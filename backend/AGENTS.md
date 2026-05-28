@@ -38,8 +38,8 @@ backend/
 | 加后台页 | `apps/<app>/admin.py`（SimpleUI），分组/排序在 settings |
 | 加 Celery 任务 | `apps/<app>/tasks.py` + `config/celery.py` autodiscover |
 | 全局异常包络 | `config/exceptions.py` |
-| 缓存管理 | `config/business_cache.py` + `/admin/cache/` 面板 |
-| 运维面板 | `config/operations_admin.py` → `/admin/operations/` |
+| 业务列表/详情缓存 | 继承 `config/business_cache.py` 的 `CachedBusinessResponseMixin` |
+| 周期任务 / 任务结果 | Django admin → 系统工具 →「周期任务」「任务执行结果」（由 `django-celery-beat` / `django-celery-results` 提供） |
 | settings 分层 | `config/settings/{base,dev,prod}.py`（base 是共同部分） |
 
 ## CONVENTIONS
@@ -58,7 +58,7 @@ backend/
 - ❌ 在业务 API 里暴露知识库 `processing_status` 写入：首版硬边界，状态**只**走 `/admin/`。
 - ❌ 在 `apps/resources/serializers.py` 给 `local_url` / `effective_url` 加可写字段：本地地址由 `views.py` 运行时基于 `model_file` 生成，永远只读。
 - ❌ 在 compose 中把 DB/Redis 主机写成 `localhost`：要写服务名 `db` / `redis`。
-- ❌ 把 admin 自定义页面的 view 直接挂到 `urls.py` 顶层：必须经过 `admin.site.admin_view(...)` 包裹，否则丢登录态保护（参考 `cache_admin` / `operations_admin`）。
+- ❌ 把 admin 自定义页面的 view 直接挂到 `urls.py` 顶层：必须经过 `admin.site.admin_view(...)` 包裹，否则丢登录态保护。
 
 ## COMMANDS
 
@@ -86,6 +86,6 @@ python manage.py test apps.<app>.tests.<module>
 
 - 默认 settings = `config.settings.dev`；生产用 `config.settings.prod`，区别主要在 `DEBUG` / 静态文件托管 / `ALLOWED_HOSTS`。
 - ASGI 入口 `config.asgi:application`；切到 wsgi 会破坏聊天室真实流式输出。
-- `config/business_cache.py` 提供命名空间化的 Redis 缓存键工具，admin 缓存面板可清。
+- `config/business_cache.py` 提供命名空间化的 Redis 缓存键工具，业务 view 通过 `CachedBusinessResponseMixin` 复用；写穿要走命名空间，不要直接 `cache.set()`。
 - `apps/admin_examples/` 仅为 SimpleUI 用法演示，**不**接入任何路由，迁移时可忽略。
 - `apps/resources/point_*.py` 是控制点位的子领域（运行时 / 序列化器 / 后台 / 视图各一份），改动需要同时验证 `/commands/points/` 路由。

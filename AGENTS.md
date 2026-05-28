@@ -6,7 +6,28 @@
 
 ## OVERVIEW
 
-数字人后台管理平台（**solin**）：React 18 + Vite SPA（`web/`） + Django 5.2 + DRF + Celery + ASGI（`backend/`），由根 `docker-compose.yaml` 编排为 7 个容器。生产仓库名 `ai-human-server-frontend`，运行时容器前缀统一 `solin_`。
+数字人后台管理平台（**solin**）：React 18 + Vite SPA（`web/`） + Django 5.2 + DRF + Celery + ASGI（`backend/`），由根 `docker-compose.yaml` 编排为 6 个容器。生产仓库名 `ai-human-server-frontend`，运行时容器前缀统一 `solin_`。
+
+## ENVIRONMENT MANDATE（硬约束 / 不可绕开）
+
+> **本项目所有日常开发、调试、测试、运行命令一律通过 `docker compose` 执行。禁止任何形式的宿主裸跑。**
+> 这条规则优先级高于一切便利性诉求；任何 PR / 文档 / 脚本如果让人在宿主直接跑 `npm` / `python` / `pytest`，视为违规。
+
+| ✅ 允许 | ❌ 禁止 |
+|------|------|
+| `docker compose up -d` 起全栈 | 宿主直接 `npm run dev` / `vite` |
+| `docker compose exec backend python manage.py test ...` | 宿主直接 `python manage.py runserver` / `pytest` |
+| `docker compose exec backend python manage.py shell` | 宿主装 venv / conda 跑 Django |
+| `docker compose exec web npm install <pkg>` / `npm run lint` | 宿主装 Node 直接 `npm install` 调试 |
+| 宿主用 GUI 客户端**只读**连容器（`localhost:5433` / `localhost:6380`） | 宿主单独起 Postgres / Redis 服务进程 |
+
+理由：
+- 后端启动序列（`migrate → seed_operations_periodic_tasks → collectstatic → 建 admin → seed_devices → uvicorn`）固化在 compose `command:` inline shell，宿主跑不了。
+- 容器内主机名（`db` / `redis` / `backend:8000`）与宿主网络不通，绕开 docker 必须改连接串，极易污染 `backend/.env` / `web/.env` 并提交。
+- 健康检查、自动重启、依赖顺序、镜像源（APT / PyPI 国内镜像）由 compose 统一编排，宿主跑这层全部失效。
+- 团队协作的前提是"克隆 + `docker compose up -d` 即跑"。任何隐式的宿主依赖（Node 版本 / Python 版本 / 系统库）都会破坏这条约定，必须在镜像里固化。
+
+唯一例外：编辑器（VS Code / IDE）和 Git 客户端在宿主跑，**但它们只读改源码**，不启动任何服务进程。
 
 ## STRUCTURE
 
@@ -14,7 +35,7 @@
 could_frontend/
 ├── web/                  # React SPA（详见 web/AGENTS.md）
 ├── backend/              # Django + DRF + Celery（详见 backend/AGENTS.md）
-├── docker-compose.yaml   # 7 服务：db / redis / backend / celery_worker / celery_beat / flower / web
+├── docker-compose.yaml   # 6 服务：db / redis / backend / celery_worker / celery_beat / web
 └── .env                  # 仅声明宿主端口映射（**不**给容器内服务读）
 ```
 
@@ -31,11 +52,12 @@ could_frontend/
 
 ## CONVENTIONS
 
+- **Docker-only 执行面**：所有运行时命令（启动 / 测试 / 迁移 / 安装依赖 / 看日志 / 进 shell）一律走 `docker compose ...` 或 `docker compose exec <service> ...`。详见上文 ENVIRONMENT MANDATE。
 - **双 .env 边界**：根 `.env` **只**有 `*_PORT`（宿主端口），不要塞业务变量；后端运行时配置全部进 `backend/.env`，前端进 `web/.env`。`docker-compose.yaml` 不会把根 `.env` 注入容器进程。
 - **容器内主机名**：后端 / Celery 访问数据库写 `db`，访问缓存写 `redis`，前端代理目标写 `backend:8000`。**不要**用 `localhost`（编排网络下指向容器自身）。
 - **重启策略统一**：所有服务 `restart: always`，依赖宿主或 docker daemon 重启后自动恢复。新增服务必须沿用。
-- **构建锚点共用**：四个 backend 容器（backend / celery_worker / celery_beat / flower）共用 `x-backend-build` YAML 锚点；改 backend Dockerfile 一处，四个容器同步生效。
-- **健康检查门禁**：`celery_worker` / `celery_beat` / `flower` / `web` 的 `depends_on` 都是 `backend: { condition: service_healthy }`，不是 `service_started`；backend healthcheck 走 8000 端口 TCP 探测。
+- **构建锚点共用**：三个 backend 容器（backend / celery_worker / celery_beat）共用 `x-backend-build` YAML 锚点；改 backend Dockerfile 一处，三个容器同步生效。
+- **健康检查门禁**：`celery_worker` / `celery_beat` / `web` 的 `depends_on` 都是 `backend: { condition: service_healthy }`，不是 `service_started`；backend healthcheck 走 8000 端口 TCP 探测。
 - **宿主端口非默认**：见下表，**避免**与本机已有 Postgres / Redis / Vite 冲突。
 
 ## ANTI-PATTERNS
@@ -43,7 +65,7 @@ could_frontend/
 - ❌ 在 `docker-compose.yaml` 把 `DATABASE_URL` 写成 `postgres://...@localhost:5432/...`：必须 `db:5432`。
 - ❌ 把业务变量加到根 `.env`：根只放宿主端口，容器进程读不到。
 - ❌ 跳过 backend healthcheck 让 worker 直接启动：worker 启动命令含 `python manage.py migrate --check`，未迁移会立即退出循环重启。
-- ❌ 在 `web` 容器里 `npm install` 后把 `node_modules` 同步出宿主：compose 已挂 `/app/node_modules` 匿名卷隔离，宿主侧若执行 `npm install` 应用宿主自己的版本，不要拷进去。
+- ❌ 在宿主跑 `npm install` / `npm run dev` 调试前端：违反 ENVIRONMENT MANDATE。`web` 容器已挂 `/app/node_modules` 匿名卷隔离依赖，宿主跑 `npm install` 既污染锁文件又跟容器版本漂移。装新依赖一律 `docker compose exec web npm install <pkg>`。
 - ❌ 上线把 backend 启动命令的 `uvicorn config.asgi:application` 换成 `wsgi`：聊天室 SSE 流式会立即退化成阻塞返回（详 `backend/CLAUDE.md`）。
 - ❌ 修改 backend 启动命令时丢掉 `seed_devices` / `seed_operations_periodic_tasks`：缺设备种子 + 周期任务，运维面板与设备列表会空。
 - ❌ 修改 backend 启动命令时丢掉自动创建 superuser 的那段 inline shell：开发环境登录约定 `admin / admin123456`，丢了会卡 `/admin/` 入口。
@@ -57,7 +79,6 @@ could_frontend/
 | `solin_backend` | build `./backend` | `API_PORT=8880` | 8000 (uvicorn) | db, redis |
 | `solin_celery_worker` | 同 backend | - | - | backend healthy |
 | `solin_celery_beat` | 同 backend | - | - | backend healthy |
-| `solin_flower` | 同 backend | `FLOWER_PORT=5555` | 5555 | backend healthy |
 | `solin_web` | build `./web` | `WEB_PORT=5175` | 5173 (vite dev) | backend healthy |
 
 ## COMMANDS
@@ -67,7 +88,7 @@ could_frontend/
 docker compose up -d
 
 # 单独重建后端镜像（修了 requirements.txt / Dockerfile / settings 后必跑）
-docker compose build backend && docker compose up -d backend celery_worker celery_beat flower
+docker compose build backend && docker compose up -d backend celery_worker celery_beat
 
 # 看后端日志（聊天室流式排障必备，关注 chat.send.* / chat.conversation.config_updated）
 docker compose logs -f backend
@@ -76,8 +97,12 @@ docker compose logs -f backend
 docker compose exec backend python manage.py shell
 docker compose exec backend python manage.py test apps.resources.tests
 
-# 前端本地（不入容器）
-cd web && npm install && npm run dev
+# 进 web 容器装/升级前端依赖（禁止宿主 npm install）
+docker compose exec web npm install <pkg>
+docker compose exec web npm run lint
+
+# 看前端 dev server 日志（HMR / 代理排障）
+docker compose logs -f web
 ```
 
 ## NOTES
