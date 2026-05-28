@@ -1,0 +1,17 @@
+Django==5.2.6
+djangorestframework
+djangorestframework-simplejwt==5.5.1
+drf-spectacular==0.28.0
+drf-spectacular-sidecar==2025.6.1
+django-simpleui==2025.1.13
+celery==5.5.3
+django-celery-results==2.6.0
+flower==2.0.1
+redis==6.4.0
+dj-database-url==2.3.0
+psycopg[binary]==3.2.9
+django-cors-headers==4.4.0
+Pillow==11.1.0
+httpx==0.28.1
+uvicorn==0.44.0
+django-celery-beat

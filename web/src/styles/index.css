@@ -1,0 +1,580 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #eef3f1;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.ant-layout {
+  background: transparent;
+}
+
+/* 统一卡片圆角与底色，避免页面各处自定义类名互相覆盖 */
+.ant-card {
+  border-radius: 14px;
+}
+
+.ant-card-bordered {
+  border-color: #edf2f0;
+}
+
+.ant-card .ant-card-head {
+  border-bottom-color: #edf2f0;
+  min-height: 52px;
+  padding: 0 20px;
+}
+
+.ant-card .ant-card-head-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: #0f172a;
+}
+
+.ant-card .ant-card-extra {
+  font-size: 13px;
+}
+
+/* 表格视觉降噪：表头更轻、行高更舒展、悬停色与品牌色呼应 */
+.ant-table-wrapper .ant-table {
+  border-radius: 12px;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th {
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: #334155 !important;
+  background: #f8fafc !important;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th::before {
+  display: none !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr > td {
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr.ant-table-row:hover > td {
+  background: #f0fdfa !important;
+}
+
+/* 全局按钮：高度、圆角、字重统一；主按钮阴影更克制 */
+.ant-btn {
+  font-weight: 500;
+  transition: all 0.18s ease;
+}
+
+.ant-btn-primary {
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.16);
+}
+
+.ant-btn-primary:not(:disabled):hover {
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.22);
+  transform: translateY(-1px);
+}
+
+.ant-btn-primary:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(15, 118, 110, 0.14);
+}
+
+/* Tag 视觉降噪：默认色更柔和，圆角更小，字重 medium 即可 */
+.ant-tag {
+  font-weight: 500;
+  border-radius: 6px;
+  padding-inline: 8px;
+  line-height: 22px;
+  border-color: transparent;
+}
+
+/* Form Item 间距更宽松，label 更轻 */
+.ant-form-vertical .ant-form-item-label > label {
+  font-weight: 500;
+  color: #334155;
+  font-size: 13px;
+}
+
+.ant-form-item-required::before {
+  margin-right: 2px !important;
+}
+
+/* Modal 标题更轻；底部分隔由 Antd 默认管理（避免 negative margin 在自定义 padding 下溢出） */
+.ant-modal-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.ant-modal-content {
+  padding: 20px !important;
+}
+
+/* Input 焦点态与品牌色呼应 */
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-input-number,
+.ant-picker,
+.ant-select-selector {
+  transition: all 0.18s ease !important;
+}
+
+.ant-input:hover,
+.ant-input-affix-wrapper:hover,
+.ant-input-number:hover,
+.ant-picker:hover {
+  border-color: #5eead4 !important;
+}
+
+/* Descriptions：标签底色更浅，分隔更细 */
+.ant-descriptions-bordered .ant-descriptions-item-label {
+  background: #f8fafc !important;
+  font-weight: 500;
+  color: #475569;
+}
+
+/* Empty 状态视觉更克制 */
+.ant-empty-description {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+/* Pagination 视觉降噪 */
+.ant-pagination .ant-pagination-item {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.ant-pagination .ant-pagination-item-active {
+  border-color: #0f766e;
+  background: rgba(15, 118, 110, 0.06);
+}
+
+.ant-pagination .ant-pagination-item-active a {
+  color: #0f766e !important;
+}
+
+/* Segmented 视觉更现代 */
+.ant-segmented {
+  background: #f1f5f9;
+  padding: 3px;
+}
+
+.ant-segmented .ant-segmented-item-selected {
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+/* Dropdown / Select popup 阴影更柔和 */
+.ant-dropdown .ant-dropdown-menu,
+.ant-select-dropdown {
+  box-shadow:
+    0 6px 16px rgba(15, 23, 42, 0.08),
+    0 3px 6px rgba(15, 23, 42, 0.05) !important;
+  border: 1px solid #edf2f0;
+}
+
+/* Switch 视觉对齐主色 */
+.ant-switch.ant-switch-checked {
+  background: #0d9488;
+}
+
+/* Notification / Message 圆角与阴影统一 */
+.ant-message-notice-content,
+.ant-notification-notice {
+  border-radius: 12px !important;
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.10),
+    0 2px 6px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* 子任务卡片是密集表单中的可排序单元，hover/拖拽反馈要足够明确。 */
+.task-step-card--interactive {
+  position: relative;
+  overflow: visible;
+  cursor: grab;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.task-step-card--interactive:hover {
+  border-color: rgba(15, 118, 110, 0.46) !important;
+  background: linear-gradient(180deg, rgba(240, 253, 250, 0.58), #ffffff 54%);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+.task-step-card--interactive:active,
+.task-step-card--dragging {
+  cursor: grabbing;
+}
+
+.task-step-card--dragging {
+  opacity: 0.62;
+  border-color: rgba(15, 118, 110, 0.64) !important;
+  box-shadow: 0 14px 34px rgba(15, 118, 110, 0.18);
+}
+
+.task-step-card--drop-target {
+  border-color: #0f766e !important;
+  background: #f0fdfa;
+  box-shadow:
+    inset 0 0 0 1px rgba(15, 118, 110, 0.34),
+    0 12px 30px rgba(15, 118, 110, 0.14);
+}
+
+.task-step-card--drop-before {
+  transform: translateY(5px);
+}
+
+.task-step-card--drop-after {
+  transform: translateY(-5px);
+}
+
+.task-step-card--drop-before::before,
+.task-step-card--drop-after::after {
+  position: absolute;
+  right: 14px;
+  left: 14px;
+  z-index: 2;
+  height: 4px;
+  border-radius: 999px;
+  background: #0f766e;
+  box-shadow:
+    0 0 0 6px rgba(15, 118, 110, 0.12),
+    0 8px 20px rgba(15, 118, 110, 0.22);
+  content: '';
+  animation: task-step-drop-pulse 0.72s ease-in-out infinite alternate;
+}
+
+.task-step-card--drop-before::before {
+  top: -11px;
+}
+
+.task-step-card--drop-after::after {
+  bottom: -11px;
+}
+
+.task-step-drag-handle {
+  transition: color 0.16s ease;
+}
+
+.task-step-card--interactive:hover .task-step-drag-handle {
+  color: #0f766e;
+}
+
+.task-command-modal .ant-modal-content {
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+}
+
+.task-command-modal .ant-modal-body {
+  scrollbar-width: auto;
+  scrollbar-color: #0f766e rgba(15, 118, 110, 0.12);
+}
+
+.task-command-modal .ant-modal-body::-webkit-scrollbar {
+  width: 14px;
+}
+
+.task-command-modal .ant-modal-body::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.1);
+}
+
+.task-command-modal .ant-modal-body::-webkit-scrollbar-thumb {
+  min-height: 72px;
+  border: 3px solid rgba(240, 253, 250, 0.9);
+  border-radius: 999px;
+  background: #0f766e;
+}
+
+.task-command-modal .ant-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #0d9488;
+}
+
+@keyframes task-step-drop-pulse {
+  from {
+    opacity: 0.72;
+    transform: scaleX(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* 后台框架的深色侧栏需要覆盖 antd 默认暗色菜单，让选中态更贴近工作台主色。 */
+.app-sidebar-menu.ant-menu-dark,
+.app-sidebar-menu.ant-menu-dark .ant-menu-sub,
+.app-sidebar-menu.ant-menu-dark .ant-menu-submenu-title,
+.app-sidebar-menu.ant-menu-dark .ant-menu-item {
+  background: transparent;
+}
+
+.app-sidebar-menu.ant-menu-dark .ant-menu-item,
+.app-sidebar-menu.ant-menu-dark .ant-menu-submenu-title {
+  width: calc(100% - 4px);
+  height: 40px;
+  margin: 2px 2px;
+  border-radius: 10px;
+  color: rgba(226, 232, 240, 0.78);
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.18s ease;
+}
+
+.app-sidebar-menu.ant-menu-dark .ant-menu-item:hover,
+.app-sidebar-menu.ant-menu-dark .ant-menu-submenu-title:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.app-sidebar-menu.ant-menu-dark .ant-menu-item-selected {
+  color: #ecfeff;
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.28), rgba(13, 148, 136, 0.20));
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(45, 212, 191, 0.20);
+}
+
+.app-sidebar-menu.ant-menu-dark .ant-menu-submenu-selected > .ant-menu-submenu-title {
+  color: #ecfeff;
+}
+
+.app-sidebar-menu.ant-menu-dark .ant-menu-item .anticon,
+.app-sidebar-menu.ant-menu-dark .ant-menu-submenu-title .anticon {
+  font-size: 16px;
+}
+
+/* 折叠态下点击带子菜单的项弹出的浮层：保持深色风格、文字清晰、图标对齐。
+   通过 popupClassName="app-sidebar-menu-popup" 限制作用域，避免影响项目里其他 dark Menu/Dropdown。 */
+.app-sidebar-menu-popup.ant-menu-submenu-popup .ant-menu {
+  background: #0f172a !important;
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.32),
+    0 4px 10px rgba(0, 0, 0, 0.18);
+}
+
+.app-sidebar-menu-popup.ant-menu-submenu-popup .ant-menu-item,
+.app-sidebar-menu-popup.ant-menu-submenu-popup .ant-menu-submenu-title {
+  height: 36px;
+  line-height: 36px;
+  margin: 2px 0;
+  border-radius: 8px;
+  color: rgba(226, 232, 240, 0.85) !important;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.app-sidebar-menu-popup.ant-menu-submenu-popup .ant-menu-item:hover,
+.app-sidebar-menu-popup.ant-menu-submenu-popup .ant-menu-submenu-title:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #ffffff !important;
+}
+
+.app-sidebar-menu-popup.ant-menu-submenu-popup .ant-menu-item-selected {
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.32), rgba(13, 148, 136, 0.22)) !important;
+  color: #ecfeff !important;
+  font-weight: 600;
+}
+
+.app-sidebar-menu-popup.ant-menu-submenu-popup .ant-menu-item .anticon,
+.app-sidebar-menu-popup.ant-menu-submenu-popup .ant-menu-submenu-title .anticon {
+  color: rgba(226, 232, 240, 0.85);
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.42) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.32);
+  transition: background 0.18s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.54);
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-markdown > *:first-child {
+  margin-top: 0;
+}
+
+.chat-markdown > *:last-child {
+  margin-bottom: 0;
+}
+
+.chat-markdown p,
+.chat-markdown ul,
+.chat-markdown ol,
+.chat-markdown blockquote,
+.chat-markdown pre,
+.chat-markdown h1,
+.chat-markdown h2,
+.chat-markdown h3,
+.chat-markdown h4,
+.chat-markdown h5,
+.chat-markdown h6 {
+  margin: 0 0 0.6em;
+}
+
+.chat-markdown ul,
+.chat-markdown ol {
+  padding-left: 1.2em;
+}
+
+.chat-markdown blockquote {
+  border-left: 3px solid #cbd5e1;
+  padding-left: 0.75em;
+  color: #475569;
+}
+
+.chat-markdown code {
+  border-radius: 6px;
+  background: rgba(148, 163, 184, 0.18);
+  padding: 0.15em 0.35em;
+  font-family: Consolas, 'SFMono-Regular', Monaco, monospace;
+  font-size: 0.92em;
+}
+
+.chat-markdown pre {
+  overflow-x: auto;
+  border-radius: 10px;
+  background: #0f172a;
+  padding: 0.85em 1em;
+  color: #e2e8f0;
+}
+
+.chat-markdown pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.chat-markdown a {
+  color: #0d9488;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.chat-markdown a:hover {
+  color: #0f766e;
+}
+
+.chat-markdown hr {
+  margin: 0.9em 0;
+  border: none;
+  border-top: 1px solid #cbd5e1;
+}
+
+.chat-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: 10px;
+  font-size: 0.95em;
+}
+
+.chat-markdown th,
+.chat-markdown td {
+  border: 1px solid #dbe2ea;
+  padding: 0.45em 0.6em;
+  text-align: left;
+  vertical-align: top;
+}
+
+.chat-markdown thead {
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.chat-code-block {
+  position: relative;
+}
+
+.chat-code-copy-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.82);
+  padding: 0.18rem 0.55rem;
+  color: #e2e8f0;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+.chat-code-copy-btn:hover {
+  background: #0d9488;
+}
+
+/* 页面区块标题：在管理类页面统一使用，避免每页各自写 mb-4 text-xl font-bold */
+.page-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 顶部页面 hero 卡片：克制的渐变 + 主色高光 */
+.page-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  padding: 22px 24px;
+  background:
+    radial-gradient(120% 200% at 0% 0%, rgba(20, 184, 166, 0.12) 0%, transparent 55%),
+    linear-gradient(135deg, #ffffff 0%, #f8fbfa 100%);
+  border: 1px solid #edf2f0;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.page-hero::after {
+  content: '';
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(20, 184, 166, 0.10), transparent 70%);
+  pointer-events: none;
+}

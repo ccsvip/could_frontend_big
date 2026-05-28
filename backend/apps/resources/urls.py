@@ -1,0 +1,37 @@
+from django.urls import path
+from rest_framework.routers import DefaultRouter
+
+from .point_views import PointViewSet
+from .views import (
+    AliyunCommandListView,
+    CommandDataLookupView,
+    CommandExportCommandsView,
+    CommandExportEnabledGroupsView,
+    CommandGroupViewSet,
+    ControlCommandViewSet,
+    ImageResourceViewSet,
+    ModelAssetViewSet,
+    ScrollingTextViewSet,
+    TaskCommandViewSet,
+    VideoResourceViewSet,
+    VoiceToneViewSet,
+)
+
+router = DefaultRouter()
+router.register('resources/images', ImageResourceViewSet, basename='resource-image')
+router.register('resources/videos', VideoResourceViewSet, basename='resource-video')
+router.register('resources/scrolling-texts', ScrollingTextViewSet, basename='scrolling-text')
+router.register('resources/voice-tones', VoiceToneViewSet, basename='voice-tone')
+router.register('resources/models', ModelAssetViewSet, basename='model-asset')
+router.register('commands/groups', CommandGroupViewSet, basename='command-group')
+router.register('commands/control', ControlCommandViewSet, basename='control-command')
+router.register('commands/tasks', TaskCommandViewSet, basename='task-command')
+router.register('commands/points', PointViewSet, basename='point')
+
+urlpatterns = [
+    path('commands/aliyun/', AliyunCommandListView.as_view(), name='aliyun-command-list'),
+    path('commands/data/', CommandDataLookupView.as_view(), name='command-data-lookup'),
+    path('commands/export/enabled-groups/', CommandExportEnabledGroupsView.as_view(), name='command-export-enabled-groups'),
+    path('commands/export/commands/', CommandExportCommandsView.as_view(), name='command-export-commands'),
+    *router.urls,
+]

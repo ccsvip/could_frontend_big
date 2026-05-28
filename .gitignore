@@ -1,0 +1,159 @@
+# ============================================================
+# could_frontend / solin — root .gitignore
+# Monorepo: web/ (React + Vite) + backend/ (Django + Celery) + docker-compose
+# ============================================================
+
+# --- VCS & OMC ---
+.svn/
+.omo/
+.omc/
+
+# --- OS / Editor ---
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- Secrets (env files; allowlist .env.example) ---
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.production.local
+!.env.example
+!.env.sample
+
+# Project ships with a root .env for host-port mapping (committed intentionally).
+# Re-track it explicitly if it ever gets ignored:
+!/.env
+
+# ============================================================
+# backend/ — Django + DRF + Celery + Python
+# ============================================================
+
+# Python bytecode / cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtualenvs
+.venv/
+venv/
+env/
+ENV/
+
+# Distribution / packaging
+*.egg
+*.egg-info/
+.eggs/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.whl
+
+# Test / coverage / type-check caches
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+.cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+
+# Django runtime artifacts
+backend/media/
+backend/staticfiles/
+backend/celerybeat-schedule
+backend/celerybeat-schedule.*
+backend/*.sqlite3
+backend/*.sqlite3-journal
+backend/db.sqlite3
+backend/db.sqlite3-journal
+
+# Django one-off backup dumps (e.g. point-backup-before-workflow-*.json)
+backend/*-backup-*.json
+backend/point-backup-*.json
+
+# Celery local state
+celerybeat-schedule
+celerybeat.pid
+
+# Logs
+*.log
+logs/
+backend/logs/
+
+# ============================================================
+# web/ — React + Vite + TypeScript + Tailwind
+# ============================================================
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Build output
+web/dist/
+web/build/
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+web/tsconfig.tsbuildinfo
+web/tsconfig.app.tsbuildinfo
+web/tsconfig.node.tsbuildinfo
+
+# Vite dev cache
+.vite/
+web/.vite/
+web/node_modules/.vite/
+
+# Generated declaration files for plain JS configs (tailwind/vite/postcss)
+web/tailwind.config.d.ts
+web/vite.config.d.ts
+web/vite.config.js
+web/tailwind.config.js
+
+# Test / coverage
+coverage/
+*.lcov
+
+# ============================================================
+# Docker / runtime
+# ============================================================
+*.pid
+*.seed
+*.pid.lock
+
+# Local docker-compose overrides (team-specific, not for VCS)
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# ============================================================
+# Misc
+# ============================================================
+*.bak
+*.tmp
+*.orig
+*.rej
