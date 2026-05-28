@@ -224,14 +224,29 @@ SIMPLEUI_CONFIG = {
             'icon': 'fas fa-tools',
             'models': [
                 {
-                    'name': 'Redis缓存管理',
-                    'icon': 'fas fa-database',
-                    'url': '/admin/cache/',
+                    'name': '周期任务',
+                    'icon': 'fas fa-clock',
+                    'url': '/admin/django_celery_beat/periodictask/',
                 },
                 {
-                    'name': '系统运维',
-                    'icon': 'fas fa-heartbeat',
-                    'url': '/admin/operations/',
+                    'name': 'Crontab 调度',
+                    'icon': 'fas fa-calendar-alt',
+                    'url': '/admin/django_celery_beat/crontabschedule/',
+                },
+                {
+                    'name': '间隔调度',
+                    'icon': 'fas fa-stopwatch',
+                    'url': '/admin/django_celery_beat/intervalschedule/',
+                },
+                {
+                    'name': '任务执行结果',
+                    'icon': 'fas fa-tasks',
+                    'url': '/admin/django_celery_results/taskresult/',
+                },
+                {
+                    'name': '任务组结果',
+                    'icon': 'fas fa-layer-group',
+                    'url': '/admin/django_celery_results/groupresult/',
                 },
             ],
         },

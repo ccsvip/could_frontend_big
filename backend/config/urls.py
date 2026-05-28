@@ -9,9 +9,6 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .cache_admin import cache_management_view
-from .operations_admin import operations_dashboard_view
-
 
 class ApiV1RootView(APIView):
     """API v1 根视图，列出所有主要接口端点（Browsable API 格式）"""
@@ -79,8 +76,6 @@ urlpatterns = [
         ),
         name='favicon',
     ),
-    path('admin/cache/', admin.site.admin_view(cache_management_view), name='admin-cache-management'),
-    path('admin/operations/', admin.site.admin_view(operations_dashboard_view), name='admin-operations-dashboard'),
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
