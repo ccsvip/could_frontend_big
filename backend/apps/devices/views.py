@@ -1,6 +1,5 @@
 from django.core.cache import cache
 from django.db.models import Count
-from kombu.exceptions import OperationalError
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -10,7 +9,6 @@ from apps.accounts.permissions import CanCreateDevices, CanDeleteDevices, CanUpd
 
 from .models import Device
 from .serializers import DeviceDetailSerializer, DeviceSerializer, DeviceStatsSerializer
-from .tasks import refresh_device_stats
 
 
 @extend_schema_view(
@@ -58,8 +56,4 @@ class DeviceViewSet(viewsets.ModelViewSet):
             for item in grouped:
                 stats[item['status']] = item['total']
             cache.set('device_stats', stats, timeout=300)
-            try:
-                refresh_device_stats.delay()
-            except OperationalError:
-                pass
         return Response(stats)
