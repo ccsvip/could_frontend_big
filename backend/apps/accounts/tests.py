@@ -344,17 +344,32 @@ class UserAdminPasswordResetEntryTests(APITestCase):
         self.client.force_login(self.admin)
 
     def test_user_admin_list_page_shows_reset_password_action_column(self):
-        response = self.client.get('/admin/auth/user/')
+        # 用户列表通过 AccountUser proxy 挂在"账号管理"分组下
+        response = self.client.get('/admin/accounts/accountuser/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         body = response.content.decode('utf-8')
         # 列名出现
         self.assertIn('重置密码', body)
         # 列里渲染出指向该用户密码修改页的链接
-        expected_href = f'/admin/auth/user/{self.target.id}/password/'
+        expected_href = f'/admin/accounts/accountuser/{self.target.id}/password/'
         self.assertIn(expected_href, body)
 
     def test_reset_password_link_target_page_is_reachable(self):
         response = self.client.get(
-            f'/admin/auth/user/{self.target.id}/password/'
+            f'/admin/accounts/accountuser/{self.target.id}/password/'
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_admin_grouped_under_accounts_app(self):
+        # 在 admin 首页应能在"账号管理"分组里看到 User 入口
+        response = self.client.get('/admin/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        body = response.content.decode('utf-8')
+        self.assertIn('/admin/accounts/accountuser/', body)
+
+    def test_legacy_auth_user_changelist_no_longer_registered(self):
+        # auth.User 仍注册（UserRoleAdmin.autocomplete_fields 依赖之，admin.E039），
+        # 但已通过 SIMPLEUI_CONFIG.menu_display 白名单从左侧菜单中移除，
+        # 真正暴露给运维使用的入口是 /admin/accounts/user/。
+        from django.conf import settings
+        self.assertNotIn('认证和授权', settings.SIMPLEUI_CONFIG['menu_display'])

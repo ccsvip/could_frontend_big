@@ -1,8 +1,23 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User as AuthUser
 from django.db import models
 
 User = get_user_model()
+
+
+class AccountUser(AuthUser):
+    """auth.User 的 proxy，用于把"用户"管理挂到 accounts app 的「账号管理」分组下。
+
+    数据库不变，仍读写 auth_user 表；只是 admin 注册路径从 /admin/auth/user/
+    迁到 /admin/accounts/user/，与 AccountApplication / Role / Menu 等同组显示。
+    """
+
+    class Meta:
+        proxy = True
+        app_label = 'accounts'
+        verbose_name = '用户'
+        verbose_name_plural = '用户'
 
 
 class AccountApplication(models.Model):

@@ -1,20 +1,17 @@
 from django.contrib import admin
-from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-from django.urls import reverse
+from django.urls import path, reverse
 from django.utils.html import format_html
 
-from .models import AccountApplication, Menu, PermissionPoint, Role, UserRole
-
-User = get_user_model()
+from .models import AccountApplication, AccountUser, Menu, PermissionPoint, Role, UserRole
 
 
-# 接管默认 User admin，给列表页加显眼的"重置密码"列。
-admin.site.unregister(User)
-
-
-@admin.register(User)
-class UserAdmin(DjangoUserAdmin):
+# 把"用户"管理通过 AccountUser proxy 挂到 accounts app 下，归入「账号管理」分组。
+# 注意：不能 unregister 默认的 auth.User —— UserRoleAdmin.autocomplete_fields=('user',)
+# 依赖它的 admin 注册（admin.E039）。默认的 auth.User 已被 SIMPLEUI_CONFIG.menu_display
+# 过滤掉，不会出现在菜单里。
+@admin.register(AccountUser)
+class AccountUserAdmin(DjangoUserAdmin):
     list_display = (
         'username',
         'email',
@@ -24,9 +21,21 @@ class UserAdmin(DjangoUserAdmin):
         'reset_password_button',
     )
 
+    def get_urls(self):
+        # DjangoUserAdmin.get_urls() 把 password URL name 硬编码成 auth_user_password_change，
+        # proxy 模型必须改成 <app_label>_<model_name>_password_change，否则 reverse() 错乱。
+        meta = self.model._meta
+        return [
+            path(
+                '<id>/password/',
+                self.admin_site.admin_view(self.user_change_password),
+                name=f'{meta.app_label}_{meta.model_name}_password_change',
+            ),
+        ] + super(DjangoUserAdmin, self).get_urls()
+
     @admin.display(description='重置密码')
     def reset_password_button(self, obj):
-        url = reverse('admin:auth_user_password_change', args=[obj.pk])
+        url = reverse('admin:accounts_accountuser_password_change', args=[obj.pk])
         return format_html(
             '<a class="button" href="{}" '
             'style="background:#0d9488;color:#fff;padding:4px 10px;border-radius:4px;'
