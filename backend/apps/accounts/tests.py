@@ -329,3 +329,32 @@ class ChangePasswordApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password('oldPass123456'))
+
+
+class UserAdminPasswordResetEntryTests(APITestCase):
+    """B1: 用户列表页直接出现"重置密码"入口列。"""
+
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            username='boss', password='boss-pass-1', email='boss@example.com'
+        )
+        self.target = User.objects.create_user(
+            username='victim', password='old-pass-1', email='victim@example.com'
+        )
+        self.client.force_login(self.admin)
+
+    def test_user_admin_list_page_shows_reset_password_action_column(self):
+        response = self.client.get('/admin/auth/user/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        body = response.content.decode('utf-8')
+        # 列名出现
+        self.assertIn('重置密码', body)
+        # 列里渲染出指向该用户密码修改页的链接
+        expected_href = f'/admin/auth/user/{self.target.id}/password/'
+        self.assertIn(expected_href, body)
+
+    def test_reset_password_link_target_page_is_reachable(self):
+        response = self.client.get(
+            f'/admin/auth/user/{self.target.id}/password/'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
