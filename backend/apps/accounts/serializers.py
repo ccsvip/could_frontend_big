@@ -3,6 +3,7 @@ from typing import Any
 from drf_spectacular.utils import extend_schema_field
 from django.contrib.auth import get_user_model
 from django.contrib.auth import password_validation
+from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 
 from .models import AccountApplication
@@ -78,15 +79,26 @@ class UserSerializer(serializers.ModelSerializer):
 
 class AccountApplicationCreateSerializer(serializers.ModelSerializer):
     username = serializers.RegexField(
-        regex=r'^[A-Za-z0-9_.-]{3,30}$',
+        regex=r'^[A-Za-z0-9]{3,30}$',
         max_length=30,
-        error_messages={'invalid': '用户名需为 3-30 位字母、数字、下划线、点或短横线'},
+        error_messages={'invalid': '用户名需为 3-30 位英文字母或数字'},
     )
     applicantName = serializers.CharField(source='applicant_name', max_length=64)
+    enterpriseName = serializers.CharField(source='enterprise_name', max_length=128)
+    password = serializers.CharField(max_length=128, write_only=True)
+    confirmPassword = serializers.CharField(max_length=128, write_only=True)
 
     class Meta:
         model = AccountApplication
-        fields = ('username', 'applicantName', 'phone', 'email', 'reason')
+        fields = (
+            'username',
+            'applicantName',
+            'enterpriseName',
+            'phone',
+            'password',
+            'confirmPassword',
+            'reason',
+        )
 
     def validate_username(self, value: str) -> str:
         username = value.strip()
@@ -96,13 +108,45 @@ class AccountApplicationCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('该用户名已存在，请更换后再提交')
         return username
 
+    def validate_password(self, value: str) -> str:
+        # 不允许纯数字，长度不少于 6 位（其余强度规则交给 AUTH_PASSWORD_VALIDATORS）。
+        if value.isdigit():
+            raise serializers.ValidationError('密码不能为纯数字')
+        if len(value) < 6:
+            raise serializers.ValidationError('密码长度不能少于 6 位')
+        password_validation.validate_password(value)
+        return value
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        attrs = super().validate(attrs)
+        if attrs.get('password') != attrs.get('confirmPassword'):
+            raise serializers.ValidationError({'confirmPassword': '两次输入的密码不一致'})
+        return attrs
+
+    def create(self, validated_data: dict[str, Any]) -> AccountApplication:
+        validated_data.pop('confirmPassword', None)
+        # 申请记录里只存哈希；审核通过时直接复制到 auth_user.password。
+        validated_data['password'] = make_password(validated_data['password'])
+        return super().create(validated_data)
+
 
 class AccountApplicationResponseSerializer(serializers.ModelSerializer):
     applicantName = serializers.CharField(source='applicant_name')
+    enterpriseName = serializers.CharField(source='enterprise_name')
 
     class Meta:
         model = AccountApplication
-        fields = ('id', 'username', 'applicantName', 'phone', 'email', 'reason', 'status', 'created_at', 'updated_at')
+        fields = (
+            'id',
+            'username',
+            'applicantName',
+            'enterpriseName',
+            'phone',
+            'reason',
+            'status',
+            'created_at',
+            'updated_at',
+        )
 
 
 class AccountApplicationStatusSerializer(serializers.ModelSerializer):

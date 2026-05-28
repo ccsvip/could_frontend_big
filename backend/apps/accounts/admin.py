@@ -5,10 +5,10 @@ from .models import AccountApplication, Menu, PermissionPoint, Role, UserRole
 
 @admin.register(AccountApplication)
 class AccountApplicationAdmin(admin.ModelAdmin):
-    list_display = ('username', 'applicant_name', 'phone', 'email', 'status', 'created_at')
+    list_display = ('username', 'applicant_name', 'enterprise_name', 'phone', 'status', 'created_at')
     list_filter = ('status', 'created_at')
-    search_fields = ('username', 'applicant_name', 'phone', 'email')
-    readonly_fields = ('created_at', 'updated_at')
+    search_fields = ('username', 'applicant_name', 'enterprise_name', 'phone')
+    readonly_fields = ('password', 'created_at', 'updated_at')
 
 
 @admin.register(Menu)

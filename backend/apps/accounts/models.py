@@ -3,7 +3,6 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 User = get_user_model()
-DEFAULT_APPROVED_PASSWORD = '123456'
 
 
 class AccountApplication(models.Model):
@@ -18,8 +17,10 @@ class AccountApplication(models.Model):
 
     username = models.CharField('登录用户名', max_length=150, unique=True, null=True, blank=True)
     applicant_name = models.CharField('申请人姓名', max_length=64)
+    enterprise_name = models.CharField('企业名称', max_length=128, default='')
     phone = models.CharField('手机号', max_length=20, unique=True)
-    email = models.EmailField('邮箱', blank=True)
+    # 申请时由用户自填密码，此处仅存哈希值。审核通过时直接复制到 auth_user.password。
+    password = models.CharField('登录密码哈希', max_length=128, default='')
     reason = models.CharField('申请原因', max_length=200)
     status = models.CharField('审核状态', max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
@@ -39,30 +40,32 @@ class AccountApplication(models.Model):
         return (self.username or self.phone).strip()
 
     def ensure_login_user(self):
-        """确保已通过申请存在对应登录账号，兼容历史已通过但未建号的数据。"""
+        """确保已通过申请存在对应登录账号，兼容历史已通过但未建号的数据。
+
+        用户的登录密码直接来自 AccountApplication.password（已经是哈希）。
+        admin 想"看密码"=点用户详情页的"修改密码"链接重置一个新值（Django 自带）。
+        """
         user = User.objects.filter(username=self.login_username).first()
 
         if user is None:
             user = User.objects.create(
                 username=self.login_username,
-                email=self.email,
                 first_name=self.applicant_name,
                 is_active=True,
             )
-            user.set_password(DEFAULT_APPROVED_PASSWORD)
+            # 直接复制已 hash 的 password；不要再次 set_password 否则会双重哈希。
+            user.password = self.password
             user.save(update_fields=['password'])
             return user
 
         update_fields = []
-        if user.email != self.email:
-            user.email = self.email
-            update_fields.append('email')
         if user.first_name != self.applicant_name:
             user.first_name = self.applicant_name
             update_fields.append('first_name')
         if not user.is_active:
             user.is_active = True
             update_fields.append('is_active')
+        # 已经存在的账号不强制覆盖密码，避免管理员手动改过的密码被申请记录里的旧 hash 还原。
         if update_fields:
             user.save(update_fields=update_fields)
         return user

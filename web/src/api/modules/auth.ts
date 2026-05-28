@@ -25,8 +25,10 @@ export type LoginResponse = {
 export type AccountApplicationPayload = {
   username: string;
   applicantName: string;
+  enterpriseName: string;
   phone: string;
-  email?: string;
+  password: string;
+  confirmPassword: string;
   reason: string;
 };
 
@@ -34,8 +36,8 @@ export type AccountApplicationRecord = {
   id: number;
   username: string;
   applicantName: string;
+  enterpriseName: string;
   phone: string;
-  email: string;
   reason: string;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;

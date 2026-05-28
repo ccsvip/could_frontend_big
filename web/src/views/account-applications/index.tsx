@@ -85,9 +85,9 @@ export const AccountApplicationsPage = () => {
       width: 140,
     },
     {
-      title: '邮箱',
-      dataIndex: 'email',
-      key: 'email',
+      title: '企业名称',
+      dataIndex: 'enterpriseName',
+      key: 'enterpriseName',
       width: 220,
       render: (value: string) => value || '-',
     },
@@ -151,7 +151,7 @@ export const AccountApplicationsPage = () => {
               账号申请管理
             </Typography.Title>
             <Typography.Text className="!text-slate-500">
-              查看前端提交的账号申请，并完成通过或拒绝处理。审核通过后会自动创建登录账号，默认密码为 123456。
+              查看前端提交的账号申请，并完成通过或拒绝处理。审核通过后会自动创建登录账号，登录密码为申请人提交时自定义的密码。
             </Typography.Text>
           </div>
           <Space wrap>
@@ -194,8 +194,8 @@ export const AccountApplicationsPage = () => {
           <Descriptions column={1} bordered>
             <Descriptions.Item label="登录用户名">{activeRecord.username || '-'}</Descriptions.Item>
             <Descriptions.Item label="申请人">{activeRecord.applicantName}</Descriptions.Item>
+            <Descriptions.Item label="企业名称">{activeRecord.enterpriseName || '-'}</Descriptions.Item>
             <Descriptions.Item label="手机号">{activeRecord.phone}</Descriptions.Item>
-            <Descriptions.Item label="邮箱">{activeRecord.email || '-'}</Descriptions.Item>
             <Descriptions.Item label="状态">
               <Tag color={statusMap[activeRecord.status].color}>{statusMap[activeRecord.status].text}</Tag>
             </Descriptions.Item>

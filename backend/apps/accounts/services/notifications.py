@@ -9,13 +9,12 @@ from ..models import AccountApplication
 
 def notify_account_application_created(application: AccountApplication) -> bool:
     """发送账号申请创建通知到飞书。"""
-    email = application.email or '未填写'
     text = (
         '📩 账号入驻申请通知\n'
         f'登录用户名：{application.login_username}\n'
         f'申请人姓名：{application.applicant_name}\n'
+        f'企业名称：{application.enterprise_name}\n'
         f'手机号：{application.phone}\n'
-        f'企业邮箱：{email}\n'
         f'申请说明：{application.reason}'
     )
     return send_feishu_text(text)

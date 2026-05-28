@@ -24,8 +24,10 @@ type LoginForm = {
 type ApplyAccountForm = {
   username: string;
   applicantName: string;
+  enterpriseName: string;
   phone: string;
-  email?: string;
+  password: string;
+  confirmPassword: string;
   reason: string;
 };
 
@@ -258,13 +260,24 @@ export const LoginPage = () => {
             name="username"
             rules={[
               { required: true, message: '请输入登录用户名' },
-              { pattern: /^[A-Za-z0-9_.-]{3,30}$/, message: '用户名需为 3-30 位字母、数字、下划线、点或短横线' },
+              { pattern: /^[A-Za-z0-9]{3,30}$/, message: '用户名需为 3-30 位英文字母或数字' },
             ]}
           >
-            <Input placeholder="审核通过后用于登录" />
+            <Input placeholder="审核通过后用于登录（字母或数字，至少 3 位，需全局唯一）" />
           </Form.Item>
-          <Form.Item label={<span className="text-[13px] font-medium text-slate-700">申请人姓名</span>} name="applicantName" rules={[{ required: true, message: '请输入申请人姓名' }]}>
+          <Form.Item
+            label={<span className="text-[13px] font-medium text-slate-700">申请人姓名</span>}
+            name="applicantName"
+            rules={[{ required: true, message: '请输入申请人姓名' }]}
+          >
             <Input placeholder="输入真实姓名" />
+          </Form.Item>
+          <Form.Item
+            label={<span className="text-[13px] font-medium text-slate-700">企业名称</span>}
+            name="enterpriseName"
+            rules={[{ required: true, message: '请输入企业名称' }]}
+          >
+            <Input placeholder="所属公司或组织全称" maxLength={128} />
           </Form.Item>
           <Form.Item
             label={<span className="text-[13px] font-medium text-slate-700">手机号</span>}
@@ -276,10 +289,48 @@ export const LoginPage = () => {
           >
             <Input placeholder="常用联系方式" />
           </Form.Item>
-          <Form.Item label={<span className="text-[13px] font-medium text-slate-700">企业邮箱</span>} name="email" rules={[{ type: 'email', message: '邮箱格式不正确' }]}>
-            <Input placeholder="用于接收通知（选填）" />
+          <Form.Item
+            label={<span className="text-[13px] font-medium text-slate-700">密码</span>}
+            name="password"
+            rules={[
+              { required: true, message: '请输入密码' },
+              { min: 6, message: '密码长度不少于 6 位' },
+              {
+                validator: (_, value) => {
+                  if (!value) return Promise.resolve();
+                  if (/^\d+$/.test(value)) {
+                    return Promise.reject(new Error('密码不能为纯数字'));
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
+          >
+            <Input.Password placeholder="不少于 6 位，且不能为纯数字" maxLength={128} />
           </Form.Item>
-          <Form.Item label={<span className="text-[13px] font-medium text-slate-700">申请说明</span>} name="reason" rules={[{ required: true, message: '请填写申请原因' }]}>
+          <Form.Item
+            label={<span className="text-[13px] font-medium text-slate-700">确认密码</span>}
+            name="confirmPassword"
+            dependencies={['password']}
+            rules={[
+              { required: true, message: '请再次输入密码' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('password') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('两次输入的密码不一致'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password placeholder="再次输入密码" maxLength={128} />
+          </Form.Item>
+          <Form.Item
+            label={<span className="text-[13px] font-medium text-slate-700">申请说明</span>}
+            name="reason"
+            rules={[{ required: true, message: '请填写申请原因' }]}
+          >
             <Input.TextArea rows={4} maxLength={200} showCount placeholder="请简述您的业务背景和使用目的" />
           </Form.Item>
         </Form>
