@@ -84,23 +84,6 @@ services:
         condition: service_started
     command: sh -c "python manage.py migrate --check && celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
 
-  flower:
-    build: *backend-build
-    container_name: solin_flower
-    restart: always
-    env_file:
-      - ./backend/.env
-    volumes:
-      - ./backend:/app
-    depends_on:
-      backend:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    ports:
-      - "${FLOWER_PORT}:5555"
-    command: celery -A config flower --port=5555
-
   web:
     build:
       context: ./web
