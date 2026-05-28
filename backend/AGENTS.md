@@ -15,7 +15,6 @@ backend/
 ├── apps/                # 业务 apps（每个一个 Django app）
 │   ├── accounts/        # 登录 / JWT / 账号申请 / 权限 / 菜单
 │   ├── ai_models/       # ASR/LLM/TTS 供应商 + 聊天会话（SSE 流式）
-│   ├── admin_examples/  # SimpleUI 示例（参考用，不上线）
 │   ├── devices/         # 数字人设备
 │   ├── knowledge_base/  # 知识库文档（admin-only 状态维护）
 │   └── resources/       # 图片/视频/滚动字幕/音色/模型/控制指令/点位
@@ -87,5 +86,4 @@ python manage.py test apps.<app>.tests.<module>
 - 默认 settings = `config.settings.dev`；生产用 `config.settings.prod`，区别主要在 `DEBUG` / 静态文件托管 / `ALLOWED_HOSTS`。
 - ASGI 入口 `config.asgi:application`；切到 wsgi 会破坏聊天室真实流式输出。
 - `config/business_cache.py` 提供命名空间化的 Redis 缓存键工具，业务 view 通过 `CachedBusinessResponseMixin` 复用；写穿要走命名空间，不要直接 `cache.set()`。
-- `apps/admin_examples/` 仅为 SimpleUI 用法演示，**不**接入任何路由，迁移时可忽略。
 - `apps/resources/point_*.py` 是控制点位的子领域（运行时 / 序列化器 / 后台 / 视图各一份），改动需要同时验证 `/commands/points/` 路由。

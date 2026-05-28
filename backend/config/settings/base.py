@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'apps.accounts',
     'apps.devices',
     'apps.resources',
-    'apps.admin_examples',
     'apps.knowledge_base',
     'apps.ai_models',
 ]
@@ -217,7 +216,7 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 SIMPLEUI_CONFIG = {
     'system_keep': True,
-    'menu_display': ['系统管理', '账号管理', '设备管理', '资源管理', '接口示例', '知识库', 'AI大模型', '系统工具'],
+    'menu_display': ['系统管理', '账号管理', '设备管理', '资源管理', '知识库', 'AI大模型', '系统工具'],
     'menus': [
         {
             'name': '系统工具',
