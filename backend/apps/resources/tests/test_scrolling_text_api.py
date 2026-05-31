@@ -41,10 +41,14 @@ class ScrollingTextApiTests(TenantTestMixin, APITestCase):
             permission_points.append(permission_point)
         self.role.permission_points.set(permission_points)
 
-    def test_list_scrolling_texts_requires_view_permission(self):
+    def test_list_scrolling_texts_is_public(self):
+        # scrolling-texts 是多租户改造里明确定为公开的运行时端点：
+        # ScrollingTextViewSet 硬编码 permission_classes=[AllowAny] 且 get_permissions()
+        # 恒返回 [AllowAny()]，靠 ?tenant=<code> 行级隔离服务匿名数字人设备，不靠登录鉴权。
+        # 因此未授予 view 权限的请求应当 200（公开可读），而非 403。
         response = self.client.get('/api/v1/resources/scrolling-texts/')
 
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_create_scrolling_text_success(self):
         self.grant_permissions('resources.scrolling_texts.view', 'resources.scrolling_texts.create')

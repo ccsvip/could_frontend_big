@@ -92,7 +92,7 @@ class ResourceSerializer(serializers.ModelSerializer):
         if resource_type == Resource.TYPE_VIDEO:
             # 视频资源允许仅填写云端 URL，不再强制要求本地文件。
             if clear_file:
-                raise serializers.ValidationError({'clearFile': '瑙嗛璧勬簮涓嶆敮鎸佹竻绌烘枃浠讹紝璇风洿鎺ュ垹闄ゆ垨閲嶆柊涓婁紶'})
+                raise serializers.ValidationError({'clearFile': '视频资源不支持清空文件，请直接删除或重新上传'})
 
         attrs['resource_type'] = resource_type
         attrs['_clear_file'] = clear_file
@@ -317,7 +317,7 @@ class VoiceToneSerializer(serializers.ModelSerializer):
             if self.instance is not None:
                 queryset = queryset.exclude(pk=self.instance.pk)
             if queryset.exists():
-                raise serializers.ValidationError({'voiceCode': '璇ラ煶鑹叉爣璇嗗凡瀛樺湪'})
+                raise serializers.ValidationError({'voiceCode': '该音色标识已存在'})
 
         attrs['_clear_icon'] = clear_icon
         attrs['_clear_audio'] = clear_audio
@@ -428,13 +428,13 @@ class ModelAssetSerializer(serializers.ModelSerializer):
             if self.instance is not None:
                 queryset = queryset.exclude(pk=self.instance.pk)
             if queryset.exists():
-                raise serializers.ValidationError({'name': '璇ユā鍨嬪悕绉板凡瀛樺湪'})
+                raise serializers.ValidationError({'name': '该模型名称已存在'})
 
         instance_has_model_file = bool(self.instance and self.instance.model_file)
         has_model_file = bool(attrs.get('model_file')) or (instance_has_model_file and not clear_model_file)
         cloud_url = attrs.get('cloud_url') if 'cloud_url' in attrs else (self.instance.cloud_url if self.instance else '')
         if not has_model_file and not cloud_url:
-            raise serializers.ValidationError({'cloudUrl': '璇蜂笂浼犳ā鍨嬫枃浠舵垨濉啓浜戠鍦板潃'})
+            raise serializers.ValidationError({'cloudUrl': '请上传模型文件或填写云端地址'})
 
         attrs['_clear_thumbnail'] = clear_thumbnail
         attrs['_clear_model_file'] = clear_model_file
@@ -524,7 +524,7 @@ class ControlCommandSerializer(serializers.ModelSerializer):
             if self.instance is not None:
                 queryset = queryset.exclude(pk=self.instance.pk)
             if queryset.exists():
-                raise serializers.ValidationError({'command': '璇ユ寚浠ゅ凡瀛樺湪'})
+                raise serializers.ValidationError({'command': '该指令已存在'})
 
         protocol = attrs.get('protocol', self.instance.protocol if self.instance else ControlCommand.PROTOCOL_UDP)
         if protocol not in {ControlCommand.PROTOCOL_UDP, ControlCommand.PROTOCOL_TCP}:
@@ -627,7 +627,7 @@ class TaskCommandStepSerializer(serializers.ModelSerializer):
 
     def validate_type(self, value: str) -> str:
         if value not in {choice[0] for choice in TaskCommandStep.TYPE_CHOICES}:
-            raise serializers.ValidationError('璇烽€夋嫨鍚堟硶鐨勫瓙浠诲姟绫诲瀷')
+            raise serializers.ValidationError('请选择合法的子任务类型')
         if self.context.get('inner_depth', 0) > 0 and value == TaskCommandStep.TYPE_NAVIGATION:
             raise serializers.ValidationError('子子任务不能选择导航指令')
         return value
@@ -645,12 +645,12 @@ class TaskCommandStepSerializer(serializers.ModelSerializer):
         is_show = attrs.get('is_show', self.instance.is_show if self.instance else True)
 
         if task_type == TaskCommandStep.TYPE_COMMAND and control_command is None:
-            raise serializers.ValidationError({'controlCommandId': '璇烽€夋嫨鎺у埗鎸囦护'})
+            raise serializers.ValidationError({'controlCommandId': '请选择控制指令'})
         if task_type == TaskCommandStep.TYPE_NAVIGATION and point is None:
-            raise serializers.ValidationError({'pointId': '璇烽€夋嫨鐐逛綅'})
+            raise serializers.ValidationError({'pointId': '请选择点位'})
         if task_type in {TaskCommandStep.TYPE_IMAGE, TaskCommandStep.TYPE_VIDEO}:
             if resource is None:
-                raise serializers.ValidationError({'resourceId': '璇烽€夋嫨璧勬簮'})
+                raise serializers.ValidationError({'resourceId': '请选择资源'})
             expected_type = Resource.TYPE_IMAGE if task_type == TaskCommandStep.TYPE_IMAGE else Resource.TYPE_VIDEO
             if resource.resource_type != expected_type:
                 raise serializers.ValidationError({'resourceId': '资源类型与子任务类型不一致'})
@@ -703,11 +703,11 @@ class TaskCommandSerializer(serializers.ModelSerializer):
             if self.instance is not None:
                 queryset = queryset.exclude(pk=self.instance.pk)
             if queryset.exists():
-                raise serializers.ValidationError({'command': '璇ユ寚浠ゅ凡瀛樺湪'})
+                raise serializers.ValidationError({'command': '该指令已存在'})
 
         tasks = attrs.get('tasks')
         if not tasks:
-            raise serializers.ValidationError({'tasks': '璇疯嚦灏戦厤缃竴涓瓙浠诲姟'})
+            raise serializers.ValidationError({'tasks': '请至少配置一个子任务'})
         self._validate_task_orders(tasks)
         return attrs
 

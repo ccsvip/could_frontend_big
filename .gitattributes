@@ -1,0 +1,56 @@
+# 仓库行尾策略
+# ---------------------------------------------------------------------------
+# 背景：Windows 下 git core.autocrlf=true（global+system 生效），且此前仓库无
+# .gitattributes 钉死行尾，导致每个含 LF 的文本文件在 add/checkout 时都刷
+# "LF will be replaced by CRLF the next time Git touches it" 警告。
+# 下面用 .gitattributes 统一以 LF 入库/检出（覆盖 autocrlf），消除刷屏，
+# 并跨平台保持一致的行尾。该文件优先级高于 core.autocrlf。
+# ---------------------------------------------------------------------------
+
+# 默认：自动识别文本，统一以 LF 检出与入库
+* text=auto eol=lf
+
+# 显式文本类型（确保按 LF 处理并参与 diff/merge）
+*.py    text eol=lf
+*.ts    text eol=lf
+*.tsx   text eol=lf
+*.js    text eol=lf
+*.mjs   text eol=lf
+*.json  text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.md    text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+*.txt   text eol=lf
+*.svg   text eol=lf
+*.env   text eol=lf
+
+# Windows 脚本须保留 CRLF（当前未跟踪，预置规则以防将来加入）
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+# 二进制：禁用行尾转换与 diff（避免被误当文本损坏）
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.webp  binary
+*.bmp   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.eot   binary
+*.otf   binary
+*.zip   binary
+*.gz    binary
+*.tar   binary
+*.7z    binary
+*.pdf   binary
+*.mp3   binary
+*.mp4   binary
+*.wav   binary
+*.webm  binary
+*.mov   binary

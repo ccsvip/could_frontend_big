@@ -329,6 +329,9 @@ class BackendManagementFlowApiTests(TenantTestMixin, APITestCase):
             override_settings(
                 FEISHU_WEBHOOK_URL='https://feishu.example/webhook',
                 FEISHU_WEBHOOK_SECRET='',
+                # 清空环境泄漏的 HOST_IP（根 .env 设了 localhost），否则 _resolve_server_ip
+                # 会短路在 HOST_IP 分支，永远到不了 FEISHU_SERVER_IP，断言必失败。
+                HOST_IP='',
                 FEISHU_SERVER_IP='10.0.0.8',
             ),
             patch('apps.resources.services.feishu.httpx.Client', FakeClient),

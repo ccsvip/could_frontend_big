@@ -1,6 +1,7 @@
 import json
 from unittest.mock import patch
 
+from asgiref.sync import async_to_sync
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -11,6 +12,51 @@ from apps.ai_models.views import _build_chat_completions_url
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
+
+
+def _read_streaming_body(response) -> str:
+    """Drain an async StreamingHttpResponse into a single decoded string.
+
+    The chat ``send`` endpoint returns a ``StreamingHttpResponse`` wrapping an
+    ``async`` generator, so ``streaming_content`` is an async generator and
+    cannot be iterated synchronously. We consume it via ``async_to_sync`` so
+    the generator body (which also persists assistant messages / title /
+    summary) actually runs.
+    """
+
+    async def _drain():
+        return [chunk async for chunk in response.streaming_content]
+
+    chunks = async_to_sync(_drain)()
+    return ''.join(
+        chunk.decode('utf-8') if isinstance(chunk, bytes) else chunk
+        for chunk in chunks
+    )
+
+
+def _sse_content(streamed_body: str) -> str:
+    """解析 SSE ``data:`` 行，拼接解码后的 ``content`` 字段。
+
+    视图用 json.dumps 默认 ensure_ascii=True 输出，中文在 wire 上是 \\uXXXX 转义
+    （前端 JSON.parse 后等价于原文，不影响功能）。故按语义比对：json.loads 解码
+    回真中文再断言，而不是断言转义后的 wire 字节。只取 content 字段，忽略
+    title/summary/[DONE]。
+    """
+    parts = []
+    for line in streamed_body.splitlines():
+        line = line.strip()
+        if not line.startswith('data:'):
+            continue
+        payload = line[len('data:'):].strip()
+        if payload == '[DONE]':
+            continue
+        try:
+            obj = json.loads(payload)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(obj, dict) and isinstance(obj.get('content'), str):
+            parts.append(obj['content'])
+    return ''.join(parts)
 
 
 class _DummyStreamResponse:
@@ -201,23 +247,26 @@ class ChatApiTests(TenantTestMixin, APITestCase):
                 ],
             }
         )
+        summary_payload = {
+            'choices': [{'message': {'role': 'assistant', 'content': '兼容模式自动摘要'}}]
+        }
 
         with patch(
-            'apps.ai_models.views.httpx.Client',
-            return_value=_DummyHttpxClient(_DummyStreamResponse([plain_json_response])),
+            'apps.ai_models.views.httpx.AsyncClient',
+            return_value=_DummyHttpxClient(
+                _DummyStreamResponse([plain_json_response]),
+                post_response=_DummyJsonResponse(summary_payload),
+            ),
         ):
             response = self.client.post(
                 f'/api/v1/ai-models/chat/conversations/{conversation.id}/send/',
                 {'content': '你好'},
                 format='json',
             )
+            streamed_body = _read_streaming_body(response)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        streamed_body = ''.join(
-            chunk.decode('utf-8') if isinstance(chunk, bytes) else chunk
-            for chunk in response.streaming_content
-        )
-        self.assertIn('这是兼容模式返回的完整回复', streamed_body)
+        self.assertIn('这是兼容模式返回的完整回复', _sse_content(streamed_body))
 
         messages = list(conversation.messages.order_by('created_at').values_list('role', 'content'))
         self.assertEqual(
@@ -253,24 +302,28 @@ class ChatApiTests(TenantTestMixin, APITestCase):
             'data:{"choices":[{"delta":{"content":"！"},"index":0}]}',
             'data:[DONE]',
         ]
+        summary_payload = {
+            'choices': [{'message': {'role': 'assistant', 'content': 'LongCat 流式自动摘要'}}]
+        }
 
         with patch(
-            'apps.ai_models.views.httpx.Client',
-            return_value=_DummyHttpxClient(_DummyStreamResponse(sse_lines, headers={'content-type': 'text/event-stream'})),
+            'apps.ai_models.views.httpx.AsyncClient',
+            return_value=_DummyHttpxClient(
+                _DummyStreamResponse(sse_lines, headers={'content-type': 'text/event-stream'}),
+                post_response=_DummyJsonResponse(summary_payload),
+            ),
         ):
             response = self.client.post(
                 f'/api/v1/ai-models/chat/conversations/{conversation.id}/send/',
                 {'content': '你好'},
                 format='json',
             )
+            streamed_body = _read_streaming_body(response)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        streamed_body = ''.join(
-            chunk.decode('utf-8') if isinstance(chunk, bytes) else chunk
-            for chunk in response.streaming_content
-        )
-        self.assertIn('data: {"content": "你好"}', streamed_body)
-        self.assertIn('data: {"content": "\\uff01"}', streamed_body)
+        # 语义断言：LongCat 的无空格 data:{...} chunk 必须被正确解析、不被丢弃，
+        # 拼接出完整回复「你好！」（wire 上中文是 \uXXXX 转义，前端 JSON.parse 后等价）。
+        self.assertEqual(_sse_content(streamed_body), '你好！')
 
         messages = list(conversation.messages.order_by('created_at').values_list('role', 'content'))
         self.assertEqual(
@@ -309,23 +362,25 @@ class ChatApiTests(TenantTestMixin, APITestCase):
                 }
             ],
         }
+        summary_payload = {
+            'choices': [{'message': {'role': 'assistant', 'content': '非流式自动摘要'}}]
+        }
 
         with patch(
-            'apps.ai_models.views.httpx.Client',
-            return_value=_DummyHttpxClient(post_response=_DummyJsonResponse(payload)),
+            'apps.ai_models.views.httpx.AsyncClient',
+            return_value=_DummyHttpxClient(
+                post_response=[_DummyJsonResponse(payload), _DummyJsonResponse(summary_payload)],
+            ),
         ):
             response = self.client.post(
                 f'/api/v1/ai-models/chat/conversations/{conversation.id}/send/',
                 {'content': '你好', 'stream': False},
                 format='json',
             )
+            streamed_body = _read_streaming_body(response)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        streamed_body = ''.join(
-            chunk.decode('utf-8') if isinstance(chunk, bytes) else chunk
-            for chunk in response.streaming_content
-        )
-        self.assertIn('这是关闭流式后的完整回答', streamed_body)
+        self.assertIn('这是关闭流式后的完整回答', _sse_content(streamed_body))
 
         messages = list(conversation.messages.order_by('created_at').values_list('role', 'content'))
         self.assertEqual(
@@ -392,6 +447,9 @@ class ChatApiTests(TenantTestMixin, APITestCase):
                 {'content': '帮我比较 MySQL 和 PostgreSQL'},
                 format='json',
             )
+            # Drive the async streaming generator so its body runs: it persists the
+            # assistant reply and then generates+writes the title and summary.
+            _read_streaming_body(response)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         conversation.refresh_from_db()
