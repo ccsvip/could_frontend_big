@@ -81,6 +81,7 @@
 - `backend/apps/devices/AGENTS.md`
 - `backend/apps/knowledge_base/AGENTS.md`
 - `backend/apps/resources/AGENTS.md`
+- `backend/apps/tenants/AGENTS.md`（多租户隔离地基：三道防线、三级菜单、员工管理）
 
 ## 变更记录 (Changelog)
 

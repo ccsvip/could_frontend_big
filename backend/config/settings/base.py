@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'django_celery_results',
     'apps.accounts',
+    'apps.tenants',
     'apps.devices',
     'apps.resources',
     'apps.knowledge_base',

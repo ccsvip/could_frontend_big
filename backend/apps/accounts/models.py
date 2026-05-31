@@ -38,6 +38,14 @@ class AccountApplication(models.Model):
     password = models.CharField('登录密码哈希', max_length=128, default='')
     reason = models.CharField('申请原因', max_length=200)
     status = models.CharField('审核状态', max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='开通公司',
+        null=True,
+        blank=True,
+    )
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
 
@@ -93,7 +101,8 @@ class AccountApplication(models.Model):
         super().save(*args, **kwargs)
 
         if self.status == self.STATUS_APPROVED:
-            self.ensure_login_user()
+            user = self.ensure_login_user()
+            self.provision_company(user)
             return
 
         if previous_status == self.status:
@@ -104,12 +113,40 @@ class AccountApplication(models.Model):
             user.is_active = False
             user.save(update_fields=['is_active'])
 
+    def provision_company(self, user):
+        """审批通过后为申请人开通公司：建 Tenant + 把申请人设为公司管理员，并回写 self.tenant。
+
+        幂等：provision_company 检测到已有 Membership 时直接复用，重复审批不会建出多家公司。
+        用 .update() 回写避免再次触发 save() 递归。
+        """
+        # 懒加载避免 app 加载顺序问题（accounts ↔ tenants）。
+        from apps.tenants.services import provision_company as _provision
+
+        company_name = (self.enterprise_name or self.applicant_name or self.login_username).strip()
+        tenant = _provision(name=company_name, admin_user=user)
+        if self.tenant_id != tenant.id:
+            self.tenant = tenant
+            type(self).objects.filter(pk=self.pk).update(tenant=tenant)
+        return tenant
+
 
 class Menu(models.Model):
+    AUDIENCE_ALL = 'all'
+    AUDIENCE_PLATFORM = 'platform'
+    AUDIENCE_TENANT_ADMIN = 'tenant_admin'
+    AUDIENCE_CHOICES = [
+        (AUDIENCE_ALL, '通用业务菜单（可分配）'),
+        (AUDIENCE_PLATFORM, '平台超管专属'),
+        (AUDIENCE_TENANT_ADMIN, '公司管理员专属'),
+    ]
+
     name = models.CharField('菜单名称', max_length=64)
     key = models.CharField('菜单键', max_length=128, unique=True)
     path = models.CharField('路由路径', max_length=128, unique=True)
     icon = models.CharField('图标', max_length=64, blank=True, default='')
+    # 受众决定菜单归属：all=可被超管分配给公司、再由公司管理员分配给员工；
+    # platform=仅超管（如租户管理）；tenant_admin=仅公司管理员（如员工管理），员工与可分配目录均不含。
+    audience = models.CharField('菜单受众', max_length=20, choices=AUDIENCE_CHOICES, default=AUDIENCE_ALL)
     parent = models.ForeignKey(
         'self',
         on_delete=models.CASCADE,
@@ -152,9 +189,19 @@ class PermissionPoint(models.Model):
 
 class Role(models.Model):
     name = models.CharField('角色名称', max_length=64)
-    code = models.CharField('角色编码', max_length=64, unique=True)
+    code = models.CharField('角色编码', max_length=64)
     description = models.TextField('角色说明', blank=True, default='')
     is_active = models.BooleanField('是否启用', default=True)
+    # tenant 为 null 表示平台模板（is_template=True）；非 null 表示某公司自建角色。
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='roles',
+        verbose_name='所属公司',
+        null=True,
+        blank=True,
+    )
+    is_template = models.BooleanField('平台模板', default=False)
     menus = models.ManyToManyField(Menu, blank=True, related_name='roles', verbose_name='菜单')
     permission_points = models.ManyToManyField(
         PermissionPoint,
@@ -169,6 +216,11 @@ class Role(models.Model):
         ordering = ['name', 'id']
         verbose_name = '角色'
         verbose_name_plural = '角色'
+        constraints = [
+            # 角色编码在公司内唯一（不同公司可同名）。平台模板 tenant=null，
+            # Postgres 视多个 null 为相异，模板间唯一性由 seed 自行保证。
+            models.UniqueConstraint(fields=['tenant', 'code'], name='unique_role_code_per_tenant'),
+        ]
 
     def __str__(self) -> str:
         return f'{self.name} ({self.code})'

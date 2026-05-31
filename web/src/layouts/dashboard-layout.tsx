@@ -1,4 +1,5 @@
 import {
+  ApartmentOutlined,
   AudioOutlined,
   CheckCircleOutlined,
   CloudOutlined,
@@ -19,6 +20,7 @@ import {
   RobotOutlined,
   SolutionOutlined,
   SoundOutlined,
+  TeamOutlined,
   ThunderboltOutlined,
   VideoCameraOutlined,
 } from '@ant-design/icons';
@@ -40,6 +42,8 @@ const SIDEBAR_COLLAPSE_STORAGE_KEY = 'app:sidebar-collapsed';
 
 const menuIconMap = {
   DesktopOutlined: <DesktopOutlined />,
+  ApartmentOutlined: <ApartmentOutlined />,
+  TeamOutlined: <TeamOutlined />,
   SolutionOutlined: <SolutionOutlined />,
   PictureOutlined: <PictureOutlined />,
   VideoCameraOutlined: <VideoCameraOutlined />,

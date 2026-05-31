@@ -11,6 +11,7 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.resources.models import ModelAsset
+from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
 
@@ -27,12 +28,13 @@ def build_test_model_file(name: str = 'avatar-model.bin', content: bytes = b'mod
     return SimpleUploadedFile(name, content, content_type='application/octet-stream')
 
 
-class ModelAssetApiTests(APITestCase):
+class ModelAssetApiTests(TenantTestMixin, APITestCase):
     def setUp(self):
         self.media_root = tempfile.mkdtemp()
         self.override_media_root = override_settings(MEDIA_ROOT=self.media_root)
         self.override_media_root.enable()
         self.user = User.objects.create_user(username='model-tester', password='test123456')
+        self.setup_tenant(self.user)
         self.role = Role.objects.create(name='模型测试角色', code='model_tester')
         UserRole.objects.create(user=self.user, role=self.role)
         self.client.force_authenticate(user=self.user)
@@ -125,6 +127,7 @@ class ModelAssetApiTests(APITestCase):
             orientation='horizontal',
             cloud_url='https://cdn.example.com/models/existing.bin',
             is_visible=True,
+            tenant=self.tenant,
         )
 
         response = self.client.post(
@@ -167,6 +170,7 @@ class ModelAssetApiTests(APITestCase):
             orientation='horizontal',
             cloud_url='https://cdn.example.com/models/hm.bin',
             is_visible=True,
+            tenant=self.tenant,
         )
         ModelAsset.objects.create(
             name='竖屏女模型',
@@ -174,6 +178,7 @@ class ModelAssetApiTests(APITestCase):
             orientation='vertical',
             cloud_url='https://cdn.example.com/models/vf.bin',
             is_visible=True,
+            tenant=self.tenant,
         )
 
         response = self.client.get('/api/v1/resources/models/?keyword=横屏&model_type=male&orientation=horizontal')
@@ -191,6 +196,7 @@ class ModelAssetApiTests(APITestCase):
             model_file=build_test_model_file(name='local-model.bin', content=b'local-model-content'),
             cloud_url='https://cdn.example.com/models/fallback.bin',
             is_visible=True,
+            tenant=self.tenant,
         )
 
         response = self.client.patch(

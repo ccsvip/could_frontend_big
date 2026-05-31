@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from apps.tenants.managers import TenantManager
+
 
 PROVIDER_TYPE_CHOICES = [
     ('openai', 'OpenAI'),
@@ -23,8 +25,18 @@ class LLMProvider(models.Model):
     avatar = models.ImageField('供应商头像', upload_to='ai_models/avatars/', blank=True, null=True)
     models_config = models.JSONField('模型列表', default=list, blank=True)
     is_active = models.BooleanField('是否启用', default=True)
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='+',
+        verbose_name='所属公司',
+        null=True,
+        blank=True,
+    )
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
 
     class Meta:
         verbose_name = 'LLM 供应商'
@@ -57,8 +69,18 @@ class ChatConversation(models.Model):
     system_prompt = models.TextField('系统提示词', blank=True, default='')
     temperature = models.FloatField('Temperature', default=0.7)
     max_tokens = models.PositiveIntegerField('最大输出Tokens', default=1000)
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='+',
+        verbose_name='所属公司',
+        null=True,
+        blank=True,
+    )
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
 
     class Meta:
         verbose_name = '聊天会话'

@@ -20,6 +20,7 @@ from apps.accounts.permissions import (
     CanViewKnowledgeBase,
 )
 from config.business_cache import CachedBusinessResponseMixin, clear_business_cache_namespace
+from apps.tenants.mixins import TenantScopedQuerysetMixin
 
 from .models import KnowledgeDocument
 from .serializers import KnowledgeDocumentSerializer
@@ -78,6 +79,7 @@ def build_content_disposition(filename: str) -> str:
 )
 class KnowledgeDocumentViewSet(
     CachedBusinessResponseMixin,
+    TenantScopedQuerysetMixin,
     PermissionMappedViewSet,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
@@ -105,10 +107,10 @@ class KnowledgeDocumentViewSet(
         processing_status = self.request.query_params.get('processing_status', '').strip()
         if processing_status:
             queryset = queryset.filter(processing_status=processing_status)
-        return queryset
+        return self.apply_tenant_scope(queryset)
 
     def perform_create(self, serializer):
-        document = serializer.save()
+        document = serializer.save(**self.tenant_create_kwargs())
         self.clear_cached_business_responses()
         notify_knowledge_document_event('create', getattr(self.request, 'user', None), document)
 
@@ -169,9 +171,11 @@ class KnowledgeDocumentViewSet(
             seen_ids.add(document_id)
             deduped_ids.append(document_id)
 
+        # 走租户作用域查询集（修复跨租户泄漏：原先直接 KnowledgeDocument.objects 绕过隔离，
+        # B 公司可凭 id 批量下载 A 公司文档）。
         documents_by_id = {
             document.id: document
-            for document in KnowledgeDocument.objects.filter(id__in=deduped_ids).order_by('-updated_at', '-id')
+            for document in self.get_queryset().filter(id__in=deduped_ids).order_by('-updated_at', '-id')
         }
         valid_documents = [
             document

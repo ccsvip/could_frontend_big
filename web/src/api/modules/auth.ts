@@ -6,6 +6,13 @@ export type LoginPayload = {
   password: string;
 };
 
+export type CurrentUserTenant = {
+  id: number;
+  name: string;
+  code: string;
+  isTenantAdmin: boolean;
+};
+
 export type CurrentUser = {
   id: number;
   username: string;
@@ -13,6 +20,8 @@ export type CurrentUser = {
   role: AppRole;
   permissions: string[];
   menus: AppMenu[];
+  tenant: CurrentUserTenant | null;
+  must_change_password: boolean;
 };
 
 export type LoginResponse = {

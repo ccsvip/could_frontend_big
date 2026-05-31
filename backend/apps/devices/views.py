@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from apps.accounts.permissions import CanCreateDevices, CanDeleteDevices, CanUpdateDevices, CanViewDevices
+from apps.tenants.mixins import TenantScopedQuerysetMixin
 
 from .models import Device
 from .serializers import DeviceDetailSerializer, DeviceSerializer, DeviceStatsSerializer
@@ -19,7 +20,7 @@ from .serializers import DeviceDetailSerializer, DeviceSerializer, DeviceStatsSe
     partial_update=extend_schema(tags=['Devices']),
     destroy=extend_schema(tags=['Devices']),
 )
-class DeviceViewSet(viewsets.ModelViewSet):
+class DeviceViewSet(TenantScopedQuerysetMixin, viewsets.ModelViewSet):
     queryset = Device.objects.all()
     lookup_field = 'code'
 
@@ -44,7 +45,10 @@ class DeviceViewSet(viewsets.ModelViewSet):
     @extend_schema(responses=DeviceStatsSerializer, tags=['Devices'])
     @action(detail=False, methods=['get'], url_path='stats')
     def stats(self, request):
-        stats = cache.get('device_stats')
+        # 缓存键并入租户维度，避免 A 公司的统计被 B 公司命中（跨租户缓存泄漏）。
+        tenant = self.request_tenant
+        cache_key = f'device_stats:{tenant.id if tenant else "all"}'
+        stats = cache.get(cache_key)
         if not stats:
             grouped = self.get_queryset().values('status').annotate(total=Count('id'))
             stats = {
@@ -55,5 +59,5 @@ class DeviceViewSet(viewsets.ModelViewSet):
             }
             for item in grouped:
                 stats[item['status']] = item['total']
-            cache.set('device_stats', stats, timeout=300)
+            cache.set(cache_key, stats, timeout=300)
         return Response(stats)

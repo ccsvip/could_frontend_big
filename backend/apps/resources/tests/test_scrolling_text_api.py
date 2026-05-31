@@ -5,6 +5,7 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.resources.models import ScrollingText, ScrollingTextItem
+from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
 
@@ -17,9 +18,10 @@ LOC_MEM_CACHES = {
 
 
 @override_settings(CACHES=LOC_MEM_CACHES)
-class ScrollingTextApiTests(APITestCase):
+class ScrollingTextApiTests(TenantTestMixin, APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='scrolling-text-tester', password='test123456')
+        self.setup_tenant(self.user)
         self.role = Role.objects.create(name='滚动文本测试角色', code='scrolling_text_tester')
         UserRole.objects.create(user=self.user, role=self.role)
         self.client.force_authenticate(user=self.user)
@@ -106,7 +108,7 @@ class ScrollingTextApiTests(APITestCase):
 
     def test_list_scrolling_texts_returns_language_specific_texts(self):
         self.grant_permissions('resources.scrolling_texts.view')
-        scrolling_text = ScrollingText.objects.create(title='多语言公告', is_active=True)
+        scrolling_text = ScrollingText.objects.create(title='多语言公告', is_active=True, tenant=self.tenant)
         ScrollingTextItem.objects.create(
             scrolling_text=scrolling_text,
             order=1,
@@ -127,8 +129,8 @@ class ScrollingTextApiTests(APITestCase):
 
     def test_list_scrolling_texts_without_params_returns_pair_content_list(self):
         self.grant_permissions('resources.scrolling_texts.view')
-        active = ScrollingText.objects.create(title='启用公告', is_active=True)
-        inactive = ScrollingText.objects.create(title='停用公告', is_active=False)
+        active = ScrollingText.objects.create(title='启用公告', is_active=True, tenant=self.tenant)
+        inactive = ScrollingText.objects.create(title='停用公告', is_active=False, tenant=self.tenant)
         ScrollingTextItem.objects.create(scrolling_text=active, order=1, zh_text='启用中文', en_text='Active English')
         ScrollingTextItem.objects.create(scrolling_text=inactive, order=1, zh_text='停用中文', en_text='Inactive English')
 
@@ -139,7 +141,7 @@ class ScrollingTextApiTests(APITestCase):
 
     def test_scrolling_text_content_action_supports_language_body(self):
         self.grant_permissions('resources.scrolling_texts.view')
-        scrolling_text = ScrollingText.objects.create(title='消费公告', is_active=True)
+        scrolling_text = ScrollingText.objects.create(title='消费公告', is_active=True, tenant=self.tenant)
         ScrollingTextItem.objects.create(scrolling_text=scrolling_text, order=1, zh_text='第一条中文', en_text='First English')
         ScrollingTextItem.objects.create(scrolling_text=scrolling_text, order=2, zh_text='第二条中文', en_text='Second English')
 
@@ -162,8 +164,8 @@ class ScrollingTextApiTests(APITestCase):
 
     def test_list_scrolling_texts_supports_exact_title_query(self):
         self.grant_permissions('resources.scrolling_texts.view')
-        first = ScrollingText.objects.create(title='首页滚动公告', is_active=True)
-        second = ScrollingText.objects.create(title='首页滚动公告副本', is_active=True)
+        first = ScrollingText.objects.create(title='首页滚动公告', is_active=True, tenant=self.tenant)
+        second = ScrollingText.objects.create(title='首页滚动公告副本', is_active=True, tenant=self.tenant)
         ScrollingTextItem.objects.create(
             scrolling_text=first,
             order=1,
@@ -186,7 +188,7 @@ class ScrollingTextApiTests(APITestCase):
 
     def test_update_scrolling_text_replaces_items_in_order(self):
         self.grant_permissions('resources.scrolling_texts.view', 'resources.scrolling_texts.update')
-        scrolling_text = ScrollingText.objects.create(title='旧公告', is_active=True)
+        scrolling_text = ScrollingText.objects.create(title='旧公告', is_active=True, tenant=self.tenant)
         ScrollingTextItem.objects.create(scrolling_text=scrolling_text, order=1, zh_text='旧中文', en_text='Old')
 
         response = self.client.patch(

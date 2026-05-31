@@ -18,6 +18,7 @@ from .serializers import (
 )
 from .services.notifications import notify_account_application_created, notify_account_application_reviewed
 from .tasks import notify_account_application
+from apps.tenants.services import get_user_tenant
 
 
 class LoginView(APIView):
@@ -48,6 +49,11 @@ class LoginView(APIView):
             )
 
         refresh = RefreshToken.for_user(user)
+        # tenant_id 写入 JWT claim 仅作辅助；权威租户上下文始终以 DB 的 Membership 为准
+        # （避免 superuser 重新归属数据后旧 token 串租户）。
+        tenant = get_user_tenant(user)
+        if tenant is not None:
+            refresh['tenant_id'] = tenant.id
         return Response(
             {
                 'access': str(refresh.access_token),
@@ -80,6 +86,9 @@ class ChangePasswordView(APIView):
 
         request.user.set_password(serializer.validated_data['newPassword'])
         request.user.save(update_fields=['password'])
+        # 清除首登强制改密标志（员工自行改密后即解除拦截）。
+        from apps.tenants.models import Membership
+        Membership.objects.filter(user=request.user, must_change_password=True).update(must_change_password=False)
         return Response(
             {
                 'status': 'success',

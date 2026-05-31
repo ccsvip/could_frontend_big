@@ -15,6 +15,7 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.knowledge_base.models import KnowledgeDocument
+from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
 
@@ -23,7 +24,7 @@ def build_document_upload(name: str = '知识库文档.pdf', content: bytes = b'
     return SimpleUploadedFile(name, content, content_type='application/octet-stream')
 
 
-class KnowledgeBaseApiTests(APITestCase):
+class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
     def setUp(self):
         self.media_root = tempfile.mkdtemp()
         self.override_media_root = override_settings(MEDIA_ROOT=self.media_root)
@@ -38,6 +39,7 @@ class KnowledgeBaseApiTests(APITestCase):
         )
         self.override_cache.enable()
         self.user = User.objects.create_user(username='knowledge-user', password='test123456', first_name='知识库用户')
+        self.setup_tenant(self.user)
         self.role = Role.objects.create(name='知识库测试角色', code='knowledge_role')
         UserRole.objects.create(user=self.user, role=self.role)
         self.client.force_authenticate(user=self.user)
@@ -68,6 +70,7 @@ class KnowledgeBaseApiTests(APITestCase):
             title=title or name.rsplit('.', 1)[0],
             file=build_document_upload(name=name, content=content),
             uploaded_by=self.user,
+            tenant=self.tenant,
         )
 
     def test_list_requires_view_permission(self):

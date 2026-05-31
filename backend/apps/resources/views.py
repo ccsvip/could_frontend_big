@@ -43,6 +43,9 @@ from apps.accounts.permissions import (
     IsAdminRole,
 )
 from config.business_cache import CachedBusinessResponseMixin
+from apps.tenants.mixins import TenantScopedQuerysetMixin
+from apps.tenants.services import resolve_member_or_public_tenant, scope_queryset_member_or_public
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import CommandGroup, ControlCommand, ModelAsset, Resource, ScrollingText, ScrollingTextItem, TaskCommand, TaskCommandStep, VoiceTone
 from .serializers import (
@@ -73,7 +76,7 @@ class PermissionMappedModelViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
 
-class BaseResourceViewSet(CachedBusinessResponseMixin, PermissionMappedModelViewSet):
+class BaseResourceViewSet(CachedBusinessResponseMixin, TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
     serializer_class = ResourceSerializer
     lookup_field = 'pk'
     resource_type = ''
@@ -87,7 +90,7 @@ class BaseResourceViewSet(CachedBusinessResponseMixin, PermissionMappedModelView
         keyword = self.request.query_params.get('keyword', '').strip()
         if keyword:
             queryset = queryset.filter(name__icontains=keyword)
-        return queryset
+        return self.apply_tenant_scope(queryset)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -322,7 +325,8 @@ SCROLLING_TEXT_CONTENT_REQUEST_EXAMPLE = OpenApiExample(
     ),
 )
 class ScrollingTextViewSet(CachedBusinessResponseMixin, PermissionMappedModelViewSet):
-    authentication_classes = []
+    # 仅启用 JWT（不禁用认证）：后台带 token 走 membership，运行时无 token 走 ?tenant=<code>。
+    authentication_classes = [JWTAuthentication]
     permission_classes = [AllowAny]
 
     serializer_class = ScrollingTextSerializer
@@ -356,7 +360,14 @@ class ScrollingTextViewSet(CachedBusinessResponseMixin, PermissionMappedModelVie
         is_active = self.request.query_params.get('is_active', '').strip().lower()
         if is_active in {'true', 'false'}:
             queryset = queryset.filter(is_active=is_active == 'true')
-        return queryset
+        return scope_queryset_member_or_public(queryset, self.request)
+
+    def perform_create(self, serializer):
+        tenant = resolve_member_or_public_tenant(self.request)
+        if tenant is not None:
+            serializer.save(tenant=tenant)
+        else:
+            serializer.save()
 
     def list(self, request, *args, **kwargs):
         if not request.query_params:
@@ -372,6 +383,11 @@ class ScrollingTextViewSet(CachedBusinessResponseMixin, PermissionMappedModelVie
     def build_content_payload(self, language: str = '') -> list:
         normalized_language = language.strip().lower()
         items = ScrollingTextItem.objects.filter(scrolling_text__is_active=True).order_by('scrolling_text__id', 'order', 'id')
+        # 运行时消费路径同样按租户收窄（经 scrolling_text__tenant），否则滚动文本跨公司泄漏。
+        user = getattr(self.request, 'user', None)
+        if not (user is not None and user.is_authenticated and user.is_superuser):
+            tenant = resolve_member_or_public_tenant(self.request)
+            items = items.filter(scrolling_text__tenant=tenant) if tenant else items.none()
         if normalized_language in {'cn', 'zh'}:
             return [item.zh_text for item in items]
         if normalized_language == 'en':
@@ -417,7 +433,7 @@ class ScrollingTextViewSet(CachedBusinessResponseMixin, PermissionMappedModelVie
     partial_update=extend_schema(tags=['Resources']),
     destroy=extend_schema(tags=['Resources']),
 )
-class VoiceToneViewSet(CachedBusinessResponseMixin, PermissionMappedModelViewSet):
+class VoiceToneViewSet(CachedBusinessResponseMixin, TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
     serializer_class = VoiceToneSerializer
     lookup_field = 'pk'
     business_cache_namespace = 'voice_tones'
@@ -439,7 +455,7 @@ class VoiceToneViewSet(CachedBusinessResponseMixin, PermissionMappedModelViewSet
         is_active = self.request.query_params.get('is_active', '').strip().lower()
         if is_active in {'true', 'false'}:
             queryset = queryset.filter(is_active=is_active == 'true')
-        return queryset
+        return self.apply_tenant_scope(queryset)
 
 
 @extend_schema_view(
@@ -450,7 +466,7 @@ class VoiceToneViewSet(CachedBusinessResponseMixin, PermissionMappedModelViewSet
     partial_update=extend_schema(tags=['Resources']),
     destroy=extend_schema(tags=['Resources']),
 )
-class ModelAssetViewSet(PermissionMappedModelViewSet):
+class ModelAssetViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
     serializer_class = ModelAssetSerializer
     lookup_field = 'pk'
     permission_map = {
@@ -483,7 +499,7 @@ class ModelAssetViewSet(PermissionMappedModelViewSet):
         is_visible = self.request.query_params.get('is_visible', '').strip().lower()
         if is_visible in {'true', 'false'}:
             queryset = queryset.filter(is_visible=is_visible == 'true')
-        return queryset
+        return self.apply_tenant_scope(queryset)
 
 
 @extend_schema_view(
@@ -494,7 +510,7 @@ class ModelAssetViewSet(PermissionMappedModelViewSet):
     partial_update=extend_schema(tags=['Commands']),
     destroy=extend_schema(tags=['Commands']),
 )
-class CommandGroupViewSet(PermissionMappedModelViewSet):
+class CommandGroupViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
     serializer_class = CommandGroupSerializer
     lookup_field = 'pk'
     permission_map = {
@@ -517,10 +533,10 @@ class CommandGroupViewSet(PermissionMappedModelViewSet):
         is_active = self.request.query_params.get('is_active', '').strip().lower()
         if is_active in {'true', 'false'}:
             queryset = queryset.filter(is_active=is_active == 'true')
-        return queryset
+        return self.apply_tenant_scope(queryset)
 
     def perform_create(self, serializer):
-        instance = serializer.save()
+        instance = serializer.save(**self.tenant_create_kwargs())
         enqueue_command_notification(
             'create',
             getattr(self.request, 'user', None),
@@ -555,7 +571,7 @@ class CommandGroupViewSet(PermissionMappedModelViewSet):
     partial_update=extend_schema(tags=['Commands']),
     destroy=extend_schema(tags=['Commands']),
 )
-class ControlCommandViewSet(PermissionMappedModelViewSet):
+class ControlCommandViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
     serializer_class = ControlCommandSerializer
     lookup_field = 'pk'
     permission_map = {
@@ -578,10 +594,10 @@ class ControlCommandViewSet(PermissionMappedModelViewSet):
         is_active = self.request.query_params.get('is_active', '').strip().lower()
         if is_active in {'true', 'false'}:
             queryset = queryset.filter(is_active=is_active == 'true')
-        return queryset
+        return self.apply_tenant_scope(queryset)
 
     def perform_create(self, serializer):
-        instance = serializer.save()
+        instance = serializer.save(**self.tenant_create_kwargs())
         enqueue_command_change_notification(
             action='create',
             user=getattr(self.request, 'user', None),
@@ -641,7 +657,7 @@ class ControlCommandViewSet(PermissionMappedModelViewSet):
     partial_update=extend_schema(tags=['Commands']),
     destroy=extend_schema(tags=['Commands']),
 )
-class TaskCommandViewSet(PermissionMappedModelViewSet):
+class TaskCommandViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
     serializer_class = TaskCommandSerializer
     lookup_field = 'pk'
     permission_map = {
@@ -675,10 +691,10 @@ class TaskCommandViewSet(PermissionMappedModelViewSet):
         is_active = self.request.query_params.get('is_active', '').strip().lower()
         if is_active in {'true', 'false'}:
             queryset = queryset.filter(is_active=is_active == 'true')
-        return queryset
+        return self.apply_tenant_scope(queryset)
 
     def perform_create(self, serializer):
-        instance = serializer.save()
+        instance = serializer.save(**self.tenant_create_kwargs())
         enqueue_command_change_notification(
             action='create',
             user=getattr(self.request, 'user', None),
@@ -732,7 +748,8 @@ class TaskCommandViewSet(PermissionMappedModelViewSet):
 
 @extend_schema(tags=['Commands'])
 class CommandDataLookupView(APIView):
-    authentication_classes = []
+    # 仅启用 JWT（不禁用认证）：后台带 token 走 membership，运行时无 token 走 ?tenant=<code>。
+    authentication_classes = [JWTAuthentication]
     permission_classes = [AllowAny]
 
     def get(self, request):
@@ -743,7 +760,9 @@ class CommandDataLookupView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        control_command = ControlCommand.objects.filter(command_code=command, is_active=True).select_related('group').first()
+        # command_code 现按租户唯一，必须先按租户收窄再查，否则会命中别家公司的同名指令。
+        control_qs = scope_queryset_member_or_public(ControlCommand.objects.all(), request)
+        control_command = control_qs.filter(command_code=command, is_active=True).select_related('group').first()
         if control_command and control_command.group and control_command.group.is_active:
             return Response(
                 {
@@ -771,7 +790,8 @@ class CommandDataLookupView(APIView):
             .order_by('order', 'id')
         )
         task_command = (
-            TaskCommand.objects.filter(command_code=command, is_active=True, group__is_active=True)
+            scope_queryset_member_or_public(TaskCommand.objects.all(), request)
+            .filter(command_code=command, is_active=True, group__is_active=True)
             .select_related('group')
             .prefetch_related(Prefetch('tasks', queryset=step_queryset))
             .first()

@@ -43,6 +43,16 @@ class CanReviewAccountApplications(HasPermissionCode):
     required_permission = 'account_applications.review'
 
 
+class CanManageTenants(HasPermissionCode):
+    # 平台超管专属：只有 superuser 的 access-context 才含 tenant.management.view。
+    required_permission = 'tenant.management.view'
+
+
+class CanManageEmployees(HasPermissionCode):
+    # 公司管理员专属：tenant_admin 的 access-context 固有此码。
+    required_permission = 'tenant.employees.manage'
+
+
 class CanViewDevices(HasPermissionCode):
     required_permission = 'devices.view'
 

@@ -19,6 +19,9 @@ import { AsrManagementPage } from '../views/asr-management';
 import { LlmManagementPage } from '../views/llm-management';
 import { TtsManagementPage } from '../views/tts-management';
 import { ChatRoomPage } from '../views/chat-room';
+import { TenantManagementPage } from '../views/tenant-management';
+import { EmployeeManagementPage } from '../views/employee-management';
+import { ForcePasswordChangePage } from '../views/force-password-change';
 import { fetchCurrentUser } from '../api/modules/auth';
 import { useAuthStore } from '../store/auth';
 
@@ -78,6 +81,7 @@ const AuthSyncFallback = () => (
 const AuthGuard = ({ children }: { children: ReactNode }) => {
   const token = useAuthStore((state) => state.token);
   const authSyncStatus = useAuthStore((state) => state.authSyncStatus);
+  const mustChangePassword = useAuthStore((state) => state.mustChangePassword);
 
   if (!token) {
     return <Navigate to="/login" replace />;
@@ -85,6 +89,11 @@ const AuthGuard = ({ children }: { children: ReactNode }) => {
 
   if (authSyncStatus !== 'ready') {
     return <AuthSyncFallback />;
+  }
+
+  // 首登 / 被重置密码的员工必须先改密，挡住所有业务页面。
+  if (mustChangePassword) {
+    return <ForcePasswordChangePage />;
   }
 
   return <>{children}</>;
@@ -159,6 +168,8 @@ export const AppRouter = () => {
           role: currentUser.role,
           permissions: currentUser.permissions,
           menus: currentUser.menus,
+          tenant: currentUser.tenant,
+          mustChangePassword: currentUser.must_change_password,
         });
       })
       .catch(() => {
@@ -193,6 +204,22 @@ export const AppRouter = () => {
       ),
       children: [
         { index: true, element: <DefaultAuthedRoute /> },
+        {
+          path: 'tenants',
+          element: (
+            <PermissionGuard permission="tenant.management.view">
+              <TenantManagementPage />
+            </PermissionGuard>
+          ),
+        },
+        {
+          path: 'employees',
+          element: (
+            <PermissionGuard permission="tenant.employees.manage">
+              <EmployeeManagementPage />
+            </PermissionGuard>
+          ),
+        },
         {
           path: 'knowledge-base',
           element: (

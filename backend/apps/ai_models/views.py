@@ -23,6 +23,7 @@ from apps.accounts.permissions import (
     CanViewLLMProviders,
 )
 from apps.resources.views import PermissionMappedModelViewSet
+from apps.tenants.mixins import TenantScopedQuerysetMixin
 
 from .models import ChatConversation, ChatMessage, LLMProvider
 from .serializers import (
@@ -222,7 +223,7 @@ async def _generate_conversation_summary(
     return summary or None
 
 
-class LLMProviderViewSet(PermissionMappedModelViewSet):
+class LLMProviderViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
     queryset = LLMProvider.objects.all()
     serializer_class = LLMProviderSerializer
     parser_classes = [MultiPartParser, JSONParser]
@@ -322,7 +323,7 @@ class LLMProviderViewSet(PermissionMappedModelViewSet):
     update_title=extend_schema(tags=['AI Chat']),
     update_config=extend_schema(tags=['AI Chat']),
 )
-class ChatConversationViewSet(PermissionMappedModelViewSet):
+class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
     queryset = ChatConversation.objects.all()
     serializer_class = ChatConversationListSerializer
     permission_map = {
@@ -357,10 +358,15 @@ class ChatConversationViewSet(PermissionMappedModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        tenant = self.request_tenant
         provider_id = serializer.validated_data.get('llmProviderId')
         provider = None
         if provider_id:
-            provider = LLMProvider.objects.filter(pk=provider_id).first()
+            # provider 限定在本租户内，防止绑定到别家公司的供应商。
+            provider_qs = LLMProvider.objects.all()
+            if tenant is not None:
+                provider_qs = provider_qs.for_tenant(tenant)
+            provider = provider_qs.filter(pk=provider_id).first()
         conversation = ChatConversation.objects.create(
             title=serializer.validated_data.get('title', '新对话'),
             user=request.user,
@@ -370,6 +376,7 @@ class ChatConversationViewSet(PermissionMappedModelViewSet):
             system_prompt=serializer.validated_data.get('systemPrompt', ''),
             temperature=serializer.validated_data.get('temperature', 0.7),
             max_tokens=serializer.validated_data.get('max_tokens', 1000),
+            tenant=tenant,
         )
         output_serializer = ChatConversationListSerializer(conversation)
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)
@@ -401,7 +408,12 @@ class ChatConversationViewSet(PermissionMappedModelViewSet):
         provider_id = serializer.validated_data.get('llmProviderId')
         provider = None
         if provider_id:
-            provider = LLMProvider.objects.filter(pk=provider_id, is_active=True).first()
+            # 限定在本公司范围内，防止绑定到别家公司的供应商。
+            provider = (
+                LLMProvider.objects.for_tenant(conversation.tenant)
+                .filter(pk=provider_id, is_active=True)
+                .first()
+            )
 
         conversation.llm_provider = provider
         conversation.model_name = serializer.validated_data.get('modelName', '')
@@ -505,7 +517,6 @@ class ChatConversationViewSet(PermissionMappedModelViewSet):
         # Resolve provider & model
         provider = conversation.llm_provider
         if not provider or not provider.is_active:
-            # Fallback to first active provider
             logger.warning(
                 'chat.send.provider_fallback conversation_id=%s user_id=%s previous_provider_id=%s previous_provider_active=%s',
                 conversation.id,
@@ -513,7 +524,8 @@ class ChatConversationViewSet(PermissionMappedModelViewSet):
                 conversation.llm_provider_id,
                 bool(provider and provider.is_active),
             )
-            provider = LLMProvider.objects.filter(is_active=True).first()
+            # 仅在本公司范围内回退；for_tenant(None) 返回空集，绝不跨租户拿别家供应商（含其 API Key）。
+            provider = LLMProvider.objects.for_tenant(conversation.tenant).filter(is_active=True).first()
 
         if not provider:
             ChatMessage.objects.create(

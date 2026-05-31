@@ -1,6 +1,19 @@
 from django.db import models
 from django.db.models import Q
 
+from apps.tenants.managers import TenantManager
+
+# 复用的 tenant 外键定义：行级隔离，业务路径一律走 objects.for_tenant()。
+def _tenant_fk():
+    return models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='+',
+        verbose_name='所属公司',
+        null=True,
+        blank=True,
+    )
+
 
 class Resource(models.Model):
     TYPE_IMAGE = 'image'
@@ -30,8 +43,11 @@ class Resource(models.Model):
     file = models.FileField('资源文件', upload_to='resources/%Y/%m/%d', blank=True, null=True)
     cloud_url = models.URLField('云端URL地址', max_length=2048, blank=True, default='')
     description = models.CharField('资源说明', max_length=255, blank=True, default='')
+    tenant = _tenant_fk()
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
 
     class Meta:
         ordering = ['-updated_at', '-id']
@@ -55,8 +71,11 @@ class ScrollingText(models.Model):
     title = models.CharField('标题', max_length=128)
     i18n_scheme = models.CharField('国际化方案', max_length=32, choices=I18N_SCHEME_CHOICES, default=I18N_SCHEME_ZH_EN)
     is_active = models.BooleanField('是否启用', default=True)
+    tenant = _tenant_fk()
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
 
     class Meta:
         ordering = ['-updated_at', '-id']
@@ -104,8 +123,11 @@ class CommandGroup(models.Model):
     group_type = models.CharField('指令类型', max_length=20, choices=TYPE_CHOICES)
     export_enabled = models.BooleanField('是否允许导出', default=False)
     is_active = models.BooleanField('是否启用', default=True)
+    tenant = _tenant_fk()
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
 
     class Meta:
         ordering = ['group_type', 'name', 'id']
@@ -118,19 +140,25 @@ class CommandGroup(models.Model):
 
 class VoiceTone(models.Model):
     name = models.CharField('音色名称', max_length=128)
-    voice_code = models.CharField('音色标识', max_length=128, unique=True)
+    voice_code = models.CharField('音色标识', max_length=128)
     content = models.TextField('ASR结果', blank=True, default='')
     icon = models.ImageField('音色图标', upload_to='voice-tones/icons/%Y/%m/%d', blank=True, null=True)
     audio = models.FileField('音色文件', upload_to='voice-tones/%Y/%m/%d', blank=True, null=True)
     is_active = models.BooleanField('是否启用', default=True)
     is_visible = models.BooleanField('前端可见', default=True)
+    tenant = _tenant_fk()
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
 
     class Meta:
         ordering = ['-updated_at', '-id']
         verbose_name = '音色'
         verbose_name_plural = '音色'
+        constraints = [
+            models.UniqueConstraint(fields=['tenant', 'voice_code'], name='unique_voice_code_per_tenant'),
+        ]
 
     def __str__(self) -> str:
         return f'{self.name} ({self.voice_code})'
@@ -159,7 +187,7 @@ class ModelAsset(models.Model):
         (ORIENTATION_VERTICAL, '竖屏'),
     ]
 
-    name = models.CharField('模型名称', max_length=128, unique=True)
+    name = models.CharField('模型名称', max_length=128)
     model_type = models.CharField('模型类型', max_length=16, choices=TYPE_CHOICES)
     orientation = models.CharField('模型方向', max_length=16, choices=ORIENTATION_CHOICES)
     thumbnail = models.ImageField('模型缩略图', upload_to='models/thumbnails/%Y/%m/%d', blank=True, null=True)
@@ -167,13 +195,19 @@ class ModelAsset(models.Model):
     model_size = models.BigIntegerField('模型大小(字节)', blank=True, null=True)
     cloud_url = models.URLField('云端地址', blank=True, default='')
     is_visible = models.BooleanField('前端可见', default=True)
+    tenant = _tenant_fk()
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
 
     class Meta:
         ordering = ['-updated_at', '-id']
         verbose_name = '模型管理'
         verbose_name_plural = '模型管理'
+        constraints = [
+            models.UniqueConstraint(fields=['tenant', 'name'], name='unique_model_asset_name_per_tenant'),
+        ]
 
     def __str__(self) -> str:
         return self.name
@@ -222,19 +256,25 @@ class ControlCommand(models.Model):
         null=True,
     )
     name = models.CharField('名称', max_length=128)
-    command_code = models.CharField('指令', max_length=128, unique=True)
+    command_code = models.CharField('指令', max_length=128)
     command_value_type = models.CharField('指令类型', max_length=16, choices=COMMAND_VALUE_TYPE_CHOICES, default=COMMAND_VALUE_TYPE_STRING)
     protocol = models.CharField('调用方式', max_length=16, choices=PROTOCOL_CHOICES, default=PROTOCOL_UDP)
     host = models.GenericIPAddressField('IP')
     port = models.PositiveIntegerField('端口')
     is_active = models.BooleanField('是否启用', default=True)
+    tenant = _tenant_fk()
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
 
     class Meta:
         ordering = ['group__name', 'name', 'id']
         verbose_name = '控制指令'
         verbose_name_plural = '控制指令'
+        constraints = [
+            models.UniqueConstraint(fields=['tenant', 'command_code'], name='unique_control_command_code_per_tenant'),
+        ]
 
     def __str__(self) -> str:
         return f'{self.name} ({self.command_code})'
@@ -250,15 +290,21 @@ class TaskCommand(models.Model):
         null=True,
     )
     name = models.CharField('名称', max_length=128)
-    command_code = models.CharField('指令', max_length=128, unique=True)
+    command_code = models.CharField('指令', max_length=128)
     is_active = models.BooleanField('是否启用', default=True)
+    tenant = _tenant_fk()
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
 
     class Meta:
         ordering = ['group__name', 'name', 'id']
         verbose_name = '任务指令'
         verbose_name_plural = '任务指令'
+        constraints = [
+            models.UniqueConstraint(fields=['tenant', 'command_code'], name='unique_task_command_code_per_tenant'),
+        ]
 
     def __str__(self) -> str:
         return f'{self.name} ({self.command_code})'

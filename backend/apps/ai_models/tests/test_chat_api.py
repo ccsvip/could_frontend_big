@@ -8,6 +8,7 @@ from rest_framework.test import APITestCase
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.models import ChatConversation, ChatMessage, LLMProvider
 from apps.ai_models.views import _build_chat_completions_url
+from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
 
@@ -83,9 +84,10 @@ class _DummyHttpxClient:
         return self._post_responses.pop(0)
 
 
-class ChatApiTests(APITestCase):
+class ChatApiTests(TenantTestMixin, APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='chat-tester', password='test123456')
+        self.setup_tenant(self.user)
         self.role = Role.objects.create(name='聊天测试角色', code='chat_tester')
         UserRole.objects.create(user=self.user, role=self.role)
         self.client.force_authenticate(user=self.user)
@@ -122,6 +124,7 @@ class ChatApiTests(APITestCase):
     def test_update_config_updates_selected_provider_and_model(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
         provider_a = LLMProvider.objects.create(
+            tenant=self.tenant,
             name='默认 OpenAI',
             provider_type='openai',
             api_base_url='https://api.openai.com/v1',
@@ -130,6 +133,7 @@ class ChatApiTests(APITestCase):
             is_active=True,
         )
         provider_b = LLMProvider.objects.create(
+            tenant=self.tenant,
             name='兼容供应商',
             provider_type='other',
             api_base_url='https://example.com/v1',
@@ -138,6 +142,7 @@ class ChatApiTests(APITestCase):
             is_active=True,
         )
         conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
             title='测试会话',
             user=self.user,
             llm_provider=provider_a,
@@ -166,6 +171,7 @@ class ChatApiTests(APITestCase):
     def test_send_accepts_openai_compatible_non_stream_json_response(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
         provider = LLMProvider.objects.create(
+            tenant=self.tenant,
             name='标准兼容模式',
             provider_type='openai',
             api_base_url='https://api.openai.com/v1',
@@ -174,6 +180,7 @@ class ChatApiTests(APITestCase):
             is_active=True,
         )
         conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
             title='兼容模式测试',
             user=self.user,
             llm_provider=provider,
@@ -224,6 +231,7 @@ class ChatApiTests(APITestCase):
     def test_send_accepts_sse_lines_without_space_after_data_prefix(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
         provider = LLMProvider.objects.create(
+            tenant=self.tenant,
             name='LongCat 流式',
             provider_type='openai',
             api_base_url='https://api.longcat.chat/openai/v1',
@@ -232,6 +240,7 @@ class ChatApiTests(APITestCase):
             is_active=True,
         )
         conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
             title='LongCat 流式测试',
             user=self.user,
             llm_provider=provider,
@@ -275,6 +284,7 @@ class ChatApiTests(APITestCase):
     def test_send_can_request_non_stream_mode(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
         provider = LLMProvider.objects.create(
+            tenant=self.tenant,
             name='LongCat 非流式',
             provider_type='openai',
             api_base_url='https://api.longcat.chat/openai',
@@ -283,6 +293,7 @@ class ChatApiTests(APITestCase):
             is_active=True,
         )
         conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
             title='LongCat 非流式测试',
             user=self.user,
             llm_provider=provider,
@@ -328,6 +339,7 @@ class ChatApiTests(APITestCase):
     def test_send_generates_title_with_current_model_after_first_reply(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
         provider = LLMProvider.objects.create(
+            tenant=self.tenant,
             name='标题生成模型',
             provider_type='openai',
             api_base_url='https://api.longcat.chat/openai/v1',
@@ -336,6 +348,7 @@ class ChatApiTests(APITestCase):
             is_active=True,
         )
         conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
             title='新对话',
             user=self.user,
             llm_provider=provider,
@@ -388,6 +401,7 @@ class ChatApiTests(APITestCase):
     def test_update_feedback_updates_latest_assistant_feedback(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
         conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
             title='反馈测试',
             user=self.user,
         )

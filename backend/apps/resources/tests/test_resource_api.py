@@ -4,6 +4,7 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.resources.models import Resource
+from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
 
@@ -16,9 +17,10 @@ LONG_OSS_VIDEO_URL = (
 )
 
 
-class ResourceApiTests(APITestCase):
+class ResourceApiTests(TenantTestMixin, APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='resource-tester', password='test123456')
+        self.setup_tenant(self.user)
         self.role = Role.objects.create(name='资源测试角色', code='resource_tester')
         UserRole.objects.create(user=self.user, role=self.role)
         self.client.force_authenticate(user=self.user)
@@ -80,6 +82,7 @@ class ResourceApiTests(APITestCase):
                 name=f'分页视频资源 {index}',
                 resource_type=Resource.TYPE_VIDEO,
                 category=Resource.CATEGORY_HORIZONTAL,
+                tenant=self.tenant,
             )
 
         response = self.client.get('/api/v1/resources/videos/?page_size=2')
@@ -95,6 +98,7 @@ class ResourceApiTests(APITestCase):
             name='长链接视频资源',
             resource_type=Resource.TYPE_VIDEO,
             category=Resource.CATEGORY_VERTICAL,
+            tenant=self.tenant,
         )
 
         response = self.client.patch(

@@ -13,6 +13,13 @@ export type AppMenu = {
   children?: AppMenu[];
 };
 
+export type AppTenant = {
+  id: number;
+  name: string;
+  code: string;
+  isTenantAdmin: boolean;
+} | null;
+
 export type AuthSyncStatus = 'idle' | 'syncing' | 'ready';
 
 type LoginPayload = {
@@ -22,6 +29,8 @@ type LoginPayload = {
   role: AppRole;
   permissions: string[];
   menus: AppMenu[];
+  tenant: AppTenant;
+  mustChangePassword: boolean;
 };
 
 type UserContextPayload = Omit<LoginPayload, 'token' | 'refreshToken'>;
@@ -33,6 +42,8 @@ type AuthState = {
   role: AppRole;
   permissions: string[];
   menus: AppMenu[];
+  tenant: AppTenant;
+  mustChangePassword: boolean;
   authSyncStatus: AuthSyncStatus;
   login: (payload: LoginPayload) => void;
   setUserContext: (payload: UserContextPayload) => void;
@@ -48,6 +59,8 @@ const USERNAME_STORAGE_KEY = 'username';
 const ROLE_STORAGE_KEY = 'role';
 const PERMISSIONS_STORAGE_KEY = 'permissions';
 const MENUS_STORAGE_KEY = 'menus';
+const TENANT_STORAGE_KEY = 'tenant';
+const MUST_CHANGE_PASSWORD_STORAGE_KEY = 'mustChangePassword';
 
 const readStoredJson = <T>(key: string, fallback: T): T => {
   const value = localStorage.getItem(key);
@@ -125,11 +138,36 @@ const readStoredMenus = (): AppMenu[] => {
   return parsed.map((item) => parseMenu(item)).filter((item): item is AppMenu => Boolean(item));
 };
 
-const persistUserContext = ({ username, role, permissions, menus }: UserContextPayload) => {
+const persistUserContext = ({ username, role, permissions, menus, tenant, mustChangePassword }: UserContextPayload) => {
   localStorage.setItem(USERNAME_STORAGE_KEY, username);
   localStorage.setItem(ROLE_STORAGE_KEY, JSON.stringify(role));
   localStorage.setItem(PERMISSIONS_STORAGE_KEY, JSON.stringify(permissions));
   localStorage.setItem(MENUS_STORAGE_KEY, JSON.stringify(menus));
+  localStorage.setItem(TENANT_STORAGE_KEY, JSON.stringify(tenant));
+  localStorage.setItem(MUST_CHANGE_PASSWORD_STORAGE_KEY, JSON.stringify(mustChangePassword));
+};
+
+const readStoredTenant = (): AppTenant => {
+  const parsed = readStoredJson<unknown>(TENANT_STORAGE_KEY, null);
+  if (
+    parsed &&
+    typeof parsed === 'object' &&
+    'id' in parsed &&
+    'code' in parsed
+  ) {
+    const t = parsed as { id: number; name?: unknown; code: string; isTenantAdmin?: unknown };
+    return {
+      id: t.id,
+      name: typeof t.name === 'string' ? t.name : '',
+      code: t.code,
+      isTenantAdmin: Boolean(t.isTenantAdmin),
+    };
+  }
+  return null;
+};
+
+const readStoredMustChangePassword = (): boolean => {
+  return readStoredJson<boolean>(MUST_CHANGE_PASSWORD_STORAGE_KEY, false) === true;
 };
 
 const clearAuthStorage = () => {
@@ -139,6 +177,8 @@ const clearAuthStorage = () => {
   localStorage.removeItem(ROLE_STORAGE_KEY);
   localStorage.removeItem(PERMISSIONS_STORAGE_KEY);
   localStorage.removeItem(MENUS_STORAGE_KEY);
+  localStorage.removeItem(TENANT_STORAGE_KEY);
+  localStorage.removeItem(MUST_CHANGE_PASSWORD_STORAGE_KEY);
 };
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -148,27 +188,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   role: readStoredRole(),
   permissions: readStoredPermissions(),
   menus: readStoredMenus(),
+  tenant: readStoredTenant(),
+  mustChangePassword: readStoredMustChangePassword(),
   authSyncStatus: localStorage.getItem(TOKEN_STORAGE_KEY) ? 'idle' : 'ready',
-  login: ({ username, token, refreshToken, role, permissions, menus }) => {
+  login: ({ username, token, refreshToken, role, permissions, menus, tenant, mustChangePassword }) => {
     localStorage.setItem(TOKEN_STORAGE_KEY, token);
     localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, refreshToken);
-    persistUserContext({ username, role, permissions, menus });
-    set({ token, refreshToken, username, role, permissions, menus, authSyncStatus: 'ready' });
+    persistUserContext({ username, role, permissions, menus, tenant, mustChangePassword });
+    set({ token, refreshToken, username, role, permissions, menus, tenant, mustChangePassword, authSyncStatus: 'ready' });
   },
-  setUserContext: ({ username, role, permissions, menus }) => {
-    persistUserContext({ username, role, permissions, menus });
-    set({ username, role, permissions, menus });
+  setUserContext: ({ username, role, permissions, menus, tenant, mustChangePassword }) => {
+    persistUserContext({ username, role, permissions, menus, tenant, mustChangePassword });
+    set({ username, role, permissions, menus, tenant, mustChangePassword });
   },
   setAuthSyncStatus: (authSyncStatus) => {
     set({ authSyncStatus });
   },
   logout: () => {
     clearAuthStorage();
-    set({ token: null, refreshToken: null, username: '', role: null, permissions: [], menus: [], authSyncStatus: 'ready' });
+    set({ token: null, refreshToken: null, username: '', role: null, permissions: [], menus: [], tenant: null, mustChangePassword: false, authSyncStatus: 'ready' });
   },
   clearAuth: () => {
     clearAuthStorage();
-    set({ token: null, refreshToken: null, username: '', role: null, permissions: [], menus: [], authSyncStatus: 'ready' });
+    set({ token: null, refreshToken: null, username: '', role: null, permissions: [], menus: [], tenant: null, mustChangePassword: false, authSyncStatus: 'ready' });
   },
   hasPermission: (permission: string) => get().permissions.includes(permission),
 }));
