@@ -26,6 +26,12 @@ import {
   type TenantRecord,
 } from '../../api/modules/tenants';
 
+// 菜单 key -> 权限点 module 的命名约定：去掉开头的 "/"，再把所有 "/" 和 "-" 换成 "_"。
+// 例：/resources/models -> resources_models、/account-applications -> account_applications。
+// 没有对应 module 的菜单（父级分组菜单、约定外的菜单）映射为空，自动联动时会被安全跳过。
+const normalizeMenuKeyToModule = (key: string): string =>
+  key.replace(/^\//, '').replace(/[/-]/g, '_');
+
 const buildMenuTree = (menus: MenuCatalogResponse['menus']): DataNode[] => {
   const byId = new Map(menus.map((m) => [m.id, m]));
   const childrenOf = (parentId: number | null): DataNode[] =>
@@ -126,6 +132,22 @@ export const TenantManagementPage = () => {
     });
     return Array.from(groups.entries());
   }, [catalog]);
+  // 每个菜单按命名约定映射到它所属模块的全部权限点 id；约定外的菜单不在表中，联动时自动跳过。
+  const menuPermIdMap = useMemo(() => {
+    const map = new Map<number, number[]>();
+    if (!catalog) return map;
+    const idsByModule = new Map<string, number[]>();
+    catalog.permissionPoints.forEach((p) => {
+      const list = idsByModule.get(p.module) ?? [];
+      list.push(p.id);
+      idsByModule.set(p.module, list);
+    });
+    catalog.menus.forEach((m) => {
+      const ids = idsByModule.get(normalizeMenuKeyToModule(m.key));
+      if (ids?.length) map.set(m.id, ids);
+    });
+    return map;
+  }, [catalog]);
 
   const columns: ColumnsType<TenantRecord> = [
     { title: '公司名称', dataIndex: 'name', key: 'name' },
@@ -206,7 +228,30 @@ export const TenantManagementPage = () => {
           checkedKeys={checkedMenuIds}
           onCheck={(checked) => {
             const keys = Array.isArray(checked) ? checked : checked.checked;
-            setCheckedMenuIds(keys.map(Number));
+            const nextMenuIds = keys.map(Number);
+            const prevSet = new Set(checkedMenuIds);
+            const nextSet = new Set(nextMenuIds);
+            const added = nextMenuIds.filter((id) => !prevSet.has(id));
+            const removed = checkedMenuIds.filter((id) => !nextSet.has(id));
+
+            setCheckedMenuIds(nextMenuIds);
+            if (!added.length && !removed.length) return;
+
+            // 仅在用户手动勾选/取消菜单时联动权限点（抽屉打开回显走的是 openAssign，不触发这里，
+            // 因此超管之前手工微调过的权限点不会在重新打开时被强制重置）。
+            setCheckedPermIds((prev) => {
+              const result = new Set(prev);
+              added.forEach((id) => menuPermIdMap.get(id)?.forEach((pid) => result.add(pid)));
+              // 取消菜单时移除其模块权限点，但保留仍被其它已勾选菜单需要的点（防命名碰撞误删）。
+              const stillNeeded = new Set<number>();
+              nextMenuIds.forEach((id) => menuPermIdMap.get(id)?.forEach((pid) => stillNeeded.add(pid)));
+              removed.forEach((id) =>
+                menuPermIdMap.get(id)?.forEach((pid) => {
+                  if (!stillNeeded.has(pid)) result.delete(pid);
+                }),
+              );
+              return Array.from(result);
+            });
           }}
         />
 
@@ -214,7 +259,7 @@ export const TenantManagementPage = () => {
           可用权限点
         </Typography.Title>
         <Typography.Paragraph type="secondary" className="!text-[13px]">
-          公司可使用的操作权限上限（员工实际权限再按其角色取交集）。
+          公司可使用的操作权限上限（员工实际权限再按其角色取交集）。勾选上方菜单会自动联动其权限点，你仍可在此手动增减。
         </Typography.Paragraph>
         {permsByModule.map(([module, points]) => (
           <div key={module} className="mb-3">
