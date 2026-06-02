@@ -11,6 +11,21 @@ class IsAdminRole(permissions.BasePermission):
         return bool(user and user.is_authenticated and (user.is_staff or user.is_superuser))
 
 
+class IsSuperUser(permissions.BasePermission):
+    """平台超管专属：仅 superuser 放行（is_staff 不够）。
+
+    用于跨租户的平台级只读端点（如审计日志）。注意不要用 CanManageTenants 把关
+    这类端点：tenant.management.view 对 is_staff 也发放，会让非超管 staff 横向
+    读到全平台数据。本类只认 is_superuser，杜绝该越权面。
+    """
+
+    message = '仅平台超级管理员可访问'
+
+    def has_permission(self, request, view):
+        user = request.user
+        return bool(user and user.is_authenticated and user.is_superuser)
+
+
 class IsAuthenticatedReadOnlyOrAdminWrite(permissions.BasePermission):
     message = '当前账号无写入权限'
 

@@ -34,6 +34,9 @@ import {
 } from '../../api/modules/employees';
 import type { MenuCatalogResponse } from '../../api/modules/tenants';
 
+const normalizeMenuKeyToModule = (key: string): string =>
+  key.replace(/^\//, '').replace(/[/-]/g, '_');
+
 const buildMenuTree = (menus: MenuCatalogResponse['menus']): DataNode[] => {
   const byId = new Map(menus.map((m) => [m.id, m]));
   const childrenOf = (parentId: number | null): DataNode[] =>
@@ -274,7 +277,10 @@ const RolesTab = ({ onRolesChanged }: { onRolesChanged: () => void }) => {
     if (role === 'new') {
       form.resetFields();
       setCheckedMenuIds([]);
-      setCheckedPermIds([]);
+      const defaultPermIds = catalog
+        ? catalog.permissionPoints.filter((p) => p.module !== 'employees').map((p) => p.id)
+        : [];
+      setCheckedPermIds(defaultPermIds);
     } else {
       form.setFieldsValue({ name: role.name, code: role.code, description: role.description });
       setCheckedMenuIds(role.menuIds);
@@ -320,6 +326,21 @@ const RolesTab = ({ onRolesChanged }: { onRolesChanged: () => void }) => {
       groups.set(p.module, list);
     });
     return Array.from(groups.entries());
+  }, [catalog]);
+  const menuPermIdMap = useMemo(() => {
+    const map = new Map<number, number[]>();
+    if (!catalog) return map;
+    const idsByModule = new Map<string, number[]>();
+    catalog.permissionPoints.forEach((p) => {
+      const list = idsByModule.get(p.module) ?? [];
+      list.push(p.id);
+      idsByModule.set(p.module, list);
+    });
+    catalog.menus.forEach((m) => {
+      const ids = idsByModule.get(normalizeMenuKeyToModule(m.key));
+      if (ids?.length) map.set(m.id, ids);
+    });
+    return map;
   }, [catalog]);
 
   const columns: ColumnsType<TenantRoleRecord> = [
@@ -390,7 +411,27 @@ const RolesTab = ({ onRolesChanged }: { onRolesChanged: () => void }) => {
           checkedKeys={checkedMenuIds}
           onCheck={(checked) => {
             const keys = Array.isArray(checked) ? checked : checked.checked;
-            setCheckedMenuIds(keys.map(Number));
+            const nextMenuIds = keys.map(Number);
+            const prevSet = new Set(checkedMenuIds);
+            const nextSet = new Set(nextMenuIds);
+            const added = nextMenuIds.filter((id) => !prevSet.has(id));
+            const removed = checkedMenuIds.filter((id) => !nextSet.has(id));
+
+            setCheckedMenuIds(nextMenuIds);
+            if (!added.length && !removed.length) return;
+
+            setCheckedPermIds((prev) => {
+              const result = new Set(prev);
+              added.forEach((id) => menuPermIdMap.get(id)?.forEach((pid) => result.add(pid)));
+              const stillNeeded = new Set<number>();
+              nextMenuIds.forEach((id) => menuPermIdMap.get(id)?.forEach((pid) => stillNeeded.add(pid)));
+              removed.forEach((id) =>
+                menuPermIdMap.get(id)?.forEach((pid) => {
+                  if (!stillNeeded.has(pid)) result.delete(pid);
+                }),
+              );
+              return Array.from(result);
+            });
           }}
         />
 

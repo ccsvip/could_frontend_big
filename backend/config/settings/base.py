@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'apps.resources',
     'apps.knowledge_base',
     'apps.ai_models',
+    'apps.audit',
 ]
 
 MIDDLEWARE = [
@@ -49,6 +50,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # 放在 AuthenticationMiddleware 之后：响应阶段 request.user 已就绪，便于审计解析操作人。
+    'apps.audit.middleware.OperationLogMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
