@@ -260,7 +260,11 @@ class AuthApiCsrfTests(APITestCase):
 
     def test_account_application_review_sends_feishu_notification_with_operator(self):
         from django.contrib.auth.hashers import make_password
+        from apps.tenants.models import Membership, Tenant
         reviewer = User.objects.create_user(username='solin', password='test123456')
+        # 审核员是非超管用户：PR-4 后必须有 Membership 才能解析租户与权限交集。
+        review_tenant = Tenant.objects.create(name='审核公司', code='review-co')
+        Membership.objects.create(user=reviewer, tenant=review_tenant)
         role = Role.objects.create(name='reviewer', code='reviewer')
         permission, _ = PermissionPoint.objects.update_or_create(
             code='account_applications.review',
@@ -272,6 +276,8 @@ class AuthApiCsrfTests(APITestCase):
             },
         )
         role.permission_points.add(permission)
+        # 公司须被授权该权限点，员工权限 = 角色权限 ∩ 公司权限 才非空。
+        review_tenant.permission_points.add(permission)
         UserRole.objects.create(user=reviewer, role=role)
         application = AccountApplication.objects.create(
             username='reviewtarget',

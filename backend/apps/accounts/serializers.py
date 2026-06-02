@@ -49,13 +49,40 @@ class UserSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
     permissions = serializers.SerializerMethodField()
     menus = serializers.SerializerMethodField()
+    tenant = serializers.SerializerMethodField()
+    must_change_password = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'display_name', 'role', 'permissions', 'menus')
+        fields = ('id', 'username', 'display_name', 'role', 'permissions', 'menus', 'tenant', 'must_change_password')
 
     def get_display_name(self, obj: User) -> str:
         return obj.get_full_name() or obj.username
+
+    def _get_membership(self, obj: User):
+        # 懒加载避免 app 加载顺序问题。
+        from apps.tenants.services import get_user_membership
+        if not hasattr(self, '_membership_cache'):
+            self._membership_cache: dict[int, Any] = {}
+        if obj.pk not in self._membership_cache:
+            self._membership_cache[obj.pk] = get_user_membership(obj)
+        return self._membership_cache[obj.pk]
+
+    def get_tenant(self, obj: User) -> dict[str, Any] | None:
+        membership = self._get_membership(obj)
+        if membership is None:
+            return None
+        tenant = membership.tenant
+        return {
+            'id': tenant.id,
+            'name': tenant.name,
+            'code': tenant.code,
+            'isTenantAdmin': membership.is_tenant_admin,
+        }
+
+    def get_must_change_password(self, obj: User) -> bool:
+        membership = self._get_membership(obj)
+        return bool(membership and membership.must_change_password)
 
     def _get_access_context(self, obj: User) -> dict[str, Any]:
         if not hasattr(self, '_access_context_cache'):

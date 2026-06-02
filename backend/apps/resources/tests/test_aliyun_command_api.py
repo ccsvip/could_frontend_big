@@ -8,6 +8,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
+from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
 
@@ -22,11 +23,12 @@ class _MockHttpxResponse:
         return self._payload
 
 
-class AliyunCommandApiTests(APITestCase):
+class AliyunCommandApiTests(TenantTestMixin, APITestCase):
     endpoint = '/api/v1/commands/aliyun/'
 
     def setUp(self):
         self.user = User.objects.create_user(username='aliyun-command-tester', password='test123456')
+        self.setup_tenant(self.user)
         self.role = Role.objects.create(name='阿里云指令测试角色', code='aliyun_command_tester')
         UserRole.objects.create(user=self.user, role=self.role)
         self.client.force_authenticate(user=self.user)
@@ -45,6 +47,9 @@ class AliyunCommandApiTests(APITestCase):
             )
             permission_points.append(permission_point)
         self.role.permission_points.set(permission_points)
+        # 同步授予公司：PR-4 后员工权限 = 角色权限 ∩ 公司权限。这些权限点是测试内惰性创建的，
+        # 晚于 setup_tenant 的全量快照，故需显式补授给 tenant，交集才非空。
+        self.tenant.permission_points.add(*permission_points)
 
     @override_settings(
         MULTIMODAL_WORKSPACE_ID='workspace-1',

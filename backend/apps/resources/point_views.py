@@ -1,6 +1,8 @@
 from django.db.models import Q
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from apps.tenants.services import resolve_member_or_public_tenant, scope_queryset_member_or_public
 from .point_models import Point
 from .point_serializers import PointSerializer
 from .views import PermissionMappedModelViewSet
@@ -78,12 +80,13 @@ POINT_LIST_PARAMETERS = [
     destroy=extend_schema(tags=['Point Management']),
 )
 class PointViewSet(PermissionMappedModelViewSet):
-    authentication_classes = []
+    # 仅启用 JWT 认证（不禁用）：带 token 的后台请求识别出 user 走 membership 隔离（防伪造），
+    # 无 token 的数字人运行时请求仍放行，走 ?tenant=<code> 参数隔离。
+    authentication_classes = [JWTAuthentication]
     permission_classes = [AllowAny]
-    
+
     serializer_class = PointSerializer
     lookup_field = 'pk'
-    authentication_classes = ()
     permission_map = {
         # 'list': [],
         # 'retrieve': [],
@@ -121,4 +124,12 @@ class PointViewSet(PermissionMappedModelViewSet):
             include_hidden = self.request.query_params.get('include_hidden', '').strip().lower()
             if include_hidden not in _TRUTHY:
                 queryset = queryset.filter(is_active=True, is_show=True)
-        return queryset
+        # 登录后台用户走 membership 隔离；无登录态的数字人运行时走 ?tenant=<code>。
+        return scope_queryset_member_or_public(queryset, self.request)
+
+    def perform_create(self, serializer):
+        tenant = resolve_member_or_public_tenant(self.request)
+        if tenant is not None:
+            serializer.save(tenant=tenant)
+        else:
+            serializer.save()

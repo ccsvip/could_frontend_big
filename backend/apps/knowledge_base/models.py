@@ -5,6 +5,8 @@ from pathlib import Path
 from django.conf import settings
 from django.db import models
 
+from apps.tenants.managers import TenantManager
+
 
 class KnowledgeDocument(models.Model):
     STATUS_PENDING = 'pending'
@@ -33,8 +35,18 @@ class KnowledgeDocument(models.Model):
         null=True,
     )
     download_count = models.PositiveIntegerField('下载次数', default=0)
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='+',
+        verbose_name='所属公司',
+        null=True,
+        blank=True,
+    )
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
 
     class Meta:
         ordering = ['-updated_at', '-id']

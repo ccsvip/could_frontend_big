@@ -61,7 +61,11 @@ def get_business_cache_timeout() -> int:
 
 def make_response_cache_key(namespace: str, request) -> str:
     validate_business_cache_namespace(namespace)
-    raw_key = f'{request.method}:{request.get_host()}:{request.get_full_path()}'
+    # 缓存键并入租户维度，避免 A 公司缓存的列表/详情被 B 公司请同一 URL 时命中。
+    from apps.tenants.services import get_request_tenant
+    tenant = get_request_tenant(request)
+    tenant_part = tenant.id if tenant is not None else 'none'
+    raw_key = f'{request.method}:{request.get_host()}:{request.get_full_path()}:t={tenant_part}'
     digest = sha256(raw_key.encode('utf-8')).hexdigest()
     return f'{BUSINESS_CACHE_KEY_PREFIX}:{namespace}:response:{digest}'
 

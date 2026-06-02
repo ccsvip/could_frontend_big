@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
-import { Navigate, useRoutes } from 'react-router-dom';
+import { Navigate, Outlet, useParams, useRoutes } from 'react-router-dom';
 import { Spin } from 'antd';
 import {
   CommandExportManagementPage,
@@ -19,8 +19,13 @@ import { AsrManagementPage } from '../views/asr-management';
 import { LlmManagementPage } from '../views/llm-management';
 import { TtsManagementPage } from '../views/tts-management';
 import { ChatRoomPage } from '../views/chat-room';
+import { TenantManagementPage } from '../views/tenant-management';
+import { EmployeeManagementPage } from '../views/employee-management';
+import { ForcePasswordChangePage } from '../views/force-password-change';
+import { LogManagementPage } from '../views/log-management';
 import { fetchCurrentUser } from '../api/modules/auth';
 import { useAuthStore } from '../store/auth';
+import { useTenantScopeStore } from '../store/tenant-scope';
 
 let inFlightSyncToken: string | null = null;
 let inFlightSyncPromise: Promise<void> | null = null;
@@ -66,6 +71,32 @@ const getFirstAccessiblePath = (menus: RouteMenu[]) => {
   return '/login';
 };
 
+// 平台超管（持 tenant.management.view）默认落地「租户管理」页，不走后端 menus 流程。
+const resolveLandingPath = (hasPermission: (permission: string) => boolean, menus: RouteMenu[]) => {
+  if (hasPermission('tenant.management.view')) {
+    return '/tenants';
+  }
+  return getFirstAccessiblePath(menus);
+};
+
+// 在 /tenants/:tenantId/* 业务路由挂载期间写入公司作用域，离开时清空。
+// axios 请求拦截器据此为业务接口追加 ?tenant=<id>。
+const TenantScopeOutlet = () => {
+  const { tenantId } = useParams<{ tenantId: string }>();
+  const setTenantId = useTenantScopeStore((state) => state.setTenantId);
+  const clear = useTenantScopeStore((state) => state.clear);
+
+  useEffect(() => {
+    const parsed = Number(tenantId);
+    setTenantId(Number.isFinite(parsed) && parsed > 0 ? parsed : null);
+    return () => {
+      clear();
+    };
+  }, [tenantId, setTenantId, clear]);
+
+  return <Outlet />;
+};
+
 const AuthSyncFallback = () => (
   <div className="flex min-h-screen items-center justify-center bg-slate-50">
     <div className="flex flex-col items-center gap-3 text-slate-500">
@@ -78,6 +109,7 @@ const AuthSyncFallback = () => (
 const AuthGuard = ({ children }: { children: ReactNode }) => {
   const token = useAuthStore((state) => state.token);
   const authSyncStatus = useAuthStore((state) => state.authSyncStatus);
+  const mustChangePassword = useAuthStore((state) => state.mustChangePassword);
 
   if (!token) {
     return <Navigate to="/login" replace />;
@@ -87,12 +119,18 @@ const AuthGuard = ({ children }: { children: ReactNode }) => {
     return <AuthSyncFallback />;
   }
 
+  // 首登 / 被重置密码的员工必须先改密，挡住所有业务页面。
+  if (mustChangePassword) {
+    return <ForcePasswordChangePage />;
+  }
+
   return <>{children}</>;
 };
 
 const GuestGuard = ({ children }: { children: ReactNode }) => {
   const token = useAuthStore((state) => state.token);
   const menus = useAuthStore((state) => state.menus);
+  const hasPermission = useAuthStore((state) => state.hasPermission);
   const authSyncStatus = useAuthStore((state) => state.authSyncStatus);
 
   if (!token) {
@@ -103,7 +141,7 @@ const GuestGuard = ({ children }: { children: ReactNode }) => {
     return <AuthSyncFallback />;
   }
 
-  return <Navigate to={getFirstAccessiblePath(menus)} replace />;
+  return <Navigate to={resolveLandingPath(hasPermission, menus)} replace />;
 };
 
 const PermissionGuard = ({ children, permission }: { children: ReactNode; permission?: string }) => {
@@ -124,13 +162,14 @@ const PermissionGuard = ({ children, permission }: { children: ReactNode; permis
 
 const DefaultAuthedRoute = () => {
   const menus = useAuthStore((state) => state.menus);
+  const hasPermission = useAuthStore((state) => state.hasPermission);
   const authSyncStatus = useAuthStore((state) => state.authSyncStatus);
 
   if (authSyncStatus !== 'ready') {
     return <AuthSyncFallback />;
   }
 
-  return <Navigate to={getFirstAccessiblePath(menus)} replace />;
+  return <Navigate to={resolveLandingPath(hasPermission, menus)} replace />;
 };
 
 export const AppRouter = () => {
@@ -159,6 +198,8 @@ export const AppRouter = () => {
           role: currentUser.role,
           permissions: currentUser.permissions,
           menus: currentUser.menus,
+          tenant: currentUser.tenant,
+          mustChangePassword: currentUser.must_change_password,
         });
       })
       .catch(() => {
@@ -193,6 +234,57 @@ export const AppRouter = () => {
       ),
       children: [
         { index: true, element: <DefaultAuthedRoute /> },
+        {
+          path: 'tenants',
+          element: (
+            <PermissionGuard permission="tenant.management.view">
+              <TenantManagementPage />
+            </PermissionGuard>
+          ),
+        },
+        {
+          // 平台超管「按公司浏览」业务作用域：挂载期间写入 tenant-scope store，
+          // axios 拦截器据此为业务接口注入 ?tenant=<id>。所有子路由复用现有业务页面组件。
+          path: 'tenants/:tenantId',
+          element: (
+            <PermissionGuard permission="tenant.management.view">
+              <TenantScopeOutlet />
+            </PermissionGuard>
+          ),
+          children: [
+            { index: true, element: <Navigate to="devices" replace /> },
+            { path: 'devices', element: <DeviceManagementPage /> },
+            { path: 'resources', element: <Navigate to="resources/images" replace /> },
+            { path: 'resources/images', element: <ResourceManagementPage key="scoped-resource-image" resourceType="image" /> },
+            { path: 'resources/videos', element: <ResourceManagementPage key="scoped-resource-video" resourceType="video" /> },
+            { path: 'resources/scrolling-texts', element: <ScrollingTextManagementPage /> },
+            { path: 'resources/voice-tones', element: <VoiceToneManagementPage /> },
+            { path: 'resources/models', element: <ModelManagementPage /> },
+            { path: 'knowledge-base', element: <KnowledgeBasePage /> },
+            { path: 'commands', element: <CommandWorkspacePage /> },
+            { path: 'ai-models', element: <Navigate to="ai-models/llm" replace /> },
+            { path: 'ai-models/asr', element: <AsrManagementPage /> },
+            { path: 'ai-models/llm', element: <LlmManagementPage /> },
+            { path: 'ai-models/tts', element: <TtsManagementPage /> },
+            { path: 'ai-models/chat', element: <ChatRoomPage /> },
+          ],
+        },
+        {
+          path: 'logs',
+          element: (
+            <PermissionGuard permission="tenant.management.view">
+              <LogManagementPage />
+            </PermissionGuard>
+          ),
+        },
+        {
+          path: 'employees',
+          element: (
+            <PermissionGuard permission="tenant.employees.manage">
+              <EmployeeManagementPage />
+            </PermissionGuard>
+          ),
+        },
         {
           path: 'knowledge-base',
           element: (

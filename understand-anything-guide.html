@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Understand Anything 使用指南</title>
+    <style>
+      :root {
+        --ink: #14211f;
+        --muted: #5b6c67;
+        --line: #d9e4df;
+        --paper: #f7faf8;
+        --panel: #ffffff;
+        --teal: #0f766e;
+        --teal-soft: #dff6ef;
+        --amber: #c77913;
+        --rose: #b9475f;
+        --shadow: 0 18px 45px rgba(18, 32, 29, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family:
+          "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC",
+          -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          linear-gradient(90deg, rgba(15, 118, 110, 0.055) 1px, transparent 1px),
+          linear-gradient(rgba(15, 118, 110, 0.045) 1px, transparent 1px),
+          #eef3f1;
+        background-size: 34px 34px;
+      }
+
+      .shell {
+        width: min(1180px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 34px 0 48px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+        gap: 18px;
+        align-items: stretch;
+        min-height: 360px;
+      }
+
+      .hero-main,
+      .map-panel,
+      .section,
+      .command-box,
+      .question-card {
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.86);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(10px);
+      }
+
+      .hero-main {
+        padding: 34px;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        width: fit-content;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 10px;
+        border: 1px solid #b9ded7;
+        border-radius: 999px;
+        color: #0f5f58;
+        background: var(--teal-soft);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      h1 {
+        margin: 22px 0 14px;
+        font-size: clamp(34px, 5vw, 64px);
+        line-height: 1.03;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        max-width: 680px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.8;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 28px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 38px;
+        padding: 0 13px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: #f8fbfa;
+        color: #28413d;
+        font-size: 14px;
+        font-weight: 650;
+      }
+
+      .map-panel {
+        border-radius: 8px;
+        padding: 24px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .map-title {
+        margin: 0 0 18px;
+        font-size: 15px;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .graph {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .node {
+        min-height: 96px;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid #d6e5e0;
+        background: #f8fbfa;
+      }
+
+      .node strong {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--teal);
+        font-size: 16px;
+      }
+
+      .node span {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .connector {
+        margin-top: 16px;
+        padding: 15px;
+        border-left: 4px solid var(--teal);
+        background: #eefaf7;
+        color: #264641;
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .section {
+        margin-top: 18px;
+        border-radius: 8px;
+        padding: 24px;
+      }
+
+      .section h2 {
+        margin: 0 0 16px;
+        font-size: 24px;
+        letter-spacing: 0;
+      }
+
+      .step {
+        display: flex;
+        gap: 14px;
+        padding: 18px;
+        min-height: 150px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: #fbfdfc;
+      }
+
+      .number {
+        display: grid;
+        flex: 0 0 auto;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--teal);
+        color: #fff;
+        font-weight: 800;
+      }
+
+      .step h3,
+      .question-card h3 {
+        margin: 0 0 8px;
+        font-size: 17px;
+      }
+
+      .step p,
+      .question-card p,
+      .section p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.75;
+      }
+
+      .commands {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .command-box {
+        border-radius: 8px;
+        box-shadow: none;
+        padding: 18px;
+        background: #101b19;
+        color: #e8fff8;
+      }
+
+      .command-box label {
+        display: block;
+        margin-bottom: 10px;
+        color: #9ee5d6;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      code {
+        display: block;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font-family: "Cascadia Code", Consolas, "Liberation Mono", monospace;
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .question-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .question-card {
+        border-radius: 8px;
+        box-shadow: none;
+        padding: 18px;
+      }
+
+      .tag {
+        display: inline-flex;
+        margin-bottom: 12px;
+        padding: 5px 9px;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 750;
+      }
+
+      .tag.teal {
+        background: var(--teal);
+      }
+
+      .tag.amber {
+        background: var(--amber);
+      }
+
+      .tag.rose {
+        background: var(--rose);
+      }
+
+      .tag.dark {
+        background: #243833;
+      }
+
+      .footer-note {
+        margin: 18px 0 0;
+        padding: 16px 18px;
+        border: 1px dashed #a8cfc6;
+        border-radius: 8px;
+        color: #31504b;
+        background: rgba(223, 246, 239, 0.72);
+        line-height: 1.75;
+      }
+
+      @media (max-width: 880px) {
+        .shell {
+          width: min(100% - 24px, 760px);
+          padding-top: 18px;
+        }
+
+        .hero,
+        .grid,
+        .commands,
+        .question-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-main,
+        .section,
+        .map-panel {
+          padding: 20px;
+        }
+
+        .graph {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-main">
+          <div>
+            <span class="eyebrow">AI 编程的项目地图</span>
+            <h1 id="page-title">Understand Anything 使用指南</h1>
+            <p class="lead">
+              它会把代码库扫描成知识图谱，让 AI 知道项目里有哪些文件、模块、函数、接口、配置和依赖关系。
+              你不用先读完整个项目，只要先生成图谱，再让 AI 按图谱回答和改代码。
+            </p>
+          </div>
+          <div class="hero-actions" aria-label="核心作用">
+            <span class="pill">看懂架构</span>
+            <span class="pill">定位功能入口</span>
+            <span class="pill">判断影响范围</span>
+            <span class="pill">减少盲改代码</span>
+          </div>
+        </div>
+
+        <aside class="map-panel" aria-label="知识图谱示意">
+          <p class="map-title">它会把项目整理成这样的关系</p>
+          <div class="graph">
+            <div class="node">
+              <strong>文件</strong>
+              <span>例如 router、页面、API 模块、配置文件</span>
+            </div>
+            <div class="node">
+              <strong>功能</strong>
+              <span>登录、设备管理、知识库、聊天、任务队列</span>
+            </div>
+            <div class="node">
+              <strong>关系</strong>
+              <span>谁调用谁、谁依赖谁、谁配置谁</span>
+            </div>
+            <div class="node">
+              <strong>问题</strong>
+              <span>你可以直接问“这个功能在哪里改”</span>
+            </div>
+          </div>
+          <div class="connector">
+            普通搜索只能找到关键词；知识图谱能告诉 AI：关键词背后的模块关系和上下游影响。
+          </div>
+        </aside>
+      </section>
+
+      <section class="section" aria-labelledby="steps-title">
+        <h2 id="steps-title">照着这 3 步用</h2>
+        <div class="grid">
+          <article class="step">
+            <span class="number">1</span>
+            <div>
+              <h3>先生成项目图谱</h3>
+              <p>在项目根目录让 AI 执行 understand 分析。完成后会生成 `.understand-anything/knowledge-graph.json`。</p>
+            </div>
+          </article>
+          <article class="step">
+            <span class="number">2</span>
+            <div>
+              <h3>再用图谱提问</h3>
+              <p>让 AI 基于知识图谱回答：“这个功能在哪”“调用链是什么”“改这里会影响谁”。</p>
+            </div>
+          </article>
+          <article class="step">
+            <span class="number">3</span>
+            <div>
+              <h3>最后再让 AI 改代码</h3>
+              <p>先确认入口和影响范围，再实施修改。这样比直接搜索文件更稳，也更适合大型项目。</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="commands-title">
+        <h2 id="commands-title">常用命令</h2>
+        <div class="commands">
+          <div class="command-box">
+            <label>生成中文知识图谱</label>
+            <code>/understand --language zh</code>
+          </div>
+          <div class="command-box">
+            <label>重新完整扫描</label>
+            <code>/understand --full --language zh</code>
+          </div>
+          <div class="command-box">
+            <label>询问项目问题</label>
+            <code>/understand-chat 登录流程在哪些文件里？</code>
+          </div>
+          <div class="command-box">
+            <label>分析某次改动</label>
+            <code>让 AI 使用 understand-diff 看这次修改影响哪些模块</code>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="questions-title">
+        <h2 id="questions-title">你可以这样问 AI</h2>
+        <div class="question-grid">
+          <article class="question-card">
+            <span class="tag teal">找入口</span>
+            <h3>“设备管理页面的数据从哪里来？”</h3>
+            <p>适合在你知道功能名，但不知道页面、API、后端接口分别在哪里时使用。</p>
+          </article>
+          <article class="question-card">
+            <span class="tag amber">看影响</span>
+            <h3>“如果我改登录权限，会影响哪些路由？”</h3>
+            <p>适合改权限、路由、全局状态、API 拦截器这类容易牵连多处的代码。</p>
+          </article>
+          <article class="question-card">
+            <span class="tag rose">读架构</span>
+            <h3>“这个项目的前端、后端、Celery 是怎么协作的？”</h3>
+            <p>适合刚接手项目，或者准备改跨模块功能之前先建立整体理解。</p>
+          </article>
+          <article class="question-card">
+            <span class="tag dark">查调用链</span>
+            <h3>“聊天功能从页面到接口的调用链是什么？”</h3>
+            <p>适合排查 bug、定位接口、理解状态流转和请求路径。</p>
+          </article>
+        </div>
+        <p class="footer-note">
+          最好先让 AI 生成图谱，再问具体问题。问题越具体，图谱越能发挥作用；例如不要只问“帮我看看项目”，而是问“知识库上传功能在哪些文件里，改上传校验会影响哪里？”
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

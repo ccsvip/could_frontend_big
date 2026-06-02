@@ -12,6 +12,7 @@ from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.resources.models import Resource
 from apps.resources.services.feishu import send_feishu_text
 from apps.resources.tasks import notify_command_event_task
+from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
 
@@ -20,7 +21,7 @@ def build_upload(name: str, content: bytes, content_type: str) -> SimpleUploaded
     return SimpleUploadedFile(name, content, content_type=content_type)
 
 
-class BackendManagementFlowApiTests(APITestCase):
+class BackendManagementFlowApiTests(TenantTestMixin, APITestCase):
     def setUp(self):
         self.media_root = tempfile.mkdtemp()
         self.override_media_root = override_settings(MEDIA_ROOT=self.media_root)
@@ -31,6 +32,7 @@ class BackendManagementFlowApiTests(APITestCase):
         self.command_change_delay_patcher = patch('apps.resources.tasks.notify_command_change_task.delay')
         self.command_change_delay = self.command_change_delay_patcher.start()
         self.user = User.objects.create_user(username='flow-tester', password='test123456')
+        self.setup_tenant(self.user)
         self.role = Role.objects.create(name='flow tester', code='flow_tester')
         UserRole.objects.create(user=self.user, role=self.role)
         self.client.force_authenticate(user=self.user)
@@ -327,6 +329,9 @@ class BackendManagementFlowApiTests(APITestCase):
             override_settings(
                 FEISHU_WEBHOOK_URL='https://feishu.example/webhook',
                 FEISHU_WEBHOOK_SECRET='',
+                # 清空环境泄漏的 HOST_IP（根 .env 设了 localhost），否则 _resolve_server_ip
+                # 会短路在 HOST_IP 分支，永远到不了 FEISHU_SERVER_IP，断言必失败。
+                HOST_IP='',
                 FEISHU_SERVER_IP='10.0.0.8',
             ),
             patch('apps.resources.services.feishu.httpx.Client', FakeClient),
@@ -421,7 +426,7 @@ class BackendManagementFlowApiTests(APITestCase):
             },
             format='json',
         )
-        runtime_response = APIClient().get('/api/v1/commands/data/', {'command': 'ASCII_POWER_ON'})
+        runtime_response = APIClient().get('/api/v1/commands/data/', {'command': 'ASCII_POWER_ON', 'tenant': 'test-tenant'})
 
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(create_response.data['commandValueType'], 'ascii')
@@ -466,18 +471,21 @@ class BackendManagementFlowApiTests(APITestCase):
             resource_type=Resource.TYPE_IMAGE,
             category=Resource.CATEGORY_UNCATEGORIZED,
             file=build_upload('welcome.png', b'image-bytes', 'image/png'),
+            tenant=self.tenant,
         )
         video = Resource.objects.create(
             name='Intro Video',
             resource_type=Resource.TYPE_VIDEO,
             category=Resource.CATEGORY_UNCATEGORIZED,
             file=build_upload('intro.mp4', b'video-bytes', 'video/mp4'),
+            tenant=self.tenant,
         )
         cloud_video = Resource.objects.create(
             name='Cloud Intro Video',
             resource_type=Resource.TYPE_VIDEO,
             category=Resource.CATEGORY_UNCATEGORIZED,
             cloud_url='https://cdn.example.com/videos/cloud-intro.mp4',
+            tenant=self.tenant,
         )
 
         task_response = self.client.post(
@@ -502,7 +510,7 @@ class BackendManagementFlowApiTests(APITestCase):
         self.assertEqual(task_response.data['tasks'][2]['imageText'], 'Library image caption')
         self.assertEqual(task_response.data['tasks'][3]['imageText'], '')
 
-        response = APIClient().get('/api/v1/commands/data/', {'command': 'WELCOME_SCENE'})
+        response = APIClient().get('/api/v1/commands/data/', {'command': 'WELCOME_SCENE', 'tenant': 'test-tenant'})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['status'], 'success')
@@ -536,6 +544,7 @@ class BackendManagementFlowApiTests(APITestCase):
             resource_type=Resource.TYPE_IMAGE,
             category=Resource.CATEGORY_UNCATEGORIZED,
             file=build_upload('plain.png', b'image-bytes', 'image/png'),
+            tenant=self.tenant,
         )
 
         task_response = self.client.post(
@@ -554,7 +563,7 @@ class BackendManagementFlowApiTests(APITestCase):
         self.assertEqual(task_response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(task_response.data['tasks'][0]['imageText'], '')
 
-        response = APIClient().get('/api/v1/commands/data/', {'command': 'PLAIN_IMAGE'})
+        response = APIClient().get('/api/v1/commands/data/', {'command': 'PLAIN_IMAGE', 'tenant': 'test-tenant'})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['data']['tasks'][0]['content']['imageText'], '')
@@ -581,7 +590,7 @@ class BackendManagementFlowApiTests(APITestCase):
         )
         self.assertEqual(task_response.status_code, status.HTTP_201_CREATED)
 
-        response = APIClient().get('/api/v1/commands/data/', {'command': 'junjie'})
+        response = APIClient().get('/api/v1/commands/data/', {'command': 'junjie', 'tenant': 'test-tenant'})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['status'], 'success')
@@ -631,7 +640,7 @@ class BackendManagementFlowApiTests(APITestCase):
         self.assertTrue(task_response.data['tasks'][0]['waitForInnerTasks'])
         self.assertEqual(task_response.data['tasks'][0]['innerTasks'][0]['text'], '已到达充电桩')
 
-        response = APIClient().get('/api/v1/commands/data/', {'command': 'NESTED_NAV'})
+        response = APIClient().get('/api/v1/commands/data/', {'command': 'NESTED_NAV', 'tenant': 'test-tenant'})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['data']['tasks']), 1)
@@ -695,7 +704,7 @@ class BackendManagementFlowApiTests(APITestCase):
         self.assertEqual(task_response.data['tasks'][0]['isShow'], True)
         self.assertEqual(task_response.data['tasks'][1]['isShow'], False)
 
-        response = APIClient().get('/api/v1/commands/data/', {'command': 'SKIP_NAV'})
+        response = APIClient().get('/api/v1/commands/data/', {'command': 'SKIP_NAV', 'tenant': 'test-tenant'})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.data['data']

@@ -1,8 +1,39 @@
 import axios from 'axios';
 import { message } from 'antd';
 import { useAuthStore } from '../store/auth';
+import { useTenantScopeStore } from '../store/tenant-scope';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+
+// 平台超管「按公司浏览」时，仅业务列表接口允许追加 ?tenant=<id>。
+// 显式白名单避免给 /auth、/tenants、/audit、/menus 等管理类接口注入。
+const TENANT_SCOPED_PREFIXES = [
+  '/devices',
+  '/device-groups',
+  '/device-applications',
+  '/device-authorization-codes',
+  '/resources',
+  '/knowledge-base',
+  '/commands',
+  '/ai-models',
+];
+
+const isTenantScopedUrl = (url?: string): boolean => {
+  if (!url) {
+    return false;
+  }
+  // baseURL 为 /api/v1，业务调用传入的 url 形如 '/devices/'；统一取 pathname 后按前缀匹配。
+  const path = url.startsWith('http')
+    ? (() => {
+        try {
+          return new URL(url).pathname.replace(/^\/api\/v1/, '');
+        } catch {
+          return url;
+        }
+      })()
+    : url;
+  return TENANT_SCOPED_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+};
 
 export type ApiResponse<T = unknown> = {
   status: 'success' | 'error';
@@ -83,6 +114,17 @@ httpClient.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // 用 getState() 实时读取作用域，避免订阅闭包陈旧。仅当存在公司作用域且命中业务接口白名单时注入。
+  const tenantId = useTenantScopeStore.getState().tenantId;
+  if (tenantId != null && isTenantScopedUrl(config.url)) {
+    // 合并已有 params，不覆盖业务自身传入的 tenant（理论上不会有，仍保守保护）。
+    const existing = (config.params as Record<string, unknown> | undefined) ?? {};
+    if (existing.tenant == null) {
+      config.params = { ...existing, tenant: tenantId };
+    }
+  }
+
   return config;
 });
 

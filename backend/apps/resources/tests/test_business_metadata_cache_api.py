@@ -12,6 +12,7 @@ from rest_framework.test import APITestCase
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.knowledge_base.models import KnowledgeDocument
 from apps.resources.models import Resource, VoiceTone
+from apps.tenants.test_utils import TenantTestMixin
 from config.business_cache import get_business_cache_summaries
 
 User = get_user_model()
@@ -25,12 +26,13 @@ User = get_user_model()
         }
     }
 )
-class BusinessMetadataCacheApiTests(APITestCase):
+class BusinessMetadataCacheApiTests(TenantTestMixin, APITestCase):
     def setUp(self):
         self.media_root = tempfile.mkdtemp()
         self.override_media_root = override_settings(MEDIA_ROOT=self.media_root)
         self.override_media_root.enable()
         self.user = User.objects.create_user(username='metadata-cache-user', password='test123456')
+        self.setup_tenant(self.user)
         self.role = Role.objects.create(name='缓存测试角色', code='metadata_cache_role')
         UserRole.objects.create(user=self.user, role=self.role)
         self.client.force_authenticate(user=self.user)
@@ -68,6 +70,7 @@ class BusinessMetadataCacheApiTests(APITestCase):
             name='横屏背景图',
             resource_type=Resource.TYPE_IMAGE,
             category=Resource.CATEGORY_HORIZONTAL,
+            tenant=self.tenant,
         )
 
         response = self.client.get('/api/v1/resources/images/?category=horizontal')
@@ -97,6 +100,7 @@ class BusinessMetadataCacheApiTests(APITestCase):
             content='用于缓存测试',
             is_active=True,
             is_visible=True,
+            tenant=self.tenant,
         )
 
         response = self.client.get('/api/v1/resources/voice-tones/?is_active=true')
@@ -120,6 +124,7 @@ class BusinessMetadataCacheApiTests(APITestCase):
             title='缓存文档',
             file=SimpleUploadedFile('cache-doc.pdf', b'cache-doc-content', content_type='application/pdf'),
             uploaded_by=self.user,
+            tenant=self.tenant,
         )
 
         response = self.client.get('/api/v1/knowledge-base/')

@@ -4,13 +4,15 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.models import LLMProvider
+from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
 
 
-class LLMProviderApiTests(APITestCase):
+class LLMProviderApiTests(TenantTestMixin, APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='llm-tester', password='test123456')
+        self.setup_tenant(self.user)
         self.role = Role.objects.create(name='LLM测试角色', code='llm_tester')
         UserRole.objects.create(user=self.user, role=self.role)
         self.client.force_authenticate(user=self.user)
@@ -38,6 +40,7 @@ class LLMProviderApiTests(APITestCase):
     def test_retrieve_existing_llm_provider_success(self):
         self.grant_permissions('ai_models.llm.view')
         provider = LLMProvider.objects.create(
+            tenant=self.tenant,
             name='OpenAI 主账号',
             provider_type='openai',
             api_base_url='https://api.openai.com/v1',
@@ -57,6 +60,7 @@ class LLMProviderApiTests(APITestCase):
     def test_test_connection_returns_friendly_message_when_models_missing(self):
         self.grant_permissions('ai_models.llm.view')
         provider = LLMProvider.objects.create(
+            tenant=self.tenant,
             name='空模型供应商',
             provider_type='openai',
             api_base_url='https://api.openai.com/v1',

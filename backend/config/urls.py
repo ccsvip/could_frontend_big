@@ -83,10 +83,12 @@ urlpatterns = [
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path('api/v1/', ApiV1RootView.as_view(), name='api-root'),  # API v1 根视图，列出所有接口（Browsable API 格式）
     path('api/v1/auth/', include('apps.accounts.urls')),
+    path('api/v1/', include('apps.tenants.urls')),
     path('api/v1/', include('apps.devices.urls')),
     path('api/v1/', include('apps.resources.urls')),
     path('api/v1/', include('apps.knowledge_base.urls')),
     path('api/v1/', include('apps.ai_models.urls')),
+    path('api/v1/', include('apps.audit.urls')),
 ]
 
 if settings.DEBUG:

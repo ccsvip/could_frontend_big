@@ -81,6 +81,29 @@ could_frontend/
 | `solin_celery_beat` | 同 backend | - | - | backend healthy |
 | `solin_web` | build `./web` | `WEB_PORT=5175` | 5173 (vite dev) | backend healthy |
 
+## UNDERSTAND ANYTHING（AI 代码理解辅助）
+
+本仓库允许使用 `understand-anything` 辅助 AI 理解代码结构。它会在根目录 `.understand-anything/` 下生成知识图谱，用于描述文件、函数、类、模块、接口、配置、服务以及它们之间的 `imports` / `calls` / `depends_on` / `configures` 等关系。
+
+使用原则：
+- 当任务涉及陌生模块、跨前后端链路、权限/路由/API/状态流转、Celery/配置/部署影响面时，AI 应优先基于 Understand Anything 做结构理解，再修改代码。
+- 小型、明确、单文件修复可以直接读源码；不要为了 trivial change 强行重建图谱。
+- `.understand-anything/knowledge-graph.json` 是分析产物，不是业务源码。除非用户明确要求更新/删除图谱，否则不要手动编辑或清空 `.understand-anything/`。
+- 如果图谱不存在或明显过期，先运行 `/understand --language zh`；如果需要完整重扫，运行 `/understand --full --language zh`。
+- 生成图谱后，优先用 `/understand-chat <问题>` 查询入口、调用链、依赖关系和影响面，再进入实现。
+
+推荐提问：
+- `/understand-chat 设备管理页面的数据从哪里来？`
+- `/understand-chat 登录、权限、菜单和路由之间是什么关系？`
+- `/understand-chat 修改聊天 SSE 流式输出会影响哪些模块？`
+- `/understand-chat 知识库上传功能涉及哪些前端页面、API 模块和后端接口？`
+
+给后续 AI 的约束：
+- 使用 Understand Anything 得到的是辅助上下文，最终改动仍必须回到真实源码核验。
+- 不要把图谱结论当成唯一事实；关键路径要用 `rg` / 文件读取 / 测试再次确认。
+- 本项目运行、测试、依赖安装仍必须遵守 Docker-only 规则；Understand Anything 只用于代码理解，不替代 `docker compose ...` 验证。
+- 根目录 `understand-anything-guide.html` 是给人看的快速说明页，可作为新协作者了解工具用途的入口。
+
 ## COMMANDS
 
 ```bash
@@ -112,3 +135,70 @@ docker compose logs -f web
 - `web` 容器走 `npm run dev` + 挂载源码 + 匿名 `node_modules` 卷，**是开发态而非生产态**。生产部署需要另写一份 compose 或 Dockerfile 改成 `npm run build` + 静态托管。
 - 国内镜像默认值：APT 走阿里云 Debian、PyPI 走清华 Tsinghua，由 `x-backend-build.args` 注入；离线 / 海外环境覆盖根 `.env` 即可。
 - 子目录文档同时维护两份：`AGENTS.md`（quick-ref）+ `CLAUDE.md`（详细 FAQ + Changelog）。新增模块文档遵循同一对偶。
+
+
+## 务必遵循
+
+Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+
+**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+
+## 1. Think Before Coding
+
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
+
+Before implementing:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+## 2. Simplicity First
+
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+## 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+---
+
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.

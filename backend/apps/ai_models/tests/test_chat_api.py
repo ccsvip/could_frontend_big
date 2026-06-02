@@ -1,6 +1,7 @@
 import json
 from unittest.mock import patch
 
+from asgiref.sync import async_to_sync
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -8,8 +9,54 @@ from rest_framework.test import APITestCase
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.models import ChatConversation, ChatMessage, LLMProvider
 from apps.ai_models.views import _build_chat_completions_url
+from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
+
+
+def _read_streaming_body(response) -> str:
+    """Drain an async StreamingHttpResponse into a single decoded string.
+
+    The chat ``send`` endpoint returns a ``StreamingHttpResponse`` wrapping an
+    ``async`` generator, so ``streaming_content`` is an async generator and
+    cannot be iterated synchronously. We consume it via ``async_to_sync`` so
+    the generator body (which also persists assistant messages / title /
+    summary) actually runs.
+    """
+
+    async def _drain():
+        return [chunk async for chunk in response.streaming_content]
+
+    chunks = async_to_sync(_drain)()
+    return ''.join(
+        chunk.decode('utf-8') if isinstance(chunk, bytes) else chunk
+        for chunk in chunks
+    )
+
+
+def _sse_content(streamed_body: str) -> str:
+    """解析 SSE ``data:`` 行，拼接解码后的 ``content`` 字段。
+
+    视图用 json.dumps 默认 ensure_ascii=True 输出，中文在 wire 上是 \\uXXXX 转义
+    （前端 JSON.parse 后等价于原文，不影响功能）。故按语义比对：json.loads 解码
+    回真中文再断言，而不是断言转义后的 wire 字节。只取 content 字段，忽略
+    title/summary/[DONE]。
+    """
+    parts = []
+    for line in streamed_body.splitlines():
+        line = line.strip()
+        if not line.startswith('data:'):
+            continue
+        payload = line[len('data:'):].strip()
+        if payload == '[DONE]':
+            continue
+        try:
+            obj = json.loads(payload)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(obj, dict) and isinstance(obj.get('content'), str):
+            parts.append(obj['content'])
+    return ''.join(parts)
 
 
 class _DummyStreamResponse:
@@ -83,9 +130,10 @@ class _DummyHttpxClient:
         return self._post_responses.pop(0)
 
 
-class ChatApiTests(APITestCase):
+class ChatApiTests(TenantTestMixin, APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='chat-tester', password='test123456')
+        self.setup_tenant(self.user)
         self.role = Role.objects.create(name='聊天测试角色', code='chat_tester')
         UserRole.objects.create(user=self.user, role=self.role)
         self.client.force_authenticate(user=self.user)
@@ -122,6 +170,7 @@ class ChatApiTests(APITestCase):
     def test_update_config_updates_selected_provider_and_model(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
         provider_a = LLMProvider.objects.create(
+            tenant=self.tenant,
             name='默认 OpenAI',
             provider_type='openai',
             api_base_url='https://api.openai.com/v1',
@@ -130,6 +179,7 @@ class ChatApiTests(APITestCase):
             is_active=True,
         )
         provider_b = LLMProvider.objects.create(
+            tenant=self.tenant,
             name='兼容供应商',
             provider_type='other',
             api_base_url='https://example.com/v1',
@@ -138,6 +188,7 @@ class ChatApiTests(APITestCase):
             is_active=True,
         )
         conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
             title='测试会话',
             user=self.user,
             llm_provider=provider_a,
@@ -166,6 +217,7 @@ class ChatApiTests(APITestCase):
     def test_send_accepts_openai_compatible_non_stream_json_response(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
         provider = LLMProvider.objects.create(
+            tenant=self.tenant,
             name='标准兼容模式',
             provider_type='openai',
             api_base_url='https://api.openai.com/v1',
@@ -174,6 +226,7 @@ class ChatApiTests(APITestCase):
             is_active=True,
         )
         conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
             title='兼容模式测试',
             user=self.user,
             llm_provider=provider,
@@ -194,23 +247,26 @@ class ChatApiTests(APITestCase):
                 ],
             }
         )
+        summary_payload = {
+            'choices': [{'message': {'role': 'assistant', 'content': '兼容模式自动摘要'}}]
+        }
 
         with patch(
-            'apps.ai_models.views.httpx.Client',
-            return_value=_DummyHttpxClient(_DummyStreamResponse([plain_json_response])),
+            'apps.ai_models.views.httpx.AsyncClient',
+            return_value=_DummyHttpxClient(
+                _DummyStreamResponse([plain_json_response]),
+                post_response=_DummyJsonResponse(summary_payload),
+            ),
         ):
             response = self.client.post(
                 f'/api/v1/ai-models/chat/conversations/{conversation.id}/send/',
                 {'content': '你好'},
                 format='json',
             )
+            streamed_body = _read_streaming_body(response)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        streamed_body = ''.join(
-            chunk.decode('utf-8') if isinstance(chunk, bytes) else chunk
-            for chunk in response.streaming_content
-        )
-        self.assertIn('这是兼容模式返回的完整回复', streamed_body)
+        self.assertIn('这是兼容模式返回的完整回复', _sse_content(streamed_body))
 
         messages = list(conversation.messages.order_by('created_at').values_list('role', 'content'))
         self.assertEqual(
@@ -224,6 +280,7 @@ class ChatApiTests(APITestCase):
     def test_send_accepts_sse_lines_without_space_after_data_prefix(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
         provider = LLMProvider.objects.create(
+            tenant=self.tenant,
             name='LongCat 流式',
             provider_type='openai',
             api_base_url='https://api.longcat.chat/openai/v1',
@@ -232,6 +289,7 @@ class ChatApiTests(APITestCase):
             is_active=True,
         )
         conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
             title='LongCat 流式测试',
             user=self.user,
             llm_provider=provider,
@@ -244,24 +302,28 @@ class ChatApiTests(APITestCase):
             'data:{"choices":[{"delta":{"content":"！"},"index":0}]}',
             'data:[DONE]',
         ]
+        summary_payload = {
+            'choices': [{'message': {'role': 'assistant', 'content': 'LongCat 流式自动摘要'}}]
+        }
 
         with patch(
-            'apps.ai_models.views.httpx.Client',
-            return_value=_DummyHttpxClient(_DummyStreamResponse(sse_lines, headers={'content-type': 'text/event-stream'})),
+            'apps.ai_models.views.httpx.AsyncClient',
+            return_value=_DummyHttpxClient(
+                _DummyStreamResponse(sse_lines, headers={'content-type': 'text/event-stream'}),
+                post_response=_DummyJsonResponse(summary_payload),
+            ),
         ):
             response = self.client.post(
                 f'/api/v1/ai-models/chat/conversations/{conversation.id}/send/',
                 {'content': '你好'},
                 format='json',
             )
+            streamed_body = _read_streaming_body(response)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        streamed_body = ''.join(
-            chunk.decode('utf-8') if isinstance(chunk, bytes) else chunk
-            for chunk in response.streaming_content
-        )
-        self.assertIn('data: {"content": "你好"}', streamed_body)
-        self.assertIn('data: {"content": "\\uff01"}', streamed_body)
+        # 语义断言：LongCat 的无空格 data:{...} chunk 必须被正确解析、不被丢弃，
+        # 拼接出完整回复「你好！」（wire 上中文是 \uXXXX 转义，前端 JSON.parse 后等价）。
+        self.assertEqual(_sse_content(streamed_body), '你好！')
 
         messages = list(conversation.messages.order_by('created_at').values_list('role', 'content'))
         self.assertEqual(
@@ -275,6 +337,7 @@ class ChatApiTests(APITestCase):
     def test_send_can_request_non_stream_mode(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
         provider = LLMProvider.objects.create(
+            tenant=self.tenant,
             name='LongCat 非流式',
             provider_type='openai',
             api_base_url='https://api.longcat.chat/openai',
@@ -283,6 +346,7 @@ class ChatApiTests(APITestCase):
             is_active=True,
         )
         conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
             title='LongCat 非流式测试',
             user=self.user,
             llm_provider=provider,
@@ -298,23 +362,25 @@ class ChatApiTests(APITestCase):
                 }
             ],
         }
+        summary_payload = {
+            'choices': [{'message': {'role': 'assistant', 'content': '非流式自动摘要'}}]
+        }
 
         with patch(
-            'apps.ai_models.views.httpx.Client',
-            return_value=_DummyHttpxClient(post_response=_DummyJsonResponse(payload)),
+            'apps.ai_models.views.httpx.AsyncClient',
+            return_value=_DummyHttpxClient(
+                post_response=[_DummyJsonResponse(payload), _DummyJsonResponse(summary_payload)],
+            ),
         ):
             response = self.client.post(
                 f'/api/v1/ai-models/chat/conversations/{conversation.id}/send/',
                 {'content': '你好', 'stream': False},
                 format='json',
             )
+            streamed_body = _read_streaming_body(response)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        streamed_body = ''.join(
-            chunk.decode('utf-8') if isinstance(chunk, bytes) else chunk
-            for chunk in response.streaming_content
-        )
-        self.assertIn('这是关闭流式后的完整回答', streamed_body)
+        self.assertIn('这是关闭流式后的完整回答', _sse_content(streamed_body))
 
         messages = list(conversation.messages.order_by('created_at').values_list('role', 'content'))
         self.assertEqual(
@@ -328,6 +394,7 @@ class ChatApiTests(APITestCase):
     def test_send_generates_title_with_current_model_after_first_reply(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
         provider = LLMProvider.objects.create(
+            tenant=self.tenant,
             name='标题生成模型',
             provider_type='openai',
             api_base_url='https://api.longcat.chat/openai/v1',
@@ -336,6 +403,7 @@ class ChatApiTests(APITestCase):
             is_active=True,
         )
         conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
             title='新对话',
             user=self.user,
             llm_provider=provider,
@@ -379,6 +447,9 @@ class ChatApiTests(APITestCase):
                 {'content': '帮我比较 MySQL 和 PostgreSQL'},
                 format='json',
             )
+            # Drive the async streaming generator so its body runs: it persists the
+            # assistant reply and then generates+writes the title and summary.
+            _read_streaming_body(response)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         conversation.refresh_from_db()
@@ -388,6 +459,7 @@ class ChatApiTests(APITestCase):
     def test_update_feedback_updates_latest_assistant_feedback(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
         conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
             title='反馈测试',
             user=self.user,
         )

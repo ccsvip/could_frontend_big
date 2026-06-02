@@ -10,7 +10,7 @@
 
 - `web/`：后台管理 SPA（React 18 + Vite + Antd + Tailwind + Zustand），登录后管理设备、资源、知识库、AI 供应商和聊天工作台。
 - `backend/`：Django 5.2 + DRF + simplejwt + drf-spectacular + SimpleUI 后台 + Celery 5.5 + httpx 异步客户端 + uvicorn ASGI 入口。
-- `docker-compose.yaml`：7 容器编排（db、redis、backend、celery_worker、celery_beat、flower、web）。
+- `docker-compose.yaml`：6 容器编排（db、redis、backend、celery_worker、celery_beat、web）。Celery 监控走 Django admin →「任务执行结果」/「周期任务」（`django-celery-beat` + `django-celery-results`），**没有** flower 服务。
 
 ## 入口与启动
 
@@ -24,12 +24,12 @@
 
 - `solin_backend` 暴露 `${API_PORT}:8000`，REST 前缀 `/api/v1/*`，admin 在 `/admin/`，OpenAPI 在 `/api/docs/`，媒体在 `/media/`，静态在 `/static/`。
 - `solin_web` 暴露 `${WEB_PORT}:5173`，vite 开发态。
-- `solin_flower` 暴露 `${FLOWER_PORT}:5555`，Celery 监控面板。
+- Celery worker / beat **不**对外暴露端口，监控走 `/admin/django_celery_results/` 与 `/admin/django_celery_beat/`。
 
 ## 关键依赖与配置
 
 - 容器栈：postgres:16-alpine、redis:7-alpine、Python 3 + Django + Celery（自构建）、Node + Vite（自构建）
-- 配置：根 `.env`（**仅** 5 个 `*_PORT`）、`backend/.env`（业务运行时变量）、`web/.env`（vite 构建/运行时变量）
+- 配置：根 `.env`（**仅** 4 个宿主端口 `WEB_PORT`/`API_PORT`/`DB_PORT`/`REDIS_PORT`）、`backend/.env`（业务运行时变量）、`web/.env`（vite 构建/运行时变量）
 - 构建参数：`APT_MIRROR` / `APT_SECURITY_MIRROR` / `PIP_INDEX_URL`（默认阿里云 Debian + 清华 PyPI），通过 `x-backend-build.args` 注入
 
 ## 数据模型
@@ -76,9 +76,80 @@
 - `web/src/views/AGENTS.md`
 - `web/src/views/command-management/AGENTS.md`
 - `backend/config/AGENTS.md`
+- `backend/apps/accounts/AGENTS.md`
 - `backend/apps/ai_models/AGENTS.md`
+- `backend/apps/devices/AGENTS.md`
+- `backend/apps/knowledge_base/AGENTS.md`
 - `backend/apps/resources/AGENTS.md`
+- `backend/apps/tenants/AGENTS.md`（多租户隔离地基：三道防线、三级菜单、员工管理）
 
 ## 变更记录 (Changelog)
 
 - 2026-05-28：初始化根级 AGENTS.md / CLAUDE.md，承接子模块 `[根目录](../AGENTS.md)` / `[根目录](../CLAUDE.md)` 的链接锚点；专注 compose 编排、端口映射、双 `.env` 边界与跨模块联调 FAQ，不重复子模块内容。
+- 2026-05-29：纠正容器栈描述（实际 6 容器，无 flower）、根 `.env` 端口数量（4 个：WEB/API/DB/REDIS_PORT），删除 `solin_flower` 入口表述；同步 `accounts` / `devices` / `knowledge_base` 子 AGENTS.md 链接。
+
+## 务必遵循
+
+Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+
+**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+
+## 1. Think Before Coding
+
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
+
+Before implementing:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+## 2. Simplicity First
+
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+## 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+---
+
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.

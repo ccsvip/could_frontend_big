@@ -1,4 +1,5 @@
 import {
+  ApartmentOutlined,
   AudioOutlined,
   CheckCircleOutlined,
   CloudOutlined,
@@ -7,6 +8,7 @@ import {
   EnvironmentOutlined,
   ExportOutlined,
   FileImageOutlined,
+  FileSearchOutlined,
   FileTextOutlined,
   LockOutlined,
   LogoutOutlined,
@@ -19,6 +21,7 @@ import {
   RobotOutlined,
   SolutionOutlined,
   SoundOutlined,
+  TeamOutlined,
   ThunderboltOutlined,
   VideoCameraOutlined,
 } from '@ant-design/icons';
@@ -28,6 +31,7 @@ import dayjs, { type Dayjs } from 'dayjs';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { changePasswordRequest, type ChangePasswordPayload } from '../api/modules/auth';
+import { fetchTenants, type TenantRecord } from '../api/modules/tenants';
 import { BrandMark } from '../components/brand-mark';
 import { useAuthStore, type AppMenu } from '../store/auth';
 
@@ -40,6 +44,8 @@ const SIDEBAR_COLLAPSE_STORAGE_KEY = 'app:sidebar-collapsed';
 
 const menuIconMap = {
   DesktopOutlined: <DesktopOutlined />,
+  ApartmentOutlined: <ApartmentOutlined />,
+  TeamOutlined: <TeamOutlined />,
   SolutionOutlined: <SolutionOutlined />,
   PictureOutlined: <PictureOutlined />,
   VideoCameraOutlined: <VideoCameraOutlined />,
@@ -52,6 +58,7 @@ const menuIconMap = {
   SoundOutlined: <SoundOutlined />,
   MessageOutlined: <MessageOutlined />,
   FileImageOutlined: <FileImageOutlined />,
+  FileSearchOutlined: <FileSearchOutlined />,
   NotificationOutlined: <NotificationOutlined />,
   EnvironmentOutlined: <EnvironmentOutlined />,
   ExportOutlined: <ExportOutlined />,
@@ -59,6 +66,94 @@ const menuIconMap = {
 
 const hiddenMenuPaths = new Set(['/commands/task-lists', 'commands/task-lists']);
 const commandRootPaths = new Set(['/commands', 'commands']);
+
+// 平台超管「按公司浏览」时，每家公司可下钻的业务模块。segment 对应 /tenants/:tenantId/<segment> 子路由，
+// 图标与中文名复用 menuIconMap 风格，保持与后端 menus 渲染一致的观感。
+type SuperAdminTenantModule = {
+  segment: string;
+  label: string;
+  icon: keyof typeof menuIconMap;
+  children?: ReadonlyArray<SuperAdminTenantModule>;
+};
+
+const SUPER_ADMIN_TENANT_MODULES: ReadonlyArray<SuperAdminTenantModule> = [
+  { segment: 'devices', label: '设备管理', icon: 'DesktopOutlined' },
+  {
+    segment: 'resources',
+    label: '资源管理',
+    icon: 'PictureOutlined',
+    children: [
+      { segment: 'images', label: '背景图片管理', icon: 'PictureOutlined' },
+      { segment: 'videos', label: '视频管理', icon: 'VideoCameraOutlined' },
+      { segment: 'scrolling-texts', label: '滚动文本', icon: 'NotificationOutlined' },
+      { segment: 'voice-tones', label: '音色管理', icon: 'CustomerServiceOutlined' },
+      { segment: 'models', label: '模型管理', icon: 'RobotOutlined' },
+    ],
+  },
+  { segment: 'knowledge-base', label: '知识库', icon: 'FileTextOutlined' },
+  { segment: 'commands', label: '指令管理', icon: 'ThunderboltOutlined' },
+  {
+    segment: 'ai-models',
+    label: 'AI大模型',
+    icon: 'RobotOutlined',
+    children: [
+      { segment: 'asr', label: 'ASR管理', icon: 'AudioOutlined' },
+      { segment: 'llm', label: 'LLM管理', icon: 'CloudOutlined' },
+      { segment: 'tts', label: 'TTS管理', icon: 'SoundOutlined' },
+      { segment: 'chat', label: '聊天室', icon: 'MessageOutlined' },
+    ],
+  },
+];
+
+const buildSuperAdminTenantModuleMenus = (
+  tenantId: number,
+  modules: ReadonlyArray<SuperAdminTenantModule>,
+  parentSegment = '',
+): AppMenu[] =>
+  modules.map((module) => {
+    const segmentPath = parentSegment ? `${parentSegment}/${module.segment}` : module.segment;
+    const children = module.children
+      ? buildSuperAdminTenantModuleMenus(tenantId, module.children, segmentPath)
+      : undefined;
+
+    return {
+      key: `tenant-${tenantId}-${segmentPath}`,
+      label: module.label,
+      icon: module.icon,
+      path: `/tenants/${tenantId}/${segmentPath}`,
+      children: children && children.length > 0 ? children : undefined,
+    };
+  });
+
+// 构建超管专属导航树：租户管理(可展开→各公司→各公司业务模块)、账号申请管理、日志管理。
+// 与后端 menus 流程完全分流，仅在 hasPermission('tenant.management.view') 时启用。
+const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
+  {
+    key: 'tenants',
+    label: '租户管理',
+    icon: 'ApartmentOutlined',
+    path: '/tenants',
+    children: tenants.map((tenant) => ({
+      key: `tenant-${tenant.id}`,
+      label: tenant.name,
+      icon: 'TeamOutlined',
+      children: buildSuperAdminTenantModuleMenus(tenant.id, SUPER_ADMIN_TENANT_MODULES),
+    })),
+  },
+  {
+    key: 'account-applications',
+    label: '账号申请管理',
+    icon: 'SolutionOutlined',
+    path: '/account-applications',
+  },
+  {
+    key: 'logs',
+    label: '日志管理',
+    icon: 'FileSearchOutlined',
+    path: '/logs',
+  },
+];
+
 const commandWorkspacePaths = new Set(['/commands/groups', 'commands/groups']);
 const commandInlineWorkspacePaths = new Set(['/commands/control', 'commands/control', '/commands/tasks', 'commands/tasks']);
 
@@ -101,8 +196,9 @@ const normalizeSidebarMenus = (menus: AppMenu[]): AppMenu[] => {
 const buildMenuItem = (
   menu: AppMenu,
   navigate: (path: string) => void,
+  toggleOpenBranch: (key: string) => void,
 ): NonNullable<MenuProps['items']>[number] => {
-  const children = menu.children?.map((child) => buildMenuItem(child, navigate)).filter(Boolean);
+  const children = menu.children?.map((child) => buildMenuItem(child, navigate, toggleOpenBranch)).filter(Boolean);
   const hasChildren = Boolean(children && children.length > 0);
 
   return {
@@ -111,6 +207,7 @@ const buildMenuItem = (
     label: menu.label,
     children: hasChildren ? children : undefined,
     popupClassName: hasChildren ? 'app-sidebar-menu-popup' : undefined,
+    onTitleClick: hasChildren ? () => toggleOpenBranch(menu.key) : undefined,
     onClick: hasChildren ? undefined : () => navigate(menu.path || menu.key),
   };
 };
@@ -139,6 +236,25 @@ const findMenuTrail = (menus: AppMenu[], pathname: string, ancestors: AppMenu[] 
   return null;
 };
 
+const findMenuTrailByKey = (menus: AppMenu[], key: string, ancestors: AppMenu[] = []): AppMenu[] | null => {
+  for (const menu of menus) {
+    const trail = [...ancestors, menu];
+
+    if (menu.key === key) {
+      return trail;
+    }
+
+    if (menu.children && menu.children.length > 0) {
+      const childTrail = findMenuTrailByKey(menu.children, key, trail);
+      if (childTrail) {
+        return childTrail;
+      }
+    }
+  }
+
+  return null;
+};
+
 const useLiveNow = (): Dayjs => {
   const [now, setNow] = useState(() => dayjs());
 
@@ -155,7 +271,6 @@ type SidebarContentProps = {
   menuItems: MenuProps['items'];
   selectedMenuKey: string;
   openKeys: string[];
-  onOpenChange: (keys: string[]) => void;
   collapsed?: boolean;
   onToggleCollapsed?: () => void;
   showToggle?: boolean;
@@ -165,7 +280,6 @@ const SidebarContent = ({
   menuItems,
   selectedMenuKey,
   openKeys,
-  onOpenChange,
   collapsed = false,
   onToggleCollapsed,
   showToggle = false,
@@ -205,7 +319,7 @@ const SidebarContent = ({
       <Menu
         mode="inline"
         selectedKeys={[selectedMenuKey]}
-        {...(collapsed ? {} : { openKeys, onOpenChange: (keys: string[]) => onOpenChange(keys) })}
+        {...(collapsed ? {} : { openKeys })}
         items={menuItems}
         className="app-sidebar-menu !border-none !bg-transparent"
         theme="dark"
@@ -239,6 +353,9 @@ export const DashboardLayout = () => {
   const isDesktop = Boolean(screens.lg);
   const now = useLiveNow();
   const { username, role, logout, menus } = useAuthStore();
+  const hasPermission = useAuthStore((state) => state.hasPermission);
+  const isSuperAdmin = hasPermission('tenant.management.view');
+  const [scopedTenants, setScopedTenants] = useState<TenantRecord[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [passwordSubmitting, setPasswordSubmitting] = useState(false);
@@ -299,8 +416,36 @@ export const DashboardLayout = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // 平台超管拉取公司列表，构建「按公司浏览」二级菜单；非超管不发起该请求。
+  useEffect(() => {
+    if (!isSuperAdmin) {
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const data = await fetchTenants({ page_size: 100 });
+        if (!cancelled) {
+          setScopedTenants(data.results);
+        }
+      } catch {
+        // 错误已由响应拦截器统一提示，这里只保证不抛出。
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isSuperAdmin]);
+
+  // 超管走「按公司浏览」自建导航树，与后端 menus 流程彻底分流；其余用户保持原有 menus 渲染。
   // 前端下线任务列表二级菜单，避免后端历史菜单配置继续渲染该入口。
-  const visibleMenus = useMemo(() => normalizeSidebarMenus(filterVisibleMenus(menus)), [menus]);
+  const visibleMenus = useMemo(
+    () =>
+      isSuperAdmin
+        ? buildSuperAdminMenus(scopedTenants)
+        : normalizeSidebarMenus(filterVisibleMenus(menus)),
+    [isSuperAdmin, scopedTenants, menus],
+  );
   const navigateFromMenu = useCallback(
     (path: string) => {
       navigate(path);
@@ -308,17 +453,33 @@ export const DashboardLayout = () => {
     },
     [navigate],
   );
-  const menuItems = useMemo<MenuProps['items']>(
-    () => visibleMenus.map((menu) => buildMenuItem(menu, navigateFromMenu)),
-    [navigateFromMenu, visibleMenus],
-  );
   const activeMenuTrail = useMemo(() => findMenuTrail(visibleMenus, location.pathname) ?? [], [location.pathname, visibleMenus]);
   const activeOpenKeys = useMemo(() => activeMenuTrail.slice(0, -1).map((menu) => menu.key), [activeMenuTrail]);
-  const [manualOpenKeys, setManualOpenKeys] = useState<string[]>([]);
-  const openKeys = useMemo(
-    () => Array.from(new Set([...manualOpenKeys, ...activeOpenKeys])),
-    [activeOpenKeys, manualOpenKeys],
+  const [manualOpenKeys, setManualOpenKeys] = useState<string[] | null>(null);
+  const openKeys = manualOpenKeys ?? activeOpenKeys;
+  const handleToggleOpenBranch = useCallback(
+    (key: string) =>
+      setManualOpenKeys((previousOpenKeys) => {
+        const trail = findMenuTrailByKey(visibleMenus, key);
+        if (!trail) {
+          return previousOpenKeys ?? activeOpenKeys;
+        }
+
+        const trailKeys = trail.map((menu) => menu.key);
+        const currentOpenKeys = previousOpenKeys ?? activeOpenKeys;
+        return currentOpenKeys.includes(key) ? trailKeys.slice(0, -1) : trailKeys;
+      }),
+    [activeOpenKeys, visibleMenus],
   );
+  const menuItems = useMemo<MenuProps['items']>(
+    () => visibleMenus.map((menu) => buildMenuItem(menu, navigateFromMenu, handleToggleOpenBranch)),
+    [handleToggleOpenBranch, navigateFromMenu, visibleMenus],
+  );
+
+  useEffect(() => {
+    setManualOpenKeys(null);
+  }, [location.pathname]);
+
   const currentMenuLabel = activeMenuTrail.length > 0 ? activeMenuTrail[activeMenuTrail.length - 1].label : null;
   const selectedMenuKey = activeMenuTrail.length > 0 ? activeMenuTrail[activeMenuTrail.length - 1].key : location.pathname;
   const breadcrumbText = activeMenuTrail.length > 1 ? activeMenuTrail.map((menu) => menu.label).join(' / ') : '后台总览';
@@ -367,7 +528,6 @@ export const DashboardLayout = () => {
       menuItems={menuItems}
       selectedMenuKey={selectedMenuKey}
       openKeys={openKeys}
-      onOpenChange={setManualOpenKeys}
       collapsed={isDesktop && sidebarCollapsed}
       onToggleCollapsed={handleToggleSidebar}
       showToggle={isDesktop}

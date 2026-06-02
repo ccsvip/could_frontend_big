@@ -57,6 +57,8 @@ export const LoginPage = () => {
         role: response.user.role,
         permissions: response.user.permissions,
         menus: response.user.menus,
+        tenant: response.user.tenant,
+        mustChangePassword: response.user.must_change_password,
       });
       message.success(response.message || '登录成功');
       navigate('/devices', { replace: true });

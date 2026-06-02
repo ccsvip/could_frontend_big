@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>多租户改造设计稿 · solin / could_frontend</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
+</script>
+<style>
+  :root { --teal: #0d9488; --slate: #0f172a; --ink: #1e293b; --mute: #64748b; --line: #e2e8f0; --bg: #f8fafc; }
+  html, body { background: var(--bg); color: var(--ink); }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+  .tag { display:inline-flex; align-items:center; gap:.35rem; padding:.18rem .55rem; border-radius:.4rem; font-size:.72rem; font-weight:600; letter-spacing:.02em; }
+  .tag.must  { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
+  .tag.ask   { background:#fffbeb; color:#a16207; border:1px solid #fde68a; }
+  .tag.rec   { background:#ecfeff; color:#0e7490; border:1px solid #a5f3fc; }
+  .tag.note  { background:#eef2ff; color:#3730a3; border:1px solid #c7d2fe; }
+  .tag.cost  { background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:.75rem; }
+  .card .body { padding: 1rem 1.25rem; }
+  .opt { border-left: 3px solid var(--line); padding: .35rem .75rem .55rem .75rem; margin-bottom:.5rem; }
+  .opt.win { border-left-color: var(--teal); background: linear-gradient(90deg, #f0fdfa 0%, transparent 80%); }
+  .opt h4 { font-weight:600; }
+  .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background:#f1f5f9; padding: 1px 6px; border-radius: 4px; font-size: .82em; border: 1px solid #e2e8f0; }
+  .grid-decision { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  @media (max-width: 900px) { .grid-decision { grid-template-columns: 1fr; } }
+  .anchor-btn { transition: all .15s; }
+  .anchor-btn:hover { color: var(--teal); transform: translateX(2px); }
+  table.matrix { width:100%; border-collapse: collapse; font-size:.88rem; }
+  table.matrix th, table.matrix td { border:1px solid var(--line); padding:.45rem .65rem; text-align:left; vertical-align: top; }
+  table.matrix th { background: #f8fafc; font-weight:600; }
+  table.matrix tr.win { background: #f0fdfa; }
+  .mermaid { background:#fff; border-radius:.75rem; border:1px solid var(--line); padding: 1rem; }
+  .pill { display:inline-block; padding: 1px 8px; border-radius: 999px; font-size: .72rem; font-weight: 600; }
+  .pill.ok { background:#dcfce7; color:#166534; }
+  .pill.no { background:#fee2e2; color:#991b1b; }
+  .pill.mid { background:#fef3c7; color:#92400e; }
+  ol.qs li { margin-bottom: .85rem; }
+  .qbox { background:#fffbeb; border:1px solid #fde68a; padding: .85rem 1rem; border-radius: .55rem; }
+  details > summary { cursor: pointer; font-weight: 600; }
+  details[open] > summary { color: var(--teal); }
+  .chip { display:inline-block; padding: 1px 8px; margin: 1px 2px; border-radius: 4px; font-size: .76rem; background:#f1f5f9; border:1px solid #e2e8f0; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<header class="border-b border-slate-200 bg-white">
+  <div class="max-w-6xl mx-auto px-6 py-6">
+    <div class="flex items-baseline justify-between">
+      <div>
+        <div class="text-xs uppercase tracking-widest text-teal-700 font-semibold">Multi-Tenancy · Architecture Design</div>
+        <h1 class="text-2xl font-bold mt-1 text-slate-900">solin 多租户改造设计稿</h1>
+        <p class="text-slate-500 text-sm mt-1">从「单实例平台」迁到「一个用户=一个公司，公司间数据 100% 隔离，公司管理员能管自己公司员工」</p>
+      </div>
+      <div class="text-right text-xs text-slate-500">
+        <div>状态：<span class="pill mid">待对齐</span></div>
+        <div class="mt-1">作者：Sisyphus</div>
+        <div>更新：2026-05-28</div>
+      </div>
+    </div>
+    <div class="mt-4 flex flex-wrap gap-2 text-sm">
+      <a href="#goals" class="anchor-btn text-slate-600">① 目标与非目标</a>·
+      <a href="#decisions" class="anchor-btn text-slate-600">② 关键决策点</a>·
+      <a href="#model" class="anchor-btn text-slate-600">③ 数据模型</a>·
+      <a href="#flow" class="anchor-btn text-slate-600">④ 鉴权流程</a>·
+      <a href="#impact" class="anchor-btn text-slate-600">⑤ 受影响表清单</a>·
+      <a href="#migrate" class="anchor-btn text-slate-600">⑥ 迁移策略</a>·
+      <a href="#risks" class="anchor-btn text-slate-600">⑦ 风险</a>·
+      <a href="#open-q" class="anchor-btn text-slate-600">⑧ 等你拍板</a>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 py-8 space-y-12">
+
+<!-- ====================================================================== -->
+<section id="goals">
+  <h2 class="text-xl font-bold text-slate-900 mb-3">① 目标与非目标</h2>
+  <div class="grid-decision">
+    <div class="card"><div class="body">
+      <h3 class="font-semibold text-slate-800 mb-2 flex items-center gap-2"><span class="pill ok">DO</span>设计目标</h3>
+      <ul class="text-sm space-y-1.5 text-slate-700">
+        <li>· <b>账号申请通过 = 创建公司</b>。申请人成为该公司唯一的「公司管理员」。</li>
+        <li>· 公司间数据 <b>100% 隔离</b>，没有任何业务数据跨公司共享。</li>
+        <li>· 公司管理员可在自己公司内 <b>创建 / 停用 / 重置密码</b> 员工账号。</li>
+        <li>· 员工登录后只能看到所属公司的数据，看不到任何其他公司的影子。</li>
+        <li>· superuser（平台运维）仍能登录 <span class="kbd">/admin/</span> 跨公司维护。</li>
+        <li>· 现有业务功能（设备 / 资源 / 知识库 / AI 聊天 / 控制指令 / 点位）<b>全部</b>纳入隔离边界。</li>
+      </ul>
+    </div></div>
+    <div class="card"><div class="body">
+      <h3 class="font-semibold text-slate-800 mb-2 flex items-center gap-2"><span class="pill no">DON'T</span>非目标</h3>
+      <ul class="text-sm space-y-1.5 text-slate-700">
+        <li>· <b>不</b>做跨公司"加好友 / 共享资源 / 邀请链接"等公开协作能力。</li>
+        <li>· <b>不</b>做单 SSO（暂不接微信扫码 / 飞书 / 钉钉登录）。</li>
+        <li>· <b>不</b>做计费 / 用量统计 / 套餐升级（这一版只做隔离骨架，计费可后置）。</li>
+        <li>· <b>不</b>做"员工跨公司任职"。一个 user 只能属于一个 tenant。</li>
+        <li>· <b>不</b>承诺"公司管理员可看后台 Django admin"。运维面板继续是 superuser 专属。</li>
+      </ul>
+    </div></div>
+  </div>
+</section>
+
+<!-- ====================================================================== -->
+<section id="decisions">
+  <h2 class="text-xl font-bold text-slate-900 mb-3">② 关键决策点（每条都要你拍板）</h2>
+  <p class="text-sm text-slate-500 mb-5">下面 7 个决策都会在本节给「候选 + 推荐 + 代价」。<span class="tag rec">⭐</span> 是我推荐项，但你说了算。</p>
+
+  <!-- D1 -->
+  <div class="card mb-5"><div class="body">
+    <div class="flex items-baseline justify-between">
+      <h3 class="text-lg font-bold text-slate-900">D1 · 租户身份识别（用户登录时怎么知道是哪家公司）</h3>
+      <span class="tag must">最关键</span>
+    </div>
+    <p class="text-sm text-slate-600 mt-1">这条决定登录页 UX、URL 形态、CORS / Cookie 边界。一旦定了很难改。</p>
+
+    <div class="opt">
+      <h4>选项 A · 子域名隔离 <span class="kbd">acme.solin.com / bar.solin.com</span></h4>
+      <p class="text-sm text-slate-600 mt-1">每家公司独占子域；浏览器 Cookie / localStorage 天然隔离；视觉品牌强。<br>
+      <span class="tag cost">代价</span> 通配符 SSL（<span class="kbd">*.solin.com</span>）、DNS 自动化、反代规则、CORS 全要重写；本地开发要改 hosts。</p>
+    </div>
+
+    <div class="opt">
+      <h4>选项 B · URL 路径前缀 <span class="kbd">/t/acme/devices</span></h4>
+      <p class="text-sm text-slate-600 mt-1">登录页 <span class="kbd">/t/acme/login</span> 自带租户 hint；同一域名所有公司，零 DNS 改动。<br>
+      <span class="tag cost">代价</span> 前端路由全部要套 <span class="kbd">/t/:slug/*</span>，所有现有 14 个 view 路由要改；登录态切换要清楚 slug。</p>
+    </div>
+
+    <div class="opt win">
+      <h4>选项 C · 用户名/手机号全局唯一，登录时由后端反查 tenant <span class="tag rec">⭐ 推荐</span></h4>
+      <p class="text-sm text-slate-600 mt-1">登录页保持 <span class="kbd">用户名+密码</span> 不变；后端 <span class="kbd">/auth/login/</span> 拿到 user 后从 <span class="kbd">user.tenant</span> 装到 JWT claim；所有后续请求自动按 tenant 过滤。<br>
+      <span class="tag rec">优点</span> 前端登录页 0 改动；URL/Cookie 不变。和当前申请审批流自然衔接（一个 user → 一个 tenant）。<br>
+      <span class="tag cost">代价</span> 用户名"全局唯一"约束保留 — 公司A 已有 <span class="kbd">jack</span> 时，公司B 不能再用 <span class="kbd">jack</span>。员工创建时要前端友好地报"用户名已被占用"。</p>
+    </div>
+
+    <div class="opt">
+      <h4>选项 D · 公司 code + 用户名 二段登录 <span class="kbd">[公司 code] [用户名] [密码]</span></h4>
+      <p class="text-sm text-slate-600 mt-1">登录字面上"进入自己的公司"。username 可以公司内唯一（不同公司可同名）。<br>
+      <span class="tag cost">代价</span> 登录页要加一栏「公司 code」，员工记不住或拼错；和现有"申请审批 → 直接登录"流程脱节，需要给每家公司分配一个 code 并通知到所有员工；JWT 还得带 tenant_id。</p>
+    </div>
+
+    <div class="qbox text-sm">
+      <span class="tag ask">需你确认</span>
+      偏好选项 <b>C</b>（用户名全局唯一）还是 <b>D</b>（公司 code 二段登录）？字面"进入自己的公司"听起来像 D，但 C 落地最快、改动面最小，登录体验也是单输入框。
+    </div>
+  </div></div>
+
+  <!-- D2 -->
+  <div class="card mb-5"><div class="body">
+    <div class="flex items-baseline justify-between">
+      <h3 class="text-lg font-bold text-slate-900">D2 · 数据隔离粒度</h3>
+      <span class="tag must">最关键</span>
+    </div>
+    <p class="text-sm text-slate-600 mt-1">"100% 隔离"在工程上有三档实现，强度递增、运维成本递增。</p>
+
+    <table class="matrix mt-3">
+      <thead><tr><th style="width:18%">方案</th><th>实现</th><th style="width:14%">隔离强度</th><th style="width:18%">运维成本</th><th style="width:14%">迁移工作量</th></tr></thead>
+      <tbody>
+        <tr class="win">
+          <td><b>行级隔离</b><br><span class="tag rec">⭐ 推荐</span></td>
+          <td>所有业务表加 <span class="kbd">tenant_id</span> 列；DRF ViewSet 基类自动 <span class="kbd">filter(tenant=request.tenant)</span>；<br>Manager / QuerySet / Serializer.create 三处各一道防线。</td>
+          <td><span class="pill mid">应用层强制</span></td>
+          <td><span class="pill ok">低</span> 单库单 schema</td>
+          <td><span class="pill mid">大</span> 14 张业务表 +<br>序列化器 + 视图集</td>
+        </tr>
+        <tr>
+          <td>schema-per-tenant</td>
+          <td>django-tenants：每家公司一个 Postgres schema；中间件按 host/header 切 schema。</td>
+          <td><span class="pill ok">DB 层强制</span></td>
+          <td><span class="pill no">高</span> 每加一家公司要 migrate；备份 / 监控按 schema 拆</td>
+          <td><span class="pill mid">中</span></td>
+        </tr>
+        <tr>
+          <td>DB-per-tenant</td>
+          <td>每家公司独立 Postgres database。</td>
+          <td><span class="pill ok">物理强制</span></td>
+          <td><span class="pill no">极高</span> 库存 / 备份 / 连接池 N×</td>
+          <td><span class="pill no">极大</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="text-sm text-slate-600 mt-3"><b>推荐行级隔离的理由：</b>当前已经是单 Postgres 单 schema 架构，行级方案不引入新的运维形态；防线放在 DRF 视图基类 + ORM Manager，配合代码审计就足够"100% 隔离"。等公司数到三位数、合规要求 schema 隔离时再切。</p>
+
+    <div class="qbox text-sm">
+      <span class="tag ask">需你确认</span>
+      行级隔离能不能接受？如果你的"100% 隔离"是合规/审计意义上的<b>物理隔离</b>，那就要做 schema-per-tenant，工作量翻倍但符合最高合规预期。
+    </div>
+  </div></div>
+
+  <!-- D3 -->
+  <div class="card mb-5"><div class="body">
+    <h3 class="text-lg font-bold text-slate-900">D3 · 公司管理员的产生方式</h3>
+    <div class="opt win">
+      <h4>当前流程的最小修改 <span class="tag rec">⭐ 推荐</span></h4>
+      <ol class="text-sm text-slate-700 mt-1 list-decimal pl-5 space-y-1">
+        <li>用户在 <span class="kbd">/login → 申请账号</span> 提交：用户名 + 真名 + <b>企业名称</b> + 手机号 + 密码。</li>
+        <li>superuser 在 Django admin <span class="kbd">/admin/accounts/accountapplication/</span> 审核。</li>
+        <li><b>审核通过</b>触发：
+          <ul class="list-disc pl-5 mt-1">
+            <li>新建 <span class="kbd">Tenant(name=企业名称, code=auto-slug)</span></li>
+            <li>新建 <span class="kbd">User(username=申请的用户名, password=申请时的哈希)</span></li>
+            <li>把这个 User 设为 <span class="kbd">Tenant.admin_user</span>，同时 <span class="kbd">User.tenant=新 Tenant</span></li>
+            <li>给这个 User 自动绑 <span class="kbd">UserRole(role=tenant_admin)</span></li>
+          </ul>
+        </li>
+      </ol>
+      <p class="text-sm text-slate-600 mt-2">这条路保留了"申请-审核-下发"的现有 UX，前端 / 邮件 / 飞书通知都不变。</p>
+    </div>
+    <div class="opt">
+      <h4>替代方案：自助注册即开公司</h4>
+      <p class="text-sm text-slate-600">省掉人工审核，一申请即开通。但容易被刷库 / 测试数据污染；和"账号申请审核"现有产品形态冲突。</p>
+    </div>
+  </div></div>
+
+  <!-- D4 -->
+  <div class="card mb-5"><div class="body">
+    <h3 class="text-lg font-bold text-slate-900">D4 · 员工的产生方式</h3>
+    <div class="opt win">
+      <h4>方案 A：公司管理员后台手工建号 <span class="tag rec">⭐ 推荐</span></h4>
+      <p class="text-sm text-slate-700">前端给公司管理员加一个「员工管理」页 → 输入用户名/真名/手机号/初始密码 → 立即创建。员工拿到管理员告知的初始密码登录后强制改密。</p>
+      <p class="text-sm text-slate-600 mt-1">最简、可控、不需要邮件/短信通道。</p>
+    </div>
+    <div class="opt">
+      <h4>方案 B：管理员发邀请链接</h4>
+      <p class="text-sm text-slate-600">管理员发一个一次性 token URL，员工访问后自己设密码。需要邮件/短信发送通道，先 skip 不做。</p>
+    </div>
+    <div class="opt">
+      <h4>方案 C：员工自己注册（提交"想加入 XX 公司"申请）</h4>
+      <p class="text-sm text-slate-600">公司管理员审批员工申请。流程长、容易和"申请开公司"混淆，PRD 不推荐。</p>
+    </div>
+    <div class="qbox text-sm">
+      <span class="tag ask">需你确认</span>
+      <b>员工密码强制首次修改</b>这个安全增强要做吗？做的话登录响应里要带 <span class="kbd">must_change_password</span> 标志，前端拦截。
+    </div>
+  </div></div>
+
+  <!-- D5 -->
+  <div class="card mb-5"><div class="body">
+    <h3 class="text-lg font-bold text-slate-900">D5 · 公司内部角色 / 权限</h3>
+    <div class="opt">
+      <h4>方案 A：保持当前全局 Role 表，给每家公司预绑同一个 <span class="kbd">simple_user</span></h4>
+      <p class="text-sm text-slate-600">公司管理员不能新建/编辑角色，所有员工权限完全一致。简单但僵硬。</p>
+    </div>
+    <div class="opt win">
+      <h4>方案 B：两层角色 — 平台预定义 + 公司可派生 <span class="tag rec">⭐ 推荐</span></h4>
+      <p class="text-sm text-slate-700">Role 表加 <span class="kbd">tenant</span> 字段（null = 平台预定义模板）。公司管理员复制一个模板成自己的 Role 树，可调菜单可调权限点。</p>
+      <p class="text-sm text-slate-600 mt-1">列表 / 创建 / 修改 Role 的 API 自动按 <span class="kbd">tenant=request.tenant OR tenant IS NULL（只读）</span> 过滤。</p>
+    </div>
+    <div class="opt">
+      <h4>方案 C：完全公司独立 Role 表</h4>
+      <p class="text-sm text-slate-600">Role 必须 <span class="kbd">tenant</span> 非空，每家公司必须自己建角色。最干净但首单接入麻烦。</p>
+    </div>
+  </div></div>
+
+  <!-- D6 -->
+  <div class="card mb-5"><div class="body">
+    <h3 class="text-lg font-bold text-slate-900">D6 · superuser 跨租户访问</h3>
+    <div class="opt win">
+      <h4>方案 A：superuser 走 Django admin 跨租户；前端业务 API 仍按 tenant 过滤 <span class="tag rec">⭐ 推荐</span></h4>
+      <p class="text-sm text-slate-700"><span class="kbd">/admin/</span> 自带跨租户视图（superuser 不属于任何 tenant，TenantManager 检测到 superuser 直接 <span class="kbd">.all()</span>）。<br>前端业务 API 一视同仁 — superuser 用前端同样得选一家公司"impersonate"。</p>
+    </div>
+    <div class="opt">
+      <h4>方案 B：superuser 在前端有"切换公司"下拉</h4>
+      <p class="text-sm text-slate-600">JWT claim 里带 <span class="kbd">acting_tenant_id</span>。功能强但增加前端复杂度。</p>
+    </div>
+  </div></div>
+
+  <!-- D7 -->
+  <div class="card mb-5"><div class="body">
+    <h3 class="text-lg font-bold text-slate-900">D7 · 现有数据怎么办（迁移当下的 admin / solin / yrl / xthy / jack）</h3>
+    <div class="opt">
+      <h4>方案 A：不迁移，drop+重置</h4>
+      <p class="text-sm text-slate-600">最干净。已有的 5 个用户和所有业务数据全部清空。开发期可以接受，<b>生产已上线就不行</b>。</p>
+    </div>
+    <div class="opt win">
+      <h4>方案 B：建一个「默认公司」收容现有数据 <span class="tag rec">⭐ 推荐</span></h4>
+      <p class="text-sm text-slate-700">data migration 中：
+        <ol class="list-decimal pl-5 mt-1">
+          <li>建 <span class="kbd">Tenant(name='默认公司', code='default', is_legacy=True)</span></li>
+          <li>所有现有 User（除 superuser admin）<span class="kbd">tenant=默认公司</span></li>
+          <li>所有现有业务行（device/resource/knowledge/...）<span class="kbd">tenant=默认公司</span></li>
+        </ol>
+      </p>
+      <p class="text-sm text-slate-600 mt-2">用 Django data migration 一次性回填，可逆（reverse 把 tenant 字段空掉即可）。</p>
+    </div>
+  </div></div>
+
+</section>
+
+<!-- ====================================================================== -->
+<section id="model">
+  <h2 class="text-xl font-bold text-slate-900 mb-3">③ 数据模型变更（基于 D1=C / D2=行级 / D5=两层角色 的推荐组合）</h2>
+
+  <div class="mermaid">
+classDiagram
+    class Tenant {
+      +id: BigAuto
+      +name: str
+      +code: str (unique slug)
+      +admin_user: FK User (one-to-one)
+      +is_legacy: bool
+      +is_active: bool
+      +created_at
+    }
+    class User {
+      +username (global unique)
+      +password (hash)
+      +is_active / is_staff / is_superuser
+      +tenant: FK Tenant (nullable for superuser)
+    }
+    class AccountApplication {
+      +username
+      +applicant_name
+      +enterprise_name
+      +phone
+      +password (hash)
+      +reason
+      +status
+      +tenant: FK Tenant (set on approval)
+    }
+    class Role {
+      +name
+      +code
+      +tenant: FK Tenant (null = 平台模板)
+      +is_template: bool
+    }
+    class UserRole {
+      +user: FK User
+      +role: FK Role
+    }
+    class Device {
+      +tenant: FK Tenant (NEW)
+      +...原有字段
+    }
+    class Resource {
+      +tenant: FK Tenant (NEW)
+      +...
+    }
+    class KnowledgeDocument {
+      +tenant: FK Tenant (NEW)
+      +...
+    }
+    class ChatConversation {
+      +tenant: FK Tenant (NEW)
+      +...
+    }
+
+    Tenant "1" --> "1" User : admin_user
+    User "n" --> "1" Tenant : tenant
+    AccountApplication "n" --> "0..1" Tenant
+    Role "n" --> "0..1" Tenant
+    UserRole "n" --> "1" User
+    UserRole "n" --> "1" Role
+    Device "n" --> "1" Tenant
+    Resource "n" --> "1" Tenant
+    KnowledgeDocument "n" --> "1" Tenant
+    ChatConversation "n" --> "1" Tenant
+  </div>
+
+  <p class="text-sm text-slate-600 mt-4"><b>关键约束：</b></p>
+  <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
+    <li><span class="kbd">User.tenant</span> 为 <span class="kbd">null</span> 当且仅当 <span class="kbd">is_superuser=True</span>（DB CHECK 或 model clean）。</li>
+    <li><span class="kbd">Tenant.admin_user</span> 必须满足 <span class="kbd">admin_user.tenant_id == self.id</span>（model clean）。</li>
+    <li>所有业务表 <span class="kbd">on_delete=PROTECT</span> 或 <span class="kbd">CASCADE</span>—— 看 D8（公司删除策略，下面补一条）。</li>
+  </ul>
+
+  <div class="card mt-4"><div class="body">
+    <h4 class="font-semibold mb-2">D8 · 删除一家公司时怎么处理它的数据？</h4>
+    <div class="opt"><h4>软删（<span class="kbd">is_active=False</span>，保留所有数据）</h4></div>
+    <div class="opt win"><h4>双阶段：先停用 → 30 天后 hard delete (<span class="kbd">on_delete=CASCADE</span>) <span class="tag rec">⭐ 推荐</span></h4></div>
+    <div class="opt"><h4>立即硬删（<span class="kbd">CASCADE</span>）</h4></div>
+  </div></div>
+</section>
+
+<!-- ====================================================================== -->
+<section id="flow">
+  <h2 class="text-xl font-bold text-slate-900 mb-3">④ 鉴权流程时序</h2>
+
+  <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant U as 员工浏览器
+    participant FE as React SPA
+    participant API as DRF (uvicorn)
+    participant MW as TenantMiddleware
+    participant DB as Postgres
+    U->>FE: 输入 username + password
+    FE->>API: POST /auth/login/
+    API->>DB: User.objects.filter(username=...)
+    DB-->>API: User { id, tenant_id, role_binding }
+    API->>API: authenticate() → user
+    API->>API: 校验 user.is_active && user.tenant.is_active
+    API->>API: 签 JWT { sub, tenant_id, role_code }
+    API-->>FE: { access, refresh, user, tenant }
+    FE->>FE: store: { token, tenant, menus, permissions }
+    Note over FE,API: 后续每次业务请求
+    FE->>API: GET /devices/  (Authorization: Bearer ...)
+    API->>MW: decode JWT → request.tenant_id
+    MW->>API: 注入 request.tenant
+    API->>DB: Device.objects.filter(tenant=request.tenant)
+    DB-->>API: 仅本公司的设备
+    API-->>FE: 200 OK
+  </div>
+
+  <div class="card mt-4"><div class="body">
+    <h4 class="font-semibold mb-2">三道防线（任一层都能挡住跨租户读取）</h4>
+    <ol class="text-sm text-slate-700 list-decimal pl-5 space-y-1">
+      <li><b>JWT</b>：登录时把 <span class="kbd">tenant_id</span> 写进 access token claim，篡改即签名失败。</li>
+      <li><b>Manager</b>：给所有 tenant-scoped model 加 <span class="kbd">TenantQuerySet</span>，<span class="kbd">objects = TenantManager()</span>；调用前必须 <span class="kbd">.for_tenant(t)</span>，否则 <span class="kbd">RuntimeError</span>（开发模式立刻爆炸，生产模式记 sentry）。</li>
+      <li><b>ViewSet 基类</b>：<span class="kbd">TenantScopedViewSetMixin.get_queryset()</span> 强制 <span class="kbd">.for_tenant(self.request.tenant)</span>；同时 <span class="kbd">perform_create</span> 自动塞 <span class="kbd">tenant=self.request.tenant</span>，前端就算偷偷传也覆盖掉。</li>
+    </ol>
+  </div></div>
+</section>
+
+<!-- ====================================================================== -->
+<section id="impact">
+  <h2 class="text-xl font-bold text-slate-900 mb-3">⑤ 受影响的 14 张业务表清单（全部要加 tenant 字段）</h2>
+  <p class="text-sm text-slate-500 mb-3">每张表都要：① 加 <span class="kbd">tenant FK</span> ② 改 Manager ③ 改 ViewSet ④ 改 Serializer.create ⑤ data migration 回填默认公司。</p>
+
+  <table class="matrix">
+    <thead><tr><th>App</th><th>Model</th><th>当前文件</th><th style="width:30%">需要的工作</th></tr></thead>
+    <tbody>
+      <tr><td>devices</td><td>Device</td><td>apps/devices/models.py</td><td>加 tenant FK, 改 manager + viewset</td></tr>
+      <tr><td>resources</td><td>Resource (image/video)</td><td>apps/resources/models.py</td><td>同上 + admin filter</td></tr>
+      <tr><td>resources</td><td>VoiceTone</td><td>apps/resources/models.py</td><td>同上</td></tr>
+      <tr><td>resources</td><td>ModelAsset</td><td>apps/resources/models.py</td><td>同上</td></tr>
+      <tr><td>resources</td><td>ScrollingText</td><td>apps/resources/models.py</td><td>同上</td></tr>
+      <tr><td>resources</td><td>CommandGroup</td><td>apps/resources/command_models.py</td><td>同上</td></tr>
+      <tr><td>resources</td><td>ControlCommand</td><td>同上</td><td>同上</td></tr>
+      <tr><td>resources</td><td>TaskCommand</td><td>同上</td><td>同上</td></tr>
+      <tr><td>resources</td><td>Point</td><td>apps/resources/point_models.py</td><td>同上</td></tr>
+      <tr><td>knowledge_base</td><td>KnowledgeDocument</td><td>apps/knowledge_base/models.py</td><td>同上 + 文件目录按 tenant 切分</td></tr>
+      <tr><td>ai_models</td><td>LLMProvider</td><td>apps/ai_models/models.py</td><td>同上 / 或保持平台共享 (D9)</td></tr>
+      <tr><td>ai_models</td><td>ChatConversation</td><td>同上</td><td>必须按 tenant 隔离</td></tr>
+      <tr><td>ai_models</td><td>ChatMessage</td><td>同上</td><td>跟随 conversation 自动隔离</td></tr>
+      <tr><td>accounts</td><td>AccountApplication</td><td>apps/accounts/models.py</td><td>审核通过时建 Tenant 并回写</td></tr>
+    </tbody>
+  </table>
+
+  <div class="qbox text-sm mt-4">
+    <span class="tag ask">需你确认 D9</span>
+    <b>LLM 供应商配置（API Key 等）是平台公共的还是每家公司自配？</b>
+    <ul class="list-disc pl-5 mt-1">
+      <li>公共 → 公司不能改 key，平台一份配置，所有公司共用 GPT-4 / DeepSeek 额度。<b>但</b>"100% 隔离"和共享 key 矛盾。</li>
+      <li>公司自配 → 每家公司必须填自己的 API key 才能用 AI 聊天。</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ====================================================================== -->
+<section id="migrate">
+  <h2 class="text-xl font-bold text-slate-900 mb-3">⑥ 迁移策略（分 5 个 PR，渐进上线）</h2>
+
+  <div class="card"><div class="body">
+    <ol class="text-sm text-slate-700 list-decimal pl-5 space-y-3">
+      <li><b>PR-1：基础设施</b>
+        <ul class="list-disc pl-5 mt-1 text-slate-600">
+          <li>新增 <span class="kbd">apps/tenants/</span>（Tenant 模型 + admin + serializer + 管理 API）</li>
+          <li>新增 <span class="kbd">User.tenant</span> 字段（null 允许）+ data migration 建「默认公司」+ 回填所有非 superuser</li>
+          <li>新增 <span class="kbd">TenantMiddleware</span>、<span class="kbd">TenantManager</span>、<span class="kbd">TenantScopedViewSetMixin</span> 工具类</li>
+          <li>JWT payload 增加 <span class="kbd">tenant_id</span> claim</li>
+          <li>测试覆盖：跨租户访问 → 404；同租户访问 → 200。</li>
+        </ul>
+      </li>
+      <li><b>PR-2：业务表批量加 tenant 字段</b>
+        <ul class="list-disc pl-5 mt-1 text-slate-600">
+          <li>14 张表逐张加 <span class="kbd">tenant FK</span>（先可空，data migration 回填后改非空）</li>
+          <li>所有 ViewSet 切到 <span class="kbd">TenantScopedViewSetMixin</span></li>
+          <li>所有 Serializer.create 移除前端传入的 tenant 字段（防伪造）</li>
+          <li>测试矩阵：每个 endpoint × 跨租户场景 = 必须 404</li>
+        </ul>
+      </li>
+      <li><b>PR-3：申请审批改造 + 自动建 Tenant</b>
+        <ul class="list-disc pl-5 mt-1 text-slate-600">
+          <li>AccountApplication 审核通过 → 事务性创建 Tenant + 绑定 admin_user + 自动绑 tenant_admin Role</li>
+          <li>JWT 登录返回体增加 <span class="kbd">tenant: { id, name, code }</span></li>
+          <li>前端 store 增加 tenant 信息</li>
+        </ul>
+      </li>
+      <li><b>PR-4：员工管理页（前端）</b>
+        <ul class="list-disc pl-5 mt-1 text-slate-600">
+          <li>新增 <span class="kbd">/employees</span> 路由（PermissionGuard: <span class="kbd">tenant.employees.manage</span>）</li>
+          <li>列表 / 新建 / 停用 / 重置密码（CRUD）</li>
+          <li>员工首次登录强制改密（如 D4 选要做）</li>
+        </ul>
+      </li>
+      <li><b>PR-5：Role 两层化（D5=B 时）</b>
+        <ul class="list-disc pl-5 mt-1 text-slate-600">
+          <li>Role 加 <span class="kbd">tenant FK (nullable)</span> + <span class="kbd">is_template</span></li>
+          <li>预定义模板：tenant_admin / tenant_employee 两份</li>
+          <li>"复制模板成本公司角色" API + 前端</li>
+        </ul>
+      </li>
+    </ol>
+  </div></div>
+
+  <p class="text-sm text-slate-600 mt-3"><b>每个 PR 都独立可上线 / 可回滚。</b>PR-1 / PR-2 上线后系统行为对最终用户来说零变化（只多了个看不见的"默认公司"），但已经具备了承接新公司的能力。</p>
+</section>
+
+<!-- ====================================================================== -->
+<section id="risks">
+  <h2 class="text-xl font-bold text-slate-900 mb-3">⑦ 风险点 & 对策</h2>
+  <table class="matrix">
+    <thead><tr><th style="width:30%">风险</th><th>影响</th><th style="width:30%">对策</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>R1 — 跨租户数据泄漏</b>：开发者新加 ViewSet 忘了套 mixin</td>
+        <td>P0：另一家公司能读到我家数据</td>
+        <td>① CI 守护：lint 检查所有 ViewSet 必须继承 TenantScopedViewSetMixin（或显式标记 @tenant_unscoped）<br>② 测试矩阵：每个 endpoint 必有"跨租户 404"用例</td>
+      </tr>
+      <tr>
+        <td><b>R2 — Manager 漏网</b>：直接用 Model.objects.all() 不带 for_tenant</td>
+        <td>P0：管理脚本/admin action 跨租户改写</td>
+        <td>TenantManager 默认禁用裸 .all()，必须 .for_tenant(t) 或 .all_tenants()（明确旁路）</td>
+      </tr>
+      <tr>
+        <td><b>R3 — 媒体文件路径泄漏</b>：知识库 PDF 上传到 /media/kb/uuid.pdf 后任意 tenant 拉到</td>
+        <td>P0：跨租户文件可被猜 URL 下载</td>
+        <td>媒体路径加 tenant code: /media/{tenant_code}/kb/...；下载视图二次校验 file.tenant == request.tenant</td>
+      </tr>
+      <tr>
+        <td><b>R4 — JWT 篡改 tenant_id</b></td>
+        <td>低：签名校验拦截</td>
+        <td>SimpleJWT 签名机制本身防篡改；登录时 tenant_id 直接来自 user.tenant 不可注入</td>
+      </tr>
+      <tr>
+        <td><b>R5 — 公司管理员被盗号</b> → 可改员工密码 → 整公司沦陷</td>
+        <td>中：单个公司</td>
+        <td>① 强密码策略 + 改密日志<br>② 关键操作（重置员工密码）二次确认<br>③ 后置：增加 2FA</td>
+      </tr>
+      <tr>
+        <td><b>R6 — 默认公司收容大量历史数据</b>，未来无法分拆</td>
+        <td>中：迁移期</td>
+        <td>预留 Tenant.is_legacy 标志，后续 superuser 可在 admin 手工把行迁移到正式公司</td>
+      </tr>
+      <tr>
+        <td><b>R7 — 容器内还有"company_name / password_hash" 孤儿列</b>（来自另一个 worktree 的 in-progress 工作）</td>
+        <td>中：可能与本设计的 enterprise_name / password 冲突</td>
+        <td>本次 PR-1 之前必须先和那个 worktree 的负责人对账，要么补迁移要么删孤儿列。这是先决条件</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ====================================================================== -->
+<section id="open-q">
+  <h2 class="text-xl font-bold text-slate-900 mb-3">⑧ 等你拍板的开放问题</h2>
+  <ol class="qs text-sm">
+    <li class="qbox"><b>Q1</b> 登录方式：<span class="chip">A 子域</span> <span class="chip">B URL 前缀</span> <span class="chip">⭐ C 全局唯一用户名</span> <span class="chip">D 公司code+用户名</span> ?</li>
+    <li class="qbox"><b>Q2</b> 隔离粒度：<span class="chip">⭐ 行级</span> <span class="chip">schema 级</span> <span class="chip">DB 级</span> ?<br>"100% 隔离"对你是产品语言还是合规硬要求？</li>
+    <li class="qbox"><b>Q3</b> 员工创建方式：<span class="chip">⭐ 管理员后台手工建</span> <span class="chip">邀请链接</span> <span class="chip">员工自助申请</span> ?<br>员工首次登录是否强制改密？</li>
+    <li class="qbox"><b>Q4</b> 公司内部角色：<span class="chip">A 全员同权</span> <span class="chip">⭐ B 平台模板+公司派生</span> <span class="chip">C 完全独立</span> ?</li>
+    <li class="qbox"><b>Q5</b> superuser 跨租户：<span class="chip">⭐ A 只在 admin 跨</span> <span class="chip">B 前端切换公司</span> ?</li>
+    <li class="qbox"><b>Q6</b> 现有数据迁移：<span class="chip">A 重置库</span> <span class="chip">⭐ B 默认公司收容</span> ?<br>如果选 B，admin / solin / xthy / yrl / jack 这几个老用户都进同一个"默认公司"，还是按业务把他们再分？</li>
+    <li class="qbox"><b>Q7</b> LLM 供应商配置：<span class="chip">A 平台共享</span> <span class="chip">B 公司自配</span> ?<br>如果共享，实际上"100% 隔离"被这一项打破，需要在 PRD 里写明该例外。</li>
+    <li class="qbox"><b>Q8</b> 公司删除：<span class="chip">A 软删</span> <span class="chip">⭐ B 双阶段(停用→30天硬删)</span> <span class="chip">C 立即硬删</span> ?</li>
+    <li class="qbox"><b>Q9</b> 一个不那么好的事：DB 里目前有<b>孤儿列</b>（<span class="kbd">company_name</span> / <span class="kbd">password_hash</span>），不是我加的，应该是另一个 worktree 的 in-progress 工作。本次改造会进一步触碰 accounts 表，要先和那个流程对齐再动手。<br>请你确认：是先合并掉那部分还是直接清掉？</li>
+  </ol>
+</section>
+
+<!-- ====================================================================== -->
+<section>
+  <h2 class="text-xl font-bold text-slate-900 mb-3">附 · 一键签发清单</h2>
+  <div class="card"><div class="body">
+    <p class="text-sm text-slate-600 mb-3">把上面 Q1–Q9 的答案告诉我，我开始按顺序执行 PR-1 → PR-5。<br>如果你都按 ⭐ 推荐项确认，我会启动以下默认配置：</p>
+    <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
+      <li>登录：用户名全局唯一，登录返回体带 tenant 信息</li>
+      <li>隔离：行级 + 三道防线</li>
+      <li>员工：公司管理员后台手工建号；首次登录强制改密 <span class="tag ask">需你单独确认</span></li>
+      <li>角色：平台模板 + 公司派生</li>
+      <li>superuser：只在 Django admin 跨租户</li>
+      <li>迁移：建默认公司收容历史数据</li>
+      <li>LLM：<span class="tag ask">需你单独确认</span> 公共 or 自配</li>
+      <li>公司删除：双阶段</li>
+    </ul>
+  </div></div>
+</section>
+
+</main>
+
+<footer class="border-t border-slate-200 bg-white mt-16">
+  <div class="max-w-6xl mx-auto px-6 py-4 text-xs text-slate-500 flex items-center justify-between">
+    <span>solin · multi-tenant design draft v1</span>
+    <span>scripts/multi-tenant-design.html</span>
+  </div>
+</footer>
+
+</body>
+</html>

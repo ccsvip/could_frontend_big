@@ -11,6 +11,7 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.resources.models import VoiceTone
+from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
 
@@ -23,12 +24,13 @@ def build_test_png(name: str = 'voice-icon.png') -> SimpleUploadedFile:
     return SimpleUploadedFile(name, buffer.getvalue(), content_type='image/png')
 
 
-class VoiceToneApiTests(APITestCase):
+class VoiceToneApiTests(TenantTestMixin, APITestCase):
     def setUp(self):
         self.media_root = tempfile.mkdtemp()
         self.override_media_root = override_settings(MEDIA_ROOT=self.media_root)
         self.override_media_root.enable()
         self.user = User.objects.create_user(username='voice-tone-tester', password='test123456')
+        self.setup_tenant(self.user)
         self.role = Role.objects.create(name='音色测试角色', code='voice_tone_tester')
         UserRole.objects.create(user=self.user, role=self.role)
         self.client.force_authenticate(user=self.user)
@@ -97,6 +99,7 @@ class VoiceToneApiTests(APITestCase):
             voice_code='voice_male_deep_v1',
             content='已有音色',
             is_active=True,
+            tenant=self.tenant,
         )
 
         response = self.client.post(
@@ -141,6 +144,7 @@ class VoiceToneApiTests(APITestCase):
             content='旧内容',
             is_active=True,
             is_visible=True,
+            tenant=self.tenant,
         )
 
         response = self.client.patch(
@@ -167,6 +171,7 @@ class VoiceToneApiTests(APITestCase):
             content='温柔内容',
             is_active=True,
             is_visible=True,
+            tenant=self.tenant,
         )
         VoiceTone.objects.create(
             name='沉稳男声',
@@ -174,6 +179,7 @@ class VoiceToneApiTests(APITestCase):
             content='沉稳内容',
             is_active=False,
             is_visible=False,
+            tenant=self.tenant,
         )
 
         response = self.client.get('/api/v1/resources/voice-tones/?keyword=温柔&is_active=true')
@@ -193,6 +199,7 @@ class VoiceToneApiTests(APITestCase):
             is_visible=True,
             icon=build_test_png(),
             audio=SimpleUploadedFile('voice.wav', b'fake-wave-audio', content_type='audio/wav'),
+            tenant=self.tenant,
         )
 
         response = self.client.patch(

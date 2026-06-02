@@ -157,3 +157,4 @@ docker-compose.override.yaml
 *.tmp
 *.orig
 *.rej
+.playwright-mcp

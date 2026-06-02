@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>solin 多租户改造流程说明</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
+</script>
+<style>
+  :root { --teal:#0d9488; --teal-d:#0f766e; --slate:#0f172a; --ink:#1e293b; --mute:#64748b; --line:#e2e8f0; --bg:#f8fafc; }
+  html,body { background:var(--bg); color:var(--ink); scroll-behavior:smooth; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:.75rem; }
+  .card .body { padding:1rem 1.25rem; }
+  .kbd { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; background:#f1f5f9; padding:1px 6px; border-radius:4px; font-size:.82em; border:1px solid #e2e8f0; color:#334155; }
+  .mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .pill { display:inline-block; padding:1px 9px; border-radius:999px; font-size:.72rem; font-weight:600; letter-spacing:.01em; }
+  .pill.all   { background:#ccfbf1; color:#0f766e; border:1px solid #99f6e4; }
+  .pill.plat  { background:#ede9fe; color:#6d28d9; border:1px solid #ddd6fe; }
+  .pill.tadm  { background:#ffedd5; color:#c2410c; border:1px solid #fed7aa; }
+  .pill.ok    { background:#dcfce7; color:#166534; }
+  .pill.no    { background:#fee2e2; color:#991b1b; }
+  .chip { display:inline-block; padding:1px 8px; margin:1px 2px; border-radius:4px; font-size:.74rem; background:#f1f5f9; border:1px solid #e2e8f0; color:#334155; }
+  .anchor-btn { transition:all .15s; }
+  .anchor-btn:hover { color:var(--teal); }
+  table.matrix { width:100%; border-collapse:collapse; font-size:.86rem; }
+  table.matrix th, table.matrix td { border:1px solid var(--line); padding:.5rem .65rem; text-align:left; vertical-align:top; }
+  table.matrix th { background:#f8fafc; font-weight:600; color:#334155; }
+  .mermaid { background:#fff; border-radius:.75rem; border:1px solid var(--line); padding:1.1rem; }
+  /* role lens */
+  .roletab { transition:all .15s; cursor:pointer; }
+  [data-rolecard] { transition:all .2s ease; }
+  [data-rolecard].dim { opacity:.32; filter:grayscale(.4); }
+  [data-rolecard].hot { box-shadow:0 0 0 2px var(--teal), 0 8px 24px -12px rgba(13,148,136,.5); }
+  [data-rolerow] { transition:background .2s, opacity .2s; }
+  [data-rolerow].dim { opacity:.3; }
+  [data-rolerow].hot { background:#f0fdfa; }
+  [data-roleblk] { transition:all .2s; }
+  [data-roleblk].dim { opacity:.3; }
+  [data-roleblk].hot { box-shadow:0 0 0 2px var(--teal); }
+  .stepcard { transition:all .2s; }
+  .stepcard.dim { opacity:.32; }
+  .stepcard.hot { border-color:var(--teal); box-shadow:0 6px 18px -10px rgba(13,148,136,.55); }
+  .card:hover { box-shadow:0 6px 18px -12px rgba(15,23,42,.25); transition:box-shadow .18s; }
+  details > summary { cursor:pointer; font-weight:600; list-style:none; }
+  details > summary::-webkit-details-marker { display:none; }
+  details[open] > summary { color:var(--teal); }
+  .lvl { border-left:3px solid var(--line); }
+  .lvl.l1 { border-left-color:#6d28d9; }
+  .lvl.l2 { border-left-color:#0d9488; }
+  .lvl.l3 { border-left-color:#0284c7; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- ============================= HEADER ============================= -->
+<header class="border-b border-slate-200 bg-white sticky top-0 z-20">
+  <div class="max-w-6xl mx-auto px-6 py-5">
+    <div class="flex items-baseline justify-between gap-4 flex-wrap">
+      <div>
+        <div class="text-xs uppercase tracking-widest text-teal-700 font-semibold">Multi-Tenancy · Provisioning &amp; Isolation Flow</div>
+        <h1 class="text-2xl font-bold mt-1 text-slate-900">solin 多租户改造流程说明</h1>
+        <p class="text-slate-500 text-sm mt-1">从「单实例平台」迁到「一个用户＝一个公司，公司间业务数据 100% 行级隔离，公司管理员自管员工」。</p>
+      </div>
+      <div class="text-right text-xs text-slate-500 leading-relaxed">
+        <div>分支 <span class="kbd">feat/multi-tenant</span></div>
+        <div class="mt-1">PR-1 ~ PR-6 已落地</div>
+      </div>
+    </div>
+    <nav class="mt-4 flex flex-wrap gap-x-1 gap-y-1 text-sm text-slate-600">
+      <a href="#roles" class="anchor-btn">① 三个角色全景</a><span class="text-slate-300 px-1">·</span>
+      <a href="#provision" class="anchor-btn">② 开通公司时序</a><span class="text-slate-300 px-1">·</span>
+      <a href="#menu" class="anchor-btn">③ 三级菜单可见性</a><span class="text-slate-300 px-1">·</span>
+      <a href="#defenses" class="anchor-btn">④ 三道隔离防线</a><span class="text-slate-300 px-1">·</span>
+      <a href="#pwd-llm" class="anchor-btn">⑤ 首登改密 / LLM 隔离</a><span class="text-slate-300 px-1">·</span>
+      <a href="#api" class="anchor-btn">⑥ 关键接口表</a>
+    </nav>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 py-8 space-y-14">
+
+<!-- ============================= OVERVIEW ============================= -->
+<section>
+  <div class="card">
+    <div class="body grid md:grid-cols-3 gap-4 text-sm">
+      <div>
+        <div class="text-xs uppercase tracking-wider text-teal-700 font-semibold mb-1">隔离地基</div>
+        <p class="text-slate-600">用 <b class="mono">Tenant</b> + <b class="mono">Membership</b> 两张表承载租户，刻意 <b>不改 <span class="mono">AUTH_USER_MODEL</span></b>（仍是原生 <span class="mono">auth.User</span>，中途替换风险过高）。另有 12 张业务表加 nullable <span class="mono">tenant</span> 外键 + 按租户唯一约束，全部挂 <span class="mono">TenantManager</span> 走行级隔离。</p>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-wider text-teal-700 font-semibold mb-1">三道防线</div>
+        <p class="text-slate-600">Manager（模型层 <span class="mono">for_tenant</span>，<span class="mono">None</span> fail-closed 返回空集）→ ViewSet Mixin（请求层自动收敛 + 强制注入 tenant）→ 缓存键（把 <span class="mono">tenant_id</span> 并入响应缓存键）。再加隔离契约测试防回归。</p>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-wider text-teal-700 font-semibold mb-1">三类账号</div>
+        <p class="text-slate-600">平台超级管理员（运维，无 Membership）、公司管理员（审批通过那个人，<span class="mono">is_tenant_admin=True</span>）、公司员工（经 <span class="mono">UserRole</span> 绑定本公司角色）。菜单与权限按 <span class="mono">Menu.audience</span> 三态切分、层层收窄。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= ROLES ============================= -->
+<section id="roles">
+  <div class="flex items-baseline justify-between flex-wrap gap-2 mb-2">
+    <h2 class="text-xl font-bold text-slate-900">① 三个角色全景</h2>
+    <div class="text-sm text-slate-500">点角色名切到「角色视角」，下方时序步骤、菜单矩阵、接口表会随之高亮。</div>
+  </div>
+
+  <!-- role switcher -->
+  <div class="flex flex-wrap gap-2 mb-4" id="roleTabs">
+    <button class="roletab card px-4 py-2 text-sm font-semibold" data-rolebtn="all">全部视角</button>
+    <button class="roletab card px-4 py-2 text-sm font-semibold" data-rolebtn="super_admin"><span class="pill plat mr-1">platform</span>平台超级管理员</button>
+    <button class="roletab card px-4 py-2 text-sm font-semibold" data-rolebtn="tenant_admin"><span class="pill tadm mr-1">tenant_admin</span>公司管理员</button>
+    <button class="roletab card px-4 py-2 text-sm font-semibold" data-rolebtn="employee"><span class="pill all mr-1">all</span>公司员工</button>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-4">
+    <!-- super_admin -->
+    <div class="card" data-rolecard="super_admin">
+      <div class="body">
+        <div class="flex items-center justify-between mb-1">
+          <h3 class="font-bold text-slate-900">平台超级管理员</h3>
+          <span class="pill plat">运维</span>
+        </div>
+        <p class="text-xs text-slate-400 mb-3 mono">role payload → {code:'admin', name:'管理员'}</p>
+        <div class="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1">看到的菜单</div>
+        <p class="text-sm text-slate-600 mb-3">所有 <span class="chip">audience=all</span><span class="chip">audience=platform</span> 的启用菜单，含 platform 专属的「租户管理」；<b>明确排除</b> <span class="chip">audience=tenant_admin</span> 的「员工管理」。业务页对其返回 <span class="mono">.all()</span>，能看到全部公司数据（跨租户维护建议走 <span class="kbd">/admin/</span>）。</p>
+        <div class="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1">能力</div>
+        <ul class="text-sm text-slate-600 space-y-1.5 list-disc pl-4">
+          <li>持有全部启用权限点（含 <span class="mono">tenant.management.view</span>），通过 <span class="mono">CanManageTenants</span> 把关的平台端点。</li>
+          <li><span class="mono">GET/POST/PATCH/PUT /tenants/</span> 管理所有公司（无 DELETE，停用走 <span class="mono">is_active</span>）。</li>
+          <li><span class="mono">GET/PUT /tenants/&lt;id&gt;/menus/</span> 给公司分配可见菜单 + 权限点，设定其可见范围上界。</li>
+          <li><span class="mono">GET /menus/catalog/</span> 拿可分配目录（仅 audience=all 菜单 + 权限点）。</li>
+          <li>审批账号申请：<span class="mono">GET/PATCH /auth/account-applications/manage/&lt;pk&gt;/</span>。</li>
+          <li><b>无 Membership</b>，视为平台运维；JWT 不写 <span class="mono">tenant_id</span>。</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- tenant_admin -->
+    <div class="card" data-rolecard="tenant_admin">
+      <div class="body">
+        <div class="flex items-center justify-between mb-1">
+          <h3 class="font-bold text-slate-900">公司管理员</h3>
+          <span class="pill tadm">即申请人</span>
+        </div>
+        <p class="text-xs text-slate-400 mb-3 mono">role payload → {code:'tenant_admin', name:'公司管理员'}</p>
+        <div class="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1">看到的菜单</div>
+        <p class="text-sm text-slate-600 mb-3">超管分配给本公司的 <span class="chip">audience=all</span> 菜单（<span class="mono">Tenant.menus</span>）＋ <b>全部</b> <span class="chip">audience=tenant_admin</span> 菜单（如「员工管理」，固有可见、不依赖分配）。<b>看不到</b> platform 专属的「租户管理」。</p>
+        <div class="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1">能力</div>
+        <ul class="text-sm text-slate-600 space-y-1.5 list-disc pl-4">
+          <li>权限 = <span class="mono">Tenant.permission_points</span> ＋ 固有的 <span class="mono">tenant.employees.manage</span>（建号能力不依赖授权）。</li>
+          <li><span class="mono">GET/POST/PATCH /employees/</span> 管理本公司非管理员成员 ＋ <span class="mono">POST /employees/&lt;id&gt;/reset-password/</span>。</li>
+          <li><span class="mono">GET/POST/PATCH/DELETE /roles/</span> 管理本公司角色；菜单/权限点服务端钳制在 Tenant 授权范围内，越界 <span class="mono">400</span>；有员工绑定的角色不可删。</li>
+          <li><span class="mono">GET /my-tenant/catalog/</span> 拿本公司视角可分配目录（<span class="mono">Tenant.menus[all]</span> + <span class="mono">Tenant.permission_points</span>）。</li>
+          <li>建员工时置 <span class="mono">must_change_password=True</span>，员工首登强制改密。</li>
+          <li>本人由 <span class="mono">provision_company</span> 设为 <span class="mono">is_tenant_admin=True</span>。</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- employee -->
+    <div class="card" data-rolecard="employee">
+      <div class="body">
+        <div class="flex items-center justify-between mb-1">
+          <h3 class="font-bold text-slate-900">公司员工</h3>
+          <span class="pill all">受双重裁剪</span>
+        </div>
+        <p class="text-xs text-slate-400 mb-3 mono">role payload → 所绑定角色的 {code, name}</p>
+        <div class="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1">看到的菜单</div>
+        <p class="text-sm text-slate-600 mb-3">所绑定 <span class="mono">Role.menus ∩ Tenant.menus</span>（两侧都限 <span class="chip">audience=all</span>），<b>永不超出</b>公司被授权范围。未绑定角色则无菜单。</p>
+        <div class="text-xs font-semibold text-teal-700 uppercase tracking-wide mb-1">能力</div>
+        <ul class="text-sm text-slate-600 space-y-1.5 list-disc pl-4">
+          <li>权限 = <span class="mono">Role.permission_points ∩ Tenant.permission_points</span>（交集裁剪）。</li>
+          <li>经 <span class="mono">UserRole</span> 绑定本公司某个 Role（tenant 非空、<span class="mono">is_template=False</span>）。</li>
+          <li><span class="mono">Membership.is_tenant_admin=False</span>，被公司管理员的 <span class="mono">EmployeeViewSet</span> 作用域纳管。</li>
+          <li>首登被 <span class="mono">must_change_password=True</span> 拦在改密页，<span class="mono">POST /auth/change-password/</span> 成功后解除。</li>
+          <li>所有业务读写经三道防线收敛到本公司 tenant；无归属时 <span class="mono">for_tenant(None)</span> 返回空集。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= PROVISIONING ============================= -->
+<section id="provision">
+  <h2 class="text-xl font-bold text-slate-900 mb-3">② 开通公司时序</h2>
+  <p class="text-sm text-slate-500 mb-4">申请 → 超管审批 → <span class="mono">AccountApplication.save</span> 自动建 <span class="mono">User</span> + <span class="mono">Tenant</span> + <span class="mono">Membership</span> → 分配菜单 → 公司管理员建角色/员工 → 员工首登改密。</p>
+
+  <div class="mermaid mb-6">
+sequenceDiagram
+    autonumber
+    actor A as 申请人(匿名)
+    participant API as Backend API
+    actor S as 平台超管
+    participant AA as AccountApplication.save
+    actor TA as 公司管理员
+    actor E as 公司员工
+    A->>API: POST /auth/account-applications/<br/>username/enterprise_name/password(hash) status=pending
+    Note over API: AllowAny · 触发 Celery notify(不可用同步兜底)
+    S->>API: GET /auth/account-applications/manage/<br/>(account_applications.view)
+    S->>API: PATCH manage/{pk}/ status=approved<br/>(account_applications.review)
+    API->>AA: 检测 approved
+    AA->>AA: ensure_login_user() 建 auth.User<br/>(直接复制已哈希 password)
+    AA->>AA: provision_company(): 建 Tenant(唯一 slug)<br/>+ Membership(is_tenant_admin=True)
+    Note over AA: 幂等: 已有 Membership 则复用现有公司
+    S->>API: PUT /tenants/{id}/menus/<br/>写 menuIds + permissionPointIds (可见上界)
+    TA->>API: POST /auth/login/ (申请时用户名/密码)
+    Note over API: JWT refresh 写 tenant_id 辅助 claim<br/>权威仍以 DB Membership 为准
+    TA->>API: POST /roles/ (可选) 服务端钳制在授权范围内
+    TA->>API: POST /employees/ 建 User+Membership<br/>must_change_password=True
+    E->>API: POST /auth/login/ → 被 AuthGuard 拦在改密页
+    E->>API: POST /auth/change-password/<br/>清 must_change_password 标志解除拦截
+  </div>
+
+  <!-- step cards (highlightable by role) -->
+  <div class="grid md:grid-cols-2 gap-3">
+    <div class="card stepcard" data-roleblk="employee">
+      <div class="body"><div class="flex items-center justify-between"><b class="text-slate-800 text-sm">① 提交开通申请</b><span class="pill no">匿名</span></div>
+      <p class="text-sm text-slate-600 mt-1">申请人填 <span class="mono">username / applicant_name / enterprise_name / phone / password(仅存哈希) / reason</span>，<span class="mono">status=pending</span>。<span class="kbd">AllowAny</span>。提交后触发 <span class="mono">Celery notify_account_application.delay</span>，不可用时同步兜底。</p>
+      <p class="text-xs text-slate-400 mt-1 mono">POST /api/v1/auth/account-applications/</p></div>
+    </div>
+    <div class="card stepcard" data-roleblk="super_admin">
+      <div class="body"><div class="flex items-center justify-between"><b class="text-slate-800 text-sm">② 超管查看待审申请</b><span class="pill plat">超管</span></div>
+      <p class="text-sm text-slate-600 mt-1"><span class="mono">CanViewAccountApplications</span>（<span class="mono">account_applications.view</span>）把关，列出 <span class="mono">AccountApplication</span>。</p>
+      <p class="text-xs text-slate-400 mt-1 mono">GET /api/v1/auth/account-applications/manage/</p></div>
+    </div>
+    <div class="card stepcard" data-roleblk="super_admin">
+      <div class="body"><div class="flex items-center justify-between"><b class="text-slate-800 text-sm">③ 审批通过 → 自动建公司</b><span class="pill plat">超管</span></div>
+      <p class="text-sm text-slate-600 mt-1">PATCH 改 <span class="mono">status=approved</span>。<span class="mono">save</span> 检测后：① <span class="mono">ensure_login_user()</span> 建 User（复制已哈希 password 防双重哈希）；② <span class="mono">provision_company()</span> 建 Tenant（<span class="mono">generate_unique_tenant_code</span> 唯一 slug，中文名回退 'company' 加序号）+ Membership(<span class="mono">is_tenant_admin=True</span>)，用 <span class="mono">.update()</span> 回写 tenant 避免递归 save。<b>幂等</b>：已有 Membership 复用现有公司。公司名取 <span class="mono">enterprise_name or applicant_name or login_username</span>。</p>
+      <p class="text-xs text-slate-400 mt-1 mono">PATCH /api/v1/auth/account-applications/manage/&lt;pk&gt;/</p></div>
+    </div>
+    <div class="card stepcard" data-roleblk="super_admin">
+      <div class="body"><div class="flex items-center justify-between"><b class="text-slate-800 text-sm">④ 给公司分配菜单与权限点</b><span class="pill plat">超管</span></div>
+      <p class="text-sm text-slate-600 mt-1"><span class="mono">CanManageTenants</span>（<span class="mono">tenant.management.view</span>）。PUT 写入 <span class="mono">menuIds + permissionPointIds</span>，设定公司可见范围上界（<span class="mono">Tenant.menus / permission_points</span>）。可先 <span class="mono">GET /menus/catalog/</span> 拿可分配目录（仅 audience=all 菜单 + 权限点）。</p>
+      <p class="text-xs text-slate-400 mt-1 mono">PUT /api/v1/tenants/&lt;id&gt;/menus/</p></div>
+    </div>
+    <div class="card stepcard" data-roleblk="tenant_admin">
+      <div class="body"><div class="flex items-center justify-between"><b class="text-slate-800 text-sm">⑤ 公司管理员登录</b><span class="pill tadm">公司管理员</span></div>
+      <p class="text-sm text-slate-600 mt-1">用申请时的用户名/密码登录。<span class="mono">LoginView</span> 用 <span class="mono">get_user_tenant</span> 解析公司，把 <span class="mono">tenant_id</span> 写入 JWT refresh 作辅助 claim；权威租户上下文始终以 DB <span class="mono">Membership</span> 为准。</p>
+      <p class="text-xs text-slate-400 mt-1 mono">POST /api/v1/auth/login/</p></div>
+    </div>
+    <div class="card stepcard" data-roleblk="tenant_admin">
+      <div class="body"><div class="flex items-center justify-between"><b class="text-slate-800 text-sm">⑥ 建角色（可选）</b><span class="pill tadm">公司管理员</span></div>
+      <p class="text-sm text-slate-600 mt-1"><span class="mono">CanManageEmployees</span>（<span class="mono">tenant.employees.manage</span>）。<span class="mono">TenantRoleSerializer</span> 把 <span class="mono">menuIds/permissionPointIds</span> 服务端钳制在授权范围内，越界 400；role 自动 <span class="mono">tenant=本公司、is_template=False</span>；code 在公司内唯一（<span class="mono">unique_role_code_per_tenant</span>）。</p>
+      <p class="text-xs text-slate-400 mt-1 mono">POST /api/v1/roles/</p></div>
+    </div>
+    <div class="card stepcard" data-roleblk="tenant_admin">
+      <div class="body"><div class="flex items-center justify-between"><b class="text-slate-800 text-sm">⑦ 建员工</b><span class="pill tadm">公司管理员</span></div>
+      <p class="text-sm text-slate-600 mt-1"><span class="mono">CanManageEmployees</span>。<span class="mono">EmployeeCreateSerializer</span> 校验 username 全局唯一（跨公司不可重名）+ 密码规则，建 User + Membership(<span class="mono">is_tenant_admin=False, must_change_password=True</span>)，可选 <span class="mono">UserRole</span> 绑定本公司角色（<span class="mono">roleId</span> 校验必须属于本公司）。</p>
+      <p class="text-xs text-slate-400 mt-1 mono">POST /api/v1/employees/</p></div>
+    </div>
+    <div class="card stepcard" data-roleblk="employee">
+      <div class="body"><div class="flex items-center justify-between"><b class="text-slate-800 text-sm">⑧ 员工首登强制改密</b><span class="pill all">员工</span></div>
+      <p class="text-sm text-slate-600 mt-1">首登被前端 <span class="mono">AuthGuard</span> 依据 <span class="mono">mustChangePassword</span> 拦在改密页（该标志经 <span class="mono">/me</span> 与 <span class="mono">EmployeeSerializer</span> 暴露）。员工调 change-password 成功后，<span class="mono">ChangePasswordView</span> 清除本人 <span class="mono">Membership.must_change_password</span> 标志，解除拦截。</p>
+      <p class="text-xs text-slate-400 mt-1 mono">POST /api/v1/auth/change-password/</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= MENU ============================= -->
+<section id="menu">
+  <h2 class="text-xl font-bold text-slate-900 mb-3">③ 三级菜单可见性</h2>
+  <p class="text-sm text-slate-500 mb-4">中枢是 <span class="mono">apps/accounts/services/permissions.py</span> 的 <span class="mono">build_user_access_context</span>，靠 <span class="mono">accounts.Menu.audience</span> 三态字段切分。可见集合层层收窄：<b>超管(all+platform) ⊇ 公司(Tenant.menus) ⊇ 员工(Role.menus ∩ Tenant.menus)</b>。</p>
+
+  <!-- audience legend -->
+  <div class="card mb-4"><div class="body flex flex-wrap gap-4 text-sm">
+    <div class="flex items-start gap-2"><span class="pill all">all</span><span class="text-slate-600"><b class="mono">AUDIENCE_ALL</b>　通用业务菜单，可被超管分配给公司、再由公司管理员分给员工。<b>唯一会进入分配面板的一类</b>。</span></div>
+    <div class="flex items-start gap-2"><span class="pill plat">platform</span><span class="text-slate-600"><b class="mono">AUDIENCE_PLATFORM</b>　仅超管，如「租户管理」。</span></div>
+    <div class="flex items-start gap-2"><span class="pill tadm">tenant_admin</span><span class="text-slate-600"><b class="mono">AUDIENCE_TENANT_ADMIN</b>　仅公司管理员，如「员工管理」，固有可见、不依赖分配。</span></div>
+  </div></div>
+
+  <!-- nesting tree -->
+  <div class="grid lg:grid-cols-3 gap-4 mb-5">
+    <div class="card lvl l1" data-rolecard="super_admin"><div class="body">
+      <div class="flex items-center justify-between mb-1"><b class="text-slate-800">① 超管</b><span class="pill plat">最宽</span></div>
+      <p class="text-sm text-slate-600"><span class="mono">Menu.objects.filter(is_active=True).exclude(audience=tenant_admin)</span></p>
+      <p class="text-sm text-slate-500 mt-2">＝ <span class="chip">all</span>＋<span class="chip">platform</span> 全量，<b>明确不含</b> <span class="chip">tenant_admin</span>。</p>
+    </div></div>
+    <div class="card lvl l2" data-rolecard="tenant_admin"><div class="body">
+      <div class="flex items-center justify-between mb-1"><b class="text-slate-800">② 公司管理员</b><span class="pill tadm">收窄</span></div>
+      <p class="text-sm text-slate-600"><span class="mono">tenant.menus.filter(audience=all)</span> ∪ <span class="mono">Menu.objects.filter(audience=tenant_admin)</span> 全量</p>
+      <p class="text-sm text-slate-500 mt-2">员工管理固有可见、不依赖分配；再 <span class="mono">_collect_with_ancestors</span> 补全祖先后组装树。</p>
+    </div></div>
+    <div class="card lvl l3" data-rolecard="employee"><div class="body">
+      <div class="flex items-center justify-between mb-1"><b class="text-slate-800">③ 员工</b><span class="pill all">最窄</span></div>
+      <p class="text-sm text-slate-600"><span class="mono">role.menus.filter(audience=all)</span> ∩ <span class="mono">tenant.menus(audience=all)</span> 的 id 集合求交</p>
+      <p class="text-sm text-slate-500 mt-2">Role ∩ Tenant 双重裁剪，永不超出公司被授权范围；未绑角色则空。</p>
+    </div></div>
+  </div>
+
+  <!-- matrix -->
+  <div class="card"><div class="body overflow-x-auto">
+    <table class="matrix">
+      <thead><tr>
+        <th>菜单 / audience</th>
+        <th data-rolerow="super_admin">超管<br><span class="font-normal text-slate-400">all+platform</span></th>
+        <th data-rolerow="tenant_admin">公司管理员<br><span class="font-normal text-slate-400">Tenant.menus + tenant_admin</span></th>
+        <th data-rolerow="employee">员工<br><span class="font-normal text-slate-400">Role ∩ Tenant</span></th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td>通用业务菜单（设备/资源/知识库/聊天…）<span class="pill all ml-1">all</span></td>
+          <td data-rolerow="super_admin"><span class="pill ok">可见</span><br><span class="text-xs text-slate-400">全量</span></td>
+          <td data-rolerow="tenant_admin"><span class="pill ok">可见</span><br><span class="text-xs text-slate-400">限超管已分配给本公司的</span></td>
+          <td data-rolerow="employee"><span class="pill ok">可见</span><br><span class="text-xs text-slate-400">限角色 ∩ 公司授权交集</span></td>
+        </tr>
+        <tr>
+          <td>租户管理<span class="pill plat ml-1">platform</span></td>
+          <td data-rolerow="super_admin"><span class="pill ok">可见</span></td>
+          <td data-rolerow="tenant_admin"><span class="pill no">不可见</span></td>
+          <td data-rolerow="employee"><span class="pill no">不可见</span></td>
+        </tr>
+        <tr>
+          <td>员工管理<span class="pill tadm ml-1">tenant_admin</span></td>
+          <td data-rolerow="super_admin"><span class="pill no">不可见</span><br><span class="text-xs text-slate-400">明确 exclude</span></td>
+          <td data-rolerow="tenant_admin"><span class="pill ok">可见</span><br><span class="text-xs text-slate-400">固有，不依赖分配</span></td>
+          <td data-rolerow="employee"><span class="pill no">不可见</span></td>
+        </tr>
+        <tr>
+          <td>可分配目录端点暴露范围<br><span class="text-xs text-slate-400 mono">/menus/catalog/ · /my-tenant/catalog/</span></td>
+          <td data-rolerow="super_admin" colspan="3"><span class="pill all">仅 audience=all 菜单</span> <span class="text-sm text-slate-500 ml-1">→ platform 与 tenant_admin 菜单<b>永远不会</b>进入分配选择面板。</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div></div>
+</section>
+
+<!-- ============================= DEFENSES ============================= -->
+<section id="defenses">
+  <h2 class="text-xl font-bold text-slate-900 mb-3">④ 三道隔离防线</h2>
+  <p class="text-sm text-slate-500 mb-4">行级隔离自下而上三层收敛，再加一层契约测试防回归。关键 fail-closed：无租户上下文时返回空集，而不是裸查泄漏。</p>
+  <div class="grid md:grid-cols-3 gap-4">
+    <div class="card"><div class="body">
+      <div class="flex items-center gap-2 mb-1"><span class="pill" style="background:#cffafe;color:#0e7490;border:1px solid #a5f3fc;">第一道</span><b class="text-slate-800">Manager · 模型层</b></div>
+      <p class="text-sm text-slate-600 mt-1">tenant-scoped 模型挂 <span class="mono">objects = TenantManager()</span>（基于 <span class="mono">TenantQuerySet</span>）。业务路径走 <span class="mono">.for_tenant(t)</span>；关键 fail-closed：<span class="mono">for_tenant(None)</span> 返回 <span class="mono">self.none()</span> 空集，杜绝无租户上下文时裸查泄漏。标准 <span class="mono">.all()/.filter()</span> 保留给 admin/Celery/迁移。</p>
+      <p class="text-xs text-slate-400 mt-2 mono">backend/apps/tenants/managers.py</p>
+    </div></div>
+    <div class="card"><div class="body">
+      <div class="flex items-center gap-2 mb-1"><span class="pill" style="background:#cffafe;color:#0e7490;border:1px solid #a5f3fc;">第二道</span><b class="text-slate-800">ViewSet 基类 · 请求层</b></div>
+      <p class="text-sm text-slate-600 mt-1"><span class="mono">TenantScopedQuerysetMixin.get_queryset()</span> 自动 <span class="mono">.for_tenant(request_tenant)</span>（superuser 旁路返回 <span class="mono">.all()</span>）；<span class="mono">perform_create()/tenant_create_kwargs()</span> 强制注入 tenant，前端伪造的 tenant 字段无效。租户由 <span class="mono">services.get_request_tenant</span> 从 <span class="mono">request.user.membership</span> 解析（无 TenantMiddleware，因 DRF JWT 鉴权在 view 层）；MRO 约定本 mixin 放 Cached 之后、PermissionMapped 之前。</p>
+      <p class="text-xs text-slate-400 mt-2 mono">backend/apps/tenants/mixins.py</p>
+    </div></div>
+    <div class="card"><div class="body">
+      <div class="flex items-center gap-2 mb-1"><span class="pill" style="background:#cffafe;color:#0e7490;border:1px solid #a5f3fc;">第三道</span><b class="text-slate-800">缓存键 · 缓存层</b></div>
+      <p class="text-sm text-slate-600 mt-1"><span class="mono">make_response_cache_key</span> 把 <span class="mono">tenant_id</span> 并入响应缓存键（tenant 为 None 时用 <span class="mono">'none'</span>），sha256 摘要前带 <span class="mono">t=&lt;tenant_id&gt;</span>，避免 A 公司缓存的列表/详情被 B 公司请同一 URL 命中；<span class="mono">DeviceViewSet.stats</span> 统计键同样并入 tenant_id。</p>
+      <p class="text-xs text-slate-400 mt-2 mono">backend/config/business_cache.py</p>
+    </div></div>
+  </div>
+  <div class="card mt-4" style="border-color:#fed7aa;background:#fffbeb;"><div class="body">
+    <div class="flex items-center gap-2 mb-1"><span class="pill tadm">护栏</span><b class="text-slate-800">隔离契约测试 · 防回归</b></div>
+    <p class="text-sm text-slate-700 mt-1"><span class="mono">tests/test_isolation_contract.py</span> 在「带 tenant 外键但没挂 TenantManager」时 CI 报红；新增 tenant-scoped 模型必须挂 manager，或在 <span class="mono">KNOWN_NON_SCOPED_EXEMPTIONS</span> 登记豁免并写理由。</p>
+    <p class="text-xs text-slate-400 mt-2 mono">backend/apps/tenants/tests/test_isolation_contract.py</p>
+  </div></div>
+</section>
+
+<!-- ============================= PWD + LLM ============================= -->
+<section id="pwd-llm">
+  <h2 class="text-xl font-bold text-slate-900 mb-3">⑤ 员工首登强制改密 ＆ 每公司 LLM 隔离</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card" data-rolecard="employee"><div class="body">
+      <h3 class="font-bold text-slate-800 mb-2">员工首登强制改密</h3>
+      <div class="space-y-2 text-sm text-slate-600">
+        <p><b class="text-slate-800">置位</b>　由公司管理员在两处触发 <span class="mono">Membership.must_change_password=True</span>：① 建员工时 <span class="mono">EmployeeCreateSerializer.create</span> 固定置 True（<span class="mono">employee_serializers.py</span>）；② 重置密码时 <span class="mono">EmployeeViewSet.reset_password</span> 调 <span class="mono">user.set_password</span> 后 <span class="mono">Membership...update(must_change_password=True)</span>（<span class="mono">employee_views.py</span>）。</p>
+        <p><b class="text-slate-800">拦截</b>　该标志经 <span class="mono">/auth/me/</span> 与 <span class="mono">EmployeeSerializer.mustChangePassword</span> 暴露给前端，<span class="mono">AuthGuard</span> 据此把员工拦在改密页。</p>
+        <p><b class="text-slate-800">解除</b>　员工调 <span class="mono">POST /auth/change-password/</span>，<span class="mono">ChangePasswordView</span> 先 <span class="mono">set_password</span>，再 <span class="mono">...update(must_change_password=False)</span> 清标志，之后正常放行（<span class="mono">accounts/views.py</span>）。</p>
+        <p class="text-slate-500">超管/公司管理员本人不走此机制（建公司时 Membership 默认 <span class="mono">must_change_password=False</span>）。</p>
+      </div>
+    </div></div>
+    <div class="card"><div class="body">
+      <h3 class="font-bold text-slate-800 mb-2">每公司 LLM 供应商隔离</h3>
+      <div class="space-y-2 text-sm text-slate-600">
+        <p><span class="mono">LLMProvider</span> 是 tenant-scoped 模型：<span class="mono">LLMProviderViewSet</span> 继承 <span class="mono">TenantScopedQuerysetMixin</span>，列表/详情/写入全部按本公司收敛。聊天三处显式按租户限定 provider，绝不跨租户拿到别家公司的供应商（含其 API Key）：</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>① 建会话 — <span class="mono">provider_qs = LLMProvider.objects.for_tenant(tenant).filter(pk=provider_id)</span>，会话本身写入 <span class="mono">tenant=request_tenant</span>。</li>
+          <li>② update-config — <span class="mono">for_tenant(conversation.tenant).filter(pk=provider_id, is_active=True)</span>。</li>
+          <li>③ send 兜底 — provider 缺失或停用时回退 <span class="mono">for_tenant(conversation.tenant).filter(is_active=True).first()</span>。</li>
+        </ul>
+        <p>关键 fail-closed：<span class="mono">for_tenant(None)</span> 返回空集，无租户上下文时回退拿不到任何 provider，而非误取全局第一个。兜底仍取不到时返回 <span class="mono">400「暂无可用的 LLM 供应商」</span>并写入提示性助手消息，绝不静默跨租户取用。</p>
+        <p class="text-xs text-slate-400 mono">backend/apps/ai_models/views.py</p>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ============================= API ============================= -->
+<section id="api">
+  <h2 class="text-xl font-bold text-slate-900 mb-3">⑥ 关键接口表</h2>
+
+  <div class="mb-5" data-rolecard="super_admin">
+    <div class="flex items-center gap-2 mb-2"><span class="pill plat">超管 / platform</span></div>
+    <div class="card"><div class="body overflow-x-auto"><table class="matrix">
+      <thead><tr><th class="w-28">Method</th><th>Path</th><th>Who（权限点）</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">POST</td><td class="mono">/api/v1/auth/account-applications/</td><td>匿名申请人（AllowAny）</td><td>提交开通公司申请，status=pending，触发审批通知</td></tr>
+        <tr><td class="mono">GET</td><td class="mono">/api/v1/auth/account-applications/manage/</td><td>超管（account_applications.view）</td><td>列出待审申请</td></tr>
+        <tr><td class="mono">PATCH</td><td class="mono">/api/v1/auth/account-applications/manage/&lt;pk&gt;/</td><td>超管（account_applications.review）</td><td>审批通过 → save 触发建 User + provision_company 建公司</td></tr>
+        <tr><td class="mono">GET/POST/PATCH/PUT</td><td class="mono">/api/v1/tenants/</td><td>超管（CanManageTenants / tenant.management.view）</td><td>管理所有公司（无 DELETE，停用走 is_active）</td></tr>
+        <tr><td class="mono">GET/PUT</td><td class="mono">/api/v1/tenants/&lt;id&gt;/menus/</td><td>超管（CanManageTenants）</td><td>读/写公司被分配的 menuIds + permissionPointIds（可见范围上界）</td></tr>
+        <tr><td class="mono">GET</td><td class="mono">/api/v1/menus/catalog/</td><td>超管（CanManageTenants）</td><td>可分配目录：audience=all 菜单 + 全部权限点</td></tr>
+      </tbody>
+    </table></div></div>
+  </div>
+
+  <div class="mb-5" data-rolecard="tenant_admin">
+    <div class="flex items-center gap-2 mb-2"><span class="pill tadm">公司管理员 / tenant_admin</span></div>
+    <div class="card"><div class="body overflow-x-auto"><table class="matrix">
+      <thead><tr><th class="w-28">Method</th><th>Path</th><th>Who（权限点）</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">GET/POST/PATCH</td><td class="mono">/api/v1/employees/</td><td>公司管理员（CanManageEmployees / tenant.employees.manage）</td><td>管理本公司非管理员成员；建号置 must_change_password=True</td></tr>
+        <tr><td class="mono">POST</td><td class="mono">/api/v1/employees/&lt;id&gt;/reset-password/</td><td>公司管理员（CanManageEmployees）</td><td>重置员工密码并置 must_change_password=True</td></tr>
+        <tr><td class="mono">GET/POST/PATCH/DELETE</td><td class="mono">/api/v1/roles/</td><td>公司管理员（CanManageEmployees）</td><td>管理本公司角色；菜单/权限点钳制在公司授权范围内，有绑定的角色不可删</td></tr>
+        <tr><td class="mono">GET</td><td class="mono">/api/v1/my-tenant/catalog/</td><td>公司管理员（CanManageEmployees）</td><td>本公司视角可分配目录（Tenant.menus[all] + Tenant.permission_points）</td></tr>
+      </tbody>
+    </table></div></div>
+  </div>
+
+  <div data-rolecard="employee">
+    <div class="flex items-center gap-2 mb-2"><span class="pill all">所有账号 / 通用鉴权</span></div>
+    <div class="card"><div class="body overflow-x-auto"><table class="matrix">
+      <thead><tr><th class="w-28">Method</th><th>Path</th><th>Who</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">POST</td><td class="mono">/api/v1/auth/login/</td><td>所有账号（AllowAny）</td><td>登录发 JWT，refresh 写 tenant_id 辅助 claim（权威仍以 DB Membership 为准）</td></tr>
+        <tr><td class="mono">GET</td><td class="mono">/api/v1/auth/me/</td><td>已登录用户</td><td>返回 access-context（role/menus/permissions）与 mustChangePassword</td></tr>
+        <tr><td class="mono">POST</td><td class="mono">/api/v1/auth/change-password/</td><td>已登录用户</td><td>改密成功后清除本人 must_change_password 标志，解除首登拦截</td></tr>
+      </tbody>
+    </table></div></div>
+  </div>
+</section>
+
+<!-- ============================= DATA MODEL ============================= -->
+<section>
+  <details class="card"><summary class="body text-slate-800">附：数据模型一览（点击展开）</summary>
+    <div class="body border-t border-slate-100 text-sm text-slate-600 space-y-2">
+      <p><b class="mono">Tenant</b>(name, code 唯一 slug, is_active, is_legacy 历史默认公司标记, menus M2M→accounts.Menu, permission_points M2M→accounts.PermissionPoint) — menus/permission_points 是超管分配给该公司的可见上界。</p>
+      <p><b class="mono">Membership</b>(user OneToOne→auth.User, tenant FK, is_tenant_admin 标识公司管理员即审批通过那个人, must_change_password 首登强制改密) — superuser 不建 Membership，视为平台运维。</p>
+      <p><b class="mono">Role</b>(name, code, tenant FK 可空, is_template, menus/permission_points M2M) — tenant=null 表平台模板(is_template=True)，非 null 表某公司自建角色，约束 <span class="mono">unique(tenant, code)</span> 使 code 在公司内唯一；员工经 <span class="mono">UserRole</span>(user OneToOne→Role) 绑定。</p>
+      <p><b class="mono">Menu</b> 加 <span class="mono">audience</span> 字段（all/platform/tenant_admin）决定菜单归属与可分配性。</p>
+      <p><b class="mono">accounts.AccountApplication</b> 加 tenant FK（SET_NULL）+ username/enterprise_name/password 哈希等字段，<span class="mono">save()</span> 在 approved 时建 User 并调 provision_company 回写 tenant。</p>
+      <p>另有 <b>12 张业务表</b>加 nullable tenant FK + 按租户唯一约束，全部挂 TenantManager 走行级隔离。</p>
+    </div>
+  </details>
+</section>
+
+</main>
+
+<footer class="border-t border-slate-200 bg-white">
+  <div class="max-w-6xl mx-auto px-6 py-5 text-xs text-slate-400">
+    solin · 多租户改造流程说明 · 行级隔离（PR-1 ~ PR-6）· 本页内容以仓库实际代码为准
+  </div>
+</footer>
+
+<script>
+  // ---- role lens ----
+  const tabs = document.querySelectorAll('[data-rolebtn]');
+  function applyRole(role){
+    // tab active state
+    tabs.forEach(t=>{
+      const on = t.dataset.rolebtn === role;
+      t.style.borderColor = on ? 'var(--teal)' : 'var(--line)';
+      t.style.background   = on ? '#f0fdfa' : '#fff';
+      t.style.color        = on ? 'var(--teal-d)' : 'var(--ink)';
+    });
+    const all = role === 'all';
+    document.querySelectorAll('[data-rolecard]').forEach(el=>{
+      el.classList.toggle('hot', !all && el.dataset.rolecard === role);
+      el.classList.toggle('dim', !all && el.dataset.rolecard !== role);
+    });
+    document.querySelectorAll('[data-roleblk]').forEach(el=>{
+      const hot = !all && el.dataset.roleblk === role;
+      el.classList.toggle('hot', hot);
+      el.classList.toggle('dim', !all && !hot);
+    });
+    document.querySelectorAll('[data-rolerow]').forEach(el=>{
+      const hot = !all && el.dataset.rolerow === role;
+      el.classList.toggle('hot', hot);
+      el.classList.toggle('dim', !all && !hot);
+    });
+  }
+  tabs.forEach(t=> t.addEventListener('click', ()=> applyRole(t.dataset.rolebtn)));
+  applyRole('all');
+</script>
+</body>
+</html>
