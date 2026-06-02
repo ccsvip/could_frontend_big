@@ -196,8 +196,9 @@ const normalizeSidebarMenus = (menus: AppMenu[]): AppMenu[] => {
 const buildMenuItem = (
   menu: AppMenu,
   navigate: (path: string) => void,
+  toggleOpenBranch: (key: string) => void,
 ): NonNullable<MenuProps['items']>[number] => {
-  const children = menu.children?.map((child) => buildMenuItem(child, navigate)).filter(Boolean);
+  const children = menu.children?.map((child) => buildMenuItem(child, navigate, toggleOpenBranch)).filter(Boolean);
   const hasChildren = Boolean(children && children.length > 0);
 
   return {
@@ -206,6 +207,7 @@ const buildMenuItem = (
     label: menu.label,
     children: hasChildren ? children : undefined,
     popupClassName: hasChildren ? 'app-sidebar-menu-popup' : undefined,
+    onTitleClick: hasChildren ? () => toggleOpenBranch(menu.key) : undefined,
     onClick: hasChildren ? undefined : () => navigate(menu.path || menu.key),
   };
 };
@@ -234,6 +236,25 @@ const findMenuTrail = (menus: AppMenu[], pathname: string, ancestors: AppMenu[] 
   return null;
 };
 
+const findMenuTrailByKey = (menus: AppMenu[], key: string, ancestors: AppMenu[] = []): AppMenu[] | null => {
+  for (const menu of menus) {
+    const trail = [...ancestors, menu];
+
+    if (menu.key === key) {
+      return trail;
+    }
+
+    if (menu.children && menu.children.length > 0) {
+      const childTrail = findMenuTrailByKey(menu.children, key, trail);
+      if (childTrail) {
+        return childTrail;
+      }
+    }
+  }
+
+  return null;
+};
+
 const useLiveNow = (): Dayjs => {
   const [now, setNow] = useState(() => dayjs());
 
@@ -250,7 +271,6 @@ type SidebarContentProps = {
   menuItems: MenuProps['items'];
   selectedMenuKey: string;
   openKeys: string[];
-  onOpenChange: (keys: string[]) => void;
   collapsed?: boolean;
   onToggleCollapsed?: () => void;
   showToggle?: boolean;
@@ -260,7 +280,6 @@ const SidebarContent = ({
   menuItems,
   selectedMenuKey,
   openKeys,
-  onOpenChange,
   collapsed = false,
   onToggleCollapsed,
   showToggle = false,
@@ -300,7 +319,7 @@ const SidebarContent = ({
       <Menu
         mode="inline"
         selectedKeys={[selectedMenuKey]}
-        {...(collapsed ? {} : { openKeys, onOpenChange: (keys: string[]) => onOpenChange(keys) })}
+        {...(collapsed ? {} : { openKeys })}
         items={menuItems}
         className="app-sidebar-menu !border-none !bg-transparent"
         theme="dark"
@@ -434,17 +453,33 @@ export const DashboardLayout = () => {
     },
     [navigate],
   );
-  const menuItems = useMemo<MenuProps['items']>(
-    () => visibleMenus.map((menu) => buildMenuItem(menu, navigateFromMenu)),
-    [navigateFromMenu, visibleMenus],
-  );
   const activeMenuTrail = useMemo(() => findMenuTrail(visibleMenus, location.pathname) ?? [], [location.pathname, visibleMenus]);
   const activeOpenKeys = useMemo(() => activeMenuTrail.slice(0, -1).map((menu) => menu.key), [activeMenuTrail]);
-  const [manualOpenKeys, setManualOpenKeys] = useState<string[]>([]);
-  const openKeys = useMemo(
-    () => Array.from(new Set([...manualOpenKeys, ...activeOpenKeys])),
-    [activeOpenKeys, manualOpenKeys],
+  const [manualOpenKeys, setManualOpenKeys] = useState<string[] | null>(null);
+  const openKeys = manualOpenKeys ?? activeOpenKeys;
+  const handleToggleOpenBranch = useCallback(
+    (key: string) =>
+      setManualOpenKeys((previousOpenKeys) => {
+        const trail = findMenuTrailByKey(visibleMenus, key);
+        if (!trail) {
+          return previousOpenKeys ?? activeOpenKeys;
+        }
+
+        const trailKeys = trail.map((menu) => menu.key);
+        const currentOpenKeys = previousOpenKeys ?? activeOpenKeys;
+        return currentOpenKeys.includes(key) ? trailKeys.slice(0, -1) : trailKeys;
+      }),
+    [activeOpenKeys, visibleMenus],
   );
+  const menuItems = useMemo<MenuProps['items']>(
+    () => visibleMenus.map((menu) => buildMenuItem(menu, navigateFromMenu, handleToggleOpenBranch)),
+    [handleToggleOpenBranch, navigateFromMenu, visibleMenus],
+  );
+
+  useEffect(() => {
+    setManualOpenKeys(null);
+  }, [location.pathname]);
+
   const currentMenuLabel = activeMenuTrail.length > 0 ? activeMenuTrail[activeMenuTrail.length - 1].label : null;
   const selectedMenuKey = activeMenuTrail.length > 0 ? activeMenuTrail[activeMenuTrail.length - 1].key : location.pathname;
   const breadcrumbText = activeMenuTrail.length > 1 ? activeMenuTrail.map((menu) => menu.label).join(' / ') : '后台总览';
@@ -493,7 +528,6 @@ export const DashboardLayout = () => {
       menuItems={menuItems}
       selectedMenuKey={selectedMenuKey}
       openKeys={openKeys}
-      onOpenChange={setManualOpenKeys}
       collapsed={isDesktop && sidebarCollapsed}
       onToggleCollapsed={handleToggleSidebar}
       showToggle={isDesktop}
