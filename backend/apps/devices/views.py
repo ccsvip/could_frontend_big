@@ -46,10 +46,22 @@ class DeviceViewSet(TenantScopedQuerysetMixin, viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='stats')
     def stats(self, request):
         # 缓存键并入租户维度，避免 A 公司的统计被 B 公司命中（跨租户缓存泄漏）。
-        tenant = self.request_tenant
-        cache_key = f'device_stats:{tenant.id if tenant else "all"}'
+        # 超管带 ?tenant=<id> 时按该公司统计，缓存键并入 scoped:<id>，
+        # 与全集统计（device_stats:all）互不串读。
+        user = getattr(request, 'user', None)
+        if user is not None and user.is_superuser:
+            scoped_tenant_id = self.superuser_tenant_filter()
+            cache_key = (
+                f'device_stats:scoped:{scoped_tenant_id}'
+                if scoped_tenant_id is not None
+                else 'device_stats:all'
+            )
+        else:
+            tenant = self.request_tenant
+            cache_key = f'device_stats:{tenant.id if tenant else "all"}'
         stats = cache.get(cache_key)
         if not stats:
+            # get_queryset() 已走 apply_tenant_scope，统计天然按当前作用域正确。
             grouped = self.get_queryset().values('status').annotate(total=Count('id'))
             stats = {
                 'total': self.get_queryset().count(),

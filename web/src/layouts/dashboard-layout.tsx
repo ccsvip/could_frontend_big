@@ -8,6 +8,7 @@ import {
   EnvironmentOutlined,
   ExportOutlined,
   FileImageOutlined,
+  FileSearchOutlined,
   FileTextOutlined,
   LockOutlined,
   LogoutOutlined,
@@ -30,6 +31,7 @@ import dayjs, { type Dayjs } from 'dayjs';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { changePasswordRequest, type ChangePasswordPayload } from '../api/modules/auth';
+import { fetchTenants, type TenantRecord } from '../api/modules/tenants';
 import { BrandMark } from '../components/brand-mark';
 import { useAuthStore, type AppMenu } from '../store/auth';
 
@@ -56,6 +58,7 @@ const menuIconMap = {
   SoundOutlined: <SoundOutlined />,
   MessageOutlined: <MessageOutlined />,
   FileImageOutlined: <FileImageOutlined />,
+  FileSearchOutlined: <FileSearchOutlined />,
   NotificationOutlined: <NotificationOutlined />,
   EnvironmentOutlined: <EnvironmentOutlined />,
   ExportOutlined: <ExportOutlined />,
@@ -63,6 +66,55 @@ const menuIconMap = {
 
 const hiddenMenuPaths = new Set(['/commands/task-lists', 'commands/task-lists']);
 const commandRootPaths = new Set(['/commands', 'commands']);
+
+// 平台超管「按公司浏览」时，每家公司可下钻的业务模块。segment 对应 /tenants/:tenantId/<segment> 子路由，
+// 图标与中文名复用 menuIconMap 风格，保持与后端 menus 渲染一致的观感。
+const SUPER_ADMIN_TENANT_MODULES: ReadonlyArray<{
+  segment: string;
+  label: string;
+  icon: keyof typeof menuIconMap;
+}> = [
+  { segment: 'devices', label: '设备管理', icon: 'DesktopOutlined' },
+  { segment: 'resources', label: '资源管理', icon: 'PictureOutlined' },
+  { segment: 'knowledge-base', label: '知识库', icon: 'FileTextOutlined' },
+  { segment: 'commands', label: '指令管理', icon: 'ThunderboltOutlined' },
+  { segment: 'ai-models', label: 'AI大模型', icon: 'RobotOutlined' },
+];
+
+// 构建超管专属导航树：租户管理(可展开→各公司→各公司业务模块)、账号申请管理、日志管理。
+// 与后端 menus 流程完全分流，仅在 hasPermission('tenant.management.view') 时启用。
+const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
+  {
+    key: 'tenants',
+    label: '租户管理',
+    icon: 'ApartmentOutlined',
+    path: '/tenants',
+    children: tenants.map((tenant) => ({
+      key: `tenant-${tenant.id}`,
+      label: tenant.name,
+      icon: 'TeamOutlined',
+      children: SUPER_ADMIN_TENANT_MODULES.map((module) => ({
+        key: `tenant-${tenant.id}-${module.segment}`,
+        label: module.label,
+        icon: module.icon,
+        path: `/tenants/${tenant.id}/${module.segment}`,
+      })),
+    })),
+  },
+  {
+    key: 'account-applications',
+    label: '账号申请管理',
+    icon: 'SolutionOutlined',
+    path: '/account-applications',
+  },
+  {
+    key: 'logs',
+    label: '日志管理',
+    icon: 'FileSearchOutlined',
+    path: '/logs',
+  },
+];
+
 const commandWorkspacePaths = new Set(['/commands/groups', 'commands/groups']);
 const commandInlineWorkspacePaths = new Set(['/commands/control', 'commands/control', '/commands/tasks', 'commands/tasks']);
 
@@ -243,6 +295,9 @@ export const DashboardLayout = () => {
   const isDesktop = Boolean(screens.lg);
   const now = useLiveNow();
   const { username, role, logout, menus } = useAuthStore();
+  const hasPermission = useAuthStore((state) => state.hasPermission);
+  const isSuperAdmin = hasPermission('tenant.management.view');
+  const [scopedTenants, setScopedTenants] = useState<TenantRecord[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [passwordSubmitting, setPasswordSubmitting] = useState(false);
@@ -303,8 +358,36 @@ export const DashboardLayout = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // 平台超管拉取公司列表，构建「按公司浏览」二级菜单；非超管不发起该请求。
+  useEffect(() => {
+    if (!isSuperAdmin) {
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const data = await fetchTenants({ page_size: 100 });
+        if (!cancelled) {
+          setScopedTenants(data.results);
+        }
+      } catch {
+        // 错误已由响应拦截器统一提示，这里只保证不抛出。
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isSuperAdmin]);
+
+  // 超管走「按公司浏览」自建导航树，与后端 menus 流程彻底分流；其余用户保持原有 menus 渲染。
   // 前端下线任务列表二级菜单，避免后端历史菜单配置继续渲染该入口。
-  const visibleMenus = useMemo(() => normalizeSidebarMenus(filterVisibleMenus(menus)), [menus]);
+  const visibleMenus = useMemo(
+    () =>
+      isSuperAdmin
+        ? buildSuperAdminMenus(scopedTenants)
+        : normalizeSidebarMenus(filterVisibleMenus(menus)),
+    [isSuperAdmin, scopedTenants, menus],
+  );
   const navigateFromMenu = useCallback(
     (path: string) => {
       navigate(path);
