@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      :root {
+        --ink: #0d1018;
+        --ink2: #141926;
+        --panel: #1a2233;
+        --line: #29324a;
+        --fg: #eef1f6;
+        --muted: #8893a7;
+        --accent: #ff8a4c;     /* warm coral — the eye-puller */
+        --accent-dim: #c5663a;
+        --ok: #4fd1a5;         /* healthy / ready signal */
+      }
+
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--ink);
+        font-family: "Space Grotesk", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+        color: var(--fg);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .scene {
+        position: absolute;
+        top: 0; left: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--ink);
+      }
+      #s1 { z-index: 1; }
+      #s2 { z-index: 2; opacity: 0; }
+      #s3 { z-index: 3; opacity: 0; }
+      #s4 { z-index: 4; opacity: 0; }
+      #s5 { z-index: 5; opacity: 0; }
+      #s6 { z-index: 6; opacity: 0; }
+
+      /* shared decoratives */
+      .grid-bg {
+        position: absolute; inset: 0;
+        background-image:
+          linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+        background-size: 64px 64px;
+        mask-image: radial-gradient(ellipse 80% 70% at 50% 45%, #000 40%, transparent 100%);
+      }
+      .glow {
+        position: absolute; border-radius: 50%;
+        filter: blur(70px);
+        pointer-events: none;
+      }
+      .ghost {
+        position: absolute;
+        font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace;
+        font-weight: 700;
+        color: rgba(255,255,255,0.04);
+        white-space: nowrap;
+        pointer-events: none;
+        user-select: none;
+      }
+      .kicker {
+        font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace;
+        font-size: 22px;
+        letter-spacing: 0.42em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      .corner-meta {
+        position: absolute;
+        font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace;
+        font-size: 18px;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+      .rule { background: var(--line); }
+
+      /* ============ SCENE 1 ============ */
+      #s1 .content {
+        position: relative; z-index: 2;
+        width: 100%; height: 100%;
+        display: flex; flex-direction: column; justify-content: center;
+        padding: 0 160px;
+      }
+      #s1 .brand {
+        font-size: 232px; font-weight: 700; line-height: 0.92;
+        letter-spacing: -0.04em;
+      }
+      #s1 .brand .dot { color: var(--accent); }
+      #s1 .title-zh {
+        font-size: 64px; font-weight: 500; letter-spacing: 0.02em;
+        margin-top: 8px; color: var(--fg);
+      }
+      #s1 .subtitle {
+        font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace;
+        font-size: 28px; color: var(--muted);
+        margin-top: 34px; letter-spacing: 0.04em;
+      }
+      #s1 .subtitle b { color: var(--fg); font-weight: 700; }
+      #s1 .s1-rule { height: 3px; width: 0; margin-top: 40px; }
+
+      /* ============ SCENE 2 ============ */
+      #s2 .head { position: absolute; top: 96px; left: 120px; right: 120px; z-index: 2; }
+      #s2 .cmd {
+        font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 46px; font-weight: 700;
+        color: var(--fg); letter-spacing: 0.01em;
+      }
+      #s2 .cmd .prompt { color: var(--accent); }
+      #s2 .sub { font-size: 26px; color: var(--muted); margin-top: 12px; }
+      #s2 .zones {
+        position: absolute; top: 268px; left: 120px; right: 120px; bottom: 110px;
+        z-index: 2; display: grid;
+        grid-template-columns: 1.05fr 1.55fr 1fr; gap: 40px;
+      }
+      .zone {
+        border: 2px solid var(--line); border-radius: 18px;
+        padding: 34px 32px; background: rgba(20,25,38,0.55);
+        display: flex; flex-direction: column;
+      }
+      .zone-label {
+        font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 19px; letter-spacing: 0.22em;
+        text-transform: uppercase; color: var(--muted); margin-bottom: 24px;
+      }
+      .svc {
+        border-radius: 12px; padding: 22px 24px; margin-bottom: 18px;
+        background: var(--ink2); border: 1px solid var(--line);
+      }
+      .svc:last-child { margin-bottom: 0; }
+      .svc .name {
+        font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 30px; font-weight: 700; color: var(--fg);
+      }
+      .svc .meta {
+        font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 20px; color: var(--muted); margin-top: 8px;
+        font-variant-numeric: tabular-nums;
+      }
+      .svc.accent { border-color: var(--accent-dim); }
+      .svc.accent .name { color: var(--accent); }
+      .zone.backend { border-color: var(--accent-dim); }
+      .zone .anchor-note {
+        font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 17px; color: var(--accent-dim);
+        margin-top: auto; padding-top: 18px; letter-spacing: 0.02em;
+      }
+
+      /* ============ SCENE 3 ============ */
+      #s3 .head { position: absolute; top: 96px; left: 120px; z-index: 2; }
+      #s3 .h-zh { font-size: 60px; font-weight: 700; letter-spacing: 0.01em; margin-top: 14px; }
+      #s3 .chain {
+        position: absolute; top: 0; left: 120px; right: 120px; bottom: 0;
+        z-index: 2; display: flex; align-items: center; gap: 0;
+      }
+      .node {
+        border: 2px solid var(--line); border-radius: 16px;
+        background: rgba(20,25,38,0.7); padding: 26px 28px; flex-shrink: 0;
+      }
+      .node .nm { font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 26px; font-weight: 700; }
+      .node .st {
+        font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 17px; color: var(--muted);
+        margin-top: 8px; letter-spacing: 0.02em;
+      }
+      .node.infra { width: 250px; }
+      .node.backend {
+        border-color: var(--accent); width: 300px;
+        box-shadow: 0 0 0 1px rgba(255,138,76,0.25), 0 24px 60px -30px rgba(255,138,76,0.5);
+      }
+      .node.backend .nm { color: var(--accent); }
+      .node.health .st { color: var(--ok); }
+      .node.dep { width: 250px; }
+      .node.dep .st { color: var(--ok); }
+      .col { display: flex; flex-direction: column; gap: 22px; }
+      .connector { flex: 1; height: 3px; position: relative; min-width: 60px; }
+      .connector .fill { position: absolute; inset: 0; transform-origin: left center; background: var(--accent); }
+      .connector .track { position: absolute; inset: 0; background: var(--line); }
+      .gate-tag {
+        position: absolute; z-index: 3; font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace;
+        font-size: 18px; color: var(--ok); letter-spacing: 0.04em;
+        border: 1px solid rgba(79,209,165,0.4); border-radius: 8px;
+        padding: 7px 14px; background: rgba(79,209,165,0.08);
+      }
+
+      /* ============ SCENE 4 ============ */
+      #s4 .head { position: absolute; top: 90px; left: 120px; z-index: 2; }
+      #s4 .h-zh { font-size: 58px; font-weight: 700; margin-top: 14px; }
+      #s4 .steps {
+        position: absolute; top: 286px; left: 120px; right: 120px; z-index: 2;
+        display: flex; flex-direction: column; gap: 16px;
+      }
+      .step {
+        display: flex; align-items: center; gap: 28px;
+        border-left: 3px solid var(--line); padding: 16px 0 16px 30px;
+        position: relative;
+      }
+      .step .idx {
+        font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 22px; color: var(--accent);
+        width: 44px; flex-shrink: 0; font-variant-numeric: tabular-nums;
+      }
+      .step .ccmd {
+        font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 30px; font-weight: 700; color: var(--fg);
+      }
+      .step .note { font-size: 21px; color: var(--muted); margin-left: auto; }
+      .step.final { border-left-color: var(--accent); }
+      .step.final .ccmd { color: var(--accent); }
+      #s4 .warn {
+        position: absolute; bottom: 78px; left: 120px; right: 120px; z-index: 2;
+        font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 21px; color: var(--accent-dim);
+        letter-spacing: 0.01em; border-top: 1px solid var(--line); padding-top: 22px;
+      }
+      #s4 .warn b { color: var(--accent); }
+
+      /* ============ SCENE 5 ============ */
+      #s5 .head { position: absolute; top: 84px; left: 120px; z-index: 3; }
+      #s5 .h-zh { font-size: 56px; font-weight: 700; margin-top: 12px; }
+      #s5 .flow { position: absolute; inset: 0; z-index: 2; }
+      .box {
+        position: absolute; border: 2px solid var(--line); border-radius: 14px;
+        background: rgba(20,25,38,0.85); padding: 22px 26px; z-index: 3;
+      }
+      .box .bt { font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 27px; font-weight: 700; }
+      .box .bm {
+        font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 18px; color: var(--muted);
+        margin-top: 7px; font-variant-numeric: tabular-nums;
+      }
+      .box.b-accent { border-color: var(--accent); }
+      .box.b-accent .bt { color: var(--accent); }
+      .box.b-store { border-color: var(--line); }
+      .wire { position: absolute; height: 3px; transform-origin: left center; z-index: 2; }
+      .wire.main { background: var(--accent); }
+      .wire.store { background: var(--muted); }
+      .wire.sse { background: var(--ok); }
+      .wire-label {
+        position: absolute; font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 17px;
+        color: var(--muted); z-index: 4; letter-spacing: 0.03em;
+      }
+      .wire-label.ok { color: var(--ok); }
+      .wire-label.acc { color: var(--accent); }
+
+      /* ============ SCENE 6 ============ */
+      #s6 .content {
+        position: relative; z-index: 2; width: 100%; height: 100%;
+        display: flex; flex-direction: column; justify-content: center; padding: 0 140px;
+      }
+      #s6 .h-zh { font-size: 74px; font-weight: 700; letter-spacing: 0.01em; }
+      #s6 .ports {
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px;
+        margin-top: 56px;
+      }
+      .port {
+        border: 2px solid var(--line); border-radius: 16px; padding: 30px 30px 34px;
+        background: rgba(20,25,38,0.6);
+      }
+      .port .pn { font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 22px; letter-spacing: 0.16em; color: var(--muted); }
+      .port .pv {
+        font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 78px; font-weight: 700; color: var(--accent);
+        margin-top: 10px; font-variant-numeric: tabular-nums; line-height: 1;
+      }
+      .port .pd { font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 19px; color: var(--muted); margin-top: 12px; }
+      #s6 .access {
+        margin-top: 54px; display: flex; gap: 56px; flex-wrap: wrap;
+        font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-size: 26px; color: var(--fg);
+      }
+      #s6 .access span { color: var(--muted); }
+      #s6 .access b { color: var(--ok); }
+      #s6 .closer {
+        margin-top: 50px; font-size: 40px; font-weight: 500; color: var(--fg);
+      }
+      #s6 .closer .hl { color: var(--accent); font-family: "Space Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace; font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="39"
+      data-width="1920"
+      data-height="1080"
+    >
+      <!-- ===================== SCENE 1 ===================== -->
+      <div id="s1" class="scene">
+        <div class="grid-bg"></div>
+        <div class="glow" data-layout-ignore id="s1-glow" style="width: 760px; height: 760px; background: rgba(255,138,76,0.16); top: -160px; right: -120px;"></div>
+        <div class="ghost" data-layout-ignore id="s1-ghost" style="font-size: 460px; bottom: -120px; left: -40px;">solin</div>
+        <div class="corner-meta" id="s1-meta-tl" style="top: 64px; left: 160px;">// full-stack orchestration flow</div>
+        <div class="corner-meta" id="s1-meta-br" style="bottom: 64px; right: 160px;">docker compose · 6 services</div>
+        <div class="content">
+          <div class="kicker" id="s1-kicker">数字人后台管理平台</div>
+          <div class="brand" id="s1-brand">solin<span class="dot">.</span></div>
+          <div class="title-zh" id="s1-titlezh">前后端全栈编排流程</div>
+          <div class="rule s1-rule" id="s1-rule"></div>
+          <div class="subtitle" id="s1-sub">
+            <b>React 18 SPA</b> &nbsp;·&nbsp; <b>Django 5.2 ASGI</b> &nbsp;·&nbsp; <b>Celery</b> &nbsp;·&nbsp; <b>Postgres / Redis</b>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== SCENE 2 ===================== -->
+      <div id="s2" class="scene">
+        <div class="grid-bg"></div>
+        <div class="glow" data-layout-ignore id="s2-glow" style="width: 680px; height: 680px; background: rgba(255,138,76,0.1); top: 120px; left: 40%;"></div>
+        <div class="corner-meta" style="bottom: 56px; left: 120px;">01 / 06</div>
+        <div class="head">
+          <div class="cmd" id="s2-cmd"><span class="prompt">$</span> docker compose up -d</div>
+          <div class="sub" id="s2-sub">一键编排 6 个容器 · 统一前缀 solin_ · restart: always</div>
+        </div>
+        <div class="zones">
+          <div class="zone" id="s2-z1">
+            <div class="zone-label">数据层 / data</div>
+            <div class="svc"><div class="name">solin_db</div><div class="meta">postgres:16-alpine · :5432</div></div>
+            <div class="svc"><div class="name">solin_redis</div><div class="meta">redis:7-alpine · :6379</div></div>
+          </div>
+          <div class="zone backend" id="s2-z2">
+            <div class="zone-label">后端 / backend (build ./backend)</div>
+            <div class="svc accent"><div class="name">solin_backend</div><div class="meta">uvicorn config.asgi · :8000</div></div>
+            <div class="svc"><div class="name">solin_celery_worker</div><div class="meta">celery -A config worker</div></div>
+            <div class="svc"><div class="name">solin_celery_beat</div><div class="meta">celery beat · DatabaseScheduler</div></div>
+            <div class="anchor-note">三容器共用 x-backend-build 锚点</div>
+          </div>
+          <div class="zone" id="s2-z3">
+            <div class="zone-label">前端 / web</div>
+            <div class="svc"><div class="name">solin_web</div><div class="meta">vite dev · :5173</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== SCENE 3 ===================== -->
+      <div id="s3" class="scene">
+        <div class="grid-bg"></div>
+        <div class="glow" data-layout-ignore id="s3-glow" style="width: 620px; height: 620px; background: rgba(79,209,165,0.1); top: 50%; left: 44%;"></div>
+        <div class="corner-meta" style="bottom: 56px; left: 120px;">02 / 06</div>
+        <div class="head">
+          <div class="kicker" id="s3-kick">depends_on · healthcheck</div>
+          <div class="h-zh" id="s3-h">启动依赖顺序与健康检查门禁</div>
+        </div>
+        <div class="chain">
+          <div class="col" id="s3-infra">
+            <div class="node infra"><div class="nm">db</div><div class="st">service_started</div></div>
+            <div class="node infra"><div class="nm">redis</div><div class="st">service_started</div></div>
+          </div>
+          <div class="connector" id="s3-c1"><div class="track"></div><div class="fill"></div></div>
+          <div class="node backend health" id="s3-be">
+            <div class="nm">backend</div>
+            <div class="st">healthcheck · TCP :8000</div>
+          </div>
+          <div class="connector" id="s3-c2">
+            <div class="track"></div><div class="fill"></div>
+            <div class="gate-tag" id="s3-gate" style="top: -54px; left: 50%; transform: translateX(-50%);">condition: service_healthy</div>
+          </div>
+          <div class="col" id="s3-deps">
+            <div class="node dep"><div class="nm">celery_worker</div><div class="st">migrate --check ✓</div></div>
+            <div class="node dep"><div class="nm">celery_beat</div><div class="st">migrate --check ✓</div></div>
+            <div class="node dep"><div class="nm">web</div><div class="st">等待 backend ✓</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== SCENE 4 ===================== -->
+      <div id="s4" class="scene">
+        <div class="grid-bg"></div>
+        <div class="glow" data-layout-ignore id="s4-glow" style="width: 700px; height: 700px; background: rgba(255,138,76,0.12); top: -120px; left: -80px;"></div>
+        <div class="ghost" data-layout-ignore id="s4-ghost" style="font-size: 300px; bottom: -40px; right: -20px;">init</div>
+        <div class="corner-meta" style="bottom: 56px; left: 120px;">03 / 06</div>
+        <div class="head">
+          <div class="kicker" id="s4-kick">backend command · inline shell</div>
+          <div class="h-zh" id="s4-h">后端启动序列（固化在 compose）</div>
+        </div>
+        <div class="steps">
+          <div class="step"><span class="idx">01</span><span class="ccmd">migrate</span><span class="note">应用数据库迁移</span></div>
+          <div class="step"><span class="idx">02</span><span class="ccmd">seed_operations_periodic_tasks</span><span class="note">种子周期任务</span></div>
+          <div class="step"><span class="idx">03</span><span class="ccmd">collectstatic --noinput</span><span class="note">收集静态资源</span></div>
+          <div class="step"><span class="idx">04</span><span class="ccmd">create_superuser</span><span class="note">admin / admin123456</span></div>
+          <div class="step"><span class="idx">05</span><span class="ccmd">seed_devices</span><span class="note">种子设备数据</span></div>
+          <div class="step final"><span class="idx">06</span><span class="ccmd">uvicorn config.asgi:application</span><span class="note">:8000 · ASGI 监听</span></div>
+        </div>
+        <div class="warn" id="s4-warn">
+          ⚠ 换成 <b>wsgi</b> → 聊天室 SSE 流式退化为阻塞返回 · 丢 <b>seed_*</b> → 设备列表与运维面板为空
+        </div>
+      </div>
+
+      <!-- ===================== SCENE 5 ===================== -->
+      <div id="s5" class="scene">
+        <div class="grid-bg"></div>
+        <div class="glow" data-layout-ignore id="s5-glow" style="width: 640px; height: 640px; background: rgba(255,138,76,0.08); top: 40%; left: 30%;"></div>
+        <div class="corner-meta" style="bottom: 56px; left: 120px;">04 / 06</div>
+        <div class="head">
+          <div class="kicker" id="s5-kick">runtime request flow</div>
+          <div class="h-zh" id="s5-h">运行时请求链路</div>
+        </div>
+        <div class="flow">
+          <!-- wires (behind boxes) -->
+          <div class="wire main" id="w1" style="left: 470px; top: 372px; width: 250px;"></div>
+          <div class="wire main" id="w2" style="left: 980px; top: 372px; width: 250px;"></div>
+          <div class="wire store" id="w3" style="left: 1300px; top: 430px; width: 220px; transform: rotate(34deg);"></div>
+          <div class="wire store" id="w4" style="left: 1300px; top: 410px; width: 250px; transform: rotate(-26deg);"></div>
+          <div class="wire sse" id="w5" style="left: 1290px; top: 372px; width: 300px;"></div>
+
+          <div class="wire-label acc" id="wl1" style="left: 500px; top: 332px;">localhost:5175</div>
+          <div class="wire-label acc" id="wl2" style="left: 1010px; top: 332px;">/api/v1/*</div>
+          <div class="wire-label" id="wl3" style="left: 1380px; top: 540px;">db:5432</div>
+          <div class="wire-label" id="wl4" style="left: 1380px; top: 250px;">redis:6379</div>
+
+          <!-- boxes -->
+          <div class="box" id="bx1" style="left: 150px; top: 330px; width: 320px;">
+            <div class="bt">浏览器</div><div class="bm">Browser · :5175</div>
+          </div>
+          <div class="box" id="bx2" style="left: 720px; top: 330px; width: 260px;">
+            <div class="bt">solin_web</div><div class="bm">vite · :5173</div>
+          </div>
+          <div class="box b-accent" id="bx3" style="left: 1230px; top: 320px; width: 320px;">
+            <div class="bt">solin_backend</div><div class="bm">uvicorn ASGI · :8000</div>
+          </div>
+          <div class="box b-store" id="bx4" style="left: 1560px; top: 560px; width: 250px;">
+            <div class="bt">solin_db</div><div class="bm">postgres · :5432</div>
+          </div>
+          <div class="box b-store" id="bx5" style="left: 1560px; top: 150px; width: 250px;">
+            <div class="bt">solin_redis</div><div class="bm">redis · :6379</div>
+          </div>
+
+          <!-- branches -->
+          <div class="box b-accent" id="bx6" style="left: 700px; top: 720px; width: 470px;">
+            <div class="bt">SSE 流式聊天</div>
+            <div class="bm">async def + StreamingHttpResponse · httpx → LLM 上游</div>
+          </div>
+          <div class="box b-store" id="bx7" style="left: 1230px; top: 720px; width: 470px;">
+            <div class="bt">Celery 异步任务</div>
+            <div class="bm">redis broker → worker / beat</div>
+          </div>
+          <div class="wire-label ok" id="wl5" style="left: 740px; top: 672px;">async streaming</div>
+          <div class="wire-label" id="wl6" style="left: 1270px; top: 672px;">broker: redis://redis:6379/0</div>
+        </div>
+      </div>
+
+      <!-- ===================== SCENE 6 ===================== -->
+      <div id="s6" class="scene">
+        <div class="grid-bg"></div>
+        <div class="glow" data-layout-ignore id="s6-glow" style="width: 820px; height: 820px; background: rgba(255,138,76,0.13); top: -200px; right: -120px;"></div>
+        <div class="ghost" data-layout-ignore id="s6-ghost" style="font-size: 380px; bottom: -110px; left: -30px;">up -d</div>
+        <div class="corner-meta" style="bottom: 56px; right: 140px;">05 / 06</div>
+        <div class="content">
+          <div class="kicker" id="s6-kick">host ports · access</div>
+          <div class="h-zh" id="s6-h">宿主端口与访问入口</div>
+          <div class="ports">
+            <div class="port" id="p1"><div class="pn">WEB</div><div class="pv">5175</div><div class="pd">→ vite 5173</div></div>
+            <div class="port" id="p2"><div class="pn">API</div><div class="pv">8880</div><div class="pd">→ uvicorn 8000</div></div>
+            <div class="port" id="p3"><div class="pn">DB</div><div class="pv">5433</div><div class="pd">→ postgres 5432</div></div>
+            <div class="port" id="p4"><div class="pn">REDIS</div><div class="pv">6380</div><div class="pd">→ redis 6379</div></div>
+          </div>
+          <div class="access" id="s6-access">
+            <div><span>登录</span> &nbsp;<b>admin / admin123456</b></div>
+            <div><span>后台</span> &nbsp;<b>/admin/</b></div>
+            <div><span>OpenAPI</span> &nbsp;<b>/api/docs/</b></div>
+          </div>
+          <div class="closer" id="s6-closer">克隆 + <span class="hl">docker compose up -d</span> 即跑</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // ---- transition helpers (operate on scene CONTAINERS only) ----
+      function crossfade(outSel, inSel, t) {
+        tl.to(outSel, { opacity: 0, filter: "blur(14px)", duration: 0.55, ease: "power2.in" }, t);
+        tl.fromTo(inSel,
+          { opacity: 0, filter: "blur(18px)" },
+          { opacity: 1, filter: "blur(0px)", duration: 0.55, ease: "power2.out" }, t);
+      }
+      function pushSlide(outSel, inSel, t) {
+        tl.to(outSel, { xPercent: -10, opacity: 0, filter: "blur(10px)", duration: 0.5, ease: "power3.in" }, t);
+        tl.fromTo(inSel,
+          { xPercent: 8, opacity: 0, filter: "blur(10px)" },
+          { xPercent: 0, opacity: 1, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, t);
+      }
+
+      /* ================= SCENE 1 : 0 – 5 ================= */
+      tl.fromTo("#s1-kicker", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.6, ease: "power2.out" }, 0.2);
+      tl.fromTo("#s1-brand", { opacity: 0, y: 70, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: "expo.out" }, 0.35);
+      tl.fromTo("#s1-titlezh", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.7);
+      tl.fromTo("#s1-rule", { width: 0 }, { width: 520, duration: 0.8, ease: "power2.inOut" }, 0.95);
+      tl.fromTo("#s1-sub", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: "sine.out" }, 1.15);
+      tl.fromTo("#s1-meta-tl", { opacity: 0 }, { opacity: 1, duration: 0.6 }, 1.3);
+      tl.fromTo("#s1-meta-br", { opacity: 0 }, { opacity: 1, duration: 0.6 }, 1.45);
+      // ambient
+      tl.fromTo("#s1-glow", { scale: 0.85, opacity: 0.7 }, { scale: 1.12, opacity: 1, duration: 2.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 0);
+      tl.fromTo("#s1-ghost", { x: -30, opacity: 0.6 }, { x: 30, opacity: 1, duration: 4.6, ease: "sine.inOut" }, 0);
+
+      /* ================= TRANSITION 1 -> 2 @4.5 ================= */
+      crossfade("#s1", "#s2", 4.5);
+
+      /* ================= SCENE 2 : 5 – 11 ================= */
+      tl.fromTo("#s2-cmd", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, 5.15);
+      tl.fromTo("#s2-sub", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" }, 5.4);
+      tl.fromTo("#s2-z1", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 5.7);
+      tl.fromTo("#s2-z2", { opacity: 0, y: 80, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "expo.out" }, 5.95);
+      tl.fromTo("#s2-z3", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 6.2);
+      tl.fromTo("#s2 .svc", { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.45, stagger: 0.08, ease: "sine.out" }, 6.4);
+      // ambient breathe
+      tl.fromTo("#s2-glow", { scale: 0.9, opacity: 0.6 }, { scale: 1.15, opacity: 1, duration: 3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 5);
+
+      /* ================= TRANSITION 2 -> 3 @10.5 ================= */
+      crossfade("#s2", "#s3", 10.5);
+
+      /* ================= SCENE 3 : 11 – 18 ================= */
+      tl.fromTo("#s3-kick", { opacity: 0, x: -36 }, { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 11.15);
+      tl.fromTo("#s3-h", { opacity: 0, y: 36 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 11.35);
+      tl.fromTo("#s3-infra .node", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 0.55, stagger: 0.12, ease: "power3.out" }, 11.7);
+      tl.fromTo("#s3-c1 .fill", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.inOut" }, 12.2);
+      tl.fromTo("#s3-be", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 12.7);
+      tl.fromTo("#s3-gate", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 13.2);
+      tl.fromTo("#s3-c2 .fill", { scaleX: 0 }, { scaleX: 1, duration: 0.55, ease: "power2.inOut" }, 13.4);
+      tl.fromTo("#s3-deps .node", { opacity: 0, x: 50 }, { opacity: 1, x: 0, duration: 0.55, stagger: 0.14, ease: "power3.out" }, 13.9);
+      // ambient: backend node glow pulse
+      tl.to("#s3-be", { boxShadow: "0 0 0 1px rgba(255,138,76,0.5), 0 24px 70px -24px rgba(255,138,76,0.8)", duration: 1.6, yoyo: true, repeat: 1, ease: "sine.inOut" }, 14.6);
+
+      /* ================= TRANSITION 3 -> 4 @17.4 ================= */
+      crossfade("#s3", "#s4", 17.4);
+
+      /* ================= SCENE 4 : 18 – 25.5 ================= */
+      tl.fromTo("#s4-kick", { opacity: 0, x: -36 }, { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 18.1);
+      tl.fromTo("#s4-h", { opacity: 0, y: 36 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 18.3);
+      tl.fromTo("#s4 .step", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.5, stagger: 0.16, ease: "power2.out" }, 18.65);
+      tl.fromTo("#s4-warn", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: "sine.out" }, 20.2);
+      // ambient ghost drift
+      tl.fromTo("#s4-ghost", { x: 24, opacity: 0.7 }, { x: -24, opacity: 1, duration: 5, ease: "sine.inOut" }, 18);
+
+      /* ================= TRANSITION 4 -> 5 @25 (section change: push) ================= */
+      pushSlide("#s4", "#s5", 25);
+
+      /* ================= SCENE 5 : 25.5 – 32.5 ================= */
+      tl.fromTo("#s5-kick", { opacity: 0, x: -36 }, { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" }, 25.75);
+      tl.fromTo("#s5-h", { opacity: 0, y: 32 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 25.95);
+      tl.fromTo("#bx1", { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 26.3);
+      tl.fromTo("#w1 ", { scaleX: 0 }, { scaleX: 1, duration: 0.35, ease: "power2.inOut" }, 26.6);
+      tl.fromTo("#wl1", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 26.7);
+      tl.fromTo("#bx2", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.5)" }, 26.85);
+      tl.fromTo("#w2", { scaleX: 0 }, { scaleX: 1, duration: 0.35, ease: "power2.inOut" }, 27.15);
+      tl.fromTo("#wl2", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 27.25);
+      tl.fromTo("#bx3", { opacity: 0, scale: 0.88 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, 27.4);
+      tl.fromTo("#w3", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "power2.out" }, 27.9);
+      tl.fromTo("#w4", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "power2.out" }, 27.95);
+      tl.fromTo("#bx4", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 28.2);
+      tl.fromTo("#bx5", { opacity: 0, y: -30 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 28.3);
+      tl.fromTo("#wl3, #wl4", { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.1 }, 28.4);
+      // branches
+      tl.fromTo("#w5", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "power2.inOut" }, 28.7);
+      tl.fromTo("#bx6", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 28.9);
+      tl.fromTo("#bx7", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 29.1);
+      tl.fromTo("#wl5, #wl6", { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.1 }, 29.3);
+      // ambient: backend box pulse
+      tl.to("#bx3", { borderColor: "#ffb07f", duration: 1.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 30);
+
+      /* ================= TRANSITION 5 -> 6 @32 ================= */
+      crossfade("#s5", "#s6", 32);
+
+      /* ================= SCENE 6 : 32.5 – 39 (final) ================= */
+      tl.fromTo("#s6-kick", { opacity: 0, x: -36 }, { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 32.7);
+      tl.fromTo("#s6-h", { opacity: 0, y: 44 }, { opacity: 1, y: 0, duration: 0.7, ease: "expo.out" }, 32.9);
+      tl.fromTo("#s6 .port", { opacity: 0, y: 60, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.55, stagger: 0.1, ease: "back.out(1.4)" }, 33.3);
+      tl.fromTo("#s6 .port .pv", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, stagger: 0.1, ease: "back.out(2)" }, 33.55);
+      tl.fromTo("#s6-access div", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.12, ease: "power2.out" }, 34.2);
+      tl.fromTo("#s6-closer", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 34.8);
+      // ambient glow breathe (final hold — no fade to black so the page rests on the closing card)
+      tl.fromTo("#s6-glow", { scale: 0.9, opacity: 0.7 }, { scale: 1.12, opacity: 1, duration: 2.6, yoyo: true, repeat: 1, ease: "sine.inOut" }, 32.5);
+      tl.fromTo("#s6-ghost", { x: -20, opacity: 0.7 }, { x: 20, opacity: 1, duration: 5, ease: "sine.inOut" }, 32.5);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
