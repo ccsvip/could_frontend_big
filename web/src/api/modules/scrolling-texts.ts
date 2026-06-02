@@ -37,6 +37,7 @@ export type ScrollingTextListResponse = {
 
 export type ScrollingTextListQuery = {
   page?: number;
+  pageSize?: number;
   title?: string;
   keyword?: string;
   status?: ScrollingTextStatusFilter;
@@ -52,6 +53,7 @@ export type ScrollingTextPayload = {
 
 const buildListParams = (query?: ScrollingTextListQuery) => ({
   page: query?.page,
+  page_size: query?.pageSize,
   title: query?.title || undefined,
   keyword: query?.keyword || undefined,
   lang: query?.lang || undefined,

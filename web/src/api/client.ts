@@ -7,7 +7,16 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 // 平台超管「按公司浏览」时，仅业务列表接口允许追加 ?tenant=<id>。
 // 显式白名单避免给 /auth、/tenants、/audit、/menus 等管理类接口注入。
-const TENANT_SCOPED_PREFIXES = ['/devices', '/resources', '/knowledge-base', '/commands', '/ai-models'];
+const TENANT_SCOPED_PREFIXES = [
+  '/devices',
+  '/device-groups',
+  '/device-applications',
+  '/device-authorization-codes',
+  '/resources',
+  '/knowledge-base',
+  '/commands',
+  '/ai-models',
+];
 
 const isTenantScopedUrl = (url?: string): boolean => {
   if (!url) {

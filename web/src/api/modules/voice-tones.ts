@@ -30,6 +30,7 @@ export type VoiceToneStatusFilter = 'all' | 'active' | 'inactive';
 
 export type VoiceToneListQuery = {
   page?: number;
+  pageSize?: number;
   keyword?: string;
   status?: VoiceToneStatusFilter;
 };
@@ -70,6 +71,7 @@ const buildFormData = (payload: VoiceTonePayload) => {
 
 const buildListParams = (query?: VoiceToneListQuery) => ({
   page: query?.page,
+  page_size: query?.pageSize,
   keyword: query?.keyword || undefined,
   is_active:
     query?.status === 'active' ? 'true' : query?.status === 'inactive' ? 'false' : undefined,

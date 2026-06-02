@@ -34,6 +34,7 @@ export type ModelAssetListResponse = {
 
 export type ModelAssetListQuery = {
   page?: number;
+  pageSize?: number;
   keyword?: string;
   modelType?: ModelAssetType;
   orientation?: ModelAssetOrientation;
@@ -76,6 +77,7 @@ const buildFormData = (payload: ModelAssetPayload) => {
 
 const buildListParams = (query?: ModelAssetListQuery) => ({
   page: query?.page,
+  page_size: query?.pageSize,
   keyword: query?.keyword || undefined,
   model_type: query?.modelType || undefined,
   orientation: query?.orientation || undefined,

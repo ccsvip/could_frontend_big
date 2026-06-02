@@ -4,22 +4,8 @@ from django.utils import timezone
 from apps.tenants.managers import TenantManager
 
 
-class Device(models.Model):
-    STATUS_ONLINE = 'online'
-    STATUS_OFFLINE = 'offline'
-    STATUS_MAINTAINING = 'maintaining'
-    STATUS_CHOICES = [
-        (STATUS_ONLINE, '在线'),
-        (STATUS_OFFLINE, '离线'),
-        (STATUS_MAINTAINING, '维护中'),
-    ]
-
-    code = models.CharField('设备编号', max_length=32)
-    name = models.CharField('设备名称', max_length=128)
-    location = models.CharField('部署位置', max_length=128)
-    status = models.CharField('运行状态', max_length=20, choices=STATUS_CHOICES, default=STATUS_OFFLINE)
-    last_heartbeat = models.DateTimeField('最近心跳', default=timezone.now)
-    tenant = models.ForeignKey(
+def _tenant_fk():
+    return models.ForeignKey(
         'tenants.Tenant',
         on_delete=models.CASCADE,
         related_name='+',
@@ -27,6 +13,133 @@ class Device(models.Model):
         null=True,
         blank=True,
     )
+
+
+class DeviceGroup(models.Model):
+    name = models.CharField('分组名称', max_length=128)
+    remark = models.CharField('备注', max_length=255, blank=True, default='')
+    tenant = _tenant_fk()
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        ordering = ['name', 'id']
+        verbose_name = '设备分组'
+        verbose_name_plural = '设备分组'
+        constraints = [
+            models.UniqueConstraint(fields=['tenant', 'name'], name='unique_device_group_name_per_tenant'),
+        ]
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class DeviceApplication(models.Model):
+    name = models.CharField('应用名称', max_length=128)
+    code = models.SlugField('应用标识', max_length=64)
+    description = models.CharField('应用说明', max_length=255, blank=True, default='')
+    is_active = models.BooleanField('是否启用', default=True)
+    tenant = _tenant_fk()
+    resources = models.ManyToManyField(
+        'resources.Resource',
+        blank=True,
+        related_name='device_applications',
+        verbose_name='图片/视频资源',
+    )
+    scrolling_texts = models.ManyToManyField(
+        'resources.ScrollingText',
+        blank=True,
+        related_name='device_applications',
+        verbose_name='滚动文本',
+    )
+    voice_tones = models.ManyToManyField(
+        'resources.VoiceTone',
+        blank=True,
+        related_name='device_applications',
+        verbose_name='音色',
+    )
+    model_assets = models.ManyToManyField(
+        'resources.ModelAsset',
+        blank=True,
+        related_name='device_applications',
+        verbose_name='模型',
+    )
+    command_groups = models.ManyToManyField(
+        'resources.CommandGroup',
+        blank=True,
+        related_name='device_applications',
+        verbose_name='指令分组',
+    )
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        ordering = ['name', 'id']
+        verbose_name = '设备应用'
+        verbose_name_plural = '设备应用'
+        constraints = [
+            models.UniqueConstraint(fields=['tenant', 'code'], name='unique_device_application_code_per_tenant'),
+        ]
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class Device(models.Model):
+    STATUS_ONLINE = 'online'
+    STATUS_OFFLINE = 'offline'
+    AUTHORIZATION_PERMANENT = 'permanent'
+    AUTHORIZATION_TRIAL = 'trial'
+    STATUS_CHOICES = [
+        (STATUS_ONLINE, '在线'),
+        (STATUS_OFFLINE, '离线'),
+    ]
+    AUTHORIZATION_CHOICES = [
+        (AUTHORIZATION_PERMANENT, '永久'),
+        (AUTHORIZATION_TRIAL, '试用'),
+    ]
+
+    # code is the Android-generated unique device code.
+    code = models.CharField('设备码', max_length=128)
+    name = models.CharField('设备名称', max_length=128)
+    location = models.CharField('部署位置', max_length=128, blank=True, default='')
+    status = models.CharField('设备状态', max_length=20, choices=STATUS_CHOICES, default=STATUS_OFFLINE)
+    application = models.ForeignKey(
+        DeviceApplication,
+        on_delete=models.SET_NULL,
+        related_name='devices',
+        verbose_name='绑定应用',
+        null=True,
+        blank=True,
+    )
+    group = models.ForeignKey(
+        DeviceGroup,
+        on_delete=models.SET_NULL,
+        related_name='devices',
+        verbose_name='设备分组',
+        null=True,
+        blank=True,
+    )
+    authorization_type = models.CharField(
+        '授权类型',
+        max_length=20,
+        choices=AUTHORIZATION_CHOICES,
+        default=AUTHORIZATION_PERMANENT,
+    )
+    expires_at = models.DateTimeField('到期时间', null=True, blank=True)
+    software_version = models.CharField('软件版本', max_length=64, blank=True, default='')
+    system_version = models.CharField('系统版本', max_length=128, blank=True, default='')
+    mainboard_info = models.CharField('主板信息', max_length=255, blank=True, default='')
+    is_enabled = models.BooleanField('是否启用', default=True)
+    registered_at = models.DateTimeField('注册时间', null=True, blank=True)
+    last_auth_at = models.DateTimeField('最后认证时间', null=True, blank=True)
+    last_heartbeat = models.DateTimeField('最近心跳', null=True, blank=True)
+    device_info = models.JSONField('设备信息', blank=True, default=dict)
+    tenant = _tenant_fk()
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
 
@@ -42,3 +155,104 @@ class Device(models.Model):
 
     def __str__(self) -> str:
         return f'{self.code} - {self.name}'
+
+    @property
+    def is_expired(self) -> bool:
+        return self.authorization_type == self.AUTHORIZATION_TRIAL and bool(self.expires_at and self.expires_at <= timezone.now())
+
+
+class DeviceAuthorizationCode(models.Model):
+    STATUS_UNUSED = 'unused'
+    STATUS_USED = 'used'
+    STATUS_DISABLED = 'disabled'
+    STATUS_CHOICES = [
+        (STATUS_UNUSED, '未使用'),
+        (STATUS_USED, '已使用'),
+        (STATUS_DISABLED, '已禁用'),
+    ]
+
+    tenant = _tenant_fk()
+    application = models.ForeignKey(
+        DeviceApplication,
+        on_delete=models.CASCADE,
+        related_name='authorization_codes',
+        verbose_name='绑定应用',
+    )
+    code = models.CharField('授权码', max_length=64, unique=True)
+    status = models.CharField('状态', max_length=20, choices=STATUS_CHOICES, default=STATUS_UNUSED)
+    authorization_type = models.CharField(
+        '授权类型',
+        max_length=20,
+        choices=Device.AUTHORIZATION_CHOICES,
+        default=Device.AUTHORIZATION_TRIAL,
+    )
+    expires_at = models.DateTimeField('到期时间', null=True, blank=True)
+    used_at = models.DateTimeField('使用时间', null=True, blank=True)
+    used_by_device = models.ForeignKey(
+        Device,
+        on_delete=models.SET_NULL,
+        related_name='authorization_codes',
+        verbose_name='使用设备',
+        null=True,
+        blank=True,
+    )
+    created_by = models.ForeignKey(
+        'auth.User',
+        on_delete=models.SET_NULL,
+        related_name='+',
+        verbose_name='创建人',
+        null=True,
+        blank=True,
+    )
+    remark = models.CharField('备注', max_length=255, blank=True, default='')
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        ordering = ['-created_at', '-id']
+        verbose_name = '设备授权码'
+        verbose_name_plural = '设备授权码'
+
+    def __str__(self) -> str:
+        return self.code
+
+    @property
+    def is_available(self) -> bool:
+        if self.status != self.STATUS_UNUSED:
+            return False
+        return not (self.expires_at and self.expires_at <= timezone.now())
+
+
+class DeviceAuthLog(models.Model):
+    ACTION_ACTIVATE = 'activate'
+    ACTION_HEARTBEAT = 'heartbeat'
+    ACTION_CONFIG = 'config'
+    ACTION_CHOICES = [
+        (ACTION_ACTIVATE, '激活'),
+        (ACTION_HEARTBEAT, '心跳'),
+        (ACTION_CONFIG, '配置拉取'),
+    ]
+
+    tenant = models.ForeignKey('tenants.Tenant', on_delete=models.CASCADE, related_name='+', null=True, blank=True)
+    application = models.ForeignKey(DeviceApplication, on_delete=models.SET_NULL, related_name='+', null=True, blank=True)
+    device = models.ForeignKey(Device, on_delete=models.SET_NULL, related_name='auth_logs', null=True, blank=True)
+    auth_code = models.ForeignKey(DeviceAuthorizationCode, on_delete=models.SET_NULL, related_name='auth_logs', null=True, blank=True)
+    code = models.CharField('设备码', max_length=128, blank=True, default='')
+    action = models.CharField('动作', max_length=32, choices=ACTION_CHOICES)
+    result = models.BooleanField('结果', default=False)
+    message = models.CharField('消息', max_length=255, blank=True, default='')
+    ip_address = models.GenericIPAddressField('IP', null=True, blank=True)
+    device_info = models.JSONField('设备信息', blank=True, default=dict)
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        ordering = ['-created_at', '-id']
+        verbose_name = '设备授权日志'
+        verbose_name_plural = '设备授权日志'
+
+    def __str__(self) -> str:
+        return f'{self.action}:{self.code}:{self.result}'

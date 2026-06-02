@@ -81,6 +81,29 @@ could_frontend/
 | `solin_celery_beat` | 同 backend | - | - | backend healthy |
 | `solin_web` | build `./web` | `WEB_PORT=5175` | 5173 (vite dev) | backend healthy |
 
+## UNDERSTAND ANYTHING（AI 代码理解辅助）
+
+本仓库允许使用 `understand-anything` 辅助 AI 理解代码结构。它会在根目录 `.understand-anything/` 下生成知识图谱，用于描述文件、函数、类、模块、接口、配置、服务以及它们之间的 `imports` / `calls` / `depends_on` / `configures` 等关系。
+
+使用原则：
+- 当任务涉及陌生模块、跨前后端链路、权限/路由/API/状态流转、Celery/配置/部署影响面时，AI 应优先基于 Understand Anything 做结构理解，再修改代码。
+- 小型、明确、单文件修复可以直接读源码；不要为了 trivial change 强行重建图谱。
+- `.understand-anything/knowledge-graph.json` 是分析产物，不是业务源码。除非用户明确要求更新/删除图谱，否则不要手动编辑或清空 `.understand-anything/`。
+- 如果图谱不存在或明显过期，先运行 `/understand --language zh`；如果需要完整重扫，运行 `/understand --full --language zh`。
+- 生成图谱后，优先用 `/understand-chat <问题>` 查询入口、调用链、依赖关系和影响面，再进入实现。
+
+推荐提问：
+- `/understand-chat 设备管理页面的数据从哪里来？`
+- `/understand-chat 登录、权限、菜单和路由之间是什么关系？`
+- `/understand-chat 修改聊天 SSE 流式输出会影响哪些模块？`
+- `/understand-chat 知识库上传功能涉及哪些前端页面、API 模块和后端接口？`
+
+给后续 AI 的约束：
+- 使用 Understand Anything 得到的是辅助上下文，最终改动仍必须回到真实源码核验。
+- 不要把图谱结论当成唯一事实；关键路径要用 `rg` / 文件读取 / 测试再次确认。
+- 本项目运行、测试、依赖安装仍必须遵守 Docker-only 规则；Understand Anything 只用于代码理解，不替代 `docker compose ...` 验证。
+- 根目录 `understand-anything-guide.html` 是给人看的快速说明页，可作为新协作者了解工具用途的入口。
+
 ## COMMANDS
 
 ```bash
