@@ -69,17 +69,61 @@ const commandRootPaths = new Set(['/commands', 'commands']);
 
 // 平台超管「按公司浏览」时，每家公司可下钻的业务模块。segment 对应 /tenants/:tenantId/<segment> 子路由，
 // 图标与中文名复用 menuIconMap 风格，保持与后端 menus 渲染一致的观感。
-const SUPER_ADMIN_TENANT_MODULES: ReadonlyArray<{
+type SuperAdminTenantModule = {
   segment: string;
   label: string;
   icon: keyof typeof menuIconMap;
-}> = [
+  children?: ReadonlyArray<SuperAdminTenantModule>;
+};
+
+const SUPER_ADMIN_TENANT_MODULES: ReadonlyArray<SuperAdminTenantModule> = [
   { segment: 'devices', label: '设备管理', icon: 'DesktopOutlined' },
-  { segment: 'resources', label: '资源管理', icon: 'PictureOutlined' },
+  {
+    segment: 'resources',
+    label: '资源管理',
+    icon: 'PictureOutlined',
+    children: [
+      { segment: 'images', label: '背景图片管理', icon: 'PictureOutlined' },
+      { segment: 'videos', label: '视频管理', icon: 'VideoCameraOutlined' },
+      { segment: 'scrolling-texts', label: '滚动文本', icon: 'NotificationOutlined' },
+      { segment: 'voice-tones', label: '音色管理', icon: 'CustomerServiceOutlined' },
+      { segment: 'models', label: '模型管理', icon: 'RobotOutlined' },
+    ],
+  },
   { segment: 'knowledge-base', label: '知识库', icon: 'FileTextOutlined' },
   { segment: 'commands', label: '指令管理', icon: 'ThunderboltOutlined' },
-  { segment: 'ai-models', label: 'AI大模型', icon: 'RobotOutlined' },
+  {
+    segment: 'ai-models',
+    label: 'AI大模型',
+    icon: 'RobotOutlined',
+    children: [
+      { segment: 'asr', label: 'ASR管理', icon: 'AudioOutlined' },
+      { segment: 'llm', label: 'LLM管理', icon: 'CloudOutlined' },
+      { segment: 'tts', label: 'TTS管理', icon: 'SoundOutlined' },
+      { segment: 'chat', label: '聊天室', icon: 'MessageOutlined' },
+    ],
+  },
 ];
+
+const buildSuperAdminTenantModuleMenus = (
+  tenantId: number,
+  modules: ReadonlyArray<SuperAdminTenantModule>,
+  parentSegment = '',
+): AppMenu[] =>
+  modules.map((module) => {
+    const segmentPath = parentSegment ? `${parentSegment}/${module.segment}` : module.segment;
+    const children = module.children
+      ? buildSuperAdminTenantModuleMenus(tenantId, module.children, segmentPath)
+      : undefined;
+
+    return {
+      key: `tenant-${tenantId}-${segmentPath}`,
+      label: module.label,
+      icon: module.icon,
+      path: `/tenants/${tenantId}/${segmentPath}`,
+      children: children && children.length > 0 ? children : undefined,
+    };
+  });
 
 // 构建超管专属导航树：租户管理(可展开→各公司→各公司业务模块)、账号申请管理、日志管理。
 // 与后端 menus 流程完全分流，仅在 hasPermission('tenant.management.view') 时启用。
@@ -93,12 +137,7 @@ const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
       key: `tenant-${tenant.id}`,
       label: tenant.name,
       icon: 'TeamOutlined',
-      children: SUPER_ADMIN_TENANT_MODULES.map((module) => ({
-        key: `tenant-${tenant.id}-${module.segment}`,
-        label: module.label,
-        icon: module.icon,
-        path: `/tenants/${tenant.id}/${module.segment}`,
-      })),
+      children: buildSuperAdminTenantModuleMenus(tenant.id, SUPER_ADMIN_TENANT_MODULES),
     })),
   },
   {
