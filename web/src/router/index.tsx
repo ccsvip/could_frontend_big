@@ -9,6 +9,7 @@ import {
 import { LoginPage } from '../views/login';
 import { DashboardLayout } from '../layouts/dashboard-layout';
 import { DeviceManagementPage } from '../views/device-management';
+import { DeviceAuthorizationCenterPage } from '../views/device-authorization-center';
 import { AccountApplicationsPage } from '../views/account-applications/index';
 import { ModelManagementPage } from '../views/model-management';
 import { ResourceManagementPage } from '../views/resource-management';
@@ -268,6 +269,14 @@ export const AppRouter = () => {
             { path: 'ai-models/tts', element: <TtsManagementPage /> },
             { path: 'ai-models/chat', element: <ChatRoomPage /> },
           ],
+        },
+        {
+          path: 'device-authorizations',
+          element: (
+            <PermissionGuard permission="tenant.management.view">
+              <DeviceAuthorizationCenterPage />
+            </PermissionGuard>
+          ),
         },
         {
           path: 'logs',

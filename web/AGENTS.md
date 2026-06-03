@@ -44,6 +44,7 @@ web/
 - **路径**：相对 import，**没有**配置 `@/*` 别名。
 - **样式**：Tailwind utility 优先；Antd 组件保持默认主题；项目内未配 CSS Modules。
 - **请求**：通过 `httpClient` 自动注入 Bearer，401 时自动清 token + 跳 `/login`。
+- **设备实时同步**：设备管理页用 `/ws/devices/events/?token=<JWT>[&tenantId=<公司ID>]` 订阅后台事件；相对 API 地址经 Vite `/ws` proxy 转发，绝不要用 HTTP heartbeat 或手动刷新代替在线 / 离线实时状态。
 - **登录态持久化**：`localStorage`（`token` / `refreshToken` / `username` / `role` / `permissions` / `menus`）；启动时由 `router/index.tsx` 调 `/auth/me/` 校准。
 
 ## ANTI-PATTERNS

@@ -44,6 +44,7 @@ const SIDEBAR_COLLAPSE_STORAGE_KEY = 'app:sidebar-collapsed';
 
 const menuIconMap = {
   DesktopOutlined: <DesktopOutlined />,
+  CheckCircleOutlined: <CheckCircleOutlined />,
   ApartmentOutlined: <ApartmentOutlined />,
   TeamOutlined: <TeamOutlined />,
   SolutionOutlined: <SolutionOutlined />,
@@ -139,6 +140,12 @@ const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
       icon: 'TeamOutlined',
       children: buildSuperAdminTenantModuleMenus(tenant.id, SUPER_ADMIN_TENANT_MODULES),
     })),
+  },
+  {
+    key: 'device-authorizations',
+    label: '设备授权中心',
+    icon: 'CheckCircleOutlined',
+    path: '/device-authorizations',
   },
   {
     key: 'account-applications',
@@ -571,8 +578,8 @@ export const DashboardLayout = () => {
         className="relative z-10 min-h-screen bg-transparent transition-[margin-left] duration-300"
         style={{ marginLeft: isDesktop ? currentSidebarWidth : 0 }}
       >
-        <Header className="sticky top-0 z-40 !h-auto !border-b !border-slate-200/60 !bg-white/85 !px-3 !py-3 !leading-none backdrop-blur-xl sm:!px-4 sm:!py-3 lg:!px-8">
-          <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-2 sm:gap-4">
+        <Header className="sticky top-0 z-40 !h-auto !border-b !border-slate-200/60 !bg-white/85 !px-[2%] !py-3 !leading-none backdrop-blur-xl">
+          <div className="mx-auto flex w-[96%] items-center justify-between gap-2 sm:gap-4">
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
               {!isDesktop ? (
                 <Button
@@ -629,8 +636,8 @@ export const DashboardLayout = () => {
           </div>
         </Header>
 
-        <Content className="px-3 py-4 sm:px-4 sm:py-5 lg:px-8 lg:py-6">
-          <div className="mx-auto max-w-[1600px]">
+        <Content className="px-[2%] py-4 sm:py-5">
+          <div className="mx-auto w-[96%]">
             <Outlet />
           </div>
         </Content>

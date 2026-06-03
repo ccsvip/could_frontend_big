@@ -31,6 +31,38 @@ const statusColor = (code: number): string => {
   return 'default';
 };
 
+const fallbackActionText: Record<OperationLogAction, string> = {
+  create: '新增数据',
+  update: '修改数据',
+  delete: '删除数据',
+};
+
+const pathDescriptionRules: Array<{
+  pattern: RegExp;
+  descriptions: Partial<Record<string, string>>;
+}> = [
+  { pattern: /^\/api\/v1\/tenants\/(?:\d+\/)?$/, descriptions: { POST: '新增公司', PUT: '修改公司', PATCH: '修改公司', DELETE: '删除公司' } },
+  { pattern: /^\/api\/v1\/tenants\/\d+\/assign-menus\/$/, descriptions: { POST: '分配公司菜单' } },
+  { pattern: /^\/api\/v1\/account-applications\/\d+\/approve\/$/, descriptions: { POST: '通过账号申请' } },
+  { pattern: /^\/api\/v1\/account-applications\/\d+\/reject\/$/, descriptions: { POST: '拒绝账号申请' } },
+  { pattern: /^\/api\/v1\/devices\/[^/]+\/$/, descriptions: { PUT: '修改设备', PATCH: '修改设备', DELETE: '删除设备' } },
+  { pattern: /^\/api\/v1\/device-groups\/(?:\d+\/)?$/, descriptions: { POST: '新增设备分组', PUT: '修改设备分组', PATCH: '修改设备分组', DELETE: '删除设备分组' } },
+  { pattern: /^\/api\/v1\/device-applications\/(?:\d+\/)?$/, descriptions: { POST: '新增设备应用', PUT: '修改设备应用', PATCH: '修改设备应用', DELETE: '删除设备应用' } },
+  { pattern: /^\/api\/v1\/device-authorization-requests\/[^/]+\/bind\/$/, descriptions: { POST: '绑定设备到公司' } },
+  { pattern: /^\/api\/v1\/device-authorization-requests\/[^/]+\/ignore\/$/, descriptions: { POST: '忽略设备授权请求' } },
+  { pattern: /^\/api\/v1\/device-authorization-requests\/[^/]+\/authorize\/$/, descriptions: { POST: '再次授权设备' } },
+  { pattern: /^\/api\/v1\/device-authorization-requests\/[^/]+\/revoke\/$/, descriptions: { POST: '撤销设备授权' } },
+  { pattern: /^\/api\/v1\/resources\/[^/]+\/(?:\d+\/)?$/, descriptions: { POST: '新增资源', PUT: '修改资源', PATCH: '修改资源', DELETE: '删除资源' } },
+  { pattern: /^\/api\/v1\/knowledge-base\/(?:\d+\/)?$/, descriptions: { POST: '上传知识库文档', PUT: '修改知识库文档', PATCH: '修改知识库文档', DELETE: '删除知识库文档' } },
+  { pattern: /^\/api\/v1\/ai-models\/[^/]+\/(?:\d+\/)?$/, descriptions: { POST: '新增 AI 模型配置', PUT: '修改 AI 模型配置', PATCH: '修改 AI 模型配置', DELETE: '删除 AI 模型配置' } },
+  { pattern: /^\/api\/v1\/commands\/[^/]+\/(?:\d+\/)?$/, descriptions: { POST: '新增指令数据', PUT: '修改指令数据', PATCH: '修改指令数据', DELETE: '删除指令数据' } },
+];
+
+const describeOperationPath = (path: string, method: string, action: OperationLogAction) => {
+  const rule = pathDescriptionRules.find((item) => item.pattern.test(path));
+  return rule?.descriptions[method] ?? fallbackActionText[action];
+};
+
 export const LogManagementPage = () => {
   const [logs, setLogs] = useState<OperationLogRecord[]>([]);
   const [total, setTotal] = useState(0);
@@ -78,21 +110,21 @@ export const LogManagementPage = () => {
         title: '操作人',
         dataIndex: 'actorUsername',
         key: 'actorUsername',
-        width: 140,
+        width: '10%',
         render: (value: string) => value || <span className="text-slate-400">匿名</span>,
       },
       {
         title: '所属公司',
         dataIndex: 'tenantName',
         key: 'tenantName',
-        width: 160,
+        width: '10%',
         render: (value: string | null) => value || <span className="text-slate-400">—</span>,
       },
       {
         title: '动作',
         dataIndex: 'action',
         key: 'action',
-        width: 90,
+        width: '8%',
         render: (action: OperationLogAction) => {
           const meta = actionMap[action];
           return <Tag color={meta?.color}>{meta?.text ?? action}</Tag>;
@@ -102,28 +134,35 @@ export const LogManagementPage = () => {
         title: '请求方法',
         dataIndex: 'method',
         key: 'method',
-        width: 110,
+        width: '8%',
         render: (method: string) => <Tag color={methodColorMap[method] ?? 'default'}>{method}</Tag>,
       },
       {
         title: '请求路径',
         dataIndex: 'path',
         key: 'path',
+        width: '28%',
         ellipsis: true,
         render: (path: string) => <span className="font-mono text-[13px] text-slate-700">{path}</span>,
+      },
+      {
+        title: '操作说明',
+        key: 'description',
+        width: '20%',
+        render: (_, record) => describeOperationPath(record.path, record.method, record.action),
       },
       {
         title: '状态码',
         dataIndex: 'statusCode',
         key: 'statusCode',
-        width: 100,
+        width: '6%',
         render: (code: number) => <Tag color={statusColor(code)}>{code}</Tag>,
       },
       {
         title: '操作时间',
         dataIndex: 'createdAt',
         key: 'createdAt',
-        width: 180,
+        width: '10%',
       },
     ],
     [],
@@ -174,7 +213,7 @@ export const LogManagementPage = () => {
           dataSource={logs}
           rowKey="id"
           loading={loading}
-          scroll={{ x: 880 }}
+          tableLayout="fixed"
           pagination={{
             current: page,
             pageSize: PAGE_SIZE,
