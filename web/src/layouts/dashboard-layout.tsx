@@ -34,6 +34,7 @@ import { changePasswordRequest, type ChangePasswordPayload } from '../api/module
 import { fetchTenants, type TenantRecord } from '../api/modules/tenants';
 import { BrandMark } from '../components/brand-mark';
 import { useAuthStore, type AppMenu } from '../store/auth';
+import { useTenantScopeStore } from '../store/tenant-scope';
 
 const { Header, Sider, Content } = Layout;
 const { useBreakpoint } = Grid;
@@ -130,10 +131,15 @@ const buildSuperAdminTenantModuleMenus = (
 // 与后端 menus 流程完全分流，仅在 hasPermission('tenant.management.view') 时启用。
 const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
   {
-    key: 'tenants',
+    key: 'tenant-management',
     label: '租户管理',
     icon: 'ApartmentOutlined',
     path: '/tenants',
+  },
+  {
+    key: 'tenant-browse',
+    label: '公司视图',
+    icon: 'TeamOutlined',
     children: tenants.map((tenant) => ({
       key: `tenant-${tenant.id}`,
       label: tenant.name,
@@ -361,6 +367,7 @@ export const DashboardLayout = () => {
   const now = useLiveNow();
   const { username, role, logout, menus } = useAuthStore();
   const hasPermission = useAuthStore((state) => state.hasPermission);
+  const includeHiddenTenants = useTenantScopeStore((state) => state.includeHiddenTenants);
   const isSuperAdmin = hasPermission('tenant.management.view');
   const [scopedTenants, setScopedTenants] = useState<TenantRecord[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -431,7 +438,10 @@ export const DashboardLayout = () => {
     let cancelled = false;
     void (async () => {
       try {
-        const data = await fetchTenants({ page_size: 100 });
+        const data = await fetchTenants({
+          page_size: 100,
+          include_hidden: includeHiddenTenants || undefined,
+        });
         if (!cancelled) {
           setScopedTenants(data.results);
         }
@@ -442,7 +452,7 @@ export const DashboardLayout = () => {
     return () => {
       cancelled = true;
     };
-  }, [isSuperAdmin]);
+  }, [includeHiddenTenants, isSuperAdmin]);
 
   // 超管走「按公司浏览」自建导航树，与后端 menus 流程彻底分流；其余用户保持原有 menus 渲染。
   // 前端下线任务列表二级菜单，避免后端历史菜单配置继续渲染该入口。

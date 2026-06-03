@@ -7,6 +7,7 @@ import {
   Input,
   Modal,
   Space,
+  Switch,
   Table,
   Tag,
   Tree,
@@ -24,7 +25,9 @@ import {
   fetchTenants,
   type MenuCatalogResponse,
   type TenantRecord,
+  updateTenant,
 } from '../../api/modules/tenants';
+import { useTenantScopeStore } from '../../store/tenant-scope';
 
 // 菜单 key -> 权限点 module 的命名约定：去掉开头的 "/"，再把所有 "/" 和 "-" 换成 "_"。
 // 例：/resources/models -> resources_models、/account-applications -> account_applications。
@@ -49,19 +52,22 @@ export const TenantManagementPage = () => {
   const [tenants, setTenants] = useState<TenantRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [createVisible, setCreateVisible] = useState(false);
+  const includeHidden = useTenantScopeStore((state) => state.includeHiddenTenants);
+  const setIncludeHidden = useTenantScopeStore((state) => state.setIncludeHiddenTenants);
   const [form] = Form.useForm<{ name: string }>();
-  const hasLoadedRef = useRef(false);
+  const lastLoadedIncludeHiddenRef = useRef<boolean | null>(null);
 
   const [catalog, setCatalog] = useState<MenuCatalogResponse | null>(null);
   const [assignTenant, setAssignTenant] = useState<TenantRecord | null>(null);
   const [checkedMenuIds, setCheckedMenuIds] = useState<number[]>([]);
   const [checkedPermIds, setCheckedPermIds] = useState<number[]>([]);
   const [assignSaving, setAssignSaving] = useState(false);
+  const [statusSavingTenantId, setStatusSavingTenantId] = useState<number | null>(null);
 
   const loadTenants = async () => {
     setLoading(true);
     try {
-      const data = await fetchTenants();
+      const data = await fetchTenants({ include_hidden: includeHidden || undefined });
       setTenants(data.results);
     } catch {
       // 拦截器已提示
@@ -71,10 +77,10 @@ export const TenantManagementPage = () => {
   };
 
   useEffect(() => {
-    if (hasLoadedRef.current) return;
-    hasLoadedRef.current = true;
+    if (lastLoadedIncludeHiddenRef.current === includeHidden) return;
+    lastLoadedIncludeHiddenRef.current = includeHidden;
     void loadTenants();
-  }, []);
+  }, [includeHidden]);
 
   const handleCreate = async () => {
     try {
@@ -122,6 +128,19 @@ export const TenantManagementPage = () => {
     }
   };
 
+  const handleStatusChange = async (tenant: TenantRecord, isActive: boolean) => {
+    setStatusSavingTenantId(tenant.id);
+    try {
+      await updateTenant(tenant.id, { isActive });
+      message.success(isActive ? '公司已启用' : '公司已停用');
+      void loadTenants();
+    } catch {
+      // 拦截器已提示
+    } finally {
+      setStatusSavingTenantId(null);
+    }
+  };
+
   const menuTree = useMemo(() => (catalog ? buildMenuTree(catalog.menus) : []), [catalog]);
   const permsByModule = useMemo(() => {
     const groups = new Map<string, MenuCatalogResponse['permissionPoints']>();
@@ -160,7 +179,13 @@ export const TenantManagementPage = () => {
       width: 120,
       render: (_, record) => (
         <Space size={4}>
-          <Tag color={record.isActive ? 'success' : 'default'}>{record.isActive ? '启用' : '停用'}</Tag>
+          <Switch
+            checked={record.isActive}
+            loading={statusSavingTenantId === record.id}
+            checkedChildren="启用"
+            unCheckedChildren="停用"
+            onChange={(checked) => void handleStatusChange(record, checked)}
+          />
           {record.isLegacy ? <Tag color="warning">默认公司</Tag> : null}
         </Space>
       ),
@@ -183,9 +208,20 @@ export const TenantManagementPage = () => {
         <Typography.Title level={4} className="!mb-0">
           租户管理
         </Typography.Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateVisible(true)}>
-          新建公司
-        </Button>
+        <Space size={12} wrap>
+          <Typography.Text type="secondary" className="!text-[13px]">
+            公司范围：默认仅显示账号申请开通的公司，开启后显示全部公司
+          </Typography.Text>
+          <Switch
+            checked={includeHidden}
+            onChange={setIncludeHidden}
+            checkedChildren="全部"
+            unCheckedChildren="申请"
+          />
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateVisible(true)}>
+            新建公司
+          </Button>
+        </Space>
       </div>
 
       <Table rowKey="id" columns={columns} dataSource={tenants} loading={loading} />

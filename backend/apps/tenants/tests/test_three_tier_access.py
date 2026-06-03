@@ -89,6 +89,18 @@ class ThreeTierAccessContextTests(APITestCase):
         self.assertNotIn('/t-resources', paths)
         self.assertEqual(ctx['permissions'], ['t.devices.view'])
 
+    def test_inactive_tenant_users_have_no_menus_or_permissions(self):
+        self.tenant.is_active = False
+        self.tenant.save(update_fields=['is_active'])
+
+        admin_ctx = build_user_access_context(self.admin_user)
+        employee_ctx = build_user_access_context(self.employee)
+
+        self.assertEqual(admin_ctx['menus'], [])
+        self.assertEqual(admin_ctx['permissions'], [])
+        self.assertEqual(employee_ctx['menus'], [])
+        self.assertEqual(employee_ctx['permissions'], [])
+
     def test_employee_cannot_exceed_tenant_grant(self):
         # 给员工角色加一个公司并未被分配的菜单/权限，员工仍不应看到（交集裁剪）
         extra = Menu.objects.create(name='额外', key='/t-extra', path='/t-extra', audience=Menu.AUDIENCE_ALL, sort_order=30)

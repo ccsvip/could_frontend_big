@@ -46,7 +46,7 @@ export type TenantMenuSelection = {
   permissionPointIds: number[];
 };
 
-export const fetchTenants = async (params?: { page?: number; page_size?: number }) => {
+export const fetchTenants = async (params?: { page?: number; page_size?: number; include_hidden?: boolean }) => {
   const response = await httpClient.get<TenantListResponse>('/tenants/', { params });
   return response.data;
 };

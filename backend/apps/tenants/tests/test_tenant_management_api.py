@@ -4,7 +4,7 @@ from __future__ import annotations
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 
-from apps.accounts.models import Menu, PermissionPoint
+from apps.accounts.models import AccountApplication, Menu, PermissionPoint
 from apps.tenants.models import Membership, Tenant
 
 User = get_user_model()
@@ -31,6 +31,56 @@ class TenantManagementApiTests(APITestCase):
         self.assertNotIn('/tenants', paths)    # 平台专属不可分配
         self.assertNotIn('/employees', paths)  # 公司管理员专属不可分配
         self.assertIn('permissionPoints', resp.data)
+
+    def test_tenant_list_only_shows_approved_application_companies_by_default(self):
+        self.client.force_authenticate(self.superuser)
+        linked = Tenant.objects.create(name='Linked', code='linked')
+        application = AccountApplication.objects.create(
+            username='linkedadmin',
+            applicant_name='Linked Admin',
+            enterprise_name='Linked',
+            phone='13000000001',
+            password='hash',
+            reason='test',
+            tenant=linked,
+        )
+        AccountApplication.objects.filter(pk=application.pk).update(status=AccountApplication.STATUS_APPROVED)
+        inactive = Tenant.objects.create(name='Inactive', code='inactive', is_active=False)
+        legacy = Tenant.objects.create(name='Legacy', code='legacy', is_legacy=True)
+
+        resp = self.client.get('/api/v1/tenants/')
+
+        self.assertEqual(resp.status_code, 200)
+        tenant_ids = {item['id'] for item in resp.data['results']}
+        self.assertIn(linked.id, tenant_ids)
+        self.assertNotIn(self.tenant.id, tenant_ids)
+        self.assertNotIn(inactive.id, tenant_ids)
+        self.assertNotIn(legacy.id, tenant_ids)
+
+    def test_tenant_list_can_include_hidden_companies(self):
+        self.client.force_authenticate(self.superuser)
+        linked = Tenant.objects.create(name='Linked', code='linked')
+        application = AccountApplication.objects.create(
+            username='linkedadmin',
+            applicant_name='Linked Admin',
+            enterprise_name='Linked',
+            phone='13000000001',
+            password='hash',
+            reason='test',
+            tenant=linked,
+        )
+        AccountApplication.objects.filter(pk=application.pk).update(status=AccountApplication.STATUS_APPROVED)
+        inactive = Tenant.objects.create(name='Inactive', code='inactive', is_active=False)
+        legacy = Tenant.objects.create(name='Legacy', code='legacy', is_legacy=True)
+
+        resp = self.client.get('/api/v1/tenants/?include_hidden=true')
+
+        self.assertEqual(resp.status_code, 200)
+        tenant_ids = {item['id'] for item in resp.data['results']}
+        self.assertIn(linked.id, tenant_ids)
+        self.assertIn(self.tenant.id, tenant_ids)
+        self.assertIn(inactive.id, tenant_ids)
+        self.assertIn(legacy.id, tenant_ids)
 
     def test_superuser_can_create_and_assign_menus(self):
         self.client.force_authenticate(self.superuser)

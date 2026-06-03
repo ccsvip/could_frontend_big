@@ -126,6 +126,8 @@ def get_active_menus_for_user(user: User) -> list[dict[str, Any]]:
     if membership is None:
         return []
     tenant = membership.tenant
+    if not tenant.is_active:
+        return []
 
     if membership.is_tenant_admin:
         # 公司管理员：超管分配给本公司的菜单（均为通用业务菜单） + 所有「公司管理员专属」菜单（员工管理）。
@@ -165,6 +167,8 @@ def get_active_permission_codes_for_user(user: User) -> list[str]:
     if membership is None:
         return []
     tenant = membership.tenant
+    if not tenant.is_active:
+        return []
 
     if membership.is_tenant_admin:
         # 公司管理员：本公司被授权的权限点 + 员工管理能力（额外的、不依赖授权的固有能力）。

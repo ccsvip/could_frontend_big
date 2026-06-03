@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="1152" viewBox="0 0 2048 1152">
+  <defs>
+    <style>
+      .bg { fill: #f7fafc; }
+      .title { font: 700 42px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #132033; }
+      .subtitle { font: 500 22px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #526172; }
+      .section { font: 700 24px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #142033; }
+      .text { font: 500 17px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #233447; }
+      .small { font: 500 15px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #405166; }
+      .tiny { font: 500 13px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #405166; }
+      .badge { font: 700 16px "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif; fill: #ffffff; }
+      .card { stroke-width: 2.5; rx: 18; }
+      .line { stroke: #53667a; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .softline { stroke: #8a98a8; stroke-width: 2.5; fill: none; marker-end: url(#arrowSoft); }
+      .dashed { stroke-dasharray: 10 8; }
+      .tab { fill: #ffffff; stroke: #9bc8bd; stroke-width: 2; rx: 12; }
+      .icon { font: 700 28px Arial, sans-serif; fill: #ffffff; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#53667a"/>
+    </marker>
+    <marker id="arrowSoft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#8a98a8"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1f2d3d" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect class="bg" width="2048" height="1152"/>
+  <text x="1024" y="58" text-anchor="middle" class="title">solin 数字人后台管理平台</text>
+  <text x="1024" y="92" text-anchor="middle" class="subtitle">React 18 + Vite 管理台 / Django 5.2 DRF API / Docker Compose 全栈编排</text>
+
+  <rect x="54" y="126" width="420" height="286" class="card" fill="#e8fbf6" stroke="#18a88d" filter="url(#shadow)"/>
+  <circle cx="94" cy="166" r="22" fill="#18a88d"/><text x="94" y="175" text-anchor="middle" class="icon">W</text>
+  <text x="126" y="174" class="section">前端 Web 管理台 solin_web</text>
+  <text x="78" y="215" class="text">React 18 + Vite + TypeScript strict</text>
+  <text x="78" y="247" class="text">Ant Design 5 + Tailwind CSS + Zustand</text>
+  <text x="78" y="279" class="text">src/api / router / store / views</text>
+  <text x="78" y="311" class="text">AuthGuard / PermissionGuard</text>
+  <text x="78" y="343" class="text">请求：/api/v1/*、/media/*</text>
+  <rect x="78" y="366" width="190" height="30" rx="15" fill="#18a88d"/>
+  <text x="173" y="387" text-anchor="middle" class="badge">端口 5175 → 5173</text>
+
+  <rect x="54" y="440" width="420" height="338" class="card" fill="#f0fffb" stroke="#39b9a4" filter="url(#shadow)"/>
+  <circle cx="94" cy="480" r="22" fill="#39b9a4"/><text x="94" y="489" text-anchor="middle" class="icon">D</text>
+  <text x="126" y="488" class="section">新版设备管理页面</text>
+  <rect x="80" y="520" width="82" height="42" class="tab"/><text x="121" y="547" text-anchor="middle" class="text">设备</text>
+  <rect x="176" y="520" width="82" height="42" class="tab"/><text x="217" y="547" text-anchor="middle" class="text">应用</text>
+  <rect x="272" y="520" width="98" height="42" class="tab"/><text x="321" y="547" text-anchor="middle" class="text">授权码</text>
+  <rect x="384" y="520" width="82" height="42" class="tab"/><text x="425" y="547" text-anchor="middle" class="text">分组</text>
+  <text x="82" y="602" class="text">搜索：设备名 / 设备码</text>
+  <text x="82" y="634" class="text">筛选：状态 / 应用 / 分组 / 授权类型</text>
+  <text x="82" y="666" class="text">编辑：设备名称、分组、启停状态</text>
+  <text x="82" y="698" class="text">管理：应用资源绑定、授权码生成</text>
+  <text x="82" y="730" class="small">API 模块：web/src/api/modules/devices.ts</text>
+
+  <rect x="548" y="126" width="506" height="304" class="card" fill="#eaf3ff" stroke="#3276d6" filter="url(#shadow)"/>
+  <circle cx="590" cy="166" r="22" fill="#3276d6"/><text x="590" y="175" text-anchor="middle" class="icon">A</text>
+  <text x="622" y="174" class="section">后端 API solin_backend</text>
+  <text x="576" y="215" class="text">Django 5.2 + DRF + SimpleJWT</text>
+  <text x="576" y="247" class="text">ASGI / uvicorn：config.asgi:application</text>
+  <text x="576" y="279" class="text">API 根：/api/v1/；Admin：/admin/</text>
+  <text x="576" y="311" class="text">apps：accounts、tenants、devices、resources</text>
+  <text x="576" y="343" class="text">ai_models、knowledge_base、audit</text>
+  <rect x="576" y="366" width="190" height="30" rx="15" fill="#3276d6"/>
+  <text x="671" y="387" text-anchor="middle" class="badge">端口 8880 → 8000</text>
+
+  <rect x="548" y="462" width="506" height="226" class="card" fill="#f0efff" stroke="#6a5bd7" filter="url(#shadow)"/>
+  <circle cx="590" cy="502" r="22" fill="#6a5bd7"/><text x="590" y="511" text-anchor="middle" class="icon">S</text>
+  <text x="622" y="510" class="section">多租户隔离护栏</text>
+  <text x="576" y="550" class="text">Tenant / Membership / TenantManager</text>
+  <text x="576" y="582" class="text">TenantScopedQuerysetMixin 自动收敛查询</text>
+  <text x="576" y="614" class="text">tenant-scope：超管按公司浏览 ?tenant=&lt;id&gt;</text>
+  <text x="576" y="646" class="text">菜单与权限来自 /auth/me/</text>
+  <text x="576" y="674" class="small">目标：防止跨公司数据串读</text>
+
+  <rect x="1132" y="126" width="430" height="286" class="card" fill="#fff3e5" stroke="#f08b26" filter="url(#shadow)"/>
+  <circle cx="1172" cy="166" r="22" fill="#f08b26"/><text x="1172" y="175" text-anchor="middle" class="icon">M</text>
+  <text x="1204" y="174" class="section">设备业务模型</text>
+  <text x="1160" y="215" class="text">DeviceGroup：设备分组</text>
+  <text x="1160" y="247" class="text">DeviceApplication：设备应用</text>
+  <text x="1160" y="279" class="text">DeviceAuthorizationCode：授权码</text>
+  <text x="1160" y="311" class="text">Device：设备，绑定应用与分组</text>
+  <text x="1160" y="343" class="text">DeviceAuthLog：激活 / 配置 / 心跳日志</text>
+  <text x="1160" y="375" class="small">应用绑定：图片/视频、音色、模型、指令分组</text>
+
+  <rect x="1132" y="440" width="430" height="338" class="card" fill="#fff8ec" stroke="#f0a33a" filter="url(#shadow)"/>
+  <circle cx="1172" cy="480" r="22" fill="#f0a33a"/><text x="1172" y="489" text-anchor="middle" class="icon">K</text>
+  <text x="1204" y="488" class="section">设备授权与运行时链路</text>
+  <text x="1160" y="532" class="text">1 后台创建设备应用并绑定资源</text>
+  <text x="1160" y="564" class="text">2 生成设备授权码</text>
+  <text x="1160" y="596" class="text">3 安卓设备提交授权码 + 设备码</text>
+  <text x="1160" y="628" class="text">4 POST /device-auth/activate/</text>
+  <text x="1160" y="660" class="text">5 返回设备 token</text>
+  <text x="1160" y="692" class="text">6 GET /device-runtime/config/ 拉配置</text>
+  <text x="1160" y="724" class="text">7 POST /device-runtime/heartbeat/ 上报心跳</text>
+  <text x="1160" y="756" class="small">DeviceAuthLog 记录激活、配置拉取、心跳</text>
+
+  <rect x="1620" y="126" width="374" height="242" class="card" fill="#fff9d8" stroke="#d5a300" filter="url(#shadow)"/>
+  <circle cx="1660" cy="166" r="22" fill="#d5a300"/><text x="1660" y="175" text-anchor="middle" class="icon">Q</text>
+  <text x="1692" y="174" class="section">异步任务</text>
+  <text x="1648" y="215" class="text">solin_celery_worker：执行后台任务</text>
+  <text x="1648" y="247" class="text">solin_celery_beat：周期任务调度</text>
+  <text x="1648" y="279" class="text">django-celery-beat / results</text>
+  <text x="1648" y="311" class="text">依赖 backend healthy</text>
+
+  <rect x="1620" y="404" width="374" height="374" class="card" fill="#eaf9ec" stroke="#28a55a" filter="url(#shadow)"/>
+  <circle cx="1660" cy="444" r="22" fill="#28a55a"/><text x="1660" y="453" text-anchor="middle" class="icon">I</text>
+  <text x="1692" y="452" class="section">数据与基础设施</text>
+  <text x="1648" y="496" class="text">solin_db：PostgreSQL 16 Alpine</text>
+  <text x="1648" y="528" class="text">端口：5433 → 5432</text>
+  <text x="1648" y="570" class="text">solin_redis：Redis 7 Alpine</text>
+  <text x="1648" y="602" class="text">端口：6380 → 6379</text>
+  <text x="1648" y="644" class="text">Redis：缓存、Celery broker/result</text>
+  <text x="1648" y="676" class="text">media/：上传媒体与资源文件</text>
+  <text x="1648" y="718" class="small">业务数据按 tenant 隔离进入数据库</text>
+
+  <rect x="54" y="836" width="1940" height="118" class="card" fill="#ffffff" stroke="#c9d4df" filter="url(#shadow)"/>
+  <text x="86" y="875" class="section">Docker-only 启动链路</text>
+  <text x="86" y="918" class="text">docker compose up -d → migrate → seed_operations_periodic_tasks → collectstatic → 创建 admin(admin/admin123456) → seed_devices → uvicorn</text>
+  <text x="86" y="945" class="small">硬约束：所有运行、测试、依赖安装都走 docker compose；禁止宿主裸跑 npm / python。</text>
+
+  <rect x="54" y="990" width="1940" height="86" class="card" fill="#f5f8fb" stroke="#d5dde7"/>
+  <text x="86" y="1026" class="section">关键数据流</text>
+  <text x="86" y="1060" class="text">浏览器用户 → Web → /api/v1/* → Backend → PostgreSQL；Backend ↔ Redis；Backend → Celery；安卓设备 → activate/config/heartbeat → Backend → Device / DeviceAuthLog；Web → /media/* → media/</text>
+
+  <path class="line" d="M474 255 C515 255, 515 255, 548 255"/>
+  <path class="line" d="M474 608 C515 608, 515 608, 548 608"/>
+  <path class="line" d="M1054 276 C1090 276, 1090 276, 1132 276"/>
+  <path class="line" d="M1054 612 C1092 612, 1092 612, 1132 612"/>
+  <path class="line" d="M1562 608 C1590 608, 1590 608, 1620 608"/>
+  <path class="softline dashed" d="M1054 346 C1380 346, 1380 238, 1620 238"/>
+  <path class="softline dashed" d="M1760 404 C1760 372, 1760 372, 1760 368"/>
+  <path class="softline" d="M790 430 C790 446, 790 446, 790 462"/>
+  <path class="softline" d="M1807 778 C1807 808, 1807 808, 1807 836"/>
+  <path class="softline" d="M1250 778 C1250 810, 1250 810, 1250 836"/>
+</svg>
