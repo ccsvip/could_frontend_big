@@ -12,6 +12,7 @@ import {
   Button,
   Card,
   Col,
+  DatePicker,
   Form,
   Input,
   Modal,
@@ -25,6 +26,7 @@ import {
   message,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import dayjs, { type Dayjs } from 'dayjs';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
@@ -62,7 +64,9 @@ type DeviceEditForm = {
 };
 
 type ApplicationForm = DeviceApplicationPayload;
-type AuthorizationCodeForm = DeviceAuthorizationCodePayload;
+type AuthorizationCodeForm = Omit<DeviceAuthorizationCodePayload, 'expiresAt'> & {
+  expiresAt?: Dayjs | null;
+};
 type GroupForm = DeviceGroupPayload;
 
 type ResourceOption = {
@@ -262,7 +266,7 @@ export const DeviceManagementPage = () => {
     const created = await createDeviceAuthorizationCode({
       ...values,
       code: values.code.trim(),
-      expiresAt: values.authorizationType === 'trial' ? values.expiresAt : null,
+      expiresAt: values.authorizationType === 'trial' ? values.expiresAt?.toISOString() : null,
       remark: values.remark?.trim(),
     });
     setAuthorizationCodes((current) => [created, ...current]);
@@ -743,7 +747,13 @@ export const DeviceManagementPage = () => {
             {({ getFieldValue }) =>
               getFieldValue('authorizationType') === 'trial' ? (
                 <Form.Item label="到期时间" name="expiresAt" rules={[{ required: true, message: '请选择到期时间' }]}>
-                  <Input type="datetime-local" />
+                  <DatePicker
+                    className="w-full"
+                    format="YYYY-MM-DD HH:mm:ss"
+                    placeholder="请选择到期时间"
+                    showNow={false}
+                    showTime={{ defaultValue: dayjs('23:59:59', 'HH:mm:ss') }}
+                  />
                 </Form.Item>
               ) : null
             }
