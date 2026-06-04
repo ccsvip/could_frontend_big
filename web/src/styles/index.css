@@ -313,6 +313,40 @@ body {
   background: #0d9488;
 }
 
+.scrolling-text-form-modal .ant-modal-content {
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.scrolling-text-form-modal .ant-modal-body {
+  max-height: 68vh;
+  overflow-y: auto;
+  padding-inline-end: 3%;
+  scrollbar-width: thin;
+  scrollbar-color: #0f766e rgba(15, 118, 110, 0.12);
+}
+
+.scrolling-text-form-modal .ant-modal-body::-webkit-scrollbar {
+  width: 0.75rem;
+}
+
+.scrolling-text-form-modal .ant-modal-body::-webkit-scrollbar-track {
+  border-radius: 999rem;
+  background: rgba(15, 118, 110, 0.1);
+}
+
+.scrolling-text-form-modal .ant-modal-body::-webkit-scrollbar-thumb {
+  min-height: 12%;
+  border: 0.16rem solid rgba(240, 253, 250, 0.9);
+  border-radius: 999rem;
+  background: #0f766e;
+}
+
+.scrolling-text-form-modal .ant-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #0d9488;
+}
+
 @keyframes task-step-drop-pulse {
   from {
     opacity: 0.72;

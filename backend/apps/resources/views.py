@@ -515,6 +515,7 @@ class ScrollingTextViewSet(CachedBusinessResponseMixin, PermissionMappedModelVie
             serializer.save(tenant=tenant)
         else:
             serializer.save()
+        self.clear_cached_business_responses()
 
     def list(self, request, *args, **kwargs):
         if not request.query_params:

@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -6,6 +7,7 @@ from rest_framework.test import APITestCase
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.resources.models import ScrollingText, ScrollingTextItem
 from apps.tenants.test_utils import TenantTestMixin
+from config.business_cache import get_business_cache_summaries
 
 User = get_user_model()
 
@@ -20,6 +22,7 @@ LOC_MEM_CACHES = {
 @override_settings(CACHES=LOC_MEM_CACHES)
 class ScrollingTextApiTests(TenantTestMixin, APITestCase):
     def setUp(self):
+        cache.clear()
         self.user = User.objects.create_user(username='scrolling-text-tester', password='test123456')
         self.setup_tenant(self.user)
         self.role = Role.objects.create(name='滚动文本测试角色', code='scrolling_text_tester')
@@ -109,6 +112,34 @@ class ScrollingTextApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['title'], '自动标题中文')
         self.assertTrue(response.data['isActive'])
+
+    def test_create_scrolling_text_invalidates_cached_empty_list(self):
+        self.grant_permissions('resources.scrolling_texts.view', 'resources.scrolling_texts.create')
+        empty_response = self.client.get('/api/v1/resources/scrolling-texts/?page=1&lang=zh')
+
+        self.assertEqual(empty_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(empty_response.data['count'], 0)
+        self.assertEqual(self.get_cache_key_count('scrolling_texts'), 1)
+
+        create_response = self.client.post(
+            '/api/v1/resources/scrolling-texts/',
+            {
+                'i18nScheme': 'zh_en',
+                'items': [
+                    {'order': 1, 'zh': '创建后应立即可见', 'en': 'Visible after create'},
+                ],
+            },
+            format='json',
+        )
+
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.get_cache_key_count('scrolling_texts'), 0)
+
+        list_response = self.client.get('/api/v1/resources/scrolling-texts/?page=1&lang=zh')
+
+        self.assertEqual(list_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(list_response.data['count'], 1)
+        self.assertEqual(list_response.data['results'][0]['localizedItems'][0]['text'], '创建后应立即可见')
 
     def test_list_scrolling_texts_returns_language_specific_texts(self):
         self.grant_permissions('resources.scrolling_texts.view')
@@ -211,3 +242,9 @@ class ScrollingTextApiTests(TenantTestMixin, APITestCase):
         scrolling_text.refresh_from_db()
         self.assertEqual(scrolling_text.title, '新公告')
         self.assertEqual(list(scrolling_text.items.values_list('order', 'zh_text', 'en_text')), [(1, '第一条', 'First'), (2, '第二条', 'Second')])
+
+    def get_cache_key_count(self, namespace: str) -> int:
+        for summary in get_business_cache_summaries():
+            if summary.namespace == namespace:
+                return summary.cache_key_count
+        raise AssertionError(f'缓存命名空间不存在: {namespace}')
