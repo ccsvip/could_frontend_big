@@ -240,7 +240,7 @@ def notify_command_event(
     if command_code:
         lines.insert(0, f'指令标识：{command_code}')
     target_label = '指令名称' if '指令' in command_type else '名称'
-    return notify_business_event(
+    return notify_business_event_card(
         title=f'{command_type}变更通知',
         action=action,
         user=user,

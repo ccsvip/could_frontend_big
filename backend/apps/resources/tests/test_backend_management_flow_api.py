@@ -303,6 +303,26 @@ class BackendManagementFlowApiTests(TenantTestMixin, APITestCase):
             self.tenant.name,
         )
 
+    def test_command_notification_task_sends_feishu_card(self):
+        with patch('apps.resources.services.feishu.send_feishu_card', return_value=True) as send_card:
+            result = notify_command_event_task.run(
+                'create',
+                'flow-tester',
+                'Command Group',
+                'Card Notify Group',
+                '',
+                ['Group Type: Task Command'],
+                self.tenant.name,
+            )
+
+        self.assertEqual(result, 'command_event_notified:create:True')
+        send_card.assert_called_once()
+        sent_card = send_card.call_args.args[0]
+        self.assertEqual(sent_card['config']['wide_screen_mode'], True)
+        self.assertIn('Card Notify Group', str(sent_card))
+        self.assertIn('Group Type: Task Command', str(sent_card))
+        self.assertIn(self.tenant.name, str(sent_card))
+
     def test_feishu_text_appends_configured_server_ip(self):
         captured_payload = {}
 
