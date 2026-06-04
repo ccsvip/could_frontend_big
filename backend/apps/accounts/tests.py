@@ -249,14 +249,16 @@ class AuthApiCsrfTests(APITestCase):
             reason='需要使用后台功能',
         )
 
-        with patch('apps.accounts.services.notifications.send_feishu_text', return_value=True) as send_text:
+        with patch('apps.resources.services.feishu.send_feishu_card', return_value=True) as send_card:
             result = notify_account_application(application.id)
 
         self.assertEqual(result, f'account_application_notified:{application.id}:True')
-        send_text.assert_called_once()
-        sent_text = send_text.call_args.args[0]
-        self.assertIn('企业名称：飞书企业', sent_text)
-        self.assertNotIn('企业邮箱', sent_text)
+        send_card.assert_called_once()
+        sent_card = send_card.call_args.args[0]
+        self.assertEqual(sent_card['config']['wide_screen_mode'], True)
+        self.assertIn('feishuuser', str(sent_card))
+        self.assertIn('飞书企业', str(sent_card))
+        self.assertNotIn('公司名称', str(sent_card))
 
     def test_account_application_review_sends_feishu_notification_with_operator(self):
         from django.contrib.auth.hashers import make_password
@@ -289,7 +291,7 @@ class AuthApiCsrfTests(APITestCase):
         )
         self.client.force_authenticate(user=reviewer)
 
-        with patch('apps.resources.services.feishu.send_feishu_text', return_value=True) as send_text:
+        with patch('apps.resources.services.feishu.send_feishu_card', return_value=True) as send_card:
             response = self.client.patch(
                 f'/api/v1/auth/account-applications/manage/{application.id}/',
                 {'status': AccountApplication.STATUS_APPROVED},
@@ -297,10 +299,12 @@ class AuthApiCsrfTests(APITestCase):
             )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        sent_text = send_text.call_args.args[0]
-        self.assertIn('账号申请审核通知', sent_text)
-        self.assertIn('操作人：solin', sent_text)
-        self.assertIn('登录用户名：reviewtarget', sent_text)
+        send_card.assert_called_once()
+        sent_card = send_card.call_args.args[0]
+        self.assertIn('账号申请审核通知', str(sent_card))
+        self.assertIn('solin', str(sent_card))
+        self.assertIn('reviewtarget', str(sent_card))
+        self.assertIn('审核企业', str(sent_card))
 
 
 class ChangePasswordApiTests(APITestCase):

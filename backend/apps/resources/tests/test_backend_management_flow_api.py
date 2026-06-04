@@ -172,6 +172,7 @@ class BackendManagementFlowApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(task_args[4], 'Notify Power On')  # name_after
         self.assertEqual(task_args[5], '')  # code_before
         self.assertEqual(task_args[6], 'NOTIFY_POWER_ON')  # code_after
+        self.assertEqual(task_args[8], self.tenant.name)
 
     def test_group_and_task_command_mutations_send_feishu_notifications(self):
         self.grant_permissions(
@@ -288,6 +289,7 @@ class BackendManagementFlowApiTests(TenantTestMixin, APITestCase):
                 'Power On',
                 'POWER_ON',
                 ['分组类型：控制指令'],
+                self.tenant.name,
             )
 
         self.assertEqual(result, 'command_event_notified:create:True')
@@ -298,6 +300,7 @@ class BackendManagementFlowApiTests(TenantTestMixin, APITestCase):
             'Power On',
             'POWER_ON',
             ['分组类型：控制指令'],
+            self.tenant.name,
         )
 
     def test_feishu_text_appends_configured_server_ip(self):

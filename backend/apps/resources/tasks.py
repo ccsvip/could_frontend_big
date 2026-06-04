@@ -33,6 +33,18 @@ def _resolve_notification_user(user: Any) -> str:
     return str(user) or '匿名用户'
 
 
+def _resolve_notification_company(user: Any) -> str:
+    """将操作人所属公司转换为可序列化名称，供 Celery 任务使用。"""
+    if user is None or getattr(user, 'is_authenticated', None) is False:
+        return ''
+    try:
+        membership = getattr(user, 'membership', None)
+    except Exception:  # pragma: no cover - 防御第三方 User 实现异常
+        return ''
+    tenant = getattr(membership, 'tenant', None)
+    return str(getattr(tenant, 'name', '') or '').strip()
+
+
 @shared_task
 def notify_command_event_task(
     action: str,
@@ -41,8 +53,9 @@ def notify_command_event_task(
     command_name: str,
     command_code: str = '',
     extra_lines: list[str] | None = None,
+    company_name: str = '',
 ) -> str:
-    notified = notify_command_event(action, user_label, command_type, command_name, command_code, extra_lines)
+    notified = notify_command_event(action, user_label, command_type, command_name, command_code, extra_lines, company_name)
     return f'command_event_notified:{action}:{notified}'
 
 
@@ -56,8 +69,9 @@ def enqueue_command_notification(
 ) -> bool:
     """只投递飞书通知任务，不在接口请求中等待 webhook 结果。"""
     user_label = _resolve_notification_user(user)
+    company_name = _resolve_notification_company(user)
     try:
-        notify_command_event_task.delay(action, user_label, command_type, command_name, command_code, extra_lines or [])
+        notify_command_event_task.delay(action, user_label, command_type, command_name, command_code, extra_lines or [], company_name)
     except Exception as exc:  # pragma: no cover - broker 故障只影响通知投递，不影响业务接口
         logger.warning('Failed to enqueue command notification: %s', exc)
         return False
@@ -74,6 +88,7 @@ def notify_command_change_task(
     command_code_before: str,
     command_code_after: str,
     group_name: str = '',
+    company_name: str = '',
 ) -> str:
     """以卡片形式发送指令名称变更通知。仅在调用方判定字段确实变更后才投递。"""
     notified = notify_command_change(
@@ -85,6 +100,7 @@ def notify_command_change_task(
         command_code_before=command_code_before,
         command_code_after=command_code_after,
         group_name=group_name,
+        company_name=company_name,
     )
     return f'command_change_notified:{action}:{notified}'
 
@@ -102,6 +118,7 @@ def enqueue_command_change_notification(
 ) -> bool:
     """只投递指令名称变更卡片通知任务。"""
     user_label = _resolve_notification_user(user)
+    company_name = _resolve_notification_company(user)
     try:
         notify_command_change_task.delay(
             action,
@@ -112,6 +129,7 @@ def enqueue_command_change_notification(
             command_code_before or '',
             command_code_after or '',
             group_name or '',
+            company_name,
         )
     except Exception as exc:  # pragma: no cover - broker 故障只影响通知投递，不影响业务接口
         logger.warning('Failed to enqueue command change notification: %s', exc)

@@ -1,6 +1,6 @@
 import axios, { type AxiosProgressEvent } from 'axios';
 import { message } from 'antd';
-import { API_BASE_URL, handleUnauthorizedResponse, httpClient } from '../client';
+import { API_BASE_URL, handleUnauthorizedResponse, httpClient, type ApiResponse } from '../client';
 
 export type KnowledgeDocumentStatus = 'pending' | 'approved' | 'rejected';
 
@@ -42,6 +42,11 @@ export type KnowledgeDocumentUploadPayload = {
 export type KnowledgeDocumentUploadOptions = {
   onUploadProgress?: (percent: number) => void;
   timeoutMs?: number;
+};
+
+export type KnowledgeDocumentReviewPayload = {
+  processingStatus: Extract<KnowledgeDocumentStatus, 'approved' | 'rejected'>;
+  processingResult?: string;
 };
 
 const DOWNLOAD_TIMEOUT_MS = 120000;
@@ -191,6 +196,11 @@ export const downloadKnowledgeDocument = async (document: KnowledgeDocumentRecor
 
 export const deleteKnowledgeDocument = async (id: number) => {
   await httpClient.delete(`/knowledge-base/${id}/`);
+};
+
+export const reviewKnowledgeDocument = async (id: number, payload: KnowledgeDocumentReviewPayload) => {
+  const response = await httpClient.post<ApiResponse<KnowledgeDocumentRecord>>(`/knowledge-base/${id}/review/`, payload);
+  return response.data;
 };
 
 export const bulkDownloadKnowledgeDocuments = async (ids: number[]) => {

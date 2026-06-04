@@ -1,8 +1,10 @@
 import type { Key } from 'react';
 import {
+  CheckOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
   CloudUploadOutlined,
+  CloseOutlined,
   DeleteOutlined,
   DownloadOutlined,
   FileOutlined,
@@ -33,6 +35,7 @@ import {
   deleteKnowledgeDocument,
   downloadKnowledgeDocument,
   fetchKnowledgeDocuments,
+  reviewKnowledgeDocument,
   uploadKnowledgeDocument,
   type KnowledgeDocumentListQuery,
   type KnowledgeDocumentRecord,
@@ -97,6 +100,7 @@ export const KnowledgeBasePage = () => {
   const canUpload = hasPermission('knowledge_base.upload');
   const canDownload = hasPermission('knowledge_base.download');
   const canBulkDownload = hasPermission('knowledge_base.bulk_download');
+  const canReview = hasPermission('tenant.management.view');
   const canDelete = canUpload;
 
   const [items, setItems] = useState<KnowledgeDocumentRecord[]>([]);
@@ -108,6 +112,7 @@ export const KnowledgeBasePage = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const [downloadLoadingId, setDownloadLoadingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [reviewLoadingId, setReviewLoadingId] = useState<number | null>(null);
   const [bulkDownloading, setBulkDownloading] = useState(false);
   const [uploadTasks, setUploadTasks] = useState<UploadTask[]>([]);
   const uploadTasksRef = useRef<UploadTask[]>([]);
@@ -258,6 +263,26 @@ export const KnowledgeBasePage = () => {
     }
   }, [items.length, loadData, page, query]);
 
+  const handleReview = useCallback(
+    async (item: KnowledgeDocumentRecord, processingStatus: Extract<KnowledgeDocumentStatus, 'approved' | 'rejected'>) => {
+      setReviewLoadingId(item.id);
+      try {
+        const response = await reviewKnowledgeDocument(item.id, { processingStatus });
+        if (response.data) {
+          setItems((current) => current.map((record) => (record.id === response.data?.id ? response.data : record)));
+        } else {
+          void loadData();
+        }
+        message.success(response.message || (processingStatus === 'approved' ? '审核已通过' : '审核已拒绝'));
+      } catch {
+        // 错误由拦截器统一提示
+      } finally {
+        setReviewLoadingId(null);
+      }
+    },
+    [loadData],
+  );
+
   const columns = useMemo<ColumnsType<KnowledgeDocumentRecord>>(
     () => [
       {
@@ -303,16 +328,6 @@ export const KnowledgeBasePage = () => {
         },
       },
       {
-        title: '处理结果',
-        dataIndex: 'processingResult',
-        key: 'processingResult',
-        render: (value: string) => (
-          <Typography.Paragraph className="!mb-0 !text-slate-500" ellipsis={{ rows: 2, tooltip: value || '暂无处理结果' }}>
-            {value || '暂无处理结果'}
-          </Typography.Paragraph>
-        ),
-      },
-      {
         title: '上传人',
         dataIndex: 'uploadedBy',
         key: 'uploadedBy',
@@ -334,7 +349,7 @@ export const KnowledgeBasePage = () => {
       {
         title: '操作',
         key: 'actions',
-        width: 200,
+        width: 320,
         render: (_, item) => (
           <Space size={0}>
             <Button
@@ -346,6 +361,29 @@ export const KnowledgeBasePage = () => {
             >
               下载
             </Button>
+            {canReview ? (
+              <>
+                <Button
+                  type="link"
+                  icon={<CheckOutlined />}
+                  disabled={item.processingStatus !== 'pending'}
+                  loading={reviewLoadingId === item.id}
+                  onClick={() => void handleReview(item, 'approved')}
+                >
+                  通过
+                </Button>
+                <Button
+                  type="link"
+                  danger
+                  icon={<CloseOutlined />}
+                  disabled={item.processingStatus !== 'pending'}
+                  loading={reviewLoadingId === item.id}
+                  onClick={() => void handleReview(item, 'rejected')}
+                >
+                  拒绝
+                </Button>
+              </>
+            ) : null}
             <Popconfirm
               title="删除文档"
               description={`确认删除“${item.title}”吗？删除后不可恢复。`}
@@ -369,7 +407,7 @@ export const KnowledgeBasePage = () => {
         ),
       },
     ],
-    [canDelete, canDownload, deletingId, downloadLoadingId, handleDelete, handleSingleDownload],
+    [canDelete, canDownload, canReview, deletingId, downloadLoadingId, handleDelete, handleReview, handleSingleDownload, reviewLoadingId],
   );
 
   return (
