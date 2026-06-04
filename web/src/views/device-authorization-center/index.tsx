@@ -1,5 +1,7 @@
 import {
   CheckCircleOutlined,
+  CheckOutlined,
+  CloseOutlined,
   FileSearchOutlined,
   LinkOutlined,
   ReloadOutlined,
@@ -34,6 +36,7 @@ import {
   fetchDeviceGroups,
   ignoreDeviceAuthorizationRequest,
   revokeDeviceAuthorization,
+  updateDeviceAuthorizationRequestName,
   type DeviceActivationLogRecord,
   type DeviceApplicationRecord,
   type DeviceAuthorizationRequestRecord,
@@ -99,6 +102,9 @@ export const DeviceAuthorizationCenterPage = () => {
   const [bindingRequest, setBindingRequest] = useState<DeviceAuthorizationRequestRecord | null>(null);
   const [bindMode, setBindMode] = useState<'bind' | 'authorize'>('bind');
   const [bindSaving, setBindSaving] = useState(false);
+  const [editingDeviceCode, setEditingDeviceCode] = useState<string | null>(null);
+  const [editingDeviceName, setEditingDeviceName] = useState('');
+  const [nameSaving, setNameSaving] = useState(false);
   const [bindForm] = Form.useForm<BindForm>();
   const hasLoadedRef = useRef(false);
 
@@ -323,6 +329,74 @@ export const DeviceAuthorizationCenterPage = () => {
     });
   };
 
+  const openNameEdit = (record: DeviceAuthorizationRequestRecord) => {
+    setEditingDeviceCode(record.deviceCode);
+    setEditingDeviceName(record.name);
+  };
+
+  const cancelNameEdit = () => {
+    setEditingDeviceCode(null);
+    setEditingDeviceName('');
+  };
+
+  const applyRenamedDevice = (updated: DeviceAuthorizationRequestRecord) => {
+    const updateRecord = (item: DeviceAuthorizationRequestRecord) =>
+      item.deviceCode === updated.deviceCode ? { ...item, name: updated.name, updated_at: updated.updated_at } : item;
+    setRequests((items) => items.map(updateRecord));
+    setAuthorizations((items) => items.map(updateRecord));
+    setLogs((items) =>
+      items.map((item) => (item.code === updated.deviceCode ? { ...item, deviceName: updated.name } : item)),
+    );
+  };
+
+  const handleNameSave = async (record: DeviceAuthorizationRequestRecord) => {
+    const nextName = editingDeviceName.trim();
+    if (!nextName) {
+      message.warning('请输入设备名称');
+      return;
+    }
+    setNameSaving(true);
+    try {
+      const updated = await updateDeviceAuthorizationRequestName(record.deviceCode, nextName);
+      applyRenamedDevice(updated);
+      cancelNameEdit();
+      message.success('设备名称已保存');
+    } catch {
+      // Global interceptor displays request errors.
+    } finally {
+      setNameSaving(false);
+    }
+  };
+
+  const renderEditableDeviceName = (record: DeviceAuthorizationRequestRecord) => {
+    if (editingDeviceCode !== record.deviceCode) {
+      return (
+        <Typography.Text className="cursor-text" onDoubleClick={() => openNameEdit(record)}>
+          {record.name || '-'}
+        </Typography.Text>
+      );
+    }
+    return (
+      <Space.Compact className="w-full">
+        <Input
+          autoFocus
+          size="small"
+          value={editingDeviceName}
+          onChange={(event) => setEditingDeviceName(event.target.value)}
+          onPressEnter={() => void handleNameSave(record)}
+        />
+        <Button
+          size="small"
+          type="primary"
+          icon={<CheckOutlined />}
+          loading={nameSaving}
+          onClick={() => void handleNameSave(record)}
+        />
+        <Button size="small" icon={<CloseOutlined />} disabled={nameSaving} onClick={cancelNameEdit} />
+      </Space.Compact>
+    );
+  };
+
   const requestColumns: ColumnsType<DeviceAuthorizationRequestRecord> = [
     {
       title: '设备码',
@@ -336,7 +410,7 @@ export const DeviceAuthorizationCenterPage = () => {
         </Typography.Text>
       ),
     },
-    { title: '设备名称', dataIndex: 'name', key: 'name', width: 170 },
+    { title: '设备名称（双击可修改）', dataIndex: 'name', key: 'name', width: 220, render: (_, record) => renderEditableDeviceName(record) },
     {
       title: '所属公司',
       dataIndex: 'tenantName',
@@ -415,7 +489,7 @@ export const DeviceAuthorizationCenterPage = () => {
         </Typography.Text>
       ),
     },
-    { title: '设备名称', dataIndex: 'name', key: 'name', width: 160 },
+    { title: '设备名称', dataIndex: 'name', key: 'name', width: 220, render: (_, record) => renderEditableDeviceName(record) },
     { title: '所属公司', dataIndex: 'tenantName', key: 'tenantName', width: 160 },
     { title: '应用', dataIndex: 'applicationName', key: 'applicationName', width: 160, render: (value) => value || '-' },
     {

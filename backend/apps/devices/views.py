@@ -37,6 +37,7 @@ AUTHORIZATION_LOG_ACTIONS = {
     DeviceAuthLog.ACTION_AUTHORIZE,
     DeviceAuthLog.ACTION_REVOKE,
 }
+DEFAULT_DEVICE_NAME = '待修改'
 
 def _client_ip(request) -> str | None:
     forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -277,6 +278,16 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
         self._log_platform_action(device, DeviceAuthLog.ACTION_IGNORE, '设备授权请求已忽略', request)
         return Response(DeviceAuthorizationRequestSerializer(device, context={'request': request}).data)
 
+    @action(detail=True, methods=['patch'], url_path='name')
+    def rename(self, request, code=None):
+        device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'group'), code=code)
+        next_name = str(request.data.get('name') or '').strip()
+        if not next_name:
+            return Response({'name': '设备名称不能为空'}, status=status.HTTP_400_BAD_REQUEST)
+        device.name = next_name
+        device.save(update_fields=['name', 'updated_at'])
+        return Response(DeviceAuthorizationRequestSerializer(device, context={'request': request}).data)
+
     @action(detail=True, methods=['post'], url_path='authorize')
     def authorize(self, request, code=None):
         device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'group'), code=code)
@@ -357,7 +368,6 @@ class DeviceActivationView(APIView):
         now = timezone.now()
         device_info = request.data.get('deviceInfo') or request.data.get('device_info') or {}
         defaults = {
-            'name': str(request.data.get('deviceName') or request.data.get('device_name') or device_code).strip(),
             'software_version': str(request.data.get('softwareVersion') or request.data.get('software_version') or '').strip(),
             'system_version': str(request.data.get('systemVersion') or request.data.get('system_version') or '').strip(),
             'mainboard_info': str(request.data.get('mainboardInfo') or request.data.get('mainboard_info') or '').strip(),
@@ -376,6 +386,7 @@ class DeviceActivationView(APIView):
         else:
             device = Device.objects.create(
                 code=device_code,
+                name=DEFAULT_DEVICE_NAME,
                 authorization_type=Device.AUTHORIZATION_PERMANENT,
                 is_enabled=True,
                 **defaults,
@@ -407,7 +418,6 @@ class DeviceActivationView(APIView):
         device_info = raw_device_info if isinstance(raw_device_info, dict) else {'raw': raw_device_info}
         device_info = {
             **device_info,
-            'deviceName': request.data.get('deviceName') or request.data.get('device_name') or '',
             'softwareVersion': request.data.get('softwareVersion') or request.data.get('software_version') or '',
             'systemVersion': request.data.get('systemVersion') or request.data.get('system_version') or '',
             'mainboardInfo': request.data.get('mainboardInfo') or request.data.get('mainboard_info') or '',

@@ -197,7 +197,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['bindingStatus'], 'bound')
         device = Device.objects.get(code='ANDROID-BOARD-001', tenant=self.tenant)
         self.assertEqual(device.application_id, self.application.id)
-        self.assertEqual(device.name, 'Lobby Android')
+        self.assertEqual(device.name, 'Old Name')
         self.assertEqual(device.software_version, '1.2.3')
         self.assertEqual(device.system_version, 'Android 14')
         self.assertEqual(device.mainboard_info, 'rk3588')
@@ -206,7 +206,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
     def test_activate_unknown_device_creates_pending_device(self):
         response = self.client.post(
             '/api/v1/device-auth/activate/',
-            {'deviceCode': 'ANDROID-NEW-001', 'deviceName': 'New Android'},
+            {'deviceCode': 'ANDROID-NEW-001'},
             format='json',
         )
 
@@ -215,7 +215,18 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         device = Device.objects.get(code='ANDROID-NEW-001')
         self.assertIsNone(device.tenant_id)
         self.assertIsNone(device.application_id)
-        self.assertEqual(device.name, 'New Android')
+        self.assertEqual(device.name, '待修改')
+
+    def test_activate_ignores_android_supplied_device_name(self):
+        response = self.client.post(
+            '/api/v1/device-auth/activate/',
+            {'deviceCode': 'ANDROID-NAME-001', 'deviceName': 'Android Supplied Name'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        device = Device.objects.get(code='ANDROID-NAME-001')
+        self.assertEqual(device.name, '待修改')
 
     def test_activate_same_device_code_is_repeatable(self):
         self.client.post(
@@ -231,7 +242,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Device.objects.filter(code='ANDROID-001').count(), 1)
-        self.assertEqual(Device.objects.get(code='ANDROID-001').name, 'Second Name')
+        self.assertEqual(Device.objects.get(code='ANDROID-001').name, '待修改')
 
     def test_device_list_filters_by_name_and_device_code(self):
         group = DeviceGroup.objects.create(tenant=self.tenant, name='Lobby')
@@ -415,6 +426,30 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(logs.status_code, status.HTTP_200_OK)
         actions = [item['action'] for item in logs.data['results']]
         self.assertIn('bind', actions)
+
+    def test_superuser_updates_authorization_request_device_name(self):
+        self.client.post(
+            '/api/v1/device-auth/activate/',
+            {'deviceCode': 'ANDROID-RENAME-001'},
+            format='json',
+        )
+        superuser = User.objects.create_superuser(
+            username='platform-rename',
+            password='test123456',
+            email='platform-rename@example.com',
+        )
+        self.client.force_authenticate(user=superuser)
+
+        response = self.client.patch(
+            '/api/v1/device-authorization-requests/ANDROID-RENAME-001/name/',
+            {'name': 'Front Desk Android'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], 'Front Desk Android')
+        device = Device.objects.get(code='ANDROID-RENAME-001')
+        self.assertEqual(device.name, 'Front Desk Android')
 
     def test_superuser_ignores_activation_request_and_reactivation_restores_pending(self):
         self.client.post(

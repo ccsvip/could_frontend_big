@@ -130,7 +130,7 @@
   <main>
     <header>
       <h1>设备接口最新请求与响应</h1>
-      <p class="meta">更新时间：2026-06-03；接口基地址：宿主 http://localhost:8880/api/v1，容器内 http://backend:8000/api/v1。</p>
+      <p class="meta">更新时间：2026-06-04；接口基地址：宿主 http://localhost:8880/api/v1，容器内 http://backend:8000/api/v1。</p>
       <p class="meta">后台管理端需要 Bearer JWT；安卓运行时端不登录、不携带后台 JWT，只提交 deviceCode。</p>
     </header>
 
@@ -146,8 +146,9 @@
       <p class="warning">在线 / 离线状态不能再由 HTTP heartbeat 判定。只有安卓端连接 `/ws/device-runtime/status/` 成功才置为 online，连接断开才置为 offline。</p>
       <pre>{
   "rules": [
-    "安卓端只传 deviceCode，不传 authCode、tenantId、后台 JWT 或设备 token",
-    "POST /device-auth/activate/ 只负责登记或更新设备档案，不决定在线状态",
+    "安卓端只传 deviceCode，不传 authCode、tenantId、后台 JWT、设备 token 或设备名称",
+    "POST /device-auth/activate/ 只负责登记设备档案与更新版本、系统、主板等运行参数，不决定在线状态",
+    "未知 deviceCode 首次上报时设备名称默认为“待修改”，由超管在设备授权中心双击名称后保存修改",
     "GET /device-runtime/config/ 只在设备已绑定可用应用后返回资源包",
     "POST /device-runtime/heartbeat/ 只兼容旧端更新 lastHeartbeat / softwareVersion / systemVersion",
     "后台设备管理页通过 /ws/devices/events/ 接收设备绑定、撤销、上线、离线事件后自动刷新"
@@ -272,7 +273,7 @@
 
     <section>
       <h2><span class="pill">POST</span>安卓端激活 / 上报设备</h2>
-      <p class="note">请求路径：/api/v1/device-auth/activate/。未知 deviceCode 会创建待绑定设备；已存在设备会更新名称、版本、主板等档案字段。</p>
+      <p class="note">请求路径：/api/v1/device-auth/activate/。未知 deviceCode 会创建待绑定设备，设备名称默认“待修改”；已存在设备只更新版本、系统、主板、deviceInfo 等运行参数，不采信安卓端设备名称。</p>
       <pre>{
   "method": "POST",
   "url": "http://localhost:8880/api/v1/device-auth/activate/",
@@ -281,7 +282,6 @@
   },
   "body": {
     "deviceCode": "ANDROID-NEW-10004",
-    "deviceName": "自助上报设备 D4",
     "softwareVersion": "1.0.0",
     "systemVersion": "Android 14",
     "mainboardInfo": "rk3588",
@@ -302,7 +302,7 @@
     "device": {
       "id": "ANDROID-NEW-10004",
       "deviceCode": "ANDROID-NEW-10004",
-      "name": "自助上报设备 D4",
+      "name": "待修改",
       "status": "offline",
       "applicationId": null,
       "applicationName": "",
@@ -443,6 +443,27 @@
     "deviceCode": "ANDROID-NEW-10004",
     "status": "offline",
     "isEnabled": false
+  }
+}</pre>
+    </section>
+
+    <section>
+      <h2><span class="pill">PATCH</span>超管修改设备名称</h2>
+      <p class="note">请求路径：/api/v1/device-authorization-requests/{deviceCode}/name/。设备授权中心可双击“设备名称”进入编辑态，点击保存后更新后台设备名称；安卓端不传递该字段。</p>
+      <pre>{
+  "method": "PATCH",
+  "url": "http://localhost:8880/api/v1/device-authorization-requests/ANDROID-NEW-10004/name/",
+  "headers": {
+    "Authorization": "Bearer ***masked***",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "name": "展厅数字人终端"
+  },
+  "response": {
+    "deviceCode": "ANDROID-NEW-10004",
+    "name": "展厅数字人终端",
+    "bindingStatus": "pending"
   }
 }</pre>
     </section>

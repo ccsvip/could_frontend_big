@@ -474,14 +474,9 @@
           <label>设备码
             <input id="deviceCode">
           </label>
-          <div class="two">
-            <label>设备名称
-              <input id="deviceName" value="展厅数字人终端">
-            </label>
-            <label>主板信息
-              <input id="mainboardInfo" value="rk3588">
-            </label>
-          </div>
+          <label>主板信息
+            <input id="mainboardInfo" value="rk3588">
+          </label>
           <div class="two">
             <label>软件版本
               <input id="softwareVersion" value="1.0.0">
@@ -570,7 +565,6 @@
     const els = {
       apiBase: $('apiBase'),
       deviceCode: $('deviceCode'),
-      deviceName: $('deviceName'),
       softwareVersion: $('softwareVersion'),
       systemVersion: $('systemVersion'),
       mainboardInfo: $('mainboardInfo'),
@@ -626,7 +620,6 @@
     function activationPayload() {
       return {
         deviceCode: els.deviceCode.value.trim(),
-        deviceName: els.deviceName.value.trim(),
         softwareVersion: els.softwareVersion.value.trim(),
         systemVersion: els.systemVersion.value.trim(),
         mainboardInfo: els.mainboardInfo.value.trim(),

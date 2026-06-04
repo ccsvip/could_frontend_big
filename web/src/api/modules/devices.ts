@@ -205,6 +205,14 @@ export const fetchDeviceAuthorizations = async (query?: { page?: number; keyword
   return response.data;
 };
 
+export const updateDeviceAuthorizationRequestName = async (deviceCode: string, name: string) => {
+  const response = await httpClient.patch<DeviceAuthorizationRequestRecord>(
+    `/device-authorization-requests/${encodeURIComponent(deviceCode)}/name/`,
+    { name },
+  );
+  return response.data;
+};
+
 export const fetchDeviceActivationLogs = async (query?: { page?: number; keyword?: string; tenantId?: number }) => {
   const response = await httpClient.get<PaginatedResponse<DeviceActivationLogRecord>>(
     '/device-authorization-requests/logs/',
