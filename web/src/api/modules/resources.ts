@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { httpClient } from '../client';
 
 export type ResourceType = 'image' | 'video';
@@ -12,6 +13,8 @@ export type ResourceRecord = {
   categoryLabel: string;
   description: string;
   cloudUrl: string;
+  objectKey?: string;
+  objectSize?: number | null;
   fileUrl: string;
   fileName: string;
   fileSize: number | null;
@@ -40,6 +43,8 @@ export type ResourcePayload = {
   category: ResourceCategory;
   description?: string;
   cloudUrl?: string;
+  objectKey?: string;
+  objectSize?: number | null;
   file?: File;
   clearFile?: boolean;
 };
@@ -50,6 +55,12 @@ const buildFormData = (payload: ResourcePayload) => {
   formData.append('category', payload.category);
   formData.append('description', payload.description || '');
   formData.append('cloudUrl', payload.cloudUrl || '');
+  if (payload.objectKey) {
+    formData.append('objectKey', payload.objectKey);
+  }
+  if (payload.objectSize != null) {
+    formData.append('objectSize', String(payload.objectSize));
+  }
   if (payload.file) {
     formData.append('file', payload.file);
   }
@@ -102,4 +113,78 @@ export const updateVideoResource = async (id: number, payload: ResourcePayload) 
 
 export const deleteVideoResource = async (id: number) => {
   await httpClient.delete(`/resources/videos/${id}/`);
+};
+
+export type VideoUploadConfig = {
+  enabled: boolean;
+  maxSizeBytes: number;
+  maxSizeMB: number;
+  bucketName: string;
+  expiresIn: number;
+  allowCloudUrl: boolean;
+  quotaLimited: boolean;
+  quotaMB: number | null;
+  quotaBytes: number | null;
+  usedBytes: number;
+  remainingBytes: number | null;
+  usedMB: number;
+  remainingMB: number | null;
+};
+
+export type VideoPresignResponse = {
+  uploadUrl: string;
+  objectKey: string;
+  publicUrl: string;
+  bucket: string;
+  expiresIn: number;
+  maxSizeBytes: number;
+  objectSize: number;
+  quotaLimited: boolean;
+  quotaMB: number | null;
+  quotaBytes: number | null;
+  usedBytes: number;
+  remainingBytes: number | null;
+  usedMB: number;
+  remainingMB: number | null;
+  headers: Record<string, string>;
+};
+
+export const fetchVideoUploadConfig = async () => {
+  const response = await httpClient.get<VideoUploadConfig>('/resources/videos/upload-config/');
+  return response.data;
+};
+
+export const presignVideoUpload = async (params: { filename: string; contentType: string; fileSize: number }) => {
+  const response = await httpClient.post<VideoPresignResponse>('/resources/videos/presign/', {
+    filename: params.filename,
+    contentType: params.contentType,
+    fileSize: params.fileSize,
+  });
+  return response.data;
+};
+
+export const uploadFileToPresignedUrl = async (
+  uploadUrl: string,
+  file: File,
+  options: {
+    headers?: Record<string, string>;
+    onProgress?: (percent: number, loaded: number, total: number) => void;
+    signal?: AbortSignal;
+  } = {},
+) => {
+  await axios.put(uploadUrl, file, {
+    headers: options.headers,
+    timeout: 0,
+    signal: options.signal,
+    onUploadProgress: (event) => {
+      if (!options.onProgress) {
+        return;
+      }
+      const total = event.total ?? file.size;
+      const loaded = event.loaded;
+      const percent = total > 0 ? Math.min(100, Math.round((loaded / total) * 100)) : 0;
+      options.onProgress(percent, loaded, total);
+    },
+    transformRequest: [(data) => data],
+  });
 };

@@ -14,9 +14,11 @@ import {
   Form,
   Image,
   Input,
+  message,
   Modal,
   Pagination,
   Popconfirm,
+  Progress,
   Select,
   Space,
   Tag,
@@ -32,12 +34,16 @@ import {
   deleteVideoResource,
   fetchImageResources,
   fetchVideoResources,
+  fetchVideoUploadConfig,
+  presignVideoUpload,
+  uploadFileToPresignedUrl,
   updateImageResource,
   updateVideoResource,
   type ResourceCategory,
   type ResourceListQuery,
   type ResourceRecord,
   type ResourceType,
+  type VideoUploadConfig,
 } from '../../api/modules/resources';
 import { useAuthStore } from '../../store/auth';
 
@@ -99,6 +105,13 @@ const VIDEO_THUMBNAIL_CONCURRENCY = 2;
 const VIDEO_THUMBNAIL_CAPTURE_TIME = 0.8;
 const VIDEO_THUMBNAIL_TIMEOUT_MS = 10000;
 const resourceGridClassName = 'grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4';
+
+const formatFileMB = (bytes: number | null | undefined) => {
+  if (bytes == null) {
+    return '不限制';
+  }
+  return `${(bytes / 1024 / 1024).toFixed(1)}MB`;
+};
 const previewModalWidth = {
   imageHorizontal: 960,
   imageVertical: 560,
@@ -490,6 +503,16 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
   const [editingItem, setEditingItem] = useState<ResourceRecord | null>(null);
   const [formVisible, setFormVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [videoUploadConfig, setVideoUploadConfig] = useState<VideoUploadConfig | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<{
+    visible: boolean;
+    percent: number;
+    loaded: number;
+    total: number;
+    status: 'active' | 'success' | 'exception';
+    message: string;
+  }>({ visible: false, percent: 0, loaded: 0, total: 0, status: 'active', message: '' });
+  const uploadAbortRef = useRef<AbortController | null>(null);
   const [form] = Form.useForm<ResourceFormValues>();
 
   const query = useMemo<ResourceListQuery>(() => ({ page, category, keyword }), [page, category, keyword]);
@@ -511,8 +534,20 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
     void loadData();
   }, [loadData]);
 
+  useEffect(() => {
+    if (resourceType !== 'video') {
+      return;
+    }
+    fetchVideoUploadConfig()
+      .then(setVideoUploadConfig)
+      .catch(() => {
+        setVideoUploadConfig(null);
+      });
+  }, [resourceType]);
+
   const openCreateModal = () => {
     setEditingItem(null);
+    setUploadProgress({ visible: false, percent: 0, loaded: 0, total: 0, status: 'active', message: '' });
     form.resetFields();
     form.setFieldsValue({ category: 'uncategorized', clearFile: false, cloudUrl: '', file: [] });
     setFormVisible(true);
@@ -520,6 +555,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
 
   const openEditModal = (item: ResourceRecord) => {
     setEditingItem(item);
+    setUploadProgress({ visible: false, percent: 0, loaded: 0, total: 0, status: 'active', message: '' });
     form.setFieldsValue({
       name: item.name,
       category: item.category,
@@ -532,8 +568,11 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
   };
 
   const closeFormModal = () => {
+    uploadAbortRef.current?.abort();
+    uploadAbortRef.current = null;
     setFormVisible(false);
     setEditingItem(null);
+    setUploadProgress({ visible: false, percent: 0, loaded: 0, total: 0, status: 'active', message: '' });
     form.resetFields();
   };
 
@@ -550,16 +589,109 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
     }
   };
 
+  const uploadVideoToMinio = async (file: File): Promise<{ objectKey: string; objectSize: number } | null> => {
+    if (videoUploadConfig && !videoUploadConfig.enabled) {
+      message.error('MinIO 视频直传未启用，请填写云端 URL 或联系超级管理员');
+      return null;
+    }
+    const maxSizeBytes = videoUploadConfig?.maxSizeBytes;
+    if (maxSizeBytes && file.size > maxSizeBytes) {
+      message.error(`视频大小超出限制，最多 ${videoUploadConfig?.maxSizeMB ?? Math.floor(maxSizeBytes / 1024 / 1024)}MB`);
+      return null;
+    }
+
+    if (videoUploadConfig?.quotaLimited && videoUploadConfig.remainingBytes != null && file.size > videoUploadConfig.remainingBytes) {
+      message.error('公司视频剩余额度不足，请联系超级管理员调整额度');
+      return null;
+    }
+
+    const controller = new AbortController();
+    uploadAbortRef.current = controller;
+    setUploadProgress({
+      visible: true,
+      percent: 0,
+      loaded: 0,
+      total: file.size,
+      status: 'active',
+      message: '正在申请上传地址...',
+    });
+
+    try {
+      const presigned = await presignVideoUpload({
+        filename: file.name,
+        contentType: file.type || 'application/octet-stream',
+        fileSize: file.size,
+      });
+      setUploadProgress((prev) => ({ ...prev, message: '正在上传...' }));
+      await uploadFileToPresignedUrl(presigned.uploadUrl, file, {
+        headers: presigned.headers,
+        signal: controller.signal,
+        onProgress: (percent, loaded, total) => {
+          setUploadProgress({
+            visible: true,
+            percent,
+            loaded,
+            total,
+            status: 'active',
+            message: percent >= 100 ? '上传完成，正在保存...' : `已上传 ${percent}%`,
+          });
+        },
+      });
+      setUploadProgress((prev) => ({ ...prev, percent: 100, status: 'success', message: '上传完成' }));
+      return { objectKey: presigned.objectKey, objectSize: presigned.objectSize ?? file.size };
+    } catch (error) {
+      const aborted = controller.signal.aborted || (error as Error)?.name === 'CanceledError';
+      setUploadProgress((prev) => ({
+        ...prev,
+        status: 'exception',
+        message: aborted ? '上传已取消' : '上传失败',
+      }));
+      if (!aborted) {
+        message.error('视频上传到 MinIO 失败，请重试');
+      }
+      return null;
+    } finally {
+      uploadAbortRef.current = null;
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
       setSubmitting(true);
+      const selectedFile = values.file?.[0]?.originFileObj;
+      const cloudUrl = showCloudUrlField ? values.cloudUrl?.trim() || '' : '';
+      let objectKey = '';
+      let objectSize: number | null = null;
+      let file = selectedFile;
+
+      if (resourceType === 'video' && selectedFile && cloudUrl) {
+        message.error('上传视频和云端 URL 只能二选一');
+        return;
+      }
+      if (resourceType === 'video' && !selectedFile && !cloudUrl && !editingItem?.hasFile) {
+        message.error(showCloudUrlField ? '请上传视频或填写云端 URL' : '请上传视频');
+        return;
+      }
+
+      if (resourceType === 'video' && selectedFile) {
+        const uploaded = await uploadVideoToMinio(selectedFile);
+        if (!uploaded) {
+          return;
+        }
+        objectKey = uploaded.objectKey;
+        objectSize = uploaded.objectSize;
+        file = undefined;
+      }
+
       const payload = {
         name: values.name,
         category: values.category,
         description: values.description,
-        cloudUrl: values.cloudUrl?.trim() || '',
-        file: values.file?.[0]?.originFileObj,
+        cloudUrl,
+        objectKey: objectKey || undefined,
+        objectSize,
+        file,
         clearFile: resourceType === 'image' ? Boolean(values.clearFile) : false,
       };
 
@@ -567,6 +699,20 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         await config.updater(editingItem.id, payload);
       } else {
         await config.creator(payload);
+      }
+
+      if (resourceType === 'video' && objectSize != null) {
+        setVideoUploadConfig((current) => current
+          ? {
+              ...current,
+              usedBytes: current.usedBytes + objectSize,
+              remainingBytes: current.remainingBytes == null ? null : Math.max(0, current.remainingBytes - objectSize),
+              usedMB: Math.round(((current.usedBytes + objectSize) / 1024 / 1024) * 100) / 100,
+              remainingMB: current.remainingBytes == null
+                ? null
+                : Math.round((Math.max(0, current.remainingBytes - objectSize) / 1024 / 1024) * 100) / 100,
+            }
+          : current);
       }
 
       closeFormModal();
@@ -582,6 +728,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
   };
 
   const emptyDescription = resourceType === 'image' ? '暂无背景图资源，请先上传图片。' : '暂无视频资源，请先上传视频。';
+  const showCloudUrlField = resourceType === 'image' || videoUploadConfig?.allowCloudUrl !== false;
 
   return (
     <Space direction="vertical" size={18} className="w-full">
@@ -735,9 +882,11 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
           <Form.Item label="资源说明" name="description">
             <Input.TextArea rows={3} placeholder="请输入资源说明" />
           </Form.Item>
-          <Form.Item label="云端URL地址（选填）" name="cloudUrl">
-            <Input placeholder="请输入云端 URL（选填）" />
-          </Form.Item>
+          {showCloudUrlField ? (
+            <Form.Item label="云端URL地址（选填）" name="cloudUrl">
+              <Input placeholder="请输入云端 URL（选填）" />
+            </Form.Item>
+          ) : null}
           <Form.Item
             label={resourceType === 'image' ? '上传背景图（选填）' : '上传视频（选填）'}
             name="file"
@@ -749,9 +898,31 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
             </Upload>
           </Form.Item>
           {resourceType === 'video' ? (
-            <Typography.Text className="!text-slate-500">
-              上传视频和云端URL都为选填，即便两者都不填写也可以创建视频资源。
-            </Typography.Text>
+            <Space direction="vertical" size={8} className="mb-3 w-full">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                <Space wrap size={12}>
+                  <span>单文件最大：{videoUploadConfig ? formatFileMB(videoUploadConfig.maxSizeBytes) : '加载中'}</span>
+                  <span>已用：{formatFileMB(videoUploadConfig?.usedBytes)}</span>
+                  <span>剩余：{videoUploadConfig?.quotaLimited ? formatFileMB(videoUploadConfig.remainingBytes) : '不限制'}</span>
+                </Space>
+              </div>
+              {uploadProgress.visible ? (
+                <div className="rounded-lg border border-slate-200 px-3 py-2">
+                  <div className="mb-2 flex items-center justify-between gap-3 text-sm text-slate-600">
+                    <span>{uploadProgress.message}</span>
+                    <span>
+                      {formatFileMB(uploadProgress.loaded)} / {formatFileMB(uploadProgress.total)}
+                    </span>
+                  </div>
+                  <Progress percent={uploadProgress.percent} status={uploadProgress.status} size="small" />
+                  {uploadProgress.status === 'active' ? (
+                    <Button size="small" className="mt-2" onClick={() => uploadAbortRef.current?.abort()}>
+                      取消上传
+                    </Button>
+                  ) : null}
+                </div>
+              ) : null}
+            </Space>
           ) : null}
           {resourceType === 'image' && editingItem ? (
             <Form.Item label="背景图清空" name="clearFile">

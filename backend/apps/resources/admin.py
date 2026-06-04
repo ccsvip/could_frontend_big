@@ -4,12 +4,14 @@ from django.utils.html import format_html
 from .models import (
     CommandGroup,
     ControlCommand,
+    MinioConfig,
     ModelAsset,
     Resource,
     ScrollingText,
     ScrollingTextItem,
     TaskCommand,
     TaskCommandStep,
+    TenantVideoQuota,
     VoiceTone,
 )
 from .point_models import Point
@@ -161,3 +163,45 @@ class VoiceToneAdmin(admin.ModelAdmin):
     @admin.display(boolean=True, description='是否已上传音频')
     def has_audio_display(self, obj: VoiceTone) -> bool:
         return obj.has_audio
+
+
+@admin.register(MinioConfig)
+class MinioConfigAdmin(admin.ModelAdmin):
+    list_display = ('endpoint', 'bucket_name', 'is_active', 'video_max_size_mb', 'updated_at')
+    fieldsets = (
+        ('连接信息', {
+            'fields': ('endpoint', 'secure', 'region', 'access_key', 'secret_key'),
+            'description': '字段留空时回退 backend/.env 里的同名 MINIO_* 配置。',
+        }),
+        ('Bucket / 访问', {
+            'fields': ('bucket_name', 'public_base_url', 'is_active'),
+        }),
+        ('上传约束', {
+            'fields': ('video_max_size_mb',),
+        }),
+        ('元信息', {
+            'fields': ('updated_at',),
+        }),
+    )
+    readonly_fields = ('updated_at',)
+
+    def has_add_permission(self, request):
+        return not MinioConfig.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        from django.shortcuts import redirect
+        from django.urls import reverse
+
+        instance = MinioConfig.load()
+        return redirect(reverse('admin:resources_minioconfig_change', args=[instance.pk]))
+
+
+@admin.register(TenantVideoQuota)
+class TenantVideoQuotaAdmin(admin.ModelAdmin):
+    list_display = ('tenant', 'quota_mb', 'updated_at')
+    search_fields = ('tenant__name', 'tenant__code')
+    autocomplete_fields = ('tenant',)
+    readonly_fields = ('updated_at',)

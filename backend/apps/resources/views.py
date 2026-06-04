@@ -41,18 +41,22 @@ from apps.accounts.permissions import (
     CanViewVideoResources,
     CanViewVoiceTones,
     IsAdminRole,
+    IsSuperUser,
 )
 from config.business_cache import CachedBusinessResponseMixin
 from apps.tenants.mixins import TenantScopedQuerysetMixin
-from apps.tenants.services import resolve_member_or_public_tenant, scope_queryset_member_or_public
+from apps.tenants.models import Tenant
+from apps.tenants.services import get_request_tenant, resolve_member_or_public_tenant, scope_queryset_member_or_public
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from .models import CommandGroup, ControlCommand, ModelAsset, Resource, ScrollingText, ScrollingTextItem, TaskCommand, TaskCommandStep, VoiceTone
+from .models import CommandGroup, ControlCommand, MinioConfig, ModelAsset, Resource, ScrollingText, ScrollingTextItem, TaskCommand, TaskCommandStep, TenantVideoQuota, VoiceTone
 from .serializers import (
     AliyunCommandItemSerializer,
     CommandGroupSerializer,
     ControlCommandSerializer,
     ModelAssetSerializer,
+    MinioConfigSerializer,
+    TenantVideoQuotaSerializer,
     ResourceSerializer,
     ScrollingTextSerializer,
     TaskCommandSerializer,
@@ -65,6 +69,13 @@ from .services.aliyun_commands import (
     AliyunCommandServiceError,
     fetch_aliyun_commands,
 )
+from .services.minio_client import (
+    MinioConfigError,
+    delete_object,
+    get_minio_settings,
+    get_video_upload_config,
+    presign_video_put_url,
+)
 from .tasks import enqueue_command_change_notification, enqueue_command_notification
 
 
@@ -74,6 +85,16 @@ class PermissionMappedModelViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         permission_classes = self.permission_map.get(self.action, self.permission_map.get('list', []))
         return [permission() for permission in permission_classes]
+
+
+def get_business_write_tenant(request):
+    user = getattr(request, 'user', None)
+    if user is not None and user.is_authenticated and user.is_superuser:
+        raw = request.query_params.get('tenant')
+        if raw and raw.strip().isdigit():
+            return Tenant.objects.filter(id=int(raw), is_active=True).first()
+        return None
+    return get_request_tenant(request)
 
 
 class BaseResourceViewSet(CachedBusinessResponseMixin, TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
@@ -95,7 +116,12 @@ class BaseResourceViewSet(CachedBusinessResponseMixin, TenantScopedQuerysetMixin
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['resource_type'] = self.resource_type
+        context['object_key_tenant'] = get_business_write_tenant(self.request)
         return context
+
+    def tenant_create_kwargs(self) -> dict:
+        tenant = get_business_write_tenant(self.request)
+        return {'tenant': tenant} if tenant is not None else {}
 
 
 @extend_schema(tags=['Commands'])
@@ -175,6 +201,127 @@ class VideoResourceViewSet(BaseResourceViewSet):
         'partial_update': [CanUpdateVideoResources],
         'destroy': [CanDeleteVideoResources],
     }
+
+    def perform_destroy(self, instance):
+        object_key = (instance.object_key or '').strip()
+        super().perform_destroy(instance)
+        if object_key:
+            delete_object(object_key)
+
+
+class VideoUploadConfigView(APIView):
+    permission_classes = [CanCreateVideoResources]
+
+    def get(self, request):
+        return Response(get_video_upload_config(get_business_write_tenant(request)))
+
+
+class VideoUploadPresignView(APIView):
+    permission_classes = [CanCreateVideoResources]
+
+    def post(self, request):
+        data = request.data if isinstance(request.data, dict) else {}
+        filename = str(data.get('filename') or '').strip()
+        content_type = str(data.get('contentType') or data.get('content_type') or '').strip()
+        try:
+            file_size = int(data.get('fileSize') or data.get('file_size') or 0)
+        except (TypeError, ValueError):
+            file_size = 0
+
+        if not filename:
+            return Response({'filename': 'filename 不能为空'}, status=status.HTTP_400_BAD_REQUEST)
+        if file_size <= 0:
+            return Response({'fileSize': 'fileSize 必须是正整数'}, status=status.HTTP_400_BAD_REQUEST)
+
+        tenant = get_business_write_tenant(request)
+        try:
+            return Response(
+                presign_video_put_url(
+                    filename=filename,
+                    content_type=content_type,
+                    file_size=file_size,
+                    tenant=tenant,
+                )
+            )
+        except MinioConfigError as exc:
+            return Response({'message': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MinioSettingsView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def _response_payload(self):
+        cfg = MinioConfig.load()
+        effective = get_minio_settings()
+        return {
+            'endpoint': effective.endpoint,
+            'accessKey': effective.access_key,
+            'bucketName': effective.bucket_name,
+            'secure': effective.secure,
+            'region': effective.region,
+            'publicBaseUrl': effective.public_base_url,
+            'videoMaxSizeMB': effective.video_max_size_bytes // (1024 * 1024),
+            'allowVideoCloudUrl': effective.allow_video_cloud_url,
+            'isActive': effective.is_active,
+            'updated_at': cfg.updated_at,
+        }
+
+    def get(self, request):
+        return Response(self._response_payload())
+
+    def patch(self, request):
+        instance = MinioConfig.load()
+        serializer = MinioConfigSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(self._response_payload())
+
+
+class MinioTenantQuotaView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def _tenant_quotas(self):
+        tenants = Tenant.objects.filter(is_active=True).order_by('id')
+        quotas = []
+        for tenant in tenants:
+            quota, _ = TenantVideoQuota.objects.get_or_create(tenant=tenant, defaults={'quota_mb': None})
+            quotas.append(quota)
+        return quotas
+
+    def get(self, request):
+        serializer = TenantVideoQuotaSerializer(self._tenant_quotas(), many=True)
+        return Response({'results': serializer.data})
+
+    def patch(self, request):
+        raw_items = request.data.get('items') if isinstance(request.data, dict) else None
+        if not isinstance(raw_items, list):
+            return Response({'items': 'items 必须是数组'}, status=status.HTTP_400_BAD_REQUEST)
+
+        tenants = {tenant.id: tenant for tenant in Tenant.objects.filter(is_active=True)}
+        for item in raw_items:
+            if not isinstance(item, dict):
+                return Response({'items': 'items 中每一项必须是对象'}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                tenant_id = int(item.get('tenantId') or item.get('tenant_id'))
+            except (TypeError, ValueError):
+                return Response({'tenantId': 'tenantId 必须是正整数'}, status=status.HTTP_400_BAD_REQUEST)
+            if tenant_id not in tenants:
+                return Response({'tenantId': f'公司不存在或已停用：{tenant_id}'}, status=status.HTTP_400_BAD_REQUEST)
+            quota_limited = bool(item.get('quotaLimited'))
+            quota_mb = item.get('quotaMB')
+            if not quota_limited:
+                quota_mb = None
+            else:
+                try:
+                    quota_mb = int(quota_mb)
+                except (TypeError, ValueError):
+                    return Response({'quotaMB': '启用限制时 quotaMB 必须是正整数'}, status=status.HTTP_400_BAD_REQUEST)
+                if quota_mb <= 0:
+                    return Response({'quotaMB': '启用限制时 quotaMB 必须是正整数'}, status=status.HTTP_400_BAD_REQUEST)
+            TenantVideoQuota.objects.update_or_create(tenant=tenants[tenant_id], defaults={'quota_mb': quota_mb})
+
+        serializer = TenantVideoQuotaSerializer(self._tenant_quotas(), many=True)
+        return Response({'results': serializer.data})
 
 
 SCROLLING_TEXT_LIST_PARAMETERS = [

@@ -16,3 +16,4 @@ httpx==0.28.1
 uvicorn==0.44.0
 websockets==15.0.1
 django-celery-beat
+minio==7.2.7

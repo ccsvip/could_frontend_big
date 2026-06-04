@@ -59,6 +59,9 @@ const ForcePasswordChangePage = lazy(() =>
 const LogManagementPage = lazy(() =>
   import('../views/log-management').then((module) => ({ default: module.LogManagementPage })),
 );
+const MinioSettingsPage = lazy(() =>
+  import('../views/minio-settings').then((module) => ({ default: module.MinioSettingsPage })),
+);
 const CommandWorkspacePage = lazy(() =>
   import('../views/command-management/workspace').then((module) => ({ default: module.CommandWorkspacePage })),
 );
@@ -316,6 +319,14 @@ export const AppRouter = () => {
           element: (
             <PermissionGuard permission="tenant.management.view">
               <DeviceAuthorizationCenterPage />
+            </PermissionGuard>
+          ),
+        },
+        {
+          path: 'settings/minio',
+          element: (
+            <PermissionGuard permission="tenant.management.view">
+              <MinioSettingsPage />
             </PermissionGuard>
           ),
         },

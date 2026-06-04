@@ -19,6 +19,7 @@ import {
   PictureOutlined,
   NotificationOutlined,
   RobotOutlined,
+  SettingOutlined,
   SolutionOutlined,
   SoundOutlined,
   TeamOutlined,
@@ -54,6 +55,7 @@ const menuIconMap = {
   CustomerServiceOutlined: <CustomerServiceOutlined />,
   FileTextOutlined: <FileTextOutlined />,
   RobotOutlined: <RobotOutlined />,
+  SettingOutlined: <SettingOutlined />,
   ThunderboltOutlined: <ThunderboltOutlined />,
   CloudOutlined: <CloudOutlined />,
   AudioOutlined: <AudioOutlined />,
@@ -158,6 +160,19 @@ const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
     label: '账号申请管理',
     icon: 'SolutionOutlined',
     path: '/account-applications',
+  },
+  {
+    key: 'settings',
+    label: '设置',
+    icon: 'SettingOutlined',
+    children: [
+      {
+        key: 'settings-minio',
+        label: 'MinIO 设置',
+        icon: 'CloudOutlined',
+        path: '/settings/minio',
+      },
+    ],
   },
   {
     key: 'logs',
