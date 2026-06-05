@@ -156,10 +156,10 @@ class OperationLogMiddlewareTests(APITestCase):
         self.assertEqual(resp.data['deleted'], 2)
         self.assertEqual(OperationLog.objects.count(), 0)
 
-    def test_audit_logs_endpoint_allowed_for_staff_non_superuser(self):
-        # 平台管理员（is_staff）沿用全量权限码，因此也能读取审计日志。
+    def test_audit_logs_endpoint_forbidden_for_staff_non_superuser(self):
+        # 安全边界：is_staff 但非 superuser 且无公司归属，不得读取审计日志。
         staff_user = User.objects.create_user('staffer', password='pw12345678', is_staff=True)
 
         self.client.force_authenticate(staff_user)
         resp = self.client.get('/api/v1/audit/logs/')
-        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
