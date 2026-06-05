@@ -20,9 +20,8 @@ const actionMap: Record<OperationLogAction, { color: string; text: string }> = {
 };
 
 export const LogManagementPage = () => {
-  const hasPermission = useAuthStore((state) => state.hasPermission);
-  const tenant = useAuthStore((state) => state.tenant);
-  const isPlatformAdmin = hasPermission('tenant.management.view') || !tenant;
+  const isSuperuser = useAuthStore((state) => state.isSuperuser);
+  const isPlatformAdmin = isSuperuser;
   const [logs, setLogs] = useState<OperationLogRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);

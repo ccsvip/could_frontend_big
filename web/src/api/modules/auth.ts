@@ -21,6 +21,7 @@ export type CurrentUser = {
   permissions: string[];
   menus: AppMenu[];
   tenant: CurrentUserTenant | null;
+  is_superuser: boolean;
   must_change_password: boolean;
 };
 

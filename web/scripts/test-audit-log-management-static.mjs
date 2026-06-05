@@ -14,7 +14,8 @@ assert(router.includes('<AuditLogGuard>'), 'logs route should be wrapped by Audi
 assert(page.includes("import { DeleteOutlined, FileSearchOutlined } from '@ant-design/icons';"), 'page should import the clear and search icons');
 assert(page.includes("import { Button, Card, Modal, Select, Space, Table, Tag, Typography, message } from 'antd';"), 'page should import the expected antd controls');
 assert(page.includes('clearOperationLogs'), 'page should call clearOperationLogs');
-assert(page.includes("const isPlatformAdmin = hasPermission('tenant.management.view') || !tenant;"), 'page should derive platform admin scope from auth store');
+assert(page.includes('const isSuperuser = useAuthStore((state) => state.isSuperuser);'), 'page should read exact superuser scope from auth store');
+assert(page.includes('const isPlatformAdmin = isSuperuser;'), 'page should derive platform admin scope from isSuperuser');
 assert(page.includes("content: isPlatformAdmin"), 'clear modal should distinguish platform-wide and tenant-scoped deletion');
 assert(page.includes("title: '操作具体做了什么'"), 'log table should show backend description column');
 assert(page.includes("render: (value: string) => value || <span className=\"text-slate-400\">-</span>"), 'description column should fall back to a dash');

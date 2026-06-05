@@ -209,13 +209,14 @@ const AuditLogGuard = ({ children }: { children: ReactNode }) => {
   const hasPermission = useAuthStore((state) => state.hasPermission);
   const menus = useAuthStore((state) => state.menus);
   const tenant = useAuthStore((state) => state.tenant);
+  const isSuperuser = useAuthStore((state) => state.isSuperuser);
   const authSyncStatus = useAuthStore((state) => state.authSyncStatus);
 
   if (authSyncStatus !== 'ready') {
     return <AuthSyncFallback />;
   }
 
-  if (hasPermission('audit.logs.view') && (hasPermission('tenant.management.view') || tenant?.isTenantAdmin)) {
+  if (hasPermission('audit.logs.view') && (isSuperuser || tenant?.isTenantAdmin)) {
     return <>{children}</>;
   }
 
@@ -261,6 +262,7 @@ export const AppRouter = () => {
           permissions: currentUser.permissions,
           menus: currentUser.menus,
           tenant: currentUser.tenant,
+          isSuperuser: currentUser.is_superuser,
           mustChangePassword: currentUser.must_change_password,
         });
       })
