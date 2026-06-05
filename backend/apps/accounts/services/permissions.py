@@ -14,6 +14,7 @@ ADMIN_ROLE_NAME = '管理员'
 # 平台/公司管理员专属权限码（PR-4 迁移中 seed 对应 PermissionPoint）。
 TENANT_MANAGEMENT_VIEW_CODE = 'tenant.management.view'
 TENANT_EMPLOYEES_MANAGE_CODE = 'tenant.employees.manage'
+AUDIT_LOGS_VIEW_CODE = 'audit.logs.view'
 
 
 def is_admin_user(user: User) -> bool:
@@ -152,6 +153,7 @@ def get_active_permission_codes_for_user(user: User) -> list[str]:
             tenant.permission_points.filter(is_active=True).values_list('code', flat=True)
         )
         codes.add(TENANT_EMPLOYEES_MANAGE_CODE)
+        codes.add(AUDIT_LOGS_VIEW_CODE)
         return sorted(codes)
 
     # 员工：本公司被授权的业务权限点。公司管理员仅额外多员工管理能力。

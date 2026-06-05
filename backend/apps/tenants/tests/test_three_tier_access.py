@@ -69,7 +69,7 @@ class ThreeTierAccessContextTests(APITestCase):
     def test_tenant_admin_sees_assigned_plus_employees_not_tenants(self):
         ctx = build_user_access_context(self.admin_user)
         paths = _menu_paths(ctx)
-        self.assertEqual(paths, {'/t-devices', '/t-resources', '/employees'})
+        self.assertEqual(paths, {'/t-devices', '/t-resources', '/employees', '/logs'})
         self.assertNotIn('/tenants', paths)
         self.assertEqual(ctx['role']['code'], 'tenant_admin')
         self.assertIn('tenant.employees.manage', ctx['permissions'])

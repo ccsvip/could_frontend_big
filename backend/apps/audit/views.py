@@ -1,7 +1,10 @@
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
-from apps.accounts.permissions import IsSuperUser
+from apps.accounts.permissions import CanClearAuditLogs, CanViewAuditLogs
+from apps.tenants.services import get_user_tenant
 
 from .models import OperationLog
 from .serializers import OperationLogSerializer
@@ -24,20 +27,37 @@ from .serializers import OperationLogSerializer
 class OperationLogViewSet(viewsets.ReadOnlyModelViewSet):
     """操作日志只读查询。
 
-    平台超管专属（IsSuperUser 把关，仅 is_superuser 放行）。
-    注意：不可改用 CanManageTenants —— tenant.management.view 对 is_staff 也发放，
-    会让非超管 staff 横向读到全平台日志。
-    支持 ?tenant=<id> 按公司过滤；默认分页（StandardPageNumberPagination）。
-    日志为系统自动写入，不提供任何写接口。
+    通过 audit.logs.view 控制访问；公司管理员只能看本租户日志，超管可按 ?tenant= 过滤。
     """
 
     queryset = OperationLog.objects.select_related('actor', 'tenant').all()
     serializer_class = OperationLogSerializer
-    permission_classes = [IsSuperUser]
+    permission_classes = [CanViewAuditLogs]
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        raw_tenant = (self.request.query_params.get('tenant') or '').strip()
-        if raw_tenant.isdigit():
-            queryset = queryset.filter(tenant_id=int(raw_tenant))
-        return queryset
+        user = self.request.user
+        if user.is_superuser:
+            raw_tenant = (self.request.query_params.get('tenant') or '').strip()
+            if raw_tenant.isdigit():
+                queryset = queryset.filter(tenant_id=int(raw_tenant))
+            return queryset
+
+        tenant = get_user_tenant(user)
+        if tenant is None:
+            return queryset.none()
+        return queryset.filter(tenant=tenant)
+
+    @action(detail=False, methods=['delete'], url_path='clear', permission_classes=[CanClearAuditLogs])
+    def clear(self, request):
+        user = request.user
+        queryset = OperationLog.objects.all()
+        if not user.is_superuser:
+            tenant = get_user_tenant(user)
+            if tenant is None:
+                queryset = queryset.none()
+            else:
+                queryset = queryset.filter(tenant=tenant)
+
+        deleted, _ = queryset.delete()
+        return Response({'deleted': deleted})

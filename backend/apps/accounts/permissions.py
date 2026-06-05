@@ -68,6 +68,14 @@ class CanManageEmployees(HasPermissionCode):
     required_permission = 'tenant.employees.manage'
 
 
+class CanViewAuditLogs(HasPermissionCode):
+    required_permission = 'audit.logs.view'
+
+
+class CanClearAuditLogs(HasPermissionCode):
+    required_permission = 'audit.logs.view'
+
+
 class CanViewDevices(HasPermissionCode):
     required_permission = 'devices.view'
 
