@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
+const auditApi = fs.readFileSync('src/api/modules/audit.ts', 'utf8');
+const router = fs.readFileSync('src/router/index.tsx', 'utf8');
 const page = fs.readFileSync('src/views/log-management/index.tsx', 'utf8');
 
+assert(auditApi.includes('description: string;'), 'OperationLogRecord should expose description');
+assert(auditApi.includes('clearOperationLogs'), 'audit API should expose clearOperationLogs');
+assert(router.includes('permission="audit.logs.view"'), 'logs route should use audit.logs.view guard');
 assert(page.includes("import { DeleteOutlined, FileSearchOutlined } from '@ant-design/icons';"), 'page should import the clear and search icons');
 assert(page.includes("import { Button, Card, Modal, Select, Space, Table, Tag, Typography, message } from 'antd';"), 'page should import the expected antd controls');
 assert(page.includes('clearOperationLogs'), 'page should call clearOperationLogs');

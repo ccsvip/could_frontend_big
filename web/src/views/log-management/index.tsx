@@ -78,9 +78,12 @@ export const LogManagementPage = () => {
         try {
           const data = await clearOperationLogs();
           message.success(`已清空 ${data.deleted} 条日志`);
+          const shouldReloadImmediately = page === 1 && tenantFilter === undefined;
           setTenantFilter(undefined);
           setPage(1);
-          await loadLogs(1, undefined);
+          if (shouldReloadImmediately) {
+            await loadLogs(1, undefined);
+          }
         } finally {
           setClearing(false);
         }
