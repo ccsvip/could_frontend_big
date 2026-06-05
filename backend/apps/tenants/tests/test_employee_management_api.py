@@ -30,21 +30,38 @@ class EmployeeManagementApiTests(APITestCase):
     def test_admin_creates_employee_with_must_change_password(self):
         self.client.force_authenticate(self.admin_a)
         resp = self.client.post('/api/v1/employees/', {
-            'username': 'empA1', 'displayName': '员工一', 'password': 'init12345678',
+            'username': 'empA1', 'displayName': '员工一', 'password': 'init12345678', 'roleName': '运营',
         }, format='json')
         self.assertEqual(resp.status_code, 201)
         self.assertTrue(resp.data['mustChangePassword'])
+        self.assertEqual(resp.data['roleName'], '运营')
         emp = User.objects.get(username='empA1')
         m = Membership.objects.get(user=emp)
         self.assertEqual(m.tenant_id, self.tenant_a.id)
         self.assertFalse(m.is_tenant_admin)
         self.assertTrue(m.must_change_password)
+        self.assertEqual(m.role_name, '运营')
+
+    def test_employee_role_name_is_required_but_can_repeat(self):
+        self.client.force_authenticate(self.admin_a)
+        missing = self.client.post('/api/v1/employees/', {
+            'username': 'empNoRole', 'displayName': '无角色名', 'password': 'init12345678',
+        }, format='json')
+        self.assertEqual(missing.status_code, 400)
+        self.assertIn('必填', str(missing.data))
+
+        for username in ['sameRole1', 'sameRole2']:
+            resp = self.client.post('/api/v1/employees/', {
+                'username': username, 'displayName': username, 'password': 'init12345678', 'roleName': '客服',
+            }, format='json')
+            self.assertEqual(resp.status_code, 201)
+            self.assertEqual(resp.data['roleName'], '客服')
 
     def test_duplicate_username_friendly_error(self):
         self.client.force_authenticate(self.admin_a)
         User.objects.create_user('takenname', password='x12345678')
         resp = self.client.post('/api/v1/employees/', {
-            'username': 'takenname', 'displayName': '冲突', 'password': 'init12345678',
+            'username': 'takenname', 'displayName': '冲突', 'password': 'init12345678', 'roleName': '员工',
         }, format='json')
         self.assertEqual(resp.status_code, 400)
         self.assertIn('已被占用', str(resp.data))
@@ -52,9 +69,9 @@ class EmployeeManagementApiTests(APITestCase):
     def test_employee_list_scoped_to_own_company(self):
         # A 建一个员工，B 建一个员工，互相看不到
         self.client.force_authenticate(self.admin_a)
-        self.client.post('/api/v1/employees/', {'username': 'aEmp', 'displayName': 'a', 'password': 'init12345678'}, format='json')
+        self.client.post('/api/v1/employees/', {'username': 'aEmp', 'displayName': 'a', 'password': 'init12345678', 'roleName': '员工'}, format='json')
         self.client.force_authenticate(self.admin_b)
-        self.client.post('/api/v1/employees/', {'username': 'bEmp', 'displayName': 'b', 'password': 'init12345678'}, format='json')
+        self.client.post('/api/v1/employees/', {'username': 'bEmp', 'displayName': 'b', 'password': 'init12345678', 'roleName': '员工'}, format='json')
 
         self.client.force_authenticate(self.admin_a)
         resp = self.client.get('/api/v1/employees/')
@@ -63,13 +80,59 @@ class EmployeeManagementApiTests(APITestCase):
 
     def test_reset_password_sets_must_change(self):
         self.client.force_authenticate(self.admin_a)
-        self.client.post('/api/v1/employees/', {'username': 'resetEmp', 'displayName': 'r', 'password': 'init12345678'}, format='json')
+        self.client.post('/api/v1/employees/', {'username': 'resetEmp', 'displayName': 'r', 'password': 'init12345678', 'roleName': '员工'}, format='json')
         emp = User.objects.get(username='resetEmp')
         # 先把标志清掉模拟员工已改过密
         Membership.objects.filter(user=emp).update(must_change_password=False)
         resp = self.client.post(f'/api/v1/employees/{emp.id}/reset-password/', {'newPassword': 'newpw12345678'}, format='json')
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(Membership.objects.get(user=emp).must_change_password)
+
+    def test_admin_updates_employee_profile_fields(self):
+        self.client.force_authenticate(self.admin_a)
+        self.client.post('/api/v1/employees/', {
+            'username': 'editEmp', 'displayName': '旧姓名', 'password': 'init12345678', 'roleName': '旧角色',
+        }, format='json')
+        emp = User.objects.get(username='editEmp')
+
+        resp = self.client.patch(f'/api/v1/employees/{emp.id}/', {
+            'username': 'editedEmp', 'displayName': '新姓名', 'roleName': '新角色',
+        }, format='json')
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data['username'], 'editedEmp')
+        self.assertEqual(resp.data['displayName'], '新姓名')
+        self.assertEqual(resp.data['roleName'], '新角色')
+        emp.refresh_from_db()
+        self.assertEqual(emp.username, 'editedEmp')
+        self.assertEqual(emp.first_name, '新姓名')
+        self.assertEqual(Membership.objects.get(user=emp).role_name, '新角色')
+
+    def test_admin_cannot_update_employee_to_duplicate_username(self):
+        self.client.force_authenticate(self.admin_a)
+        User.objects.create_user('existing', password='x12345678')
+        self.client.post('/api/v1/employees/', {
+            'username': 'willEdit', 'displayName': '员工', 'password': 'init12345678', 'roleName': '员工',
+        }, format='json')
+        emp = User.objects.get(username='willEdit')
+
+        resp = self.client.patch(f'/api/v1/employees/{emp.id}/', {'username': 'existing'}, format='json')
+
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('已被占用', str(resp.data))
+
+    def test_admin_deletes_employee(self):
+        self.client.force_authenticate(self.admin_a)
+        self.client.post('/api/v1/employees/', {
+            'username': 'deleteEmp', 'displayName': '待删', 'password': 'init12345678', 'roleName': '员工',
+        }, format='json')
+        emp = User.objects.get(username='deleteEmp')
+
+        resp = self.client.delete(f'/api/v1/employees/{emp.id}/')
+
+        self.assertEqual(resp.status_code, 204)
+        self.assertFalse(User.objects.filter(username='deleteEmp').exists())
+        self.assertFalse(Membership.objects.filter(user_id=emp.id).exists())
 
     def test_role_menu_clamped_to_tenant_grant(self):
         # 公司角色不能引用未被授权的菜单

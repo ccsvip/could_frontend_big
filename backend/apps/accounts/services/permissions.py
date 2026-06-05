@@ -4,7 +4,7 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 
-from apps.accounts.models import Menu, PermissionPoint, Role, UserRole
+from apps.accounts.models import Menu, PermissionPoint
 
 User = get_user_model()
 
@@ -18,22 +18,6 @@ TENANT_EMPLOYEES_MANAGE_CODE = 'tenant.employees.manage'
 
 def is_admin_user(user: User) -> bool:
     return bool(user and user.is_authenticated and (user.is_staff or user.is_superuser))
-
-
-def get_bound_role(user: User) -> Role | None:
-    if not user or not user.is_authenticated or is_admin_user(user):
-        return None
-
-    try:
-        binding = user.role_binding
-    except UserRole.DoesNotExist:
-        return None
-
-    role = binding.role
-    if not role.is_active:
-        return None
-
-    return role
 
 
 def get_role_payload(user: User) -> dict[str, str] | None:
@@ -52,15 +36,13 @@ def get_role_payload(user: User) -> dict[str, str] | None:
             'code': 'tenant_admin',
             'name': '公司管理员',
         }
+    if membership is not None:
+        return {
+            'code': 'employee',
+            'name': membership.role_name or '公司员工',
+        }
 
-    role = get_bound_role(user)
-    if role is None:
-        return None
-
-    return {
-        'code': role.code,
-        'name': role.name,
-    }
+    return None
 
 
 def _get_membership(user: User):
@@ -140,16 +122,10 @@ def get_active_menus_for_user(user: User) -> list[dict[str, Any]]:
         menus = _collect_with_ancestors(assigned + admin_only)
         return _assemble_menu_tree(menus)
 
-    # 员工：所属角色的菜单 ∩ 本公司被分配的菜单（员工永不超出公司被授权的范围）。
-    role = get_bound_role(user)
-    if role is None:
-        return []
-    tenant_menu_ids = set(tenant.menus.filter(is_active=True, audience=Menu.AUDIENCE_ALL).values_list('id', flat=True))
-    assigned = [
-        menu
-        for menu in role.menus.filter(is_active=True, audience=Menu.AUDIENCE_ALL).order_by('sort_order', 'id')
-        if menu.id in tenant_menu_ids
-    ]
+    # 员工：本公司被分配的业务菜单。公司管理员仅额外多员工管理菜单。
+    assigned = list(
+        tenant.menus.filter(is_active=True, audience=Menu.AUDIENCE_ALL).order_by('sort_order', 'id')
+    )
     menus = _collect_with_ancestors(assigned)
     return _assemble_menu_tree(menus)
 
@@ -178,13 +154,8 @@ def get_active_permission_codes_for_user(user: User) -> list[str]:
         codes.add(TENANT_EMPLOYEES_MANAGE_CODE)
         return sorted(codes)
 
-    # 员工：角色权限点 ∩ 本公司被授权的权限点。
-    role = get_bound_role(user)
-    if role is None:
-        return []
-    tenant_codes = set(tenant.permission_points.filter(is_active=True).values_list('code', flat=True))
-    role_codes = set(role.permission_points.filter(is_active=True).values_list('code', flat=True))
-    return sorted(role_codes & tenant_codes)
+    # 员工：本公司被授权的业务权限点。公司管理员仅额外多员工管理能力。
+    return sorted(tenant.permission_points.filter(is_active=True).values_list('code', flat=True))
 
 
 def build_user_access_context(user: User) -> dict[str, Any]:

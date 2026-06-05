@@ -58,6 +58,7 @@ class Membership(models.Model):
     )
     # 公司管理员（申请审核通过的那个人）。员工为 False。
     is_tenant_admin = models.BooleanField('公司管理员', default=False)
+    role_name = models.CharField('角色名称', max_length=64, blank=True)
     # 公司管理员建号 / 重置密码后置 True，员工首次登录强制改密。
     must_change_password = models.BooleanField('需强制改密', default=False)
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
