@@ -281,6 +281,10 @@ class CanViewLLMProviders(HasPermissionCode):
     required_permission = 'ai_models.llm.view'
 
 
+class CanViewASR(HasPermissionCode):
+    required_permission = 'ai_models.asr.view'
+
+
 class CanCreateLLMProviders(HasPermissionCode):
     required_permission = 'ai_models.llm.create'
 

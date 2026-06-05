@@ -47,6 +47,43 @@ class LLMProvider(models.Model):
         return f'{self.name} ({self.get_provider_type_display()})'
 
 
+class ASRConfig(models.Model):
+    workspace_id = models.CharField('Workspace ID', max_length=128, blank=True, default='')
+    api_key = models.CharField('API Key', max_length=512, blank=True, default='')
+    base_url = models.CharField('WebSocket URL', max_length=512, blank=True, default='')
+    model = models.CharField('妯″瀷鍚嶇О', max_length=128, blank=True, default='')
+    is_active = models.BooleanField('鏄惁鍚敤', default=True)
+    updated_at = models.DateTimeField('鏇存柊鏃堕棿', auto_now=True)
+
+    class Meta:
+        verbose_name = 'ASR 閰嶇疆'
+        verbose_name_plural = 'ASR 閰嶇疆'
+
+    def __str__(self):
+        return f'ASR Config ({self.model or "unset"})'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        return None
+
+    @classmethod
+    def load(cls) -> 'ASRConfig':
+        instance, _ = cls.objects.get_or_create(
+            pk=1,
+            defaults={
+                'workspace_id': getattr(settings, 'MULTIMODAL_WORKSPACE_ID', ''),
+                'api_key': getattr(settings, 'MULTIMODAL_API_KEY', ''),
+                'base_url': getattr(settings, 'ASR_BASE_URL', ''),
+                'model': getattr(settings, 'ASR_MODEL', ''),
+                'is_active': True,
+            },
+        )
+        return instance
+
+
 class ChatConversation(models.Model):
     """聊天会话"""
     title = models.CharField('会话标题', max_length=256, default='新对话')

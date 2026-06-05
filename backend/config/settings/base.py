@@ -272,6 +272,9 @@ SIMPLEUI_LOGIN_PARTICLES = True
 SIMPLEUI_LOADING = True
 
 MULTIMODAL_WORKSPACE_ID = os.getenv('MULTIMODAL_WORKSPACE_ID', '').strip()
+MULTIMODAL_API_KEY = os.getenv('MULTIMODAL_API_KEY', '').strip()
+ASR_BASE_URL = os.getenv('ASR_BASE_URL', 'wss://dashscope.aliyuncs.com/api-ws/v1/realtime').strip()
+ASR_MODEL = os.getenv('ASR_MODEL', 'qwen3-asr-flash-realtime').strip()
 ALIYUN_MM_APP_ID = os.getenv('ALIYUN_MM_APP_ID', '').strip()
 ALIYUN_MM_DOMAIN_CODE = os.getenv('ALIYUN_MM_DOMAIN_CODE', '').strip()
 ALIYUN_MM_ACCESS_KEY_ID = os.getenv('ALIYUN_MM_ACCESS_KEY_ID', '').strip()

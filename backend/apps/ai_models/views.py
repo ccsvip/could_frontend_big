@@ -12,8 +12,10 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.accounts.permissions import (
+    CanViewASR,
     CanCreateChat,
     CanCreateLLMProviders,
     CanDeleteChat,
@@ -21,12 +23,14 @@ from apps.accounts.permissions import (
     CanUpdateLLMProviders,
     CanViewChat,
     CanViewLLMProviders,
+    IsSuperUser,
 )
 from apps.resources.views import PermissionMappedModelViewSet
 from apps.tenants.mixins import TenantScopedQuerysetMixin
 
 from .models import ChatConversation, ChatMessage, LLMProvider
 from .serializers import (
+    ASRConfigSerializer,
     ChatConversationConfigSerializer,
     ChatConversationCreateSerializer,
     ChatConversationDetailSerializer,
@@ -36,8 +40,51 @@ from .serializers import (
     ChatSendSerializer,
     LLMProviderSerializer,
 )
+from .services.asr import (
+    get_effective_asr_config,
+    serialize_asr_settings,
+    serialize_asr_status,
+    test_asr_connection,
+)
 
 logger = logging.getLogger(__name__)
+
+
+class ASRSettingsView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def get(self, request):
+        return Response(serialize_asr_settings(get_effective_asr_config()))
+
+    def patch(self, request):
+        from .models import ASRConfig
+
+        instance = ASRConfig.load()
+        serializer = ASRConfigSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serialize_asr_settings(get_effective_asr_config()))
+
+
+class ASRSettingsTestView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def post(self, request):
+        return Response(test_asr_connection())
+
+
+class ASRStatusView(APIView):
+    permission_classes = [CanViewASR]
+
+    def get(self, request):
+        return Response(serialize_asr_status())
+
+
+class ASRTestView(APIView):
+    permission_classes = [CanViewASR]
+
+    def post(self, request):
+        return Response(test_asr_connection())
 
 
 def _build_chat_completions_url(raw_url: str) -> str:

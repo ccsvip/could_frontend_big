@@ -1,7 +1,7 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from .models import ChatConversation, ChatMessage, LLMProvider
+from .models import ASRConfig, ChatConversation, ChatMessage, LLMProvider
 
 
 class LLMProviderSerializer(serializers.ModelSerializer):
@@ -57,6 +57,23 @@ class LLMProviderSerializer(serializers.ModelSerializer):
         if 'api_key' not in validated_data:
             validated_data.pop('api_key', None)
 
+        return super().update(instance, validated_data)
+
+
+class ASRConfigSerializer(serializers.ModelSerializer):
+    workspaceId = serializers.CharField(source='workspace_id', required=False, allow_blank=True)
+    apiKey = serializers.CharField(source='api_key', required=False, allow_blank=True, write_only=True)
+    baseUrl = serializers.CharField(source='base_url', required=False, allow_blank=True, max_length=512)
+    isActive = serializers.BooleanField(source='is_active', required=False)
+
+    class Meta:
+        model = ASRConfig
+        fields = ('workspaceId', 'apiKey', 'baseUrl', 'model', 'isActive', 'updated_at')
+        read_only_fields = ('updated_at',)
+
+    def update(self, instance, validated_data):
+        if validated_data.get('api_key', None) == '':
+            validated_data.pop('api_key', None)
         return super().update(instance, validated_data)
 
 

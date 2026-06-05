@@ -172,6 +172,12 @@ const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
         icon: 'CloudOutlined',
         path: '/settings/minio',
       },
+      {
+        key: 'settings-asr',
+        label: 'ASR设置',
+        icon: 'AudioOutlined',
+        path: '/settings/asr',
+      },
     ],
   },
   {
