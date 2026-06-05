@@ -1,16 +1,19 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-const auditApi = fs.readFileSync('src/api/modules/audit.ts', 'utf8');
-const router = fs.readFileSync('src/router/index.tsx', 'utf8');
 const page = fs.readFileSync('src/views/log-management/index.tsx', 'utf8');
 
-// The page assertions are expected to fail after Task 3 and turn green when Task 4 lands.
-assert(auditApi.includes('description: string;'), 'OperationLogRecord should expose description');
-assert(auditApi.includes('clearOperationLogs'), 'audit API should expose clearOperationLogs');
-assert(router.includes('permission="audit.logs.view"'), 'logs route should use audit.logs.view guard');
-assert(page.includes('操作具体做了什么'), 'log table should show operation detail column');
-assert(page.includes('无法恢复'), 'clear modal should warn that deletion cannot be recovered');
-assert(!page.includes("title: '请求路径'"), 'log table should not expose request path as a main column');
+assert(page.includes("import { DeleteOutlined, FileSearchOutlined } from '@ant-design/icons';"), 'page should import the clear and search icons');
+assert(page.includes("import { Button, Card, Modal, Select, Space, Table, Tag, Typography, message } from 'antd';"), 'page should import the expected antd controls');
+assert(page.includes('clearOperationLogs'), 'page should call clearOperationLogs');
+assert(page.includes("const isPlatformAdmin = hasPermission('tenant.management.view') || !tenant;"), 'page should derive platform admin scope from auth store');
+assert(page.includes("content: isPlatformAdmin"), 'clear modal should distinguish platform-wide and tenant-scoped deletion');
+assert(page.includes("title: '操作具体做了什么'"), 'log table should show backend description column');
+assert(page.includes("render: (value: string) => value || <span className=\"text-slate-400\">-</span>"), 'description column should fall back to a dash');
+assert(!page.includes("describeOperationPath"), 'frontend path-description logic should be removed');
+assert(!page.includes("methodColorMap"), 'request method color mapping should be removed');
+assert(!page.includes("statusColor"), 'status code color mapping should be removed');
+assert(!page.includes("fallbackActionText"), 'fallback action text logic should be removed');
+assert(!page.includes("pathDescriptionRules"), 'path description rules should be removed');
 
 console.log('audit log management static checks passed');
