@@ -11,6 +11,8 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from apps.accounts.models import PermissionPoint
+from apps.audit.descriptions import describe_operation
 from apps.audit.models import OperationLog
 from apps.tenants.models import Membership, Tenant
 
@@ -163,3 +165,41 @@ class OperationLogMiddlewareTests(APITestCase):
         self.client.force_authenticate(staff_user)
         resp = self.client.get('/api/v1/audit/logs/')
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_audit_logs_endpoint_forbidden_for_employee_even_with_permission_point(self):
+        tenant = Tenant.objects.create(name='公司D', code='comp-d')
+        audit_perm = PermissionPoint.objects.get(code='audit.logs.view')
+        tenant.permission_points.add(audit_perm)
+        employee = User.objects.create_user('audit-employee', password='pw12345678')
+        Membership.objects.create(user=employee, tenant=tenant, is_tenant_admin=False)
+
+        self.client.force_authenticate(employee)
+        resp = self.client.get('/api/v1/audit/logs/')
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_describe_operation_uses_specific_action_labels(self):
+        class EmptyResponse:
+            data = {}
+
+        cases = [
+            ('/api/v1/tenants/1/menus/', '分配公司菜单'),
+            ('/api/v1/account-applications/1/approve/', '通过账号申请'),
+            ('/api/v1/account-applications/1/reject/', '拒绝账号申请'),
+            ('/api/v1/device-authorization-requests/abc/bind/', '绑定设备到公司'),
+            ('/api/v1/device-authorization-requests/abc/ignore/', '忽略设备授权请求'),
+            ('/api/v1/device-authorization-requests/abc/authorize/', '再次授权设备'),
+            ('/api/v1/device-authorization-requests/abc/revoke/', '撤销设备授权'),
+        ]
+
+        for path, expected in cases:
+            with self.subTest(path=path):
+                self.assertEqual(
+                    describe_operation(
+                        request=None,
+                        response=EmptyResponse(),
+                        action='create',
+                        method='POST',
+                        path=path,
+                    ),
+                    expected,
+                )

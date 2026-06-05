@@ -77,8 +77,9 @@ class CanViewAuditLogs(HasPermissionCode):
         user = request.user
         if user.is_superuser:
             return True
-        from apps.tenants.services import get_user_tenant
-        return get_user_tenant(user) is not None
+        from apps.tenants.services import get_user_membership
+        membership = get_user_membership(user)
+        return bool(membership and membership.is_tenant_admin)
 
 
 class CanClearAuditLogs(HasPermissionCode):

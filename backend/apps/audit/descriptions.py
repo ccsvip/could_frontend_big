@@ -11,6 +11,16 @@ _ACTION_LABELS = {
     'delete': '删除',
 }
 
+_SPECIAL_OPERATION_LABELS: list[tuple[re.Pattern[str], str]] = [
+    (re.compile(r'^/api/v1/tenants/\d+/menus/?$'), '分配公司菜单'),
+    (re.compile(r'^/api/v1/account-applications/\d+/approve/?$'), '通过账号申请'),
+    (re.compile(r'^/api/v1/account-applications/\d+/reject/?$'), '拒绝账号申请'),
+    (re.compile(r'^/api/v1/device-authorization-requests/[^/]+/bind/?$'), '绑定设备到公司'),
+    (re.compile(r'^/api/v1/device-authorization-requests/[^/]+/ignore/?$'), '忽略设备授权请求'),
+    (re.compile(r'^/api/v1/device-authorization-requests/[^/]+/authorize/?$'), '再次授权设备'),
+    (re.compile(r'^/api/v1/device-authorization-requests/[^/]+/revoke/?$'), '撤销设备授权'),
+]
+
 _SPECIAL_ROUTE_LABELS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r'^/api/v1/resources/videos/upload-config/?$'), '视频上传'),
     (re.compile(r'^/api/v1/resources/videos/presign/?$'), '视频上传'),
@@ -48,17 +58,19 @@ _RESOURCE_NAME_KEYS = (
 
 def describe_operation(*, request, response, action: str, method: str, path: str) -> str:
     action_label = _ACTION_LABELS.get(action, '操作')
-    route_label = _describe_route(path)
+    normalized_path = _normalize_path(path)
+    operation_label = _describe_special_operation(normalized_path)
+    route_label = operation_label or _describe_route(normalized_path)
     resource_name = _extract_resource_name(getattr(response, 'data', None))
 
-    description = f'{action_label}{route_label}'
+    description = route_label if operation_label else f'{action_label}{route_label}'
     if resource_name:
         description = f'{description}：{resource_name}'
     return description[:255]
 
 
 def _describe_route(path: str) -> str:
-    normalized = (path or '').split('?', 1)[0].strip()
+    normalized = _normalize_path(path)
     for pattern, label in _SPECIAL_ROUTE_LABELS:
         if pattern.match(normalized):
             return label
@@ -83,6 +95,17 @@ def _describe_route(path: str) -> str:
             }.get(top_level, top_level.replace('-', ' '))
 
     return '接口'
+
+
+def _describe_special_operation(path: str) -> str:
+    for pattern, label in _SPECIAL_OPERATION_LABELS:
+        if pattern.match(path):
+            return label
+    return ''
+
+
+def _normalize_path(path: str) -> str:
+    return (path or '').split('?', 1)[0].strip()
 
 
 def _extract_resource_name(value: Any) -> str:
