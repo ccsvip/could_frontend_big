@@ -58,6 +58,7 @@ export const LoginPage = () => {
         permissions: response.user.permissions,
         menus: response.user.menus,
         tenant: response.user.tenant,
+        isSuperuser: response.user.is_superuser,
         mustChangePassword: response.user.must_change_password,
       });
       message.success(response.message || '登录成功');

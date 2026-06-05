@@ -19,6 +19,7 @@ import {
   PictureOutlined,
   NotificationOutlined,
   RobotOutlined,
+  SettingOutlined,
   SolutionOutlined,
   SoundOutlined,
   TeamOutlined,
@@ -34,6 +35,7 @@ import { changePasswordRequest, type ChangePasswordPayload } from '../api/module
 import { fetchTenants, type TenantRecord } from '../api/modules/tenants';
 import { BrandMark } from '../components/brand-mark';
 import { useAuthStore, type AppMenu } from '../store/auth';
+import { useTenantScopeStore } from '../store/tenant-scope';
 
 const { Header, Sider, Content } = Layout;
 const { useBreakpoint } = Grid;
@@ -44,6 +46,7 @@ const SIDEBAR_COLLAPSE_STORAGE_KEY = 'app:sidebar-collapsed';
 
 const menuIconMap = {
   DesktopOutlined: <DesktopOutlined />,
+  CheckCircleOutlined: <CheckCircleOutlined />,
   ApartmentOutlined: <ApartmentOutlined />,
   TeamOutlined: <TeamOutlined />,
   SolutionOutlined: <SolutionOutlined />,
@@ -52,6 +55,7 @@ const menuIconMap = {
   CustomerServiceOutlined: <CustomerServiceOutlined />,
   FileTextOutlined: <FileTextOutlined />,
   RobotOutlined: <RobotOutlined />,
+  SettingOutlined: <SettingOutlined />,
   ThunderboltOutlined: <ThunderboltOutlined />,
   CloudOutlined: <CloudOutlined />,
   AudioOutlined: <AudioOutlined />,
@@ -129,10 +133,15 @@ const buildSuperAdminTenantModuleMenus = (
 // 与后端 menus 流程完全分流，仅在 hasPermission('tenant.management.view') 时启用。
 const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
   {
-    key: 'tenants',
+    key: 'tenant-management',
     label: '租户管理',
     icon: 'ApartmentOutlined',
     path: '/tenants',
+  },
+  {
+    key: 'tenant-browse',
+    label: '公司视图',
+    icon: 'TeamOutlined',
     children: tenants.map((tenant) => ({
       key: `tenant-${tenant.id}`,
       label: tenant.name,
@@ -141,10 +150,29 @@ const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
     })),
   },
   {
+    key: 'device-authorizations',
+    label: '设备授权中心',
+    icon: 'CheckCircleOutlined',
+    path: '/device-authorizations',
+  },
+  {
     key: 'account-applications',
     label: '账号申请管理',
     icon: 'SolutionOutlined',
     path: '/account-applications',
+  },
+  {
+    key: 'settings',
+    label: '设置',
+    icon: 'SettingOutlined',
+    children: [
+      {
+        key: 'settings-minio',
+        label: 'MinIO 设置',
+        icon: 'CloudOutlined',
+        path: '/settings/minio',
+      },
+    ],
   },
   {
     key: 'logs',
@@ -354,6 +382,7 @@ export const DashboardLayout = () => {
   const now = useLiveNow();
   const { username, role, logout, menus } = useAuthStore();
   const hasPermission = useAuthStore((state) => state.hasPermission);
+  const includeHiddenTenants = useTenantScopeStore((state) => state.includeHiddenTenants);
   const isSuperAdmin = hasPermission('tenant.management.view');
   const [scopedTenants, setScopedTenants] = useState<TenantRecord[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -424,7 +453,10 @@ export const DashboardLayout = () => {
     let cancelled = false;
     void (async () => {
       try {
-        const data = await fetchTenants({ page_size: 100 });
+        const data = await fetchTenants({
+          page_size: 100,
+          include_hidden: includeHiddenTenants || undefined,
+        });
         if (!cancelled) {
           setScopedTenants(data.results);
         }
@@ -435,7 +467,7 @@ export const DashboardLayout = () => {
     return () => {
       cancelled = true;
     };
-  }, [isSuperAdmin]);
+  }, [includeHiddenTenants, isSuperAdmin]);
 
   // 超管走「按公司浏览」自建导航树，与后端 menus 流程彻底分流；其余用户保持原有 menus 渲染。
   // 前端下线任务列表二级菜单，避免后端历史菜单配置继续渲染该入口。
@@ -571,8 +603,8 @@ export const DashboardLayout = () => {
         className="relative z-10 min-h-screen bg-transparent transition-[margin-left] duration-300"
         style={{ marginLeft: isDesktop ? currentSidebarWidth : 0 }}
       >
-        <Header className="sticky top-0 z-40 !h-auto !border-b !border-slate-200/60 !bg-white/85 !px-3 !py-3 !leading-none backdrop-blur-xl sm:!px-4 sm:!py-3 lg:!px-8">
-          <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-2 sm:gap-4">
+        <Header className="sticky top-0 z-40 !h-auto !border-b !border-slate-200/60 !bg-white/85 !px-[2%] !py-3 !leading-none backdrop-blur-xl">
+          <div className="mx-auto flex w-[96%] items-center justify-between gap-2 sm:gap-4">
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
               {!isDesktop ? (
                 <Button
@@ -629,8 +661,8 @@ export const DashboardLayout = () => {
           </div>
         </Header>
 
-        <Content className="px-3 py-4 sm:px-4 sm:py-5 lg:px-8 lg:py-6">
-          <div className="mx-auto max-w-[1600px]">
+        <Content className="px-[2%] py-4 sm:py-5">
+          <div className="mx-auto w-[96%]">
             <Outlet />
           </div>
         </Content>

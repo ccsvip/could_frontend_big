@@ -41,6 +41,9 @@ class EmployeeSerializer(serializers.Serializer):
         return binding.role_id if binding else None
 
     def get_roleName(self, obj):
+        membership = getattr(obj, 'membership', None)
+        if membership and membership.role_name:
+            return membership.role_name
         binding = getattr(obj, 'role_binding', None)
         return binding.role.name if binding else None
 
@@ -53,6 +56,7 @@ class EmployeeCreateSerializer(serializers.Serializer):
     )
     displayName = serializers.CharField(max_length=64)
     password = serializers.CharField(max_length=128, write_only=True)
+    roleName = serializers.CharField(max_length=64)
     roleId = serializers.IntegerField(required=False, allow_null=True)
 
     def validate_username(self, value: str) -> str:
@@ -69,6 +73,12 @@ class EmployeeCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError('密码长度不能少于 6 位')
         password_validation.validate_password(value)
         return value
+
+    def validate_roleName(self, value: str) -> str:
+        role_name = value.strip()
+        if not role_name:
+            raise serializers.ValidationError('请输入角色名称')
+        return role_name
 
     def validate_roleId(self, value):
         if value is None:
@@ -90,7 +100,11 @@ class EmployeeCreateSerializer(serializers.Serializer):
         user.save(update_fields=['password'])
         # 员工首次登录强制改密（D4）。
         Membership.objects.create(
-            user=user, tenant=tenant, is_tenant_admin=False, must_change_password=True,
+            user=user,
+            tenant=tenant,
+            role_name=validated_data['roleName'],
+            is_tenant_admin=False,
+            must_change_password=True,
         )
         role_id = validated_data.get('roleId')
         if role_id:
@@ -99,9 +113,28 @@ class EmployeeCreateSerializer(serializers.Serializer):
 
 
 class EmployeeUpdateSerializer(serializers.Serializer):
+    username = serializers.RegexField(
+        regex=r'^[A-Za-z0-9]{3,30}$',
+        max_length=30,
+        required=False,
+        error_messages={'invalid': '用户名需为 3-30 位英文字母或数字'},
+    )
     displayName = serializers.CharField(max_length=64, required=False)
     isActive = serializers.BooleanField(required=False)
+    roleName = serializers.CharField(max_length=64, required=False)
     roleId = serializers.IntegerField(required=False, allow_null=True)
+
+    def validate_username(self, value: str) -> str:
+        username = value.strip()
+        if User.objects.filter(username=username).exclude(id=self.instance.id).exists():
+            raise serializers.ValidationError('该用户名已被占用，请更换')
+        return username
+
+    def validate_roleName(self, value: str) -> str:
+        role_name = value.strip()
+        if not role_name:
+            raise serializers.ValidationError('请输入角色名称')
+        return role_name
 
     def validate_roleId(self, value):
         if value is None:
@@ -112,11 +145,17 @@ class EmployeeUpdateSerializer(serializers.Serializer):
         return value
 
     def update(self, instance, validated_data):
+        if 'username' in validated_data:
+            instance.username = validated_data['username']
         if 'displayName' in validated_data:
             instance.first_name = validated_data['displayName']
         if 'isActive' in validated_data:
             instance.is_active = validated_data['isActive']
         instance.save()
+        if 'roleName' in validated_data:
+            Membership.objects.filter(user=instance).update(role_name=validated_data['roleName'])
+            if hasattr(instance, 'membership'):
+                instance.membership.role_name = validated_data['roleName']
         if 'roleId' in validated_data:
             role_id = validated_data['roleId']
             if role_id is None:

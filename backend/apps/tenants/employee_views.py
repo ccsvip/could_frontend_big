@@ -47,12 +47,13 @@ class MyTenantCatalogView(APIView):
     retrieve=extend_schema(tags=['Employees']),
     create=extend_schema(tags=['Employees']),
     partial_update=extend_schema(tags=['Employees']),
+    destroy=extend_schema(tags=['Employees']),
 )
 class EmployeeViewSet(viewsets.ModelViewSet):
     """公司管理员管理本公司员工。作用域到本公司「非管理员」成员。"""
 
     permission_classes = [CanManageEmployees]
-    http_method_names = ['get', 'post', 'patch', 'head', 'options']
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
 
     def get_queryset(self):
         tenant = get_user_tenant(self.request.user)

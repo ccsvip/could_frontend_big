@@ -42,6 +42,8 @@ class Resource(models.Model):
     )
     file = models.FileField('资源文件', upload_to='resources/%Y/%m/%d', blank=True, null=True)
     cloud_url = models.URLField('云端URL地址', max_length=2048, blank=True, default='')
+    object_key = models.CharField('MinIO 对象键', max_length=512, blank=True, default='')
+    object_size = models.BigIntegerField('MinIO 对象大小', blank=True, null=True)
     description = models.CharField('资源说明', max_length=255, blank=True, default='')
     tenant = _tenant_fk()
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
@@ -59,7 +61,7 @@ class Resource(models.Model):
 
     @property
     def has_file(self) -> bool:
-        return bool(self.file)
+        return bool(self.file) or bool(self.object_key)
 
 
 class ScrollingText(models.Model):
@@ -391,6 +393,56 @@ class TaskCommandStep(models.Model):
 
     def __str__(self) -> str:
         return f'{self.task_command.command_code} #{self.order} {self.task_type}'
+
+
+class MinioConfig(models.Model):
+    endpoint = models.CharField('Endpoint', max_length=255, blank=True, default='', help_text='host:port, e.g. localhost:9000')
+    access_key = models.CharField('Access Key', max_length=255, blank=True, default='')
+    secret_key = models.CharField('Secret Key', max_length=255, blank=True, default='')
+    bucket_name = models.CharField('Bucket', max_length=255, blank=True, default='')
+    secure = models.BooleanField('Use HTTPS', default=False)
+    region = models.CharField('Region', max_length=64, blank=True, default='')
+    public_base_url = models.URLField('Public base URL', max_length=512, blank=True, default='')
+    video_max_size_mb = models.PositiveIntegerField('Video max size MB', default=1024)
+    allow_video_cloud_url = models.BooleanField('Allow video cloud URL', default=True)
+    is_active = models.BooleanField('Enable video direct upload', default=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = 'MinIO 配置'
+        verbose_name_plural = 'MinIO 配置'
+
+    def __str__(self) -> str:
+        return f'MinIO Config ({self.bucket_name or "unset"})'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        return None
+
+    @classmethod
+    def load(cls) -> 'MinioConfig':
+        instance, _ = cls.objects.get_or_create(pk=1)
+        return instance
+
+
+class TenantVideoQuota(models.Model):
+    tenant = models.OneToOneField('tenants.Tenant', on_delete=models.CASCADE, related_name='video_quota')
+    quota_mb = models.PositiveIntegerField('视频容量额度（MB）', blank=True, null=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = '公司视频额度'
+        verbose_name_plural = '公司视频额度'
+
+    def __str__(self) -> str:
+        return f'{self.tenant_id}: {self.quota_mb}MB' if self.quota_mb else f'{self.tenant_id}: unlimited'
+
+    @property
+    def quota_bytes(self) -> int:
+        return int(self.quota_mb or 0) * 1024 * 1024
 
 
 from .point_models import Point  # noqa: E402,F401

@@ -40,6 +40,7 @@ class OperationLog(models.Model):
     action = models.CharField('操作类型', max_length=16, choices=ACTION_CHOICES)
     method = models.CharField('请求方法', max_length=8)
     path = models.CharField('请求路径', max_length=512)
+    description = models.CharField('操作说明', max_length=255, blank=True, default='')
     status_code = models.IntegerField('响应状态码')
     created_at = models.DateTimeField('操作时间', auto_now_add=True)
 

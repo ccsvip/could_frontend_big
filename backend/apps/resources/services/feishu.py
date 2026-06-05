@@ -179,6 +179,17 @@ def _resolve_username(user: Any) -> str:
     return str(user) or '匿名用户'
 
 
+def _resolve_company_name(user: Any) -> str:
+    if isinstance(user, str) or user is None or getattr(user, 'is_authenticated', None) is False:
+        return ''
+    try:
+        membership = getattr(user, 'membership', None)
+    except Exception:  # pragma: no cover - defensive
+        return ''
+    tenant = getattr(membership, 'tenant', None)
+    return str(getattr(tenant, 'name', '') or '').strip()
+
+
 def notify_business_event(
     title: str,
     action: str,
@@ -186,6 +197,7 @@ def notify_business_event(
     target_label: str,
     target_name: str,
     extra_lines: list[str] | None = None,
+    company_name: str = '',
 ) -> bool:
     """发送通用业务操作通知；调用方只提供领域文案和业务字段。"""
     action_map = {
@@ -199,12 +211,15 @@ def notify_business_event(
     }
     icon, action_label = action_map.get(action, ('🔔', action))
     safe_name = (target_name or '').strip() or '(未命名)'
+    resolved_company_name = (company_name or _resolve_company_name(user)).strip()
     lines = [
         f'{icon} {title}',
         f'操作人：{_resolve_username(user)}',
         f'操作类型：{action_label}',
-        f'{target_label}：{safe_name}',
     ]
+    if resolved_company_name:
+        lines.append(f'公司名称：{resolved_company_name}')
+    lines.append(f'{target_label}：{safe_name}')
     if extra_lines:
         lines.extend(line for line in extra_lines if line)
     lines.append(f'北京时间：{_format_beijing_now()}')
@@ -218,19 +233,21 @@ def notify_command_event(
     command_name: str,
     command_code: str = '',
     extra_lines: list[str] | None = None,
+    company_name: str = '',
 ) -> bool:
     """发送指令体系 CRUD 变更通知。"""
     lines = list(extra_lines or [])
     if command_code:
         lines.insert(0, f'指令标识：{command_code}')
     target_label = '指令名称' if '指令' in command_type else '名称'
-    return notify_business_event(
+    return notify_business_event_card(
         title=f'{command_type}变更通知',
         action=action,
         user=user,
         target_label=target_label,
         target_name=command_name,
         extra_lines=lines,
+        company_name=company_name,
     )
 
 
@@ -254,6 +271,17 @@ _COMMAND_CARD_ACTION_META: dict[str, tuple[str, str, str]] = {
     'create': ('green', '📥', '新增'),
     'update': ('blue', '✏️', '编辑'),
     'delete': ('red', '🗑️', '删除'),
+}
+
+
+_BUSINESS_CARD_ACTION_META: dict[str, tuple[str, str, str]] = {
+    'create': ('green', '📄', '新增'),
+    'update': ('blue', '✏️', '编辑'),
+    'delete': ('red', '🗑️', '删除'),
+    'download': ('blue', '📥', '下载'),
+    'bulk_download': ('blue', '📦', '批量下载'),
+    'review': ('green', '✅', '审核'),
+    'submit': ('blue', '📨', '提交'),
 }
 
 
@@ -303,6 +331,96 @@ def send_feishu_card(card: dict[str, Any]) -> bool:
     return True
 
 
+def build_business_event_card(
+    *,
+    title: str,
+    action: str,
+    user: Any,
+    target_label: str,
+    target_name: str,
+    extra_lines: list[str] | None = None,
+    company_name: str = '',
+) -> dict[str, Any]:
+    template, icon, action_label = _BUSINESS_CARD_ACTION_META.get(action, ('grey', '🔔', action))
+    safe_name = (target_name or '').strip() or '(未命名)'
+    resolved_company_name = (company_name or _resolve_company_name(user)).strip()
+    fields = [
+        {
+            'is_short': True,
+            'text': {'tag': 'lark_md', 'content': f'**操作人**\n{_resolve_username(user)}'},
+        },
+        {
+            'is_short': True,
+            'text': {'tag': 'lark_md', 'content': f'**操作类型**\n{action_label}'},
+        },
+    ]
+    if resolved_company_name:
+        fields.append({
+            'is_short': True,
+            'text': {'tag': 'lark_md', 'content': f'**公司名称**\n{resolved_company_name}'},
+        })
+    elements: list[dict[str, Any]] = [
+        {
+            'tag': 'div',
+            'fields': fields,
+        },
+        {
+            'tag': 'div',
+            'text': {'tag': 'lark_md', 'content': f'**{target_label}**\n{safe_name}'},
+        },
+    ]
+    if extra_lines:
+        elements.append({'tag': 'hr'})
+        elements.extend(
+            {
+                'tag': 'div',
+                'text': {'tag': 'lark_md', 'content': line},
+            }
+            for line in extra_lines
+            if line
+        )
+    elements.append({'tag': 'hr'})
+    elements.append({
+        'tag': 'note',
+        'elements': [
+            {
+                'tag': 'plain_text',
+                'content': f'北京时间：{_format_beijing_now()} · 服务器IP：{_resolve_server_ip()}',
+            },
+        ],
+    })
+    return {
+        'config': {'wide_screen_mode': True},
+        'header': {
+            'template': template,
+            'title': {'tag': 'plain_text', 'content': f'{icon} {title}'},
+        },
+        'elements': elements,
+    }
+
+
+def notify_business_event_card(
+    title: str,
+    action: str,
+    user: Any,
+    target_label: str,
+    target_name: str,
+    extra_lines: list[str] | None = None,
+    company_name: str = '',
+) -> bool:
+    return send_feishu_card(
+        build_business_event_card(
+            title=title,
+            action=action,
+            user=user,
+            target_label=target_label,
+            target_name=target_name,
+            extra_lines=extra_lines,
+            company_name=company_name,
+        )
+    )
+
+
 def _diff_field_element(label: str, before: str, after: str) -> dict[str, Any]:
     """构建"变更前 → 变更后"的字段块。任意一边为空时显示占位符。"""
     placeholder = '（空）'
@@ -333,6 +451,7 @@ def build_command_change_card(
     command_code_before: str,
     command_code_after: str,
     group_name: str = '',
+    company_name: str = '',
 ) -> dict[str, Any]:
     """构建指令名称/指令变更的飞书消息卡片。
 
@@ -353,19 +472,25 @@ def build_command_change_card(
     # 控制指令的字段名是"指令"，任务指令的字段名是"指令名称"。
     code_label = '指令名称' if '任务' in command_type else '指令'
 
+    fields = [
+        {
+            'is_short': True,
+            'text': {'tag': 'lark_md', 'content': f'**操作人**\n{user_label or "匿名用户"}'},
+        },
+        {
+            'is_short': True,
+            'text': {'tag': 'lark_md', 'content': f'**操作类型**\n{action_label}'},
+        },
+    ]
+    if company_name:
+        fields.append({
+            'is_short': True,
+            'text': {'tag': 'lark_md', 'content': f'**公司名称**\n{company_name}'},
+        })
     elements: list[dict[str, Any]] = [
         {
             'tag': 'div',
-            'fields': [
-                {
-                    'is_short': True,
-                    'text': {'tag': 'lark_md', 'content': f'**操作人**\n{user_label or "匿名用户"}'},
-                },
-                {
-                    'is_short': True,
-                    'text': {'tag': 'lark_md', 'content': f'**操作类型**\n{action_label}'},
-                },
-            ],
+            'fields': fields,
         },
     ]
     if group_name:
@@ -407,6 +532,7 @@ def notify_command_change(
     command_code_before: str,
     command_code_after: str,
     group_name: str = '',
+    company_name: str = '',
 ) -> bool:
     """发送指令名称变更通知（卡片形式，包含变更前后值）。"""
     card = build_command_change_card(
@@ -418,5 +544,6 @@ def notify_command_change(
         command_code_before=command_code_before or '',
         command_code_after=command_code_after or '',
         group_name=group_name or '',
+        company_name=company_name or _resolve_company_name(user),
     )
     return send_feishu_card(card)

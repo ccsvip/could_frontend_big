@@ -47,7 +47,7 @@ export const createEmployee = async (payload: {
   username: string;
   displayName: string;
   password: string;
-  roleId?: number | null;
+  roleName: string;
 }) => {
   const response = await httpClient.post<EmployeeRecord>('/employees/', payload);
   return response.data;
@@ -55,9 +55,14 @@ export const createEmployee = async (payload: {
 
 export const updateEmployee = async (
   id: number,
-  payload: { displayName?: string; isActive?: boolean; roleId?: number | null },
+  payload: { username?: string; displayName?: string; roleName?: string; isActive?: boolean },
 ) => {
   const response = await httpClient.patch<EmployeeRecord>(`/employees/${id}/`, payload);
+  return response.data;
+};
+
+export const deleteEmployee = async (id: number) => {
+  const response = await httpClient.delete(`/employees/${id}/`);
   return response.data;
 };
 

@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
+from config.business_cache import clear_business_cache_namespace
+
 from .models import KnowledgeDocument
 
 
@@ -44,4 +46,8 @@ class KnowledgeDocumentAdmin(admin.ModelAdmin):
             obj.file.url,
             obj.file_name or obj.file.url,
         )
+
+    def save_model(self, request, obj: KnowledgeDocument, form, change):
+        super().save_model(request, obj, form, change)
+        clear_business_cache_namespace('knowledge_base')
 

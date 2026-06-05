@@ -1,31 +1,76 @@
-import { useEffect, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { Navigate, Outlet, useParams, useRoutes } from 'react-router-dom';
 import { Spin } from 'antd';
-import {
-  CommandExportManagementPage,
-  CommandWorkspacePage,
-  PointManagementPage,
-} from '../views/command-management';
-import { LoginPage } from '../views/login';
 import { DashboardLayout } from '../layouts/dashboard-layout';
-import { DeviceManagementPage } from '../views/device-management';
-import { AccountApplicationsPage } from '../views/account-applications/index';
-import { ModelManagementPage } from '../views/model-management';
-import { ResourceManagementPage } from '../views/resource-management';
-import { ScrollingTextManagementPage } from '../views/scrolling-text-management';
-import { KnowledgeBasePage } from '../views/knowledge-base';
-import { VoiceToneManagementPage } from '../views/voice-tone-management';
-import { AsrManagementPage } from '../views/asr-management';
-import { LlmManagementPage } from '../views/llm-management';
-import { TtsManagementPage } from '../views/tts-management';
-import { ChatRoomPage } from '../views/chat-room';
-import { TenantManagementPage } from '../views/tenant-management';
-import { EmployeeManagementPage } from '../views/employee-management';
-import { ForcePasswordChangePage } from '../views/force-password-change';
-import { LogManagementPage } from '../views/log-management';
 import { fetchCurrentUser } from '../api/modules/auth';
 import { useAuthStore } from '../store/auth';
 import { useTenantScopeStore } from '../store/tenant-scope';
+
+const LoginPage = lazy(() => import('../views/login').then((module) => ({ default: module.LoginPage })));
+const DeviceManagementPage = lazy(() =>
+  import('../views/device-management').then((module) => ({ default: module.DeviceManagementPage })),
+);
+const DeviceAuthorizationCenterPage = lazy(() =>
+  import('../views/device-authorization-center').then((module) => ({
+    default: module.DeviceAuthorizationCenterPage,
+  })),
+);
+const AccountApplicationsPage = lazy(() =>
+  import('../views/account-applications').then((module) => ({ default: module.AccountApplicationsPage })),
+);
+const ModelManagementPage = lazy(() =>
+  import('../views/model-management').then((module) => ({ default: module.ModelManagementPage })),
+);
+const ResourceManagementPage = lazy(() =>
+  import('../views/resource-management').then((module) => ({ default: module.ResourceManagementPage })),
+);
+const ScrollingTextManagementPage = lazy(() =>
+  import('../views/scrolling-text-management').then((module) => ({
+    default: module.ScrollingTextManagementPage,
+  })),
+);
+const KnowledgeBasePage = lazy(() =>
+  import('../views/knowledge-base').then((module) => ({ default: module.KnowledgeBasePage })),
+);
+const VoiceToneManagementPage = lazy(() =>
+  import('../views/voice-tone-management').then((module) => ({ default: module.VoiceToneManagementPage })),
+);
+const AsrManagementPage = lazy(() =>
+  import('../views/asr-management').then((module) => ({ default: module.AsrManagementPage })),
+);
+const LlmManagementPage = lazy(() =>
+  import('../views/llm-management').then((module) => ({ default: module.LlmManagementPage })),
+);
+const TtsManagementPage = lazy(() =>
+  import('../views/tts-management').then((module) => ({ default: module.TtsManagementPage })),
+);
+const ChatRoomPage = lazy(() =>
+  import('../views/chat-room').then((module) => ({ default: module.ChatRoomPage })),
+);
+const TenantManagementPage = lazy(() =>
+  import('../views/tenant-management').then((module) => ({ default: module.TenantManagementPage })),
+);
+const EmployeeManagementPage = lazy(() =>
+  import('../views/employee-management').then((module) => ({ default: module.EmployeeManagementPage })),
+);
+const ForcePasswordChangePage = lazy(() =>
+  import('../views/force-password-change').then((module) => ({ default: module.ForcePasswordChangePage })),
+);
+const LogManagementPage = lazy(() =>
+  import('../views/log-management').then((module) => ({ default: module.LogManagementPage })),
+);
+const MinioSettingsPage = lazy(() =>
+  import('../views/minio-settings').then((module) => ({ default: module.MinioSettingsPage })),
+);
+const CommandWorkspacePage = lazy(() =>
+  import('../views/command-management/workspace').then((module) => ({ default: module.CommandWorkspacePage })),
+);
+const PointManagementPage = lazy(() =>
+  import('../views/command-management/points').then((module) => ({ default: module.PointManagementPage })),
+);
+const CommandExportManagementPage = lazy(() =>
+  import('../views/command-management/export').then((module) => ({ default: module.CommandExportManagementPage })),
+);
 
 let inFlightSyncToken: string | null = null;
 let inFlightSyncPromise: Promise<void> | null = null;
@@ -160,6 +205,24 @@ const PermissionGuard = ({ children, permission }: { children: ReactNode; permis
   return <Navigate to={getFirstAccessiblePath(menus)} replace />;
 };
 
+const AuditLogGuard = ({ children }: { children: ReactNode }) => {
+  const hasPermission = useAuthStore((state) => state.hasPermission);
+  const menus = useAuthStore((state) => state.menus);
+  const tenant = useAuthStore((state) => state.tenant);
+  const isSuperuser = useAuthStore((state) => state.isSuperuser);
+  const authSyncStatus = useAuthStore((state) => state.authSyncStatus);
+
+  if (authSyncStatus !== 'ready') {
+    return <AuthSyncFallback />;
+  }
+
+  if (hasPermission('audit.logs.view') && (isSuperuser || tenant?.isTenantAdmin)) {
+    return <>{children}</>;
+  }
+
+  return <Navigate to={getFirstAccessiblePath(menus)} replace />;
+};
+
 const DefaultAuthedRoute = () => {
   const menus = useAuthStore((state) => state.menus);
   const hasPermission = useAuthStore((state) => state.hasPermission);
@@ -199,6 +262,7 @@ export const AppRouter = () => {
           permissions: currentUser.permissions,
           menus: currentUser.menus,
           tenant: currentUser.tenant,
+          isSuperuser: currentUser.is_superuser,
           mustChangePassword: currentUser.must_change_password,
         });
       })
@@ -270,11 +334,27 @@ export const AppRouter = () => {
           ],
         },
         {
-          path: 'logs',
+          path: 'device-authorizations',
           element: (
             <PermissionGuard permission="tenant.management.view">
-              <LogManagementPage />
+              <DeviceAuthorizationCenterPage />
             </PermissionGuard>
+          ),
+        },
+        {
+          path: 'settings/minio',
+          element: (
+            <PermissionGuard permission="tenant.management.view">
+              <MinioSettingsPage />
+            </PermissionGuard>
+          ),
+        },
+        {
+          path: 'logs',
+          element: (
+            <AuditLogGuard>
+              <LogManagementPage />
+            </AuditLogGuard>
           ),
         },
         {
@@ -426,5 +506,5 @@ export const AppRouter = () => {
     { path: '*', element: <DefaultAuthedRoute /> },
   ]);
 
-  return elements;
+  return <Suspense fallback={<AuthSyncFallback />}>{elements}</Suspense>;
 };

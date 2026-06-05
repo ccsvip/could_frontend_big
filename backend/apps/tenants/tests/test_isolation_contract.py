@@ -21,11 +21,12 @@ KNOWN_NON_SCOPED_EXEMPTIONS = {
     ('tenants', 'Tenant'): '租户表本身，不按 tenant 过滤',
     ('tenants', 'Membership'): '租户成员关系，按 user/tenant 直接查',
     ('accounts', 'AccountApplication'): '审批表，tenant 在通过时回写，列表仅超管可见',
-    ('audit', 'OperationLog'): '跨租户审计日志，仅超管可读，经审计接口自身的 ?tenant 过滤，不参与业务租户隔离',
+    ('audit', 'OperationLog'): '跨租户审计日志，经审计接口按 superuser/tenant_admin 访问范围过滤，不参与业务租户隔离',
     ('accounts', 'Role'): '租户级角色，CRUD 在 employee_views 里按 request.tenant 过滤',
     ('resources', 'ScrollingTextItem'): '经 scrolling_text 父 FK 间接隔离',
     ('resources', 'TaskCommandStep'): '经 task_command 父 FK 间接隔离',
     ('ai_models', 'ChatMessage'): '经 conversation 父 FK 间接隔离',
+    ('resources', 'TenantVideoQuota'): '租户级视频配额单例，经资源接口按 tenant 读写，不参与业务租户隔离',
 }
 
 

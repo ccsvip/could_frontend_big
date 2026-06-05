@@ -4,8 +4,9 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from apps.resources.models import CommandGroup, ModelAsset, Resource, ScrollingText, VoiceTone
+from apps.tenants.models import Tenant
 
-from .models import Device, DeviceApplication, DeviceAuthorizationCode, DeviceGroup
+from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceGroup
 
 
 def _tenant_from_context(serializer: serializers.Serializer):
@@ -91,6 +92,8 @@ class DeviceApplicationSerializer(serializers.ModelSerializer):
 class DeviceSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
     deviceCode = serializers.CharField(source='code', required=False)
+    tenantId = serializers.IntegerField(source='tenant_id', read_only=True)
+    tenantName = serializers.CharField(source='tenant.name', read_only=True, default='')
     groupId = TenantOwnedPrimaryKeyField(
         source='group',
         queryset=DeviceGroup.objects.all(),
@@ -119,6 +122,7 @@ class DeviceSerializer(serializers.ModelSerializer):
     registeredAt = serializers.DateTimeField(source='registered_at', read_only=True, allow_null=True)
     lastAuthAt = serializers.DateTimeField(source='last_auth_at', read_only=True, allow_null=True)
     lastHeartbeat = serializers.DateTimeField(source='last_heartbeat', read_only=True, allow_null=True)
+    ignoredAt = serializers.DateTimeField(source='authorization_ignored_at', read_only=True, allow_null=True)
 
     class Meta:
         model = Device
@@ -127,6 +131,8 @@ class DeviceSerializer(serializers.ModelSerializer):
             'deviceCode',
             'name',
             'location',
+            'tenantId',
+            'tenantName',
             'status',
             'groupId',
             'groupName',
@@ -142,11 +148,14 @@ class DeviceSerializer(serializers.ModelSerializer):
             'registeredAt',
             'lastAuthAt',
             'lastHeartbeat',
+            'ignoredAt',
             'created_at',
             'updated_at',
         )
         read_only_fields = (
             'id',
+            'tenantId',
+            'tenantName',
             'status',
             'softwareVersion',
             'systemVersion',
@@ -154,6 +163,7 @@ class DeviceSerializer(serializers.ModelSerializer):
             'registeredAt',
             'lastAuthAt',
             'lastHeartbeat',
+            'ignoredAt',
             'created_at',
             'updated_at',
         )
@@ -169,6 +179,15 @@ class DeviceSerializer(serializers.ModelSerializer):
                 attrs['code'] = legacy_id
         if self.instance is None and not attrs.get('code'):
             raise serializers.ValidationError({'deviceCode': '设备码不能为空'})
+        application = attrs.get('application')
+        group = attrs.get('group')
+        instance_tenant = getattr(self.instance, 'tenant', None)
+        if application is not None and instance_tenant is not None and application.tenant_id != instance_tenant.id:
+            raise serializers.ValidationError({'applicationId': '应用不属于当前设备公司'})
+        if group is not None and instance_tenant is not None and group.tenant_id != instance_tenant.id:
+            raise serializers.ValidationError({'groupId': '分组不属于当前设备公司'})
+        if application is not None and group is not None and application.tenant_id != group.tenant_id:
+            raise serializers.ValidationError({'groupId': '分组与应用不属于同一公司'})
         return attrs
 
     def create(self, validated_data):
@@ -178,9 +197,15 @@ class DeviceSerializer(serializers.ModelSerializer):
 
     def update(self, instance: Device, validated_data):
         allowed = {}
-        for key in ('name', 'group', 'is_enabled', 'authorization_type', 'expires_at'):
+        for key in ('name', 'location', 'application', 'group'):
             if key in validated_data:
                 allowed[key] = validated_data[key]
+        application = allowed.get('application')
+        if application is not None and instance.tenant_id is None:
+            allowed['tenant'] = application.tenant
+        group = allowed.get('group')
+        if group is not None and instance.tenant_id is None and 'tenant' not in allowed:
+            allowed['tenant'] = group.tenant
         return super().update(instance, allowed)
 
 
@@ -239,6 +264,153 @@ class DeviceAuthorizationCodeSerializer(serializers.ModelSerializer):
         if request and getattr(request, 'user', None) and request.user.is_authenticated:
             validated_data['created_by'] = request.user
         return super().create(validated_data)
+
+
+class DeviceAuthorizationRequestSerializer(DeviceSerializer):
+    bindingStatus = serializers.SerializerMethodField()
+    runtimeStatus = serializers.SerializerMethodField()
+    latestActivationAt = serializers.SerializerMethodField()
+    latestActivationMessage = serializers.SerializerMethodField()
+    latestActivationIp = serializers.SerializerMethodField()
+    latestActivationDeviceInfo = serializers.SerializerMethodField()
+
+    class Meta(DeviceSerializer.Meta):
+        fields = DeviceSerializer.Meta.fields + (
+            'bindingStatus',
+            'runtimeStatus',
+            'latestActivationAt',
+            'latestActivationMessage',
+            'latestActivationIp',
+            'latestActivationDeviceInfo',
+        )
+
+    def _latest_activation_log(self, obj: Device):
+        prefetched = getattr(obj, 'activation_logs_for_request', None)
+        if prefetched is not None:
+            return prefetched[0] if prefetched else None
+        return obj.auth_logs.filter(action=DeviceAuthLog.ACTION_ACTIVATE).order_by('-created_at', '-id').first()
+
+    def get_bindingStatus(self, obj: Device) -> str:
+        if obj.authorization_ignored_at:
+            return 'ignored'
+        return 'bound' if obj.tenant_id else 'pending'
+
+    def get_runtimeStatus(self, obj: Device) -> str:
+        return 'ready' if obj.tenant_id and obj.application_id else 'waiting_application'
+
+    def get_latestActivationAt(self, obj: Device):
+        log = self._latest_activation_log(obj)
+        return log.created_at if log else None
+
+    def get_latestActivationMessage(self, obj: Device) -> str:
+        log = self._latest_activation_log(obj)
+        return log.message if log else ''
+
+    def get_latestActivationIp(self, obj: Device) -> str | None:
+        log = self._latest_activation_log(obj)
+        return log.ip_address if log else None
+
+    def get_latestActivationDeviceInfo(self, obj: Device) -> dict:
+        log = self._latest_activation_log(obj)
+        return log.device_info if log else {}
+
+
+class DeviceActivationLogSerializer(serializers.ModelSerializer):
+    tenantId = serializers.IntegerField(source='tenant_id', read_only=True)
+    tenantName = serializers.CharField(source='tenant.name', read_only=True, default='')
+    applicationId = serializers.IntegerField(source='application_id', read_only=True)
+    applicationName = serializers.CharField(source='application.name', read_only=True, default='')
+    deviceName = serializers.CharField(source='device.name', read_only=True, default='')
+    ipAddress = serializers.IPAddressField(source='ip_address', read_only=True, allow_null=True)
+    deviceInfo = serializers.JSONField(source='device_info', read_only=True)
+    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+
+    class Meta:
+        model = DeviceAuthLog
+        fields = (
+            'id',
+            'code',
+            'action',
+            'result',
+            'message',
+            'tenantId',
+            'tenantName',
+            'applicationId',
+            'applicationName',
+            'deviceName',
+            'ipAddress',
+            'deviceInfo',
+            'createdAt',
+        )
+
+
+class DeviceBindSerializer(serializers.Serializer):
+    tenantId = serializers.IntegerField()
+    applicationId = serializers.IntegerField(required=False, allow_null=True)
+    groupId = serializers.IntegerField(required=False, allow_null=True)
+    authorizationType = serializers.ChoiceField(
+        choices=Device.AUTHORIZATION_CHOICES,
+        required=False,
+        default=Device.AUTHORIZATION_PERMANENT,
+    )
+    expiresAt = serializers.DateTimeField(required=False, allow_null=True)
+    isEnabled = serializers.BooleanField(required=False, default=True)
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        try:
+            tenant = Tenant.objects.get(id=attrs['tenantId'])
+        except Tenant.DoesNotExist as exc:
+            raise serializers.ValidationError({'tenantId': '公司不存在'}) from exc
+
+        application = None
+        application_id = attrs.get('applicationId')
+        if application_id is not None:
+            try:
+                application = DeviceApplication.objects.get(id=application_id, tenant=tenant)
+            except DeviceApplication.DoesNotExist as exc:
+                raise serializers.ValidationError({'applicationId': '应用不属于所选公司'}) from exc
+
+        group = None
+        group_id = attrs.get('groupId')
+        if group_id is not None:
+            try:
+                group = DeviceGroup.objects.get(id=group_id, tenant=tenant)
+            except DeviceGroup.DoesNotExist as exc:
+                raise serializers.ValidationError({'groupId': '分组不属于所选公司'}) from exc
+
+        if attrs.get('authorizationType') == Device.AUTHORIZATION_TRIAL and not attrs.get('expiresAt'):
+            raise serializers.ValidationError({'expiresAt': '试用授权必须设置到期时间'})
+
+        attrs['tenant'] = tenant
+        attrs['application'] = application
+        attrs['group'] = group
+        return attrs
+
+    def save(self, device: Device) -> Device:
+        device.tenant = self.validated_data['tenant']
+        device.application = self.validated_data.get('application')
+        device.group = self.validated_data.get('group')
+        device.authorization_ignored_at = None
+        device.authorization_type = self.validated_data.get('authorizationType', Device.AUTHORIZATION_PERMANENT)
+        device.expires_at = (
+            self.validated_data.get('expiresAt')
+            if device.authorization_type == Device.AUTHORIZATION_TRIAL
+            else None
+        )
+        device.is_enabled = self.validated_data.get('isEnabled', True)
+        device.save(update_fields=[
+            'tenant',
+            'application',
+            'group',
+            'authorization_ignored_at',
+            'authorization_type',
+            'expires_at',
+            'is_enabled',
+            'updated_at',
+        ])
+        return device
+
 
 class DeviceStatsSerializer(serializers.Serializer):
     total = serializers.IntegerField()

@@ -7,13 +7,16 @@ import tempfile
 import zipfile
 from unittest.mock import patch
 
+from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import RequestFactory
 from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
+from apps.knowledge_base.admin import KnowledgeDocumentAdmin
 from apps.knowledge_base.models import KnowledgeDocument
 from apps.tenants.test_utils import TenantTestMixin
 
@@ -104,7 +107,7 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
     def test_create_document_sends_feishu_notification(self):
         self.grant_permissions('knowledge_base.upload')
 
-        with patch('apps.resources.services.feishu.send_feishu_text', return_value=True) as send_text:
+        with patch('apps.resources.services.feishu.send_feishu_card', return_value=True) as send_card:
             response = self.client.post(
                 '/api/v1/knowledge-base/',
                 {
@@ -115,10 +118,11 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
             )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        sent_text = send_text.call_args.args[0]
-        self.assertIn('知识库文档操作通知', sent_text)
-        self.assertIn('操作类型：新增', sent_text)
-        self.assertIn('文件名：通知文档.pdf', sent_text)
+        send_card.assert_called_once()
+        sent_card = send_card.call_args.args[0]
+        self.assertIn('知识库文档操作通知', str(sent_card))
+        self.assertIn('通知文档.pdf', str(sent_card))
+        self.assertIn(self.tenant.name, str(sent_card))
 
     def test_create_document_rejects_unsupported_extension(self):
         self.grant_permissions('knowledge_base.view', 'knowledge_base.upload')
@@ -148,19 +152,19 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
         document = self.create_document(name='待删除文档.pdf', content=b'delete-me')
         file_path = document.file.path
 
-        with patch('apps.resources.services.feishu.send_feishu_text', return_value=True) as send_text:
+        with patch('apps.resources.services.feishu.send_feishu_card', return_value=True) as send_card:
             response = self.client.delete(f'/api/v1/knowledge-base/{document.id}/')
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(KnowledgeDocument.objects.filter(pk=document.pk).exists())
         self.assertFalse(Path(file_path).exists())
-        self.assertIn('操作类型：删除', send_text.call_args.args[0])
+        self.assertIn('待删除文档.pdf', str(send_card.call_args.args[0]))
 
     def test_download_returns_binary_response_and_increments_count(self):
         self.grant_permissions('knowledge_base.download')
         document = self.create_document(name='下载文档.pdf', content=b'download-me')
 
-        with patch('apps.resources.services.feishu.send_feishu_text', return_value=True) as send_text:
+        with patch('apps.resources.services.feishu.send_feishu_card', return_value=True) as send_card:
             response = self.client.get(f'/api/v1/knowledge-base/{document.id}/download/')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -168,14 +172,14 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(b''.join(response.streaming_content), b'download-me')
         document.refresh_from_db()
         self.assertEqual(document.download_count, 1)
-        self.assertIn('操作类型：下载', send_text.call_args.args[0])
+        self.assertIn('下载文档.pdf', str(send_card.call_args.args[0]))
 
     def test_bulk_download_deduplicates_and_renames_duplicate_file_names(self):
         self.grant_permissions('knowledge_base.bulk_download')
         first = self.create_document(name='重复文档.pdf', title='重复文档A', content=b'first-doc')
         second = self.create_document(name='重复文档.pdf', title='重复文档B', content=b'second-doc')
 
-        with patch('apps.resources.services.feishu.send_feishu_text', return_value=True) as send_text:
+        with patch('apps.resources.services.feishu.send_feishu_card', return_value=True) as send_card:
             response = self.client.post(
                 '/api/v1/knowledge-base/bulk-download/',
                 {'ids': [first.id, first.id, second.id]},
@@ -193,8 +197,9 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
         second.refresh_from_db()
         self.assertEqual(first.download_count, 1)
         self.assertEqual(second.download_count, 1)
-        self.assertIn('操作类型：批量下载', send_text.call_args.args[0])
-        self.assertIn('文档数量：2', send_text.call_args.args[0])
+        sent_card = send_card.call_args.args[0]
+        self.assertIn('批量下载', str(sent_card))
+        self.assertIn('文档数量', str(sent_card))
 
     def test_bulk_download_requires_at_least_one_valid_document(self):
         self.grant_permissions('knowledge_base.bulk_download')
@@ -244,3 +249,63 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_admin_status_update_clears_cached_document_list(self):
+        self.grant_permissions('knowledge_base.view')
+        document = self.create_document(name='admin-cache.pdf', content=b'cache')
+
+        first_response = self.client.get('/api/v1/knowledge-base/')
+        self.assertEqual(first_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(first_response.data['results'][0]['processingStatus'], KnowledgeDocument.STATUS_PENDING)
+
+        document.processing_status = KnowledgeDocument.STATUS_APPROVED
+        document.processing_result = 'admin approved'
+        request = RequestFactory().post(f'/admin/knowledge_base/knowledgedocument/{document.pk}/change/')
+        request.user = User.objects.create_superuser(username='admin-cache-reviewer', password='test123456')
+        model_admin = KnowledgeDocumentAdmin(KnowledgeDocument, admin.site)
+        model_admin.save_model(request, document, form=None, change=True)
+
+        second_response = self.client.get('/api/v1/knowledge-base/')
+        self.assertEqual(second_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(second_response.data['results'][0]['processingStatus'], KnowledgeDocument.STATUS_APPROVED)
+        self.assertEqual(second_response.data['results'][0]['processingResult'], 'admin approved')
+
+    def test_superuser_can_review_document_and_send_feishu_notification(self):
+        document = self.create_document(name='review-api.pdf', content=b'review')
+        reviewer = User.objects.create_superuser(username='knowledge-reviewer', password='test123456')
+        self.client.force_authenticate(user=reviewer)
+
+        with patch('apps.resources.services.feishu.send_feishu_card', return_value=True) as send_card:
+            response = self.client.post(
+                f'/api/v1/knowledge-base/{document.id}/review/',
+                {
+                    'processingStatus': KnowledgeDocument.STATUS_APPROVED,
+                    'processingResult': 'front-end approved',
+                },
+                format='json',
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['data']['processingStatus'], KnowledgeDocument.STATUS_APPROVED)
+        self.assertEqual(response.data['data']['processingResult'], 'front-end approved')
+        document.refresh_from_db()
+        self.assertEqual(document.processing_status, KnowledgeDocument.STATUS_APPROVED)
+        self.assertEqual(document.processing_result, 'front-end approved')
+        send_card.assert_called_once()
+
+    def test_non_superuser_cannot_review_document(self):
+        document = self.create_document(name='review-forbidden.pdf', content=b'forbidden')
+        self.grant_permissions('knowledge_base.view', 'knowledge_base.upload')
+
+        response = self.client.post(
+            f'/api/v1/knowledge-base/{document.id}/review/',
+            {
+                'processingStatus': KnowledgeDocument.STATUS_APPROVED,
+                'processingResult': 'should not save',
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        document.refresh_from_db()
+        self.assertEqual(document.processing_status, KnowledgeDocument.STATUS_PENDING)

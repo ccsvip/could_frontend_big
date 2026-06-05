@@ -13,7 +13,6 @@ import {
   Form,
   Input,
   Modal,
-  Pagination,
   Popconfirm,
   Select,
   Space,
@@ -70,9 +69,7 @@ export const ScrollingTextManagementPage = () => {
 
   const [items, setItems] = useState<ScrollingTextRecord[]>([]);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
-  const [total, setTotal] = useState(0);
+  const [existingRecordCount, setExistingRecordCount] = useState<number | null>(null);
   const [keyword, setKeyword] = useState('');
   const [statusFilter, setStatusFilter] = useState<ScrollingTextStatusFilter>('all');
   const [previewItem, setPreviewItem] = useState<ScrollingTextRecord | null>(null);
@@ -84,9 +81,10 @@ export const ScrollingTextManagementPage = () => {
   const titleFilter = searchParams.get('title')?.trim() || '';
 
   const query = useMemo<ScrollingTextListQuery>(
-    () => ({ page, title: titleFilter, keyword, status: statusFilter, lang: 'zh' }),
-    [page, titleFilter, keyword, statusFilter],
+    () => ({ page: 1, title: titleFilter, keyword, status: statusFilter, lang: 'zh' }),
+    [titleFilter, keyword, statusFilter],
   );
+  const canOpenCreate = existingRecordCount === null || existingRecordCount === 0;
 
   const loadData = useCallback(
     async (nextQuery: ScrollingTextListQuery = query) => {
@@ -94,7 +92,6 @@ export const ScrollingTextManagementPage = () => {
       try {
         const response = await fetchScrollingTexts(nextQuery);
         setItems(response.results);
-        setTotal(response.count);
       } catch {
         // 错误由请求拦截器统一提示。
       } finally {
@@ -104,11 +101,27 @@ export const ScrollingTextManagementPage = () => {
     [query],
   );
 
+  const refreshRecordLimit = useCallback(async () => {
+    try {
+      const response = await fetchScrollingTexts({ page: 1, status: 'all', lang: 'zh' });
+      setExistingRecordCount(response.count);
+    } catch {
+      // 错误由请求拦截器统一提示。
+    }
+  }, []);
+
   useEffect(() => {
     void loadData();
   }, [loadData]);
 
+  useEffect(() => {
+    void refreshRecordLimit();
+  }, [refreshRecordLimit]);
+
   const openCreateModal = () => {
+    if (!canOpenCreate) {
+      return;
+    }
     setEditingItem(null);
     form.resetFields();
     form.setFieldsValue({
@@ -139,11 +152,9 @@ export const ScrollingTextManagementPage = () => {
   const handleDelete = async (item: ScrollingTextRecord) => {
     try {
       await deleteScrollingText(item.id);
-      if (items.length === 1 && page > 1) {
-        setPage((current) => current - 1);
-      } else {
-        void loadData();
-      }
+      setExistingRecordCount((current) => (current === null ? current : Math.max(current - 1, 0)));
+      void refreshRecordLimit();
+      void loadData();
     } catch {
       // 错误由请求拦截器统一提示。
     }
@@ -165,13 +176,12 @@ export const ScrollingTextManagementPage = () => {
         await updateScrollingText(editingItem.id, payload);
       } else {
         await createScrollingText(payload);
+        setExistingRecordCount(1);
       }
 
       closeFormModal();
-      if (!editingItem) {
-        setPage(1);
-      }
-      void loadData(editingItem ? query : { ...query, page: 1 });
+      void refreshRecordLimit();
+      void loadData(query);
     } catch {
       // 表单校验和接口错误均在原处展示。
     } finally {
@@ -281,7 +291,6 @@ export const ScrollingTextManagementPage = () => {
               placeholder="搜索标题或文本"
               onSearch={(value) => {
                 setKeyword(value.trim());
-                setPage(1);
               }}
               className="!w-60"
             />
@@ -290,7 +299,6 @@ export const ScrollingTextManagementPage = () => {
               options={statusOptions as unknown as { label: string; value: string }[]}
               onChange={(value) => {
                 setStatusFilter(value as ScrollingTextStatusFilter);
-                setPage(1);
               }}
               className="!w-36"
             />
@@ -298,7 +306,7 @@ export const ScrollingTextManagementPage = () => {
               刷新
             </Button>
             {canCreate ? (
-              <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
+              <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal} disabled={!canOpenCreate}>
                 新增滚动文本
               </Button>
             ) : null}
@@ -318,18 +326,6 @@ export const ScrollingTextManagementPage = () => {
         />
       </Card>
 
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
-        <div className="flex justify-end">
-          <Pagination
-            current={page}
-            pageSize={pageSize}
-            total={total}
-            showSizeChanger={false}
-            onChange={(nextPage) => setPage(nextPage)}
-          />
-        </div>
-      </Card>
-
       <Modal
         title={editingItem ? '编辑滚动文本' : '新增滚动文本'}
         open={formVisible}
@@ -338,7 +334,8 @@ export const ScrollingTextManagementPage = () => {
         confirmLoading={submitting}
         destroyOnHidden
         forceRender
-        width={760}
+        width="min(92vw, 56rem)"
+        className="scrolling-text-form-modal"
         okText={editingItem ? '保存' : '创建'}
         cancelText="取消"
       >
@@ -370,11 +367,18 @@ export const ScrollingTextManagementPage = () => {
                       </Space>
                     }
                     extra={
-                      fields.length > 1 ? (
-                        <Button danger type="link" icon={<DeleteOutlined />} onClick={() => remove(fieldName)}>
-                          删除
-                        </Button>
-                      ) : null
+                      <Space size={4} wrap>
+                        {index > 0 ? (
+                          <Button type="link" icon={<PlusOutlined />} onClick={() => add({ order: index + 1, zh: '', en: '' }, index)}>
+                            向上插入
+                          </Button>
+                        ) : null}
+                        {fields.length > 1 ? (
+                          <Button danger type="link" icon={<DeleteOutlined />} onClick={() => remove(fieldName)}>
+                            删除
+                          </Button>
+                        ) : null}
+                      </Space>
                     }
                   >
                     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">

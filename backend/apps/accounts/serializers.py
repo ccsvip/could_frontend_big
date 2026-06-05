@@ -50,11 +50,12 @@ class UserSerializer(serializers.ModelSerializer):
     permissions = serializers.SerializerMethodField()
     menus = serializers.SerializerMethodField()
     tenant = serializers.SerializerMethodField()
+    is_superuser = serializers.BooleanField(read_only=True)
     must_change_password = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'display_name', 'role', 'permissions', 'menus', 'tenant', 'must_change_password')
+        fields = ('id', 'username', 'display_name', 'role', 'permissions', 'menus', 'tenant', 'is_superuser', 'must_change_password')
 
     def get_display_name(self, obj: User) -> str:
         return obj.get_full_name() or obj.username

@@ -5,12 +5,16 @@ import { create } from 'zustand';
 // 请求拦截器通过 useTenantScopeStore.getState().tenantId 读取（非订阅，避免闭包陈旧）。
 type TenantScopeState = {
   tenantId: number | null;
+  includeHiddenTenants: boolean;
   setTenantId: (tenantId: number | null) => void;
+  setIncludeHiddenTenants: (includeHiddenTenants: boolean) => void;
   clear: () => void;
 };
 
 export const useTenantScopeStore = create<TenantScopeState>((set) => ({
   tenantId: null,
+  includeHiddenTenants: false,
   setTenantId: (tenantId) => set({ tenantId }),
+  setIncludeHiddenTenants: (includeHiddenTenants) => set({ includeHiddenTenants }),
   clear: () => set({ tenantId: null }),
 }));

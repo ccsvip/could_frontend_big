@@ -7,6 +7,7 @@ class OperationLogSerializer(serializers.ModelSerializer):
     actorUsername = serializers.CharField(source='actor_username', read_only=True)
     tenantName = serializers.CharField(source='tenant.name', read_only=True, default=None)
     statusCode = serializers.IntegerField(source='status_code', read_only=True)
+    description = serializers.CharField(read_only=True)
     createdAt = serializers.DateTimeField(source='created_at', format='%Y-%m-%d %H:%M:%S', read_only=True)
 
     class Meta:
@@ -20,6 +21,7 @@ class OperationLogSerializer(serializers.ModelSerializer):
             'action',
             'method',
             'path',
+            'description',
             'statusCode',
             'createdAt',
         )

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.shortcuts import render
 from django.urls import include, path, re_path
 from django.views.generic import RedirectView
 from django.views.static import serve
@@ -8,6 +9,10 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+
+def backend_not_found_view(request):
+    return render(request, '404.html', status=404)
 
 
 class ApiV1RootView(APIView):
@@ -103,3 +108,7 @@ if settings.DEBUG or getattr(settings, 'SERVE_LOCAL_MEDIA', False):
     urlpatterns += [
         re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     ]
+
+urlpatterns += [
+    re_path(r'^(?!api/|static/|media/).*$', backend_not_found_view, name='backend-not-found'),
+]

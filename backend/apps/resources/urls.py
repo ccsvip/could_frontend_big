@@ -10,9 +10,13 @@ from .views import (
     CommandGroupViewSet,
     ControlCommandViewSet,
     ImageResourceViewSet,
+    MinioSettingsView,
+    MinioTenantQuotaView,
     ModelAssetViewSet,
     ScrollingTextViewSet,
     TaskCommandViewSet,
+    VideoUploadConfigView,
+    VideoUploadPresignView,
     VideoResourceViewSet,
     VoiceToneViewSet,
 )
@@ -29,6 +33,10 @@ router.register('commands/tasks', TaskCommandViewSet, basename='task-command')
 router.register('commands/points', PointViewSet, basename='point')
 
 urlpatterns = [
+    path('settings/minio/', MinioSettingsView.as_view(), name='minio-settings'),
+    path('settings/minio/quotas/', MinioTenantQuotaView.as_view(), name='minio-tenant-quotas'),
+    path('resources/videos/upload-config/', VideoUploadConfigView.as_view(), name='video-upload-config'),
+    path('resources/videos/presign/', VideoUploadPresignView.as_view(), name='video-upload-presign'),
     path('commands/aliyun/', AliyunCommandListView.as_view(), name='aliyun-command-list'),
     path('commands/data/', CommandDataLookupView.as_view(), name='command-data-lookup'),
     path('commands/export/enabled-groups/', CommandExportEnabledGroupsView.as_view(), name='command-export-enabled-groups'),

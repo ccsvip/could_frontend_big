@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Android Device Runtime Simulator</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101214;
+      --panel: #171b1f;
+      --panel-2: #1d2329;
+      --line: #2b343d;
+      --text: #f1f5f0;
+      --muted: #9aa8a3;
+      --green: #4ade80;
+      --yellow: #f6c453;
+      --red: #ff6b6b;
+      --blue: #6fb7ff;
+      --ink: #050807;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+      font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        radial-gradient(circle at 12% 18%, rgba(74, 222, 128, 0.16), transparent 28rem),
+        radial-gradient(circle at 86% 10%, rgba(111, 183, 255, 0.12), transparent 24rem),
+        var(--bg);
+      background-size: 34px 34px, 34px 34px, auto, auto, auto;
+      color: var(--text);
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    main {
+      width: min(1280px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 16px;
+    }
+
+    .hero,
+    .panel {
+      border: 1px solid var(--line);
+      background: rgba(23, 27, 31, 0.92);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .hero {
+      min-height: 180px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-radius: 8px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--green);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--yellow);
+      box-shadow: 0 0 0 0 rgba(246, 196, 83, 0.7);
+      animation: pulse 1.6s infinite;
+    }
+
+    h1 {
+      margin: 18px 0 8px;
+      font-size: clamp(28px, 4vw, 54px);
+      line-height: 1.02;
+      letter-spacing: 0;
+      max-width: 780px;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      max-width: 820px;
+      font-size: 14px;
+    }
+
+    .state-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .state-box {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 74px;
+    }
+
+    .state-box span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .state-box strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 18px;
+      overflow-wrap: anywhere;
+    }
+
+    .panel {
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(320px, 0.95fr) minmax(420px, 1.35fr);
+      gap: 16px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid #39444f;
+      background: #0f1317;
+      color: var(--text);
+      border-radius: 8px;
+      min-height: 40px;
+      padding: 9px 11px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 108px;
+      resize: vertical;
+      font-family: Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(111, 183, 255, 0.14);
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button {
+      border: 1px solid #46535e;
+      background: #242c33;
+      color: var(--text);
+      border-radius: 8px;
+      min-height: 42px;
+      padding: 9px 12px;
+      cursor: pointer;
+      transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: var(--blue);
+      background: #2b3540;
+    }
+
+    button.primary {
+      border-color: rgba(74, 222, 128, 0.6);
+      background: linear-gradient(180deg, #2c4737, #22372c);
+    }
+
+    button.warn {
+      border-color: rgba(246, 196, 83, 0.6);
+      background: linear-gradient(180deg, #4d4125, #382f1d);
+    }
+
+    button.danger {
+      border-color: rgba(255, 107, 107, 0.55);
+      background: linear-gradient(180deg, #4b292d, #352025);
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.68;
+      transform: none;
+    }
+
+    .runtime {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 14px;
+    }
+
+    .phone {
+      border: 1px solid #3a4650;
+      background: #080a0c;
+      border-radius: 30px;
+      padding: 14px;
+      min-height: 504px;
+      box-shadow: inset 0 0 0 5px #15191d, 0 18px 54px rgba(0, 0, 0, 0.36);
+    }
+
+    .screen {
+      height: 100%;
+      min-height: 476px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, #17201b, #0c1012 45%, #090b0d);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow: hidden;
+    }
+
+    .screen-top {
+      display: flex;
+      justify-content: space-between;
+      color: #d7e7dd;
+      font-size: 12px;
+    }
+
+    .qr-shell {
+      margin: auto 0;
+      display: grid;
+      justify-items: center;
+      gap: 12px;
+    }
+
+    canvas {
+      width: 176px;
+      height: 176px;
+      image-rendering: pixelated;
+      border: 10px solid #e9f2e9;
+      border-radius: 8px;
+      background: #e9f2e9;
+    }
+
+    .device-code {
+      width: 100%;
+      border: 1px dashed #506051;
+      border-radius: 8px;
+      padding: 9px;
+      color: var(--green);
+      font-size: 11px;
+      font-family: Consolas, "Liberation Mono", monospace;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+
+    .screen-status {
+      border: 1px solid rgba(246, 196, 83, 0.34);
+      color: var(--yellow);
+      background: rgba(246, 196, 83, 0.08);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 12px;
+      min-height: 58px;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .step {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #12171b;
+      min-height: 76px;
+    }
+
+    .step span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .step strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 13px;
+    }
+
+    .step.active {
+      border-color: rgba(74, 222, 128, 0.7);
+      background: rgba(74, 222, 128, 0.08);
+    }
+
+    .event-log {
+      min-height: 270px;
+      max-height: 358px;
+      overflow: auto;
+      border: 1px solid #303a43;
+      background: #0b0f13;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .response-view {
+      margin-top: 10px;
+      min-height: 176px;
+      max-height: 260px;
+      overflow: auto;
+      border: 1px solid #303a43;
+      background: #0b0f13;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .transport {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #11161a;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 26px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid #40505a;
+      color: var(--text);
+      background: #20272d;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .badge.ok {
+      border-color: rgba(74, 222, 128, 0.58);
+      color: var(--green);
+    }
+
+    .badge.warn {
+      border-color: rgba(246, 196, 83, 0.58);
+      color: var(--yellow);
+    }
+
+    .badge.err {
+      border-color: rgba(255, 107, 107, 0.58);
+      color: var(--red);
+    }
+
+    @keyframes pulse {
+      70% {
+        box-shadow: 0 0 0 10px rgba(246, 196, 83, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(246, 196, 83, 0);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .topbar,
+      .layout,
+      .runtime,
+      .timeline {
+        grid-template-columns: 1fr;
+      }
+
+      .state-grid,
+      .two,
+      .button-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="topbar">
+      <div class="hero">
+        <div>
+          <div class="eyebrow"><span class="pulse-dot"></span> Android Runtime Lab</div>
+          <h1>设备授权与信息上报模拟器</h1>
+          <p class="sub">按真实后端接口模拟安卓未授权、二维码待绑定、后台授权后恢复运行、重新上报设备信息的闭环。</p>
+        </div>
+        <div class="state-grid">
+          <div class="state-box"><span>运行状态</span><strong id="runtimeState">未启动</strong></div>
+          <div class="state-box"><span>绑定状态</span><strong id="bindingState">unknown</strong></div>
+          <div class="state-box"><span>最近在线信号</span><strong id="heartbeatState">-</strong></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>接口参数</h2>
+        <div class="form-grid">
+          <label>API Base URL
+            <input id="apiBase" value="http://localhost:8880/api/v1">
+          </label>
+          <label>设备码
+            <input id="deviceCode">
+          </label>
+          <label>主板信息
+            <input id="mainboardInfo" value="rk3588">
+          </label>
+          <div class="two">
+            <label>软件版本
+              <input id="softwareVersion" value="1.0.0">
+            </label>
+            <label>系统版本
+              <input id="systemVersion" value="Android 14">
+            </label>
+          </div>
+          <label>deviceInfo JSON
+            <textarea id="deviceInfo">{
+  "screen": "1080x1920",
+  "network": "wifi",
+  "role": "digital-human-player"
+}</textarea>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="panel">
+        <h2>安卓端画面</h2>
+        <div class="phone">
+          <div class="screen">
+            <div class="screen-top">
+              <span>Digital Human</span>
+              <span id="clockText">--:--</span>
+            </div>
+            <div class="qr-shell">
+              <canvas id="qrCanvas" width="176" height="176"></canvas>
+              <div class="device-code" id="qrCodeText"></div>
+            </div>
+            <div class="screen-status" id="phoneMessage">等待请求配置接口</div>
+          </div>
+        </div>
+        <div class="button-grid">
+          <button id="copyCodeBtn">复制设备码</button>
+          <button id="newCodeBtn">生成新设备码</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>接口执行</h2>
+        <div class="timeline">
+          <div class="step" id="stepConfig"><span>Step 1</span><strong>请求配置</strong></div>
+          <div class="step" id="stepReport"><span>Step 2</span><strong>上报建档</strong></div>
+          <div class="step" id="stepWatch"><span>Step 3</span><strong>监听授权</strong></div>
+          <div class="step" id="stepRun"><span>Step 4</span><strong>WebSocket 在线</strong></div>
+        </div>
+
+        <div class="transport">
+          <span>设备在线通道</span>
+          <span class="badge warn" id="transportBadge">WebSocket disconnected</span>
+        </div>
+
+        <div class="button-grid">
+          <button class="warn" id="requestConfigBtn">1. 请求配置</button>
+          <button class="primary" id="reportBtn">2. 上报设备信息</button>
+          <button id="watchBtn">启动授权监听</button>
+          <button class="primary" id="refreshReportBtn">重新上报并刷新授权</button>
+          <button id="heartbeatBtn">发送兼容心跳</button>
+          <button class="danger" id="stopBtn">停止监听 / 断开在线</button>
+        </div>
+
+        <h2 style="margin-top: 16px;">事件日志</h2>
+        <div class="event-log" id="eventLog"></div>
+        <h2 style="margin-top: 12px;">最近响应</h2>
+        <div class="response-view" id="responseView">{}</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const state = {
+      watcher: null,
+      heartbeatTimer: null,
+      statusSocket: null,
+      busy: false,
+      authorized: false,
+      pollIntervalMs: 3000,
+      wsPingIntervalMs: 30000,
+    };
+
+    const els = {
+      apiBase: $('apiBase'),
+      deviceCode: $('deviceCode'),
+      softwareVersion: $('softwareVersion'),
+      systemVersion: $('systemVersion'),
+      mainboardInfo: $('mainboardInfo'),
+      deviceInfo: $('deviceInfo'),
+      runtimeState: $('runtimeState'),
+      bindingState: $('bindingState'),
+      heartbeatState: $('heartbeatState'),
+      qrCanvas: $('qrCanvas'),
+      qrCodeText: $('qrCodeText'),
+      phoneMessage: $('phoneMessage'),
+      eventLog: $('eventLog'),
+      responseView: $('responseView'),
+      transportBadge: $('transportBadge'),
+      steps: {
+        config: $('stepConfig'),
+        report: $('stepReport'),
+        watch: $('stepWatch'),
+        run: $('stepRun'),
+      },
+    };
+
+    function nowText() {
+      return new Date().toLocaleTimeString('zh-CN', { hour12: false });
+    }
+
+    function setBusy(value) {
+      state.busy = value;
+      document.querySelectorAll('button').forEach((button) => {
+        if (button.id !== 'stopBtn') button.disabled = value;
+      });
+    }
+
+    function apiUrl(path) {
+      return `${els.apiBase.value.replace(/\/+$/, '')}${path}`;
+    }
+
+    function websocketUrl() {
+      const code = encodeURIComponent(els.deviceCode.value.trim());
+      if (!code) throw new Error('设备码不能为空');
+      const base = new URL(els.apiBase.value.replace(/\/+$/, ''), window.location.href);
+      const protocol = base.protocol === 'https:' ? 'wss:' : 'ws:';
+      return `${protocol}//${base.host}/ws/device-runtime/status/?deviceCode=${code}`;
+    }
+
+    function readDeviceInfo() {
+      try {
+        return JSON.parse(els.deviceInfo.value || '{}');
+      } catch (error) {
+        throw new Error('deviceInfo 不是有效 JSON');
+      }
+    }
+
+    function activationPayload() {
+      return {
+        deviceCode: els.deviceCode.value.trim(),
+        softwareVersion: els.softwareVersion.value.trim(),
+        systemVersion: els.systemVersion.value.trim(),
+        mainboardInfo: els.mainboardInfo.value.trim(),
+        deviceInfo: readDeviceInfo(),
+      };
+    }
+
+    function log(message, payload) {
+      const line = `[${nowText()}] ${message}`;
+      const extra = payload ? `\n${JSON.stringify(payload, null, 2)}` : '';
+      els.eventLog.textContent = `${line}${extra}\n\n${els.eventLog.textContent}`;
+    }
+
+    function showResponse(data) {
+      els.responseView.textContent = JSON.stringify(data, null, 2);
+    }
+
+    function setStep(active) {
+      Object.values(els.steps).forEach((step) => step.classList.remove('active'));
+      if (active && els.steps[active]) els.steps[active].classList.add('active');
+    }
+
+    function setStatus({ runtime, binding, phone, badge, badgeKind }) {
+      if (runtime) els.runtimeState.textContent = runtime;
+      if (binding) els.bindingState.textContent = binding;
+      if (phone) els.phoneMessage.textContent = phone;
+      if (badge) {
+        els.transportBadge.textContent = badge;
+        els.transportBadge.className = `badge ${badgeKind || 'warn'}`;
+      }
+    }
+
+    async function requestJson(path, options = {}) {
+      const response = await fetch(apiUrl(path), {
+        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+        ...options,
+      });
+      const text = await response.text();
+      let body = null;
+      try {
+        body = text ? JSON.parse(text) : null;
+      } catch {
+        body = text;
+      }
+      return { ok: response.ok, status: response.status, body };
+    }
+
+    async function requestConfig(silent = false) {
+      const code = encodeURIComponent(els.deviceCode.value.trim());
+      if (!code) throw new Error('设备码不能为空');
+      setStep('config');
+      const result = await requestJson(`/device-runtime/config/?deviceCode=${code}`);
+      showResponse(result);
+      if (result.ok) {
+        state.authorized = true;
+        setStep('run');
+        setStatus({
+          runtime: '已授权运行',
+          binding: 'bound',
+          phone: '授权成功，已拉取应用资源包',
+          badge: 'authorized',
+          badgeKind: 'ok',
+        });
+        if (!silent) log('配置拉取成功，设备已授权', result.body);
+        startStatusWebSocket();
+      } else {
+        state.authorized = false;
+        const msg = result.body && result.body.message ? result.body.message : `HTTP ${result.status}`;
+        setStatus({
+          runtime: '未授权',
+          binding: result.status === 404 ? 'not registered' : 'pending',
+          phone: `未授权或未绑定：${msg}`,
+          badge: 'waiting for backend authorization',
+          badgeKind: 'warn',
+        });
+        if (!silent) log('配置拉取失败，显示二维码', result);
+      }
+      return result;
+    }
+
+    async function reportDeviceInfo() {
+      setStep('report');
+      const payload = activationPayload();
+      const result = await requestJson('/device-auth/activate/', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      showResponse(result);
+      if (result.ok) {
+        const binding = result.body && result.body.bindingStatus ? result.body.bindingStatus : 'unknown';
+        state.authorized = binding === 'bound';
+        setStatus({
+          runtime: state.authorized ? '已授权运行' : '待后台授权',
+          binding,
+          phone: state.authorized ? '授权成功，设备信息已更新' : '设备信息已上报，等待后台授权',
+          badge: state.authorized ? 'authorized' : 'polling backend authorization',
+          badgeKind: state.authorized ? 'ok' : 'warn',
+        });
+        log('设备信息上报完成', result.body);
+        if (state.authorized) {
+          setStep('run');
+          await requestConfig(true);
+        } else {
+          startWatcher();
+        }
+      } else {
+        setStatus({ runtime: '上报失败', phone: '设备信息上报失败', badge: 'report failed', badgeKind: 'err' });
+        log('设备信息上报失败', result);
+      }
+      return result;
+    }
+
+    async function refreshReportAndAuthorization() {
+      const result = await reportDeviceInfo();
+      if (!result.ok) return result;
+      await requestConfig();
+      return result;
+    }
+
+    async function heartbeatOnce(silent = false) {
+      const payload = {
+        deviceCode: els.deviceCode.value.trim(),
+        softwareVersion: els.softwareVersion.value.trim(),
+        systemVersion: els.systemVersion.value.trim(),
+        deviceInfo: readDeviceInfo(),
+      };
+      const result = await requestJson('/device-runtime/heartbeat/', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      showResponse(result);
+      if (result.ok) {
+        els.heartbeatState.textContent = nowText();
+        setStatus({ phone: '兼容心跳成功；在线 / 离线由 WebSocket 连接决定' });
+        if (!silent) log('心跳成功', result.body);
+      } else {
+        setStatus({ runtime: '心跳失败', phone: '心跳失败，可能未授权或已过期', badge: 'heartbeat rejected', badgeKind: 'err' });
+        if (!silent) log('心跳失败', result);
+      }
+      return result;
+    }
+
+    function startWatcher() {
+      stopWatcher(false);
+      setStep('watch');
+      setStatus({
+        runtime: '监听授权中',
+        badge: 'polling authorization / WebSocket standby',
+        badgeKind: 'warn',
+      });
+      log('授权监听已启动：轮询等待后台授权；授权成功后自动建立 WebSocket 在线连接');
+      state.watcher = window.setInterval(async () => {
+        try {
+          const result = await requestConfig(true);
+          if (result.ok) {
+            log('监听到后台授权成功', result.body);
+            stopWatcher(false);
+          }
+        } catch (error) {
+          log(`授权监听异常：${error.message}`);
+        }
+      }, state.pollIntervalMs);
+    }
+
+    function stopWatcher(announce = true) {
+      if (state.watcher) {
+        window.clearInterval(state.watcher);
+        state.watcher = null;
+      }
+      if (announce) {
+        setStatus({ badge: 'listener stopped', badgeKind: 'warn' });
+        log('授权监听已停止');
+      }
+    }
+
+    function startStatusWebSocket() {
+      if (state.statusSocket && state.statusSocket.readyState === WebSocket.OPEN) {
+        return;
+      }
+      stopStatusWebSocket(false);
+      const url = websocketUrl();
+      const socket = new WebSocket(url);
+      state.statusSocket = socket;
+      setStatus({ runtime: '连接在线通道中', badge: 'WebSocket connecting', badgeKind: 'warn' });
+      log('正在建立 WebSocket 在线连接', { url });
+
+      socket.addEventListener('open', () => {
+        setStep('run');
+        els.heartbeatState.textContent = nowText();
+        setStatus({
+          runtime: '在线',
+          phone: 'WebSocket 已连接，设备在线',
+          badge: 'WebSocket online',
+          badgeKind: 'ok',
+        });
+        log('WebSocket 已连接，后端应显示设备在线');
+        state.heartbeatTimer = window.setInterval(() => {
+          if (socket.readyState === WebSocket.OPEN) {
+            socket.send('ping');
+          }
+        }, state.wsPingIntervalMs);
+      });
+
+      socket.addEventListener('message', (event) => {
+        els.heartbeatState.textContent = nowText();
+        log(`WebSocket 收到消息：${event.data}`);
+      });
+
+      socket.addEventListener('close', (event) => {
+        if (state.statusSocket === socket) {
+          state.statusSocket = null;
+        }
+        stopHeartbeatPing();
+        setStatus({
+          runtime: '离线',
+          phone: 'WebSocket 已断开，后端应显示设备离线',
+          badge: `WebSocket closed ${event.code || ''}`.trim(),
+          badgeKind: 'warn',
+        });
+        log('WebSocket 已断开', { code: event.code, reason: event.reason });
+      });
+
+      socket.addEventListener('error', () => {
+        setStatus({
+          runtime: '在线通道异常',
+          phone: 'WebSocket 连接异常，请确认 backend 已重启并支持 /ws/device-runtime/status/',
+          badge: 'WebSocket error',
+          badgeKind: 'err',
+        });
+        log('WebSocket 连接异常');
+      });
+    }
+
+    function stopHeartbeatPing() {
+      if (state.heartbeatTimer) {
+        window.clearInterval(state.heartbeatTimer);
+        state.heartbeatTimer = null;
+      }
+    }
+
+    function stopStatusWebSocket(announce = true) {
+      stopHeartbeatPing();
+      if (state.statusSocket) {
+        const socket = state.statusSocket;
+        state.statusSocket = null;
+        if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+          socket.close(1000, 'simulator stopped');
+        }
+      }
+      if (announce) {
+        setStatus({ runtime: '离线', phone: '已主动断开 WebSocket 在线连接', badge: 'WebSocket disconnected', badgeKind: 'warn' });
+        log('已主动断开 WebSocket 在线连接');
+      }
+    }
+
+    function generateCode() {
+      stopWatcher(false);
+      stopStatusWebSocket(false);
+      const stamp = Date.now().toString(36).toUpperCase();
+      const rand = Math.random().toString(36).slice(2, 8).toUpperCase();
+      els.deviceCode.value = `ANDROID-SIM-${stamp}-${rand}`;
+      syncQr();
+      setStatus({ runtime: '未启动', binding: 'unknown', phone: '等待请求配置接口' });
+      showResponse({});
+      log('已生成新设备码');
+    }
+
+    function syncQr() {
+      const code = els.deviceCode.value.trim();
+      els.qrCodeText.textContent = code || '-';
+      drawPseudoQr(code || 'EMPTY');
+    }
+
+    function drawPseudoQr(value) {
+      const canvas = els.qrCanvas;
+      const ctx = canvas.getContext('2d');
+      const size = 29;
+      const cell = canvas.width / size;
+      ctx.fillStyle = '#edf7ee';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      function hashAt(index) {
+        let hash = 2166136261;
+        for (let i = 0; i < value.length; i += 1) {
+          hash ^= value.charCodeAt(i) + index * 131;
+          hash = Math.imul(hash, 16777619);
+        }
+        return hash >>> 0;
+      }
+
+      function finder(x, y) {
+        ctx.fillStyle = '#050807';
+        ctx.fillRect(x * cell, y * cell, 7 * cell, 7 * cell);
+        ctx.fillStyle = '#edf7ee';
+        ctx.fillRect((x + 1) * cell, (y + 1) * cell, 5 * cell, 5 * cell);
+        ctx.fillStyle = '#050807';
+        ctx.fillRect((x + 2) * cell, (y + 2) * cell, 3 * cell, 3 * cell);
+      }
+
+      finder(1, 1);
+      finder(21, 1);
+      finder(1, 21);
+
+      ctx.fillStyle = '#050807';
+      for (let y = 0; y < size; y += 1) {
+        for (let x = 0; x < size; x += 1) {
+          const inFinder =
+            (x >= 1 && x < 8 && y >= 1 && y < 8) ||
+            (x >= 21 && x < 28 && y >= 1 && y < 8) ||
+            (x >= 1 && x < 8 && y >= 21 && y < 28);
+          if (inFinder) continue;
+          const bit = (hashAt(x * 41 + y * 97) >> ((x + y) % 16)) & 1;
+          if (bit) ctx.fillRect(x * cell, y * cell, Math.ceil(cell), Math.ceil(cell));
+        }
+      }
+    }
+
+    async function runAction(fn) {
+      if (state.busy) return;
+      setBusy(true);
+      try {
+        await fn();
+      } catch (error) {
+        setStatus({ runtime: '请求异常', phone: error.message, badge: 'request error', badgeKind: 'err' });
+        log(`请求异常：${error.message}`);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    $('requestConfigBtn').addEventListener('click', () => runAction(() => requestConfig()));
+    $('reportBtn').addEventListener('click', () => runAction(() => reportDeviceInfo()));
+    $('watchBtn').addEventListener('click', () => startWatcher());
+    $('refreshReportBtn').addEventListener('click', () => runAction(() => refreshReportAndAuthorization()));
+    $('heartbeatBtn').addEventListener('click', () => runAction(() => heartbeatOnce()));
+    $('stopBtn').addEventListener('click', () => {
+      stopWatcher();
+      stopStatusWebSocket();
+    });
+    $('newCodeBtn').addEventListener('click', () => generateCode());
+    $('copyCodeBtn').addEventListener('click', async () => {
+      const code = els.deviceCode.value.trim();
+      try {
+        await navigator.clipboard.writeText(code);
+        log('设备码已复制');
+      } catch {
+        els.deviceCode.focus();
+        els.deviceCode.select();
+        log('当前浏览器限制剪贴板访问，已选中设备码');
+      }
+    });
+
+    els.deviceCode.addEventListener('input', syncQr);
+    window.setInterval(() => {
+      $('clockText').textContent = nowText();
+    }, 1000);
+
+    generateCode();
+    $('clockText').textContent = nowText();
+  </script>
+</body>
+</html>

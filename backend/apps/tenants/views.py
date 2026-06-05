@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.accounts.models import Menu, PermissionPoint
+from apps.accounts.models import AccountApplication, Menu, PermissionPoint
 from apps.accounts.permissions import CanManageTenants
 
 from .models import Tenant
@@ -34,6 +34,19 @@ class TenantViewSet(viewsets.ModelViewSet):
     permission_classes = [CanManageTenants]
     # 不开放 DELETE（公司停用走 is_active / 双阶段删除，不硬删）；put 供 assign_menus action 使用。
     http_method_names = ['get', 'post', 'put', 'patch', 'head', 'options']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.action != 'list':
+            return queryset
+        include_hidden = self.request.query_params.get('include_hidden') == 'true'
+        if include_hidden:
+            return queryset
+        approved_tenant_ids = AccountApplication.objects.filter(
+            status=AccountApplication.STATUS_APPROVED,
+            tenant__isnull=False,
+        ).values_list('tenant_id', flat=True)
+        return queryset.filter(id__in=approved_tenant_ids, is_active=True, is_legacy=False)
 
     def get_serializer_class(self):
         if self.action == 'create':

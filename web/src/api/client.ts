@@ -11,7 +11,6 @@ const TENANT_SCOPED_PREFIXES = [
   '/devices',
   '/device-groups',
   '/device-applications',
-  '/device-authorization-codes',
   '/resources',
   '/knowledge-base',
   '/commands',

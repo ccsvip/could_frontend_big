@@ -9,14 +9,24 @@ from .models import (
     CommandGroup,
     ControlCommand,
     ModelAsset,
+    MinioConfig,
     Resource,
     ScrollingText,
     ScrollingTextItem,
     TaskCommand,
     TaskCommandStep,
+    TenantVideoQuota,
     VoiceTone,
 )
 from .point_models import Point
+from .services.minio_client import (
+    MinioConfigError,
+    build_public_object_url,
+    delete_object,
+    get_tenant_video_quota_summary,
+    get_minio_settings,
+    validate_tenant_object_key,
+)
 
 
 def build_absolute_file_url(request, file_field) -> str:
@@ -35,6 +45,8 @@ class ResourceSerializer(serializers.ModelSerializer):
     resourceTypeLabel = serializers.CharField(source='get_resource_type_display', read_only=True)
     hasFile = serializers.BooleanField(source='has_file', read_only=True)
     cloudUrl = serializers.CharField(source='cloud_url', required=False, allow_blank=True, default='')
+    objectKey = serializers.CharField(source='object_key', required=False, allow_blank=True, default='')
+    objectSize = serializers.IntegerField(source='object_size', required=False, allow_null=True, min_value=0)
     clearFile = serializers.BooleanField(write_only=True, required=False, default=False)
 
     class Meta:
@@ -49,6 +61,8 @@ class ResourceSerializer(serializers.ModelSerializer):
             'description',
             'file',
             'cloudUrl',
+            'objectKey',
+            'objectSize',
             'fileUrl',
             'fileName',
             'fileSize',
@@ -70,14 +84,20 @@ class ResourceSerializer(serializers.ModelSerializer):
         )
 
     def get_fileUrl(self, obj: Resource) -> str:
+        if obj.object_key:
+            return build_public_object_url(obj.object_key)
         return build_absolute_file_url(self.context.get('request'), obj.file)
 
     def get_fileName(self, obj: Resource) -> str:
+        if obj.object_key:
+            return Path(obj.object_key).name
         if not obj.file:
             return ''
         return Path(obj.file.name).name
 
     def get_fileSize(self, obj: Resource) -> int | None:
+        if obj.object_key:
+            return obj.object_size
         if not obj.file:
             return None
         try:
@@ -89,8 +109,39 @@ class ResourceSerializer(serializers.ModelSerializer):
         attrs = super().validate(attrs)
         resource_type = self.context['resource_type']
         clear_file = attrs.pop('clearFile', False)
+        request = self.context.get('request')
+        tenant = self.context.get('object_key_tenant')
+        if request is not None and not getattr(request, '_tenant_resolved', False):
+            from apps.tenants.services import get_request_tenant
+
+            tenant = tenant or get_request_tenant(request)
+        object_key = attrs.get('object_key')
+        if object_key:
+            try:
+                attrs['object_key'] = validate_tenant_object_key(object_key, tenant=tenant)
+            except MinioConfigError as exc:
+                raise serializers.ValidationError({'objectKey': str(exc)}) from exc
         if resource_type == Resource.TYPE_VIDEO:
-            # 视频资源允许仅填写云端 URL，不再强制要求本地文件。
+            minio_settings = get_minio_settings()
+            submitted_cloud_url = (attrs.get('cloud_url') or '').strip()
+            if submitted_cloud_url and not minio_settings.allow_video_cloud_url:
+                raise serializers.ValidationError({'cloudUrl': '当前不允许填写视频云端 URL'})
+
+            final_cloud_url = submitted_cloud_url
+            if self.instance is not None and 'cloud_url' not in attrs:
+                final_cloud_url = self.instance.cloud_url
+            final_object_key = attrs.get('object_key')
+            if self.instance is not None and 'object_key' not in attrs:
+                final_object_key = self.instance.object_key
+            final_has_uploaded_file = bool(attrs.get('file'))
+            if self.instance is not None and 'file' not in attrs:
+                final_has_uploaded_file = bool(self.instance.file)
+            if final_cloud_url and (final_object_key or final_has_uploaded_file):
+                raise serializers.ValidationError({'cloudUrl': '视频上传文件和云端 URL 只能二选一'})
+            if not (final_cloud_url or final_object_key or final_has_uploaded_file):
+                message = '请上传视频或填写云端 URL' if minio_settings.allow_video_cloud_url else '请上传视频'
+                raise serializers.ValidationError({'file': message})
+            # 视频来源必填；开启云端 URL 时仍与上传文件互斥。
             if clear_file:
                 raise serializers.ValidationError({'clearFile': '视频资源不支持清空文件，请直接删除或重新上传'})
 
@@ -104,11 +155,100 @@ class ResourceSerializer(serializers.ModelSerializer):
 
     def update(self, instance: Resource, validated_data):
         clear_file = validated_data.pop('_clear_file', False)
+        new_object_key = validated_data.get('object_key')
+        if new_object_key is not None and instance.object_key and new_object_key != instance.object_key:
+            delete_object(instance.object_key)
         if clear_file:
             if instance.file:
                 instance.file.delete(save=False)
             validated_data['file'] = None
         return super().update(instance, validated_data)
+
+
+class MinioConfigSerializer(serializers.ModelSerializer):
+    accessKey = serializers.CharField(source='access_key', required=False, allow_blank=True)
+    secretKey = serializers.CharField(source='secret_key', required=False, allow_blank=True, write_only=True)
+    bucketName = serializers.CharField(source='bucket_name', required=False, allow_blank=True)
+    publicBaseUrl = serializers.CharField(source='public_base_url', required=False, allow_blank=True)
+    videoMaxSizeMB = serializers.IntegerField(source='video_max_size_mb', required=False, min_value=1)
+    allowVideoCloudUrl = serializers.BooleanField(source='allow_video_cloud_url', required=False)
+    isActive = serializers.BooleanField(source='is_active', required=False)
+
+    class Meta:
+        model = MinioConfig
+        fields = (
+            'endpoint',
+            'accessKey',
+            'secretKey',
+            'bucketName',
+            'secure',
+            'region',
+            'publicBaseUrl',
+            'videoMaxSizeMB',
+            'allowVideoCloudUrl',
+            'isActive',
+            'updated_at',
+        )
+        read_only_fields = ('updated_at',)
+
+
+class TenantVideoQuotaSerializer(serializers.ModelSerializer):
+    tenantId = serializers.IntegerField(source='tenant_id', read_only=True)
+    tenantName = serializers.CharField(source='tenant.name', read_only=True)
+    tenantCode = serializers.CharField(source='tenant.code', read_only=True)
+    quotaLimited = serializers.SerializerMethodField()
+    quotaMB = serializers.IntegerField(source='quota_mb', required=False, allow_null=True, min_value=1)
+    usedBytes = serializers.SerializerMethodField()
+    usedMB = serializers.SerializerMethodField()
+    remainingBytes = serializers.SerializerMethodField()
+    remainingMB = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TenantVideoQuota
+        fields = (
+            'tenantId',
+            'tenantName',
+            'tenantCode',
+            'quotaLimited',
+            'quotaMB',
+            'usedBytes',
+            'usedMB',
+            'remainingBytes',
+            'remainingMB',
+            'updated_at',
+        )
+        read_only_fields = (
+            'tenantId',
+            'tenantName',
+            'tenantCode',
+            'quotaLimited',
+            'usedBytes',
+            'usedMB',
+            'remainingBytes',
+            'remainingMB',
+            'updated_at',
+        )
+
+    def get_quotaLimited(self, obj: TenantVideoQuota) -> bool:
+        return obj.quota_mb is not None
+
+    def _summary(self, obj: TenantVideoQuota) -> dict:
+        cache_name = '_video_quota_summary'
+        if not hasattr(obj, cache_name):
+            setattr(obj, cache_name, get_tenant_video_quota_summary(obj.tenant))
+        return getattr(obj, cache_name)
+
+    def get_usedBytes(self, obj: TenantVideoQuota):
+        return self._summary(obj)['usedBytes']
+
+    def get_usedMB(self, obj: TenantVideoQuota):
+        return self._summary(obj)['usedMB']
+
+    def get_remainingBytes(self, obj: TenantVideoQuota):
+        return self._summary(obj)['remainingBytes']
+
+    def get_remainingMB(self, obj: TenantVideoQuota):
+        return self._summary(obj)['remainingMB']
 
 
 class ScrollingTextItemSerializer(serializers.ModelSerializer):
@@ -870,5 +1010,3 @@ class AliyunCommandItemSerializer(serializers.Serializer):
     description = serializers.CharField(allow_blank=True)
     toolExamples = serializers.ListField(child=serializers.JSONField(), required=False)
     toolParams = serializers.ListField(child=serializers.JSONField(), required=False)
-
-

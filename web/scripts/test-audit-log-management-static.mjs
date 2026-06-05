@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+
+const auditApi = fs.readFileSync('src/api/modules/audit.ts', 'utf8');
+const router = fs.readFileSync('src/router/index.tsx', 'utf8');
+const page = fs.readFileSync('src/views/log-management/index.tsx', 'utf8');
+
+assert(auditApi.includes('description: string;'), 'OperationLogRecord should expose description');
+assert(auditApi.includes('clearOperationLogs'), 'audit API should expose clearOperationLogs');
+assert(router.includes('const AuditLogGuard'), 'logs route should use a dedicated audit log guard');
+assert(router.includes("hasPermission('audit.logs.view')"), 'audit guard should require audit.logs.view');
+assert(router.includes('tenant?.isTenantAdmin'), 'audit guard should require tenant admin scope for non-platform users');
+assert(router.includes('<AuditLogGuard>'), 'logs route should be wrapped by AuditLogGuard');
+assert(page.includes("import { DeleteOutlined, FileSearchOutlined } from '@ant-design/icons';"), 'page should import the clear and search icons');
+assert(page.includes("import { Button, Card, Modal, Select, Space, Table, Tag, Typography, message } from 'antd';"), 'page should import the expected antd controls');
+assert(page.includes('clearOperationLogs'), 'page should call clearOperationLogs');
+assert(page.includes('const isSuperuser = useAuthStore((state) => state.isSuperuser);'), 'page should read exact superuser scope from auth store');
+assert(page.includes('const isPlatformAdmin = isSuperuser;'), 'page should derive platform admin scope from isSuperuser');
+assert(page.includes("content: isPlatformAdmin"), 'clear modal should distinguish platform-wide and tenant-scoped deletion');
+assert(page.includes("title: '操作具体做了什么'"), 'log table should show backend description column');
+assert(page.includes("render: (value: string) => value || <span className=\"text-slate-400\">-</span>"), 'description column should fall back to a dash');
+assert(!page.includes("describeOperationPath"), 'frontend path-description logic should be removed');
+assert(!page.includes("methodColorMap"), 'request method color mapping should be removed');
+assert(!page.includes("statusColor"), 'status code color mapping should be removed');
+assert(!page.includes("fallbackActionText"), 'fallback action text logic should be removed');
+assert(!page.includes("pathDescriptionRules"), 'path description rules should be removed');
+
+console.log('audit log management static checks passed');

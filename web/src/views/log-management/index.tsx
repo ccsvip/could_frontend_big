@@ -1,13 +1,15 @@
-import { FileSearchOutlined } from '@ant-design/icons';
-import { Card, Select, Space, Table, Tag, Typography } from 'antd';
+import { DeleteOutlined, FileSearchOutlined } from '@ant-design/icons';
+import { Button, Card, Modal, Select, Space, Table, Tag, Typography, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  clearOperationLogs,
   fetchOperationLogs,
   type OperationLogAction,
   type OperationLogRecord,
 } from '../../api/modules/audit';
 import { fetchTenants, type TenantRecord } from '../../api/modules/tenants';
+import { useAuthStore } from '../../store/auth';
 
 const PAGE_SIZE = 10;
 
@@ -17,25 +19,14 @@ const actionMap: Record<OperationLogAction, { color: string; text: string }> = {
   delete: { color: 'error', text: '删除' },
 };
 
-const methodColorMap: Record<string, string> = {
-  POST: 'green',
-  PUT: 'gold',
-  PATCH: 'gold',
-  DELETE: 'red',
-};
-
-const statusColor = (code: number): string => {
-  if (code >= 500) return 'error';
-  if (code >= 400) return 'warning';
-  if (code >= 200 && code < 300) return 'success';
-  return 'default';
-};
-
 export const LogManagementPage = () => {
+  const isSuperuser = useAuthStore((state) => state.isSuperuser);
+  const isPlatformAdmin = isSuperuser;
   const [logs, setLogs] = useState<OperationLogRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [clearing, setClearing] = useState(false);
   const [tenants, setTenants] = useState<TenantRecord[]>([]);
   const [tenantFilter, setTenantFilter] = useState<number | undefined>(undefined);
   const hasLoadedTenantsRef = useRef(false);
@@ -58,7 +49,7 @@ export const LogManagementPage = () => {
   }, [page, tenantFilter]);
 
   useEffect(() => {
-    if (hasLoadedTenantsRef.current) {
+    if (!isPlatformAdmin || hasLoadedTenantsRef.current) {
       return;
     }
     hasLoadedTenantsRef.current = true;
@@ -67,10 +58,37 @@ export const LogManagementPage = () => {
         const data = await fetchTenants({ page_size: 100 });
         setTenants(data.results);
       } catch {
-        // 拦截器已提示
+        // 错误已在拦截器中处理
       }
     })();
-  }, []);
+  }, [isPlatformAdmin]);
+
+  const handleClearLogs = () => {
+    Modal.confirm({
+      title: '清空日志',
+      content: isPlatformAdmin
+        ? '将真实删除全平台全部操作日志，无法恢复。'
+        : '将真实删除当前公司全部操作日志，无法恢复。',
+      okText: '确认清空',
+      okButtonProps: { danger: true, loading: clearing },
+      cancelText: '取消',
+      async onOk() {
+        setClearing(true);
+        try {
+          const data = await clearOperationLogs();
+          message.success(`已清空 ${data.deleted} 条日志`);
+          const shouldReloadImmediately = page === 1 && tenantFilter === undefined;
+          setTenantFilter(undefined);
+          setPage(1);
+          if (shouldReloadImmediately) {
+            await loadLogs(1, undefined);
+          }
+        } finally {
+          setClearing(false);
+        }
+      },
+    });
+  };
 
   const columns: ColumnsType<OperationLogRecord> = useMemo(
     () => [
@@ -78,52 +96,32 @@ export const LogManagementPage = () => {
         title: '操作人',
         dataIndex: 'actorUsername',
         key: 'actorUsername',
-        width: 140,
+        width: '20%',
         render: (value: string) => value || <span className="text-slate-400">匿名</span>,
-      },
-      {
-        title: '所属公司',
-        dataIndex: 'tenantName',
-        key: 'tenantName',
-        width: 160,
-        render: (value: string | null) => value || <span className="text-slate-400">—</span>,
       },
       {
         title: '动作',
         dataIndex: 'action',
         key: 'action',
-        width: 90,
+        width: '14%',
         render: (action: OperationLogAction) => {
           const meta = actionMap[action];
           return <Tag color={meta?.color}>{meta?.text ?? action}</Tag>;
         },
       },
       {
-        title: '请求方法',
-        dataIndex: 'method',
-        key: 'method',
-        width: 110,
-        render: (method: string) => <Tag color={methodColorMap[method] ?? 'default'}>{method}</Tag>,
-      },
-      {
-        title: '请求路径',
-        dataIndex: 'path',
-        key: 'path',
+        title: '操作具体做了什么',
+        dataIndex: 'description',
+        key: 'description',
+        width: '46%',
         ellipsis: true,
-        render: (path: string) => <span className="font-mono text-[13px] text-slate-700">{path}</span>,
+        render: (value: string) => value || <span className="text-slate-400">-</span>,
       },
       {
-        title: '状态码',
-        dataIndex: 'statusCode',
-        key: 'statusCode',
-        width: 100,
-        render: (code: number) => <Tag color={statusColor(code)}>{code}</Tag>,
-      },
-      {
-        title: '操作时间',
+        title: '时间',
         dataIndex: 'createdAt',
         key: 'createdAt',
-        width: 180,
+        width: '20%',
       },
     ],
     [],
@@ -138,24 +136,31 @@ export const LogManagementPage = () => {
               <span className="inline-block h-1 w-1 rounded-full bg-teal-600" />
               Operation Audit
             </div>
-            <Typography.Title level={4} className="!mb-1 !text-slate-900 !font-semibold">
+            <Typography.Title level={4} className="!mb-1 !font-semibold !text-slate-900">
               操作日志审计
             </Typography.Title>
             <Typography.Text className="!text-[13px] !text-slate-500">
-              记录平台内各公司的写操作（新增 / 修改 / 删除），可按公司筛选追溯
+              记录平台内各公司的写操作（新增 / 修改 / 删除），可按公司筛选追溯。
             </Typography.Text>
           </div>
-          <Select
-            allowClear
-            placeholder="按公司筛选"
-            className="!w-full md:!w-60"
-            value={tenantFilter}
-            onChange={(value) => {
-              setTenantFilter(value);
-              setPage(1);
-            }}
-            options={tenants.map((tenant) => ({ value: tenant.id, label: tenant.name }))}
-          />
+          <Space className="!w-full justify-end md:!w-auto">
+            {isPlatformAdmin ? (
+              <Select
+                allowClear
+                placeholder="按公司筛选"
+                className="!w-60"
+                value={tenantFilter}
+                onChange={(value) => {
+                  setTenantFilter(value);
+                  setPage(1);
+                }}
+                options={tenants.map((tenantItem) => ({ value: tenantItem.id, label: tenantItem.name }))}
+              />
+            ) : null}
+            <Button danger icon={<DeleteOutlined />} loading={clearing} onClick={handleClearLogs}>
+              清空日志
+            </Button>
+          </Space>
         </div>
       </div>
 
@@ -174,7 +179,7 @@ export const LogManagementPage = () => {
           dataSource={logs}
           rowKey="id"
           loading={loading}
-          scroll={{ x: 880 }}
+          tableLayout="fixed"
           pagination={{
             current: page,
             pageSize: PAGE_SIZE,

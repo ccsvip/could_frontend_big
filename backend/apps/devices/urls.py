@@ -5,6 +5,7 @@ from .views import (
     DeviceActivationView,
     DeviceApplicationViewSet,
     DeviceAuthorizationCodeViewSet,
+    DeviceAuthorizationRequestViewSet,
     DeviceGroupViewSet,
     DeviceRuntimeConfigView,
     DeviceRuntimeHeartbeatView,
@@ -16,6 +17,7 @@ router.register('devices', DeviceViewSet, basename='device')
 router.register('device-groups', DeviceGroupViewSet, basename='device-group')
 router.register('device-applications', DeviceApplicationViewSet, basename='device-application')
 router.register('device-authorization-codes', DeviceAuthorizationCodeViewSet, basename='device-authorization-code')
+router.register('device-authorization-requests', DeviceAuthorizationRequestViewSet, basename='device-authorization-request')
 
 urlpatterns = [
     path('device-auth/activate/', DeviceActivationView.as_view(), name='device-auth-activate'),

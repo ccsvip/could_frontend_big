@@ -14,6 +14,12 @@
       "fileCategory": "code"
     },
     {
+      "path": ".understand-anything/.understandignore",
+      "language": "unknown",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
       "path": ".understand-anything/config.json",
       "language": "json",
       "sizeLines": 3,
@@ -22,7 +28,7 @@
     {
       "path": "AGENTS.md",
       "language": "markdown",
-      "sizeLines": 180,
+      "sizeLines": 204,
       "fileCategory": "docs"
     },
     {
@@ -382,13 +388,13 @@
     {
       "path": "backend/apps/devices/admin.py",
       "language": "python",
-      "sizeLines": 10,
+      "sizeLines": 53,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/devices/AGENTS.md",
       "language": "markdown",
-      "sizeLines": 50,
+      "sizeLines": 105,
       "fileCategory": "docs"
     },
     {
@@ -412,7 +418,7 @@
     {
       "path": "backend/apps/devices/management/commands/seed_devices.py",
       "language": "python",
-      "sizeLines": 41,
+      "sizeLines": 69,
       "fileCategory": "code"
     },
     {
@@ -440,27 +446,75 @@
       "fileCategory": "code"
     },
     {
+      "path": "backend/apps/devices/migrations/0003_device_authorization_type_device_device_info_and_more.py",
+      "language": "python",
+      "sizeLines": 184,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0004_device_status_online_offline_only.py",
+      "language": "python",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0005_deviceapplication_scrolling_texts.py",
+      "language": "python",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0006_device_authorization_ignored_at_and_log_actions.py",
+      "language": "python",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
       "path": "backend/apps/devices/models.py",
       "language": "python",
-      "sizeLines": 44,
+      "sizeLines": 267,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/realtime.py",
+      "language": "python",
+      "sizeLines": 148,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/devices/serializers.py",
       "language": "python",
-      "sizeLines": 32,
+      "sizeLines": 420,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/tests/test_device_authorization_api.py",
+      "language": "python",
+      "sizeLines": 692,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/tokens.py",
+      "language": "python",
+      "sizeLines": 34,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/devices/urls.py",
       "language": "python",
-      "sizeLines": 8,
+      "sizeLines": 27,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/devices/views.py",
       "language": "python",
-      "sizeLines": 75,
+      "sizeLines": 603,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/websocket.py",
+      "language": "python",
+      "sizeLines": 87,
       "fileCategory": "code"
     },
     {
@@ -1072,7 +1126,7 @@
     {
       "path": "backend/apps/tenants/tests/test_tenant_management_api.py",
       "language": "python",
-      "sizeLines": 73,
+      "sizeLines": 123,
       "fileCategory": "code"
     },
     {
@@ -1090,7 +1144,7 @@
     {
       "path": "backend/apps/tenants/views.py",
       "language": "python",
-      "sizeLines": 74,
+      "sizeLines": 87,
       "fileCategory": "code"
     },
     {
@@ -1114,7 +1168,7 @@
     {
       "path": "backend/config/asgi.py",
       "language": "python",
-      "sizeLines": 7,
+      "sizeLines": 22,
       "fileCategory": "code"
     },
     {
@@ -1216,7 +1270,7 @@
     {
       "path": "backend/requirements.txt",
       "language": "txt",
-      "sizeLines": 16,
+      "sizeLines": 18,
       "fileCategory": "docs"
     },
     {
@@ -1298,9 +1352,15 @@
       "fileCategory": "markup"
     },
     {
+      "path": "understand-anything-guide.html",
+      "language": "html",
+      "sizeLines": 456,
+      "fileCategory": "markup"
+    },
+    {
       "path": "web/AGENTS.md",
       "language": "markdown",
-      "sizeLines": 70,
+      "sizeLines": 71,
       "fileCategory": "docs"
     },
     {
@@ -1384,7 +1444,7 @@
     {
       "path": "web/src/api/client.ts",
       "language": "typescript",
-      "sizeLines": 142,
+      "sizeLines": 150,
       "fileCategory": "code"
     },
     {
@@ -1414,7 +1474,7 @@
     {
       "path": "web/src/api/modules/devices.ts",
       "language": "typescript",
-      "sizeLines": 45,
+      "sizeLines": 283,
       "fileCategory": "code"
     },
     {
@@ -1438,7 +1498,7 @@
     {
       "path": "web/src/api/modules/models.ts",
       "language": "typescript",
-      "sizeLines": 109,
+      "sizeLines": 111,
       "fileCategory": "code"
     },
     {
@@ -1456,7 +1516,7 @@
     {
       "path": "web/src/api/modules/scrolling-texts.ts",
       "language": "typescript",
-      "sizeLines": 85,
+      "sizeLines": 87,
       "fileCategory": "code"
     },
     {
@@ -1468,7 +1528,7 @@
     {
       "path": "web/src/api/modules/voice-tones.ts",
       "language": "typescript",
-      "sizeLines": 95,
+      "sizeLines": 97,
       "fileCategory": "code"
     },
     {
@@ -1486,7 +1546,7 @@
     {
       "path": "web/src/layouts/dashboard-layout.tsx",
       "language": "typescript",
-      "sizeLines": 694,
+      "sizeLines": 711,
       "fileCategory": "code"
     },
     {
@@ -1498,7 +1558,7 @@
     {
       "path": "web/src/router/index.tsx",
       "language": "typescript",
-      "sizeLines": 430,
+      "sizeLines": 439,
       "fileCategory": "code"
     },
     {
@@ -1510,7 +1570,7 @@
     {
       "path": "web/src/store/tenant-scope.ts",
       "language": "typescript",
-      "sizeLines": 16,
+      "sizeLines": 20,
       "fileCategory": "code"
     },
     {
@@ -1622,9 +1682,15 @@
       "fileCategory": "code"
     },
     {
+      "path": "web/src/views/device-authorization-center/index.tsx",
+      "language": "typescript",
+      "sizeLines": 711,
+      "fileCategory": "code"
+    },
+    {
       "path": "web/src/views/device-management/index.tsx",
       "language": "typescript",
-      "sizeLines": 239,
+      "sizeLines": 861,
       "fileCategory": "code"
     },
     {
@@ -1660,7 +1726,7 @@
     {
       "path": "web/src/views/log-management/index.tsx",
       "language": "typescript",
-      "sizeLines": 190,
+      "sizeLines": 229,
       "fileCategory": "code"
     },
     {
@@ -1708,7 +1774,7 @@
     {
       "path": "web/src/views/tenant-management/index.tsx",
       "language": "typescript",
-      "sizeLines": 284,
+      "sizeLines": 299,
       "fileCategory": "code"
     },
     {
@@ -1768,35 +1834,53 @@
     {
       "path": "web/vite.config.ts",
       "language": "typescript",
-      "sizeLines": 26,
+      "sizeLines": 31,
       "fileCategory": "code"
+    },
+    {
+      "path": "wiki/android-device-runtime-simulator.html",
+      "language": "html",
+      "sizeLines": 991,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "wiki/container-dependencies.md",
+      "language": "markdown",
+      "sizeLines": 235,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "wiki/device-api-latest.html",
+      "language": "html",
+      "sizeLines": 490,
+      "fileCategory": "markup"
     }
   ],
-  "totalFiles": 295,
-  "filteredByIgnore": 0,
+  "totalFiles": 309,
+  "filteredByIgnore": 5,
   "estimatedComplexity": "large",
   "stats": {
-    "filesScanned": 295,
+    "filesScanned": 309,
     "byCategory": {
       "config": 10,
-      "code": 256,
-      "docs": 20,
+      "code": 266,
+      "docs": 21,
       "infra": 4,
-      "markup": 5
+      "markup": 8
     },
     "byLanguage": {
       "config": 1,
-      "unknown": 1,
+      "unknown": 2,
       "json": 9,
-      "markdown": 19,
-      "python": 188,
+      "markdown": 20,
+      "python": 196,
       "dockerfile": 2,
       "txt": 1,
       "yaml": 1,
-      "html": 4,
+      "html": 7,
       "makefile": 1,
       "javascript": 8,
-      "typescript": 59,
+      "typescript": 60,
       "css": 1
     }
   }

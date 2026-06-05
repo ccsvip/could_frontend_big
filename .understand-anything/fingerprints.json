@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "gitCommitHash": "3fd6c8b5870a76a5886bc8ea9c50ed9766cbacde",
-  "generatedAt": "2026-06-02T13:34:20.950Z",
+  "gitCommitHash": "c5fe335c406ea8e4c800250e4fc92985200ee23f",
+  "generatedAt": "2026-06-03T14:27:54.171Z",
   "files": {
     ".env": {
       "filePath": ".env",
@@ -23,6 +23,16 @@
       "totalLines": 57,
       "hasStructuralAnalysis": false
     },
+    ".understand-anything/.understandignore": {
+      "filePath": ".understand-anything/.understandignore",
+      "contentHash": "eb115967b13ba308df4a98becec35c98987d145f3ffb6ab81d79c2215eaa005d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 41,
+      "hasStructuralAnalysis": false
+    },
     ".understand-anything/config.json": {
       "filePath": ".understand-anything/config.json",
       "contentHash": "cf5ec638b0e283c436761f5b7664b9665fcf2e2a79bd6e2f1ff50b52e9f92c7d",
@@ -35,12 +45,12 @@
     },
     "AGENTS.md": {
       "filePath": "AGENTS.md",
-      "contentHash": "c674b04d6e87a2bd08506aec60ead798e1bebec74aa8d7637f350ac988126029",
+      "contentHash": "b9a63c600e7d9628db6f8b91417bcc152835ccfce7d3c24b06d39799293fc77b",
       "functions": [],
       "classes": [],
       "imports": [],
       "exports": [],
-      "totalLines": 181,
+      "totalLines": 205,
       "hasStructuralAnalysis": true
     },
     "backend/AGENTS.md": {
@@ -3351,15 +3361,43 @@
     },
     "backend/apps/devices/admin.py": {
       "filePath": "backend/apps/devices/admin.py",
-      "contentHash": "784f0ae5b124c3f7d00e4d5d58e2290aabc6877860eb186aa5379e02e9dc68d6",
+      "contentHash": "002be1b3844f932968e177b64908c731ff58b7a69f6bdb22a534c57c1b68f6b1",
       "functions": [],
       "classes": [
+        {
+          "name": "DeviceGroupAdmin",
+          "methods": [],
+          "properties": [],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "DeviceApplicationAdmin",
+          "methods": [],
+          "properties": [],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "DeviceAuthorizationCodeAdmin",
+          "methods": [],
+          "properties": [],
+          "exported": true,
+          "lineCount": 5
+        },
         {
           "name": "DeviceAdmin",
           "methods": [],
           "properties": [],
           "exported": true,
-          "lineCount": 4
+          "lineCount": 16
+        },
+        {
+          "name": "DeviceAuthLogAdmin",
+          "methods": [],
+          "properties": [],
+          "exported": true,
+          "lineCount": 5
         }
       ],
       "imports": [
@@ -3372,24 +3410,32 @@
         {
           "source": ".models",
           "specifiers": [
-            "Device"
+            "Device",
+            "DeviceApplication",
+            "DeviceAuthLog",
+            "DeviceAuthorizationCode",
+            "DeviceGroup"
           ]
         }
       ],
       "exports": [
-        "DeviceAdmin"
+        "DeviceGroupAdmin",
+        "DeviceApplicationAdmin",
+        "DeviceAuthorizationCodeAdmin",
+        "DeviceAdmin",
+        "DeviceAuthLogAdmin"
       ],
-      "totalLines": 11,
+      "totalLines": 54,
       "hasStructuralAnalysis": true
     },
     "backend/apps/devices/AGENTS.md": {
       "filePath": "backend/apps/devices/AGENTS.md",
-      "contentHash": "5db73f443c685feb313bc7a763e6fd2f93daacba6c21ee1edff8cca18e208fe3",
+      "contentHash": "d1370a72a3921e8a16b32968057a017f24a08c52527365f1bc8171ad8bec89f7",
       "functions": [],
       "classes": [],
       "imports": [],
       "exports": [],
-      "totalLines": 51,
+      "totalLines": 106,
       "hasStructuralAnalysis": true
     },
     "backend/apps/devices/apps.py": {
@@ -3441,7 +3487,7 @@
     },
     "backend/apps/devices/management/commands/seed_devices.py": {
       "filePath": "backend/apps/devices/management/commands/seed_devices.py",
-      "contentHash": "bd78198d441542b25c5d5d0a3e2f17dc4e35af2a31c48024bba8bdf96416061a",
+      "contentHash": "fc03f03fe359bc9467166375bf16ee608ba08e7ef214e664b36e3a466d256d35",
       "functions": [],
       "classes": [
         {
@@ -3451,7 +3497,7 @@
           ],
           "properties": [],
           "exported": true,
-          "lineCount": 35
+          "lineCount": 62
         }
       ],
       "imports": [
@@ -3470,14 +3516,22 @@
         {
           "source": "apps.devices.models",
           "specifiers": [
-            "Device"
+            "Device",
+            "DeviceApplication",
+            "DeviceGroup"
+          ]
+        },
+        {
+          "source": "apps.tenants.models",
+          "specifiers": [
+            "Tenant"
           ]
         }
       ],
       "exports": [
         "Command"
       ],
-      "totalLines": 42,
+      "totalLines": 70,
       "hasStructuralAnalysis": true
     },
     "backend/apps/devices/management/commands/seed_operations_periodic_tasks.py": {
@@ -3594,19 +3648,199 @@
       "totalLines": 30,
       "hasStructuralAnalysis": true
     },
-    "backend/apps/devices/models.py": {
-      "filePath": "backend/apps/devices/models.py",
-      "contentHash": "86b025afc78f64a58a997cb5653c8942f4aa9020f88fc43695aa2c1a3966600c",
+    "backend/apps/devices/migrations/0003_device_authorization_type_device_device_info_and_more.py": {
+      "filePath": "backend/apps/devices/migrations/0003_device_authorization_type_device_device_info_and_more.py",
+      "contentHash": "1ddbc9ce667d302a106a12bb274048251f7a986a9334a389ad581bfd709c36c2",
       "functions": [],
       "classes": [
         {
-          "name": "Device",
+          "name": "Migration",
+          "methods": [],
+          "properties": [],
+          "exported": true,
+          "lineCount": 177
+        }
+      ],
+      "imports": [
+        {
+          "source": "django.db.models.deletion",
+          "specifiers": [
+            "django.db.models.deletion"
+          ]
+        },
+        {
+          "source": "django.conf",
+          "specifiers": [
+            "settings"
+          ]
+        },
+        {
+          "source": "django.db",
+          "specifiers": [
+            "migrations",
+            "models"
+          ]
+        }
+      ],
+      "exports": [
+        "Migration"
+      ],
+      "totalLines": 185,
+      "hasStructuralAnalysis": true
+    },
+    "backend/apps/devices/migrations/0004_device_status_online_offline_only.py": {
+      "filePath": "backend/apps/devices/migrations/0004_device_status_online_offline_only.py",
+      "contentHash": "566df9090326eb6bde8fae5413b91eff514cb8980a417dc642ec8cb3e0b13a56",
+      "functions": [
+        {
+          "name": "normalize_legacy_statuses",
+          "params": [
+            "apps",
+            "schema_editor"
+          ],
+          "exported": true,
+          "lineCount": 3
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "methods": [],
+          "properties": [],
+          "exported": true,
+          "lineCount": 19
+        }
+      ],
+      "imports": [
+        {
+          "source": "django.db",
+          "specifiers": [
+            "migrations",
+            "models"
+          ]
+        }
+      ],
+      "exports": [
+        "normalize_legacy_statuses",
+        "Migration"
+      ],
+      "totalLines": 30,
+      "hasStructuralAnalysis": true
+    },
+    "backend/apps/devices/migrations/0005_deviceapplication_scrolling_texts.py": {
+      "filePath": "backend/apps/devices/migrations/0005_deviceapplication_scrolling_texts.py",
+      "contentHash": "7e69fc64cdebe8ff87ef3da7b5a74d68abfb0ce7a973de1866d622ab61ecc884",
+      "functions": [],
+      "classes": [
+        {
+          "name": "Migration",
+          "methods": [],
+          "properties": [],
+          "exported": true,
+          "lineCount": 19
+        }
+      ],
+      "imports": [
+        {
+          "source": "django.db",
+          "specifiers": [
+            "migrations",
+            "models"
+          ]
+        }
+      ],
+      "exports": [
+        "Migration"
+      ],
+      "totalLines": 25,
+      "hasStructuralAnalysis": true
+    },
+    "backend/apps/devices/migrations/0006_device_authorization_ignored_at_and_log_actions.py": {
+      "filePath": "backend/apps/devices/migrations/0006_device_authorization_ignored_at_and_log_actions.py",
+      "contentHash": "5c8f9616c8380dacfd5acda64ffff34949cd402b99822131771c33a6ccff9b70",
+      "functions": [],
+      "classes": [
+        {
+          "name": "Migration",
+          "methods": [],
+          "properties": [],
+          "exported": true,
+          "lineCount": 30
+        }
+      ],
+      "imports": [
+        {
+          "source": "django.db",
+          "specifiers": [
+            "migrations",
+            "models"
+          ]
+        }
+      ],
+      "exports": [
+        "Migration"
+      ],
+      "totalLines": 34,
+      "hasStructuralAnalysis": true
+    },
+    "backend/apps/devices/models.py": {
+      "filePath": "backend/apps/devices/models.py",
+      "contentHash": "32d12931d63fa218b985c4a0174666d88e79fd2f463397c0f8dc31965fd50214",
+      "functions": [
+        {
+          "name": "_tenant_fk",
+          "params": [],
+          "exported": true,
+          "lineCount": 9
+        }
+      ],
+      "classes": [
+        {
+          "name": "DeviceGroup",
           "methods": [
             "__str__"
           ],
           "properties": [],
           "exported": true,
-          "lineCount": 38
+          "lineCount": 19
+        },
+        {
+          "name": "DeviceApplication",
+          "methods": [
+            "__str__"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 51
+        },
+        {
+          "name": "Device",
+          "methods": [
+            "__str__",
+            "is_expired"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 71
+        },
+        {
+          "name": "DeviceAuthorizationCode",
+          "methods": [
+            "__str__",
+            "is_available"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 62
+        },
+        {
+          "name": "DeviceAuthLog",
+          "methods": [
+            "__str__"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 39
         }
       ],
       "imports": [
@@ -3630,45 +3864,504 @@
         }
       ],
       "exports": [
-        "Device"
+        "_tenant_fk",
+        "DeviceGroup",
+        "DeviceApplication",
+        "Device",
+        "DeviceAuthorizationCode",
+        "DeviceAuthLog"
       ],
-      "totalLines": 45,
+      "totalLines": 268,
+      "hasStructuralAnalysis": true
+    },
+    "backend/apps/devices/realtime.py": {
+      "filePath": "backend/apps/devices/realtime.py",
+      "contentHash": "90987ba0fbf0b12ad09a96f6af52e88f0fa6dfeb2fd9b0bd4eeae28c43a23185",
+      "functions": [
+        {
+          "name": "device_events_websocket_application",
+          "params": [
+            "scope",
+            "receive",
+            "send"
+          ],
+          "exported": true,
+          "lineCount": 47
+        },
+        {
+          "name": "publish_device_event",
+          "params": [
+            "event"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 12
+        },
+        {
+          "name": "publish_device_event_sync",
+          "params": [
+            "event"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "_put_event",
+          "params": [
+            "queue",
+            "event"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "_resolve_connection",
+          "params": [
+            "token",
+            "tenant_id_param"
+          ],
+          "returnType": "dict | None",
+          "exported": true,
+          "lineCount": 26
+        },
+        {
+          "name": "_parse_positive_int",
+          "params": [
+            "value"
+          ],
+          "returnType": "int | None",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "_invalidate_device_stats",
+          "params": [
+            "tenant_id"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "classes": [
+        {
+          "name": "DeviceEventSubscriber",
+          "methods": [],
+          "properties": [
+            "queue",
+            "loop",
+            "tenant_id"
+          ],
+          "exported": true,
+          "lineCount": 4
+        }
+      ],
+      "imports": [
+        {
+          "source": "asyncio",
+          "specifiers": [
+            "asyncio"
+          ]
+        },
+        {
+          "source": "json",
+          "specifiers": [
+            "json"
+          ]
+        },
+        {
+          "source": "threading",
+          "specifiers": [
+            "threading"
+          ]
+        },
+        {
+          "source": "dataclasses",
+          "specifiers": [
+            "dataclass"
+          ]
+        },
+        {
+          "source": "urllib.parse",
+          "specifiers": [
+            "parse_qs"
+          ]
+        },
+        {
+          "source": "asgiref.sync",
+          "specifiers": [
+            "async_to_sync",
+            "sync_to_async"
+          ]
+        },
+        {
+          "source": "django.core.cache",
+          "specifiers": [
+            "cache"
+          ]
+        },
+        {
+          "source": "rest_framework_simplejwt.authentication",
+          "specifiers": [
+            "JWTAuthentication"
+          ]
+        },
+        {
+          "source": "apps.accounts.services.permissions",
+          "specifiers": [
+            "get_active_permission_codes_for_user"
+          ]
+        },
+        {
+          "source": "apps.tenants.services",
+          "specifiers": [
+            "get_user_tenant"
+          ]
+        }
+      ],
+      "exports": [
+        "DeviceEventSubscriber",
+        "device_events_websocket_application",
+        "publish_device_event",
+        "publish_device_event_sync",
+        "_put_event",
+        "_resolve_connection",
+        "_parse_positive_int",
+        "_invalidate_device_stats"
+      ],
+      "totalLines": 149,
       "hasStructuralAnalysis": true
     },
     "backend/apps/devices/serializers.py": {
       "filePath": "backend/apps/devices/serializers.py",
-      "contentHash": "be4002b7a2c93ee1511c32524145ec157ae2abc6fbed389241a2ddf63d585990",
-      "functions": [],
+      "contentHash": "3087e9b828901d48e0c97e9405b5acf9cc78a15d3de0045f48ad056e6ca191e4",
+      "functions": [
+        {
+          "name": "_tenant_from_context",
+          "params": [
+            "serializer"
+          ],
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
       "classes": [
         {
-          "name": "DeviceSerializer",
+          "name": "TenantOwnedPrimaryKeyField",
           "methods": [
-            "create"
+            "get_queryset"
           ],
           "properties": [],
           "exported": true,
-          "lineCount": 11
+          "lineCount": 10
+        },
+        {
+          "name": "DeviceGroupSerializer",
+          "methods": [],
+          "properties": [],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "DeviceApplicationSerializer",
+          "methods": [],
+          "properties": [],
+          "exported": true,
+          "lineCount": 50
+        },
+        {
+          "name": "DeviceSerializer",
+          "methods": [
+            "get_id",
+            "validate",
+            "create",
+            "update"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 118
         },
         {
           "name": "DeviceDetailSerializer",
           "methods": [],
           "properties": [],
           "exported": true,
-          "lineCount": 7
+          "lineCount": 5
+        },
+        {
+          "name": "DeviceAuthorizationCodeSerializer",
+          "methods": [
+            "validate",
+            "create"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 48
+        },
+        {
+          "name": "DeviceAuthorizationRequestSerializer",
+          "methods": [
+            "_latest_activation_log",
+            "get_bindingStatus",
+            "get_runtimeStatus",
+            "get_latestActivationAt",
+            "get_latestActivationMessage",
+            "get_latestActivationIp",
+            "get_latestActivationDeviceInfo"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 47
+        },
+        {
+          "name": "DeviceActivationLogSerializer",
+          "methods": [],
+          "properties": [],
+          "exported": true,
+          "lineCount": 27
+        },
+        {
+          "name": "DeviceBindSerializer",
+          "methods": [
+            "validate",
+            "save"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 66
         },
         {
           "name": "DeviceStatsSerializer",
           "methods": [],
           "properties": [],
           "exported": true,
-          "lineCount": 5
+          "lineCount": 6
         }
       ],
       "imports": [
         {
+          "source": "django.utils",
+          "specifiers": [
+            "timezone"
+          ]
+        },
+        {
           "source": "rest_framework",
           "specifiers": [
             "serializers"
+          ]
+        },
+        {
+          "source": "apps.resources.models",
+          "specifiers": [
+            "CommandGroup",
+            "ModelAsset",
+            "Resource",
+            "ScrollingText",
+            "VoiceTone"
+          ]
+        },
+        {
+          "source": "apps.tenants.models",
+          "specifiers": [
+            "Tenant"
+          ]
+        },
+        {
+          "source": ".models",
+          "specifiers": [
+            "Device",
+            "DeviceApplication",
+            "DeviceAuthLog",
+            "DeviceAuthorizationCode",
+            "DeviceGroup"
+          ]
+        }
+      ],
+      "exports": [
+        "_tenant_from_context",
+        "TenantOwnedPrimaryKeyField",
+        "DeviceGroupSerializer",
+        "DeviceApplicationSerializer",
+        "DeviceSerializer",
+        "DeviceDetailSerializer",
+        "DeviceAuthorizationCodeSerializer",
+        "DeviceAuthorizationRequestSerializer",
+        "DeviceActivationLogSerializer",
+        "DeviceBindSerializer",
+        "DeviceStatsSerializer"
+      ],
+      "totalLines": 421,
+      "hasStructuralAnalysis": true
+    },
+    "backend/apps/devices/tests/test_device_authorization_api.py": {
+      "filePath": "backend/apps/devices/tests/test_device_authorization_api.py",
+      "contentHash": "b91161c0a20e2053110416b5fb27302225f86e2f47a3b6acb811192a8ee62536",
+      "functions": [],
+      "classes": [
+        {
+          "name": "DeviceAuthorizationApiTests",
+          "methods": [
+            "setUp",
+            "grant_permissions",
+            "create_code",
+            "test_device_status_choices_match_android_runtime_states",
+            "test_superuser_cannot_create_company_owned_device_application",
+            "test_create_authorization_requires_user_supplied_code",
+            "test_create_authorization_uses_user_supplied_code",
+            "test_application_can_bind_scrolling_texts_and_runtime_config_returns_them",
+            "test_activate_updates_bound_device_by_device_code",
+            "test_activate_unknown_device_creates_pending_device",
+            "test_activate_same_device_code_is_repeatable",
+            "test_device_list_filters_by_name_and_device_code",
+            "test_device_list_filters_by_enabled_status",
+            "test_device_patch_only_updates_name_and_group",
+            "test_device_group_can_be_deleted",
+            "test_activation_request_appears_in_superuser_request_list",
+            "test_superuser_binds_activation_request_to_company",
+            "test_superuser_ignores_activation_request_and_reactivation_restores_pending",
+            "test_superuser_reauthorizes_and_revokes_authorized_device",
+            "test_heartbeat_updates_last_seen_but_does_not_mark_device_online",
+            "test_device_status_websocket_marks_online_until_disconnect",
+            "test_device_events_websocket_sends_same_tenant_events",
+            "test_device_events_websocket_filters_other_tenant_events",
+            "test_device_events_websocket_allows_superuser_scoped_tenant"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 671
+        }
+      ],
+      "imports": [
+        {
+          "source": "datetime",
+          "specifiers": [
+            "timedelta"
+          ]
+        },
+        {
+          "source": "asgiref.sync",
+          "specifiers": [
+            "async_to_sync",
+            "sync_to_async"
+          ]
+        },
+        {
+          "source": "asgiref.testing",
+          "specifiers": [
+            "ApplicationCommunicator"
+          ]
+        },
+        {
+          "source": "django.contrib.auth",
+          "specifiers": [
+            "get_user_model"
+          ]
+        },
+        {
+          "source": "django.utils",
+          "specifiers": [
+            "timezone"
+          ]
+        },
+        {
+          "source": "rest_framework",
+          "specifiers": [
+            "status"
+          ]
+        },
+        {
+          "source": "rest_framework.test",
+          "specifiers": [
+            "APITestCase"
+          ]
+        },
+        {
+          "source": "rest_framework_simplejwt.tokens",
+          "specifiers": [
+            "AccessToken"
+          ]
+        },
+        {
+          "source": "apps.accounts.models",
+          "specifiers": [
+            "PermissionPoint",
+            "Role",
+            "UserRole"
+          ]
+        },
+        {
+          "source": "apps.devices.models",
+          "specifiers": [
+            "Device",
+            "DeviceApplication",
+            "DeviceAuthorizationCode",
+            "DeviceGroup"
+          ]
+        },
+        {
+          "source": "apps.resources.models",
+          "specifiers": [
+            "ScrollingText",
+            "ScrollingTextItem"
+          ]
+        },
+        {
+          "source": "apps.tenants.models",
+          "specifiers": [
+            "Tenant"
+          ]
+        },
+        {
+          "source": "apps.tenants.test_utils",
+          "specifiers": [
+            "TenantTestMixin"
+          ]
+        }
+      ],
+      "exports": [
+        "DeviceAuthorizationApiTests"
+      ],
+      "totalLines": 693,
+      "hasStructuralAnalysis": true
+    },
+    "backend/apps/devices/tokens.py": {
+      "filePath": "backend/apps/devices/tokens.py",
+      "contentHash": "46f1d5c9c34277380e155278296fbd4bb59a1d8512d1806e2ef892ab7b231909",
+      "functions": [
+        {
+          "name": "make_device_token",
+          "params": [
+            "device"
+          ],
+          "returnType": "str",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "resolve_device_token",
+          "params": [
+            "token"
+          ],
+          "returnType": "Device | None",
+          "exported": true,
+          "lineCount": 13
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "django.core",
+          "specifiers": [
+            "signing"
+          ]
+        },
+        {
+          "source": "django.core.exceptions",
+          "specifiers": [
+            "ObjectDoesNotExist"
           ]
         },
         {
@@ -3679,16 +4372,15 @@
         }
       ],
       "exports": [
-        "DeviceSerializer",
-        "DeviceDetailSerializer",
-        "DeviceStatsSerializer"
+        "make_device_token",
+        "resolve_device_token"
       ],
-      "totalLines": 33,
+      "totalLines": 35,
       "hasStructuralAnalysis": true
     },
     "backend/apps/devices/urls.py": {
       "filePath": "backend/apps/devices/urls.py",
-      "contentHash": "d71fffee31e8c2b9c98b1bfddfea75f05c9ebb6810fd95070cdc021d49f3dfe1",
+      "contentHash": "de55e30b41af98ed758d861f2dab6eb2d05ec797fdaaeb2a446a12d42a8b2007",
       "functions": [],
       "classes": [],
       "imports": [
@@ -3699,31 +4391,153 @@
           ]
         },
         {
+          "source": "django.urls",
+          "specifiers": [
+            "path"
+          ]
+        },
+        {
           "source": ".views",
           "specifiers": [
+            "DeviceActivationView",
+            "DeviceApplicationViewSet",
+            "DeviceAuthorizationCodeViewSet",
+            "DeviceAuthorizationRequestViewSet",
+            "DeviceGroupViewSet",
+            "DeviceRuntimeConfigView",
+            "DeviceRuntimeHeartbeatView",
             "DeviceViewSet"
           ]
         }
       ],
       "exports": [],
-      "totalLines": 9,
+      "totalLines": 28,
       "hasStructuralAnalysis": true
     },
     "backend/apps/devices/views.py": {
       "filePath": "backend/apps/devices/views.py",
-      "contentHash": "b8e6492045ac002638d096ddcfc75d5f6a5f4e889a157042b5a3ddfe347fd87e",
-      "functions": [],
+      "contentHash": "e1060ff5c298cfd122a379aafac4ce847863f1430d530c7dae99baa303d7a734",
+      "functions": [
+        {
+          "name": "_client_ip",
+          "params": [
+            "request"
+          ],
+          "returnType": "str | None",
+          "exported": true,
+          "lineCount": 5
+        }
+      ],
       "classes": [
+        {
+          "name": "DevicePermissionMixin",
+          "methods": [
+            "get_permissions"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 15
+        },
+        {
+          "name": "CompanyDeviceWritePermission",
+          "methods": [
+            "has_permission"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 10
+        },
         {
           "name": "DeviceViewSet",
           "methods": [
-            "get_permissions",
             "get_serializer_class",
+            "get_queryset",
             "stats"
           ],
           "properties": [],
           "exported": true,
-          "lineCount": 53
+          "lineCount": 69
+        },
+        {
+          "name": "DeviceGroupViewSet",
+          "methods": [],
+          "properties": [],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "DeviceApplicationViewSet",
+          "methods": [],
+          "properties": [],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "DeviceAuthorizationCodeViewSet",
+          "methods": [
+            "perform_create"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "DeviceAuthorizationRequestViewSet",
+          "methods": [
+            "get_queryset",
+            "list",
+            "logs",
+            "authorizations",
+            "bind",
+            "ignore",
+            "authorize",
+            "revoke",
+            "_log_platform_action",
+            "_publish_authorization_event"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 154
+        },
+        {
+          "name": "DeviceActivationView",
+          "methods": [
+            "post",
+            "_application_payload",
+            "_log_activation"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 89
+        },
+        {
+          "name": "DeviceRuntimeView",
+          "methods": [
+            "get_device_code",
+            "validate_device"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 35
+        },
+        {
+          "name": "DeviceRuntimeConfigView",
+          "methods": [
+            "get",
+            "_resources_payload"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 108
+        },
+        {
+          "name": "DeviceRuntimeHeartbeatView",
+          "methods": [
+            "post"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 29
         }
       ],
       "imports": [
@@ -3734,14 +4548,29 @@
           ]
         },
         {
+          "source": "django.db",
+          "specifiers": [
+            "transaction"
+          ]
+        },
+        {
           "source": "django.db.models",
           "specifiers": [
-            "Count"
+            "Count",
+            "Prefetch",
+            "Q"
+          ]
+        },
+        {
+          "source": "django.utils",
+          "specifiers": [
+            "timezone"
           ]
         },
         {
           "source": "rest_framework",
           "specifiers": [
+            "status",
             "viewsets"
           ]
         },
@@ -3752,9 +4581,29 @@
           ]
         },
         {
+          "source": "rest_framework.generics",
+          "specifiers": [
+            "get_object_or_404"
+          ]
+        },
+        {
+          "source": "rest_framework.permissions",
+          "specifiers": [
+            "SAFE_METHODS",
+            "AllowAny",
+            "BasePermission"
+          ]
+        },
+        {
           "source": "rest_framework.response",
           "specifiers": [
             "Response"
+          ]
+        },
+        {
+          "source": "rest_framework.views",
+          "specifiers": [
+            "APIView"
           ]
         },
         {
@@ -3770,7 +4619,8 @@
             "CanCreateDevices",
             "CanDeleteDevices",
             "CanUpdateDevices",
-            "CanViewDevices"
+            "CanViewDevices",
+            "IsSuperUser"
           ]
         },
         {
@@ -3780,24 +4630,153 @@
           ]
         },
         {
+          "source": "apps.tenants.services",
+          "specifiers": [
+            "get_request_tenant"
+          ]
+        },
+        {
           "source": ".models",
           "specifiers": [
-            "Device"
+            "Device",
+            "DeviceApplication",
+            "DeviceAuthLog",
+            "DeviceAuthorizationCode",
+            "DeviceGroup"
+          ]
+        },
+        {
+          "source": ".realtime",
+          "specifiers": [
+            "publish_device_event_sync"
           ]
         },
         {
           "source": ".serializers",
           "specifiers": [
+            "DeviceApplicationSerializer",
+            "DeviceActivationLogSerializer",
+            "DeviceAuthorizationCodeSerializer",
+            "DeviceAuthorizationRequestSerializer",
+            "DeviceBindSerializer",
             "DeviceDetailSerializer",
+            "DeviceGroupSerializer",
             "DeviceSerializer",
             "DeviceStatsSerializer"
           ]
         }
       ],
       "exports": [
-        "DeviceViewSet"
+        "_client_ip",
+        "DevicePermissionMixin",
+        "CompanyDeviceWritePermission",
+        "DeviceViewSet",
+        "DeviceGroupViewSet",
+        "DeviceApplicationViewSet",
+        "DeviceAuthorizationCodeViewSet",
+        "DeviceAuthorizationRequestViewSet",
+        "DeviceActivationView",
+        "DeviceRuntimeView",
+        "DeviceRuntimeConfigView",
+        "DeviceRuntimeHeartbeatView"
       ],
-      "totalLines": 76,
+      "totalLines": 604,
+      "hasStructuralAnalysis": true
+    },
+    "backend/apps/devices/websocket.py": {
+      "filePath": "backend/apps/devices/websocket.py",
+      "contentHash": "cd5cb791d6d364d23b2c541949ad7e02004c8497f77047612a431bfbd5f48de7",
+      "functions": [
+        {
+          "name": "device_status_websocket_application",
+          "params": [
+            "scope",
+            "receive",
+            "send"
+          ],
+          "exported": true,
+          "lineCount": 27
+        },
+        {
+          "name": "_mark_device_online",
+          "params": [
+            "device_code"
+          ],
+          "returnType": "Device | None",
+          "exported": true,
+          "lineCount": 23
+        },
+        {
+          "name": "_touch_device",
+          "params": [
+            "device_id"
+          ],
+          "returnType": "None",
+          "exported": true,
+          "lineCount": 2
+        },
+        {
+          "name": "_mark_device_offline",
+          "params": [
+            "device_id"
+          ],
+          "returnType": "dict | None",
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "_device_status_event",
+          "params": [
+            "device",
+            "status"
+          ],
+          "returnType": "dict",
+          "exported": true,
+          "lineCount": 9
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "urllib.parse",
+          "specifiers": [
+            "parse_qs"
+          ]
+        },
+        {
+          "source": "asgiref.sync",
+          "specifiers": [
+            "sync_to_async"
+          ]
+        },
+        {
+          "source": "django.utils",
+          "specifiers": [
+            "timezone"
+          ]
+        },
+        {
+          "source": ".models",
+          "specifiers": [
+            "Device",
+            "DeviceAuthLog"
+          ]
+        },
+        {
+          "source": ".realtime",
+          "specifiers": [
+            "publish_device_event"
+          ]
+        }
+      ],
+      "exports": [
+        "device_status_websocket_application",
+        "_mark_device_online",
+        "_touch_device",
+        "_mark_device_offline",
+        "_device_status_event"
+      ],
+      "totalLines": 88,
       "hasStructuralAnalysis": true
     },
     "backend/apps/knowledge_base/__init__.py": {
@@ -9927,7 +10906,7 @@
     },
     "backend/apps/tenants/tests/test_tenant_management_api.py": {
       "filePath": "backend/apps/tenants/tests/test_tenant_management_api.py",
-      "contentHash": "da564fcaf4c73da17440c43e3cf6513c5045123491c1405eab35f5683ed99869",
+      "contentHash": "1984558e61309fe4f191ff3a1d85c71f037f05391a3d4a067d9ba57f40de7f16",
       "functions": [],
       "classes": [
         {
@@ -9935,6 +10914,8 @@
           "methods": [
             "setUpTestData",
             "test_catalog_only_lists_assignable_menus",
+            "test_tenant_list_only_shows_approved_application_companies_by_default",
+            "test_tenant_list_can_include_hidden_companies",
             "test_superuser_can_create_and_assign_menus",
             "test_assigning_platform_or_admin_menu_is_rejected",
             "test_tenant_admin_cannot_access_platform_endpoints",
@@ -9942,7 +10923,7 @@
           ],
           "properties": [],
           "exported": true,
-          "lineCount": 61
+          "lineCount": 111
         }
       ],
       "imports": [
@@ -9961,6 +10942,7 @@
         {
           "source": "apps.accounts.models",
           "specifiers": [
+            "AccountApplication",
             "Menu",
             "PermissionPoint"
           ]
@@ -9976,7 +10958,7 @@
       "exports": [
         "TenantManagementApiTests"
       ],
-      "totalLines": 74,
+      "totalLines": 124,
       "hasStructuralAnalysis": true
     },
     "backend/apps/tenants/tests/test_three_tier_access.py": {
@@ -10090,18 +11072,19 @@
     },
     "backend/apps/tenants/views.py": {
       "filePath": "backend/apps/tenants/views.py",
-      "contentHash": "d12e5a2d2783c8c36750b98c4158fd5092a4d009b93060638ae024ed47f2d237",
+      "contentHash": "4ed350e8c93a60ca409142185bb9e3f2c9851af9c2a2d586a951ec62ddb4a2e9",
       "functions": [],
       "classes": [
         {
           "name": "TenantViewSet",
           "methods": [
+            "get_queryset",
             "get_serializer_class",
             "assign_menus"
           ],
           "properties": [],
           "exported": true,
-          "lineCount": 34
+          "lineCount": 47
         },
         {
           "name": "MenuCatalogView",
@@ -10149,6 +11132,7 @@
         {
           "source": "apps.accounts.models",
           "specifiers": [
+            "AccountApplication",
             "Menu",
             "PermissionPoint"
           ]
@@ -10180,7 +11164,7 @@
         "TenantViewSet",
         "MenuCatalogView"
       ],
-      "totalLines": 75,
+      "totalLines": 88,
       "hasStructuralAnalysis": true
     },
     "backend/CLAUDE.md": {
@@ -10222,8 +11206,19 @@
     },
     "backend/config/asgi.py": {
       "filePath": "backend/config/asgi.py",
-      "contentHash": "cb808efa20eb5a766c4c6927204e2a9e354b2b40d0f9e7a33200f9c476bab890",
-      "functions": [],
+      "contentHash": "ee93c413f45a8cfc9ef2167d6b4f3875e767ad1b46be1d59c635df7682501bde",
+      "functions": [
+        {
+          "name": "application",
+          "params": [
+            "scope",
+            "receive",
+            "send"
+          ],
+          "exported": true,
+          "lineCount": 13
+        }
+      ],
       "classes": [],
       "imports": [
         {
@@ -10239,8 +11234,10 @@
           ]
         }
       ],
-      "exports": [],
-      "totalLines": 8,
+      "exports": [
+        "application"
+      ],
+      "totalLines": 23,
       "hasStructuralAnalysis": true
     },
     "backend/config/business_cache.py": {
@@ -10945,12 +11942,12 @@
     },
     "backend/requirements.txt": {
       "filePath": "backend/requirements.txt",
-      "contentHash": "b26468126ec32865cf71f7fb92e86df0e97c820a9c4e229a9d9e81e3978a8fb5",
+      "contentHash": "278b13bfdb737f8f452e9a8a715307c10cd5cf47bb13cf846065c4e4321d4dbc",
       "functions": [],
       "classes": [],
       "imports": [],
       "exports": [],
-      "totalLines": 17,
+      "totalLines": 19,
       "hasStructuralAnalysis": false
     },
     "CLAUDE.md": {
@@ -11083,14 +12080,24 @@
       "totalLines": 594,
       "hasStructuralAnalysis": false
     },
-    "web/AGENTS.md": {
-      "filePath": "web/AGENTS.md",
-      "contentHash": "46dc12bcfe5fbcce3c85547ec48754a46f056e66b86675692deb733224b217d0",
+    "understand-anything-guide.html": {
+      "filePath": "understand-anything-guide.html",
+      "contentHash": "ddc1ac91812891e9fdae77bce4ca2e9a6936f060b05a92c0186744b745a217c2",
       "functions": [],
       "classes": [],
       "imports": [],
       "exports": [],
-      "totalLines": 71,
+      "totalLines": 457,
+      "hasStructuralAnalysis": false
+    },
+    "web/AGENTS.md": {
+      "filePath": "web/AGENTS.md",
+      "contentHash": "62baf05062a468a4d067e34624163c39477d8897661bcac68a6a6427418b1f10",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 72,
       "hasStructuralAnalysis": true
     },
     "web/CLAUDE.md": {
@@ -11388,7 +12395,7 @@
     },
     "web/src/api/client.ts": {
       "filePath": "web/src/api/client.ts",
-      "contentHash": "07bb55c5ee43a44e80364e9ecead3145a79b7aa2acd219f09e24f927c5e1fb59",
+      "contentHash": "7c282146b03152f56284cb86a955aa1994a16e32d95994079e617abd079b9333",
       "functions": [
         {
           "name": "isTenantScopedUrl",
@@ -11461,7 +12468,7 @@
         "httpClient",
         "handleUnauthorizedResponse"
       ],
-      "totalLines": 143,
+      "totalLines": 151,
       "hasStructuralAnalysis": true
     },
     "web/src/api/modules/audit.ts": {
@@ -11853,11 +12860,30 @@
     },
     "web/src/api/modules/devices.ts": {
       "filePath": "web/src/api/modules/devices.ts",
-      "contentHash": "12a5ec8359458706160966a20ab1de7b50de8187d97de971937edacbfe76e9a7",
+      "contentHash": "13520662ff738b87aed241c989e47406b263f0eeab2ae7bc68c166a2e04f1b39",
       "functions": [
         {
+          "name": "normalizeList",
+          "params": [
+            "value"
+          ],
+          "returnType": "PaginatedResponse<T>",
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "buildDeviceParams",
+          "params": [
+            "query"
+          ],
+          "exported": false,
+          "lineCount": 9
+        },
+        {
           "name": "fetchDevices",
-          "params": [],
+          "params": [
+            "query"
+          ],
           "exported": true,
           "lineCount": 4
         },
@@ -11868,8 +12894,125 @@
           "lineCount": 4
         },
         {
-          "name": "createDevice",
+          "name": "updateDevice",
           "params": [
+            "deviceCode",
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "fetchDeviceAuthorizationRequests",
+          "params": [
+            "query"
+          ],
+          "exported": true,
+          "lineCount": 14
+        },
+        {
+          "name": "fetchDeviceAuthorizations",
+          "params": [
+            "query"
+          ],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "fetchDeviceActivationLogs",
+          "params": [
+            "query"
+          ],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "bindDeviceAuthorizationRequest",
+          "params": [
+            "deviceCode",
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "ignoreDeviceAuthorizationRequest",
+          "params": [
+            "deviceCode"
+          ],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "authorizeDevice",
+          "params": [
+            "deviceCode",
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "revokeDeviceAuthorization",
+          "params": [
+            "deviceCode"
+          ],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "fetchDeviceGroups",
+          "params": [
+            "params"
+          ],
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "createDeviceGroup",
+          "params": [
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "updateDeviceGroup",
+          "params": [
+            "id",
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "deleteDeviceGroup",
+          "params": [
+            "id"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "fetchDeviceApplications",
+          "params": [
+            "params"
+          ],
+          "exported": true,
+          "lineCount": 7
+        },
+        {
+          "name": "createDeviceApplication",
+          "params": [
+            "payload"
+          ],
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "updateDeviceApplication",
+          "params": [
+            "id",
             "payload"
           ],
           "exported": true,
@@ -11888,9 +13031,23 @@
       "exports": [
         "fetchDevices",
         "fetchDeviceStats",
-        "createDevice"
+        "updateDevice",
+        "fetchDeviceAuthorizationRequests",
+        "fetchDeviceAuthorizations",
+        "fetchDeviceActivationLogs",
+        "bindDeviceAuthorizationRequest",
+        "ignoreDeviceAuthorizationRequest",
+        "authorizeDevice",
+        "revokeDeviceAuthorization",
+        "fetchDeviceGroups",
+        "createDeviceGroup",
+        "updateDeviceGroup",
+        "deleteDeviceGroup",
+        "fetchDeviceApplications",
+        "createDeviceApplication",
+        "updateDeviceApplication"
       ],
-      "totalLines": 46,
+      "totalLines": 284,
       "hasStructuralAnalysis": true
     },
     "web/src/api/modules/employees.ts": {
@@ -12213,7 +13370,7 @@
     },
     "web/src/api/modules/models.ts": {
       "filePath": "web/src/api/modules/models.ts",
-      "contentHash": "551f0110c2c70487e54ef57c7509c5ac5deaf4df3e5b62f16029d4ee10890026",
+      "contentHash": "f4ca2fefb84f3b1c913502a0701bc938b3d8598b35e447b8e9bf0aee622c7860",
       "functions": [
         {
           "name": "buildFormData",
@@ -12229,7 +13386,7 @@
             "query"
           ],
           "exported": false,
-          "lineCount": 12
+          "lineCount": 13
         },
         {
           "name": "fetchModelAssets",
@@ -12280,7 +13437,7 @@
         "updateModelAsset",
         "deleteModelAsset"
       ],
-      "totalLines": 110,
+      "totalLines": 112,
       "hasStructuralAnalysis": true
     },
     "web/src/api/modules/point-management.ts": {
@@ -12466,7 +13623,7 @@
     },
     "web/src/api/modules/scrolling-texts.ts": {
       "filePath": "web/src/api/modules/scrolling-texts.ts",
-      "contentHash": "7cae7a80cc24e094808bfeaa52c0cc0f53703bdba2d26d82c25623dbc3138840",
+      "contentHash": "57b53c10b8748efae783648cd90b7bf72a71a6ef5a0bd1a757f8b919a6e150e8",
       "functions": [
         {
           "name": "buildListParams",
@@ -12474,7 +13631,7 @@
             "query"
           ],
           "exported": false,
-          "lineCount": 12
+          "lineCount": 13
         },
         {
           "name": "fetchScrollingTexts",
@@ -12525,12 +13682,12 @@
         "updateScrollingText",
         "deleteScrollingText"
       ],
-      "totalLines": 86,
+      "totalLines": 88,
       "hasStructuralAnalysis": true
     },
     "web/src/api/modules/tenants.ts": {
       "filePath": "web/src/api/modules/tenants.ts",
-      "contentHash": "ec3037e97e832ffc26a832c89ce91ea24beec1a858c9a0cc248ec5805259922a",
+      "contentHash": "77594dc2edcc52cad59a0ad4a985b0969e579bf2551240f0bdf2efc6ef367b00",
       "functions": [
         {
           "name": "fetchTenants",
@@ -12603,7 +13760,7 @@
     },
     "web/src/api/modules/voice-tones.ts": {
       "filePath": "web/src/api/modules/voice-tones.ts",
-      "contentHash": "f1d28cfe95e9fdeec42d1d64fffd1e8777824a79577b68652552073bfb1ca728",
+      "contentHash": "708d3b1d9c825cc61e7b3be0a17c35fdf0b5b1c0244e394c872808498cfc435e",
       "functions": [
         {
           "name": "buildFormData",
@@ -12619,7 +13776,7 @@
             "query"
           ],
           "exported": false,
-          "lineCount": 6
+          "lineCount": 7
         },
         {
           "name": "fetchVoiceTones",
@@ -12670,7 +13827,7 @@
         "updateVoiceTone",
         "deleteVoiceTone"
       ],
-      "totalLines": 96,
+      "totalLines": 98,
       "hasStructuralAnalysis": true
     },
     "web/src/components/brand-mark.tsx": {
@@ -12803,7 +13960,7 @@
     },
     "web/src/layouts/dashboard-layout.tsx": {
       "filePath": "web/src/layouts/dashboard-layout.tsx",
-      "contentHash": "d25952e60f23a8384e228d3496dc0779401b246ba15e06de223b57e5c3c1c21d",
+      "contentHash": "d00d26ccd3969b09aad88db9f90fcd72b2e9f8fb544453c3f14f6432849cd7a5",
       "functions": [
         {
           "name": "buildSuperAdminTenantModuleMenus",
@@ -12823,7 +13980,7 @@
           ],
           "returnType": "AppMenu[]",
           "exported": false,
-          "lineCount": 26
+          "lineCount": 37
         },
         {
           "name": "filterVisibleMenus",
@@ -12895,7 +14052,7 @@
           "name": "DashboardLayout",
           "params": [],
           "exported": true,
-          "lineCount": 346
+          "lineCount": 350
         }
       ],
       "classes": [],
@@ -13003,12 +14160,18 @@
             "useAuthStore",
             "AppMenu"
           ]
+        },
+        {
+          "source": "../store/tenant-scope",
+          "specifiers": [
+            "useTenantScopeStore"
+          ]
         }
       ],
       "exports": [
         "DashboardLayout"
       ],
-      "totalLines": 695,
+      "totalLines": 712,
       "hasStructuralAnalysis": true
     },
     "web/src/main.tsx": {
@@ -13065,7 +14228,7 @@
     },
     "web/src/router/index.tsx": {
       "filePath": "web/src/router/index.tsx",
-      "contentHash": "3c6405d9fbfdd771ad05f86e2cbef78e4eea4155b976349475622da448577ac9",
+      "contentHash": "2b403538d56cab491058057783053c39220b8f50763c104b97e4add6237d02f0",
       "functions": [
         {
           "name": "filterRouteMenus",
@@ -13139,7 +14302,7 @@
           "name": "AppRouter",
           "params": [],
           "exported": true,
-          "lineCount": 256
+          "lineCount": 264
         }
       ],
       "classes": [],
@@ -13190,6 +14353,12 @@
           "source": "../views/device-management",
           "specifiers": [
             "DeviceManagementPage"
+          ]
+        },
+        {
+          "source": "../views/device-authorization-center",
+          "specifiers": [
+            "DeviceAuthorizationCenterPage"
           ]
         },
         {
@@ -13298,7 +14467,7 @@
       "exports": [
         "AppRouter"
       ],
-      "totalLines": 431,
+      "totalLines": 440,
       "hasStructuralAnalysis": true
     },
     "web/src/store/auth.ts": {
@@ -13381,7 +14550,7 @@
     },
     "web/src/store/tenant-scope.ts": {
       "filePath": "web/src/store/tenant-scope.ts",
-      "contentHash": "29fd908d01276c76c296441d1d418df1071c58d13dd22610ba4fb3841b02590e",
+      "contentHash": "644b4711a803fa9a3c5b688a2ffe5c8570d5a8ab4cdebc51fb836c7b70387957",
       "functions": [],
       "classes": [],
       "imports": [
@@ -13395,12 +14564,12 @@
       "exports": [
         "useTenantScopeStore"
       ],
-      "totalLines": 17,
+      "totalLines": 21,
       "hasStructuralAnalysis": true
     },
     "web/src/styles/index.css": {
       "filePath": "web/src/styles/index.css",
-      "contentHash": "905ceee0682ef29b6f656d0e4cd732840e4cfcb12ca94b2398b95385196038f9",
+      "contentHash": "c47e8f511838cd3077fb6bc9340275c2cecbcb5c8af482669bbd160708365b35",
       "functions": [],
       "classes": [],
       "imports": [],
@@ -14615,15 +15784,24 @@
       "totalLines": 1295,
       "hasStructuralAnalysis": true
     },
-    "web/src/views/device-management/index.tsx": {
-      "filePath": "web/src/views/device-management/index.tsx",
-      "contentHash": "9f3e755fb29e8344988157c98707ec0675ae9631650139429a231478d472e513",
+    "web/src/views/device-authorization-center/index.tsx": {
+      "filePath": "web/src/views/device-authorization-center/index.tsx",
+      "contentHash": "547b2b3dcc5b36add1f0d4567003e94901a4a13c7c8867914ca4218880965c28",
       "functions": [
         {
-          "name": "DeviceManagementPage",
+          "name": "getInfoText",
+          "params": [
+            "info",
+            "key"
+          ],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "DeviceAuthorizationCenterPage",
           "params": [],
           "exported": true,
-          "lineCount": 213
+          "lineCount": 632
         }
       ],
       "classes": [],
@@ -14632,10 +15810,129 @@
           "source": "@ant-design/icons",
           "specifiers": [
             "CheckCircleOutlined",
-            "ClockCircleOutlined",
+            "FileSearchOutlined",
+            "LinkOutlined",
+            "ReloadOutlined",
+            "SearchOutlined"
+          ]
+        },
+        {
+          "source": "antd",
+          "specifiers": [
+            "Button",
+            "Card",
+            "DatePicker",
+            "Form",
+            "Input",
+            "Modal",
+            "Select",
+            "Space",
+            "Switch",
+            "Table",
+            "Tabs",
+            "Tag",
+            "Typography",
+            "message"
+          ]
+        },
+        {
+          "source": "antd/es/table",
+          "specifiers": [
+            "ColumnsType"
+          ]
+        },
+        {
+          "source": "dayjs",
+          "specifiers": [
+            "dayjs",
+            "Dayjs"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useEffect",
+            "useMemo",
+            "useRef",
+            "useState"
+          ]
+        },
+        {
+          "source": "../../api/modules/devices",
+          "specifiers": [
+            "bindDeviceAuthorizationRequest",
+            "authorizeDevice",
+            "fetchDeviceActivationLogs",
+            "fetchDeviceApplications",
+            "fetchDeviceAuthorizations",
+            "fetchDeviceAuthorizationRequests",
+            "fetchDeviceGroups",
+            "ignoreDeviceAuthorizationRequest",
+            "revokeDeviceAuthorization",
+            "DeviceActivationLogRecord",
+            "DeviceApplicationRecord",
+            "DeviceAuthorizationRequestRecord",
+            "DeviceAuthorizationType",
+            "DeviceGroupRecord"
+          ]
+        },
+        {
+          "source": "../../api/modules/tenants",
+          "specifiers": [
+            "fetchTenants",
+            "TenantRecord"
+          ]
+        }
+      ],
+      "exports": [
+        "DeviceAuthorizationCenterPage"
+      ],
+      "totalLines": 712,
+      "hasStructuralAnalysis": true
+    },
+    "web/src/views/device-management/index.tsx": {
+      "filePath": "web/src/views/device-management/index.tsx",
+      "contentHash": "832ec06cdedf685afacdb6eb243dc5392ba9cf51bfb6d4800dba5ac628077d75",
+      "functions": [
+        {
+          "name": "toSelectOptions",
+          "params": [
+            "items"
+          ],
+          "exported": false,
+          "lineCount": 2
+        },
+        {
+          "name": "buildDeviceEventsWebSocketUrl",
+          "params": [
+            "token",
+            "tenantId"
+          ],
+          "exported": false,
+          "lineCount": 13
+        },
+        {
+          "name": "DeviceManagementPage",
+          "params": [],
+          "exported": true,
+          "lineCount": 752
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@ant-design/icons",
+          "specifiers": [
+            "AppstoreOutlined",
+            "ClusterOutlined",
+            "DeleteOutlined",
+            "DesktopOutlined",
+            "EditOutlined",
+            "LinkOutlined",
             "PlusOutlined",
-            "WarningOutlined",
-            "CloudServerOutlined"
+            "ReloadOutlined",
+            "SearchOutlined",
+            "SettingOutlined"
           ]
         },
         {
@@ -14644,14 +15941,20 @@
             "Button",
             "Card",
             "Col",
+            "Divider",
+            "Empty",
             "Form",
             "Input",
             "Modal",
+            "Popconfirm",
             "Row",
             "Select",
             "Space",
+            "Switch",
             "Table",
+            "Tabs",
             "Tag",
+            "Tooltip",
             "Typography",
             "message"
           ]
@@ -14672,12 +15975,68 @@
           ]
         },
         {
+          "source": "react-router-dom",
+          "specifiers": [
+            "useLocation"
+          ]
+        },
+        {
+          "source": "../../api/client",
+          "specifiers": [
+            "API_BASE_URL"
+          ]
+        },
+        {
           "source": "../../api/modules/devices",
           "specifiers": [
-            "fetchDevices",
+            "createDeviceApplication",
+            "createDeviceGroup",
+            "deleteDeviceGroup",
+            "fetchDeviceApplications",
+            "fetchDeviceGroups",
             "fetchDeviceStats",
-            "createDevice",
+            "fetchDevices",
+            "updateDevice",
+            "updateDeviceApplication",
+            "updateDeviceGroup",
+            "DeviceApplicationPayload",
+            "DeviceApplicationRecord",
+            "DeviceAuthorizationType",
+            "DeviceGroupPayload",
+            "DeviceGroupRecord",
+            "DeviceListQuery",
             "DeviceRecord"
+          ]
+        },
+        {
+          "source": "../../api/modules/commands",
+          "specifiers": [
+            "fetchCommandGroups"
+          ]
+        },
+        {
+          "source": "../../api/modules/resources",
+          "specifiers": [
+            "fetchImageResources",
+            "fetchVideoResources"
+          ]
+        },
+        {
+          "source": "../../api/modules/scrolling-texts",
+          "specifiers": [
+            "fetchScrollingTexts"
+          ]
+        },
+        {
+          "source": "../../api/modules/models",
+          "specifiers": [
+            "fetchModelAssets"
+          ]
+        },
+        {
+          "source": "../../api/modules/voice-tones",
+          "specifiers": [
+            "fetchVoiceTones"
           ]
         },
         {
@@ -14685,12 +16044,18 @@
           "specifiers": [
             "useAuthStore"
           ]
+        },
+        {
+          "source": "../../store/tenant-scope",
+          "specifiers": [
+            "useTenantScopeStore"
+          ]
         }
       ],
       "exports": [
         "DeviceManagementPage"
       ],
-      "totalLines": 240,
+      "totalLines": 862,
       "hasStructuralAnalysis": true
     },
     "web/src/views/employee-management/index.tsx": {
@@ -15095,7 +16460,7 @@
     },
     "web/src/views/log-management/index.tsx": {
       "filePath": "web/src/views/log-management/index.tsx",
-      "contentHash": "10866b1d388436dc874df66976b71921bdfec5b0650da892b2691f5fa406b90b",
+      "contentHash": "edff0e4013481f25c41151f55f32ef20a870097f9785a9f0efb1e941b9ce5852",
       "functions": [
         {
           "name": "statusColor",
@@ -15107,10 +16472,20 @@
           "lineCount": 6
         },
         {
+          "name": "describeOperationPath",
+          "params": [
+            "path",
+            "method",
+            "action"
+          ],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
           "name": "LogManagementPage",
           "params": [],
           "exported": true,
-          "lineCount": 157
+          "lineCount": 164
         }
       ],
       "classes": [],
@@ -15166,7 +16541,7 @@
       "exports": [
         "LogManagementPage"
       ],
-      "totalLines": 191,
+      "totalLines": 230,
       "hasStructuralAnalysis": true
     },
     "web/src/views/login/index.tsx": {
@@ -15716,7 +17091,7 @@
     },
     "web/src/views/tenant-management/index.tsx": {
       "filePath": "web/src/views/tenant-management/index.tsx",
-      "contentHash": "6e915d1c96c4f4343722724c10e7d320b3a6159f1e41cbc2699287a901b3e901",
+      "contentHash": "44b660ffe70ff67c4a26ea09f0719ea2ed8ad7e49f19ef09bb4f9aa7790f6f9b",
       "functions": [
         {
           "name": "normalizeMenuKeyToModule",
@@ -15740,7 +17115,7 @@
           "name": "TenantManagementPage",
           "params": [],
           "exported": true,
-          "lineCount": 237
+          "lineCount": 250
         }
       ],
       "classes": [],
@@ -15762,6 +17137,7 @@
             "Input",
             "Modal",
             "Space",
+            "Switch",
             "Table",
             "Tag",
             "Tree",
@@ -15801,12 +17177,18 @@
             "MenuCatalogResponse",
             "TenantRecord"
           ]
+        },
+        {
+          "source": "../../store/tenant-scope",
+          "specifiers": [
+            "useTenantScopeStore"
+          ]
         }
       ],
       "exports": [
         "TenantManagementPage"
       ],
-      "totalLines": 285,
+      "totalLines": 300,
       "hasStructuralAnalysis": true
     },
     "web/src/views/tts-management.ts": {
@@ -16057,7 +17439,7 @@
     },
     "web/vite.config.ts": {
       "filePath": "web/vite.config.ts",
-      "contentHash": "55d00f8cd51b90f1c0fa365498b31c079355bd977be7228443b9dfb67e953270",
+      "contentHash": "845ef8883fcf1459da7147b1addda8b60cccd67083b3124b9671ded1b4bfb78f",
       "functions": [],
       "classes": [],
       "imports": [
@@ -16076,8 +17458,38 @@
         }
       ],
       "exports": [],
-      "totalLines": 27,
+      "totalLines": 32,
       "hasStructuralAnalysis": true
+    },
+    "wiki/android-device-runtime-simulator.html": {
+      "filePath": "wiki/android-device-runtime-simulator.html",
+      "contentHash": "2727a24ab4c4d05187ae841cdd3bc873d248b07cefa883fb9ea8d70597f1ac93",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 992,
+      "hasStructuralAnalysis": false
+    },
+    "wiki/container-dependencies.md": {
+      "filePath": "wiki/container-dependencies.md",
+      "contentHash": "2482f14c7022daa79fa45f7afbad8de54ae42ac6a93cc9d00cbb095bb3d2ef0b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 236,
+      "hasStructuralAnalysis": true
+    },
+    "wiki/device-api-latest.html": {
+      "filePath": "wiki/device-api-latest.html",
+      "contentHash": "fdbcd5af941b426165fd8f6a6c1c574735788b3f82dedf4b6967334a55480c9d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 491,
+      "hasStructuralAnalysis": false
     }
   }
 }

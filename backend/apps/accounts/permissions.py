@@ -68,6 +68,27 @@ class CanManageEmployees(HasPermissionCode):
     required_permission = 'tenant.employees.manage'
 
 
+class CanViewAuditLogs(HasPermissionCode):
+    required_permission = 'audit.logs.view'
+
+    def has_permission(self, request, view):
+        if not super().has_permission(request, view):
+            return False
+        user = request.user
+        if user.is_superuser:
+            return True
+        from apps.tenants.services import get_user_membership
+        membership = get_user_membership(user)
+        return bool(membership and membership.is_tenant_admin)
+
+
+class CanClearAuditLogs(HasPermissionCode):
+    required_permission = 'audit.logs.view'
+
+    def has_permission(self, request, view):
+        return CanViewAuditLogs().has_permission(request, view)
+
+
 class CanViewDevices(HasPermissionCode):
     required_permission = 'devices.view'
 

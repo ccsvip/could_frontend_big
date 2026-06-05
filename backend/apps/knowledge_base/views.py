@@ -12,19 +12,26 @@ from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import mixins, serializers, viewsets
 from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from apps.accounts.permissions import (
     CanBulkDownloadKnowledgeBase,
     CanDownloadKnowledgeBase,
     CanUploadKnowledgeBase,
     CanViewKnowledgeBase,
+    IsSuperUser,
 )
 from config.business_cache import CachedBusinessResponseMixin, clear_business_cache_namespace
 from apps.tenants.mixins import TenantScopedQuerysetMixin
 
 from .models import KnowledgeDocument
-from .serializers import KnowledgeDocumentSerializer
-from .services import notify_knowledge_bulk_download, notify_knowledge_document_deleted, notify_knowledge_document_event
+from .serializers import KnowledgeDocumentReviewSerializer, KnowledgeDocumentSerializer
+from .services import (
+    notify_knowledge_bulk_download,
+    notify_knowledge_document_deleted,
+    notify_knowledge_document_event,
+    notify_knowledge_document_reviewed,
+)
 
 MAX_BULK_DOWNLOAD_COUNT = 20
 MAX_BULK_DOWNLOAD_SIZE = 200 * 1024 * 1024
@@ -96,6 +103,7 @@ class KnowledgeDocumentViewSet(
         'destroy': [CanUploadKnowledgeBase],
         'download': [CanDownloadKnowledgeBase],
         'bulk_download': [CanBulkDownloadKnowledgeBase],
+        'review': [IsSuperUser],
     }
 
     def get_queryset(self):
@@ -118,6 +126,7 @@ class KnowledgeDocumentViewSet(
         document_id = instance.pk
         document_title = instance.title
         document_file_name = instance.file_name
+        company_name = str(getattr(getattr(instance, 'tenant', None), 'name', '') or '').strip()
         file_field = instance.file if instance.file else None
         super().perform_destroy(instance)
         if file_field:
@@ -127,6 +136,7 @@ class KnowledgeDocumentViewSet(
             document_id=document_id,
             title=document_title,
             file_name=document_file_name,
+            company_name=company_name,
         )
 
     @extend_schema(
@@ -217,3 +227,26 @@ class KnowledgeDocumentViewSet(
         response['Content-Disposition'] = build_content_disposition(zip_name)
         response._resource_closers.append(lambda path=temp_file_path: os.path.exists(path) and os.remove(path))
         return response
+
+    @extend_schema(
+        tags=['KnowledgeBase'],
+        request=KnowledgeDocumentReviewSerializer,
+        responses={200: KnowledgeDocumentSerializer},
+    )
+    @action(detail=True, methods=['post'], url_path='review')
+    def review(self, request, pk=None):
+        document = self.get_object()
+        serializer = KnowledgeDocumentReviewSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        document.processing_status = serializer.validated_data['processing_status']
+        document.processing_result = serializer.validated_data.get('processing_result', '')
+        document.save(update_fields=['processing_status', 'processing_result', 'updated_at'])
+        clear_business_cache_namespace(self.business_cache_namespace)
+        notify_knowledge_document_reviewed(request.user, document)
+        return Response(
+            {
+                'status': 'success',
+                'message': '审核操作成功',
+                'data': KnowledgeDocumentSerializer(document, context={'request': request}).data,
+            }
+        )

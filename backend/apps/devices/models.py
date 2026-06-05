@@ -138,6 +138,7 @@ class Device(models.Model):
     registered_at = models.DateTimeField('注册时间', null=True, blank=True)
     last_auth_at = models.DateTimeField('最后认证时间', null=True, blank=True)
     last_heartbeat = models.DateTimeField('最近心跳', null=True, blank=True)
+    authorization_ignored_at = models.DateTimeField('授权请求忽略时间', null=True, blank=True)
     device_info = models.JSONField('设备信息', blank=True, default=dict)
     tenant = _tenant_fk()
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
@@ -229,10 +230,18 @@ class DeviceAuthLog(models.Model):
     ACTION_ACTIVATE = 'activate'
     ACTION_HEARTBEAT = 'heartbeat'
     ACTION_CONFIG = 'config'
+    ACTION_BIND = 'bind'
+    ACTION_IGNORE = 'ignore'
+    ACTION_AUTHORIZE = 'authorize'
+    ACTION_REVOKE = 'revoke'
     ACTION_CHOICES = [
         (ACTION_ACTIVATE, '激活'),
         (ACTION_HEARTBEAT, '心跳'),
         (ACTION_CONFIG, '配置拉取'),
+        (ACTION_BIND, '绑定'),
+        (ACTION_IGNORE, '忽略'),
+        (ACTION_AUTHORIZE, '再次授权'),
+        (ACTION_REVOKE, '撤销授权'),
     ]
 
     tenant = models.ForeignKey('tenants.Tenant', on_delete=models.CASCADE, related_name='+', null=True, blank=True)

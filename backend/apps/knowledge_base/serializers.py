@@ -91,3 +91,11 @@ class KnowledgeDocumentSerializer(serializers.ModelSerializer):
             validated_data['uploaded_by'] = request.user
         return super().create(validated_data)
 
+
+class KnowledgeDocumentReviewSerializer(serializers.Serializer):
+    processingStatus = serializers.ChoiceField(
+        source='processing_status',
+        choices=(KnowledgeDocument.STATUS_APPROVED, KnowledgeDocument.STATUS_REJECTED),
+    )
+    processingResult = serializers.CharField(source='processing_result', required=False, allow_blank=True)
+
