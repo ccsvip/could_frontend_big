@@ -205,6 +205,23 @@ const PermissionGuard = ({ children, permission }: { children: ReactNode; permis
   return <Navigate to={getFirstAccessiblePath(menus)} replace />;
 };
 
+const AuditLogGuard = ({ children }: { children: ReactNode }) => {
+  const hasPermission = useAuthStore((state) => state.hasPermission);
+  const menus = useAuthStore((state) => state.menus);
+  const tenant = useAuthStore((state) => state.tenant);
+  const authSyncStatus = useAuthStore((state) => state.authSyncStatus);
+
+  if (authSyncStatus !== 'ready') {
+    return <AuthSyncFallback />;
+  }
+
+  if (hasPermission('audit.logs.view') && (hasPermission('tenant.management.view') || tenant?.isTenantAdmin)) {
+    return <>{children}</>;
+  }
+
+  return <Navigate to={getFirstAccessiblePath(menus)} replace />;
+};
+
 const DefaultAuthedRoute = () => {
   const menus = useAuthStore((state) => state.menus);
   const hasPermission = useAuthStore((state) => state.hasPermission);
@@ -333,9 +350,9 @@ export const AppRouter = () => {
         {
           path: 'logs',
           element: (
-            <PermissionGuard permission="audit.logs.view">
+            <AuditLogGuard>
               <LogManagementPage />
-            </PermissionGuard>
+            </AuditLogGuard>
           ),
         },
         {

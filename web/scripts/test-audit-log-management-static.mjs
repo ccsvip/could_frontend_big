@@ -7,7 +7,10 @@ const page = fs.readFileSync('src/views/log-management/index.tsx', 'utf8');
 
 assert(auditApi.includes('description: string;'), 'OperationLogRecord should expose description');
 assert(auditApi.includes('clearOperationLogs'), 'audit API should expose clearOperationLogs');
-assert(router.includes('permission="audit.logs.view"'), 'logs route should use audit.logs.view guard');
+assert(router.includes('const AuditLogGuard'), 'logs route should use a dedicated audit log guard');
+assert(router.includes("hasPermission('audit.logs.view')"), 'audit guard should require audit.logs.view');
+assert(router.includes('tenant?.isTenantAdmin'), 'audit guard should require tenant admin scope for non-platform users');
+assert(router.includes('<AuditLogGuard>'), 'logs route should be wrapped by AuditLogGuard');
 assert(page.includes("import { DeleteOutlined, FileSearchOutlined } from '@ant-design/icons';"), 'page should import the clear and search icons');
 assert(page.includes("import { Button, Card, Modal, Select, Space, Table, Tag, Typography, message } from 'antd';"), 'page should import the expected antd controls');
 assert(page.includes('clearOperationLogs'), 'page should call clearOperationLogs');
