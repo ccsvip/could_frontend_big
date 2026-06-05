@@ -5,6 +5,7 @@ const auditApi = fs.readFileSync('src/api/modules/audit.ts', 'utf8');
 const router = fs.readFileSync('src/router/index.tsx', 'utf8');
 const page = fs.readFileSync('src/views/log-management/index.tsx', 'utf8');
 
+// The page assertions are expected to fail after Task 3 and turn green when Task 4 lands.
 assert(auditApi.includes('description: string;'), 'OperationLogRecord should expose description');
 assert(auditApi.includes('clearOperationLogs'), 'audit API should expose clearOperationLogs');
 assert(router.includes('permission="audit.logs.view"'), 'logs route should use audit.logs.view guard');
