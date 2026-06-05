@@ -12,6 +12,7 @@ export type OperationLogRecord = {
   action: OperationLogAction;
   method: string;
   path: string;
+  description: string;
   statusCode: number;
   createdAt: string;
 };
@@ -30,5 +31,10 @@ export type FetchOperationLogsParams = {
 
 export const fetchOperationLogs = async (params?: FetchOperationLogsParams) => {
   const response = await httpClient.get<OperationLogListResponse>('/audit/logs/', { params });
+  return response.data;
+};
+
+export const clearOperationLogs = async () => {
+  const response = await httpClient.delete<{ deleted: number }>('/audit/logs/clear/');
   return response.data;
 };

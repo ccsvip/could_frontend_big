@@ -333,7 +333,7 @@ export const AppRouter = () => {
         {
           path: 'logs',
           element: (
-            <PermissionGuard permission="tenant.management.view">
+            <PermissionGuard permission="audit.logs.view">
               <LogManagementPage />
             </PermissionGuard>
           ),
