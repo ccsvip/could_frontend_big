@@ -1,4 +1,4 @@
-import { httpClient } from '../client';
+import { API_BASE_URL, httpClient } from '../client';
 
 export type AsrSettingsRecord = {
   workspaceId: string;
@@ -49,4 +49,15 @@ export const fetchAsrStatus = async () => {
 export const testAsr = async () => {
   const response = await httpClient.post<AsrTestResult>('/ai-models/asr/test/');
   return response.data;
+};
+
+export const buildAsrRealtimeWebSocketUrl = (token: string) => {
+  const baseUrl = API_BASE_URL.startsWith('http')
+    ? new URL(API_BASE_URL)
+    : new URL(API_BASE_URL, window.location.origin);
+  baseUrl.protocol = baseUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+  baseUrl.pathname = '/ws/asr/test/';
+  baseUrl.search = '';
+  baseUrl.searchParams.set('token', token);
+  return baseUrl.toString();
 };

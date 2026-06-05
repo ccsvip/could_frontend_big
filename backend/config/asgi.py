@@ -18,5 +18,10 @@ async def application(scope, receive, send):
 
         await device_events_websocket_application(scope, receive, send)
         return
+    if scope.get('type') == 'websocket' and scope.get('path') == '/ws/asr/test/':
+        from apps.ai_models.realtime_asr import asr_realtime_websocket_application
+
+        await asr_realtime_websocket_application(scope, receive, send)
+        return
 
     await django_application(scope, receive, send)
