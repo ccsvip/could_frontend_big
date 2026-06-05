@@ -166,6 +166,13 @@ class OperationLogMiddlewareTests(APITestCase):
         resp = self.client.get('/api/v1/audit/logs/')
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_audit_logs_clear_forbidden_for_staff_non_superuser(self):
+        staff_user = User.objects.create_user('staff-clearer', password='pw12345678', is_staff=True)
+
+        self.client.force_authenticate(staff_user)
+        resp = self.client.delete('/api/v1/audit/logs/clear/')
+        self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_audit_logs_endpoint_forbidden_for_employee_even_with_permission_point(self):
         tenant = Tenant.objects.create(name='公司D', code='comp-d')
         audit_perm = PermissionPoint.objects.get(code='audit.logs.view')
