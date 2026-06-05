@@ -54,9 +54,16 @@ class OperationLogMiddleware:
         if user is not None and user.is_authenticated:
             actor = user
             actor_username = user.get_username()
+            actor_display_name = user.get_full_name() or actor_username
+            from apps.accounts.services.permissions import get_role_payload
+
+            role_payload = get_role_payload(user)
+            actor_role_name = role_payload['name'] if role_payload else ''
         else:
             actor = None
             actor_username = ''
+            actor_display_name = ''
+            actor_role_name = ''
 
         tenant = self._resolve_tenant(request, user)
 
@@ -75,6 +82,8 @@ class OperationLogMiddleware:
         OperationLog.objects.create(
             actor=actor,
             actor_username=actor_username,
+            actor_display_name=actor_display_name,
+            actor_role_name=actor_role_name,
             tenant=tenant,
             action=action,
             method=method,
@@ -84,14 +93,7 @@ class OperationLogMiddleware:
         )
 
     def _resolve_tenant(self, request, user):
-        """普通用户取 membership 公司；超管带 ?tenant=<id> 时取该公司，否则 None。"""
-        tenant = get_request_tenant(request)
-        if tenant is not None:
-            return tenant
+        """普通用户取 membership 公司；超管操作始终记为平台日志。"""
         if user is not None and user.is_authenticated and user.is_superuser:
-            raw = (request.GET.get('tenant') or '').strip()
-            if raw.isdigit():
-                from apps.tenants.models import Tenant
-
-                return Tenant.objects.filter(pk=int(raw)).first()
-        return None
+            return None
+        return get_request_tenant(request)

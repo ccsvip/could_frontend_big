@@ -22,7 +22,7 @@ User = get_user_model()
 class OperationLogMiddlewareTests(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.superuser = User.objects.create_superuser('root', 'r@x.com', 'pw12345678')
+        cls.superuser = User.objects.create_superuser('root', 'r@x.com', 'pw12345678', first_name='超级管理员')
 
     def setUp(self):
         self.client.force_authenticate(self.superuser)
@@ -41,11 +41,15 @@ class OperationLogMiddlewareTests(APITestCase):
         self.assertEqual(log.status_code, status.HTTP_201_CREATED)
         self.assertEqual(log.actor_id, self.superuser.id)
         self.assertEqual(log.actor_username, 'root')
+        self.assertEqual(log.actor_display_name, '超级管理员')
+        self.assertEqual(log.actor_role_name, '管理员')
 
         audit_resp = self.client.get('/api/v1/audit/logs/')
         self.assertEqual(audit_resp.status_code, status.HTTP_200_OK)
         self.assertGreaterEqual(audit_resp.data['count'], 1)
         self.assertEqual(audit_resp.data['results'][0]['description'], '新增公司：审计公司')
+        self.assertEqual(audit_resp.data['results'][0]['actorDisplayName'], '超级管理员')
+        self.assertEqual(audit_resp.data['results'][0]['actorRoleName'], '管理员')
 
     def test_get_request_is_not_logged(self):
         before = OperationLog.objects.count()
@@ -66,6 +70,15 @@ class OperationLogMiddlewareTests(APITestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         # 默认分页，结果在 results 中。
         self.assertGreaterEqual(resp.data['count'], 1)
+
+    def test_superuser_scoped_write_is_not_recorded_as_company_log(self):
+        tenant = Tenant.objects.create(name='公司E', code='comp-e')
+
+        self.client.post(f'/api/v1/tenants/?tenant={tenant.id}', {'name': '超管 scoped 创建'}, format='json')
+
+        log = OperationLog.objects.order_by('-created_at').first()
+        self.assertEqual(log.actor_id, self.superuser.id)
+        self.assertIsNone(log.tenant_id)
 
     def test_tenant_admin_lists_only_own_tenant_logs(self):
         tenant_a = Tenant.objects.create(name='公司A', code='comp-a')
@@ -210,3 +223,23 @@ class OperationLogMiddlewareTests(APITestCase):
                     ),
                     expected,
                 )
+
+    def test_describe_operation_uses_knowledge_review_labels(self):
+        class ApprovedReviewResponse:
+            data = {
+                'data': {
+                    'title': '公司简介',
+                    'processingStatus': 'approved',
+                }
+            }
+
+        self.assertEqual(
+            describe_operation(
+                request=None,
+                response=ApprovedReviewResponse(),
+                action='create',
+                method='POST',
+                path='/api/v1/knowledge-base/7/review/',
+            ),
+            '通过知识库文档审核：公司简介',
+        )

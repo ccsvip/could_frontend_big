@@ -96,14 +96,30 @@ export const LogManagementPage = () => {
         title: '操作人',
         dataIndex: 'actorUsername',
         key: 'actorUsername',
-        width: '20%',
+        width: '14%',
         render: (value: string) => value || <span className="text-slate-400">匿名</span>,
+      },
+      {
+        title: '姓名',
+        dataIndex: 'actorDisplayName',
+        key: 'actorDisplayName',
+        width: '14%',
+        ellipsis: true,
+        render: (value: string) => value || <span className="text-slate-400">-</span>,
+      },
+      {
+        title: '角色',
+        dataIndex: 'actorRoleName',
+        key: 'actorRoleName',
+        width: '14%',
+        ellipsis: true,
+        render: (value: string) => value || <span className="text-slate-400">-</span>,
       },
       {
         title: '动作',
         dataIndex: 'action',
         key: 'action',
-        width: '14%',
+        width: '10%',
         render: (action: OperationLogAction) => {
           const meta = actionMap[action];
           return <Tag color={meta?.color}>{meta?.text ?? action}</Tag>;
@@ -113,7 +129,7 @@ export const LogManagementPage = () => {
         title: '操作具体做了什么',
         dataIndex: 'description',
         key: 'description',
-        width: '46%',
+        width: '30%',
         ellipsis: true,
         render: (value: string) => value || <span className="text-slate-400">-</span>,
       },
@@ -121,7 +137,7 @@ export const LogManagementPage = () => {
         title: '时间',
         dataIndex: 'createdAt',
         key: 'createdAt',
-        width: '20%',
+        width: '18%',
       },
     ],
     [],
@@ -140,7 +156,9 @@ export const LogManagementPage = () => {
               操作日志审计
             </Typography.Title>
             <Typography.Text className="!text-[13px] !text-slate-500">
-              记录平台内各公司的写操作（新增 / 修改 / 删除），可按公司筛选追溯。
+              {isPlatformAdmin
+                ? '记录平台范围内的新增、修改、删除操作，可按公司筛选追溯。'
+                : '记录当前公司的新增、修改、删除操作，便于追溯管理变更。'}
             </Typography.Text>
           </div>
           <Space className="!w-full justify-end md:!w-auto">

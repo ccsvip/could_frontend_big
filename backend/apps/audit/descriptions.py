@@ -59,9 +59,12 @@ _RESOURCE_NAME_KEYS = (
 def describe_operation(*, request, response, action: str, method: str, path: str) -> str:
     action_label = _ACTION_LABELS.get(action, '操作')
     normalized_path = _normalize_path(path)
-    operation_label = _describe_special_operation(normalized_path)
+    response_data = getattr(response, 'data', None)
+    operation_label = _describe_knowledge_review_operation(normalized_path, response_data)
+    if not operation_label:
+        operation_label = _describe_special_operation(normalized_path)
     route_label = operation_label or _describe_route(normalized_path)
-    resource_name = _extract_resource_name(getattr(response, 'data', None))
+    resource_name = _extract_resource_name(response_data)
 
     description = route_label if operation_label else f'{action_label}{route_label}'
     if resource_name:
@@ -104,6 +107,18 @@ def _describe_special_operation(path: str) -> str:
     return ''
 
 
+def _describe_knowledge_review_operation(path: str, response_data: Any) -> str:
+    if not re.match(r'^/api/v1/knowledge-base/\d+/review/?$', path):
+        return ''
+
+    status_value = _extract_processing_status(response_data)
+    if status_value == 'approved':
+        return '通过知识库文档审核'
+    if status_value == 'rejected':
+        return '拒绝知识库文档审核'
+    return '审核知识库文档'
+
+
 def _normalize_path(path: str) -> str:
     return (path or '').split('?', 1)[0].strip()
 
@@ -133,6 +148,33 @@ def _extract_resource_name(value: Any) -> str:
             text = _extract_resource_name(item)
             if text:
                 return text
+
+    return ''
+
+
+def _extract_processing_status(value: Any) -> str:
+    if isinstance(value, Mapping):
+        for key in ('processingStatus', 'processing_status'):
+            candidate = value.get(key)
+            if isinstance(candidate, str) and candidate.strip():
+                return candidate.strip()
+
+        for nested_key in ('data', 'result', 'item'):
+            status_value = _extract_processing_status(value.get(nested_key))
+            if status_value:
+                return status_value
+
+        for nested in value.values():
+            if isinstance(nested, (Mapping, list, tuple)):
+                status_value = _extract_processing_status(nested)
+                if status_value:
+                    return status_value
+
+    elif isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        for item in value:
+            status_value = _extract_processing_status(item)
+            if status_value:
+                return status_value
 
     return ''
 

@@ -29,6 +29,8 @@ class OperationLog(models.Model):
     )
     # 冗余用户名：用户被删除后 actor 置空，仍可凭此追溯是谁做的操作。
     actor_username = models.CharField('操作人用户名', max_length=150, blank=True)
+    actor_display_name = models.CharField('操作人姓名', max_length=150, blank=True, default='')
+    actor_role_name = models.CharField('操作人角色', max_length=64, blank=True, default='')
     tenant = models.ForeignKey(
         'tenants.Tenant',
         on_delete=models.SET_NULL,

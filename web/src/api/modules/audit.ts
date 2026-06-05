@@ -7,6 +7,8 @@ export type OperationLogRecord = {
   id: number;
   actor: number | null;
   actorUsername: string;
+  actorDisplayName: string;
+  actorRoleName: string;
   tenant: number | null;
   tenantName: string | null;
   action: OperationLogAction;
