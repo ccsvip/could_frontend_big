@@ -32,12 +32,18 @@ class OperationLogMiddlewareTests(APITestCase):
 
         self.assertEqual(OperationLog.objects.count(), before + 1)
         log = OperationLog.objects.order_by('-created_at').first()
+        self.assertEqual(log.description, '新增公司：审计公司')
         self.assertEqual(log.action, 'create')
         self.assertEqual(log.method, 'POST')
         self.assertEqual(log.path, '/api/v1/tenants/')
         self.assertEqual(log.status_code, status.HTTP_201_CREATED)
         self.assertEqual(log.actor_id, self.superuser.id)
         self.assertEqual(log.actor_username, 'root')
+
+        audit_resp = self.client.get('/api/v1/audit/logs/')
+        self.assertEqual(audit_resp.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(audit_resp.data['count'], 1)
+        self.assertEqual(audit_resp.data['results'][0]['description'], '新增公司：审计公司')
 
     def test_get_request_is_not_logged(self):
         before = OperationLog.objects.count()
