@@ -260,14 +260,14 @@ export const LoginPage = () => {
               
               <div className="mb-10 text-center md:text-left">
                 <h3 className="text-3xl font-bold text-slate-800 mb-2">登录工作台</h3>
-                <p className="text-slate-500">欢迎回来，请输入您的管理员账号进行身份验证</p>
+                <p className="text-slate-500">欢迎回来，请输入您的账号进行身份验证</p>
               </div>
 
               <form onSubmit={handleNativeSubmit} className="space-y-6">
                 
                 {/* 用户名输入 */}
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 block">账号 / 用户名</label>
+                  <label className="text-sm font-medium text-slate-700 block">用户名</label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <UserIcon className="h-5 w-5 text-slate-400 group-focus-within:text-teal-500 transition-colors" />
@@ -275,7 +275,7 @@ export const LoginPage = () => {
                     <input
                       type="text"
                       className="block w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm"
-                      placeholder="admin"
+                      placeholder="在此处输入用户名"
                       value={formData.username}
                       onChange={(e) => setFormData({...formData, username: e.target.value})}
                       required
