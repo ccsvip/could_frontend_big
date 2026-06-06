@@ -139,6 +139,7 @@ httpClient.interceptors.response.use(
   (error) => {
     if (error?.response?.status === 401) {
       handleUnauthorizedResponse();
+      return Promise.reject(error);
     }
 
     const errorData = error?.response?.data as ApiResponse | undefined;
