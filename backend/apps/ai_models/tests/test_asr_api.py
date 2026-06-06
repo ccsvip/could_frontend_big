@@ -193,6 +193,7 @@ class ASRApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(create_response.data['replacementText'], '小张')
         self.assertTrue(create_response.data['isActive'])
         self.assertEqual(create_response.data['tenantId'], self.tenant.id)
+        self.assertNotIn('sortOrder', create_response.data)
 
         list_response = self.client.get('/api/v1/ai-models/asr/replacement-rules/')
 
@@ -237,7 +238,7 @@ class ASRApiTests(TenantTestMixin, APITestCase):
 
         response = self.client.post(
             f'/api/v1/ai-models/asr/replacement-rules/?tenant={self.tenant.id}',
-            {'sourceText': '小明', 'replacementText': '小张', 'isActive': True, 'sortOrder': 0},
+            {'sourceText': '小明', 'replacementText': '小张', 'isActive': True},
             format='json',
         )
 
@@ -257,7 +258,7 @@ class ASRApiTests(TenantTestMixin, APITestCase):
 
         response = self.client.post(
             '/api/v1/ai-models/asr/replacement-rules/',
-            {'sourceText': '小明', 'replacementText': '小张', 'isActive': True, 'sortOrder': 0},
+            {'sourceText': '小明', 'replacementText': '小张', 'isActive': True},
             format='json',
         )
 

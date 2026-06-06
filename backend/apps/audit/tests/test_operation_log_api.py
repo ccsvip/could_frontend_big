@@ -243,3 +243,18 @@ class OperationLogMiddlewareTests(APITestCase):
             ),
             '通过知识库文档审核：公司简介',
         )
+
+    def test_describe_operation_uses_asr_replacement_rule_label(self):
+        class EmptyResponse:
+            data = {}
+
+        self.assertEqual(
+            describe_operation(
+                request=None,
+                response=EmptyResponse(),
+                action='delete',
+                method='DELETE',
+                path='/api/v1/ai-models/asr/replacement-rules/7/',
+            ),
+            '删除ASR替换词',
+        )

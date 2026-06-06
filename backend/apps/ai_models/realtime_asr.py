@@ -185,7 +185,7 @@ def load_asr_replacement_pairs(tenant_id: int | None) -> list[tuple[str, str]]:
         return []
     return list(
         ASRReplacementRule.objects.filter(tenant_id=tenant_id, is_active=True)
-        .order_by('sort_order', 'id')
+        .order_by('id')
         .values_list('source_text', 'replacement_text')
     )
 

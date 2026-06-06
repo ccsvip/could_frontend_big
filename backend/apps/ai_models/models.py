@@ -88,7 +88,6 @@ class ASRReplacementRule(models.Model):
     source_text = models.CharField('原词', max_length=128)
     replacement_text = models.CharField('替换词', max_length=128)
     is_active = models.BooleanField('是否启用', default=True)
-    sort_order = models.PositiveIntegerField('排序', default=0)
     tenant = models.ForeignKey(
         'tenants.Tenant',
         on_delete=models.CASCADE,
@@ -103,7 +102,7 @@ class ASRReplacementRule(models.Model):
     class Meta:
         verbose_name = 'ASR 替换词'
         verbose_name_plural = 'ASR 替换词'
-        ordering = ['sort_order', 'id']
+        ordering = ['id']
         constraints = [
             models.UniqueConstraint(fields=['tenant', 'source_text'], name='uniq_asr_replacement_rule_tenant_source'),
         ]

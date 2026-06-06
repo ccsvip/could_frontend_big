@@ -4,7 +4,6 @@ import {
   Card,
   Form,
   Input,
-  InputNumber,
   Modal,
   Popconfirm,
   Switch,
@@ -55,7 +54,6 @@ type ReplacementRuleFormValues = {
   sourceText: string;
   replacementText: string;
   isActive: boolean;
-  sortOrder: number;
 };
 
 const TARGET_SAMPLE_RATE = 16000;
@@ -196,7 +194,6 @@ export const AsrManagementPage = () => {
       sourceText: '',
       replacementText: '',
       isActive: true,
-      sortOrder: 0,
     });
     setRuleModalVisible(true);
   };
@@ -206,8 +203,7 @@ export const AsrManagementPage = () => {
     ruleForm.setFieldsValue({
       sourceText: rule.sourceText,
       replacementText: rule.replacementText,
-      isActive: rule.isActive,
-      sortOrder: rule.sortOrder,
+      isActive: Boolean(rule.isActive),
     });
     setRuleModalVisible(true);
   };
@@ -222,7 +218,6 @@ export const AsrManagementPage = () => {
     sourceText: values.sourceText.trim(),
     replacementText: values.replacementText.trim(),
     isActive: values.isActive ?? true,
-    sortOrder: Number(values.sortOrder ?? 0),
   });
 
   const handleRuleSubmit = async () => {
@@ -441,17 +436,6 @@ export const AsrManagementPage = () => {
           >
             {value ? '● 已启用' : '○ 已停用'}
           </Tag>
-        ),
-      },
-      {
-        title: '排序',
-        dataIndex: 'sortOrder',
-        key: 'sortOrder',
-        width: 90,
-        render: (value: number) => (
-          <span className="text-slate-500 font-mono text-xs bg-slate-100 px-2 py-0.5 rounded">
-            {value}
-          </span>
         ),
       },
       {
@@ -874,27 +858,17 @@ export const AsrManagementPage = () => {
             </Form.Item>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-            <Form.Item
-              label="优先级排序 (越小越优先)"
-              name="sortOrder"
-              className="mb-4"
-            >
-              <InputNumber min={0} precision={0} className="!w-full h-10 flex items-center border-slate-200 focus:border-teal-500" />
-            </Form.Item>
-
-            <Form.Item
-              label="启用状态"
-              name="isActive"
-              valuePropName="checked"
-              className="mb-4"
-            >
-              <div className="h-10 flex items-center border border-slate-100 bg-slate-50/50 rounded px-3">
-                <Switch checkedChildren="启用" unCheckedChildren="停用" />
-                <span className="text-slate-400 text-xs ml-3">启用后识别将自动生效</span>
-              </div>
-            </Form.Item>
-          </div>
+          <Form.Item
+            label="启用状态"
+            name="isActive"
+            valuePropName="checked"
+            className="mb-2"
+          >
+            <Switch checkedChildren="启用" unCheckedChildren="停用" />
+          </Form.Item>
+          <Typography.Text className="!text-slate-400 !text-xs">
+            启用后识别将自动生效
+          </Typography.Text>
         </Form>
       </Modal>
     </div>

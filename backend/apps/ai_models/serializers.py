@@ -81,7 +81,6 @@ class ASRReplacementRuleSerializer(serializers.ModelSerializer):
     sourceText = serializers.CharField(source='source_text', max_length=128)
     replacementText = serializers.CharField(source='replacement_text', max_length=128)
     isActive = serializers.BooleanField(source='is_active', required=False)
-    sortOrder = serializers.IntegerField(source='sort_order', required=False, min_value=0)
     tenantId = serializers.IntegerField(source='tenant_id', read_only=True)
 
     class Meta:
@@ -91,7 +90,6 @@ class ASRReplacementRuleSerializer(serializers.ModelSerializer):
             'sourceText',
             'replacementText',
             'isActive',
-            'sortOrder',
             'tenantId',
             'created_at',
             'updated_at',

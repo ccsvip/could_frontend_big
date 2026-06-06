@@ -33,6 +33,7 @@ _SPECIAL_ROUTE_LABELS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r'^/api/v1/resources/voice-tones(?:/|$)'), '音色'),
     (re.compile(r'^/api/v1/resources/models(?:/|$)'), '数字人模型'),
     (re.compile(r'^/api/v1/knowledge-base(?:/|$)'), '知识库文档'),
+    (re.compile(r'^/api/v1/ai-models/asr/replacement-rules(?:/|$)'), 'ASR替换词'),
     (re.compile(r'^/api/v1/ai-models/llm-providers(?:/|$)'), '模型供应商'),
     (re.compile(r'^/api/v1/ai-models/chat/conversations(?:/|$)'), '会话'),
     (re.compile(r'^/api/v1/commands/groups(?:/|$)'), '指令分组'),

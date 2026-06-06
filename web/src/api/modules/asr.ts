@@ -31,7 +31,6 @@ export type AsrReplacementRuleRecord = {
   sourceText: string;
   replacementText: string;
   isActive: boolean;
-  sortOrder: number;
   tenantId: number;
   created_at: string;
   updated_at: string;
@@ -48,7 +47,6 @@ export type AsrReplacementRulePayload = {
   sourceText: string;
   replacementText: string;
   isActive: boolean;
-  sortOrder: number;
 };
 
 export const fetchAsrSettings = async () => {
