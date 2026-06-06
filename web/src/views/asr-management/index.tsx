@@ -399,8 +399,11 @@ export const AsrManagementPage = () => {
     if (phase === 'listening') {
       return '正在等待语音输入';
     }
+    if (!serviceReady) {
+      return 'ASR 服务未就绪，请先检查 ASR 设置';
+    }
     return '测试结果将在这里显示';
-  }, [currentText, phase]);
+  }, [currentText, phase, serviceReady]);
 
   const replacementColumns: ColumnsType<AsrReplacementRuleRecord> = useMemo(
     () => [
@@ -650,10 +653,10 @@ export const AsrManagementPage = () => {
                 {/* 录音状态和辅助文字 */}
                 <div className="text-center mb-6">
                   <div className={`font-semibold text-lg ${canStop ? 'text-teal-600' : 'text-slate-800'}`}>
-                    {phase === 'listening' ? '录音测试中...' : phase === 'connecting' ? '正在连接服务...' : phase === 'finishing' ? '正在整理数据...' : phase === 'done' ? '测试已完成' : phase === 'error' ? '测试发生异常' : '准备就绪'}
+                    {phase === 'listening' ? '录音测试中...' : phase === 'connecting' ? '正在连接服务...' : phase === 'finishing' ? '正在整理数据...' : phase === 'done' ? '测试已完成' : phase === 'error' ? '测试发生异常' : statusLoading ? '正在检查服务...' : serviceReady ? '准备就绪' : '服务未就绪'}
                   </div>
                   <div className="text-slate-400 text-xs mt-1">
-                    {phase === 'listening' ? '请对着麦克风说话' : phase === 'connecting' ? '正在建立WebSocket连接' : phase === 'finishing' ? '正在等待最后一帧流式输出' : phase === 'done' ? '您可以重新启动测试' : '点击按钮开始实时语音识别'}
+                    {phase === 'listening' ? '请对着麦克风说话' : phase === 'connecting' ? '正在建立WebSocket连接' : phase === 'finishing' ? '正在等待最后一帧流式输出' : phase === 'done' ? '您可以重新启动测试' : statusLoading ? '正在读取 ASR 服务状态' : serviceReady ? '点击按钮开始实时语音识别' : '请先检查 ASR 设置'}
                   </div>
                 </div>
 
