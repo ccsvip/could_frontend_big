@@ -19,6 +19,12 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER:-postgres}\" -d \"$${POSTGRES_DB:-postgres}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
 
   redis:
     image: redis:7-alpine
@@ -26,6 +32,12 @@ services:
     restart: always
     ports:
       - "${REDIS_PORT}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
 
   backend:
     build: *backend-build
@@ -39,9 +51,9 @@ services:
       - "${API_PORT}:8000"
     depends_on:
       db:
-        condition: service_started
+        condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     command: sh -c "python manage.py migrate && python manage.py seed_operations_periodic_tasks && python manage.py collectstatic --noinput && python manage.py shell -c \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@example.com', 'admin123456')\" && python manage.py seed_devices && uvicorn config.asgi:application --host 0.0.0.0 --port 8000 --lifespan off"
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import socket; s = socket.create_connection(('127.0.0.1', 8000), 2); s.close()\""]
@@ -62,9 +74,9 @@ services:
       backend:
         condition: service_healthy
       db:
-        condition: service_started
+        condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     command: sh -c "python manage.py migrate --check && celery -A config worker -l info"
 
   celery_beat:
@@ -79,9 +91,9 @@ services:
       backend:
         condition: service_healthy
       db:
-        condition: service_started
+        condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     command: sh -c "python manage.py migrate --check && celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
 
   web:

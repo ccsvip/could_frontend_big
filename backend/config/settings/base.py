@@ -6,12 +6,14 @@ import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
 import sentry_sdk
+from config.sentry import before_send
 
 sentry_sdk.init(
     dsn="https://9fc7401da3edadaa479d986c8584c939@o4507569064640512.ingest.us.sentry.io/4511515819638784",
     # Add data like request headers and IP for users,
     # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
     send_default_pii=True,
+    before_send=before_send,
 )
 
 BASE_DIR = Path(__file__).resolve().parents[2]
