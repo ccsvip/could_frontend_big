@@ -95,7 +95,7 @@ console.log('login command center static checks passed');
 Run from the repository root:
 
 ```bash
-docker compose exec web node scripts/test-login-command-center-static.mjs
+docker compose run --rm --no-deps web node scripts/test-login-command-center-static.mjs
 ```
 
 Expected: FAIL with `login page must import the new command center hero asset`.
@@ -147,7 +147,7 @@ Do not overwrite `web/src/assets/hero.png`.
 Run:
 
 ```bash
-docker compose exec web node -e "const fs=require('fs'); const p='src/assets/login-command-center.png'; if(!fs.existsSync(p)) throw new Error(p+' missing'); console.log('login command center asset exists')"
+docker compose run --rm --no-deps web node -e "const fs=require('fs'); const p='src/assets/login-command-center.png'; if(!fs.existsSync(p)) throw new Error(p+' missing'); console.log('login command center asset exists')"
 ```
 
 Expected: PASS with `login command center asset exists`.
@@ -269,7 +269,7 @@ Replace only the visual JSX returned by `LoginPage` with a dark full-screen layo
 - [ ] **Step 4: Run the static test to verify the layout markers**
 
 ```bash
-docker compose exec web node scripts/test-login-command-center-static.mjs
+docker compose run --rm --no-deps web node scripts/test-login-command-center-static.mjs
 ```
 
 Expected: PASS with `login command center static checks passed`.
@@ -291,7 +291,7 @@ git commit -m "feat: 升级登录页指挥中心视觉"
 - [ ] **Step 1: Run the static login check**
 
 ```bash
-docker compose exec web node scripts/test-login-command-center-static.mjs
+docker compose run --rm --no-deps web node scripts/test-login-command-center-static.mjs
 ```
 
 Expected: PASS with `login command center static checks passed`.
@@ -299,25 +299,25 @@ Expected: PASS with `login command center static checks passed`.
 - [ ] **Step 2: Run the frontend build inside Docker**
 
 ```bash
-docker compose exec web npm run build
+docker compose run --rm --no-deps web npm run build
 ```
 
 Expected: PASS. The command should complete Vite and TypeScript build without unused imports, type errors, or missing asset errors.
 
 - [ ] **Step 3: Start or confirm the full stack**
 
-```bash
-docker compose up -d
+```powershell
+$env:WEB_PORT='5176'; docker compose up -d --no-deps web
 ```
 
-Expected: `web` is reachable through the configured host port.
+Expected: the worktree `web` service starts without colliding with the main workspace already using port `5175`.
 
 - [ ] **Step 4: Browser-check `/login` desktop and mobile**
 
 Open:
 
 ```text
-http://localhost:5175/login
+http://localhost:5176/login
 ```
 
 Check:
