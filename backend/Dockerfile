@@ -33,4 +33,4 @@ RUN pip install --no-cache-dir -i "${PIP_INDEX_URL}" -r requirements.txt
 
 COPY . .
 
-CMD ["uvicorn", "config.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "config.asgi:application", "--host", "0.0.0.0", "--port", "8000", "--lifespan", "off"]

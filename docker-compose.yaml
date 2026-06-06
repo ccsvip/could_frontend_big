@@ -42,7 +42,7 @@ services:
         condition: service_started
       redis:
         condition: service_started
-    command: sh -c "python manage.py migrate && python manage.py seed_operations_periodic_tasks && python manage.py collectstatic --noinput && python manage.py shell -c \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@example.com', 'admin123456')\" && python manage.py seed_devices && uvicorn config.asgi:application --host 0.0.0.0 --port 8000"
+    command: sh -c "python manage.py migrate && python manage.py seed_operations_periodic_tasks && python manage.py collectstatic --noinput && python manage.py shell -c \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@example.com', 'admin123456')\" && python manage.py seed_devices && uvicorn config.asgi:application --host 0.0.0.0 --port 8000 --lifespan off"
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import socket; s = socket.create_connection(('127.0.0.1', 8000), 2); s.close()\""]
       interval: 5s

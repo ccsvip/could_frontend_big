@@ -18,3 +18,4 @@ websockets==15.0.1
 websocket-client==1.8.0
 django-celery-beat
 minio==7.2.7
+sentry-sdk
