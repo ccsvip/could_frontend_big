@@ -21,6 +21,7 @@ ai_models/
 ## CONVENTIONS
 
 - **流式必须异步**：`/conversations/<id>/send/` 必须 `async def` + `httpx.AsyncClient` + `async generator` + `StreamingHttpResponse`。同步 generator 在 ASGI 下会被整段消费。
+- **ASR 安卓设备身份**：安卓端不登录后台、不拿后台 JWT。ASR 运行时必须通过设备号解析公司上下文：安卓 WebSocket 用 `X-Device-Code` 请求头；`scripts/asr-replacement-test.html` 先用 `X-Device-Code` 调 `/ai-models/asr/device-status/` 验证公司，再用 `deviceCode` 查询参数打开浏览器 WebSocket（浏览器原生 WebSocket 不能自定义请求头）。
 - **SSE 兼容**：解析上游事件行**必须**同时匹配 `data:{...}` 与 `data: {...}`（冒号后 0/1 个空格）。LongCat 用前者。
 - **API URL 规范化**：`api_base_url` 用户可能填 `https://api.x.com/openai`、`https://api.x.com/openai/v1` 或完整 `.../chat/completions`。`views.py` 内有规范化函数统一归一到 chat completions 端点。**不要**在调用处再做拼接。
 - **OpenAI 兼容兜底**：`stream=true` 时上游若返回 200 + 普通 JSON，回退读 `choices[0].message.content` 转单条 SSE 片段下发。
@@ -33,6 +34,7 @@ ai_models/
 ## ANTI-PATTERNS
 
 - ❌ 用 `requests` 替代 `httpx.AsyncClient`：会同步阻塞 ASGI worker。
+- ❌ 在 ASR 安卓链路或替换词测试页里用 `admin / admin123456`、后台登录接口或后台 JWT：这会绕开设备到公司的解析，和安卓端真实行为不一致。
 - ❌ 用 `Response.iter_content` 替代 `httpx.aiter_lines` 异步迭代。
 - ❌ 在 SSE 解析里只识别 `data: `（带空格）：丢 LongCat。
 - ❌ 在日志里打 `api_key` / 完整 prompt / 完整用户消息正文。

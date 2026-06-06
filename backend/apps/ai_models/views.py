@@ -10,7 +10,9 @@ from django.http import StreamingHttpResponse
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import JSONParser, MultiPartParser
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -25,12 +27,16 @@ from apps.accounts.permissions import (
     CanViewLLMProviders,
     IsSuperUser,
 )
+from apps.devices.models import Device
 from apps.resources.views import PermissionMappedModelViewSet
 from apps.tenants.mixins import TenantScopedQuerysetMixin
+from apps.tenants.models import Tenant
 
-from .models import ChatConversation, ChatMessage, LLMProvider
+from .models import ASRReplacementRule, ChatConversation, ChatMessage, LLMProvider
+from .realtime_asr import resolve_asr_device_connection
 from .serializers import (
     ASRConfigSerializer,
+    ASRReplacementRuleSerializer,
     ChatConversationConfigSerializer,
     ChatConversationCreateSerializer,
     ChatConversationDetailSerializer,
@@ -80,11 +86,64 @@ class ASRStatusView(APIView):
         return Response(serialize_asr_status())
 
 
+class ASRDeviceStatusView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        device_code = str(request.headers.get('X-Device-Code') or '').strip()
+        if not device_code:
+            return Response({'message': '设备号不能为空'}, status=status.HTTP_400_BAD_REQUEST)
+
+        connection = resolve_asr_device_connection(device_code)
+        if connection is None:
+            return Response({'message': '设备未绑定公司或不可用'}, status=status.HTTP_403_FORBIDDEN)
+
+        device = Device.objects.select_related('tenant', 'application').get(id=connection['device_id'])
+        return Response({
+            **serialize_asr_status(),
+            'deviceCode': device.code,
+            'deviceId': device.id,
+            'tenantId': device.tenant_id,
+            'tenantName': device.tenant.name if device.tenant else '',
+            'applicationId': device.application_id,
+            'applicationName': device.application.name if device.application else '',
+        })
+
+
 class ASRTestView(APIView):
     permission_classes = [CanViewASR]
 
     def post(self, request):
         return Response(test_asr_connection())
+
+
+class ASRReplacementRuleViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
+    queryset = ASRReplacementRule.objects.all()
+    serializer_class = ASRReplacementRuleSerializer
+    permission_map = {
+        'list': [CanViewASR],
+        'retrieve': [CanViewASR],
+        'create': [CanViewASR],
+        'partial_update': [CanViewASR],
+        'update': [CanViewASR],
+        'destroy': [CanViewASR],
+    }
+
+    def tenant_create_kwargs(self) -> dict:
+        user = getattr(self.request, 'user', None)
+        if user is not None and user.is_superuser:
+            tenant_id = self.superuser_tenant_filter()
+            if tenant_id is not None:
+                tenant = Tenant.objects.filter(id=tenant_id, is_active=True).first()
+                if tenant is not None:
+                    return {'tenant': tenant}
+            raise ValidationError({'tenant': ['超管请先具体到某家公司后再保存替换词']})
+
+        tenant = self.request_tenant
+        if tenant is None:
+            raise ValidationError({'tenant': ['当前账号未归属公司，无法保存替换词']})
+        return {'tenant': tenant}
 
 
 def _build_chat_completions_url(raw_url: str) -> str:

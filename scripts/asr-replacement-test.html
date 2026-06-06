@@ -1,0 +1,1152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ASR 替换词测试</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f6f1;
+      --panel: #fff;
+      --ink: #17201d;
+      --muted: #68736f;
+      --line: #d8ddd3;
+      --green: #11664f;
+      --green-soft: #e2f2ea;
+      --amber: #9a5d12;
+      --amber-soft: #fff0d2;
+      --red: #b33434;
+      --red-soft: #fae4df;
+      --blue: #245c9b;
+      --blue-soft: #e4edf7;
+      --shadow: 0 18px 48px rgb(28 37 32 / 12%);
+      font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(135deg, rgb(17 102 79 / 8%) 0 25%, transparent 25% 100%),
+        linear-gradient(315deg, rgb(154 93 18 / 9%) 0 18%, transparent 18% 100%),
+        var(--bg);
+      color: var(--ink);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .56;
+    }
+
+    .shell {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 32px 0 44px;
+    }
+
+    .top {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 470px);
+      gap: 24px;
+      align-items: end;
+      margin-bottom: 22px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(30px, 4vw, 52px);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .connect-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(180px, auto) auto;
+      gap: 10px;
+      align-items: end;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .device-chip {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfcf8;
+      color: var(--ink);
+      padding: 10px 12px;
+      overflow-wrap: anywhere;
+      line-height: 1.4;
+      font-size: 13px;
+    }
+
+    .device-chip.missing,
+    input.missing {
+      color: var(--amber);
+      background: var(--amber-soft);
+      border-color: #e7c57d;
+    }
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfcf8;
+      color: var(--ink);
+      outline: none;
+      padding: 10px 12px;
+      min-height: 42px;
+      transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+
+    input:focus {
+      border-color: var(--green);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgb(17 102 79 / 14%);
+    }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: 6px;
+      min-height: 42px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--ink);
+      background: #f0f2ea;
+      transition: transform .14s ease, background .14s ease, border-color .14s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    .btn.primary {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+
+    .btn.warn {
+      background: var(--amber-soft);
+      border-color: #e3bd74;
+      color: #6e3f09;
+    }
+
+    .btn.danger {
+      background: var(--red-soft);
+      border-color: #edb0a8;
+      color: var(--red);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 410px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: rgb(255 255 255 / 92%);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .panel-body {
+      padding: 18px;
+    }
+
+    .status-list {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 11px 12px;
+      background: #fbfcf8;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      color: var(--muted);
+      background: #eef0e8;
+      border: 1px solid #dfe4d7;
+      white-space: nowrap;
+    }
+
+    .badge::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .badge.ready {
+      color: var(--green);
+      background: var(--green-soft);
+      border-color: #b7dac8;
+    }
+
+    .badge.busy {
+      color: var(--blue);
+      background: var(--blue-soft);
+      border-color: #bfd1e5;
+    }
+
+    .badge.warn {
+      color: var(--amber);
+      background: var(--amber-soft);
+      border-color: #e7c57d;
+    }
+
+    .badge.error {
+      color: var(--red);
+      background: var(--red-soft);
+      border-color: #edb0a8;
+    }
+
+    .record-zone {
+      display: grid;
+      place-items: center;
+      min-height: 210px;
+      border: 1px dashed #b6c2bb;
+      border-radius: 8px;
+      background:
+        repeating-linear-gradient(90deg, rgb(17 102 79 / 5%) 0 1px, transparent 1px 40px),
+        #fbfcf8;
+      margin-bottom: 16px;
+    }
+
+    .mic-button {
+      width: 118px;
+      height: 118px;
+      border-radius: 50%;
+      border: 1px solid #9fcbb9;
+      background: var(--green);
+      color: #fff;
+      font-size: 42px;
+      box-shadow: 0 18px 34px rgb(17 102 79 / 26%);
+      transition: transform .18s ease, background .18s ease;
+    }
+
+    .mic-button:hover:not(:disabled) {
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .mic-button.recording {
+      background: var(--red);
+      border-color: #e6aaa2;
+      box-shadow: 0 18px 34px rgb(179 52 52 / 23%);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .rule-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .rules {
+      display: grid;
+      gap: 8px;
+    }
+
+    .rule-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 8px 10px;
+      background: #fbfcf8;
+      font-size: 14px;
+    }
+
+    .rule-token {
+      overflow-wrap: anywhere;
+      color: var(--ink);
+    }
+
+    .arrow {
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border-radius: 6px;
+      border: 1px solid #edb0a8;
+      background: var(--red-soft);
+      color: var(--red);
+    }
+
+    .empty {
+      border: 1px dashed var(--line);
+      border-radius: 7px;
+      padding: 18px;
+      text-align: center;
+      color: var(--muted);
+      background: #fbfcf8;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .text-box {
+      min-height: 310px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcf8;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .text-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      background: #f1f4ed;
+    }
+
+    .text-content {
+      padding: 18px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.9;
+      font-size: 18px;
+      color: var(--ink);
+    }
+
+    .text-content.placeholder {
+      color: #96a19d;
+    }
+
+    .log {
+      margin-top: 14px;
+      max-height: 170px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #17201d;
+      color: #dceadf;
+      padding: 12px;
+      font: 12px/1.6 Consolas, "Courier New", monospace;
+    }
+
+    @media (max-width: 980px) {
+      .top,
+      .grid,
+      .result-grid,
+      .connect-card {
+        grid-template-columns: 1fr;
+      }
+
+      .rule-form {
+        grid-template-columns: 1fr;
+      }
+
+      .shell {
+        width: min(100vw - 20px, 1180px);
+        padding-top: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="top">
+      <div>
+        <h1>ASR 替换词测试</h1>
+        <p class="subtitle">按安卓运行时链路测试 ASR：设备号先通过请求头交给后端，后端解析设备所属公司。</p>
+      </div>
+      <section class="connect-card" aria-label="连接信息">
+        <label class="field">
+          <span class="label-row">
+            <span>后端地址</span>
+            <span>IP:PORT</span>
+          </span>
+          <input id="backendAddress" value="127.0.0.1:8880" autocomplete="off" spellcheck="false">
+        </label>
+        <label class="field">
+          <span class="label-row">
+            <span>设备号</span>
+            <span>输入或来自链接</span>
+          </span>
+          <input id="deviceCodeInput" placeholder="请输入设备号" autocomplete="off" spellcheck="false">
+        </label>
+        <button class="btn primary" id="connectBtn" type="button">连接</button>
+      </section>
+    </header>
+
+    <div class="grid">
+      <section class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">控制台</h2>
+          <span class="badge" id="phaseBadge">未连接</span>
+        </div>
+        <div class="panel-body">
+          <div class="status-list">
+            <div class="status-item">
+              <span>设备</span>
+              <span class="badge" id="deviceBadge">未解析</span>
+            </div>
+            <div class="status-item">
+              <span>公司</span>
+              <span class="badge" id="tenantBadge">未解析</span>
+            </div>
+            <div class="status-item">
+              <span>ASR 服务</span>
+              <span class="badge" id="asrBadge">未检测</span>
+            </div>
+            <div class="status-item">
+              <span>替换规则</span>
+              <span class="badge ready" id="ruleBadge">0 条</span>
+            </div>
+          </div>
+
+          <div class="record-zone">
+            <button class="mic-button" id="micBtn" type="button" disabled title="开始 / 停止录音">🎙</button>
+          </div>
+
+          <div class="actions">
+            <button class="btn" id="statusBtn" type="button" disabled>重新解析</button>
+            <button class="btn warn" id="clearBtn" type="button">清空结果</button>
+            <button class="btn danger" id="disconnectBtn" type="button" disabled>断开</button>
+          </div>
+
+          <h2 class="panel-title">替换词</h2>
+          <form class="rule-form" id="ruleForm">
+            <input id="fromText" placeholder="识别到" autocomplete="off">
+            <input id="toText" placeholder="替换为" autocomplete="off">
+            <button class="btn primary" type="submit">添加</button>
+          </form>
+          <div class="rules" id="rules"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">识别结果</h2>
+          <span class="badge" id="socketBadge">WebSocket 未连接</span>
+        </div>
+        <div class="panel-body">
+          <div class="result-grid">
+            <article class="text-box">
+              <div class="text-title">
+                <span>原始 ASR</span>
+                <span id="rawCount">0 字</span>
+              </div>
+              <div class="text-content placeholder" id="rawText">等待识别结果</div>
+            </article>
+            <article class="text-box">
+              <div class="text-title">
+                <span>替换后</span>
+                <span id="replacedCount">0 字</span>
+              </div>
+              <div class="text-content placeholder" id="replacedText">等待识别结果</div>
+            </article>
+          </div>
+          <pre class="log" id="log"></pre>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const TARGET_SAMPLE_RATE = 16000;
+    const STORAGE_KEY = 'solin-asr-replacement-test-v2';
+
+    const els = {
+      backendAddress: document.getElementById('backendAddress'),
+      deviceCodeInput: document.getElementById('deviceCodeInput'),
+      connectBtn: document.getElementById('connectBtn'),
+      statusBtn: document.getElementById('statusBtn'),
+      disconnectBtn: document.getElementById('disconnectBtn'),
+      clearBtn: document.getElementById('clearBtn'),
+      micBtn: document.getElementById('micBtn'),
+      ruleForm: document.getElementById('ruleForm'),
+      fromText: document.getElementById('fromText'),
+      toText: document.getElementById('toText'),
+      rules: document.getElementById('rules'),
+      phaseBadge: document.getElementById('phaseBadge'),
+      deviceBadge: document.getElementById('deviceBadge'),
+      tenantBadge: document.getElementById('tenantBadge'),
+      asrBadge: document.getElementById('asrBadge'),
+      ruleBadge: document.getElementById('ruleBadge'),
+      socketBadge: document.getElementById('socketBadge'),
+      rawText: document.getElementById('rawText'),
+      replacedText: document.getElementById('replacedText'),
+      rawCount: document.getElementById('rawCount'),
+      replacedCount: document.getElementById('replacedCount'),
+      log: document.getElementById('log'),
+    };
+
+    const state = {
+      serviceReady: false,
+      deviceReady: false,
+      phase: 'idle',
+      rules: [],
+      finalRaw: '',
+      liveRaw: '',
+      socket: null,
+      stream: null,
+      audioContext: null,
+      source: null,
+      processor: null,
+      gain: null,
+      finishTimer: null,
+      deviceStatus: null,
+      deviceCode: '',
+    };
+
+    function makeId() {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID();
+      }
+      return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function loadSavedState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        if (typeof saved.backendAddress === 'string' && saved.backendAddress.trim()) {
+          els.backendAddress.value = saved.backendAddress.trim();
+        }
+        if (typeof saved.deviceCode === 'string' && saved.deviceCode.trim()) {
+          state.deviceCode = saved.deviceCode.trim();
+        }
+        if (Array.isArray(saved.rules)) {
+          state.rules = saved.rules
+            .filter((item) => item && typeof item.from === 'string' && typeof item.to === 'string')
+            .map((item) => ({
+              id: String(item.id || makeId()),
+              from: item.from,
+              to: item.to,
+            }));
+        }
+      } catch {
+        state.rules = [];
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        backendAddress: els.backendAddress.value.trim(),
+        deviceCode: els.deviceCodeInput.value.trim(),
+        rules: state.rules,
+      }));
+    }
+
+    function log(message) {
+      const time = new Date().toLocaleTimeString();
+      els.log.textContent = `[${time}] ${message}\n${els.log.textContent}`.slice(0, 7000);
+    }
+
+    function setBadge(el, text, tone = '') {
+      el.textContent = text;
+      el.className = `badge${tone ? ` ${tone}` : ''}`;
+    }
+
+    function setPhase(phase) {
+      state.phase = phase;
+      const meta = {
+        idle: ['未连接', ''],
+        checking: ['解析中', 'busy'],
+        ready: ['可测试', 'ready'],
+        connecting: ['连接中', 'busy'],
+        listening: ['录音中', 'ready'],
+        finishing: ['整理中', 'busy'],
+        done: ['已完成', 'ready'],
+        error: ['异常', 'error'],
+      }[phase] || ['未知', 'warn'];
+      setBadge(els.phaseBadge, meta[0], meta[1]);
+      els.micBtn.disabled = !(state.deviceReady && state.serviceReady && ['ready', 'done', 'error'].includes(phase)) && phase !== 'listening';
+      els.connectBtn.disabled = ['checking', 'connecting', 'listening', 'finishing'].includes(phase);
+      els.statusBtn.disabled = !state.deviceReady || ['checking', 'connecting', 'listening', 'finishing'].includes(phase);
+      els.disconnectBtn.disabled = !state.deviceReady && !state.socket;
+      els.micBtn.classList.toggle('recording', phase === 'listening');
+    }
+
+    function normalizeBackendAddress(value) {
+      const trimmed = value.trim().replace(/\/+$/, '');
+      if (!trimmed) {
+        throw new Error('请填写后端 IP:PORT');
+      }
+      if (/^https?:\/\//i.test(trimmed)) {
+        const url = new URL(trimmed);
+        return url.host;
+      }
+      if (trimmed.includes('/')) {
+        return trimmed.split('/')[0];
+      }
+      return trimmed;
+    }
+
+    function currentDeviceCode() {
+      const value = els.deviceCodeInput.value.trim();
+      if (!value) {
+        throw new Error('请输入或提供设备号');
+      }
+      return value;
+    }
+
+    function readDeviceCodeFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return String(
+        params.get('deviceCode')
+        || params.get('device_code')
+        || params.get('deviceNo')
+        || params.get('device')
+        || ''
+      ).trim();
+    }
+
+    function renderDeviceCode() {
+      const value = els.deviceCodeInput.value.trim();
+      state.deviceCode = value;
+      if (value) {
+        els.deviceCodeInput.classList.remove('missing');
+        setBadge(els.deviceBadge, value, 'warn');
+        return;
+      }
+      els.deviceCodeInput.classList.add('missing');
+      setBadge(els.deviceBadge, '缺少设备号', 'warn');
+    }
+
+    function httpBase() {
+      return `http://${normalizeBackendAddress(els.backendAddress.value)}`;
+    }
+
+    function apiUrl(path) {
+      return `${httpBase()}/api/v1${path}`;
+    }
+
+    function wsUrl() {
+      const host = normalizeBackendAddress(els.backendAddress.value);
+      return `ws://${host}/ws/asr/test/?deviceCode=${encodeURIComponent(currentDeviceCode())}`;
+    }
+
+    async function apiFetch(path, options = {}) {
+      const headers = {
+        ...(options.headers || {}),
+      };
+      const response = await fetch(apiUrl(path), {
+        ...options,
+        headers,
+      });
+      const text = await response.text();
+      let payload = {};
+      if (text) {
+        try {
+          payload = JSON.parse(text);
+        } catch {
+          payload = { detail: text };
+        }
+      }
+      if (!response.ok) {
+        const message = payload.message || payload.detail || `${response.status} ${response.statusText}`;
+        throw new Error(message);
+      }
+      return payload;
+    }
+
+    async function resolveDeviceStatus() {
+      saveState();
+      setPhase('checking');
+      setBadge(els.deviceBadge, '解析中', 'busy');
+      setBadge(els.tenantBadge, '解析中', 'busy');
+      setBadge(els.asrBadge, '检测中', 'busy');
+      try {
+        const deviceCode = currentDeviceCode();
+        normalizeBackendAddress(els.backendAddress.value);
+        const status = await apiFetch('/ai-models/asr/device-status/', {
+          method: 'GET',
+          headers: {
+            'X-Device-Code': deviceCode,
+          },
+        });
+        state.deviceStatus = status;
+        state.deviceReady = true;
+        state.serviceReady = Boolean(status.configured && status.isActive);
+        setBadge(els.deviceBadge, status.deviceCode || deviceCode, 'ready');
+        setBadge(els.tenantBadge, status.tenantName || `公司 ${status.tenantId}`, 'ready');
+        setBadge(els.asrBadge, state.serviceReady ? '可用' : '未就绪', state.serviceReady ? 'ready' : 'warn');
+        setPhase(state.serviceReady ? 'ready' : 'error');
+        log(`设备 ${status.deviceCode || deviceCode} 已解析到公司 ${status.tenantName || status.tenantId || '-'}`);
+        if (status.applicationName) {
+          log(`绑定应用：${status.applicationName}`);
+        }
+      } catch (error) {
+        state.deviceReady = false;
+        state.serviceReady = false;
+        state.deviceStatus = null;
+        setBadge(els.deviceBadge, '失败', 'error');
+        setBadge(els.tenantBadge, '未解析', '');
+        setBadge(els.asrBadge, '未检测', '');
+        setPhase('error');
+        log(`设备解析失败：${error.message}`);
+      }
+    }
+
+    function downsampleBuffer(buffer, inputSampleRate) {
+      if (inputSampleRate === TARGET_SAMPLE_RATE) {
+        return buffer;
+      }
+      const sampleRateRatio = inputSampleRate / TARGET_SAMPLE_RATE;
+      const newLength = Math.round(buffer.length / sampleRateRatio);
+      const result = new Float32Array(newLength);
+      let offsetResult = 0;
+      let offsetBuffer = 0;
+
+      while (offsetResult < result.length) {
+        const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+        let accum = 0;
+        let count = 0;
+        for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i += 1) {
+          accum += buffer[i];
+          count += 1;
+        }
+        result[offsetResult] = count > 0 ? accum / count : 0;
+        offsetResult += 1;
+        offsetBuffer = nextOffsetBuffer;
+      }
+
+      return result;
+    }
+
+    function encodePCM16(samples) {
+      const output = new Int16Array(samples.length);
+      for (let i = 0; i < samples.length; i += 1) {
+        const sample = Math.max(-1, Math.min(1, samples[i]));
+        output[i] = sample < 0 ? sample * 0x8000 : sample * 0x7fff;
+      }
+      return output.buffer;
+    }
+
+    function stopAudio() {
+      if (state.processor) state.processor.disconnect();
+      if (state.source) state.source.disconnect();
+      if (state.gain) state.gain.disconnect();
+      if (state.stream) state.stream.getTracks().forEach((track) => track.stop());
+      if (state.audioContext) state.audioContext.close().catch(() => {});
+      state.processor = null;
+      state.source = null;
+      state.gain = null;
+      state.stream = null;
+      state.audioContext = null;
+    }
+
+    function closeSocket() {
+      if (state.finishTimer) {
+        clearTimeout(state.finishTimer);
+        state.finishTimer = null;
+      }
+      if (state.socket) {
+        state.socket.close();
+      }
+      state.socket = null;
+      setBadge(els.socketBadge, 'WebSocket 未连接', '');
+    }
+
+    function setupAudioStreaming(stream, socket) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) {
+        throw new Error('当前浏览器不支持麦克风采集');
+      }
+      const audioContext = new AudioContextClass();
+      const source = audioContext.createMediaStreamSource(stream);
+      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+      const silentGain = audioContext.createGain();
+      silentGain.gain.value = 0;
+
+      processor.onaudioprocess = (event) => {
+        if (socket.readyState !== WebSocket.OPEN || state.phase !== 'listening') {
+          return;
+        }
+        const channelData = event.inputBuffer.getChannelData(0);
+        const pcm = encodePCM16(downsampleBuffer(channelData, audioContext.sampleRate));
+        socket.send(pcm);
+      };
+
+      source.connect(processor);
+      processor.connect(silentGain);
+      silentGain.connect(audioContext.destination);
+
+      state.audioContext = audioContext;
+      state.source = source;
+      state.processor = processor;
+      state.gain = silentGain;
+    }
+
+    async function startRecording() {
+      if (!state.deviceReady) {
+        await resolveDeviceStatus();
+      }
+      if (!state.deviceReady || !state.serviceReady) {
+        log('设备或 ASR 服务未就绪，不能开始录音');
+        return;
+      }
+
+      clearTranscript();
+      setPhase('connecting');
+      setBadge(els.socketBadge, 'WebSocket 连接中', 'busy');
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        state.stream = stream;
+        const socket = new WebSocket(wsUrl());
+        socket.binaryType = 'arraybuffer';
+        state.socket = socket;
+
+        socket.onopen = () => {
+          setupAudioStreaming(stream, socket);
+          log('WebSocket 已连接，等待 ASR ready');
+        };
+
+        socket.onmessage = (event) => {
+          handleSocketMessage(event.data);
+        };
+
+        socket.onerror = () => {
+          log('WebSocket 连接异常');
+          setBadge(els.socketBadge, 'WebSocket 异常', 'error');
+          setPhase('error');
+          stopAudio();
+        };
+
+        socket.onclose = () => {
+          stopAudio();
+          setBadge(els.socketBadge, 'WebSocket 已关闭', '');
+          if (state.phase === 'connecting' || state.phase === 'listening') {
+            setPhase(state.finalRaw || state.liveRaw ? 'done' : 'ready');
+          }
+        };
+      } catch (error) {
+        log(`无法开始录音：${error.message}`);
+        setPhase('error');
+        setBadge(els.socketBadge, 'WebSocket 未连接', '');
+        stopAudio();
+        closeSocket();
+      }
+    }
+
+    function stopRecording() {
+      if (state.phase !== 'listening') {
+        return;
+      }
+      setPhase('finishing');
+      stopAudio();
+      if (state.socket && state.socket.readyState === WebSocket.OPEN) {
+        state.socket.send(JSON.stringify({ type: 'asr.finish' }));
+        state.finishTimer = setTimeout(() => {
+          log('ASR 未返回结束事件，已主动断开');
+          closeSocket();
+          setPhase('done');
+        }, 5000);
+      } else {
+        closeSocket();
+        setPhase('done');
+      }
+    }
+
+    function handleSocketMessage(raw) {
+      let payload;
+      try {
+        payload = JSON.parse(raw);
+      } catch {
+        return;
+      }
+
+      if (payload.type === 'asr.ready') {
+        setBadge(els.socketBadge, 'WebSocket 已连接', 'ready');
+        setPhase('listening');
+        log('ASR 已就绪，开始发送麦克风音频');
+        return;
+      }
+
+      if (payload.type === 'asr.transcript' && payload.text) {
+        if (payload.final) {
+          state.finalRaw = `${state.finalRaw}${state.finalRaw ? '\n' : ''}${payload.text}`;
+          state.liveRaw = '';
+        } else {
+          state.liveRaw = payload.text;
+        }
+        renderTranscript();
+        return;
+      }
+
+      if (payload.type === 'asr.done') {
+        log('ASR 测试完成');
+        setPhase('done');
+        stopAudio();
+        closeSocket();
+        return;
+      }
+
+      if (payload.type === 'asr.error') {
+        log(`ASR 错误：${payload.message || '未知错误'}`);
+        setPhase('error');
+        setBadge(els.socketBadge, 'WebSocket 异常', 'error');
+        stopAudio();
+        closeSocket();
+      }
+    }
+
+    function currentRawText() {
+      return `${state.finalRaw}${state.finalRaw && state.liveRaw ? '\n' : ''}${state.liveRaw}`.trim();
+    }
+
+    function applyRules(text) {
+      return state.rules.reduce((result, rule) => {
+        if (!rule.from) {
+          return result;
+        }
+        return result.split(rule.from).join(rule.to);
+      }, text);
+    }
+
+    function renderTranscript() {
+      const raw = currentRawText();
+      const replaced = applyRules(raw);
+      updateTextBox(els.rawText, raw, '等待识别结果');
+      updateTextBox(els.replacedText, replaced, '等待识别结果');
+      els.rawCount.textContent = `${raw.length} 字`;
+      els.replacedCount.textContent = `${replaced.length} 字`;
+    }
+
+    function updateTextBox(el, value, placeholder) {
+      el.textContent = value || placeholder;
+      el.classList.toggle('placeholder', !value);
+    }
+
+    function clearTranscript() {
+      state.finalRaw = '';
+      state.liveRaw = '';
+      renderTranscript();
+    }
+
+    function addRule(from, to) {
+      const cleanFrom = from.trim();
+      const cleanTo = to.trim();
+      if (!cleanFrom) {
+        els.fromText.focus();
+        return;
+      }
+      const existing = state.rules.find((rule) => rule.from === cleanFrom);
+      if (existing) {
+        existing.to = cleanTo;
+      } else {
+        state.rules.push({
+          id: makeId(),
+          from: cleanFrom,
+          to: cleanTo,
+        });
+      }
+      saveState();
+      renderRules();
+      renderTranscript();
+      els.fromText.value = '';
+      els.toText.value = '';
+      els.fromText.focus();
+    }
+
+    function deleteRule(id) {
+      state.rules = state.rules.filter((rule) => rule.id !== id);
+      saveState();
+      renderRules();
+      renderTranscript();
+    }
+
+    function renderRules() {
+      els.ruleBadge.textContent = `${state.rules.length} 条`;
+      if (!state.rules.length) {
+        els.rules.innerHTML = '<div class="empty">暂无替换词</div>';
+        return;
+      }
+      els.rules.innerHTML = '';
+      state.rules.forEach((rule) => {
+        const row = document.createElement('div');
+        row.className = 'rule-row';
+        row.innerHTML = `
+          <span class="rule-token"></span>
+          <span class="arrow">→</span>
+          <span class="rule-token"></span>
+          <button class="icon-btn" type="button" title="删除">×</button>
+        `;
+        row.children[0].textContent = rule.from;
+        row.children[2].textContent = rule.to || '空文本';
+        row.children[3].addEventListener('click', () => deleteRule(rule.id));
+        els.rules.appendChild(row);
+      });
+    }
+
+    function resetDeviceState() {
+      state.deviceReady = false;
+      state.serviceReady = false;
+      state.deviceStatus = null;
+      renderDeviceCode();
+      setBadge(els.tenantBadge, '未解析', '');
+      setBadge(els.asrBadge, '未检测', '');
+      setPhase('idle');
+    }
+
+    els.connectBtn.addEventListener('click', () => {
+      resolveDeviceStatus();
+    });
+
+    els.statusBtn.addEventListener('click', () => {
+      resolveDeviceStatus();
+    });
+
+    els.disconnectBtn.addEventListener('click', () => {
+      stopAudio();
+      closeSocket();
+      resetDeviceState();
+      log('已断开');
+    });
+
+    els.clearBtn.addEventListener('click', () => {
+      clearTranscript();
+      log('已清空识别结果');
+    });
+
+    els.micBtn.addEventListener('click', () => {
+      if (state.phase === 'listening') {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    });
+
+    els.ruleForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      addRule(els.fromText.value, els.toText.value);
+    });
+
+    els.backendAddress.addEventListener('change', () => {
+      saveState();
+      resetDeviceState();
+    });
+
+    els.deviceCodeInput.addEventListener('input', () => {
+      saveState();
+      resetDeviceState();
+    });
+
+    loadSavedState();
+    const urlDeviceCode = readDeviceCodeFromUrl();
+    if (urlDeviceCode) {
+      state.deviceCode = urlDeviceCode;
+    }
+    els.deviceCodeInput.value = state.deviceCode;
+    renderDeviceCode();
+    renderRules();
+    renderTranscript();
+    setPhase('idle');
+    log('页面已加载');
+  </script>
+</body>
+</html>

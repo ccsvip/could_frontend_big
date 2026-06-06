@@ -84,6 +84,34 @@ class ASRConfig(models.Model):
         return instance
 
 
+class ASRReplacementRule(models.Model):
+    source_text = models.CharField('原词', max_length=128)
+    replacement_text = models.CharField('替换词', max_length=128)
+    is_active = models.BooleanField('是否启用', default=True)
+    sort_order = models.PositiveIntegerField('排序', default=0)
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='+',
+        verbose_name='所属公司',
+    )
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        verbose_name = 'ASR 替换词'
+        verbose_name_plural = 'ASR 替换词'
+        ordering = ['sort_order', 'id']
+        constraints = [
+            models.UniqueConstraint(fields=['tenant', 'source_text'], name='uniq_asr_replacement_rule_tenant_source'),
+        ]
+
+    def __str__(self):
+        return f'{self.source_text} -> {self.replacement_text}'
+
+
 class ChatConversation(models.Model):
     """聊天会话"""
     title = models.CharField('会话标题', max_length=256, default='新对话')

@@ -1,7 +1,7 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from .models import ASRConfig, ChatConversation, ChatMessage, LLMProvider
+from .models import ASRConfig, ASRReplacementRule, ChatConversation, ChatMessage, LLMProvider
 
 
 class LLMProviderSerializer(serializers.ModelSerializer):
@@ -75,6 +75,40 @@ class ASRConfigSerializer(serializers.ModelSerializer):
         if validated_data.get('api_key', None) == '':
             validated_data.pop('api_key', None)
         return super().update(instance, validated_data)
+
+
+class ASRReplacementRuleSerializer(serializers.ModelSerializer):
+    sourceText = serializers.CharField(source='source_text', max_length=128)
+    replacementText = serializers.CharField(source='replacement_text', max_length=128)
+    isActive = serializers.BooleanField(source='is_active', required=False)
+    sortOrder = serializers.IntegerField(source='sort_order', required=False, min_value=0)
+    tenantId = serializers.IntegerField(source='tenant_id', read_only=True)
+
+    class Meta:
+        model = ASRReplacementRule
+        fields = [
+            'id',
+            'sourceText',
+            'replacementText',
+            'isActive',
+            'sortOrder',
+            'tenantId',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ('id', 'tenantId', 'created_at', 'updated_at')
+
+    def validate_sourceText(self, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('原词不能为空')
+        return value
+
+    def validate_replacementText(self, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('替换词不能为空')
+        return value
 
 
 class ChatMessageSerializer(serializers.ModelSerializer):

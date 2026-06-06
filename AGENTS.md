@@ -53,6 +53,7 @@ could_frontend/
 ## CONVENTIONS
 
 - **Docker-only 执行面**：所有运行时命令（启动 / 测试 / 迁移 / 安装依赖 / 看日志 / 进 shell）一律走 `docker compose ...` 或 `docker compose exec <service> ...`。详见上文 ENVIRONMENT MANDATE。
+- **安卓运行时无登录**：安卓端不登录后台、不拿后台 JWT，也不保存设备 token。运行时链路（含 ASR）只提交设备号 `deviceCode`；HTTP 请求优先用 `X-Device-Code` 请求头，后端按 `Device -> tenant` 解析公司上下文。
 - **双 .env 边界**：根 `.env` **只**有 `*_PORT`（宿主端口），不要塞业务变量；后端运行时配置全部进 `backend/.env`，前端进 `web/.env`。`docker-compose.yaml` 不会把根 `.env` 注入容器进程。
 - **容器内主机名**：后端 / Celery 访问数据库写 `db`，访问缓存写 `redis`，前端代理目标写 `backend:8000`。**不要**用 `localhost`（编排网络下指向容器自身）。
 - **重启策略统一**：所有服务 `restart: always`，依赖宿主或 docker daemon 重启后自动恢复。新增服务必须沿用。
@@ -66,6 +67,7 @@ could_frontend/
 - ❌ 把业务变量加到根 `.env`：根只放宿主端口，容器进程读不到。
 - ❌ 跳过 backend healthcheck 让 worker 直接启动：worker 启动命令含 `python manage.py migrate --check`，未迁移会立即退出循环重启。
 - ❌ 在宿主跑 `npm install` / `npm run dev` 调试前端：违反 ENVIRONMENT MANDATE。`web` 容器已挂 `/app/node_modules` 匿名卷隔离依赖，宿主跑 `npm install` 既污染锁文件又跟容器版本漂移。装新依赖一律 `docker compose exec web npm install <pkg>`。
+- ❌ 让安卓端登录后台、携带后台 JWT 或设备 token 调运行时 / ASR 接口：安卓没有后台账号体系，必须按 `deviceCode` 解析设备和公司。
 - ❌ 上线把 backend 启动命令的 `uvicorn config.asgi:application` 换成 `wsgi`：聊天室 SSE 流式会立即退化成阻塞返回（详 `backend/CLAUDE.md`）。
 - ❌ 修改 backend 启动命令时丢掉 `seed_devices` / `seed_operations_periodic_tasks`：缺设备种子 + 周期任务，运维面板与设备列表会空。
 - ❌ 修改 backend 启动命令时丢掉自动创建 superuser 的那段 inline shell：开发环境登录约定 `admin / admin123456`，丢了会卡 `/admin/` 入口。
