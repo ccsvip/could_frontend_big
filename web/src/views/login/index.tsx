@@ -308,19 +308,6 @@ export const LoginPage = () => {
                   </div>
                 </div>
 
-                {/* 记住我 */}
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
-                    type="checkbox"
-                    className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-slate-300 rounded cursor-pointer transition-colors"
-                  />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-600 cursor-pointer select-none">
-                    30天内免登录
-                  </label>
-                </div>
-
                 {/* 登录按钮 */}
                 <button
                   type="submit"
