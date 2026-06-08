@@ -208,18 +208,18 @@ export const AsrSettingsPage = () => {
               </Form.Item>
 
               <Form.Item
-                name="isActive"
                 label={
                   <span className="flex items-center gap-1.5 font-medium text-slate-700">
                     <InfoCircleOutlined className="text-slate-400" /> 启用服务状态
                   </span>
                 }
-                valuePropName="checked"
                 className="mb-5"
               >
                 <div className="flex items-center h-10 px-3 border border-slate-200 rounded-lg bg-slate-50/50 justify-between">
                   <span className="text-xs text-slate-500">是否对全平台启用此 ASR 配置</span>
-                  <Switch checkedChildren="开启" unCheckedChildren="关闭" />
+                  <Form.Item name="isActive" valuePropName="checked" noStyle>
+                    <Switch checkedChildren="开启" unCheckedChildren="关闭" />
+                  </Form.Item>
                 </div>
               </Form.Item>
             </div>
@@ -367,4 +367,3 @@ export const AsrSettingsPage = () => {
     </div>
   );
 };
-

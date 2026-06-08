@@ -12,21 +12,21 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='asrconfig',
-            options={'verbose_name': 'ASR 閰嶇疆', 'verbose_name_plural': 'ASR 閰嶇疆'},
+            options={'verbose_name': 'ASR 配置', 'verbose_name_plural': 'ASR 配置'},
         ),
         migrations.AlterField(
             model_name='asrconfig',
             name='is_active',
-            field=models.BooleanField(default=True, verbose_name='鏄\ue21a惁鍚\ue21c敤'),
+            field=models.BooleanField(default=True, verbose_name='是否启用'),
         ),
         migrations.AlterField(
             model_name='asrconfig',
             name='model',
-            field=models.CharField(blank=True, default='', max_length=128, verbose_name='妯″瀷鍚嶇О'),
+            field=models.CharField(blank=True, default='', max_length=128, verbose_name='模型名称'),
         ),
         migrations.AlterField(
             model_name='asrconfig',
             name='updated_at',
-            field=models.DateTimeField(auto_now=True, verbose_name='鏇存柊鏃堕棿'),
+            field=models.DateTimeField(auto_now=True, verbose_name='更新时间'),
         ),
     ]

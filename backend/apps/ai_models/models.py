@@ -51,13 +51,13 @@ class ASRConfig(models.Model):
     workspace_id = models.CharField('Workspace ID', max_length=128, blank=True, default='')
     api_key = models.CharField('API Key', max_length=512, blank=True, default='')
     base_url = models.CharField('WebSocket URL', max_length=512, blank=True, default='')
-    model = models.CharField('妯″瀷鍚嶇О', max_length=128, blank=True, default='')
-    is_active = models.BooleanField('鏄惁鍚敤', default=True)
-    updated_at = models.DateTimeField('鏇存柊鏃堕棿', auto_now=True)
+    model = models.CharField('模型名称', max_length=128, blank=True, default='')
+    is_active = models.BooleanField('是否启用', default=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
 
     class Meta:
-        verbose_name = 'ASR 閰嶇疆'
-        verbose_name_plural = 'ASR 閰嶇疆'
+        verbose_name = 'ASR 配置'
+        verbose_name_plural = 'ASR 配置'
 
     def __str__(self):
         return f'ASR Config ({self.model or "unset"})'
