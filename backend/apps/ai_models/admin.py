@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import ChatConversation, ChatMessage, LLMProvider
+from .models import AgentApplication, ChatConversation, ChatMessage, LLMProvider
 
 
 @admin.register(LLMProvider)
@@ -12,10 +12,19 @@ class LLMProviderAdmin(admin.ModelAdmin):
 
 @admin.register(ChatConversation)
 class ChatConversationAdmin(admin.ModelAdmin):
-    list_display = ('title', 'user', 'llm_provider', 'model_name', 'created_at', 'updated_at')
-    list_filter = ('llm_provider',)
+    list_display = ('title', 'user', 'application', 'llm_provider', 'model_name', 'created_at', 'updated_at')
+    list_filter = ('application', 'llm_provider')
     search_fields = ('title', 'user__username')
-    raw_id_fields = ('user', 'llm_provider')
+    raw_id_fields = ('user', 'application', 'llm_provider')
+
+
+@admin.register(AgentApplication)
+class AgentApplicationAdmin(admin.ModelAdmin):
+    list_display = ('name', 'llm_provider', 'model_name', 'is_active', 'created_by', 'created_at', 'updated_at')
+    list_filter = ('is_active', 'llm_provider')
+    search_fields = ('name', 'description', 'system_prompt')
+    raw_id_fields = ('llm_provider', 'created_by', 'tenant')
+    filter_horizontal = ('knowledge_documents',)
 
 
 @admin.register(ChatMessage)

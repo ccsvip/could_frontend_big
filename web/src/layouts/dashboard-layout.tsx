@@ -1,5 +1,6 @@
 import {
   ApartmentOutlined,
+  AppstoreOutlined,
   AudioOutlined,
   CheckCircleOutlined,
   CloudOutlined,
@@ -48,6 +49,7 @@ const menuIconMap = {
   DesktopOutlined: <DesktopOutlined />,
   CheckCircleOutlined: <CheckCircleOutlined />,
   ApartmentOutlined: <ApartmentOutlined />,
+  AppstoreOutlined: <AppstoreOutlined />,
   TeamOutlined: <TeamOutlined />,
   SolutionOutlined: <SolutionOutlined />,
   PictureOutlined: <PictureOutlined />,
@@ -82,6 +84,7 @@ type SuperAdminTenantModule = {
 
 const SUPER_ADMIN_TENANT_MODULES: ReadonlyArray<SuperAdminTenantModule> = [
   { segment: 'devices', label: '设备管理', icon: 'DesktopOutlined' },
+  { segment: 'applications', label: '应用管理', icon: 'AppstoreOutlined' },
   {
     segment: 'resources',
     label: '资源管理',
@@ -190,6 +193,7 @@ const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
 
 const commandWorkspacePaths = new Set(['/commands/groups', 'commands/groups']);
 const commandInlineWorkspacePaths = new Set(['/commands/control', 'commands/control', '/commands/tasks', 'commands/tasks']);
+const isApplicationMenuPath = (path: string) => path === '/applications' || path.endsWith('/applications');
 
 const filterVisibleMenus = (menus: AppMenu[]): AppMenu[] => {
   return menus
@@ -260,6 +264,10 @@ const findMenuTrail = (menus: AppMenu[], pathname: string, ancestors: AppMenu[] 
       if (childTrail) {
         return childTrail;
       }
+    }
+
+    if (isApplicationMenuPath(menu.path || menu.key) && pathname.startsWith(`${menu.path || menu.key}/`)) {
+      return trail;
     }
 
     if (isCommandRoot && pathname.startsWith('/commands/')) {

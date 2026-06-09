@@ -47,6 +47,9 @@ const TtsManagementPage = lazy(() =>
 const ChatRoomPage = lazy(() =>
   import('../views/chat-room').then((module) => ({ default: module.ChatRoomPage })),
 );
+const ApplicationManagementPage = lazy(() =>
+  import('../views/application-management').then((module) => ({ default: module.ApplicationManagementPage })),
+);
 const TenantManagementPage = lazy(() =>
   import('../views/tenant-management').then((module) => ({ default: module.TenantManagementPage })),
 );
@@ -328,6 +331,8 @@ export const AppRouter = () => {
             { path: 'resources/voice-tones', element: <VoiceToneManagementPage /> },
             { path: 'resources/models', element: <ModelManagementPage /> },
             { path: 'knowledge-base', element: <KnowledgeBasePage /> },
+            { path: 'applications', element: <ApplicationManagementPage /> },
+            { path: 'applications/:applicationId', element: <ApplicationManagementPage /> },
             { path: 'commands', element: <CommandWorkspacePage /> },
             { path: 'ai-models', element: <Navigate to="ai-models/llm" replace /> },
             { path: 'ai-models/asr', element: <AsrManagementPage /> },
@@ -381,6 +386,22 @@ export const AppRouter = () => {
           element: (
             <PermissionGuard permission="knowledge_base.view">
               <KnowledgeBasePage />
+            </PermissionGuard>
+          ),
+        },
+        {
+          path: 'applications',
+          element: (
+            <PermissionGuard permission="agent_applications.view">
+              <ApplicationManagementPage />
+            </PermissionGuard>
+          ),
+        },
+        {
+          path: 'applications/:applicationId',
+          element: (
+            <PermissionGuard permission="agent_applications.view">
+              <ApplicationManagementPage />
             </PermissionGuard>
           ),
         },

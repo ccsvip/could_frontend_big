@@ -111,6 +111,62 @@ class ASRReplacementRule(models.Model):
         return f'{self.source_text} -> {self.replacement_text}'
 
 
+class AgentApplication(models.Model):
+    """LLM-backed application configured with prompt and knowledge documents."""
+    name = models.CharField('应用名称', max_length=128)
+    description = models.CharField('应用说明', max_length=255, blank=True, default='')
+    llm_provider = models.ForeignKey(
+        LLMProvider,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='agent_applications',
+        verbose_name='LLM 供应商',
+    )
+    model_name = models.CharField('模型名称', max_length=128, blank=True, default='')
+    system_prompt = models.TextField('系统提示词', blank=True, default='')
+    temperature = models.FloatField('Temperature', default=0.7)
+    max_tokens = models.PositiveIntegerField('最大输出 Tokens', default=1000)
+    knowledge_documents = models.ManyToManyField(
+        'knowledge_base.KnowledgeDocument',
+        blank=True,
+        related_name='agent_applications',
+        verbose_name='绑定知识库文档',
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name='created_agent_applications',
+        verbose_name='创建人',
+        null=True,
+        blank=True,
+    )
+    is_active = models.BooleanField('是否启用', default=True)
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='+',
+        verbose_name='所属公司',
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        verbose_name = '智能体应用'
+        verbose_name_plural = '智能体应用'
+        ordering = ['-updated_at', '-id']
+        constraints = [
+            models.UniqueConstraint(fields=['tenant', 'name'], name='unique_agent_application_name_per_tenant'),
+        ]
+
+    def __str__(self):
+        return self.name
+
+
 class ChatConversation(models.Model):
     """聊天会话"""
     title = models.CharField('会话标题', max_length=256, default='新对话')
@@ -133,6 +189,14 @@ class ChatConversation(models.Model):
     system_prompt = models.TextField('系统提示词', blank=True, default='')
     temperature = models.FloatField('Temperature', default=0.7)
     max_tokens = models.PositiveIntegerField('最大输出Tokens', default=1000)
+    application = models.ForeignKey(
+        AgentApplication,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='conversations',
+        verbose_name='绑定应用',
+    )
     tenant = models.ForeignKey(
         'tenants.Tenant',
         on_delete=models.CASCADE,

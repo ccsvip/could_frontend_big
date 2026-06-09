@@ -12,6 +12,7 @@ export type ChatMessage = {
 export type ChatConversationListItem = {
   id: number;
   title: string;
+  applicationId: number | null;
   llmProviderId: number | null;
   llmProviderName: string | null;
   model_name: string;
@@ -25,6 +26,7 @@ export type ChatConversationListItem = {
 export type ChatConversationDetail = {
   id: number;
   title: string;
+  applicationId: number | null;
   llmProviderId: number | null;
   llmProviderName: string | null;
   modelName: string;
