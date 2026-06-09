@@ -409,14 +409,37 @@ export const ApplicationManagementPage = () => {
 
   const renderApplicationList = () => (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
-          <Typography.Title level={2} className="!mb-1 !text-slate-950">
-            应用工作室
-          </Typography.Title>
-          <Typography.Text className="text-slate-500">
-            在这里构建、部署和管理您的 Gemini 专属智能体
-          </Typography.Text>
+      {/* Header Banner */}
+      <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="relative flex-1 overflow-hidden rounded-2xl bg-gradient-to-r from-slate-950 to-slate-900 border border-slate-800 p-6 md:p-8 text-white shadow-card">
+          <div className="relative z-10">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2 flex items-center gap-2">
+              应用工作室 <span className="inline-flex items-center rounded-full bg-brand-500/10 px-2.5 py-0.5 text-xs font-medium text-brand-400 border border-brand-500/20">Studio</span>
+            </h1>
+            <p className="text-slate-400 text-sm md:text-base max-w-xl">
+              在这里构建、部署和管理您的专属智能体，连接底层大语言模型与专属知识资产。
+            </p>
+          </div>
+          <div className="absolute -right-8 -bottom-10 opacity-5 pointer-events-none flex items-center justify-center">
+            <RobotOutlined className="text-[180px] text-white" />
+          </div>
+        </div>
+      </div>
+
+      {/* Filter and Create Toolbar */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-white/60 backdrop-blur border border-slate-200/50 p-4 rounded-2xl shadow-sm">
+        <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
+          <Input
+            size="large"
+            allowClear
+            prefix={<SearchOutlined className="text-slate-400" />}
+            placeholder="搜索应用名称或描述..."
+            value={searchValue}
+            onChange={(event) => setSearchValue(event.target.value)}
+            onPressEnter={handleSearch}
+            className="max-w-md !rounded-xl border-slate-200/80 hover:border-brand-500 focus:border-brand-500 shadow-soft"
+          />
+          <Typography.Text className="text-slate-400 text-sm pl-2">共 {applicationTotal} 个应用</Typography.Text>
         </div>
         <Button
           type="primary"
@@ -424,94 +447,101 @@ export const ApplicationManagementPage = () => {
           icon={<PlusOutlined />}
           disabled={!canCreate}
           onClick={() => setCreateOpen(true)}
-          className="!h-11 !rounded-lg"
+          className="!h-11 !rounded-xl bg-gradient-to-r from-brand-500 to-teal-600 hover:from-brand-600 hover:to-teal-700 border-0 shadow-sm shadow-brand-500/20"
         >
           创建应用
         </Button>
       </div>
 
-      <div className="flex flex-col gap-3 border-b border-slate-200 pb-6 md:flex-row md:items-center md:justify-between">
-        <Input
-          size="large"
-          allowClear
-          prefix={<SearchOutlined className="text-slate-400" />}
-          placeholder="搜索应用名称或描述..."
-          value={searchValue}
-          onChange={(event) => setSearchValue(event.target.value)}
-          onPressEnter={handleSearch}
-          className="max-w-xl !rounded-lg"
-        />
-        <Typography.Text className="text-slate-500">共 {applicationTotal} 个应用</Typography.Text>
-      </div>
-
+      {/* Applications Grid */}
       <Spin spinning={listLoading}>
         {applications.length > 0 ? (
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {applications.map((application) => (
               <div
                 key={application.id}
-                className="group flex min-h-[260px] flex-col rounded-lg border border-slate-200 bg-white p-6 shadow-sm transition hover:border-indigo-200 hover:shadow-md"
+                className="group relative flex min-h-[280px] flex-col rounded-2xl border border-slate-200/60 bg-white p-6 shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1 hover:border-brand-200 overflow-hidden"
               >
+                {/* Accent line shown on hover */}
+                <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-brand-400 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                
                 <div className="mb-6 flex items-start justify-between gap-3">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-indigo-50 text-2xl text-indigo-600">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-brand-50 text-2xl text-brand-600 transition-all duration-300 group-hover:bg-brand-500 group-hover:text-white shadow-sm">
                     <AppstoreOutlined />
                   </div>
                   {canDelete && (
                     <Popconfirm
                       title="删除应用"
-                      description="删除后不可恢复"
+                      description="确定要删除该应用吗？删除后不可恢复。"
                       okText="删除"
                       cancelText="取消"
                       onConfirm={() => void handleDelete(application)}
                     >
-                      <Button type="text" danger icon={<DeleteOutlined />} />
+                      <Button
+                        type="text"
+                        danger
+                        icon={<DeleteOutlined />}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:!bg-red-50"
+                      />
                     </Popconfirm>
                   )}
                 </div>
-                <Typography.Title level={4} className="!mb-3 !text-slate-950">
+
+                <Typography.Title level={4} className="!mb-2.5 !text-slate-900 group-hover:text-brand-600 transition-colors duration-200">
                   {application.name}
                 </Typography.Title>
-                <Typography.Paragraph ellipsis={{ rows: 2 }} className="!mb-5 !text-slate-500">
+
+                <Typography.Paragraph ellipsis={{ rows: 2 }} className="!mb-6 !text-slate-500 text-sm leading-relaxed">
                   {application.description || '暂无描述'}
                 </Typography.Paragraph>
-                <div className="mt-auto border-t border-slate-100 pt-4">
-                  <div className="mb-4 flex flex-wrap gap-2 text-xs text-slate-500">
-                    <span className="rounded bg-slate-100 px-2 py-1 font-mono text-slate-700">
+
+                <div className="mt-auto border-t border-slate-100/80 pt-4 flex flex-col gap-3">
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    <span className="rounded-full bg-slate-50 border border-slate-100 px-2.5 py-0.5 font-mono text-slate-600">
                       Temp: {application.temperature}
                     </span>
-                    <span className="rounded bg-emerald-50 px-2 py-1 text-emerald-700">
+                    <span className="rounded-full bg-brand-50 border border-brand-100/50 px-2.5 py-0.5 text-brand-700 font-medium">
                       {application.knowledgeDocumentIds.length} 个知识库
                     </span>
                   </div>
-                  <Button
-                    type="link"
-                    className="!px-0 !font-semibold !text-slate-600 group-hover:!text-indigo-600"
-                    onClick={() => navigate(`${application.id}`)}
-                  >
-                    去编排 <ArrowRightOutlined />
-                  </Button>
+
+                  <div className="flex justify-between items-center mt-1">
+                    <Button
+                      type="link"
+                      className="!px-0 !font-semibold !text-slate-500 group-hover:!text-brand-600 flex items-center gap-1 transition-all duration-200"
+                      onClick={() => navigate(`${application.id}`)}
+                    >
+                      <span>去编排</span>
+                      <ArrowRightOutlined className="transition-transform duration-200 group-hover:translate-x-1" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="rounded-lg border border-dashed border-slate-200 bg-white py-16">
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-white py-16">
             <Empty description="暂无应用" />
           </div>
         )}
       </Spin>
 
       {applicationTotal > PAGE_SIZE && (
-        <div className="flex justify-center gap-3">
-          <Button disabled={applicationPage <= 1} onClick={() => setApplicationPage((page) => page - 1)}>
+        <div className="flex justify-center items-center gap-4 mt-8">
+          <Button
+            disabled={applicationPage <= 1}
+            onClick={() => setApplicationPage((page) => page - 1)}
+            className="!rounded-lg hover:!border-brand-500 hover:!text-brand-500"
+          >
             上一页
           </Button>
-          <Typography.Text className="self-center text-slate-500">
+          <Typography.Text className="text-slate-500 font-medium">
             {applicationPage} / {normalizePageCount(applicationTotal, PAGE_SIZE)}
           </Typography.Text>
           <Button
             disabled={applicationPage >= normalizePageCount(applicationTotal, PAGE_SIZE)}
             onClick={() => setApplicationPage((page) => page + 1)}
+            className="!rounded-lg hover:!border-brand-500 hover:!text-brand-500"
           >
             下一页
           </Button>
@@ -523,16 +553,18 @@ export const ApplicationManagementPage = () => {
   const renderChatMessage = (chatMessage: ChatMessage) => {
     const isUser = chatMessage.role === 'user';
     return (
-      <div key={chatMessage.id} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-        <div className={`flex max-w-[78%] gap-2.5 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+      <div key={chatMessage.id} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
+        <div className={`flex max-w-[85%] gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
           <Avatar
-            size={32}
+            size={36}
             icon={isUser ? <MessageOutlined /> : <RobotOutlined />}
-            className={isUser ? '!bg-indigo-600' : '!bg-emerald-500'}
+            className={isUser ? '!bg-brand-600 shadow-sm border border-brand-500/20' : '!bg-emerald-600 shadow-sm border border-emerald-500/20'}
           />
           <div
-            className={`rounded-lg px-4 py-2.5 text-sm leading-relaxed ${
-              isUser ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-800'
+            className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-soft ${
+              isUser
+                ? 'bg-gradient-to-br from-brand-500 to-brand-600 text-white rounded-tr-none'
+                : 'bg-white border border-slate-100 text-slate-800 rounded-tl-none'
             }`}
           >
             {isUser ? (
@@ -541,7 +573,7 @@ export const ApplicationManagementPage = () => {
               <ChatMarkdown content={chatMessage.content} className="chat-markdown" />
             )}
             {chatMessage.id === -1 && (
-              <span className="ml-1 inline-block h-4 w-0.5 animate-pulse bg-slate-400 align-middle" />
+              <span className="ml-1 inline-block h-4 w-0.5 animate-pulse bg-brand-400 align-middle" />
             )}
           </div>
         </div>
@@ -551,16 +583,24 @@ export const ApplicationManagementPage = () => {
 
   const renderApplicationWorkspace = () => (
     <div className="flex min-h-[calc(100vh-150px)] flex-col gap-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      {/* Workspace Header */}
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between bg-white/60 backdrop-blur border border-slate-200/50 p-4 rounded-2xl shadow-sm">
         <div className="flex min-w-0 items-center gap-3">
-          <Button icon={<ArrowLeftOutlined />} onClick={() => navigateToApplicationList()} />
+          <Button
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigateToApplicationList()}
+            className="!rounded-full hover:!border-brand-500 hover:!text-brand-500 flex items-center justify-center h-9 w-9"
+          />
           <div className="min-w-0">
-            <Typography.Title level={3} className="!mb-0 truncate !text-slate-950">
+            <Typography.Title level={4} className="!mb-0.5 truncate !text-slate-900 !font-bold">
               {selectedApplication?.name || '应用编排'}
             </Typography.Title>
-            <Typography.Text className="text-slate-500">
-              {selectedApplication?.llmProviderName || '未选择模型供应商'}
-            </Typography.Text>
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse" />
+              <Typography.Text className="text-slate-400 text-xs font-medium">
+                {selectedApplication?.llmProviderName || '未选择模型供应商'}
+              </Typography.Text>
+            </div>
           </div>
         </div>
         <Button
@@ -569,41 +609,49 @@ export const ApplicationManagementPage = () => {
           loading={configSaving}
           disabled={!canUpdate}
           onClick={() => void handleSaveConfig()}
-          className="!rounded-lg"
+          className="!h-10 !rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 border-0 shadow-sm shadow-brand-500/20 px-5"
         >
           保存配置
         </Button>
       </div>
 
       <Spin spinning={detailLoading || optionsLoading}>
-        <div className="grid min-h-[calc(100vh-220px)] gap-4 xl:grid-cols-[390px_minmax(0,1fr)]">
-          <div className="flex min-h-0 flex-col rounded-lg border border-slate-200 bg-white">
-            <div className="border-b border-slate-100 px-5 py-4">
-              <Typography.Text strong>应用配置</Typography.Text>
+        <div className="grid min-h-[calc(100vh-230px)] gap-4 xl:grid-cols-[390px_minmax(0,1fr)]">
+          {/* Left panel - Config */}
+          <div className="flex min-h-0 flex-col rounded-2xl border border-slate-200/60 bg-white shadow-card overflow-hidden">
+            <div className="border-b border-slate-100 px-6 py-4 bg-slate-50/50 flex items-center justify-between">
+              <Typography.Text className="text-slate-900 font-bold text-sm">应用配置</Typography.Text>
+              <span className="text-xs text-slate-400 font-medium">Configuration</span>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-              <Form form={configForm} layout="vertical" initialValues={{ temperature: DEFAULT_TEMPERATURE, maxTokens: DEFAULT_MAX_TOKENS, isActive: true }}>
-                <Form.Item name="name" label="应用名称" rules={[{ required: true, message: '请输入应用名称' }]}>
-                  <Input disabled={!canUpdate} maxLength={128} />
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+              <Form
+                form={configForm}
+                layout="vertical"
+                initialValues={{ temperature: DEFAULT_TEMPERATURE, maxTokens: DEFAULT_MAX_TOKENS, isActive: true }}
+                className="space-y-4"
+              >
+                <Form.Item name="name" label={<span className="text-slate-700 font-semibold text-xs">应用名称</span>} rules={[{ required: true, message: '请输入应用名称' }]}>
+                  <Input disabled={!canUpdate} maxLength={128} className="!rounded-lg" />
                 </Form.Item>
-                <Form.Item name="description" label="应用描述">
-                  <Input.TextArea disabled={!canUpdate} rows={2} maxLength={255} />
+                <Form.Item name="description" label={<span className="text-slate-700 font-semibold text-xs">应用描述</span>}>
+                  <Input.TextArea disabled={!canUpdate} rows={2} maxLength={255} className="!rounded-lg" />
                 </Form.Item>
-                <Form.Item name="llmProviderId" label="模型供应商">
+                <Form.Item name="llmProviderId" label={<span className="text-slate-700 font-semibold text-xs">模型供应商</span>}>
                   <Select
                     allowClear
                     disabled={!canUpdate}
                     options={providers.map((provider) => ({ label: provider.name, value: provider.id }))}
                     onChange={handleProviderChange}
+                    className="!rounded-lg"
                   />
                 </Form.Item>
-                <Form.Item name="modelName" label="模型">
-                  <Select allowClear disabled={!canUpdate || !selectedProviderId} options={modelOptions} />
+                <Form.Item name="modelName" label={<span className="text-slate-700 font-semibold text-xs">模型</span>}>
+                  <Select allowClear disabled={!canUpdate || !selectedProviderId} options={modelOptions} className="!rounded-lg" />
                 </Form.Item>
-                <Form.Item name="systemPrompt" label="系统提示词">
-                  <Input.TextArea disabled={!canUpdate} rows={8} />
+                <Form.Item name="systemPrompt" label={<span className="text-slate-700 font-semibold text-xs">系统提示词</span>}>
+                  <Input.TextArea disabled={!canUpdate} rows={6} className="!rounded-lg font-mono text-xs" />
                 </Form.Item>
-                <Form.Item name="knowledgeDocumentIds" label="知识库">
+                <Form.Item name="knowledgeDocumentIds" label={<span className="text-slate-700 font-semibold text-xs">知识库</span>}>
                   <Select
                     mode="multiple"
                     allowClear
@@ -613,59 +661,71 @@ export const ApplicationManagementPage = () => {
                       label: document.title || document.fileName,
                       value: document.id,
                     }))}
+                    className="!rounded-lg"
                   />
                 </Form.Item>
-                <Form.Item name="temperature" label="Temperature">
+                <Form.Item name="temperature" label={<span className="text-slate-700 font-semibold text-xs">Temperature</span>}>
                   <Slider disabled={!canUpdate} min={0} max={2} step={0.1} marks={{ 0: '0', 1: '1', 2: '2' }} />
                 </Form.Item>
-                <Form.Item name="maxTokens" label="最大输出 Tokens" rules={[{ required: true, message: '请输入最大输出 Tokens' }]}>
-                  <InputNumber disabled={!canUpdate} min={1} max={320000} className="!w-full" />
+                <Form.Item name="maxTokens" label={<span className="text-slate-700 font-semibold text-xs">最大输出 Tokens</span>} rules={[{ required: true, message: '请输入最大输出 Tokens' }]}>
+                  <InputNumber disabled={!canUpdate} min={1} max={320000} className="!w-full !rounded-lg" />
                 </Form.Item>
-                <Form.Item name="isActive" label="启用状态" valuePropName="checked">
+                <Form.Item name="isActive" label={<span className="text-slate-700 font-semibold text-xs">启用状态</span>} valuePropName="checked">
                   <Switch disabled={!canUpdate} />
                 </Form.Item>
               </Form>
             </div>
           </div>
 
-          <div className="flex min-h-0 flex-col rounded-lg border border-slate-200 bg-white">
-            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+          {/* Right panel - Debug Chat */}
+          <div className="flex min-h-0 flex-col rounded-2xl border border-slate-200/60 bg-white shadow-card overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/50">
               <div className="flex items-center gap-2">
-                <RobotOutlined className="text-emerald-600" />
-                <Typography.Text strong>调试对话</Typography.Text>
+                <RobotOutlined className="text-brand-500" />
+                <Typography.Text className="text-slate-900 font-bold text-sm">调试对话</Typography.Text>
               </div>
-              <Typography.Text className="text-xs text-slate-400">
-                {conversation ? `#${conversation.id}` : '未开始'}
-              </Typography.Text>
+              {conversation ? (
+                <span className="bg-brand-50 border border-brand-100 text-brand-700 px-2 py-0.5 rounded-full font-mono text-xs">
+                  会话ID: #{conversation.id}
+                </span>
+              ) : (
+                <span className="bg-slate-100 border border-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-mono text-xs">
+                  未开始
+                </span>
+              )}
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/60 px-5 py-4">
+            
+            <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/30 px-6 py-5">
               {chatLoading ? (
                 <div className="flex h-full items-center justify-center">
                   <Spin />
                 </div>
               ) : displayedMessages.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-2">
                   {displayedMessages.map(renderChatMessage)}
                   <div ref={messagesEndRef} />
                 </div>
               ) : (
-                <div className="flex h-full items-center justify-center">
-                  <Empty image={<BookOutlined className="text-5xl text-slate-300" />} description="暂无调试消息" />
+                <div className="flex h-full flex-col items-center justify-center text-slate-400 gap-3">
+                  <BookOutlined className="text-4xl text-slate-300" />
+                  <span className="text-sm">暂无调试消息，输入下方消息即可开始</span>
                 </div>
               )}
             </div>
-            <div className="border-t border-slate-100 px-5 py-4">
+            
+            <div className="border-t border-slate-100 px-6 py-5 bg-white">
               <div className="flex gap-2">
                 <Input
                   size="large"
                   value={inputValue}
-                  placeholder="输入消息..."
+                  placeholder="输入消息，与智能体开始对话..."
                   disabled={!canChat || streaming || !selectedApplication}
                   onChange={(event) => setInputValue(event.target.value)}
                   onPressEnter={() => void handleSend()}
+                  className="!rounded-xl border-slate-200 hover:border-brand-500 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 shadow-inner bg-slate-50/30"
                 />
                 {streaming ? (
-                  <Button size="large" danger onClick={handleStopStreaming}>
+                  <Button size="large" danger onClick={handleStopStreaming} className="!rounded-xl px-5">
                     停止
                   </Button>
                 ) : (
@@ -675,6 +735,7 @@ export const ApplicationManagementPage = () => {
                     icon={<SendOutlined />}
                     disabled={!inputValue.trim() || !canChat || !selectedApplication}
                     onClick={() => void handleSend()}
+                    className={`!rounded-xl px-5 ${inputValue.trim() ? 'bg-gradient-to-r from-brand-500 to-teal-600 hover:from-brand-600 hover:to-teal-700 border-0 text-white' : ''}`}
                   >
                     发送
                   </Button>
@@ -688,10 +749,10 @@ export const ApplicationManagementPage = () => {
   );
 
   return (
-    <div className="min-h-full bg-slate-50 px-5 py-6 text-slate-900 lg:px-8">
+    <div className="relative min-h-full bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] bg-slate-50/50 px-5 py-6 text-slate-900 lg:px-8">
       {selectedApplicationId ? renderApplicationWorkspace() : renderApplicationList()}
       <Modal
-        title="创建应用"
+        title={<span className="text-slate-900 font-bold">创建应用</span>}
         open={createOpen}
         onCancel={() => setCreateOpen(false)}
         onOk={() => void handleCreate()}
@@ -700,12 +761,12 @@ export const ApplicationManagementPage = () => {
         confirmLoading={createSaving}
         destroyOnHidden
       >
-        <Form form={createForm} layout="vertical">
-          <Form.Item name="name" label="应用名称" rules={[{ required: true, message: '请输入应用名称' }]}>
-            <Input maxLength={128} />
+        <Form form={createForm} layout="vertical" className="mt-4">
+          <Form.Item name="name" label={<span className="text-slate-700 font-medium">应用名称</span>} rules={[{ required: true, message: '请输入应用名称' }]}>
+            <Input maxLength={128} className="!rounded-lg" placeholder="给您的智能体起个名字..." />
           </Form.Item>
-          <Form.Item name="description" label="应用描述">
-            <Input.TextArea rows={3} maxLength={255} />
+          <Form.Item name="description" label={<span className="text-slate-700 font-medium">应用描述</span>}>
+            <Input.TextArea rows={3} maxLength={255} className="!rounded-lg" placeholder="描述该智能体的用途..." />
           </Form.Item>
         </Form>
       </Modal>
