@@ -1,8 +1,8 @@
 from unittest.mock import patch
 
 from django.apps import apps
+from django.core.cache import cache
 from django.contrib.auth import get_user_model
-from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -14,6 +14,7 @@ User = get_user_model()
 
 class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
     def setUp(self):
+        cache.clear()
         self.tenant_user = User.objects.create_user(username='company-llm-user', password='test123456')
         self.setup_tenant(self.tenant_user)
         self.role = Role.objects.create(name='Company LLM role', code='company_llm_role')
@@ -86,12 +87,11 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
         Grant = self.tenant_grant_model()
         return Grant.objects.create(tenant=tenant or self.tenant, model=model, is_active=is_active)
 
-    def company_settings(self, *, tenant=None, default_model=None, last_tested_at=None):
+    def company_settings(self, *, tenant=None, default_model=None):
         Settings = self.tenant_settings_model()
         return Settings.objects.create(
             tenant=tenant or self.tenant,
             default_model=default_model,
-            last_tested_at=last_tested_at,
         )
 
     def configure_test_settings(self, **overrides):
@@ -161,12 +161,12 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
 
         denied_resp = self.client.patch(
             '/api/v1/ai-models/llm/default-model/',
-            {'defaultModelId': unauthorized_model.id},
+            {'modelId': unauthorized_model.id},
             format='json',
         )
         allowed_resp = self.client.patch(
             '/api/v1/ai-models/llm/default-model/',
-            {'defaultModelId': self.model.id},
+            {'modelId': self.model.id},
             format='json',
         )
 
@@ -188,7 +188,7 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
 
         resp = self.client.patch(
             '/api/v1/ai-models/llm/default-model/',
-            {'defaultModelId': disabled_provider_model.id},
+            {'modelId': disabled_provider_model.id},
             format='json',
         )
 
@@ -209,7 +209,7 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
 
         resp = self.client.patch(
             '/api/v1/ai-models/llm/default-model/',
-            {'defaultModelId': disabled_model.id},
+            {'modelId': disabled_model.id},
             format='json',
         )
 
@@ -233,7 +233,7 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
             )
         default_resp = self.client.patch(
             '/api/v1/ai-models/llm/default-model/',
-            {'defaultModelId': self.model.id},
+            {'modelId': self.model.id},
             format='json',
         )
 
@@ -247,7 +247,7 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
 
         resp = self.client.patch(
             '/api/v1/ai-models/llm/default-model/',
-            {'defaultModelId': self.model.id},
+            {'modelId': self.model.id},
             format='json',
         )
 
@@ -258,8 +258,8 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
     def test_test_cooldown_is_enforced_and_configurable(self):
         self.grant_permissions('ai_models.llm.view')
         self.configure_test_settings(test_cooldown_seconds=60)
-        self.settings.last_tested_at = timezone.now()
-        self.settings.save(update_fields=['last_tested_at'])
+        cooldown_key = f'llm-test:{self.tenant_user.id}:{self.model.id}'
+        cache.set(cooldown_key, True, timeout=60)
         self.client.force_authenticate(self.tenant_user)
 
         blocked_resp = self.client.post(
@@ -269,9 +269,11 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(blocked_resp.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
 
+        cache.delete(cooldown_key)
         test_settings = self.llm_test_settings_model().load()
         test_settings.test_cooldown_seconds = 0
         test_settings.save(update_fields=['test_cooldown_seconds'])
+        self.assertIsNone(cache.get(cooldown_key))
 
         with patch(
             'apps.ai_models.llm_services.run_llm_model_test',
@@ -283,3 +285,4 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
             )
 
         self.assertEqual(allowed_resp.status_code, status.HTTP_200_OK)
+        self.assertIsNone(cache.get(cooldown_key))

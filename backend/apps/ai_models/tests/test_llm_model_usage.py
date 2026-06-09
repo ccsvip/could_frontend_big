@@ -108,7 +108,7 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
         resp = self.client.post('/api/v1/ai-models/chat/conversations/', {'title': '新对话'}, format='json')
 
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('defaultModelId', resp.data)
+        self.assertIn('llmModelId', resp.data)
 
     def test_update_chat_config_rejects_unauthorized_model(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
