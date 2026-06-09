@@ -23,20 +23,10 @@ class LLMProvider(models.Model):
     api_base_url = models.URLField('API 地址', max_length=512)
     api_key = models.CharField('API 密钥', max_length=512)
     avatar = models.ImageField('供应商头像', upload_to='ai_models/avatars/', blank=True, null=True)
-    models_config = models.JSONField('模型列表', default=list, blank=True)
     is_active = models.BooleanField('是否启用', default=True)
-    tenant = models.ForeignKey(
-        'tenants.Tenant',
-        on_delete=models.CASCADE,
-        related_name='+',
-        verbose_name='所属公司',
-        null=True,
-        blank=True,
-    )
+    sort_order = models.PositiveIntegerField('排序', default=0)
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
-
-    objects = TenantManager()
 
     class Meta:
         verbose_name = 'LLM 供应商'
@@ -45,6 +35,91 @@ class LLMProvider(models.Model):
 
     def __str__(self):
         return f'{self.name} ({self.get_provider_type_display()})'
+
+
+class LLMModel(models.Model):
+    provider = models.ForeignKey(
+        LLMProvider,
+        on_delete=models.CASCADE,
+        related_name='models',
+        verbose_name='所属供应商',
+    )
+    name = models.CharField('真实模型名称', max_length=128)
+    display_name = models.CharField('展示名称', max_length=128, blank=True, default='')
+    is_active = models.BooleanField('是否启用', default=True)
+    sort_order = models.PositiveIntegerField('排序', default=0)
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['provider', 'name'], name='uniq_llm_model_provider_name'),
+        ]
+
+    def __str__(self):
+        return self.display_name or self.name
+
+
+class TenantLLMModelGrant(models.Model):
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='llm_model_grants',
+        verbose_name='所属公司',
+    )
+    model = models.ForeignKey(
+        LLMModel,
+        on_delete=models.CASCADE,
+        related_name='tenant_grants',
+        verbose_name='授权模型',
+    )
+    is_active = models.BooleanField('是否启用', default=True)
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['tenant', 'model'], name='uniq_tenant_llm_model_grant'),
+        ]
+
+    def __str__(self):
+        return f'{self.tenant_id}:{self.model_id}'
+
+
+class TenantLLMSettings(models.Model):
+    tenant = models.OneToOneField(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='llm_settings',
+        verbose_name='所属公司',
+    )
+    default_model = models.ForeignKey(
+        LLMModel,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='tenant_default_settings',
+        verbose_name='默认模型',
+    )
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    def __str__(self):
+        return f'{self.tenant_id}:{self.default_model_id or "unset"}'
+
+
+class LLMTestSettings(models.Model):
+    test_prompt = models.TextField('测试提示词', default='请用一句中文回复：连接测试成功。')
+    test_cooldown_seconds = models.PositiveIntegerField('测速冷却秒数', default=10)
+    test_timeout_seconds = models.PositiveIntegerField('测速超时秒数', default=15)
+    test_max_tokens = models.PositiveIntegerField('测速最大输出 Tokens', default=64)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    def __str__(self):
+        return 'LLM Test Settings'
 
 
 class ASRConfig(models.Model):
@@ -123,6 +198,14 @@ class AgentApplication(models.Model):
         related_name='agent_applications',
         verbose_name='LLM 供应商',
     )
+    llm_model = models.ForeignKey(
+        LLMModel,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='agent_applications',
+        verbose_name='LLM 模型',
+    )
     model_name = models.CharField('模型名称', max_length=128, blank=True, default='')
     system_prompt = models.TextField('系统提示词', blank=True, default='')
     temperature = models.FloatField('Temperature', default=0.7)
@@ -183,6 +266,14 @@ class ChatConversation(models.Model):
         blank=True,
         related_name='conversations',
         verbose_name='LLM 供应商',
+    )
+    llm_model = models.ForeignKey(
+        LLMModel,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='conversations',
+        verbose_name='LLM 模型',
     )
     model_name = models.CharField('模型名称', max_length=128, blank=True, default='')
     summary = models.CharField('会话摘要', max_length=256, blank=True, default='')

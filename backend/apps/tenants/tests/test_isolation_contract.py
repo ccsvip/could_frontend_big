@@ -62,6 +62,16 @@ class TenantIsolationContractTests(TestCase):
                 stale.append(f'{app_label}.{model_name}')
         self.assertEqual(stale, [], f'豁免名单中的模型已不存在，请清理：{stale}')
 
+    def test_llm_platform_models_and_tenant_settings_keep_expected_scope(self):
+        """LLM 供应商是平台级；公司授权与默认设置必须按 tenant 隔离。"""
+        provider = django_apps.get_model('ai_models', 'LLMProvider')
+        grant = django_apps.get_model('ai_models', 'TenantLLMModelGrant')
+        settings = django_apps.get_model('ai_models', 'TenantLLMSettings')
+
+        self.assertFalse(_model_has_tenant_fk(provider))
+        self.assertIsInstance(grant._default_manager, TenantManager)
+        self.assertIsInstance(settings._default_manager, TenantManager)
+
     def test_for_tenant_none_returns_empty(self):
         """TenantManager.for_tenant(None) 必须返回空集（fail-closed，杜绝裸查泄漏）。"""
         from apps.devices.models import Device
