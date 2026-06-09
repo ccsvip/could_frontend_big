@@ -4,9 +4,11 @@ import time
 
 import httpx
 from asgiref.sync import sync_to_async
+from django.db import transaction
 from django.db import connections
 from django.db.models import Q
 from django.http import StreamingHttpResponse
+from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
@@ -36,7 +38,18 @@ from apps.resources.views import PermissionMappedModelViewSet
 from apps.tenants.mixins import TenantScopedQuerysetMixin
 from apps.tenants.models import Tenant
 
-from .models import ASRReplacementRule, AgentApplication, ChatConversation, ChatMessage, LLMProvider
+from .llm_services import llm_model_has_usage, llm_provider_has_usage, run_llm_model_test
+from .models import (
+    ASRReplacementRule,
+    AgentApplication,
+    ChatConversation,
+    ChatMessage,
+    LLMModel,
+    LLMProvider,
+    LLMTestSettings,
+    TenantLLMModelGrant,
+    TenantLLMSettings,
+)
 from .realtime_asr import resolve_asr_device_connection
 from .serializers import (
     ASRConfigSerializer,
@@ -50,6 +63,12 @@ from .serializers import (
     ChatMessageFeedbackSerializer,
     ChatSendSerializer,
     LLMProviderSerializer,
+    LLMTestSettingsSerializer,
+    PlatformLLMModelSerializer,
+    PlatformLLMModelWriteSerializer,
+    PlatformLLMProviderSerializer,
+    PlatformLLMProviderWriteSerializer,
+    TenantLLMAuthorizationSerializer,
 )
 from .services.asr import (
     get_effective_asr_config,
@@ -149,6 +168,207 @@ class ASRReplacementRuleViewSet(TenantScopedQuerysetMixin, PermissionMappedModel
         if tenant is None:
             raise ValidationError({'tenant': ['当前账号未归属公司，无法保存替换词']})
         return {'tenant': tenant}
+
+
+_PLATFORM_LLM_PERMISSION_MAP = {
+    'list': [IsSuperUser],
+    'retrieve': [IsSuperUser],
+    'create': [IsSuperUser],
+    'update': [IsSuperUser],
+    'partial_update': [IsSuperUser],
+    'destroy': [IsSuperUser],
+    'test': [IsSuperUser],
+}
+
+
+class PlatformLLMProviderViewSet(PermissionMappedModelViewSet):
+    queryset = LLMProvider.objects.all().order_by('sort_order', 'id')
+    parser_classes = [MultiPartParser, JSONParser]
+    permission_map = _PLATFORM_LLM_PERMISSION_MAP
+
+    def get_serializer_class(self):
+        if self.action in {'create', 'update', 'partial_update'}:
+            return PlatformLLMProviderWriteSerializer
+        return PlatformLLMProviderSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        provider = serializer.save()
+        return Response(
+            PlatformLLMProviderSerializer(provider, context=self.get_serializer_context()).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        provider = serializer.save()
+        return Response(PlatformLLMProviderSerializer(provider, context=self.get_serializer_context()).data)
+
+    def perform_destroy(self, instance):
+        if llm_provider_has_usage(instance):
+            raise ValidationError({'detail': '该厂商已被授权或使用，不能删除，请停用'})
+        return super().perform_destroy(instance)
+
+
+class PlatformLLMProviderModelsView(APIView):
+    permission_classes = [IsSuperUser]
+    parser_classes = [JSONParser]
+
+    def get_provider(self, provider_id):
+        return get_object_or_404(LLMProvider, pk=provider_id)
+
+    def get(self, request, provider_id):
+        provider = self.get_provider(provider_id)
+        models = provider.models.select_related('provider').order_by('sort_order', 'id')
+        return Response(PlatformLLMModelSerializer(models, many=True).data)
+
+    def post(self, request, provider_id):
+        provider = self.get_provider(provider_id)
+        data = request.data.copy()
+        data['providerId'] = provider.id
+        serializer = PlatformLLMModelWriteSerializer(
+            data=data,
+            context={'provider': provider},
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        model = serializer.save()
+        return Response(PlatformLLMModelSerializer(model).data, status=status.HTTP_201_CREATED)
+
+
+class PlatformLLMModelViewSet(PermissionMappedModelViewSet):
+    queryset = LLMModel.objects.select_related('provider').order_by('provider__sort_order', 'provider__id', 'sort_order', 'id')
+    permission_map = _PLATFORM_LLM_PERMISSION_MAP
+
+    def get_serializer_class(self):
+        if self.action in {'create', 'update', 'partial_update'}:
+            return PlatformLLMModelWriteSerializer
+        return PlatformLLMModelSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        model = serializer.save()
+        return Response(PlatformLLMModelSerializer(model).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        model = serializer.save()
+        return Response(PlatformLLMModelSerializer(model).data)
+
+    def perform_destroy(self, instance):
+        if llm_model_has_usage(instance):
+            raise ValidationError({'detail': '该模型已被授权或使用，不能删除，请停用'})
+        return super().perform_destroy(instance)
+
+    @action(detail=True, methods=['post'], url_path='test')
+    def test(self, request, pk=None):
+        model = self.get_object()
+        return Response(run_llm_model_test(model=model, settings=LLMTestSettings.load()))
+
+
+class LLMTestSettingsView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def get(self, request):
+        return Response(LLMTestSettingsSerializer(LLMTestSettings.load()).data)
+
+    def patch(self, request):
+        instance = LLMTestSettings.load()
+        serializer = LLMTestSettingsSerializer(instance, data=request.data, partial=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data)
+
+
+class TenantLLMAuthorizationView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def _get_tenant(self, tenant_id):
+        tenant = Tenant.objects.filter(id=tenant_id, is_active=True).first()
+        if tenant is None:
+            raise ValidationError({'tenantId': '公司不存在或已停用'})
+        return tenant
+
+    def _response_payload(self, tenant):
+        settings, _ = TenantLLMSettings.objects.get_or_create(tenant=tenant)
+        grant_map = {
+            grant.model_id: grant
+            for grant in TenantLLMModelGrant.objects.filter(tenant=tenant).select_related('model')
+        }
+        providers = []
+        for provider in LLMProvider.objects.order_by('sort_order', 'id'):
+            models = []
+            for model in provider.models.order_by('sort_order', 'id'):
+                grant = grant_map.get(model.id)
+                models.append({
+                    'id': model.id,
+                    'providerId': provider.id,
+                    'name': model.name,
+                    'displayName': model.display_name,
+                    'isActive': model.is_active,
+                    'sortOrder': model.sort_order,
+                    'grantIsActive': bool(grant and grant.is_active),
+                })
+            providers.append({
+                'id': provider.id,
+                'name': provider.name,
+                'providerType': provider.provider_type,
+                'providerTypeLabel': provider.get_provider_type_display(),
+                'isActive': provider.is_active,
+                'sortOrder': provider.sort_order,
+                'models': models,
+            })
+        return {
+            'tenant': {
+                'id': tenant.id,
+                'name': tenant.name,
+                'isActive': tenant.is_active,
+            },
+            'providers': providers,
+            'defaultModelId': settings.default_model_id,
+        }
+
+    def get(self, request, tenant_id):
+        tenant = self._get_tenant(tenant_id)
+        return Response(self._response_payload(tenant))
+
+    def put(self, request, tenant_id):
+        serializer = TenantLLMAuthorizationSerializer(
+            data=request.data,
+            context={'tenant_id': tenant_id},
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        tenant = serializer.validated_data['tenant']
+        grants = serializer.validated_data['modelGrants']
+        default_model_id = serializer.validated_data.get('defaultModelId')
+
+        with transaction.atomic():
+            for item in grants:
+                TenantLLMModelGrant.objects.update_or_create(
+                    tenant=tenant,
+                    model_id=int(item['modelId']),
+                    defaults={'is_active': bool(item.get('isActive'))},
+                )
+            TenantLLMSettings.objects.update_or_create(
+                tenant=tenant,
+                defaults={'default_model_id': default_model_id},
+            )
+
+        return Response(self._response_payload(tenant))
 
 
 def _build_chat_completions_url(raw_url: str) -> str:

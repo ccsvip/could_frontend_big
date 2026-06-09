@@ -2,8 +2,19 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from apps.knowledge_base.models import KnowledgeDocument
+from apps.tenants.models import Tenant
 
-from .models import ASRConfig, ASRReplacementRule, AgentApplication, ChatConversation, ChatMessage, LLMProvider
+from .llm_services import llm_model_has_usage, mask_api_key, validate_llm_test_settings_values
+from .models import (
+    ASRConfig,
+    ASRReplacementRule,
+    AgentApplication,
+    ChatConversation,
+    ChatMessage,
+    LLMModel,
+    LLMProvider,
+    LLMTestSettings,
+)
 
 
 class LLMProviderSerializer(serializers.ModelSerializer):
@@ -60,6 +71,212 @@ class LLMProviderSerializer(serializers.ModelSerializer):
             validated_data.pop('api_key', None)
 
         return super().update(instance, validated_data)
+
+
+class PlatformLLMProviderSerializer(serializers.ModelSerializer):
+    providerType = serializers.CharField(source='provider_type')
+    providerTypeLabel = serializers.CharField(source='get_provider_type_display', read_only=True)
+    apiBaseUrl = serializers.URLField(source='api_base_url')
+    apiKeyMasked = serializers.SerializerMethodField()
+    apiKeyConfigured = serializers.SerializerMethodField()
+    avatarUrl = serializers.SerializerMethodField(read_only=True)
+    clearAvatar = serializers.SerializerMethodField()
+    isActive = serializers.BooleanField(source='is_active')
+    sortOrder = serializers.IntegerField(source='sort_order')
+
+    class Meta:
+        model = LLMProvider
+        fields = [
+            'id', 'name', 'providerType', 'providerTypeLabel',
+            'apiBaseUrl', 'apiKeyMasked', 'apiKeyConfigured',
+            'avatar', 'avatarUrl', 'clearAvatar',
+            'isActive', 'sortOrder', 'created_at', 'updated_at',
+        ]
+        read_only_fields = fields
+
+    @extend_schema_field(serializers.CharField())
+    def get_apiKeyMasked(self, obj: LLMProvider) -> str:
+        return mask_api_key(obj.api_key)
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_apiKeyConfigured(self, obj: LLMProvider) -> bool:
+        return bool(obj.api_key)
+
+    @extend_schema_field(serializers.URLField(allow_null=True))
+    def get_avatarUrl(self, obj: LLMProvider) -> str | None:
+        if obj.avatar:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.avatar.url)
+            return obj.avatar.url
+        return None
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_clearAvatar(self, obj: LLMProvider) -> bool:
+        return False
+
+
+class PlatformLLMProviderWriteSerializer(serializers.ModelSerializer):
+    providerType = serializers.CharField(source='provider_type')
+    apiBaseUrl = serializers.URLField(source='api_base_url')
+    apiKey = serializers.CharField(source='api_key', required=False, allow_blank=True, write_only=True)
+    clearAvatar = serializers.BooleanField(required=False, default=False, write_only=True)
+    isActive = serializers.BooleanField(source='is_active', required=False, default=True)
+    sortOrder = serializers.IntegerField(source='sort_order', required=False, default=0)
+
+    class Meta:
+        model = LLMProvider
+        fields = [
+            'name', 'providerType', 'apiBaseUrl', 'apiKey',
+            'avatar', 'clearAvatar', 'isActive', 'sortOrder',
+        ]
+        extra_kwargs = {
+            'avatar': {'required': False},
+        }
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if self.instance is None and not attrs.get('api_key'):
+            raise serializers.ValidationError({'apiKey': 'API Key 不能为空'})
+        if self.instance is not None and attrs.get('api_key') == '':
+            attrs.pop('api_key')
+        return attrs
+
+    def create(self, validated_data):
+        validated_data.pop('clearAvatar', None)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        clear_avatar = validated_data.pop('clearAvatar', False)
+        if clear_avatar and instance.avatar:
+            instance.avatar.delete(save=False)
+            instance.avatar = None
+        return super().update(instance, validated_data)
+
+
+class PlatformLLMModelSerializer(serializers.ModelSerializer):
+    providerId = serializers.IntegerField(source='provider_id', read_only=True)
+    providerName = serializers.CharField(source='provider.name', read_only=True)
+    displayName = serializers.CharField(source='display_name')
+    isActive = serializers.BooleanField(source='is_active')
+    sortOrder = serializers.IntegerField(source='sort_order')
+
+    class Meta:
+        model = LLMModel
+        fields = [
+            'id', 'providerId', 'providerName', 'name', 'displayName',
+            'isActive', 'sortOrder', 'created_at', 'updated_at',
+        ]
+        read_only_fields = fields
+
+
+class PlatformLLMModelWriteSerializer(serializers.ModelSerializer):
+    providerId = serializers.PrimaryKeyRelatedField(
+        source='provider',
+        queryset=LLMProvider.objects.all(),
+        required=False,
+    )
+    displayName = serializers.CharField(source='display_name', required=False, allow_blank=True, default='')
+    isActive = serializers.BooleanField(source='is_active', required=False, default=True)
+    sortOrder = serializers.IntegerField(source='sort_order', required=False, default=0)
+
+    class Meta:
+        model = LLMModel
+        fields = ['providerId', 'name', 'displayName', 'isActive', 'sortOrder']
+
+    def validate_name(self, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('真实模型名称不能为空')
+        return value
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if self.instance is None and not attrs.get('provider') and not self.context.get('provider'):
+            raise serializers.ValidationError({'providerId': '供应商不能为空'})
+        if (
+            self.instance is not None
+            and 'name' in attrs
+            and attrs['name'] != self.instance.name
+            and llm_model_has_usage(self.instance)
+        ):
+            raise serializers.ValidationError({'name': '模型已被授权或使用，不能修改真实模型名称；请新增模型并停用旧模型'})
+        return attrs
+
+
+class LLMTestSettingsSerializer(serializers.ModelSerializer):
+    testPrompt = serializers.CharField(source='test_prompt')
+    testCooldownSeconds = serializers.IntegerField(source='test_cooldown_seconds')
+    testTimeoutSeconds = serializers.IntegerField(source='test_timeout_seconds')
+    testMaxTokens = serializers.IntegerField(source='test_max_tokens')
+
+    class Meta:
+        model = LLMTestSettings
+        fields = ['testPrompt', 'testCooldownSeconds', 'testTimeoutSeconds', 'testMaxTokens', 'updated_at']
+        read_only_fields = ('updated_at',)
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        instance = self.instance
+        prompt = attrs.get('test_prompt', instance.test_prompt if instance else '')
+        cooldown = attrs.get('test_cooldown_seconds', instance.test_cooldown_seconds if instance else 0)
+        timeout = attrs.get('test_timeout_seconds', instance.test_timeout_seconds if instance else 0)
+        max_tokens = attrs.get('test_max_tokens', instance.test_max_tokens if instance else 0)
+        validate_llm_test_settings_values(
+            prompt=prompt,
+            cooldown=cooldown,
+            timeout=timeout,
+            max_tokens=max_tokens,
+        )
+        return attrs
+
+
+class TenantLLMAuthorizationSerializer(serializers.Serializer):
+    modelGrants = serializers.ListField(child=serializers.DictField(), required=True)
+    defaultModelId = serializers.IntegerField(required=False, allow_null=True)
+
+    def validate(self, attrs):
+        tenant_id = self.context.get('tenant_id')
+        tenant = Tenant.objects.filter(id=tenant_id, is_active=True).first()
+        if tenant is None:
+            raise serializers.ValidationError({'tenantId': '公司不存在或已停用'})
+
+        grants = attrs.get('modelGrants') or []
+        model_ids = []
+        active_model_ids = set()
+        for item in grants:
+            try:
+                model_id = int(item.get('modelId'))
+            except (TypeError, ValueError):
+                raise serializers.ValidationError({'modelGrants': 'modelId 必须是正整数'})
+            if model_id <= 0:
+                raise serializers.ValidationError({'modelGrants': 'modelId 必须是正整数'})
+            model_ids.append(model_id)
+            if bool(item.get('isActive')):
+                active_model_ids.add(model_id)
+
+        existing_ids = set(LLMModel.objects.filter(id__in=model_ids).values_list('id', flat=True))
+        missing_ids = set(model_ids) - existing_ids
+        if missing_ids:
+            raise serializers.ValidationError({'modelGrants': f'模型不存在：{min(missing_ids)}'})
+
+        default_model_id = attrs.get('defaultModelId')
+        if default_model_id is not None:
+            default_model = (
+                LLMModel.objects
+                .select_related('provider')
+                .filter(id=default_model_id)
+                .first()
+            )
+            if default_model is None:
+                raise serializers.ValidationError({'defaultModelId': '默认模型不存在'})
+            if default_model_id not in active_model_ids:
+                raise serializers.ValidationError({'defaultModelId': '默认模型必须包含在启用授权中'})
+            if not default_model.is_active or not default_model.provider.is_active:
+                raise serializers.ValidationError({'defaultModelId': '默认模型或供应商未启用'})
+
+        attrs['tenant'] = tenant
+        return attrs
 
 
 class ASRConfigSerializer(serializers.ModelSerializer):
