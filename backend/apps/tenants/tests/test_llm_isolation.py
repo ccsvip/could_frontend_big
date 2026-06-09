@@ -1,10 +1,11 @@
-"""PR-6：每公司 LLM 供应商隔离 + 聊天不跨租户兜底。"""
+"""每公司 LLM 模型授权隔离 + 聊天不跨租户兜底。"""
 from __future__ import annotations
 
+from django.apps import apps
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 
-from apps.ai_models.models import ChatConversation, LLMProvider
+from apps.ai_models.models import ChatConversation
 from apps.tenants.models import Membership, Tenant
 
 User = get_user_model()
@@ -22,28 +23,37 @@ class LLMTenantIsolationTests(APITestCase):
         Membership.objects.create(user=cls.user_a, tenant=cls.tenant_a)
         Membership.objects.create(user=cls.user_b, tenant=cls.tenant_b)
 
-        # 只有公司 A 配了供应商
-        cls.provider_a = LLMProvider.objects.create(
+        Provider = apps.get_model('ai_models', 'LLMProvider')
+        LLMModel = apps.get_model('ai_models', 'LLMModel')
+        CompanyLLMGrant = apps.get_model('ai_models', 'CompanyLLMGrant')
+        CompanyLLMSettings = apps.get_model('ai_models', 'CompanyLLMSettings')
+
+        cls.provider_a = Provider.objects.create(
             name='A 的供应商', provider_type='openai',
             api_base_url='https://api.a.com/v1', api_key='secret-a',
-            models_config=[{'name': 'gpt-4.1', 'isDefault': True}], is_active=True,
-            tenant=cls.tenant_a,
+            is_active=True,
         )
+        cls.model_a = LLMModel.objects.create(
+            provider=cls.provider_a,
+            display_name='GPT 4.1',
+            name='gpt-4.1',
+            is_active=True,
+        )
+        CompanyLLMGrant.objects.create(tenant=cls.tenant_a, model=cls.model_a, is_active=True)
+        CompanyLLMSettings.objects.create(tenant=cls.tenant_a, default_model=cls.model_a)
 
-    def test_llm_provider_list_scoped_per_tenant(self):
-        # A 看得到自己的供应商
+    def test_llm_options_scoped_to_company_grants(self):
         self.client.force_authenticate(self.user_a)
-        resp = self.client.get('/api/v1/ai-models/llm-providers/')
-        names = [p['name'] for p in (resp.data['results'] if isinstance(resp.data, dict) else resp.data)]
+        resp = self.client.get('/api/v1/ai-models/llm/options/')
+        names = [p['name'] for p in resp.data['providers']]
         self.assertIn('A 的供应商', names)
-        # B 看不到 A 的供应商
+
         self.client.force_authenticate(self.user_b)
-        resp = self.client.get('/api/v1/ai-models/llm-providers/')
-        names = [p['name'] for p in (resp.data['results'] if isinstance(resp.data, dict) else resp.data)]
+        resp = self.client.get('/api/v1/ai-models/llm/options/')
+        names = [p['name'] for p in resp.data['providers']]
         self.assertEqual(names, [])
 
-    def test_chat_send_does_not_fall_back_to_other_tenant_provider(self):
-        # B 公司没配供应商，发消息时不应兜底到 A 的供应商，而是返回友好错误。
+    def test_chat_send_does_not_fall_back_to_other_tenant_default_model(self):
         conv = ChatConversation.objects.create(title='B 的会话', user=self.user_b, tenant=self.tenant_b)
         self.client.force_authenticate(self.user_b)
         resp = self.client.post(
@@ -52,20 +62,18 @@ class LLMTenantIsolationTests(APITestCase):
             format='json',
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertIn('暂无可用的 LLM 供应商', resp.data['message'])
-        # 确认没有偷偷绑定到 A 的供应商
+        self.assertIn('暂无可用的 LLM 模型', resp.data['message'])
         conv.refresh_from_db()
-        self.assertIsNone(conv.llm_provider_id)
+        self.assertIsNone(conv.llm_model_id)
 
-    def test_cannot_bind_other_tenant_provider_via_update_config(self):
+    def test_cannot_bind_other_tenant_model_via_update_config(self):
         conv = ChatConversation.objects.create(title='B 的会话2', user=self.user_b, tenant=self.tenant_b)
         self.client.force_authenticate(self.user_b)
         resp = self.client.patch(
             f'/api/v1/ai-models/chat/conversations/{conv.id}/update-config/',
-            {'llmProviderId': self.provider_a.id, 'modelName': 'gpt-4.1'},
+            {'modelId': self.model_a.id},
             format='json',
         )
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 400)
         conv.refresh_from_db()
-        # A 的供应商不在 B 范围内 → 绑定被忽略（置空），不会串租户。
-        self.assertIsNone(conv.llm_provider_id)
+        self.assertIsNone(conv.llm_model_id)
