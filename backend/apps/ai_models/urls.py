@@ -8,6 +8,7 @@ from .views import (
     ASRStatusView,
     ASRTestView,
     ASRReplacementRuleViewSet,
+    AgentApplicationViewSet,
     ChatConversationViewSet,
     LLMProviderViewSet,
 )
@@ -15,6 +16,7 @@ from .views import (
 router = DefaultRouter()
 router.register('ai-models/llm-providers', LLMProviderViewSet, basename='llm-provider')
 router.register('ai-models/asr/replacement-rules', ASRReplacementRuleViewSet, basename='asr-replacement-rule')
+router.register('ai-models/applications', AgentApplicationViewSet, basename='agent-application')
 router.register('ai-models/chat/conversations', ChatConversationViewSet, basename='chat-conversation')
 
 urlpatterns = [

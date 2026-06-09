@@ -309,6 +309,22 @@ class CanDeleteChat(HasPermissionCode):
     required_permission = 'ai_models.chat.delete'
 
 
+class CanViewAgentApplications(HasPermissionCode):
+    required_permission = 'agent_applications.view'
+
+
+class CanCreateAgentApplications(HasPermissionCode):
+    required_permission = 'agent_applications.create'
+
+
+class CanUpdateAgentApplications(HasPermissionCode):
+    required_permission = 'agent_applications.update'
+
+
+class CanDeleteAgentApplications(HasPermissionCode):
+    required_permission = 'agent_applications.delete'
+
+
 class CanViewKnowledgeBaseDocuments(HasPermissionCode):
     required_permission = 'knowledge_base.view'
 

@@ -1,7 +1,9 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from .models import ASRConfig, ASRReplacementRule, ChatConversation, ChatMessage, LLMProvider
+from apps.knowledge_base.models import KnowledgeDocument
+
+from .models import ASRConfig, ASRReplacementRule, AgentApplication, ChatConversation, ChatMessage, LLMProvider
 
 
 class LLMProviderSerializer(serializers.ModelSerializer):
@@ -109,6 +111,109 @@ class ASRReplacementRuleSerializer(serializers.ModelSerializer):
         return value
 
 
+class AgentKnowledgeDocumentSerializer(serializers.ModelSerializer):
+    fileName = serializers.CharField(source='file_name', read_only=True)
+    processingStatus = serializers.CharField(source='processing_status', read_only=True)
+
+    class Meta:
+        model = KnowledgeDocument
+        fields = ['id', 'title', 'fileName', 'processingStatus', 'updated_at']
+
+
+class AgentApplicationSerializer(serializers.ModelSerializer):
+    llmProviderId = serializers.PrimaryKeyRelatedField(
+        source='llm_provider',
+        queryset=LLMProvider.objects.none(),
+        required=False,
+        allow_null=True,
+    )
+    llmProviderName = serializers.CharField(source='llm_provider.name', read_only=True, default=None)
+    modelName = serializers.CharField(source='model_name', required=False, default='', allow_blank=True)
+    systemPrompt = serializers.CharField(source='system_prompt', required=False, default='', allow_blank=True)
+    maxTokens = serializers.IntegerField(source='max_tokens', required=False)
+    knowledgeDocumentIds = serializers.PrimaryKeyRelatedField(
+        source='knowledge_documents',
+        queryset=KnowledgeDocument.objects.none(),
+        many=True,
+        required=False,
+    )
+    knowledgeDocuments = AgentKnowledgeDocumentSerializer(source='knowledge_documents', many=True, read_only=True)
+    createdBy = serializers.SerializerMethodField()
+    isActive = serializers.BooleanField(source='is_active', required=False)
+
+    class Meta:
+        model = AgentApplication
+        fields = [
+            'id',
+            'name',
+            'description',
+            'llmProviderId',
+            'llmProviderName',
+            'modelName',
+            'systemPrompt',
+            'temperature',
+            'maxTokens',
+            'knowledgeDocumentIds',
+            'knowledgeDocuments',
+            'createdBy',
+            'isActive',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ('id', 'llmProviderName', 'knowledgeDocuments', 'createdBy', 'created_at', 'updated_at')
+
+    def get_fields(self):
+        fields = super().get_fields()
+        tenant = self.context.get('tenant')
+        if tenant is not None:
+            fields['llmProviderId'].queryset = LLMProvider.objects.for_tenant(tenant).filter(is_active=True)
+            fields['knowledgeDocumentIds'].child_relation.queryset = KnowledgeDocument.objects.for_tenant(tenant)
+        return fields
+
+    def get_createdBy(self, obj: AgentApplication) -> str:
+        if obj.created_by is None:
+            return ''
+        return obj.created_by.get_full_name() or obj.created_by.username
+
+    def validate_name(self, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('应用名称不能为空')
+        return value
+
+    def validate_temperature(self, value: float) -> float:
+        if value < 0 or value > 2:
+            raise serializers.ValidationError('temperature 必须在 0 到 2 之间')
+        return value
+
+    def validate_maxTokens(self, value: int) -> int:
+        if value <= 0 or value > 320000:
+            raise serializers.ValidationError('maxTokens 必须在 1 到 320000 之间')
+        return value
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        provider = attrs.get('llm_provider')
+        model_name = attrs.get('model_name')
+
+        if self.instance is not None:
+            if provider is None and 'llm_provider' not in attrs:
+                provider = self.instance.llm_provider
+            if model_name is None:
+                model_name = self.instance.model_name
+
+        model_name = (model_name or '').strip()
+        if 'model_name' in attrs:
+            attrs['model_name'] = model_name
+
+        if provider and model_name:
+            models_config = provider.models_config or []
+            model_names = {item.get('name', '').strip() for item in models_config if isinstance(item, dict)}
+            if model_name not in model_names:
+                raise serializers.ValidationError({'modelName': '所选模型不存在于该供应商配置中'})
+        return attrs
+
+
 class ChatMessageSerializer(serializers.ModelSerializer):
     conversationId = serializers.IntegerField(source='conversation_id', read_only=True)
     feedback = serializers.CharField(required=False)
@@ -120,6 +225,7 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 
 
 class ChatConversationListSerializer(serializers.ModelSerializer):
+    applicationId = serializers.IntegerField(source='application_id', read_only=True, allow_null=True)
     llmProviderId = serializers.IntegerField(source='llm_provider_id', read_only=True, allow_null=True)
     llmProviderName = serializers.CharField(source='llm_provider.name', read_only=True, default=None)
     summary = serializers.CharField(read_only=True, default='')
@@ -138,13 +244,14 @@ class ChatConversationListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatConversation
         fields = [
-            'id', 'title', 'llmProviderId', 'llmProviderName',
+            'id', 'title', 'applicationId', 'llmProviderId', 'llmProviderName',
             'model_name', 'summary', 'messageCount', 'lastMessage',
             'created_at', 'updated_at',
         ]
 
 
 class ChatConversationDetailSerializer(serializers.ModelSerializer):
+    applicationId = serializers.IntegerField(source='application_id', read_only=True, allow_null=True)
     llmProviderId = serializers.IntegerField(source='llm_provider_id', required=False, allow_null=True)
     llmProviderName = serializers.CharField(source='llm_provider.name', read_only=True, default=None)
     modelName = serializers.CharField(source='model_name', required=False, default='')
@@ -164,7 +271,7 @@ class ChatConversationDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatConversation
         fields = [
-            'id', 'title', 'llmProviderId', 'llmProviderName',
+            'id', 'title', 'applicationId', 'llmProviderId', 'llmProviderName',
             'modelName', 'summary', 'systemPrompt', 'temperature', 'maxTokens', 'messages',
             'created_at', 'updated_at',
         ]

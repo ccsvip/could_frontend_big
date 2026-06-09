@@ -17,11 +17,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.permissions import (
+    CanCreateAgentApplications,
     CanViewASR,
     CanCreateChat,
     CanCreateLLMProviders,
+    CanDeleteAgentApplications,
     CanDeleteChat,
     CanDeleteLLMProviders,
+    CanUpdateAgentApplications,
+    CanViewAgentApplications,
     CanUpdateLLMProviders,
     CanViewChat,
     CanViewLLMProviders,
@@ -32,11 +36,12 @@ from apps.resources.views import PermissionMappedModelViewSet
 from apps.tenants.mixins import TenantScopedQuerysetMixin
 from apps.tenants.models import Tenant
 
-from .models import ASRReplacementRule, ChatConversation, ChatMessage, LLMProvider
+from .models import ASRReplacementRule, AgentApplication, ChatConversation, ChatMessage, LLMProvider
 from .realtime_asr import resolve_asr_device_connection
 from .serializers import (
     ASRConfigSerializer,
     ASRReplacementRuleSerializer,
+    AgentApplicationSerializer,
     ChatConversationConfigSerializer,
     ChatConversationCreateSerializer,
     ChatConversationDetailSerializer,
@@ -418,6 +423,61 @@ class LLMProviderViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet
                 'message': str(exc)[:200],
                 'latencyMs': latency,
             })
+
+
+@extend_schema_view(
+    list=extend_schema(tags=['Agent Applications']),
+    retrieve=extend_schema(tags=['Agent Applications']),
+    create=extend_schema(tags=['Agent Applications']),
+    update=extend_schema(tags=['Agent Applications']),
+    partial_update=extend_schema(tags=['Agent Applications']),
+    destroy=extend_schema(tags=['Agent Applications']),
+    create_conversation=extend_schema(tags=['Agent Applications']),
+)
+class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
+    queryset = AgentApplication.objects.select_related('llm_provider', 'created_by').prefetch_related('knowledge_documents')
+    serializer_class = AgentApplicationSerializer
+    permission_map = {
+        'list': [CanViewAgentApplications],
+        'retrieve': [CanViewAgentApplications],
+        'create': [CanCreateAgentApplications],
+        'update': [CanUpdateAgentApplications],
+        'partial_update': [CanUpdateAgentApplications],
+        'destroy': [CanDeleteAgentApplications],
+        'create_conversation': [CanViewAgentApplications, CanCreateChat],
+    }
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        keyword = self.request.query_params.get('keyword', '').strip()
+        if keyword:
+            queryset = queryset.filter(Q(name__icontains=keyword) | Q(description__icontains=keyword))
+        return queryset
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['tenant'] = self.request_tenant
+        return context
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user, **self.tenant_create_kwargs())
+
+    @action(detail=True, methods=['post'], url_path='conversations')
+    def create_conversation(self, request, pk=None):
+        application = self.get_object()
+        conversation = ChatConversation.objects.create(
+            title=f'{application.name} 调试会话',
+            user=request.user,
+            llm_provider=application.llm_provider,
+            model_name=application.model_name,
+            summary='',
+            system_prompt=application.system_prompt,
+            temperature=application.temperature,
+            max_tokens=application.max_tokens,
+            application=application,
+            tenant=application.tenant,
+        )
+        return Response(ChatConversationDetailSerializer(conversation).data, status=status.HTTP_201_CREATED)
 
 
 @extend_schema_view(
