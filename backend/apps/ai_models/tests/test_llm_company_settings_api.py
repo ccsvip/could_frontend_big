@@ -193,7 +193,7 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
         )
 
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('defaultModelId', resp.data)
+        self.assertIn('modelId', resp.data)
         self.settings.refresh_from_db()
         self.assertEqual(self.settings.default_model_id, self.model.id)
 
@@ -214,7 +214,7 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
         )
 
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('defaultModelId', resp.data)
+        self.assertIn('modelId', resp.data)
         self.settings.refresh_from_db()
         self.assertEqual(self.settings.default_model_id, self.model.id)
 
