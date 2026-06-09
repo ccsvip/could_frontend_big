@@ -121,6 +121,11 @@ class LLMTestSettings(models.Model):
     def __str__(self):
         return 'LLM Test Settings'
 
+    @classmethod
+    def load(cls) -> 'LLMTestSettings':
+        instance, _ = cls.objects.get_or_create(pk=1)
+        return instance
+
 
 class ASRConfig(models.Model):
     workspace_id = models.CharField('Workspace ID', max_length=128, blank=True, default='')

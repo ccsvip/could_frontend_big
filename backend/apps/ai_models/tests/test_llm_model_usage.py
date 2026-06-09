@@ -1,10 +1,24 @@
+from unittest.mock import MagicMock, patch
+
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import ChatConversation
+from apps.ai_models.llm_services import (
+    get_effective_llm_model_for_tenant,
+    get_effective_llm_models_for_tenant,
+    get_tenant_llm_settings,
+    is_llm_model_effective_for_tenant,
+    llm_model_has_usage,
+    llm_provider_has_usage,
+    mask_api_key,
+    run_llm_model_test,
+    validate_llm_test_settings_values,
+)
+from apps.ai_models.models import ChatConversation, LLMTestSettings
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
@@ -88,6 +102,131 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
     def company_settings(self, *, default_model=None):
         Settings = self.tenant_settings_model()
         return Settings.objects.create(tenant=self.tenant, default_model=default_model)
+
+    def test_mask_api_key_keeps_only_safe_edges(self):
+        self.assertEqual(mask_api_key(''), '')
+        self.assertEqual(mask_api_key('shortkey'), '****')
+        self.assertEqual(mask_api_key('sk-1234567890'), 'sk-...7890')
+
+    def test_effective_models_include_only_active_granted_models_for_tenant(self):
+        inactive_provider = self.create_platform_provider(name='Inactive Provider', is_active=False)
+        inactive_provider_model = self.create_model(provider=inactive_provider, name='inactive-provider-model')
+        inactive_model = self.create_model(provider=self.provider, name='inactive-model', is_active=False)
+        inactive_grant_model = self.create_model(provider=self.provider, name='inactive-grant-model')
+        self.grant_model(inactive_provider_model)
+        self.grant_model(inactive_model)
+        self.grant_model(inactive_grant_model, is_active=False)
+
+        effective_ids = list(get_effective_llm_models_for_tenant(self.tenant).values_list('id', flat=True))
+
+        self.assertEqual(effective_ids, [self.default_model.id])
+        self.assertEqual(get_effective_llm_model_for_tenant(self.tenant, self.default_model.id), self.default_model)
+        self.assertIsNone(get_effective_llm_model_for_tenant(self.tenant, self.other_model.id))
+        self.assertFalse(get_effective_llm_models_for_tenant(None).exists())
+
+    def test_tenant_settings_service_creates_company_settings_once(self):
+        self.settings.delete()
+
+        created = get_tenant_llm_settings(self.tenant)
+        loaded = get_tenant_llm_settings(self.tenant)
+
+        self.assertEqual(created, loaded)
+        self.assertIsNone(created.default_model)
+
+    def test_llm_model_effective_service_returns_boolean(self):
+        self.assertTrue(is_llm_model_effective_for_tenant(self.tenant, self.default_model))
+        self.assertFalse(is_llm_model_effective_for_tenant(self.tenant, self.other_model))
+        self.assertFalse(is_llm_model_effective_for_tenant(None, self.default_model))
+        self.assertFalse(is_llm_model_effective_for_tenant(self.tenant, None))
+
+    def test_usage_helpers_detect_model_and_provider_references(self):
+        unused_provider = self.create_platform_provider(name='Unused Provider')
+        unused_model = self.create_model(provider=unused_provider, name='unused-model')
+
+        self.assertTrue(llm_model_has_usage(self.default_model))
+        self.assertFalse(llm_model_has_usage(unused_model))
+        self.assertTrue(llm_provider_has_usage(self.provider))
+        self.assertFalse(llm_provider_has_usage(unused_provider))
+
+    def test_validate_llm_test_settings_values_rejects_out_of_range_values(self):
+        validate_llm_test_settings_values(
+            prompt='连接测试',
+            cooldown=0,
+            timeout=1,
+            max_tokens=1,
+        )
+
+        invalid_cases = [
+            ({'prompt': '   ', 'cooldown': 0, 'timeout': 1, 'max_tokens': 1}, 'testPrompt'),
+            ({'prompt': 'x' * 2001, 'cooldown': 0, 'timeout': 1, 'max_tokens': 1}, 'testPrompt'),
+            ({'prompt': '连接测试', 'cooldown': 3601, 'timeout': 1, 'max_tokens': 1}, 'testCooldownSeconds'),
+            ({'prompt': '连接测试', 'cooldown': 0, 'timeout': 0, 'max_tokens': 1}, 'testTimeoutSeconds'),
+            ({'prompt': '连接测试', 'cooldown': 0, 'timeout': 1, 'max_tokens': 513}, 'testMaxTokens'),
+        ]
+        for values, field in invalid_cases:
+            with self.subTest(field=field):
+                with self.assertRaises(ValidationError) as ctx:
+                    validate_llm_test_settings_values(**values)
+                self.assertIn(field, ctx.exception.detail)
+
+    def test_llm_test_settings_load_uses_singleton_row(self):
+        first = LLMTestSettings.load()
+        second = LLMTestSettings.load()
+
+        self.assertEqual(first.pk, 1)
+        self.assertEqual(first, second)
+
+    @patch('apps.ai_models.llm_services.httpx.Client')
+    def test_run_llm_model_test_posts_safe_openai_compatible_request(self, mock_client_class):
+        settings = LLMTestSettings(
+            test_prompt='请回复连接成功',
+            test_timeout_seconds=7,
+            test_max_tokens=12,
+        )
+        response = MagicMock(status_code=200)
+        client = mock_client_class.return_value.__enter__.return_value
+        client.post.return_value = response
+
+        result = run_llm_model_test(model=self.default_model, settings=settings)
+
+        self.assertTrue(result['success'])
+        self.assertEqual(result['message'], '连接成功')
+        self.assertIsInstance(result['latencyMs'], int)
+        self.assertIn('testedAt', result)
+        mock_client_class.assert_called_once_with(timeout=7)
+        client.post.assert_called_once()
+        api_url = client.post.call_args.args[0]
+        self.assertEqual(api_url, 'https://api.openai.com/v1/chat/completions')
+        self.assertEqual(client.post.call_args.kwargs['json'], {
+            'model': 'gpt-4.1',
+            'messages': [{'role': 'user', 'content': '请回复连接成功'}],
+            'stream': False,
+            'temperature': 0,
+            'max_tokens': 12,
+        })
+        self.assertEqual(client.post.call_args.kwargs['headers']['Authorization'], 'Bearer sk-secret')
+        self.assertNotIn('sk-secret', str(result))
+        self.assertNotIn('https://api.openai.com', str(result))
+
+    @patch('apps.ai_models.llm_services.httpx.Client')
+    def test_run_llm_model_test_returns_safe_failure_summary(self, mock_client_class):
+        settings = LLMTestSettings(
+            test_prompt='请回复连接成功',
+            test_timeout_seconds=7,
+            test_max_tokens=12,
+        )
+        response = MagicMock(status_code=401)
+        client = mock_client_class.return_value.__enter__.return_value
+        client.post.return_value = response
+
+        result = run_llm_model_test(model=self.default_model, settings=settings)
+
+        self.assertFalse(result['success'])
+        self.assertEqual(result['message'], '连接失败 (HTTP 401)')
+        self.assertIsInstance(result['latencyMs'], int)
+        self.assertIn('testedAt', result)
+        self.assertNotIn('sk-secret', str(result))
+        self.assertNotIn('https://api.openai.com', str(result))
 
     def test_chat_creation_snapshots_company_default_model(self):
         self.grant_permissions('ai_models.chat.create')
