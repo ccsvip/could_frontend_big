@@ -1,3 +1,7 @@
+import asyncio
+from types import SimpleNamespace
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.test import TestCase
@@ -8,6 +12,28 @@ from apps.devices.models import Device, DeviceApplication
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
+
+
+class HangingUpstream:
+    def __init__(self):
+        self.messages = []
+        self._event = asyncio.Event()
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+    async def send(self, message):
+        self.messages.append(message)
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        await self._event.wait()
+        raise StopAsyncIteration
 
 
 class ASRRealtimeTests(TenantTestMixin, TestCase):
@@ -188,3 +214,40 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
                 'application_id': application.id,
             },
         )
+
+    def test_asr_realtime_returns_without_closing_after_browser_disconnect(self):
+        from apps.ai_models.realtime_asr import asr_realtime_websocket_application
+
+        sent_messages = []
+        state = {'disconnected': False}
+
+        async def receive():
+            state['disconnected'] = True
+            return {'type': 'websocket.disconnect'}
+
+        async def send(message):
+            if state['disconnected'] and message.get('type') == 'websocket.close':
+                raise RuntimeError(
+                    "Unexpected ASGI message 'websocket.close', after sending "
+                    "'websocket.close' or response already completed."
+                )
+            sent_messages.append(message)
+
+        config = SimpleNamespace(is_active=True, api_key='test-api-key', workspace_id='test-workspace')
+        upstream = HangingUpstream()
+        scope = {'type': 'websocket', 'query_string': b'token=test-token', 'headers': []}
+
+        with (
+            patch(
+                'apps.ai_models.realtime_asr.resolve_asr_realtime_connection',
+                return_value={'user_id': self.user.id, 'tenant_id': self.tenant.id},
+            ),
+            patch('apps.ai_models.realtime_asr.get_effective_asr_config', return_value=config),
+            patch('apps.ai_models.realtime_asr.is_asr_configured', return_value=True),
+            patch('apps.ai_models.realtime_asr.build_asr_ws_url', return_value='ws://asr.example/realtime'),
+            patch('apps.ai_models.realtime_asr.load_asr_replacement_pairs', return_value=[]),
+            patch('apps.ai_models.realtime_asr.websockets.connect', return_value=upstream),
+        ):
+            asyncio.run(asr_realtime_websocket_application(scope, receive, send))
+
+        self.assertNotIn('websocket.close', [message.get('type') for message in sent_messages])

@@ -27,6 +27,7 @@ FINAL_EVENT_TYPES = {
     'conversation.item.input_audio_transcription.completed',
     'conversation.item.input_audio_transcription.finished',
 }
+_BROWSER_DISCONNECTED = 'browser_disconnected'
 
 
 async def asr_realtime_websocket_application(scope, receive, send):
@@ -57,6 +58,7 @@ async def asr_realtime_websocket_application(scope, receive, send):
         connection.get('tenant_id'),
     )
 
+    should_close_browser = True
     try:
         async with websockets.connect(
             build_asr_ws_url(config),
@@ -82,15 +84,20 @@ async def asr_realtime_websocket_application(scope, receive, send):
             )
             for task in pending:
                 task.cancel()
+            if browser_task in done and browser_task.result() == _BROWSER_DISCONNECTED:
+                should_close_browser = False
             for task in done:
-                task.result()
+                if task is not browser_task:
+                    task.result()
     except Exception as exc:
-        await send({
-            'type': 'websocket.send',
-            'text': json.dumps({'type': 'asr.error', 'message': str(exc)[:200]}),
-        })
+        if should_close_browser:
+            await send({
+                'type': 'websocket.send',
+                'text': json.dumps({'type': 'asr.error', 'message': str(exc)[:200]}),
+            })
     finally:
-        await send({'type': 'websocket.close', 'code': 1000})
+        if should_close_browser:
+            await send({'type': 'websocket.close', 'code': 1000})
 
 
 def resolve_asr_realtime_connection(
@@ -220,7 +227,7 @@ def extract_transcript_payload(
     }
 
 
-async def _browser_to_upstream(receive, upstream) -> None:
+async def _browser_to_upstream(receive, upstream) -> str | None:
     while True:
         event = await receive()
         event_type = event.get('type')
@@ -229,7 +236,7 @@ async def _browser_to_upstream(receive, upstream) -> None:
                 await upstream.send(json.dumps(_session_finish_event()))
             except Exception:
                 pass
-            return
+            return _BROWSER_DISCONNECTED
 
         if event_type != 'websocket.receive':
             continue

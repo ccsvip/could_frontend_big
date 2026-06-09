@@ -126,7 +126,7 @@ export const LogManagementPage = () => {
         },
       },
       {
-        title: '操作具体做了什么',
+        title: '具体操作',
         dataIndex: 'description',
         key: 'description',
         width: '30%',
