@@ -479,7 +479,30 @@ def validate_llm_test_settings_values(*, prompt: str, cooldown: int, timeout: in
         raise ValidationError({'testMaxTokens': '测速最大输出 tokens 必须在 1 到 512 之间'})
 ```
 
-- [ ] **Step 3: Run service-related tests**
+- [ ] **Step 3: Add model test service boundary**
+
+Add the service function that API tests should mock instead of making real upstream requests:
+
+```python
+def run_llm_model_test(*, model: LLMModel, settings: LLMTestSettings) -> dict:
+    """Run one non-streaming OpenAI-compatible test request and return a safe summary."""
+    ...
+```
+
+The function must return a safe response dictionary with:
+
+```python
+{
+    'success': True,
+    'message': '连接成功',
+    'latencyMs': 123,
+    'testedAt': '2026-06-10T12:00:00+08:00',
+}
+```
+
+It must not return completion text or API key values.
+
+- [ ] **Step 4: Run service-related tests**
 
 Run:
 
@@ -489,7 +512,7 @@ docker compose exec backend python manage.py test apps.ai_models.tests.test_llm_
 
 Expected: tests still fail only on missing API/view integration, not import errors.
 
-- [ ] **Step 4: Commit services**
+- [ ] **Step 5: Commit services**
 
 Run:
 
