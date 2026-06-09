@@ -31,7 +31,7 @@ class LLMProvider(models.Model):
     class Meta:
         verbose_name = 'LLM 供应商'
         verbose_name_plural = 'LLM 供应商'
-        ordering = ['-created_at']
+        ordering = ['sort_order', 'id']
 
     def __str__(self):
         return f'{self.name} ({self.get_provider_type_display()})'

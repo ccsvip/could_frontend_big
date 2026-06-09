@@ -52,6 +52,10 @@ class Migration(migrations.Migration):
             name='sort_order',
             field=models.PositiveIntegerField(default=0, verbose_name='排序'),
         ),
+        migrations.AlterModelOptions(
+            name='llmprovider',
+            options={'ordering': ['sort_order', 'id'], 'verbose_name': 'LLM 供应商', 'verbose_name_plural': 'LLM 供应商'},
+        ),
         migrations.CreateModel(
             name='LLMModel',
             fields=[
