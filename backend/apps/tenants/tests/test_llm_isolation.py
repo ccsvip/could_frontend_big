@@ -25,8 +25,8 @@ class LLMTenantIsolationTests(APITestCase):
 
         Provider = apps.get_model('ai_models', 'LLMProvider')
         LLMModel = apps.get_model('ai_models', 'LLMModel')
-        CompanyLLMGrant = apps.get_model('ai_models', 'CompanyLLMGrant')
-        CompanyLLMSettings = apps.get_model('ai_models', 'CompanyLLMSettings')
+        TenantLLMModelGrant = apps.get_model('ai_models', 'TenantLLMModelGrant')
+        TenantLLMSettings = apps.get_model('ai_models', 'TenantLLMSettings')
 
         cls.provider_a = Provider.objects.create(
             name='A 的供应商', provider_type='openai',
@@ -39,8 +39,8 @@ class LLMTenantIsolationTests(APITestCase):
             name='gpt-4.1',
             is_active=True,
         )
-        CompanyLLMGrant.objects.create(tenant=cls.tenant_a, model=cls.model_a, is_active=True)
-        CompanyLLMSettings.objects.create(tenant=cls.tenant_a, default_model=cls.model_a)
+        TenantLLMModelGrant.objects.create(tenant=cls.tenant_a, model=cls.model_a, is_active=True)
+        TenantLLMSettings.objects.create(tenant=cls.tenant_a, default_model=cls.model_a)
 
     def test_llm_options_scoped_to_company_grants(self):
         self.client.force_authenticate(self.user_a)
@@ -71,7 +71,7 @@ class LLMTenantIsolationTests(APITestCase):
         self.client.force_authenticate(self.user_b)
         resp = self.client.patch(
             f'/api/v1/ai-models/chat/conversations/{conv.id}/update-config/',
-            {'modelId': self.model_a.id},
+            {'llmModelId': self.model_a.id},
             format='json',
         )
         self.assertEqual(resp.status_code, 400)

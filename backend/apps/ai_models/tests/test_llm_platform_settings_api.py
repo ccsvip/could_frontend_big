@@ -164,15 +164,33 @@ class LLMPlatformSettingsApiTests(TenantTestMixin, APITestCase):
         self.assertTrue(self.llm_model_model().objects.filter(id=model.id).exists())
         self.assertTrue(self.provider_model().objects.filter(id=provider.id).exists())
 
-    def test_global_test_settings_validation_rejects_invalid_bounds(self):
+    def test_test_settings_validation_rejects_invalid_bounds(self):
         self.client.force_authenticate(self.superuser)
         cases = [
-            ({'testPrompt': '', 'timeoutSeconds': 10, 'maxTokens': 128}, 'testPrompt'),
-            ({'testPrompt': 'x' * 2001, 'timeoutSeconds': 10, 'maxTokens': 128}, 'testPrompt'),
-            ({'testPrompt': 'Say hello', 'timeoutSeconds': 0, 'maxTokens': 128}, 'timeoutSeconds'),
-            ({'testPrompt': 'Say hello', 'timeoutSeconds': 61, 'maxTokens': 128}, 'timeoutSeconds'),
-            ({'testPrompt': 'Say hello', 'timeoutSeconds': 10, 'maxTokens': 0}, 'maxTokens'),
-            ({'testPrompt': 'Say hello', 'timeoutSeconds': 10, 'maxTokens': 513}, 'maxTokens'),
+            (
+                {'testPrompt': '', 'testTimeoutSeconds': 10, 'testMaxTokens': 128, 'testCooldownSeconds': 30},
+                'testPrompt',
+            ),
+            (
+                {'testPrompt': 'x' * 2001, 'testTimeoutSeconds': 10, 'testMaxTokens': 128, 'testCooldownSeconds': 30},
+                'testPrompt',
+            ),
+            (
+                {'testPrompt': 'Say hello', 'testTimeoutSeconds': 0, 'testMaxTokens': 128, 'testCooldownSeconds': 30},
+                'testTimeoutSeconds',
+            ),
+            (
+                {'testPrompt': 'Say hello', 'testTimeoutSeconds': 61, 'testMaxTokens': 128, 'testCooldownSeconds': 30},
+                'testTimeoutSeconds',
+            ),
+            (
+                {'testPrompt': 'Say hello', 'testTimeoutSeconds': 10, 'testMaxTokens': 0, 'testCooldownSeconds': 30},
+                'testMaxTokens',
+            ),
+            (
+                {'testPrompt': 'Say hello', 'testTimeoutSeconds': 10, 'testMaxTokens': 513, 'testCooldownSeconds': 30},
+                'testMaxTokens',
+            ),
         ]
 
         for payload, field in cases:

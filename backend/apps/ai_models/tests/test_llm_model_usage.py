@@ -31,12 +31,12 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
         return apps.get_model('ai_models', 'LLMModel')
 
     @staticmethod
-    def company_grant_model():
-        return apps.get_model('ai_models', 'CompanyLLMGrant')
+    def tenant_grant_model():
+        return apps.get_model('ai_models', 'TenantLLMModelGrant')
 
     @staticmethod
-    def company_settings_model():
-        return apps.get_model('ai_models', 'CompanyLLMSettings')
+    def tenant_settings_model():
+        return apps.get_model('ai_models', 'TenantLLMSettings')
 
     @staticmethod
     def agent_application_model():
@@ -82,11 +82,11 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
         return LLMModel.objects.create(**data)
 
     def grant_model(self, model, *, is_active=True):
-        Grant = self.company_grant_model()
+        Grant = self.tenant_grant_model()
         return Grant.objects.create(tenant=self.tenant, model=model, is_active=is_active)
 
     def company_settings(self, *, default_model=None):
-        Settings = self.company_settings_model()
+        Settings = self.tenant_settings_model()
         return Settings.objects.create(tenant=self.tenant, default_model=default_model)
 
     def test_chat_creation_snapshots_company_default_model(self):
@@ -122,7 +122,7 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
 
         resp = self.client.patch(
             f'/api/v1/ai-models/chat/conversations/{conversation.id}/update-config/',
-            {'modelId': self.other_model.id},
+            {'llmModelId': self.other_model.id},
             format='json',
         )
 
@@ -191,10 +191,10 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
             '/api/v1/ai-models/applications/',
             {
                 'name': 'Unsafe app',
-                'modelId': self.other_model.id,
+                'llmModelId': self.other_model.id,
             },
             format='json',
         )
 
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('modelId', resp.data)
+        self.assertIn('llmModelId', resp.data)
