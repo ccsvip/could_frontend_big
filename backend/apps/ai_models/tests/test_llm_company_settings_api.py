@@ -173,6 +173,49 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
         self.settings.refresh_from_db()
         self.assertEqual(self.settings.default_model_id, self.model.id)
 
+    def test_company_cannot_set_default_to_granted_model_when_provider_disabled(self):
+        self.grant_permissions('ai_models.llm.update')
+        disabled_provider = self.create_platform_provider(name='Disabled provider', is_active=False)
+        disabled_provider_model = self.create_model(
+            provider=disabled_provider,
+            name='disabled-provider-model',
+            display_name='Disabled Provider Model',
+        )
+        self.grant_model(disabled_provider_model)
+        self.client.force_authenticate(self.tenant_user)
+
+        resp = self.client.patch(
+            '/api/v1/ai-models/llm/settings/',
+            {'defaultModelId': disabled_provider_model.id},
+            format='json',
+        )
+
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('defaultModelId', resp.data)
+        self.settings.refresh_from_db()
+        self.assertEqual(self.settings.default_model_id, self.model.id)
+
+    def test_company_cannot_set_default_to_granted_model_when_model_disabled(self):
+        self.grant_permissions('ai_models.llm.update')
+        disabled_model = self.create_model(
+            name='disabled-model',
+            display_name='Disabled Model',
+            is_active=False,
+        )
+        self.grant_model(disabled_model)
+        self.client.force_authenticate(self.tenant_user)
+
+        resp = self.client.patch(
+            '/api/v1/ai-models/llm/settings/',
+            {'defaultModelId': disabled_model.id},
+            format='json',
+        )
+
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('defaultModelId', resp.data)
+        self.settings.refresh_from_db()
+        self.assertEqual(self.settings.default_model_id, self.model.id)
+
     def test_user_with_view_permission_can_test_but_cannot_set_default(self):
         self.grant_permissions('ai_models.llm.view')
         self.configure_global_test_settings(test_cooldown_seconds=0)
