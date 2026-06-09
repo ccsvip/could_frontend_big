@@ -58,6 +58,50 @@ type ReplacementRuleFormValues = {
 
 const TARGET_SAMPLE_RATE = 16000;
 const RULE_PAGE_SIZE = 10;
+const AUDIO_CHUNK_SIZE = 4096;
+const AUDIO_WORKLET_PROCESSOR_NAME = 'asr-pcm-capture-processor';
+const AUDIO_WORKLET_PROCESSOR_SOURCE = `
+class AsrPcmCaptureProcessor extends AudioWorkletProcessor {
+  constructor() {
+    super();
+    this.chunkSize = ${AUDIO_CHUNK_SIZE};
+    this.buffer = new Float32Array(this.chunkSize);
+    this.offset = 0;
+  }
+
+  process(inputs, outputs) {
+    const input = inputs[0] && inputs[0][0];
+    const output = outputs[0] && outputs[0][0];
+
+    if (output) {
+      output.fill(0);
+    }
+    if (!input) {
+      return true;
+    }
+
+    let inputOffset = 0;
+    while (inputOffset < input.length) {
+      const available = this.chunkSize - this.offset;
+      const length = Math.min(available, input.length - inputOffset);
+      this.buffer.set(input.subarray(inputOffset, inputOffset + length), this.offset);
+      this.offset += length;
+      inputOffset += length;
+
+      if (this.offset === this.chunkSize) {
+        const chunk = this.buffer;
+        this.port.postMessage(chunk, [chunk.buffer]);
+        this.buffer = new Float32Array(this.chunkSize);
+        this.offset = 0;
+      }
+    }
+
+    return true;
+  }
+}
+
+registerProcessor('${AUDIO_WORKLET_PROCESSOR_NAME}', AsrPcmCaptureProcessor);
+`;
 
 const phaseMeta: Record<TestPhase, { label: string; color: string }> = {
   idle: { label: '待测试', color: 'default' },
@@ -125,7 +169,7 @@ export const AsrManagementPage = () => {
   const streamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
-  const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const workletNodeRef = useRef<AudioWorkletNode | null>(null);
   const gainRef = useRef<GainNode | null>(null);
   const ignoreTranscriptRef = useRef(false);
 
@@ -164,12 +208,13 @@ export const AsrManagementPage = () => {
   }, [loadReplacementRules]);
 
   const stopAudio = useCallback(() => {
-    processorRef.current?.disconnect();
+    workletNodeRef.current?.port.close();
+    workletNodeRef.current?.disconnect();
     sourceRef.current?.disconnect();
     gainRef.current?.disconnect();
     streamRef.current?.getTracks().forEach((track) => track.stop());
     void audioContextRef.current?.close();
-    processorRef.current = null;
+    workletNodeRef.current = null;
     sourceRef.current = null;
     gainRef.current = null;
     streamRef.current = null;
@@ -250,33 +295,54 @@ export const AsrManagementPage = () => {
     await loadReplacementRules(nextPage);
   };
 
-  const setupAudioStreaming = useCallback((stream: MediaStream, socket: WebSocket) => {
+  const setupAudioStreaming = useCallback(async (stream: MediaStream, socket: WebSocket) => {
     const AudioContextClass = window.AudioContext || (window as WebAudioWindow).webkitAudioContext;
     if (!AudioContextClass) {
       throw new Error('当前浏览器不支持音频采集');
     }
     const audioContext = new AudioContextClass();
+    audioContextRef.current = audioContext;
+    if (!audioContext.audioWorklet || typeof AudioWorkletNode === 'undefined') {
+      throw new Error('当前浏览器不支持 AudioWorklet，无法进行实时音频采集');
+    }
+
     const source = audioContext.createMediaStreamSource(stream);
-    const processor = audioContext.createScriptProcessor(4096, 1, 1);
     const silentGain = audioContext.createGain();
     silentGain.gain.value = 0;
+    const workletUrl = URL.createObjectURL(
+      new Blob([AUDIO_WORKLET_PROCESSOR_SOURCE], { type: 'application/javascript' }),
+    );
 
-    processor.onaudioprocess = (event) => {
+    try {
+      await audioContext.audioWorklet.addModule(workletUrl);
+    } finally {
+      URL.revokeObjectURL(workletUrl);
+    }
+
+    const workletNode = new AudioWorkletNode(audioContext, AUDIO_WORKLET_PROCESSOR_NAME, {
+      channelCount: 1,
+      channelCountMode: 'explicit',
+      channelInterpretation: 'speakers',
+      numberOfInputs: 1,
+      numberOfOutputs: 1,
+      outputChannelCount: [1],
+    });
+
+    workletNode.port.onmessage = (event: MessageEvent<Float32Array>) => {
       if (socket.readyState !== WebSocket.OPEN) {
         return;
       }
-      const channelData = event.inputBuffer.getChannelData(0);
+      const channelData = event.data;
       const pcm = encodePCM16(downsampleBuffer(channelData, audioContext.sampleRate));
       socket.send(pcm);
     };
 
-    source.connect(processor);
-    processor.connect(silentGain);
+    source.connect(workletNode);
+    workletNode.connect(silentGain);
     silentGain.connect(audioContext.destination);
 
-    audioContextRef.current = audioContext;
     sourceRef.current = source;
-    processorRef.current = processor;
+    workletNodeRef.current = workletNode;
     gainRef.current = silentGain;
   }, []);
 
@@ -342,7 +408,12 @@ export const AsrManagementPage = () => {
       socketRef.current = socket;
 
       socket.onopen = () => {
-        setupAudioStreaming(stream, socket);
+        void setupAudioStreaming(stream, socket).catch((error: unknown) => {
+          setErrorText(error instanceof Error ? error.message : '无法打开麦克风');
+          setPhase('error');
+          stopAudio();
+          closeSocket();
+        });
       };
       socket.onmessage = handleSocketMessage;
       socket.onerror = () => {
