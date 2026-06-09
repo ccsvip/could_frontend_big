@@ -38,6 +38,8 @@ def get_effective_llm_model_for_tenant(tenant, model_id):
 
 
 def get_tenant_llm_settings(tenant):
+    if tenant is None:
+        return None
     settings, _ = TenantLLMSettings.objects.get_or_create(tenant=tenant)
     return settings
 
@@ -49,6 +51,8 @@ def is_llm_model_effective_for_tenant(tenant, model) -> bool:
 
 
 def llm_model_has_usage(model) -> bool:
+    if model is None:
+        return False
     return (
         model.tenant_grants.exists()
         or model.tenant_default_settings.exists()
@@ -58,6 +62,8 @@ def llm_model_has_usage(model) -> bool:
 
 
 def llm_provider_has_usage(provider) -> bool:
+    if provider is None:
+        return False
     return LLMModel.objects.filter(provider=provider).filter(
         models.Q(tenant_grants__isnull=False)
         | models.Q(tenant_default_settings__isnull=False)
@@ -99,8 +105,10 @@ def _test_summary(*, success: bool, message: str, start: float) -> dict:
     }
 
 
-def run_llm_model_test(*, model: LLMModel, settings: LLMTestSettings) -> dict:
+def run_llm_model_test(*, model: LLMModel, settings: LLMTestSettings | None = None) -> dict:
     """Run one non-streaming OpenAI-compatible test request and return a safe summary."""
+    if settings is None:
+        settings = LLMTestSettings.load()
     provider = model.provider
     api_url = _build_chat_completions_url(provider.api_base_url)
     payload = {

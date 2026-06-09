@@ -132,6 +132,7 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(created, loaded)
         self.assertIsNone(created.default_model)
+        self.assertIsNone(get_tenant_llm_settings(None))
 
     def test_llm_model_effective_service_returns_boolean(self):
         self.assertTrue(is_llm_model_effective_for_tenant(self.tenant, self.default_model))
@@ -145,8 +146,10 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
 
         self.assertTrue(llm_model_has_usage(self.default_model))
         self.assertFalse(llm_model_has_usage(unused_model))
+        self.assertFalse(llm_model_has_usage(None))
         self.assertTrue(llm_provider_has_usage(self.provider))
         self.assertFalse(llm_provider_has_usage(unused_provider))
+        self.assertFalse(llm_provider_has_usage(None))
 
     def test_validate_llm_test_settings_values_rejects_out_of_range_values(self):
         validate_llm_test_settings_values(
@@ -227,6 +230,28 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
         self.assertIn('testedAt', result)
         self.assertNotIn('sk-secret', str(result))
         self.assertNotIn('https://api.openai.com', str(result))
+
+    @patch('apps.ai_models.llm_services.LLMTestSettings.load')
+    @patch('apps.ai_models.llm_services.httpx.Client')
+    def test_run_llm_model_test_loads_global_settings_when_none(self, mock_client_class, mock_load):
+        mock_load.return_value = LLMTestSettings(
+            test_prompt='全局连接测试',
+            test_timeout_seconds=5,
+            test_max_tokens=8,
+        )
+        response = MagicMock(status_code=200)
+        client = mock_client_class.return_value.__enter__.return_value
+        client.post.return_value = response
+
+        result = run_llm_model_test(model=self.default_model, settings=None)
+
+        self.assertTrue(result['success'])
+        mock_load.assert_called_once_with()
+        mock_client_class.assert_called_once_with(timeout=5)
+        self.assertEqual(client.post.call_args.kwargs['json']['messages'], [
+            {'role': 'user', 'content': '全局连接测试'},
+        ])
+        self.assertEqual(client.post.call_args.kwargs['json']['max_tokens'], 8)
 
     def test_chat_creation_snapshots_company_default_model(self):
         self.grant_permissions('ai_models.chat.create')
