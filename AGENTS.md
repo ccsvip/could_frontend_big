@@ -140,7 +140,7 @@ docker compose logs -f web
 - 每次执行完任务之后都需要提交代码（非远端）使用中文去执行commit
 - 如果需要测试openai兼容接口，请使用 groq 
     - 地址 https://api.groq.com/openai/v1
-    - 密钥 GROQ_API_KEY
+    - 密钥请从环境变量 `GROQ_API_KEY` 读取，禁止提交明文密钥
     - 模型名称 qwen/qwen3-32b
 
 ## 务必遵循
