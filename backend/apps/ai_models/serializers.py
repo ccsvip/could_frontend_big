@@ -22,62 +22,6 @@ from .models import (
 )
 
 
-class LLMProviderSerializer(serializers.ModelSerializer):
-    providerType = serializers.CharField(source='provider_type')
-    providerTypeLabel = serializers.CharField(source='get_provider_type_display', read_only=True)
-    apiBaseUrl = serializers.URLField(source='api_base_url')
-    apiKey = serializers.CharField(source='api_key', required=False)
-    avatarUrl = serializers.SerializerMethodField(read_only=True)
-    clearAvatar = serializers.BooleanField(write_only=True, required=False, default=False)
-    modelsConfig = serializers.JSONField(source='models_config', required=False, default=list)
-    isActive = serializers.BooleanField(source='is_active', required=False, default=True)
-
-    class Meta:
-        model = LLMProvider
-        fields = [
-            'id', 'name', 'providerType', 'providerTypeLabel',
-            'apiBaseUrl', 'apiKey',
-            'avatar', 'avatarUrl', 'clearAvatar',
-            'modelsConfig', 'isActive',
-            'created_at', 'updated_at',
-        ]
-        extra_kwargs = {
-            'avatar': {'write_only': True, 'required': False},
-        }
-
-    @extend_schema_field(serializers.URLField(allow_null=True))
-    def get_avatarUrl(self, obj: LLMProvider) -> str | None:
-        if obj.avatar:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.avatar.url)
-            return obj.avatar.url
-        return None
-
-    def validate_modelsConfig(self, value):
-        if not isinstance(value, list):
-            raise serializers.ValidationError('模型列表必须是数组')
-        for item in value:
-            if not isinstance(item, dict) or 'name' not in item:
-                raise serializers.ValidationError('每个模型必须包含 name 字段')
-        return value
-
-    def create(self, validated_data):
-        validated_data.pop('clearAvatar', None)
-        return super().create(validated_data)
-
-    def update(self, instance, validated_data):
-        clear_avatar = validated_data.pop('clearAvatar', False)
-        if clear_avatar and instance.avatar:
-            instance.avatar.delete(save=False)
-            instance.avatar = None
-
-        if 'api_key' not in validated_data:
-            validated_data.pop('api_key', None)
-
-        return super().update(instance, validated_data)
-
-
 class PlatformLLMProviderSerializer(serializers.ModelSerializer):
     providerType = serializers.CharField(source='provider_type')
     providerTypeLabel = serializers.CharField(source='get_provider_type_display', read_only=True)

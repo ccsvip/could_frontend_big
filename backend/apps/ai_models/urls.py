@@ -14,7 +14,6 @@ from .views import (
     CompanyLLMModelTestView,
     CompanyLLMOptionsView,
     LLMTestSettingsView,
-    LLMProviderViewSet,
     PlatformLLMModelViewSet,
     PlatformLLMProviderModelsView,
     PlatformLLMProviderViewSet,
@@ -24,7 +23,6 @@ from .views import (
 router = DefaultRouter()
 router.register('settings/llm/providers', PlatformLLMProviderViewSet, basename='platform-llm-provider')
 router.register('settings/llm/models', PlatformLLMModelViewSet, basename='platform-llm-model')
-router.register('ai-models/llm-providers', LLMProviderViewSet, basename='llm-provider')
 router.register('ai-models/asr/replacement-rules', ASRReplacementRuleViewSet, basename='asr-replacement-rule')
 router.register('ai-models/applications', AgentApplicationViewSet, basename='agent-application')
 router.register('ai-models/chat/conversations', ChatConversationViewSet, basename='chat-conversation')

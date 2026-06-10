@@ -1,6 +1,5 @@
 import json
 import logging
-import time
 
 import httpx
 from asgiref.sync import sync_to_async
@@ -23,10 +22,8 @@ from apps.accounts.permissions import (
     CanCreateAgentApplications,
     CanViewASR,
     CanCreateChat,
-    CanCreateLLMProviders,
     CanDeleteAgentApplications,
     CanDeleteChat,
-    CanDeleteLLMProviders,
     CanUpdateAgentApplications,
     CanViewAgentApplications,
     CanUpdateLLMProviders,
@@ -71,7 +68,6 @@ from .serializers import (
     ChatMessageSerializer,
     ChatMessageFeedbackSerializer,
     ChatSendSerializer,
-    LLMProviderSerializer,
     LLMTestSettingsSerializer,
     PlatformLLMModelSerializer,
     PlatformLLMModelWriteSerializer,
@@ -661,97 +657,6 @@ async def _generate_conversation_summary(
     if len(summary) > 60:
         summary = summary[:60].rstrip()
     return summary or None
-
-
-class LLMProviderViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
-    queryset = LLMProvider.objects.all()
-    serializer_class = LLMProviderSerializer
-    parser_classes = [MultiPartParser, JSONParser]
-    permission_map = {
-        'list': [CanViewLLMProviders],
-        'retrieve': [CanViewLLMProviders],
-        'create': [CanCreateLLMProviders],
-        'update': [CanUpdateLLMProviders],
-        'partial_update': [CanUpdateLLMProviders],
-        'destroy': [CanDeleteLLMProviders],
-        'test_connection': [CanViewLLMProviders],
-    }
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        keyword = self.request.query_params.get('keyword')
-        provider_type = self.request.query_params.get('provider_type')
-        is_active = self.request.query_params.get('is_active')
-
-        if keyword:
-            qs = qs.filter(name__icontains=keyword)
-        if provider_type:
-            qs = qs.filter(provider_type=provider_type)
-        if is_active in ('true', 'false'):
-            qs = qs.filter(is_active=is_active == 'true')
-        return qs
-
-    @action(detail=True, methods=['post'], url_path='test-connection')
-    def test_connection(self, request, pk=None):
-        provider = self.get_object()
-        models_config = provider.models_config or []
-        default_model = next((m for m in models_config if m.get('isDefault')), None)
-        if not default_model and models_config:
-            default_model = models_config[0]
-
-        if not default_model:
-            return Response({
-                'success': False,
-                'message': '该供应商未配置任何模型',
-                'latencyMs': 0,
-            })
-
-        model_name = default_model.get('name', '')
-        api_url = _build_chat_completions_url(provider.api_base_url)
-
-        payload = {
-            'model': model_name,
-            'messages': [{'role': 'user', 'content': 'Hi'}],
-            'max_tokens': 5,
-        }
-        headers = {
-            'Authorization': f'Bearer {provider.api_key}',
-            'Content-Type': 'application/json',
-        }
-
-        start = time.time()
-        try:
-            with httpx.Client(timeout=15) as client:
-                resp = client.post(api_url, json=payload, headers=headers)
-            latency = int((time.time() - start) * 1000)
-
-            if resp.status_code == 200:
-                return Response({
-                    'success': True,
-                    'message': '连接成功',
-                    'latencyMs': latency,
-                })
-            else:
-                body = resp.text[:200]
-                return Response({
-                    'success': False,
-                    'message': f'HTTP {resp.status_code}: {body}',
-                    'latencyMs': latency,
-                })
-        except httpx.TimeoutException:
-            latency = int((time.time() - start) * 1000)
-            return Response({
-                'success': False,
-                'message': '请求超时（15秒）',
-                'latencyMs': latency,
-            })
-        except Exception as exc:
-            latency = int((time.time() - start) * 1000)
-            return Response({
-                'success': False,
-                'message': str(exc)[:200],
-                'latencyMs': latency,
-            })
 
 
 @extend_schema_view(

@@ -11,7 +11,7 @@ from django.contrib.auth import get_user_model
 
 from rest_framework.test import APITestCase
 
-from apps.accounts.models import Menu, PermissionPoint
+from apps.accounts.models import Menu, PermissionPoint, Role, UserRole
 from apps.accounts.services.permissions import build_user_access_context
 from apps.tenants.models import Membership, Tenant
 
@@ -57,6 +57,9 @@ class ThreeTierAccessContextTests(APITestCase):
 
         cls.employee = User.objects.create_user('emp', password='pw12345678')
         Membership.objects.create(user=cls.employee, tenant=cls.tenant, role_name='运营', is_tenant_admin=False)
+        cls.employee_role = Role.objects.create(name='运营', code='ops', tenant=cls.tenant)
+        cls.employee_role.permission_points.set([cls.p_dev_view, cls.p_res_view])
+        UserRole.objects.create(user=cls.employee, role=cls.employee_role)
 
     def test_superuser_sees_platform_menu_not_tenant_admin_menu(self):
         ctx = build_user_access_context(self.superuser)

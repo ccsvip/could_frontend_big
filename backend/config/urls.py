@@ -61,7 +61,8 @@ class ApiV1RootView(APIView):
                 },
                 'ai_models': {
                     'conversations': f'{base_url}/ai-models/chat/conversations/',
-                    'llm_providers': f'{base_url}/ai-models/llm-providers/',
+                    'llm_options': f'{base_url}/ai-models/llm/options/',
+                    'llm_settings': f'{base_url}/settings/llm/providers/',
                 },
             },
         })
