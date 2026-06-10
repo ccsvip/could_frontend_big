@@ -13,9 +13,10 @@ export type AgentApplicationRecord = {
   id: number;
   name: string;
   description: string;
-  llmProviderId: number | null;
+  llmModelId: number | null;
+  llmModelName: string;
+  llmModelDisplayName: string;
   llmProviderName: string | null;
-  modelName: string;
   systemPrompt: string;
   temperature: number;
   maxTokens: number;
@@ -42,8 +43,7 @@ export type AgentApplicationListQuery = {
 export type AgentApplicationPayload = {
   name: string;
   description?: string;
-  llmProviderId?: number | null;
-  modelName?: string;
+  llmModelId?: number | null;
   systemPrompt?: string;
   temperature?: number;
   maxTokens?: number;

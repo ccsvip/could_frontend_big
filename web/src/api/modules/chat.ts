@@ -13,9 +13,10 @@ export type ChatConversationListItem = {
   id: number;
   title: string;
   applicationId: number | null;
-  llmProviderId: number | null;
+  llmModelId: number | null;
+  llmModelName: string;
+  llmModelDisplayName: string;
   llmProviderName: string | null;
-  model_name: string;
   summary: string;
   messageCount: number;
   lastMessage: string | null;
@@ -27,9 +28,10 @@ export type ChatConversationDetail = {
   id: number;
   title: string;
   applicationId: number | null;
-  llmProviderId: number | null;
+  llmModelId: number | null;
+  llmModelName: string;
+  llmModelDisplayName: string;
   llmProviderName: string | null;
-  modelName: string;
   summary: string;
   systemPrompt: string;
   temperature: number;
@@ -48,8 +50,7 @@ export type ChatConversationListResponse = {
 
 export type CreateConversationPayload = {
   title?: string;
-  llmProviderId?: number | null;
-  modelName?: string;
+  llmModelId?: number | null;
   systemPrompt?: string;
   temperature?: number;
   maxTokens?: number;
@@ -99,7 +100,7 @@ export const updateConversationTitle = async (id: number, title: string) => {
 
 export const updateConversationConfig = async (
   id: number,
-  payload: Pick<CreateConversationPayload, 'llmProviderId' | 'modelName' | 'systemPrompt' | 'temperature' | 'maxTokens'>,
+  payload: Pick<CreateConversationPayload, 'llmModelId' | 'systemPrompt' | 'temperature' | 'maxTokens'>,
 ) => {
   const response = await httpClient.patch<ChatConversationDetail>(
     `/ai-models/chat/conversations/${id}/update-config/`,
