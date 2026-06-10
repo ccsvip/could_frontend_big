@@ -4,6 +4,7 @@ import time
 
 import httpx
 from asgiref.sync import sync_to_async
+from django.core.cache import cache
 from django.db import transaction
 from django.db import connections
 from django.db.models import Q
@@ -38,7 +39,14 @@ from apps.resources.views import PermissionMappedModelViewSet
 from apps.tenants.mixins import TenantScopedQuerysetMixin
 from apps.tenants.models import Tenant
 
-from .llm_services import llm_model_has_usage, llm_provider_has_usage, run_llm_model_test
+from . import llm_services
+from .llm_services import (
+    get_effective_llm_model_for_tenant,
+    get_effective_llm_models_for_tenant,
+    get_tenant_llm_settings,
+    llm_model_has_usage,
+    llm_provider_has_usage,
+)
 from .models import (
     ASRReplacementRule,
     AgentApplication,
@@ -275,7 +283,7 @@ class PlatformLLMModelViewSet(PermissionMappedModelViewSet):
     @action(detail=True, methods=['post'], url_path='test')
     def test(self, request, pk=None):
         model = self.get_object()
-        return Response(run_llm_model_test(model=model, settings=LLMTestSettings.load()))
+        return Response(llm_services.run_llm_model_test(model=model, settings=LLMTestSettings.load()))
 
 
 class LLMTestSettingsView(APIView):
@@ -369,6 +377,101 @@ class TenantLLMAuthorizationView(APIView):
             )
 
         return Response(self._response_payload(tenant))
+
+
+def _build_company_llm_options_payload(tenant, request):
+    settings = get_tenant_llm_settings(tenant)
+    test_settings = LLMTestSettings.load()
+    models = list(get_effective_llm_models_for_tenant(tenant))
+    effective_model_ids = {model.id for model in models}
+    default_model_id = (
+        settings.default_model_id
+        if settings is not None and settings.default_model_id in effective_model_ids
+        else None
+    )
+
+    providers = []
+    provider_map = {}
+    for model in models:
+        provider = model.provider
+        provider_payload = provider_map.get(provider.id)
+        if provider_payload is None:
+            avatar_url = None
+            if provider.avatar:
+                avatar_url = request.build_absolute_uri(provider.avatar.url)
+            provider_payload = {
+                'id': provider.id,
+                'name': provider.name,
+                'providerType': provider.provider_type,
+                'providerTypeLabel': provider.get_provider_type_display(),
+                'avatarUrl': avatar_url,
+                'models': [],
+            }
+            provider_map[provider.id] = provider_payload
+            providers.append(provider_payload)
+        provider_payload['models'].append({
+            'id': model.id,
+            'name': model.name,
+            'displayName': model.display_name,
+            'isDefault': model.id == default_model_id,
+        })
+
+    return {
+        'defaultModelId': default_model_id,
+        'testSettings': LLMTestSettingsSerializer(test_settings).data,
+        'providers': providers,
+    }
+
+
+class CompanyLLMOptionsView(TenantScopedQuerysetMixin, APIView):
+    permission_classes = [CanViewLLMProviders]
+
+    def get(self, request):
+        return Response(_build_company_llm_options_payload(self.request_tenant, request))
+
+
+class CompanyLLMDefaultModelView(TenantScopedQuerysetMixin, APIView):
+    permission_classes = [CanUpdateLLMProviders]
+
+    def patch(self, request):
+        tenant = self.request_tenant
+        raw_model_id = request.data.get('modelId')
+        try:
+            model_id = int(raw_model_id)
+        except (TypeError, ValueError):
+            return Response({'modelId': '模型不能为空'}, status=status.HTTP_400_BAD_REQUEST)
+        model = get_effective_llm_model_for_tenant(tenant, model_id)
+        if model is None:
+            return Response({'modelId': '所选模型不可用或未授权'}, status=status.HTTP_400_BAD_REQUEST)
+
+        settings = get_tenant_llm_settings(tenant)
+        if settings is None:
+            return Response({'tenant': '当前账号未归属公司'}, status=status.HTTP_400_BAD_REQUEST)
+        settings.default_model = model
+        settings.save(update_fields=['default_model', 'updated_at'])
+        return Response(_build_company_llm_options_payload(tenant, request))
+
+
+class CompanyLLMModelTestView(TenantScopedQuerysetMixin, APIView):
+    permission_classes = [CanViewLLMProviders]
+
+    def post(self, request, model_id):
+        tenant = self.request_tenant
+        model = get_effective_llm_model_for_tenant(tenant, model_id)
+        if model is None:
+            return Response({'modelId': '所选模型不可用或未授权'}, status=status.HTTP_400_BAD_REQUEST)
+
+        test_settings = LLMTestSettings.load()
+        cache_key = f'llm-test:{request.user.id}:{model.id}'
+        if test_settings.test_cooldown_seconds > 0:
+            if cache.get(cache_key):
+                return Response(
+                    {'detail': f'测速过于频繁，请 {test_settings.test_cooldown_seconds} 秒后再试'},
+                    status=status.HTTP_429_TOO_MANY_REQUESTS,
+                )
+            cache.set(cache_key, True, timeout=test_settings.test_cooldown_seconds)
+
+        return Response(llm_services.run_llm_model_test(model=model, settings=test_settings))
 
 
 def _build_chat_completions_url(raw_url: str) -> str:

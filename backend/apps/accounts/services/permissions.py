@@ -156,8 +156,14 @@ def get_active_permission_codes_for_user(user: User) -> list[str]:
         codes.add(AUDIT_LOGS_VIEW_CODE)
         return sorted(codes)
 
-    # 员工：本公司被授权的业务权限点。公司管理员仅额外多员工管理能力。
-    return sorted(tenant.permission_points.filter(is_active=True).values_list('code', flat=True))
+    # 员工：本公司被授权的业务权限点与当前角色权限点取交集。
+    role_binding = getattr(user, 'role_binding', None)
+    role = role_binding.role if role_binding is not None else None
+    if role is None or not role.is_active:
+        return []
+    tenant_codes = set(tenant.permission_points.filter(is_active=True).values_list('code', flat=True))
+    role_codes = set(role.permission_points.filter(is_active=True).values_list('code', flat=True))
+    return sorted(tenant_codes & role_codes)
 
 
 def build_user_access_context(user: User) -> dict[str, Any]:
