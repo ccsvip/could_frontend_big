@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Avatar,
   Button,
-  Card,
   Form,
   Input,
   message,
@@ -250,37 +249,77 @@ export const LlmManagementPage = () => {
       title: '供应商',
       key: 'name',
       render: (_, record) => (
-        <Space>
-          <Avatar src={record.avatarUrl} icon={<CloudOutlined />} />
-          <span>{record.name}</span>
-        </Space>
+        <div className="flex items-center gap-3">
+          <Avatar
+            src={record.avatarUrl}
+            icon={<CloudOutlined />}
+            className="shadow-sm border border-slate-100 bg-teal-50 text-teal-600"
+            size={36}
+          />
+          <div>
+            <span className="font-semibold text-slate-800 text-sm hover:text-teal-600 transition-colors">
+              {record.name}
+            </span>
+          </div>
+        </div>
       ),
     },
     {
       title: '类型',
       dataIndex: 'providerTypeLabel',
       width: 120,
+      render: (value: string, record) => {
+        const typeColors: Record<string, string> = {
+          openai: 'purple',
+          gemini: 'blue',
+          claude: 'orange',
+          kimi: 'green',
+          doubao: 'cyan',
+          deepseek: 'geekblue',
+          qwen: 'red',
+          zhipu: 'gold',
+          other: 'magenta',
+        };
+        const color = typeColors[record.providerType] || 'default';
+        return (
+          <Tag color={color} className="font-semibold px-2.5 py-0.5 rounded-md border-0">
+            {value || record.providerTypeLabel || record.providerType}
+          </Tag>
+        );
+      },
     },
     {
       title: 'API 地址',
       dataIndex: 'apiBaseUrl',
       ellipsis: true,
+      render: (url: string) => (
+        <code className="text-xs text-slate-600 bg-slate-50 border border-slate-200/60 px-2 py-1 rounded select-all font-mono">
+          {url}
+        </code>
+      ),
     },
     {
       title: 'API 密钥',
       dataIndex: 'apiKey',
       width: 180,
       ellipsis: true,
+      render: (key: string) => (
+        <span className="font-mono text-xs text-slate-400 select-all tracking-wider">
+          {key ? (key.length > 20 ? `${key.substring(0, 8)}...${key.substring(key.length - 8)}` : key) : '-'}
+        </span>
+      ),
     },
     {
       title: '模型数量',
       key: 'modelCount',
-      width: 100,
+      width: 120,
       render: (_, record) => {
         const defaultModel = record.modelsConfig?.find((m) => m.isDefault);
         return (
-          <Tooltip title={defaultModel ? `默认: ${defaultModel.name}` : undefined}>
-            <Tag color="blue">{record.modelsConfig?.length || 0} 个</Tag>
+          <Tooltip title={defaultModel ? `默认: ${defaultModel.name}` : '未设置默认模型'}>
+            <Tag color="cyan" className="cursor-pointer border border-cyan-100 px-2 py-0.5 rounded-md">
+              {record.modelsConfig?.length || 0} 个模型
+            </Tag>
           </Tooltip>
         );
       },
@@ -288,9 +327,11 @@ export const LlmManagementPage = () => {
     {
       title: '状态',
       key: 'isActive',
-      width: 80,
+      width: 90,
       render: (_, record) => (
-        <Tag color={record.isActive ? 'green' : 'default'}>{record.isActive ? '启用' : '停用'}</Tag>
+        <Tag color={record.isActive ? 'success' : 'default'} className="px-2.5 py-0.5 rounded-md font-medium border-0">
+          {record.isActive ? '启用中' : '已停用'}
+        </Tag>
       ),
     },
     {
@@ -300,24 +341,26 @@ export const LlmManagementPage = () => {
       render: (_, record) => {
         const result = testResults[record.id];
         return (
-          <Space>
+          <div className="flex items-center gap-2">
             <Button
               size="small"
               icon={testingId === record.id ? <LoadingOutlined /> : <ApiOutlined />}
               loading={testingId === record.id}
               onClick={() => handleTestConnection(record.id)}
+              className="border-slate-200 hover:border-teal-500 hover:text-teal-600 flex items-center transition-all rounded-md"
             >
               测试
             </Button>
             {result && (
               <Tag
-                icon={result.success ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+                icon={result.success ? <CheckCircleOutlined className="text-emerald-500" /> : <CloseCircleOutlined className="text-rose-500" />}
                 color={result.success ? 'success' : 'error'}
+                className="m-0 font-mono px-2 py-0.5 rounded-md border-0"
               >
                 {result.success ? `${result.latencyMs}ms` : '失败'}
               </Tag>
             )}
-          </Space>
+          </div>
         );
       },
     },
@@ -326,49 +369,105 @@ export const LlmManagementPage = () => {
       key: 'actions',
       width: 140,
       render: (_, record) => (
-        <Space>
+        <div className="flex items-center gap-1">
           {canUpdate && (
-            <Button type="link" size="small" icon={<EditOutlined />} onClick={() => openEditModal(record)}>
+            <Button
+              type="link"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => openEditModal(record)}
+              className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded-md"
+            >
               编辑
             </Button>
           )}
           {canDelete && (
             <Popconfirm title="确定删除该供应商？" onConfirm={() => handleDelete(record.id)}>
-              <Button type="link" size="small" danger icon={<DeleteOutlined />}>
+              <Button
+                type="link"
+                size="small"
+                danger
+                icon={<DeleteOutlined />}
+                className="hover:bg-rose-50 rounded-md"
+              >
                 删除
               </Button>
             </Popconfirm>
           )}
-        </Space>
+        </div>
       ),
     },
   ];
 
   return (
-    <div className="space-y-4">
-      <Card size="small">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Space wrap>
-            <Input
-              placeholder="搜索供应商名称"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              onPressEnter={handleSearch}
-              allowClear
-              style={{ width: 220 }}
-            />
-            <Button type="primary" onClick={handleSearch}>筛选</Button>
-            <Button onClick={handleReset}>重置</Button>
-          </Space>
-          {canCreate && (
-            <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
-              新建供应商
-            </Button>
-          )}
+    <div className="space-y-5 p-6">
+      {/* 顶部 Page Hero */}
+      <div className="page-hero">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <CloudOutlined className="text-teal-600" />
+              <span>AI 模型供应商管理</span>
+            </h1>
+            <p className="text-slate-500 mt-1 text-sm">
+              配置并接入第三方主流大语言模型服务（OpenAI、Claude、Gemini 等），实时监测模型响应延迟与连通状态。
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <div className="bg-teal-50 border border-teal-100 rounded-lg px-4 py-1.5 text-center shadow-sm">
+              <div className="text-xs text-teal-600 font-semibold mb-0.5">总供应商</div>
+              <div className="text-lg font-bold text-teal-800">{total}</div>
+            </div>
+            <div className="bg-indigo-50 border border-indigo-100 rounded-lg px-4 py-1.5 text-center shadow-sm">
+              <div className="text-xs text-indigo-600 font-semibold mb-0.5">已启用</div>
+              <div className="text-lg font-bold text-indigo-800">
+                {items.filter(item => item.isActive).length}
+              </div>
+            </div>
+          </div>
         </div>
-      </Card>
+      </div>
 
-      <Card size="small">
+      {/* 搜索过滤控制中心 */}
+      <div className="bg-white border border-slate-100 shadow-sm rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 transition-all hover:shadow-md duration-300">
+        <div className="flex items-center gap-3">
+          <Input
+            placeholder="搜索供应商名称..."
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            onPressEnter={handleSearch}
+            allowClear
+            className="w-64 rounded-lg hover:border-teal-500 focus:border-teal-500 py-1.5"
+            prefix={<CloudOutlined className="text-slate-400 mr-1" />}
+          />
+          <Button
+            type="primary"
+            className="bg-teal-600 border-teal-600 hover:bg-teal-700 hover:border-teal-700 rounded-lg px-4"
+            onClick={handleSearch}
+          >
+            筛选
+          </Button>
+          <Button
+            onClick={handleReset}
+            className="hover:text-teal-600 hover:border-teal-600 rounded-lg px-4"
+          >
+            重置
+          </Button>
+        </div>
+        {canCreate && (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={openCreateModal}
+            className="bg-gradient-to-r from-teal-600 to-emerald-600 border-none hover:from-teal-700 hover:to-emerald-700 text-white shadow-sm hover:shadow-md transition-all rounded-lg px-4 py-1.5 h-auto flex items-center font-medium"
+          >
+            新建供应商
+          </Button>
+        )}
+      </div>
+
+      {/* 表格面板 */}
+      <div className="bg-white border border-slate-100 shadow-sm rounded-xl p-4 transition-all hover:shadow-md duration-300">
         <Table
           rowKey="id"
           columns={columns}
@@ -382,10 +481,18 @@ export const LlmManagementPage = () => {
             onChange: setPage,
           }}
         />
-      </Card>
+      </div>
 
+      {/* 创建 / 编辑 Modal */}
       <Modal
-        title={editingItem ? '编辑供应商' : '新建供应商'}
+        title={
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+            <span className="p-1 bg-teal-50 text-teal-600 rounded">
+              <CloudOutlined />
+            </span>
+            <span className="font-semibold">{editingItem ? '编辑供应商' : '新建供应商'}</span>
+          </div>
+        }
         open={formVisible}
         onCancel={() => setFormVisible(false)}
         onOk={handleSubmit}
@@ -393,18 +500,21 @@ export const LlmManagementPage = () => {
         width={640}
         destroyOnHidden
         forceRender
+        className="custom-modal"
       >
-        <Form form={form} layout="vertical" className="mt-4">
-          <Form.Item name="name" label="供应商名称" rules={[{ required: true, message: '请输入供应商名称' }]}>
-            <Input placeholder="例如：我的 OpenAI 账号" />
-          </Form.Item>
+        <Form form={form} layout="vertical" className="mt-5 space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Form.Item name="name" label="供应商名称" rules={[{ required: true, message: '请输入供应商名称' }]}>
+              <Input placeholder="例如：我的 OpenAI 账号" className="rounded-lg" />
+            </Form.Item>
 
-          <Form.Item name="providerType" label="供应商类型" rules={[{ required: true }]}>
-            <Select options={PROVIDER_TYPE_OPTIONS} placeholder="选择供应商类型" />
-          </Form.Item>
+            <Form.Item name="providerType" label="供应商类型" rules={[{ required: true }]}>
+              <Select options={PROVIDER_TYPE_OPTIONS} placeholder="选择供应商类型" className="rounded-lg" />
+            </Form.Item>
+          </div>
 
           <Form.Item name="apiBaseUrl" label="API 地址" rules={[{ required: true, message: '请输入 API 地址' }]}>
-            <Input placeholder="https://api.openai.com/v1" />
+            <Input placeholder="https://api.openai.com/v1" className="rounded-lg" />
           </Form.Item>
 
           <Form.Item
@@ -412,61 +522,98 @@ export const LlmManagementPage = () => {
             label="API 密钥"
             rules={[{ required: true, message: '请输入 API 密钥' }]}
           >
-            <Input.TextArea placeholder="sk-..." rows={2} />
+            <Input.TextArea placeholder="sk-..." rows={2} className="rounded-lg" />
           </Form.Item>
 
-          <Form.Item label="供应商头像">
-            <Upload
-              listType="picture-card"
-              fileList={avatarFile}
-              maxCount={1}
-              beforeUpload={() => false}
-              onChange={({ fileList }) => setAvatarFile(fileList)}
-            >
-              {avatarFile.length === 0 && (
-                <div>
-                  <UploadOutlined />
-                  <div className="mt-1 text-xs">上传头像</div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Form.Item label="供应商头像">
+              <Upload
+                listType="picture-card"
+                fileList={avatarFile}
+                maxCount={1}
+                beforeUpload={() => false}
+                onChange={({ fileList }) => setAvatarFile(fileList)}
+                className="avatar-uploader"
+              >
+                {avatarFile.length === 0 && (
+                  <div className="text-slate-400">
+                    <UploadOutlined className="text-lg mb-1" />
+                    <div className="text-xs">上传头像</div>
+                  </div>
+                )}
+              </Upload>
+              <div className="text-slate-400 text-[11px] mt-1">
+                支持 1:1 图片，建议不超过 1MB
+              </div>
+            </Form.Item>
+
+            <Form.Item name="isActive" label="启用状态" valuePropName="checked">
+              <div className="bg-slate-50 border border-slate-200/60 rounded-xl p-4 flex items-center justify-between mt-1">
+                <span className="text-xs text-slate-500 font-medium">启用此供应商配置</span>
+                <Switch checkedChildren="启用" unCheckedChildren="停用" className="shadow-sm" />
+              </div>
+            </Form.Item>
+          </div>
+
+          <Form.Item label="模型列表" className="border-t border-slate-100 pt-4">
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1 custom-scrollbar">
+              {modelsList.length === 0 ? (
+                <div className="text-center py-6 border border-dashed border-slate-200 rounded-lg text-slate-400 text-xs">
+                  暂无模型，请在下方添加
                 </div>
+              ) : (
+                modelsList.map((model) => (
+                  <div
+                    key={model.name}
+                    className="flex items-center gap-3 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-100/60 px-3 py-2.5 transition-all duration-200"
+                  >
+                    <Radio
+                      checked={model.isDefault}
+                      onChange={() => handleSetDefaultModel(model.name)}
+                      className="text-teal-600"
+                    />
+                    <span className="flex-1 text-sm font-semibold text-slate-700 font-mono">{model.name}</span>
+                    {model.isDefault ? (
+                      <Tag color="teal" className="m-0 border-0 px-2 py-0.5 rounded-md font-medium">默认</Tag>
+                    ) : (
+                      <Button
+                        type="text"
+                        size="small"
+                        onClick={() => handleSetDefaultModel(model.name)}
+                        className="text-xs text-slate-400 hover:text-teal-600 p-0 h-auto font-medium"
+                      >
+                        设为默认
+                      </Button>
+                    )}
+                    <Button
+                      type="text"
+                      size="small"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleRemoveModel(model.name)}
+                      className="hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-md"
+                    />
+                  </div>
+                ))
               )}
-            </Upload>
-          </Form.Item>
-
-          <Form.Item label="模型列表">
-            <div className="space-y-2">
-              {modelsList.map((model) => (
-                <div key={model.name} className="flex items-center gap-2 rounded border border-slate-200 px-3 py-2">
-                  <Radio
-                    checked={model.isDefault}
-                    onChange={() => handleSetDefaultModel(model.name)}
-                  />
-                  <span className="flex-1 text-sm">{model.name}</span>
-                  {model.isDefault && <Tag color="blue" className="!mr-0">默认</Tag>}
-                  <Button
-                    type="text"
-                    size="small"
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={() => handleRemoveModel(model.name)}
-                  />
-                </div>
-              ))}
-              <Space.Compact className="w-full">
-                <Input
-                  placeholder="输入模型名称，如 gpt-4o"
-                  value={newModelName}
-                  onChange={(e) => setNewModelName(e.target.value)}
-                  onPressEnter={handleAddModel}
-                />
-                <Button type="primary" onClick={handleAddModel} icon={<PlusOutlined />}>
-                  添加
-                </Button>
-              </Space.Compact>
             </div>
-          </Form.Item>
-
-          <Form.Item name="isActive" label="启用状态" valuePropName="checked">
-            <Switch checkedChildren="启用" unCheckedChildren="停用" />
+            <Space.Compact className="w-full mt-3">
+              <Input
+                placeholder="输入模型名称，如 gpt-4o"
+                value={newModelName}
+                onChange={(e) => setNewModelName(e.target.value)}
+                onPressEnter={handleAddModel}
+                className="rounded-l-lg py-1.5"
+              />
+              <Button
+                type="primary"
+                onClick={handleAddModel}
+                icon={<PlusOutlined />}
+                className="bg-teal-600 border-teal-600 hover:bg-teal-700 hover:border-teal-700 rounded-r-lg"
+              >
+                添加
+              </Button>
+            </Space.Compact>
           </Form.Item>
         </Form>
       </Modal>
