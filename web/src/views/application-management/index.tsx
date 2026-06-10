@@ -41,7 +41,7 @@ import {
 } from '../../api/modules/applications';
 import { fetchConversation, sendMessageStream, updateConversationConfig, type ChatConversationDetail, type ChatMessage } from '../../api/modules/chat';
 import { fetchKnowledgeDocuments, type KnowledgeDocumentRecord } from '../../api/modules/knowledge-base';
-import { fetchLLMProviders, type LLMProviderRecord } from '../../api/modules/llm-providers';
+import { fetchCompanyLLMOptions, type CompanyLLMOptions } from '../../api/modules/llm-settings';
 import { ChatMarkdown } from '../../components/chat-markdown';
 import { useAuthStore } from '../../store/auth';
 
@@ -57,8 +57,7 @@ type CreateFormValues = {
 type ConfigFormValues = {
   name: string;
   description?: string;
-  llmProviderId?: number | null;
-  modelName?: string;
+  llmModelId?: number | null;
   systemPrompt?: string;
   knowledgeDocumentIds?: number[];
   temperature: number;
@@ -81,24 +80,10 @@ const fetchAllKnowledgeDocuments = async () => {
   return documents;
 };
 
-const fetchAllActiveProviders = async () => {
-  const firstPage = await fetchLLMProviders({ page: 1, isActive: 'active' });
-  const providers = [...firstPage.results];
-  let page = 2;
-  while (firstPage.next && providers.length < firstPage.count) {
-    const nextPage = await fetchLLMProviders({ page, isActive: 'active' });
-    providers.push(...nextPage.results);
-    if (!nextPage.next) break;
-    page += 1;
-  }
-  return providers.filter((provider) => provider.isActive);
-};
-
 const buildApplicationPayload = (values: ConfigFormValues): AgentApplicationPayload => ({
   name: values.name.trim(),
   description: values.description?.trim() || '',
-  llmProviderId: values.llmProviderId ?? null,
-  modelName: values.modelName || '',
+  llmModelId: values.llmModelId ?? null,
   systemPrompt: values.systemPrompt || '',
   knowledgeDocumentIds: values.knowledgeDocumentIds || [],
   temperature: values.temperature,
@@ -117,7 +102,6 @@ export const ApplicationManagementPage = () => {
 
   const [createForm] = Form.useForm<CreateFormValues>();
   const [configForm] = Form.useForm<ConfigFormValues>();
-  const selectedProviderId = Form.useWatch('llmProviderId', configForm);
 
   const [applications, setApplications] = useState<AgentApplicationRecord[]>([]);
   const [applicationTotal, setApplicationTotal] = useState(0);
@@ -130,7 +114,7 @@ export const ApplicationManagementPage = () => {
   const [createSaving, setCreateSaving] = useState(false);
   const [configSaving, setConfigSaving] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState<AgentApplicationRecord | null>(null);
-  const [providers, setProviders] = useState<LLMProviderRecord[]>([]);
+  const [llmOptions, setLlmOptions] = useState<CompanyLLMOptions | null>(null);
   const [knowledgeDocuments, setKnowledgeDocuments] = useState<KnowledgeDocumentRecord[]>([]);
   const [optionsLoading, setOptionsLoading] = useState(false);
   const [conversation, setConversation] = useState<ChatConversationDetail | null>(null);
@@ -148,17 +132,16 @@ export const ApplicationManagementPage = () => {
     return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
   }, [applicationId]);
 
-  const selectedProvider = useMemo(
-    () => providers.find((provider) => provider.id === selectedProviderId) || null,
-    [providers, selectedProviderId],
-  );
-
   const modelOptions = useMemo(
     () =>
-      selectedProvider?.modelsConfig
-        .filter((model) => model.name)
-        .map((model) => ({ label: model.name, value: model.name })) || [],
-    [selectedProvider],
+      (llmOptions?.providers || []).map((provider) => ({
+        label: provider.name,
+        options: provider.models.map((model) => ({
+          label: model.displayName || model.name,
+          value: model.id,
+        })),
+      })),
+    [llmOptions],
   );
 
   const loadApplications = useCallback(async () => {
@@ -177,11 +160,11 @@ export const ApplicationManagementPage = () => {
   const loadOptions = useCallback(async () => {
     setOptionsLoading(true);
     try {
-      const [nextProviders, nextDocuments] = await Promise.all([
-        fetchAllActiveProviders(),
+      const [nextOptions, nextDocuments] = await Promise.all([
+        fetchCompanyLLMOptions(),
         fetchAllKnowledgeDocuments(),
       ]);
-      setProviders(nextProviders);
+      setLlmOptions(nextOptions);
       setKnowledgeDocuments(nextDocuments);
     } catch {
       message.error('应用配置选项加载失败');
@@ -204,8 +187,7 @@ export const ApplicationManagementPage = () => {
       configForm.setFieldsValue({
         name: detail.name,
         description: detail.description,
-        llmProviderId: detail.llmProviderId,
-        modelName: detail.modelName,
+        llmModelId: detail.llmModelId,
         systemPrompt: detail.systemPrompt,
         knowledgeDocumentIds: detail.knowledgeDocumentIds,
         temperature: detail.temperature,
@@ -239,12 +221,6 @@ export const ApplicationManagementPage = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages, streamingContent]);
-
-  const handleProviderChange = (providerId: number | null) => {
-    const provider = providers.find((item) => item.id === providerId);
-    const defaultModel = provider?.modelsConfig.find((model) => model.isDefault)?.name || provider?.modelsConfig[0]?.name || '';
-    configForm.setFieldValue('modelName', defaultModel);
-  };
 
   const handleSearch = () => {
     setApplicationPage(1);
@@ -295,8 +271,7 @@ export const ApplicationManagementPage = () => {
       });
       if (conversation) {
         const nextConversation = await updateConversationConfig(conversation.id, {
-          llmProviderId: payload.llmProviderId,
-          modelName: payload.modelName,
+          llmModelId: payload.llmModelId,
           systemPrompt: payload.systemPrompt,
           temperature: payload.temperature,
           maxTokens: payload.maxTokens,
@@ -598,7 +573,9 @@ export const ApplicationManagementPage = () => {
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse" />
               <Typography.Text className="text-slate-400 text-xs font-medium">
-                {selectedApplication?.llmProviderName || '未选择模型供应商'}
+                {selectedApplication?.llmProviderName
+                  ? `${selectedApplication.llmProviderName} / ${selectedApplication.llmModelDisplayName || selectedApplication.llmModelName}`
+                  : '未选择模型'}
               </Typography.Text>
             </div>
           </div>
@@ -636,17 +613,14 @@ export const ApplicationManagementPage = () => {
                 <Form.Item name="description" label={<span className="text-slate-700 font-semibold text-xs">应用描述</span>}>
                   <Input.TextArea disabled={!canUpdate} rows={2} maxLength={255} className="!rounded-lg" />
                 </Form.Item>
-                <Form.Item name="llmProviderId" label={<span className="text-slate-700 font-semibold text-xs">模型供应商</span>}>
+                <Form.Item name="llmModelId" label={<span className="text-slate-700 font-semibold text-xs">模型</span>}>
                   <Select
                     allowClear
-                    disabled={!canUpdate}
-                    options={providers.map((provider) => ({ label: provider.name, value: provider.id }))}
-                    onChange={handleProviderChange}
+                    disabled={!canUpdate || modelOptions.length === 0}
+                    options={modelOptions}
+                    placeholder={modelOptions.length === 0 ? '暂无可用模型' : '请选择模型'}
                     className="!rounded-lg"
                   />
-                </Form.Item>
-                <Form.Item name="modelName" label={<span className="text-slate-700 font-semibold text-xs">模型</span>}>
-                  <Select allowClear disabled={!canUpdate || !selectedProviderId} options={modelOptions} className="!rounded-lg" />
                 </Form.Item>
                 <Form.Item name="systemPrompt" label={<span className="text-slate-700 font-semibold text-xs">系统提示词</span>}>
                   <Input.TextArea disabled={!canUpdate} rows={6} className="!rounded-lg font-mono text-xs" />

@@ -42,14 +42,10 @@ import {
   type ChatConversationDetail,
   type ChatMessage as ChatMessageType,
 } from '../../api/modules/chat';
-import {
-  fetchLLMProviders,
-  type LLMProviderRecord,
-} from '../../api/modules/llm-providers';
+import { fetchCompanyLLMOptions, type CompanyLLMOptions } from '../../api/modules/llm-settings';
 import { ChatMarkdown } from '../../components/chat-markdown';
 
 const PAGE_SIZE = 10;
-const MODEL_VALUE_SEPARATOR = '::';
 const PROMPT_TEMPLATE_OPTIONS = [
   {
     label: '专业问答',
@@ -67,24 +63,6 @@ const PROMPT_TEMPLATE_OPTIONS = [
     prompt: '你是排障助手。请优先给出根因假设、验证步骤、修复建议和风险提示，回答要具体、可执行。',
   },
 ];
-
-const buildModelValue = (providerId: number, modelName: string) =>
-  `${providerId}${MODEL_VALUE_SEPARATOR}${modelName}`;
-
-const parseModelValue = (value?: string) => {
-  if (!value) return null;
-  const [providerIdText, ...modelParts] = value.split(MODEL_VALUE_SEPARATOR);
-  const providerId = Number(providerIdText);
-  const modelName = modelParts.join(MODEL_VALUE_SEPARATOR).trim();
-  if (!providerId || !modelName) return null;
-  return { providerId, modelName };
-};
-
-const getProviderDefaultModelName = (provider?: LLMProviderRecord) => {
-  if (!provider) return '';
-  const defaultModel = provider.modelsConfig?.find((item) => item.isDefault);
-  return defaultModel?.name || provider.modelsConfig?.[0]?.name || '';
-};
 
 type DisplayAssistantMessage = {
   id: number;
@@ -122,9 +100,9 @@ export const ChatRoomPage = () => {
 
   const [editingTitleId, setEditingTitleId] = useState<number | null>(null);
   const [editingTitleValue, setEditingTitleValue] = useState('');
-  const [llmProviders, setLlmProviders] = useState<LLMProviderRecord[]>([]);
+  const [llmOptions, setLlmOptions] = useState<CompanyLLMOptions | null>(null);
   const [llmProvidersLoading, setLlmProvidersLoading] = useState(false);
-  const [selectedModelValue, setSelectedModelValue] = useState<string>();
+  const [selectedModelId, setSelectedModelId] = useState<number | null>(null);
   const [updatingConfig, setUpdatingConfig] = useState(false);
   const [useStreamEnabled, setUseStreamEnabled] = useState(true);
   const [systemPromptDraft, setSystemPromptDraft] = useState('');
@@ -138,36 +116,38 @@ export const ChatRoomPage = () => {
 
   const modelSelectOptions = useMemo(
     () =>
-      llmProviders
-        .map((provider) => ({
-          label: provider.name,
-          options: (provider.modelsConfig || []).map((model) => ({
-            label: model.isDefault ? `${model.name}（默认）` : model.name,
-            value: buildModelValue(provider.id, model.name),
-          })),
-        }))
-        .filter((group) => group.options.length > 0),
-    [llmProviders],
+      (llmOptions?.providers || []).map((provider) => ({
+        label: provider.name,
+        options: provider.models.map((model) => ({
+          label: model.isDefault ? `${model.displayName || model.name}（默认）` : model.displayName || model.name,
+          value: model.id,
+        })),
+      })),
+    [llmOptions],
   );
 
-  const defaultModelValue = useMemo(() => {
-    const firstProvider = llmProviders.find((provider) => (provider.modelsConfig || []).length > 0);
-    if (!firstProvider) return undefined;
-    const modelName = getProviderDefaultModelName(firstProvider);
-    return modelName ? buildModelValue(firstProvider.id, modelName) : undefined;
-  }, [llmProviders]);
+  const defaultModelId = useMemo(() => {
+    if (llmOptions?.defaultModelId) return llmOptions.defaultModelId;
+    return llmOptions?.providers[0]?.models[0]?.id ?? null;
+  }, [llmOptions]);
+
+  const findModelMeta = useCallback((modelId: number | null) => {
+    if (!modelId) return null;
+    for (const provider of llmOptions?.providers || []) {
+      const model = provider.models.find((item) => item.id === modelId);
+      if (model) return { provider, model };
+    }
+    return null;
+  }, [llmOptions]);
 
   const syncConversationMeta = useCallback(
     (
       conversationId: number,
-      providerId: number | null,
-      modelName: string,
+      modelId: number | null,
       nextSummary?: string,
       nextTitle?: string,
     ) => {
-      const providerName = providerId
-        ? llmProviders.find((item) => item.id === providerId)?.name ?? null
-        : null;
+      const meta = findModelMeta(modelId);
 
       setConversations((prev) =>
         prev.map((item) =>
@@ -175,33 +155,24 @@ export const ChatRoomPage = () => {
             ? {
                 ...item,
                 title: nextTitle ?? item.title,
-                llmProviderId: providerId,
-                llmProviderName: providerName,
-                model_name: modelName,
+                llmModelId: modelId,
+                llmModelName: meta?.model.name || '',
+                llmModelDisplayName: meta?.model.displayName || '',
+                llmProviderName: meta?.provider.name ?? null,
                 summary: nextSummary ?? item.summary,
               }
             : item,
         ),
       );
     },
-    [llmProviders],
+    [findModelMeta],
   );
 
   const loadActiveProviders = useCallback(async () => {
     setLlmProvidersLoading(true);
     try {
-      const records: LLMProviderRecord[] = [];
-      let currentPage = 1;
-      let total = 0;
-
-      do {
-        const response = await fetchLLMProviders({ page: currentPage, isActive: 'active' });
-        records.push(...response.results.filter((item) => item.isActive));
-        total = response.count;
-        currentPage += 1;
-      } while (records.length < total);
-
-      setLlmProviders(records);
+      const response = await fetchCompanyLLMOptions();
+      setLlmOptions(response);
     } finally {
       setLlmProvidersLoading(false);
     }
@@ -268,29 +239,18 @@ export const ChatRoomPage = () => {
   }, [loadDetail]);
 
   useEffect(() => {
-    if (activeDetail?.llmProviderId) {
-      const provider = llmProviders.find((item) => item.id === activeDetail.llmProviderId);
-      const resolvedModelName = activeDetail.modelName || getProviderDefaultModelName(provider);
-      if (resolvedModelName) {
-        setSelectedModelValue(buildModelValue(activeDetail.llmProviderId, resolvedModelName));
-        return;
-      }
+    if (activeDetail?.llmModelId) {
+      setSelectedModelId(activeDetail.llmModelId);
+      return;
     }
 
-    setSelectedModelValue((currentValue) => {
-      if (currentValue) {
-        const parsed = parseModelValue(currentValue);
-        const provider = parsed
-          ? llmProviders.find((item) => item.id === parsed.providerId)
-          : undefined;
-        const hasCurrentModel = provider?.modelsConfig?.some((item) => item.name === parsed?.modelName);
-        if (hasCurrentModel) {
-          return currentValue;
-        }
+    setSelectedModelId((currentValue) => {
+      if (currentValue && findModelMeta(currentValue)) {
+        return currentValue;
       }
-      return defaultModelValue;
+      return defaultModelId;
     });
-  }, [activeDetail?.id, activeDetail?.llmProviderId, activeDetail?.modelName, defaultModelValue, llmProviders]);
+  }, [activeDetail?.id, activeDetail?.llmModelId, defaultModelId, findModelMeta]);
 
   useEffect(() => {
     setSystemPromptDraft(activeDetail?.systemPrompt ?? '');
@@ -319,11 +279,9 @@ export const ChatRoomPage = () => {
   const handleNewConversation = async () => {
     if (!canCreate) return;
     try {
-      const parsedSelection = parseModelValue(selectedModelValue ?? defaultModelValue);
       const conv = await createConversation({
         title: '新对话',
-        llmProviderId: parsedSelection?.providerId ?? null,
-        modelName: parsedSelection?.modelName ?? '',
+        llmModelId: selectedModelId ?? defaultModelId,
         systemPrompt: systemPromptDraft,
         temperature: temperatureDraft,
         maxTokens: maxTokensDraft,
@@ -382,38 +340,22 @@ export const ChatRoomPage = () => {
     setEditingTitleId(null);
   };
 
-  const handleModelChange = async (value: string) => {
-    setSelectedModelValue(value);
+  const handleModelChange = async (value: number) => {
+    setSelectedModelId(value);
     if (!activeId || !activeDetail) {
       return;
     }
 
-    const parsedSelection = parseModelValue(value);
-    if (!parsedSelection) {
+    if (activeDetail.llmModelId === value) {
       return;
     }
 
-    if (
-      activeDetail.llmProviderId === parsedSelection.providerId
-      && activeDetail.modelName === parsedSelection.modelName
-    ) {
-      return;
-    }
-
-    const previousModelName = activeDetail.llmProviderId
-      ? activeDetail.modelName || getProviderDefaultModelName(
-        llmProviders.find((item) => item.id === activeDetail.llmProviderId),
-      )
-      : '';
-    const previousValue = activeDetail.llmProviderId && previousModelName
-      ? buildModelValue(activeDetail.llmProviderId, previousModelName)
-      : defaultModelValue;
+    const previousValue = activeDetail.llmModelId ?? defaultModelId;
 
     setUpdatingConfig(true);
     try {
       const nextDetail = await updateConversationConfig(activeId, {
-        llmProviderId: parsedSelection.providerId,
-        modelName: parsedSelection.modelName,
+        llmModelId: value,
         systemPrompt: systemPromptDraft,
         temperature: temperatureDraft,
         maxTokens: maxTokensDraft,
@@ -421,14 +363,13 @@ export const ChatRoomPage = () => {
       setActiveDetail(nextDetail);
       syncConversationMeta(
         activeId,
-        parsedSelection.providerId,
-        parsedSelection.modelName,
+        value,
         nextDetail.summary,
         nextDetail.title,
       );
       message.success('已切换聊天模型');
     } catch {
-      setSelectedModelValue(previousValue);
+      setSelectedModelId(previousValue);
       message.error('切换模型失败');
     } finally {
       setUpdatingConfig(false);
@@ -498,21 +439,18 @@ export const ChatRoomPage = () => {
       return;
     }
 
-    const parsedSelection = parseModelValue(selectedModelValue ?? defaultModelValue);
-    const providerId = parsedSelection?.providerId ?? activeDetail.llmProviderId ?? null;
-    const modelName = parsedSelection?.modelName ?? activeDetail.modelName ?? '';
+    const modelId = selectedModelId ?? activeDetail.llmModelId ?? defaultModelId;
 
     setSavingSystemPrompt(true);
     try {
       const nextDetail = await updateConversationConfig(activeId, {
-        llmProviderId: providerId,
-        modelName,
+        llmModelId: modelId,
         systemPrompt: systemPromptDraft,
         temperature: temperatureDraft,
         maxTokens: maxTokensDraft,
       });
       setActiveDetail(nextDetail);
-      syncConversationMeta(activeId, providerId, modelName, nextDetail.summary, nextDetail.title);
+      syncConversationMeta(activeId, modelId, nextDetail.summary, nextDetail.title);
       message.success('系统提示词已保存');
     } catch {
       message.error('保存系统提示词失败');
@@ -650,12 +588,12 @@ export const ChatRoomPage = () => {
       showSearch
       optionFilterProp="label"
       placeholder={llmProvidersLoading ? '加载模型中...' : '请选择聊天模型'}
-      value={selectedModelValue}
+      value={selectedModelId ?? undefined}
       options={modelSelectOptions}
       onChange={handleModelChange}
       loading={llmProvidersLoading || updatingConfig}
       disabled={streaming || llmProvidersLoading || modelSelectOptions.length === 0}
-      notFoundContent="暂无可用模型，请先到 LLM 管理配置"
+      notFoundContent="暂无可用模型，请联系管理员配置 LLM 设置"
     />
   );
 
@@ -812,7 +750,7 @@ export const ChatRoomPage = () => {
                 {activeDetail.llmProviderName && (
                   <Typography.Text type="secondary" className="!text-xs shrink-0">
                     · {activeDetail.llmProviderName}
-                    {activeDetail.modelName && ` / ${activeDetail.modelName}`}
+                    {activeDetail.llmModelName && ` / ${activeDetail.llmModelDisplayName || activeDetail.llmModelName}`}
                   </Typography.Text>
                 )}
               </div>
