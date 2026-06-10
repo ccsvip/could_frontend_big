@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  Avatar,
   Button,
   Collapse,
   Form,
@@ -15,9 +16,11 @@ import {
   Tabs,
   Tag,
   Typography,
+  Upload,
   message,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import type { UploadFile } from 'antd/es/upload';
 import {
   ApiOutlined,
   DeleteOutlined,
@@ -27,6 +30,7 @@ import {
   ReloadOutlined,
   RobotOutlined,
   SaveOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 import { fetchTenants, type TenantRecord } from '../../api/modules/tenants';
 import {
@@ -51,19 +55,7 @@ import {
   type TenantLLMAuthorization,
 } from '../../api/modules/llm-settings';
 
-const PROVIDER_TYPE_OPTIONS = [
-  { label: 'OpenAI', value: 'openai' },
-  { label: 'Gemini', value: 'gemini' },
-  { label: 'Claude', value: 'claude' },
-  { label: 'Kimi', value: 'kimi' },
-  { label: '豆包', value: 'doubao' },
-  { label: 'DeepSeek', value: 'deepseek' },
-  { label: '通义千问', value: 'qwen' },
-  { label: '智谱', value: 'zhipu' },
-  { label: '其他', value: 'other' },
-];
-
-type ProviderFormValues = PlatformLLMProviderPayload;
+type ProviderFormValues = Omit<PlatformLLMProviderPayload, 'avatar' | 'clearAvatar' | 'providerType'>;
 type ModelFormValues = PlatformLLMModelPayload;
 
 const DEFAULT_TEST_SETTINGS: LLMTestSettings = {
@@ -96,6 +88,7 @@ export const LlmSettingsAdminPage = () => {
   const [modelModalOpen, setModelModalOpen] = useState(false);
   const [editingProvider, setEditingProvider] = useState<PlatformLLMProviderRecord | null>(null);
   const [editingModel, setEditingModel] = useState<PlatformLLMModelRecord | null>(null);
+  const [providerLogoFile, setProviderLogoFile] = useState<UploadFile[]>([]);
   const [providerForm] = Form.useForm<ProviderFormValues>();
   const [modelForm] = Form.useForm<ModelFormValues>();
   const [testSettingsForm] = Form.useForm<LLMTestSettings>();
@@ -156,7 +149,8 @@ export const LlmSettingsAdminPage = () => {
   const openCreateProvider = () => {
     setEditingProvider(null);
     providerForm.resetFields();
-    providerForm.setFieldsValue({ providerType: 'openai', isActive: true, sortOrder: 0 });
+    providerForm.setFieldsValue({ isActive: true, sortOrder: 0 });
+    setProviderLogoFile([]);
     setProviderModalOpen(true);
   };
 
@@ -164,21 +158,26 @@ export const LlmSettingsAdminPage = () => {
     setEditingProvider(record);
     providerForm.setFieldsValue({
       name: record.name,
-      providerType: record.providerType,
       apiBaseUrl: record.apiBaseUrl,
       isActive: record.isActive,
       sortOrder: record.sortOrder,
     });
+    setProviderLogoFile(record.avatarUrl ? [{ uid: '-1', name: 'logo', status: 'done', url: record.avatarUrl }] : []);
     setProviderModalOpen(true);
   };
 
   const submitProvider = async () => {
     const values = await providerForm.validateFields();
+    const payload: PlatformLLMProviderPayload = {
+      ...values,
+      avatar: providerLogoFile[0]?.originFileObj,
+      clearAvatar: providerLogoFile.length === 0 && !!editingProvider?.avatarUrl ? true : undefined,
+    };
     if (editingProvider) {
-      await updatePlatformLLMProvider(editingProvider.id, values);
+      await updatePlatformLLMProvider(editingProvider.id, payload);
       message.success('厂商已更新');
     } else {
-      await createPlatformLLMProvider(values);
+      await createPlatformLLMProvider(payload);
       message.success('厂商已创建');
     }
     setProviderModalOpen(false);
@@ -319,11 +318,8 @@ export const LlmSettingsAdminPage = () => {
       dataIndex: 'name',
       render: (value: string, record) => (
         <Space>
-          <RobotOutlined className="text-brand-500" />
-          <div>
-            <div className="font-medium text-slate-900">{value}</div>
-            <Typography.Text type="secondary" className="text-xs">{record.providerTypeLabel}</Typography.Text>
-          </div>
+          <Avatar src={record.avatarUrl} icon={<RobotOutlined />} className="bg-brand-50 text-brand-500" />
+          <div className="font-medium text-slate-900">{value}</div>
         </Space>
       ),
     },
@@ -532,9 +528,6 @@ export const LlmSettingsAdminPage = () => {
           <Form.Item name="name" label="厂商名称" rules={[{ required: true, message: '请输入厂商名称' }]}>
             <Input maxLength={128} />
           </Form.Item>
-          <Form.Item name="providerType" label="厂商类型" rules={[{ required: true }]}>
-            <Select options={PROVIDER_TYPE_OPTIONS} />
-          </Form.Item>
           <Form.Item name="apiBaseUrl" label="API 地址" rules={[{ required: true, message: '请输入 API 地址' }]}>
             <Input />
           </Form.Item>
@@ -544,6 +537,22 @@ export const LlmSettingsAdminPage = () => {
             rules={editingProvider ? [] : [{ required: true, message: '请输入 API Key' }]}
           >
             <Input.Password placeholder={editingProvider ? '留空表示不修改' : undefined} />
+          </Form.Item>
+          <Form.Item label="厂商 Logo">
+            <Upload
+              listType="picture-card"
+              fileList={providerLogoFile}
+              maxCount={1}
+              beforeUpload={() => false}
+              onChange={({ fileList }) => setProviderLogoFile(fileList)}
+            >
+              {providerLogoFile.length === 0 && (
+                <div>
+                  <UploadOutlined />
+                  <div className="mt-1 text-xs">上传 Logo</div>
+                </div>
+              )}
+            </Upload>
           </Form.Item>
           <div className="grid gap-4 md:grid-cols-2">
             <Form.Item name="sortOrder" label="排序">

@@ -55,7 +55,7 @@ export type PlatformLLMProviderListResponse = {
 
 export type PlatformLLMProviderPayload = {
   name: string;
-  providerType: string;
+  providerType?: string;
   apiBaseUrl: string;
   apiKey?: string;
   avatar?: File;

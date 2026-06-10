@@ -66,7 +66,7 @@ class PlatformLLMProviderSerializer(serializers.ModelSerializer):
 
 
 class PlatformLLMProviderWriteSerializer(serializers.ModelSerializer):
-    providerType = serializers.CharField(source='provider_type')
+    providerType = serializers.CharField(source='provider_type', required=False, default='openai')
     apiBaseUrl = serializers.URLField(source='api_base_url')
     apiKey = serializers.CharField(source='api_key', required=False, allow_blank=True, write_only=True)
     clearAvatar = serializers.BooleanField(required=False, default=False, write_only=True)

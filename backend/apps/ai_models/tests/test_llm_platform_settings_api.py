@@ -86,6 +86,21 @@ class LLMPlatformSettingsApiTests(TenantTestMixin, APITestCase):
         self.assertTrue(resp.data['apiKeyConfigured'])
         self.assertTrue(resp.data['apiKeyMasked'].startswith('sk-'))
 
+    def test_superuser_can_create_platform_provider_without_provider_type(self):
+        self.client.force_authenticate(self.superuser)
+
+        resp = self.client.post('/api/v1/settings/llm/providers/', {
+            'name': 'OpenAI Compatible',
+            'apiBaseUrl': 'https://api.compatible.example/v1',
+            'apiKey': 'sk-compatible-secret',
+            'isActive': True,
+        }, format='json')
+
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(resp.data['providerType'], 'openai')
+        provider = self.provider_model().objects.get(id=resp.data['id'])
+        self.assertEqual(provider.provider_type, 'openai')
+
     def test_non_superuser_cannot_call_platform_provider_settings(self):
         self.grant_permissions('ai_models.llm.view', 'ai_models.llm.create', 'ai_models.llm.update')
         self.client.force_authenticate(self.tenant_user)
