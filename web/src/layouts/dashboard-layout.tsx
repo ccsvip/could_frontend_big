@@ -105,7 +105,7 @@ const SUPER_ADMIN_TENANT_MODULES: ReadonlyArray<SuperAdminTenantModule> = [
     icon: 'RobotOutlined',
     children: [
       { segment: 'asr', label: 'ASR管理', icon: 'AudioOutlined' },
-      { segment: 'llm', label: 'LLM管理', icon: 'CloudOutlined' },
+      { segment: 'llm', label: 'LLM设置', icon: 'CloudOutlined' },
       { segment: 'tts', label: 'TTS管理', icon: 'SoundOutlined' },
       { segment: 'chat', label: '聊天室', icon: 'MessageOutlined' },
     ],

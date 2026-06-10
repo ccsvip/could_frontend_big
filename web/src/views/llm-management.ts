@@ -1,1 +1,1 @@
-export { LlmManagementPage } from './llm-management/index';
+export { LlmSettingsPage as LlmManagementPage } from './llm-settings';
