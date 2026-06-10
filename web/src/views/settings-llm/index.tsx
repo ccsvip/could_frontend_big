@@ -310,7 +310,7 @@ export const LlmSettingsAdminPage = () => {
             icon={<ExperimentOutlined />}
             loading={testingModelId === record.id}
             onClick={() => void handleTestModel(record.id)}
-            className="border-slate-200 hover:border-violet-500 hover:text-violet-600 rounded-md"
+            className="border-slate-200 hover:border-brand-500 hover:text-brand-600 rounded-md"
           >
             测试
           </Button>
@@ -318,7 +318,7 @@ export const LlmSettingsAdminPage = () => {
             size="small"
             icon={<EditOutlined />}
             onClick={() => openEditModel(record)}
-            className="border-slate-200 hover:border-violet-500 hover:text-violet-600 rounded-md"
+            className="border-slate-200 hover:border-brand-500 hover:text-brand-600 rounded-md"
           >
             编辑
           </Button>
@@ -345,11 +345,11 @@ export const LlmSettingsAdminPage = () => {
           <Avatar
             src={record.avatarUrl}
             icon={<RobotOutlined />}
-            className="shadow-sm border border-slate-100 bg-violet-50 text-violet-600"
+            className="shadow-sm border border-slate-100 bg-brand-50 text-brand-600"
             size={36}
           />
           <div>
-            <span className="font-semibold text-slate-800 text-sm hover:text-violet-600 transition-colors">
+            <span className="font-semibold text-slate-800 text-sm hover:text-brand-600 transition-colors">
               {value}
             </span>
           </div>
@@ -395,7 +395,7 @@ export const LlmSettingsAdminPage = () => {
             size="small"
             icon={<PlusOutlined />}
             onClick={() => openCreateModel(record.id)}
-            className="border-violet-100 hover:border-violet-500 text-violet-600 hover:text-violet-700 bg-violet-50/30 hover:bg-violet-50 rounded-md"
+            className="border-brand-100 hover:border-brand-500 text-brand-600 hover:text-brand-700 bg-brand-50/30 hover:bg-brand-50 rounded-md"
           >
             模型
           </Button>
@@ -403,7 +403,7 @@ export const LlmSettingsAdminPage = () => {
             size="small"
             icon={<EditOutlined />}
             onClick={() => openEditProvider(record)}
-            className="border-slate-200 hover:border-violet-500 hover:text-violet-600 rounded-md"
+            className="border-slate-200 hover:border-brand-500 hover:text-brand-600 rounded-md"
           >
             编辑
           </Button>
@@ -433,7 +433,7 @@ export const LlmSettingsAdminPage = () => {
             type="primary"
             icon={<PlusOutlined />}
             onClick={openCreateProvider}
-            className="bg-violet-600 border-violet-600 hover:bg-violet-700 hover:border-violet-700 rounded-lg text-white"
+            className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 rounded-lg text-white"
           >
             新增厂商
           </Button>
@@ -499,7 +499,7 @@ export const LlmSettingsAdminPage = () => {
             loading={savingAuth}
             onClick={() => void saveAuthorization()}
             size="large"
-            className="bg-gradient-to-r from-violet-600 to-indigo-600 border-none hover:from-violet-700 hover:to-indigo-700 text-white shadow-sm hover:shadow-md transition-all rounded-lg font-medium"
+            className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 text-white shadow-sm hover:shadow-md transition-all rounded-lg font-medium"
           >
             保存授权
           </Button>
@@ -513,7 +513,7 @@ export const LlmSettingsAdminPage = () => {
             label: (
               <div className="flex items-center justify-between w-full pr-4">
                 <Space size="middle">
-                  <ApiOutlined className="text-violet-600 text-base" />
+                  <ApiOutlined className="text-brand-600 text-base" />
                   <span className="font-semibold text-slate-800 text-sm">{provider.name}</span>
                   <Tag color={provider.isActive ? 'success' : 'default'} className="px-2 py-0.5 rounded-md border-0 text-xs">
                     {provider.isActive ? '启用中' : '已停用'}
@@ -566,7 +566,7 @@ export const LlmSettingsAdminPage = () => {
     <div className="max-w-3xl bg-slate-50/30 border border-slate-100 rounded-xl p-6 shadow-sm">
       <div className="mb-4">
         <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-1.5 mb-1">
-          <ExperimentOutlined className="text-violet-600" />
+          <ExperimentOutlined className="text-brand-600" />
           <span>可用性与测速配置</span>
         </h3>
         <p className="text-xs text-slate-400">
@@ -603,7 +603,7 @@ export const LlmSettingsAdminPage = () => {
           type="primary"
           icon={<SaveOutlined />}
           onClick={() => void saveTestSettings()}
-          className="bg-gradient-to-r from-violet-600 to-indigo-600 border-none hover:from-violet-700 hover:to-indigo-700 text-white shadow-sm hover:shadow-md transition-all rounded-lg px-4"
+          className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 text-white shadow-sm hover:shadow-md transition-all rounded-lg px-4"
         >
           保存测试设置
         </Button>
@@ -618,7 +618,7 @@ export const LlmSettingsAdminPage = () => {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <RobotOutlined className="text-violet-600" />
+              <RobotOutlined className="text-brand-600" />
               <span>LLM 平台全局设置</span>
             </h1>
             <p className="text-slate-500 mt-1 text-sm">
@@ -626,13 +626,13 @@ export const LlmSettingsAdminPage = () => {
             </p>
           </div>
           <div className="flex gap-3">
-            <div className="bg-violet-50 border border-violet-100 rounded-lg px-4 py-1.5 text-center shadow-sm">
-              <div className="text-xs text-violet-600 font-semibold mb-0.5">可用厂商</div>
-              <div className="text-lg font-bold text-violet-800">{providers.length} 个</div>
+            <div className="bg-brand-50 border border-brand-100 rounded-lg px-4 py-1.5 text-center shadow-sm">
+              <div className="text-xs text-brand-600 font-semibold mb-0.5">可用厂商</div>
+              <div className="text-lg font-bold text-brand-800">{providers.length} 个</div>
             </div>
-            <div className="bg-purple-50 border border-purple-100 rounded-lg px-4 py-1.5 text-center shadow-sm">
-              <div className="text-xs text-purple-600 font-semibold mb-0.5">已录模型</div>
-              <div className="text-lg font-bold text-purple-800">{models.length} 个</div>
+            <div className="bg-slate-50 border border-slate-200/60 rounded-lg px-4 py-1.5 text-center shadow-sm">
+              <div className="text-xs text-slate-500 font-semibold mb-0.5">已录模型</div>
+              <div className="text-lg font-bold text-slate-700">{models.length} 个</div>
             </div>
           </div>
         </div>
@@ -653,7 +653,7 @@ export const LlmSettingsAdminPage = () => {
       <Modal
         title={
           <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-            <span className="p-1 bg-violet-50 text-violet-600 rounded">
+            <span className="p-1 bg-brand-50 text-brand-600 rounded">
               <RobotOutlined />
             </span>
             <span className="font-semibold">{editingProvider ? '编辑厂商' : '新增厂商'}</span>
@@ -718,7 +718,7 @@ export const LlmSettingsAdminPage = () => {
       <Modal
         title={
           <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-            <span className="p-1 bg-violet-50 text-violet-600 rounded">
+            <span className="p-1 bg-brand-50 text-brand-600 rounded">
               <ExperimentOutlined />
             </span>
             <span className="font-semibold">{editingModel ? '编辑模型' : '新增模型'}</span>

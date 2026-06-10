@@ -253,11 +253,11 @@ export const LlmManagementPage = () => {
           <Avatar
             src={record.avatarUrl}
             icon={<CloudOutlined />}
-            className="shadow-sm border border-slate-100 bg-teal-50 text-teal-600"
+            className="shadow-sm border border-slate-100 bg-brand-50 text-brand-600"
             size={36}
           />
           <div>
-            <span className="font-semibold text-slate-800 text-sm hover:text-teal-600 transition-colors">
+            <span className="font-semibold text-slate-800 text-sm hover:text-brand-600 transition-colors">
               {record.name}
             </span>
           </div>
@@ -347,7 +347,7 @@ export const LlmManagementPage = () => {
               icon={testingId === record.id ? <LoadingOutlined /> : <ApiOutlined />}
               loading={testingId === record.id}
               onClick={() => handleTestConnection(record.id)}
-              className="border-slate-200 hover:border-teal-500 hover:text-teal-600 flex items-center transition-all rounded-md"
+              className="border-slate-200 hover:border-brand-500 hover:text-brand-600 flex items-center transition-all rounded-md"
             >
               测试
             </Button>
@@ -376,7 +376,7 @@ export const LlmManagementPage = () => {
               size="small"
               icon={<EditOutlined />}
               onClick={() => openEditModal(record)}
-              className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded-md"
+              className="text-brand-600 hover:text-brand-700 hover:bg-brand-50 rounded-md"
             >
               编辑
             </Button>
@@ -406,7 +406,7 @@ export const LlmManagementPage = () => {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <CloudOutlined className="text-teal-600" />
+              <CloudOutlined className="text-brand-600" />
               <span>AI 模型供应商管理</span>
             </h1>
             <p className="text-slate-500 mt-1 text-sm">
@@ -414,13 +414,13 @@ export const LlmManagementPage = () => {
             </p>
           </div>
           <div className="flex gap-3">
-            <div className="bg-teal-50 border border-teal-100 rounded-lg px-4 py-1.5 text-center shadow-sm">
-              <div className="text-xs text-teal-600 font-semibold mb-0.5">总供应商</div>
-              <div className="text-lg font-bold text-teal-800">{total}</div>
+            <div className="bg-brand-50 border border-brand-100 rounded-lg px-4 py-1.5 text-center shadow-sm">
+              <div className="text-xs text-brand-600 font-semibold mb-0.5">总供应商</div>
+              <div className="text-lg font-bold text-brand-800">{total}</div>
             </div>
-            <div className="bg-indigo-50 border border-indigo-100 rounded-lg px-4 py-1.5 text-center shadow-sm">
-              <div className="text-xs text-indigo-600 font-semibold mb-0.5">已启用</div>
-              <div className="text-lg font-bold text-indigo-800">
+            <div className="bg-slate-50 border border-slate-200/60 rounded-lg px-4 py-1.5 text-center shadow-sm">
+              <div className="text-xs text-slate-500 font-semibold mb-0.5">已启用</div>
+              <div className="text-lg font-bold text-slate-700">
                 {items.filter(item => item.isActive).length}
               </div>
             </div>
@@ -437,19 +437,19 @@ export const LlmManagementPage = () => {
             onChange={(e) => setKeyword(e.target.value)}
             onPressEnter={handleSearch}
             allowClear
-            className="w-64 rounded-lg hover:border-teal-500 focus:border-teal-500 py-1.5"
+            className="w-64 rounded-lg hover:border-brand-500 focus:border-brand-500 py-1.5"
             prefix={<CloudOutlined className="text-slate-400 mr-1" />}
           />
           <Button
             type="primary"
-            className="bg-teal-600 border-teal-600 hover:bg-teal-700 hover:border-teal-700 rounded-lg px-4"
+            className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 rounded-lg px-4"
             onClick={handleSearch}
           >
             筛选
           </Button>
           <Button
             onClick={handleReset}
-            className="hover:text-teal-600 hover:border-teal-600 rounded-lg px-4"
+            className="hover:text-brand-600 hover:border-brand-600 rounded-lg px-4"
           >
             重置
           </Button>
@@ -459,7 +459,7 @@ export const LlmManagementPage = () => {
             type="primary"
             icon={<PlusOutlined />}
             onClick={openCreateModal}
-            className="bg-gradient-to-r from-teal-600 to-emerald-600 border-none hover:from-teal-700 hover:to-emerald-700 text-white shadow-sm hover:shadow-md transition-all rounded-lg px-4 py-1.5 h-auto flex items-center font-medium"
+            className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 text-white shadow-sm hover:shadow-md transition-all rounded-lg px-4 py-1.5 h-auto flex items-center font-medium"
           >
             新建供应商
           </Button>
@@ -487,7 +487,7 @@ export const LlmManagementPage = () => {
       <Modal
         title={
           <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-            <span className="p-1 bg-teal-50 text-teal-600 rounded">
+            <span className="p-1 bg-brand-50 text-brand-600 rounded">
               <CloudOutlined />
             </span>
             <span className="font-semibold">{editingItem ? '编辑供应商' : '新建供应商'}</span>
@@ -570,7 +570,7 @@ export const LlmManagementPage = () => {
                     <Radio
                       checked={model.isDefault}
                       onChange={() => handleSetDefaultModel(model.name)}
-                      className="text-teal-600"
+                      className="text-brand-600"
                     />
                     <span className="flex-1 text-sm font-semibold text-slate-700 font-mono">{model.name}</span>
                     {model.isDefault ? (
@@ -580,7 +580,7 @@ export const LlmManagementPage = () => {
                         type="text"
                         size="small"
                         onClick={() => handleSetDefaultModel(model.name)}
-                        className="text-xs text-slate-400 hover:text-teal-600 p-0 h-auto font-medium"
+                        className="text-xs text-slate-400 hover:text-brand-600 p-0 h-auto font-medium"
                       >
                         设为默认
                       </Button>
@@ -609,7 +609,7 @@ export const LlmManagementPage = () => {
                 type="primary"
                 onClick={handleAddModel}
                 icon={<PlusOutlined />}
-                className="bg-teal-600 border-teal-600 hover:bg-teal-700 hover:border-teal-700 rounded-r-lg"
+                className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 rounded-r-lg"
               >
                 添加
               </Button>
