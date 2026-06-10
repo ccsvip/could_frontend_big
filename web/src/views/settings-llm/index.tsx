@@ -423,27 +423,30 @@ export const LlmSettingsAdminPage = () => {
 
   const providerModelTab = (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50/50 p-3 rounded-lg border border-slate-100">
-        <Typography.Text className="text-slate-500 text-xs">平台统一维护各模型供应商的密钥凭证与可用模型产品线。</Typography.Text>
-        <Space>
-          <Button icon={<ReloadOutlined />} onClick={() => void loadPlatformData()} className="rounded-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+        <Typography.Text className="text-slate-500 text-xs sm:max-w-md md:max-w-lg">
+          平台统一维护各模型供应商的密钥凭证与可用模型产品线。
+        </Typography.Text>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button icon={<ReloadOutlined />} onClick={() => void loadPlatformData()} className="rounded-lg flex-1 sm:flex-initial">
             刷新
           </Button>
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={openCreateProvider}
-            className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 rounded-lg text-white"
+            className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 rounded-lg text-white flex-1 sm:flex-initial"
           >
             新增厂商
           </Button>
-        </Space>
+        </div>
       </div>
       <Table
         rowKey="id"
         loading={loading}
         columns={providerColumns}
         dataSource={providers}
+        scroll={{ x: 'max-content' }}
         expandable={{
           expandedRowRender: (provider) => (
             <Table
@@ -452,6 +455,7 @@ export const LlmSettingsAdminPage = () => {
               columns={modelColumns}
               dataSource={modelByProvider.get(provider.id) || []}
               pagination={false}
+              scroll={{ x: 'max-content' }}
             />
           ),
         }}
@@ -461,12 +465,12 @@ export const LlmSettingsAdminPage = () => {
 
   const authorizationTab = (
     <div className="space-y-4">
-      <div className="bg-slate-50/50 border border-slate-100/80 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold text-slate-700">授权目标公司:</span>
+      <div className="bg-slate-50/50 border border-slate-100/80 rounded-xl p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full lg:w-auto">
+          <span className="text-sm font-semibold text-slate-700 shrink-0">授权目标公司:</span>
           <Select
             showSearch
-            className="min-w-[280px]"
+            className="w-full sm:w-[280px]"
             placeholder="请选择公司"
             value={selectedTenantId ?? undefined}
             optionFilterProp="label"
@@ -475,10 +479,10 @@ export const LlmSettingsAdminPage = () => {
             size="large"
           />
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold text-slate-700">租户默认模型:</span>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full lg:w-auto">
+          <span className="text-sm font-semibold text-slate-700 shrink-0">租户默认模型:</span>
           <Select
-            className="min-w-[280px]"
+            className="w-full sm:w-[280px] font-mono text-sm"
             placeholder="暂无默认模型"
             allowClear
             value={authorization?.defaultModelId ?? undefined}
@@ -499,7 +503,7 @@ export const LlmSettingsAdminPage = () => {
             loading={savingAuth}
             onClick={() => void saveAuthorization()}
             size="large"
-            className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 text-white shadow-sm hover:shadow-md transition-all rounded-lg font-medium"
+            className="w-full sm:w-auto bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 text-white shadow-sm hover:shadow-md transition-all rounded-lg font-medium"
           >
             保存授权
           </Button>
@@ -512,14 +516,14 @@ export const LlmSettingsAdminPage = () => {
             key: provider.id,
             label: (
               <div className="flex items-center justify-between w-full pr-4">
-                <Space size="middle">
+                <Space size="middle" className="flex-wrap">
                   <ApiOutlined className="text-brand-600 text-base" />
                   <span className="font-semibold text-slate-800 text-sm">{provider.name}</span>
                   <Tag color={provider.isActive ? 'success' : 'default'} className="px-2 py-0.5 rounded-md border-0 text-xs">
                     {provider.isActive ? '启用中' : '已停用'}
                   </Tag>
                 </Space>
-                <span className="text-xs text-slate-400 font-medium">
+                <span className="text-xs text-slate-400 font-medium shrink-0 ml-2">
                   {provider.models.filter(m => m.grantIsActive).length} / {provider.models.length} 已授权
                 </span>
               </div>
@@ -530,12 +534,12 @@ export const LlmSettingsAdminPage = () => {
                   <div className="text-center py-6 text-slate-400 text-xs">该厂商下未录入任何模型</div>
                 ) : (
                   provider.models.map((model) => (
-                    <div key={model.id} className="flex items-center justify-between gap-4 py-3.5 px-4 hover:bg-slate-50/60 rounded-lg transition-colors">
+                    <div key={model.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-3.5 px-4 hover:bg-slate-50/60 rounded-lg transition-colors">
                       <div>
                         <div className="font-semibold text-slate-800 text-sm">{model.displayName || model.name}</div>
                         <code className="text-[11px] font-mono text-slate-400 mt-0.5 block">{model.name}</code>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 self-end sm:self-auto">
                         <Tag
                           color={model.isActive && provider.isActive ? 'success' : 'default'}
                           className="m-0 px-2 py-0.5 rounded-md border-0 text-xs font-medium"
@@ -563,7 +567,7 @@ export const LlmSettingsAdminPage = () => {
   );
 
   const testSettingsTab = (
-    <div className="max-w-3xl bg-slate-50/30 border border-slate-100 rounded-xl p-6 shadow-sm">
+    <div className="max-w-3xl bg-slate-50/30 border border-slate-100 rounded-xl p-4 sm:p-6 shadow-sm">
       <div className="mb-4">
         <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-1.5 mb-1">
           <ExperimentOutlined className="text-brand-600" />
@@ -603,7 +607,7 @@ export const LlmSettingsAdminPage = () => {
           type="primary"
           icon={<SaveOutlined />}
           onClick={() => void saveTestSettings()}
-          className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 text-white shadow-sm hover:shadow-md transition-all rounded-lg px-4"
+          className="w-full sm:w-auto bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 text-white shadow-sm hover:shadow-md transition-all rounded-lg px-4"
         >
           保存测试设置
         </Button>
@@ -612,10 +616,10 @@ export const LlmSettingsAdminPage = () => {
   );
 
   return (
-    <div className="space-y-5 p-6">
+    <div className="space-y-5 p-4 sm:p-6">
       {/* 顶部 Page Hero */}
       <div className="page-hero">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
               <RobotOutlined className="text-brand-600" />
@@ -625,12 +629,12 @@ export const LlmSettingsAdminPage = () => {
               在此统一维护各云厂商平台密钥、租户公司授权与全局测试测速策略。
             </p>
           </div>
-          <div className="flex gap-3">
-            <div className="bg-brand-50 border border-brand-100 rounded-lg px-4 py-1.5 text-center shadow-sm">
+          <div className="flex gap-3 w-full sm:w-auto justify-between sm:justify-start">
+            <div className="flex-1 sm:flex-none bg-brand-50 border border-brand-100 rounded-lg px-4 py-1.5 text-center shadow-sm">
               <div className="text-xs text-brand-600 font-semibold mb-0.5">可用厂商</div>
               <div className="text-lg font-bold text-brand-800">{providers.length} 个</div>
             </div>
-            <div className="bg-slate-50 border border-slate-200/60 rounded-lg px-4 py-1.5 text-center shadow-sm">
+            <div className="flex-1 sm:flex-none bg-slate-50 border border-slate-200/60 rounded-lg px-4 py-1.5 text-center shadow-sm">
               <div className="text-xs text-slate-500 font-semibold mb-0.5">已录模型</div>
               <div className="text-lg font-bold text-slate-700">{models.length} 个</div>
             </div>
@@ -639,7 +643,7 @@ export const LlmSettingsAdminPage = () => {
       </div>
 
       {/* 主 Tab 内容区域 */}
-      <div className="bg-white border border-slate-100 shadow-sm rounded-xl p-6 transition-all hover:shadow-md duration-300">
+      <div className="bg-white border border-slate-100 shadow-sm rounded-xl p-4 sm:p-6 transition-all hover:shadow-md duration-300">
         <Tabs
           items={[
             { key: 'providers', label: '平台厂商与模型', children: providerModelTab },

@@ -400,10 +400,10 @@ export const LlmManagementPage = () => {
   ];
 
   return (
-    <div className="space-y-5 p-6">
+    <div className="space-y-5 p-4 sm:p-6">
       {/* 顶部 Page Hero */}
       <div className="page-hero">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
               <CloudOutlined className="text-brand-600" />
@@ -413,12 +413,12 @@ export const LlmManagementPage = () => {
               配置并接入第三方主流大语言模型服务（OpenAI、Claude、Gemini 等），实时监测模型响应延迟与连通状态。
             </p>
           </div>
-          <div className="flex gap-3">
-            <div className="bg-brand-50 border border-brand-100 rounded-lg px-4 py-1.5 text-center shadow-sm">
+          <div className="flex gap-3 w-full sm:w-auto justify-between sm:justify-start">
+            <div className="flex-1 sm:flex-none bg-brand-50 border border-brand-100 rounded-lg px-4 py-1.5 text-center shadow-sm">
               <div className="text-xs text-brand-600 font-semibold mb-0.5">总供应商</div>
               <div className="text-lg font-bold text-brand-800">{total}</div>
             </div>
-            <div className="bg-slate-50 border border-slate-200/60 rounded-lg px-4 py-1.5 text-center shadow-sm">
+            <div className="flex-1 sm:flex-none bg-slate-50 border border-slate-200/60 rounded-lg px-4 py-1.5 text-center shadow-sm">
               <div className="text-xs text-slate-500 font-semibold mb-0.5">已启用</div>
               <div className="text-lg font-bold text-slate-700">
                 {items.filter(item => item.isActive).length}
@@ -429,37 +429,39 @@ export const LlmManagementPage = () => {
       </div>
 
       {/* 搜索过滤控制中心 */}
-      <div className="bg-white border border-slate-100 shadow-sm rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 transition-all hover:shadow-md duration-300">
-        <div className="flex items-center gap-3">
+      <div className="bg-white border border-slate-100 shadow-sm rounded-xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 transition-all hover:shadow-md duration-300">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
           <Input
             placeholder="搜索供应商名称..."
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onPressEnter={handleSearch}
             allowClear
-            className="w-64 rounded-lg hover:border-brand-500 focus:border-brand-500 py-1.5"
+            className="w-full sm:w-64 rounded-lg hover:border-brand-500 focus:border-brand-500 py-1.5"
             prefix={<CloudOutlined className="text-slate-400 mr-1" />}
           />
-          <Button
-            type="primary"
-            className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 rounded-lg px-4"
-            onClick={handleSearch}
-          >
-            筛选
-          </Button>
-          <Button
-            onClick={handleReset}
-            className="hover:text-brand-600 hover:border-brand-600 rounded-lg px-4"
-          >
-            重置
-          </Button>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button
+              type="primary"
+              className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 rounded-lg px-4 flex-1 sm:flex-initial"
+              onClick={handleSearch}
+            >
+              筛选
+            </Button>
+            <Button
+              onClick={handleReset}
+              className="hover:text-brand-600 hover:border-brand-600 rounded-lg px-4 flex-1 sm:flex-initial"
+            >
+              重置
+            </Button>
+          </div>
         </div>
         {canCreate && (
           <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={openCreateModal}
-            className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 text-white shadow-sm hover:shadow-md transition-all rounded-lg px-4 py-1.5 h-auto flex items-center font-medium"
+            className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 text-white shadow-sm hover:shadow-md transition-all rounded-lg px-4 py-2 h-auto flex items-center justify-center font-medium w-full md:w-auto"
           >
             新建供应商
           </Button>
@@ -473,6 +475,7 @@ export const LlmManagementPage = () => {
           columns={columns}
           dataSource={items}
           loading={loading}
+          scroll={{ x: 'max-content' }}
           pagination={{
             current: page,
             pageSize: PAGE_SIZE,
