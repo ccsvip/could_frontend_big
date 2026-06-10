@@ -138,6 +138,10 @@ docker compose logs -f web
 - 国内镜像默认值：APT 走阿里云 Debian、PyPI 走清华 Tsinghua，由 `x-backend-build.args` 注入；离线 / 海外环境覆盖根 `.env` 即可。
 - 子目录文档同时维护两份：`AGENTS.md`（quick-ref）+ `CLAUDE.md`（详细 FAQ + Changelog）。新增模块文档遵循同一对偶。
 - 每次执行完任务之后都需要提交代码（非远端）使用中文去执行commit
+- 如果需要测试openai兼容接口，请使用 groq 
+    - 地址 https://api.groq.com/openai/v1
+    - 密钥 GROQ_API_KEY
+    - 模型名称 qwen/qwen3-32b
 
 ## 务必遵循
 

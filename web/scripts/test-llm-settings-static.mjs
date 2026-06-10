@@ -28,6 +28,8 @@ if (existsSync(companyPagePath)) {
   const companyPageSource = read('src/views/llm-settings/index.tsx');
   assert(!companyPageSource.includes('apiBaseUrl'), 'company LLM page must not display API base URL');
   assert(!companyPageSource.includes('apiKey'), 'company LLM page must not display API key');
+  assert(!companyPageSource.includes('{provider.name}'), 'company LLM page must not display provider names');
+  assert(!companyPageSource.includes('provider.avatarUrl'), 'company LLM page must not display provider logos');
 }
 
 console.log('LLM settings static checks passed');
