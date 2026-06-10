@@ -5,7 +5,13 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import ChatConversation, LLMProvider
+from apps.ai_models.models import (
+    ChatConversation,
+    LLMModel,
+    LLMProvider,
+    TenantLLMModelGrant,
+    TenantLLMSettings,
+)
 from apps.knowledge_base.models import KnowledgeDocument
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
@@ -58,14 +64,27 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
 
     def create_provider(self) -> LLMProvider:
         return LLMProvider.objects.create(
-            tenant=self.tenant,
             name='OpenAI compatible',
             provider_type='openai',
             api_base_url='https://api.openai.com/v1',
             api_key='secret-key',
-            models_config=[{'name': 'gpt-4.1', 'isDefault': True}],
             is_active=True,
         )
+
+    def create_model(self, provider: LLMProvider, *, default=False) -> LLMModel:
+        model = LLMModel.objects.create(
+            provider=provider,
+            name='gpt-4.1',
+            display_name='GPT 4.1',
+            is_active=True,
+        )
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        if default:
+            TenantLLMSettings.objects.update_or_create(
+                tenant=self.tenant,
+                defaults={'default_model': model},
+            )
+        return model
 
     def create_document(self, *, tenant=None, title='Refund policy') -> KnowledgeDocument:
         return KnowledgeDocument.objects.create(
@@ -85,6 +104,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
     def test_create_agent_application_persists_model_config_and_knowledge_documents(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.create')
         provider = self.create_provider()
+        model = self.create_model(provider)
         document = self.create_document(title='Gold support playbook')
 
         response = self.client.post(
@@ -92,8 +112,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
             {
                 'name': 'Gold support agent',
                 'description': 'Handles refund and exchange questions',
-                'llmProviderId': provider.id,
-                'modelName': 'gpt-4.1',
+                'llmModelId': model.id,
                 'systemPrompt': 'Answer as a careful support specialist.',
                 'temperature': 0.8,
                 'maxTokens': 1200,
@@ -104,20 +123,22 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['name'], 'Gold support agent')
-        self.assertEqual(response.data['llmProviderId'], provider.id)
+        self.assertEqual(response.data['llmModelId'], model.id)
+        self.assertEqual(response.data['llmModelName'], 'gpt-4.1')
+        self.assertEqual(response.data['llmProviderName'], provider.name)
         self.assertEqual(response.data['knowledgeDocumentIds'], [document.id])
 
         AgentApplication = self.agent_application_model()
         application = AgentApplication.objects.get(pk=response.data['id'])
         self.assertEqual(application.tenant_id, self.tenant.id)
-        self.assertEqual(application.llm_provider_id, provider.id)
-        self.assertEqual(application.model_name, 'gpt-4.1')
+        self.assertEqual(application.llm_model_id, model.id)
         self.assertEqual(application.system_prompt, 'Answer as a careful support specialist.')
         self.assertEqual(list(application.knowledge_documents.values_list('id', flat=True)), [document.id])
 
     def test_create_agent_application_rejects_foreign_knowledge_document(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.create')
-        self.create_provider()
+        provider = self.create_provider()
+        model = self.create_model(provider)
         foreign_tenant = Tenant.objects.create(name='Foreign tenant', code='foreign-tenant')
         foreign_document = self.create_document(tenant=foreign_tenant, title='Foreign playbook')
 
@@ -125,6 +146,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
             '/api/v1/ai-models/applications/',
             {
                 'name': 'Unsafe agent',
+                'llmModelId': model.id,
                 'knowledgeDocumentIds': [foreign_document.id],
             },
             format='json',
@@ -136,14 +158,14 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
     def test_create_debug_conversation_copies_application_chat_config(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.create', 'ai_models.chat.create')
         provider = self.create_provider()
+        model = self.create_model(provider)
         AgentApplication = self.agent_application_model()
         application = AgentApplication.objects.create(
             tenant=self.tenant,
             created_by=self.user,
             name='Code diagnosis agent',
             description='Finds likely bugs in code snippets',
-            llm_provider=provider,
-            model_name='gpt-4.1',
+            llm_model=model,
             system_prompt='Diagnose code carefully.',
             temperature=0.5,
             max_tokens=1600,
@@ -154,8 +176,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         conversation = ChatConversation.objects.get(pk=response.data['id'])
         self.assertEqual(conversation.application_id, application.id)
-        self.assertEqual(conversation.llm_provider_id, provider.id)
-        self.assertEqual(conversation.model_name, 'gpt-4.1')
+        self.assertEqual(conversation.llm_model_id, model.id)
         self.assertEqual(conversation.system_prompt, 'Diagnose code carefully.')
         self.assertEqual(conversation.temperature, 0.5)
         self.assertEqual(conversation.max_tokens, 1600)

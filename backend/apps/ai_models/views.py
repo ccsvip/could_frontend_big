@@ -44,6 +44,7 @@ from .llm_services import (
     get_effective_llm_model_for_tenant,
     get_effective_llm_models_for_tenant,
     get_tenant_llm_settings,
+    is_llm_model_effective_for_tenant,
     llm_model_has_usage,
     llm_provider_has_usage,
 )
@@ -485,15 +486,20 @@ def _build_chat_completions_url(raw_url: str) -> str:
     return f'{api_url}/chat/completions'
 
 
-def _get_provider_default_model_name(provider: LLMProvider | None) -> str:
-    if not provider:
-        return ''
+def _resolve_tenant_llm_model(tenant, model_id=None, *, use_default: bool = False) -> LLMModel:
+    if model_id is not None:
+        model = get_effective_llm_model_for_tenant(tenant, model_id)
+        if model is None:
+            raise ValidationError({'llmModelId': '所选模型不可用或未授权'})
+        return model
 
-    models_config = provider.models_config or []
-    default_model = next((m for m in models_config if m.get('isDefault')), None)
-    if not default_model and models_config:
-        default_model = models_config[0]
-    return default_model.get('name', '').strip() if default_model else ''
+    if use_default:
+        settings = get_tenant_llm_settings(tenant)
+        model = settings.default_model if settings is not None else None
+        if is_llm_model_effective_for_tenant(tenant, model):
+            return model
+
+    raise ValidationError({'llmModelId': '请先选择模型或设置公司默认模型'})
 
 
 def _coerce_openai_content_to_text(content) -> str:
@@ -758,7 +764,11 @@ class LLMProviderViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet
     create_conversation=extend_schema(tags=['Agent Applications']),
 )
 class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
-    queryset = AgentApplication.objects.select_related('llm_provider', 'created_by').prefetch_related('knowledge_documents')
+    queryset = (
+        AgentApplication.objects
+        .select_related('llm_model__provider', 'created_by')
+        .prefetch_related('knowledge_documents')
+    )
     serializer_class = AgentApplicationSerializer
     permission_map = {
         'list': [CanViewAgentApplications],
@@ -782,8 +792,33 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         context['tenant'] = self.request_tenant
         return context
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            if 'llmModelId' in serializer.errors:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidationError(serializer.errors)
+        try:
+            self.perform_create(serializer)
+        except ValidationError as exc:
+            detail = getattr(exc, 'detail', None)
+            if isinstance(detail, dict) and 'llmModelId' in detail:
+                return Response(detail, status=status.HTTP_400_BAD_REQUEST)
+            raise
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user, **self.tenant_create_kwargs())
+        llm_model = serializer.validated_data.get('llm_model')
+        if llm_model is None:
+            llm_model = _resolve_tenant_llm_model(self.request_tenant, use_default=True)
+        serializer.save(created_by=self.request.user, llm_model=llm_model, **self.tenant_create_kwargs())
+
+    def perform_update(self, serializer):
+        save_kwargs = {}
+        if 'llm_model' in serializer.validated_data and serializer.validated_data['llm_model'] is None:
+            save_kwargs['llm_model'] = _resolve_tenant_llm_model(self.request_tenant, use_default=True)
+        serializer.save(**save_kwargs)
 
     @action(detail=True, methods=['post'], url_path='conversations')
     def create_conversation(self, request, pk=None):
@@ -791,8 +826,7 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         conversation = ChatConversation.objects.create(
             title=f'{application.name} 调试会话',
             user=request.user,
-            llm_provider=application.llm_provider,
-            model_name=application.model_name,
+            llm_model=application.llm_model,
             summary='',
             system_prompt=application.system_prompt,
             temperature=application.temperature,
@@ -813,7 +847,7 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
     update_config=extend_schema(tags=['AI Chat']),
 )
 class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
-    queryset = ChatConversation.objects.all()
+    queryset = ChatConversation.objects.select_related('llm_model__provider', 'application')
     serializer_class = ChatConversationListSerializer
     permission_map = {
         'list': [CanViewChat],
@@ -848,19 +882,18 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         serializer.is_valid(raise_exception=True)
 
         tenant = self.request_tenant
-        provider_id = serializer.validated_data.get('llmProviderId')
-        provider = None
-        if provider_id:
-            # provider 限定在本租户内，防止绑定到别家公司的供应商。
-            provider_qs = LLMProvider.objects.all()
-            if tenant is not None:
-                provider_qs = provider_qs.for_tenant(tenant)
-            provider = provider_qs.filter(pk=provider_id).first()
+        try:
+            llm_model = _resolve_tenant_llm_model(
+                tenant,
+                serializer.validated_data.get('llmModelId'),
+                use_default=True,
+            )
+        except ValidationError as exc:
+            return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
         conversation = ChatConversation.objects.create(
             title=serializer.validated_data.get('title', '新对话'),
             user=request.user,
-            llm_provider=provider,
-            model_name=serializer.validated_data.get('modelName', ''),
+            llm_model=llm_model,
             summary='',
             system_prompt=serializer.validated_data.get('systemPrompt', ''),
             temperature=serializer.validated_data.get('temperature', 0.7),
@@ -894,31 +927,25 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         serializer = ChatConversationConfigSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        provider_id = serializer.validated_data.get('llmProviderId')
-        provider = None
-        if provider_id:
-            # 限定在本公司范围内，防止绑定到别家公司的供应商。
-            provider = (
-                LLMProvider.objects.for_tenant(conversation.tenant)
-                .filter(pk=provider_id, is_active=True)
-                .first()
+        update_fields = ['system_prompt', 'temperature', 'max_tokens', 'updated_at']
+        if 'llmModelId' in serializer.validated_data:
+            conversation.llm_model = _resolve_tenant_llm_model(
+                conversation.tenant,
+                serializer.validated_data.get('llmModelId'),
             )
+            update_fields.insert(0, 'llm_model')
 
-        conversation.llm_provider = provider
-        conversation.model_name = serializer.validated_data.get('modelName', '')
         conversation.system_prompt = serializer.validated_data.get('systemPrompt', '')
         conversation.temperature = serializer.validated_data.get('temperature', 0.7)
         conversation.max_tokens = serializer.validated_data.get('max_tokens', 1000)
-        conversation.save(
-            update_fields=['llm_provider', 'model_name', 'system_prompt', 'temperature', 'max_tokens', 'updated_at'],
-        )
+        conversation.save(update_fields=update_fields)
 
         logger.info(
-            'chat.conversation.config_updated conversation_id=%s user_id=%s provider_id=%s model_name=%s system_prompt_length=%s temperature=%s max_tokens=%s',
+            'chat.conversation.config_updated conversation_id=%s user_id=%s model_id=%s model_name=%s system_prompt_length=%s temperature=%s max_tokens=%s',
             conversation.id,
             request.user.id,
-            provider.id if provider else None,
-            conversation.model_name or '',
+            conversation.llm_model_id,
+            conversation.llm_model.name if conversation.llm_model else '',
             len(conversation.system_prompt or ''),
             conversation.temperature,
             conversation.max_tokens,
@@ -956,15 +983,32 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         regenerate_message_id = serializer.validated_data.get('regenerateMessageId')
 
         logger.info(
-            'chat.send.received conversation_id=%s user_id=%s content_length=%s use_stream=%s regenerate_message_id=%s bound_provider_id=%s bound_model_name=%s',
+            'chat.send.received conversation_id=%s user_id=%s content_length=%s use_stream=%s regenerate_message_id=%s bound_model_id=%s bound_model_name=%s',
             conversation.id,
             request.user.id,
             len(content),
             use_stream,
             regenerate_message_id,
-            conversation.llm_provider_id,
-            conversation.model_name or '',
+            conversation.llm_model_id,
+            conversation.llm_model.name if conversation.llm_model else '',
         )
+
+        model = conversation.llm_model
+        if not is_llm_model_effective_for_tenant(conversation.tenant, model):
+            logger.warning(
+                'chat.send.model_unavailable conversation_id=%s user_id=%s bound_model_id=%s',
+                conversation.id,
+                request.user.id,
+                conversation.llm_model_id,
+            )
+            return Response({
+                'status': 'error',
+                'message': 'LLM 模型不可用，请重新选择可用模型',
+                'code': 400,
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        provider = model.provider
+        model_name = model.name
 
         if regenerate_message_id is not None:
             target_message = conversation.messages.filter(
@@ -1002,54 +1046,6 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                 content=content,
             )
             conversation.save(update_fields=['updated_at'])
-
-        # Resolve provider & model
-        provider = conversation.llm_provider
-        if not provider or not provider.is_active:
-            logger.warning(
-                'chat.send.provider_fallback conversation_id=%s user_id=%s previous_provider_id=%s previous_provider_active=%s',
-                conversation.id,
-                request.user.id,
-                conversation.llm_provider_id,
-                bool(provider and provider.is_active),
-            )
-            # 仅在本公司范围内回退；for_tenant(None) 返回空集，绝不跨租户拿别家供应商（含其 API Key）。
-            provider = LLMProvider.objects.for_tenant(conversation.tenant).filter(is_active=True).first()
-
-        if not provider:
-            ChatMessage.objects.create(
-                conversation=conversation,
-                role=ChatMessage.ROLE_ASSISTANT,
-                content='暂无可用的 LLM 供应商，请联系管理员配置。',
-            )
-            return Response({
-                'status': 'error',
-                'message': '暂无可用的 LLM 供应商',
-                'code': 400,
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        model_name = conversation.model_name
-        if not model_name:
-            model_name = _get_provider_default_model_name(provider)
-            logger.info(
-                'chat.send.model_defaulted conversation_id=%s user_id=%s provider_id=%s model_name=%s',
-                conversation.id,
-                request.user.id,
-                provider.id,
-                model_name,
-            )
-
-        if not model_name:
-            ChatMessage.objects.create(
-                conversation=conversation,
-                role=ChatMessage.ROLE_ASSISTANT,
-                content='该供应商未配置任何模型，请先在 LLM 管理中添加模型。',
-            )
-            return Response({
-                'status': 'error',
-                'message': '该供应商未配置任何模型',
-                'code': 400,
-            }, status=status.HTTP_400_BAD_REQUEST)
 
         # Build messages history
         history_messages = list(

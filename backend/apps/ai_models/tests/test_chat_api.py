@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import ChatConversation, ChatMessage, LLMProvider
+from apps.ai_models.models import ChatConversation, ChatMessage, LLMModel, LLMProvider, TenantLLMModelGrant
 from apps.ai_models.views import _build_chat_completions_url
 from apps.tenants.test_utils import TenantTestMixin
 
@@ -151,7 +151,32 @@ class ChatApiTests(TenantTestMixin, APITestCase):
                 },
             )
             permission_points.append(permission_point)
+        self.grant_all_scope_to_tenant()
         self.role.permission_points.set(permission_points)
+
+    def create_provider(self, **overrides) -> LLMProvider:
+        data = {
+            'name': 'OpenAI compatible',
+            'provider_type': 'openai',
+            'api_base_url': 'https://api.openai.com/v1',
+            'api_key': 'secret-key',
+            'is_active': True,
+        }
+        data.update(overrides)
+        return LLMProvider.objects.create(**data)
+
+    def create_model(self, provider: LLMProvider, **overrides) -> LLMModel:
+        data = {
+            'provider': provider,
+            'name': 'gpt-4.1',
+            'display_name': 'GPT 4.1',
+            'is_active': True,
+        }
+        data.update(overrides)
+        return LLMModel.objects.create(**data)
+
+    def grant_model(self, model: LLMModel):
+        return TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
 
     def test_build_chat_completions_url_normalizes_longcat_style_base_url(self):
         self.assertEqual(
@@ -169,37 +194,28 @@ class ChatApiTests(TenantTestMixin, APITestCase):
 
     def test_update_config_updates_selected_provider_and_model(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
-        provider_a = LLMProvider.objects.create(
-            tenant=self.tenant,
-            name='默认 OpenAI',
-            provider_type='openai',
-            api_base_url='https://api.openai.com/v1',
-            api_key='secret-a',
-            models_config=[{'name': 'gpt-4.1', 'isDefault': True}],
-            is_active=True,
-        )
-        provider_b = LLMProvider.objects.create(
-            tenant=self.tenant,
+        provider_a = self.create_provider(name='默认 OpenAI', api_key='secret-a')
+        model_a = self.create_model(provider_a, name='gpt-4.1', display_name='GPT 4.1')
+        self.grant_model(model_a)
+        provider_b = self.create_provider(
             name='兼容供应商',
             provider_type='other',
             api_base_url='https://example.com/v1',
             api_key='secret-b',
-            models_config=[{'name': 'chat-model-pro', 'isDefault': True}],
-            is_active=True,
         )
+        model_b = self.create_model(provider_b, name='chat-model-pro', display_name='Chat Model Pro')
+        self.grant_model(model_b)
         conversation = ChatConversation.objects.create(
             tenant=self.tenant,
             title='测试会话',
             user=self.user,
-            llm_provider=provider_a,
-            model_name='gpt-4.1',
+            llm_model=model_a,
         )
 
         response = self.client.patch(
             f'/api/v1/ai-models/chat/conversations/{conversation.id}/update-config/',
             {
-                'llmProviderId': provider_b.id,
-                'modelName': 'chat-model-pro',
+                'llmModelId': model_b.id,
                 'systemPrompt': '请用更正式的语气回复',
             },
             format='json',
@@ -207,30 +223,25 @@ class ChatApiTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         conversation.refresh_from_db()
-        self.assertEqual(conversation.llm_provider_id, provider_b.id)
-        self.assertEqual(conversation.model_name, 'chat-model-pro')
+        self.assertEqual(conversation.llm_model_id, model_b.id)
         self.assertEqual(conversation.system_prompt, '请用更正式的语气回复')
-        self.assertEqual(response.data['llmProviderId'], provider_b.id)
-        self.assertEqual(response.data['modelName'], 'chat-model-pro')
+        self.assertEqual(response.data['llmModelId'], model_b.id)
+        self.assertEqual(response.data['llmModelName'], 'chat-model-pro')
+        self.assertEqual(response.data['llmProviderName'], provider_b.name)
         self.assertEqual(response.data['systemPrompt'], '请用更正式的语气回复')
 
     def test_send_accepts_openai_compatible_non_stream_json_response(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
-        provider = LLMProvider.objects.create(
-            tenant=self.tenant,
+        provider = self.create_provider(
             name='标准兼容模式',
-            provider_type='openai',
-            api_base_url='https://api.openai.com/v1',
-            api_key='secret-key',
-            models_config=[{'name': 'gpt-4.1', 'isDefault': True}],
-            is_active=True,
         )
+        model = self.create_model(provider, name='gpt-4.1')
+        self.grant_model(model)
         conversation = ChatConversation.objects.create(
             tenant=self.tenant,
             title='兼容模式测试',
             user=self.user,
-            llm_provider=provider,
-            model_name='gpt-4.1',
+            llm_model=model,
         )
         plain_json_response = json.dumps(
             {
@@ -279,21 +290,17 @@ class ChatApiTests(TenantTestMixin, APITestCase):
 
     def test_send_accepts_sse_lines_without_space_after_data_prefix(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
-        provider = LLMProvider.objects.create(
-            tenant=self.tenant,
+        provider = self.create_provider(
             name='LongCat 流式',
-            provider_type='openai',
             api_base_url='https://api.longcat.chat/openai/v1',
-            api_key='secret-key',
-            models_config=[{'name': 'LongCat-Flash-Chat', 'isDefault': True}],
-            is_active=True,
         )
+        model = self.create_model(provider, name='LongCat-Flash-Chat', display_name='LongCat Flash Chat')
+        self.grant_model(model)
         conversation = ChatConversation.objects.create(
             tenant=self.tenant,
             title='LongCat 流式测试',
             user=self.user,
-            llm_provider=provider,
-            model_name='LongCat-Flash-Chat',
+            llm_model=model,
         )
 
         sse_lines = [
@@ -336,21 +343,17 @@ class ChatApiTests(TenantTestMixin, APITestCase):
 
     def test_send_can_request_non_stream_mode(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
-        provider = LLMProvider.objects.create(
-            tenant=self.tenant,
+        provider = self.create_provider(
             name='LongCat 非流式',
-            provider_type='openai',
             api_base_url='https://api.longcat.chat/openai',
-            api_key='secret-key',
-            models_config=[{'name': 'LongCat-Flash-Chat', 'isDefault': True}],
-            is_active=True,
         )
+        model = self.create_model(provider, name='LongCat-Flash-Chat', display_name='LongCat Flash Chat')
+        self.grant_model(model)
         conversation = ChatConversation.objects.create(
             tenant=self.tenant,
             title='LongCat 非流式测试',
             user=self.user,
-            llm_provider=provider,
-            model_name='LongCat-Flash-Chat',
+            llm_model=model,
         )
         payload = {
             'choices': [
@@ -393,21 +396,17 @@ class ChatApiTests(TenantTestMixin, APITestCase):
 
     def test_send_generates_title_with_current_model_after_first_reply(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
-        provider = LLMProvider.objects.create(
-            tenant=self.tenant,
+        provider = self.create_provider(
             name='标题生成模型',
-            provider_type='openai',
             api_base_url='https://api.longcat.chat/openai/v1',
-            api_key='secret-key',
-            models_config=[{'name': 'LongCat-Flash-Chat', 'isDefault': True}],
-            is_active=True,
         )
+        model = self.create_model(provider, name='LongCat-Flash-Chat', display_name='LongCat Flash Chat')
+        self.grant_model(model)
         conversation = ChatConversation.objects.create(
             tenant=self.tenant,
             title='新对话',
             user=self.user,
-            llm_provider=provider,
-            model_name='LongCat-Flash-Chat',
+            llm_model=model,
         )
         sse_lines = [
             'data:{"choices":[{"delta":{"content":"这是"},"index":0}]}',

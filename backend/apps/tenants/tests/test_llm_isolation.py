@@ -62,7 +62,7 @@ class LLMTenantIsolationTests(APITestCase):
             format='json',
         )
         self.assertEqual(resp.status_code, 400)
-        self.assertIn('暂无可用的 LLM 模型', resp.data['message'])
+        self.assertIn('LLM 模型不可用', resp.data['message'])
         conv.refresh_from_db()
         self.assertIsNone(conv.llm_model_id)
 
