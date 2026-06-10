@@ -68,6 +68,9 @@ const MinioSettingsPage = lazy(() =>
 const AsrSettingsPage = lazy(() =>
   import('../views/asr-settings').then((module) => ({ default: module.AsrSettingsPage })),
 );
+const LlmSettingsAdminPage = lazy(() =>
+  import('../views/settings-llm').then((module) => ({ default: module.LlmSettingsAdminPage })),
+);
 const CommandWorkspacePage = lazy(() =>
   import('../views/command-management/workspace').then((module) => ({ default: module.CommandWorkspacePage })),
 );
@@ -362,6 +365,14 @@ export const AppRouter = () => {
           element: (
             <PermissionGuard permission="tenant.management.view">
               <AsrSettingsPage />
+            </PermissionGuard>
+          ),
+        },
+        {
+          path: 'settings/llm',
+          element: (
+            <PermissionGuard permission="tenant.management.view">
+              <LlmSettingsAdminPage />
             </PermissionGuard>
           ),
         },

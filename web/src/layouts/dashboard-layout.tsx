@@ -181,6 +181,12 @@ const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
         icon: 'AudioOutlined',
         path: '/settings/asr',
       },
+      {
+        key: 'settings-llm',
+        label: 'LLM设置',
+        icon: 'RobotOutlined',
+        path: '/settings/llm',
+      },
     ],
   },
   {
