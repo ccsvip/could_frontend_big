@@ -137,9 +137,7 @@ docker compose logs -f web
 - `web` 容器走 `npm run dev` + 挂载源码 + 匿名 `node_modules` 卷，**是开发态而非生产态**。生产部署需要另写一份 compose 或 Dockerfile 改成 `npm run build` + 静态托管。
 - 国内镜像默认值：APT 走阿里云 Debian、PyPI 走清华 Tsinghua，由 `x-backend-build.args` 注入；离线 / 海外环境覆盖根 `.env` 即可。
 - 子目录文档同时维护两份：`AGENTS.md`（quick-ref）+ `CLAUDE.md`（详细 FAQ + Changelog）。新增模块文档遵循同一对偶。
-- 后续每一次新的需求都需要基于main分支新开一个dev分支去修改代码
 - 每次执行完任务之后都需要提交代码（非远端）使用中文去执行commit
-- 执行完中文commit之后记得把最新代码合并到main分支然后删除dev
 
 ## 务必遵循
 
