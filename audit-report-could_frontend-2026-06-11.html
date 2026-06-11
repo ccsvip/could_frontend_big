@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>could_frontend / solin 审计报告</title>
+<style>
+  :root {
+    --sidebar-bg: #1a1f2e;
+    --sidebar-hover: #242a3d;
+    --sidebar-active: #2d3555;
+    --bg: #f0f3f7;
+    --card-bg: #ffffff;
+    --border: #e6eaef;
+    --text: #1e2233;
+    --text-secondary: #6b7394;
+    --accent: #3370ff;
+    --accent-light: #e8f0ff;
+    --success: #34c759;
+    --warning: #ff9500;
+    --danger: #ff3b30;
+    --info: #5ac8fa;
+    --badge-critical: #ff3b30;
+    --badge-high: #ff9500;
+    --badge-medium: #3370ff;
+    --badge-low: #8e8e93;
+    --badge-info: #5ac8fa;
+    --bar-bg: #e8eaed;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    display: flex;
+    min-height: 100vh;
+    font-size: 15px;
+  }
+  .sidebar { width: 240px; background: var(--sidebar-bg); color: #fff; flex-shrink: 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sidebar-header { padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,.06); }
+  .sidebar-header h1 { font-size: 18px; font-weight: 700; letter-spacing: .5px; }
+  .sidebar-header .sub { font-size: 12px; color: rgba(255,255,255,.4); margin-top: 4px; }
+  .sidebar-nav { padding: 8px 0; flex: 1; }
+  .sidebar-nav a { display: flex; align-items: center; gap: 12px; padding: 14px 20px; color: rgba(255,255,255,.6); text-decoration: none; font-size: 14px; transition: all .15s; border-left: 3px solid transparent; }
+  .sidebar-nav a:hover { background: var(--sidebar-hover); color: #fff; }
+  .sidebar-nav a.active { background: var(--sidebar-active); color: #fff; border-left-color: var(--accent); }
+  .sidebar-nav a .icon { width: 18px; text-align: center; font-size: 14px; }
+  .sidebar-footer { padding: 12px 20px; border-top: 1px solid rgba(255,255,255,.06); font-size: 11px; color: rgba(255,255,255,.3); }
+  .main { flex: 1; min-width: 0; padding: 32px 40px 80px; }
+  .page-header { margin-bottom: 32px; }
+  .page-header h2 { font-size: 26px; font-weight: 700; }
+  .page-header .meta { font-size: 14px; color: var(--text-secondary); margin-top: 6px; display: flex; gap: 20px; flex-wrap: wrap; }
+  .page-header .meta span { display: flex; align-items: center; gap: 4px; }
+  .card { background: var(--card-bg); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 20px; overflow: hidden; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 15px; }
+  .card-body { padding: 24px; }
+  .score-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .score-item { display: flex; flex-direction: column; gap: 8px; padding: 18px 20px; background: #f8fafc; border-radius: 8px; border: 1px solid var(--border); }
+  .score-item .label { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .4px; }
+  .score-item .bar-row { display: flex; align-items: center; gap: 12px; }
+  .score-item .bar-track { flex: 1; height: 10px; background: var(--bar-bg); border-radius: 5px; overflow: hidden; }
+  .score-item .bar-fill { height: 100%; border-radius: 5px; transition: width .6s ease; }
+  .score-item .value { font-size: 22px; font-weight: 700; min-width: 52px; text-align: right; }
+  .score-item .grade { font-size: 15px; font-weight: 700; min-width: 22px; text-align: center; }
+  .bar-fill.s { background: linear-gradient(90deg, #34c759, #30d158); }
+  .bar-fill.a { background: linear-gradient(90deg, #3370ff, #5e8cff); }
+  .bar-fill.b { background: linear-gradient(90deg, #ff9500, #ffb340); }
+  .bar-fill.c { background: linear-gradient(90deg, #ff3b30, #ff6b61); }
+  .bar-fill.d { background: linear-gradient(90deg, #ff6b61, #ff9f91); }
+  .bar-fill.f { background: linear-gradient(90deg, #9b1d1a, #d63031); }
+  .grade-s { color: #34c759; } .grade-a { color: #3370ff; }
+  .grade-b { color: #ff9500; } .grade-c { color: #ff3b30; }
+  .grade-d { color: #ff6b61; } .grade-f { color: #9b1d1a; }
+  .overall-row { grid-column: 1 / -1; background: linear-gradient(135deg, #1a1f2e, #2d3555); border-color: transparent; }
+  .overall-row .label { color: rgba(255,255,255,.6); }
+  .overall-row .value { color: #fff; }
+  .overall-row .grade { color: #34c759; }
+  .overall-row .bar-fill { background: linear-gradient(90deg, #34c759, #30d158); }
+  .stats-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .stat-card { flex: 1; min-width: 140px; padding: 20px 24px; background: var(--card-bg); border-radius: 10px; border: 1px solid var(--border); text-align: center; }
+  .stat-card .num { font-size: 32px; font-weight: 700; line-height: 1.3; }
+  .stat-card .desc { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+  .finding { border-left: 4px solid var(--border); margin-bottom: 20px; padding: 20px 24px; border-radius: 0 10px 10px 0; background: #fafbfc; border: 1px solid var(--border); border-left-width: 4px; }
+  .finding.severity-critical { border-left-color: var(--badge-critical); }
+  .finding.severity-high { border-left-color: var(--badge-high); }
+  .finding.severity-medium { border-left-color: var(--badge-medium); }
+  .finding.severity-low { border-left-color: var(--badge-low); }
+  .finding.severity-info { border-left-color: var(--badge-info); }
+  .finding-header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .finding-header h4 { font-size: 16px; font-weight: 600; flex: 1; }
+  .badge { display: inline-block; padding: 3px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; line-height: 1.6; }
+  .badge-critical { background: #ffeae9; color: var(--badge-critical); }
+  .badge-high { background: #fff3e0; color: var(--badge-high); }
+  .badge-medium { background: var(--accent-light); color: var(--badge-medium); }
+  .badge-low { background: #f2f2f5; color: var(--badge-low); }
+  .badge-info { background: #e4f5ff; color: #007aff; }
+  .badge-confirmed { background: #e8ffe8; color: #248a3d; }
+  .badge-suspected { background: #fff8e1; color: #b8860b; }
+  .badge-s { background: #e8ffe8; color: #248a3d; }
+  .badge-a { background: var(--accent-light); color: var(--accent); }
+  .badge-b { background: #fff3e0; color: var(--warning); }
+  .badge-c { background: #ffeae9; color: var(--danger); }
+  .finding-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; }
+  .finding-meta span { display: flex; align-items: center; gap: 4px; }
+  .finding .evidence { margin: 12px 0; padding: 14px 18px; background: #f0f2f5; border-radius: 8px; font-family: "SF Mono","Fira Code","Consolas",monospace; font-size: 13px; line-height: 1.8; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+  .finding .problem { font-size: 14px; margin: 12px 0; color: var(--text); line-height: 1.8; }
+  .finding .fix-box { margin-top: 12px; padding: 14px 18px; background: #f0f7ff; border-radius: 8px; border: 1px solid #d6e4ff; font-size: 13px; }
+  .finding .fix-box code { display: block; margin-top: 6px; padding: 12px 16px; background: #1e2233; color: #cdd6f4; border-radius: 6px; font-family: "SF Mono","Fira Code","Consolas",monospace; font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-all; }
+  .fix-label { font-weight: 600; font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: .3px; }
+  .section-title { font-size: 20px; font-weight: 700; margin: 36px 0 20px; padding-bottom: 10px; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 12px 16px; font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: .4px; border-bottom: 2px solid var(--border); background: #f8fafc; }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  .check-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 6px; }
+  .check-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; font-size: 14px; line-height: 1.6; }
+  .check-item .check { color: var(--success); font-weight: 700; }
+  .check-item .cross { color: var(--danger); font-weight: 700; }
+  .win-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .win-card { padding: 16px; background: linear-gradient(135deg, #f0f7ff, #e8f0ff); border-radius: 8px; border: 1px solid #d6e4ff; }
+  .win-card .win-title { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .win-card .win-meta { font-size: 11px; color: var(--text-secondary); }
+  .small { font-size: 13px; color: var(--text-secondary); }
+  .code-block { margin: 8px 0; padding: 14px 18px; background: #1e2233; color: #cdd6f4; border-radius: 6px; font-family: "SF Mono","Fira Code","Consolas",monospace; font-size: 13px; overflow-x: auto; white-space: pre; line-height: 1.7; }
+  .hl { color: #f7768e; font-weight: 600; } .cm { color: #565f89; }
+  .kw { color: #bb9af7; } .fn { color: #7aa2f7; }
+  .ty { color: #ff9e64; } .op { color: #89ddff; }
+  .str { color: #9ece6a; } .nu { color: #ff9e64; }
+  @media (max-width: 768px) { .sidebar { display: none; } .main { padding: 16px; } .score-grid { grid-template-columns: 1fr; } .stats-row { flex-direction: column; } .check-list { grid-template-columns: 1fr; } .win-grid { grid-template-columns: 1fr; } }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #c1c7d0; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #a8adb8; }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <h1>could_frontend</h1>
+    <div class="sub">Full · 2026-06-11</div>
+  </div>
+  <div class="sidebar-nav">
+    <a href="#summary"><span class="icon">📊</span> 评分面板</a>
+    <a href="#executive-summary"><span class="icon">📝</span> 总体评估</a>
+    <a href="#top-risks"><span class="icon">⚠️</span> 顶部风险</a>
+    <a href="#findings"><span class="icon">🔍</span> 详细发现</a>
+    <a href="#architecture"><span class="icon">🏗️</span> 架构边界</a>
+    <a href="#security"><span class="icon">🔒</span> 安全</a>
+    <a href="#stability"><span class="icon">⚡</span> 稳定性</a>
+    <a href="#performance"><span class="icon">🚀</span> 性能</a>
+    <a href="#testing"><span class="icon">🧪</span> 测试质量</a>
+    <a href="#maintainability"><span class="icon">📐</span> 可维护性</a>
+    <a href="#design"><span class="icon">📋</span> 设计原则</a>
+    <a href="#release"><span class="icon">🚢</span> 发布部署</a>
+    <a href="#documentation"><span class="icon">📚</span> 文档准确性</a>
+    <a href="#configuration"><span class="icon">⚙️</span> 配置安全</a>
+    <a href="#observability"><span class="icon">📡</span> 可观测性</a>
+    <a href="#fallback"><span class="icon">🧯</span> 兜底逻辑</a>
+    <a href="#testing-authenticity"><span class="icon">🧭</span> 测试真实性</a>
+    <a href="#type-safety"><span class="icon">🧷</span> 类型安全</a>
+    <a href="#frontend-state"><span class="icon">🖥️</span> 前端状态</a>
+    <a href="#backend-api"><span class="icon">🔌</span> 后端 API</a>
+    <a href="#dependency-weight"><span class="icon">📦</span> 依赖重量</a>
+    <a href="#code-consistency"><span class="icon">🧩</span> 代码一致性</a>
+    <a href="#comment-coverage"><span class="icon">💬</span> 注释覆盖</a>
+    <a href="#principles"><span class="icon">📋</span> 原则违规</a>
+    <a href="#fix-order"><span class="icon">🎯</span> 修复顺序</a>
+    <a href="#quick-wins"><span class="icon">⚡</span> 快速收益</a>
+  </div>
+  <div class="sidebar-footer">Fuck My Shit Mountain v1.0</div>
+</nav>
+
+<div class="main">
+  <div class="page-header" id="summary">
+    <h2>could_frontend / solin 全量审计报告</h2>
+    <div class="meta">
+      <span>📅 2026-06-11</span>
+      <span>🔍 full</span>
+      <span>🛠 Codex</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">📊 评分面板</div>
+    <div class="card-body">
+      <div class="score-grid">
+        <div class="score-item">
+          <div class="label">Security</div>
+          <div class="bar-row">
+            <div class="bar-track"><div class="bar-fill c" style="width:42%"></div></div>
+            <span class="value grade-c">4.2</span>
+            <span class="grade grade-c">C</span>
+          </div>
+          <div class="small">硬编码默认超管、宽松生产配置、过宽 env 注入和 npm high 漏洞同时存在。</div>
+        </div>
+        <div class="score-item">
+          <div class="label">Stability</div>
+          <div class="bar-row">
+            <div class="bar-track"><div class="bar-fill b" style="width:60%"></div></div>
+            <span class="value grade-b">6.0</span>
+            <span class="grade grade-b">B</span>
+          </div>
+          <div class="small">后端关键测试通过，但设备激活并发、缓存注册表和聊天长上下文有真实故障面。</div>
+        </div>
+        <div class="score-item">
+          <div class="label">Performance</div>
+          <div class="bar-row">
+            <div class="bar-track"><div class="bar-fill b" style="width:62%"></div></div>
+            <span class="value grade-b">6.2</span>
+            <span class="grade grade-b">B</span>
+          </div>
+          <div class="small">分页和部分预取做得不错，但业务缓存注册表与聊天历史没有增长上限。</div>
+        </div>
+        <div class="score-item">
+          <div class="label">Testing</div>
+          <div class="bar-row">
+            <div class="bar-track"><div class="bar-fill c" style="width:52%"></div></div>
+            <span class="value grade-c">5.2</span>
+            <span class="grade grade-c">C</span>
+          </div>
+          <div class="small">后端覆盖面较强，前端没有 test/lint 脚本，静态字符串脚本不能替代行为测试。</div>
+        </div>
+        <div class="score-item">
+          <div class="label">Maintainability</div>
+          <div class="bar-row">
+            <div class="bar-track"><div class="bar-fill b" style="width:58%"></div></div>
+            <span class="value grade-b">5.8</span>
+            <span class="grade grade-b">B</span>
+          </div>
+          <div class="small">领域划分清晰，但多个页面和后端模块超过 800-1100 行，变更成本上升。</div>
+        </div>
+        <div class="score-item">
+          <div class="label">Design</div>
+          <div class="bar-row">
+            <div class="bar-track"><div class="bar-fill b" style="width:56%"></div></div>
+            <span class="value grade-b">5.6</span>
+            <span class="grade grade-b">B</span>
+          </div>
+          <div class="small">租户隔离、防御性测试和统一客户端是亮点；fail-fast 与资源边界仍偏弱。</div>
+        </div>
+        <div class="score-item">
+          <div class="label">Release</div>
+          <div class="bar-row">
+            <div class="bar-track"><div class="bar-fill c" style="width:45%"></div></div>
+            <span class="value grade-c">4.5</span>
+            <span class="grade grade-c">C</span>
+          </div>
+          <div class="small">compose 当前是开发态，生产设置未强制，deploy check 与 npm audit 都未进入门禁。</div>
+        </div>
+        <div class="score-item overall-row">
+          <div class="label">Overall</div>
+          <div class="bar-row">
+            <div class="bar-track" style="background:rgba(255,255,255,.12)"><div class="bar-fill" style="width:54%;background:linear-gradient(90deg,#ff3b30,#ff9500)"></div></div>
+            <span class="value" style="color:#fff">5.4</span>
+            <span class="grade" style="color:#ff9500">C</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="section-title" id="executive-summary">📝 总体评估</h3>
+  <div class="card">
+    <div class="card-header">📋 总体评估</div>
+    <div class="card-body">
+      <p><strong>项目概况：</strong>solin 是一个 React 18 + Vite + TypeScript 前端、Django 5.2 + DRF + Celery + ASGI 后端的数字人后台管理平台。项目领域边界相对清楚，核心域包括账号权限、租户隔离、设备运行时、资源/指令、AI/ASR/聊天、知识库和审计日志；根 compose 能把 db、redis、backend、celery worker/beat、web 串起来。</p>
+      <p style="margin-top:12px"><strong>主要风险：</strong>当前不适合直接作为稳定公开发布包落地，最大阻塞是安全与发布配置：compose 无条件创建已知超管账号，当前运行时加载 `config.settings.base` 而不是 `prod`，`docker compose config` 会展开 `.env` 密钥，且 `db` 容器获得了不需要的业务密钥。其次是设备激活并发可产生重复设备、前端依赖存在 high 漏洞、前端没有 lint/test 门禁。</p>
+      <p style="margin-top:12px"><strong>亮点：</strong>后端默认 DRF 鉴权、分页、异常包络、租户 manager 和跨租户测试做得比较扎实；抽样后端测试 `apps.devices.tests.test_device_authorization_api`、`apps.ai_models.tests.test_chat_api`、`apps.resources.tests.test_business_metadata_cache_api` 共 33 个用例通过。前端 TS strict 开启，统一 axios 客户端和 Vite build 也能通过。</p>
+      <p style="margin-top:12px"><strong>优先修复：</strong>先拆掉默认超管凭据与过宽环境注入，强制生产 settings fail-fast；然后修设备激活唯一性和 npm audit high 项；再补齐前端 lint/test 脚本、OpenAPI serializer 标注和大组件拆分。</p>
+      <p style="margin-top:12px"><strong>总评：</strong>C overall - 项目已经具备可运行的主干和不错的后端隔离测试，但安全发布门禁还没有收紧；按稳定公开发布标准，需要先完成 P0/P1 修复。</p>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="num">16</div><div class="desc">总发现</div></div>
+    <div class="stat-card"><div class="num" style="color:var(--badge-critical)">1</div><div class="desc">Critical</div></div>
+    <div class="stat-card"><div class="num" style="color:var(--badge-high)">4</div><div class="desc">High</div></div>
+    <div class="stat-card"><div class="num" style="color:var(--badge-medium)">7</div><div class="desc">Medium</div></div>
+    <div class="stat-card"><div class="num" style="color:var(--badge-low)">4</div><div class="desc">Low</div></div>
+    <div class="stat-card"><div class="num" style="color:var(--badge-info)">0</div><div class="desc">Info</div></div>
+  </div>
+
+  <h3 class="section-title" id="top-risks">⚠️ 顶部风险</h3>
+  <div class="card">
+    <div class="card-body" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:60px">#</th><th>发现</th><th style="width:100px">严重程度</th><th style="width:120px">类别</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>compose 无条件创建已知超管账号 admin/admin123456</td><td><span class="badge badge-critical">Critical</span></td><td>Security</td></tr>
+            <tr><td>2</td><td>当前运行时未加载 prod 安全设置，生产默认过宽</td><td><span class="badge badge-high">High</span></td><td>Configuration</td></tr>
+            <tr><td>3</td><td>db 容器接收完整 backend/.env，最小权限边界失效</td><td><span class="badge badge-high">High</span></td><td>Security</td></tr>
+            <tr><td>4</td><td>设备首次激活可并发创建同设备码重复记录</td><td><span class="badge badge-high">High</span></td><td>Stability</td></tr>
+            <tr><td>5</td><td>npm audit 报 2 个 high 与 6 个 moderate 漏洞</td><td><span class="badge badge-high">High</span></td><td>Dependency</td></tr>
+            <tr><td>6</td><td>Sentry 全环境启用 send_default_pii 且 DSN 硬编码</td><td><span class="badge badge-medium">Medium</span></td><td>Security</td></tr>
+            <tr><td>7</td><td>业务缓存注册表无过期且按完整 URL 累积</td><td><span class="badge badge-medium">Medium</span></td><td>Performance</td></tr>
+            <tr><td>8</td><td>聊天发送完整历史且 maxTokens 上限过大</td><td><span class="badge badge-medium">Medium</span></td><td>Performance</td></tr>
+            <tr><td>9</td><td>上游异常文本直接回传到 SSE/ASR 客户端</td><td><span class="badge badge-medium">Medium</span></td><td>Security</td></tr>
+            <tr><td>10</td><td>前端缺 lint/test 脚本，静态脚本不能提供行为信心</td><td><span class="badge badge-medium">Medium</span></td><td>Testing</td></tr>
+            <tr><td>11</td><td>多个前端页面和后端模块超过 800-1100 行</td><td><span class="badge badge-medium">Medium</span></td><td>Maintainability</td></tr>
+            <tr><td>12</td><td>OpenAPI 生成对大量 APIView 降级忽略</td><td><span class="badge badge-medium">Medium</span></td><td>Backend API</td></tr>
+            <tr><td>13</td><td>npm 与 pnpm 双 lockfile 并存且 Docker 只使用 npm</td><td><span class="badge badge-low">Low</span></td><td>Dependency</td></tr>
+            <tr><td>14</td><td>Antd Select 与 JSON 边界大量使用 type assertion</td><td><span class="badge badge-low">Low</span></td><td>Type Safety</td></tr>
+            <tr><td>15</td><td>子文档仍保留宿主裸跑命令，和根硬约束冲突</td><td><span class="badge badge-low">Low</span></td><td>Documentation</td></tr>
+            <tr><td>16</td><td>公开运行时接口依赖 deviceCode / tenant code，无速率限制证据</td><td><span class="badge badge-low">Low</span></td><td>Security</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="section-title" id="findings">🔍 详细发现</h3>
+
+  <div class="finding severity-critical">
+    <div class="finding-header"><h4>1. compose 无条件创建已知超管账号 admin/admin123456</h4><span class="badge badge-critical">Critical</span><span class="badge badge-confirmed">Confirmed</span></div>
+    <div class="finding-meta"><span>📁 Security / Release</span><span>📍 docker-compose.yaml:57</span><span>🎯 backend startup command</span></div>
+    <div class="problem"><strong>问题：</strong>启动命令在任何使用该 compose 的环境里都会创建同一组公开写在仓库里的 superuser。稳定公开发布时，这属于凭据写入源码/运行配置的高危面；只要部署者未立即轮换，公网后台就存在已知入口。</div>
+    <div class="evidence">docker-compose.yaml:57 User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@example.com', 'admin123456')
+CLAUDE.md:17 也记录了首次启动创建 superuser admin / admin123456
+AGENTS.md:73 要求保留该 inline shell，说明它已经成为默认开发约定</div>
+    <div class="fix-box"><div class="fix-label">MINIMAL FIX</div><code>把默认超管创建限制到显式开发开关，例如 CREATE_DEV_SUPERUSER=1；生产 settings 下如果仍启用则启动失败。把密码改为环境变量或一次性随机生成并只写到启动日志/密钥管理系统。</code></div>
+    <div class="fix-box" style="margin-top:6px;background:#fff8e1;border-color:#ffe082"><strong>⏱ 估计：</strong>0.5-1 天 &nbsp;·&nbsp; <strong>回归测试：</strong>compose 注入 DJANGO_SETTINGS_MODULE=config.settings.prod 且未设置 CREATE_DEV_SUPERUSER 时，启动脚本不得创建 admin；开发开关打开时只在空库创建。</div>
+  </div>
+
+  <div class="finding severity-high">
+    <div class="finding-header"><h4>2. 当前运行时未加载 prod 安全设置，生产默认过宽</h4><span class="badge badge-high">High</span><span class="badge badge-confirmed">Confirmed</span></div>
+    <div class="finding-meta"><span>📁 Configuration / Security</span><span>📍 backend/config/settings/base.py:31-217</span><span>🎯 Django settings</span></div>
+    <div class="problem"><strong>问题：</strong>当前容器运行时 settings module 为 `config.settings.base`，因此 `prod.py` 的 secure cookies 没生效；同时 base 里 `SECRET_KEY` 有默认值、`ALLOWED_HOSTS` 默认 `*`、`CORS_ALLOW_ALL_ORIGINS` 默认 True 且允许 credentials。`check --deploy` 确认 HSTS、SSL redirect、secure cookies、SECRET_KEY 等发布检查未达标。</div>
+    <div class="evidence">backend/config/settings/base.py:31 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-change-me')
+backend/config/settings/base.py:33 ALLOWED_HOSTS defaults to '*'
+backend/config/settings/base.py:207 CORS_ALLOW_ALL_ORIGINS defaults to True
+backend/config/settings/base.py:217 CORS_ALLOW_CREDENTIALS = True
+docker compose exec backend shell: SETTINGS_MODULE=config.settings.base; SESSION_COOKIE_SECURE=False; CSRF_COOKIE_SECURE=False
+docker compose exec backend python manage.py check --deploy: security.W004/W008/W009/W012/W016 and 38 total warnings</div>
+    <div class="fix-box"><div class="fix-label">MINIMAL FIX</div><code>生产 compose / 部署环境必须设置 DJANGO_SETTINGS_MODULE=config.settings.prod；prod.py 中对 DJANGO_SECRET_KEY、DJANGO_ALLOWED_HOSTS、CORS_ALLOWED_ORIGINS 做 fail-fast 校验，并关闭 CORS_ALLOW_ALL_ORIGINS 默认值。</code></div>
+    <div class="fix-box" style="margin-top:6px;background:#fff8e1;border-color:#ffe082"><strong>⏱ 估计：</strong>1 天 &nbsp;·&nbsp; <strong>回归测试：</strong>新增 settings 测试：prod 缺 SECRET_KEY/ALLOWED_HOSTS 时抛 ImproperlyConfigured；`docker compose exec backend python manage.py check --deploy --fail-level WARNING` 作为发布门禁。</div>
+  </div>
+
+  <div class="finding severity-high">
+    <div class="finding-header"><h4>3. db 容器接收完整 backend/.env，最小权限边界失效</h4><span class="badge badge-high">High</span><span class="badge badge-confirmed">Confirmed</span></div>
+    <div class="finding-meta"><span>📁 Security / Configuration</span><span>📍 docker-compose.yaml:16-17</span><span>🎯 db env_file</span></div>
+    <div class="problem"><strong>问题：</strong>`db` 服务通过 `env_file: ./backend/.env` 加载完整后端环境，实际只需要 POSTGRES_DB/USER/PASSWORD。`docker compose config` 会把所有 env_file 内容展开到 db/backend/celery 服务，包括 Django secret、云 API key、Webhook、MinIO secret 等类别；数据库容器和诊断输出都获得了超出职责的密钥面。</div>
+    <div class="evidence">docker-compose.yaml:16-17
+db:
+  env_file:
+    - ./backend/.env
+
+docker compose config 已确认 db.environment 中出现多类非数据库密钥；报告刻意不写入任何明文值。</div>
+    <div class="fix-box"><div class="fix-label">MINIMAL FIX</div><code>给 db 单独使用 POSTGRES_DB/POSTGRES_USER/POSTGRES_PASSWORD 三个变量，或拆出 backend/.env 与 db.env。backend/celery 继续读取业务 env；避免让数据库容器持有云厂商和应用层密钥。</code></div>
+    <div class="fix-box" style="margin-top:6px;background:#fff8e1;border-color:#ffe082"><strong>⏱ 估计：</strong>0.5 天 &nbsp;·&nbsp; <strong>回归测试：</strong>`docker compose config` 中 db.environment 只允许 POSTGRES_*；新增脚本检查 db 不含 API_KEY/SECRET/WEBHOOK/DJANGO_SECRET_KEY。</div>
+  </div>
+
+  <div class="finding severity-high">
+    <div class="finding-header"><h4>4. 设备首次激活可并发创建同设备码重复记录</h4><span class="badge badge-high">High</span><span class="badge badge-confirmed">Confirmed</span></div>
+    <div class="finding-meta"><span>📁 Stability / Backend API</span><span>📍 backend/apps/devices/models.py:154, views.py:360-387</span><span>🎯 DeviceActivationView.post</span></div>
+    <div class="problem"><strong>问题：</strong>设备唯一约束是 `(tenant, code)`，但首次激活创建的未绑定设备 `tenant=NULL`。PostgreSQL 唯一约束允许多个 NULL 组合；并发首次激活同一 deviceCode 时，两个事务都可能在 `select_for_update().filter(code=...)` 查不到行后各自创建记录，之后运行时会因重复设备码进入 409/不可用状态。</div>
+    <div class="evidence">backend/apps/devices/models.py:154 UniqueConstraint(fields=['tenant', 'code'], name='unique_device_code_per_tenant')
+backend/apps/devices/views.py:360-361 select_for_update().filter(code=device_code)
+backend/apps/devices/views.py:387 Device.objects.create(code=device_code, tenant remains null until binding)
+backend/apps/devices/views.py:458 validate_device later rejects duplicates with len(devices) &gt; 1</div>
+    <div class="fix-box"><div class="fix-label">MINIMAL FIX</div><code>为未绑定设备增加条件唯一约束 UniqueConstraint(fields=['code'], condition=Q(tenant__isnull=True))，或按业务语义把 Device.code 设为全局唯一。激活接口改为数据库约束兜底 + IntegrityError 后重新读取。</code></div>
+    <div class="fix-box" style="margin-top:6px;background:#fff8e1;border-color:#ffe082"><strong>⏱ 估计：</strong>1 天 &nbsp;·&nbsp; <strong>回归测试：</strong>使用 TransactionTestCase 并发提交相同 deviceCode，只允许一条 Device，第二个请求返回已有设备或可恢复响应。</div>
+  </div>
+
+  <div class="finding severity-high">
+    <div class="finding-header"><h4>5. npm audit 报 2 个 high 与 6 个 moderate 漏洞</h4><span class="badge badge-high">High</span><span class="badge badge-confirmed">Confirmed</span></div>
+    <div class="finding-meta"><span>📁 Dependency / Security</span><span>📍 web/package.json:14,18,26,30</span><span>🎯 npm dependency tree</span></div>
+    <div class="problem"><strong>问题：</strong>容器内 `npm audit --audit-level=moderate` 返回失败，报告 axios、picomatch 为 high，esbuild/vite、follow-redirects、postcss、react-router 为 moderate。项目有管理后台登录态、上传、下载和 API 客户端，依赖漏洞不应留在发布门禁外。</div>
+    <div class="evidence">docker compose exec web npm audit --audit-level=moderate
+Result: 8 vulnerabilities (6 moderate, 2 high)
+High: axios 1.0.0-1.15.2, picomatch affected ranges
+Moderate: esbuild/vite, follow-redirects, postcss, react-router/react-router-dom</div>
+    <div class="fix-box"><div class="fix-label">MINIMAL FIX</div><code>在 web 容器内执行 npm audit fix，检查 package-lock 变更；vite/esbuild 如需 breaking upgrade，单独建分支验证 build 和页面冒烟。把 npm audit 加入发布检查。</code></div>
+    <div class="fix-box" style="margin-top:6px;background:#fff8e1;border-color:#ffe082"><strong>⏱ 估计：</strong>0.5-2 天 &nbsp;·&nbsp; <strong>回归测试：</strong>`docker compose exec web npm audit --audit-level=high` 通过；`docker compose exec web npm run build` 通过；关键登录/设备/资源页面冒烟。</div>
+  </div>
+
+  <div class="finding severity-medium">
+    <div class="finding-header"><h4>6. Sentry 全环境启用 send_default_pii 且 DSN 硬编码</h4><span class="badge badge-medium">Medium</span><span class="badge badge-confirmed">Confirmed</span></div>
+    <div class="finding-meta"><span>📁 Security / Observability</span><span>📍 backend/config/settings/base.py:12-16</span><span>🎯 sentry_sdk.init</span></div>
+    <div class="problem"><strong>问题：</strong>Sentry 在 base settings import 时无条件初始化，DSN 写死在源码里，`send_default_pii=True` 会采集请求头/IP 等默认 PII。无环境开关、无采样策略、无 dev/prod 隔离时，本地或测试异常也可能进入同一个 Sentry 项目。</div>
+    <div class="evidence">backend/config/settings/base.py:12 sentry_sdk.init(...)
+backend/config/settings/base.py:13 dsn=&quot;...&quot;  hardcoded DSN
+backend/config/settings/base.py:16 send_default_pii=True
+backend/config/sentry.py: before_send 只过滤少量 Celery 预期错误</div>
+    <div class="fix-box"><div class="fix-label">MINIMAL FIX</div><code>改为 SENTRY_DSN 环境变量，缺省不初始化；send_default_pii 默认为 False，只在合规确认后按环境启用。保留 before_send，但增加敏感字段 scrubber。</code></div>
+    <div class="fix-box" style="margin-top:6px;background:#fff8e1;border-color:#ffe082"><strong>⏱ 估计：</strong>0.5 天 &nbsp;·&nbsp; <strong>回归测试：</strong>无 SENTRY_DSN 时 sentry_sdk 不初始化；启用时 before_send 会过滤 Authorization、Cookie、API key、Webhook 字段。</div>
+  </div>
+
+  <div class="finding severity-medium">
+    <div class="finding-header"><h4>7. 业务缓存注册表无过期且按完整 URL 累积</h4><span class="badge badge-medium">Medium</span><span class="badge badge-confirmed">Confirmed</span></div>
+    <div class="finding-meta"><span>📁 Performance / Stability</span><span>📍 backend/config/business_cache.py:68-95</span><span>🎯 CachedBusinessResponseMixin</span></div>
+    <div class="problem"><strong>问题：</strong>响应缓存本身有默认 300 秒 TTL，但注册表 `business-cache:&lt;namespace&gt;:registry` 使用 `timeout=None` 永久保存所有生成过的 cache key。cache key 原料包含 `request.get_full_path()`，搜索词、分页、host 和参数组合越多，注册表越大；过期的响应 key 不会自动从注册表剪枝。</div>
+    <div class="evidence">backend/config/business_cache.py:68 raw_key includes request.get_full_path()
+backend/config/business_cache.py:84 cache.set(cache_key, data, timeout=timeout or get_business_cache_timeout())
+backend/config/business_cache.py:95 cache.set(registry_key, sorted(registered_keys), timeout=None)</div>
+    <div class="fix-box"><div class="fix-label">MINIMAL FIX</div><code>注册表改为有界集合或同 TTL；清理时忽略不存在 key。更稳妥做法是按 namespace 使用版本号失效：cache key 加 namespace version，写入时 bump version，避免维护永久 key 列表。</code></div>
+    <div class="fix-box" style="margin-top:6px;background:#fff8e1;border-color:#ffe082"><strong>⏱ 估计：</strong>1 天 &nbsp;·&nbsp; <strong>回归测试：</strong>连续访问 200 个不同 keyword 后，registry 大小不超过设定上限或过期后归零；缓存失效仍能让列表刷新。</div>
+  </div>
+
+  <div class="finding severity-medium">
+    <div class="finding-header"><h4>8. 聊天发送完整历史且 maxTokens 上限过大</h4><span class="badge badge-medium">Medium</span><span class="badge-confirmed badge">Confirmed</span></div>
+    <div class="finding-meta"><span>📁 Performance / Stability</span><span>📍 backend/apps/ai_models/views.py:956-963, serializers.py:378-493</span><span>🎯 ChatConversationViewSet.send</span></div>
+    <div class="problem"><strong>问题：</strong>聊天接口把当前会话所有历史消息一次性取出并发给上游 LLM，没有 token/window 上限、摘要裁剪或消息条数限制；同时 maxTokens 允许到 320000。长会话会线性放大数据库读取、请求体、上游费用、延迟和失败概率。</div>
+    <div class="evidence">backend/apps/ai_models/views.py:956 history_messages = list(conversation.messages.order_by('created_at').values_list('role', 'content'))
+backend/apps/ai_models/views.py:963 api_messages.extend(...)
+backend/apps/ai_models/serializers.py:380/493 maxTokens 必须在 1 到 320000 之间</div>
+    <div class="fix-box"><div class="fix-label">MINIMAL FIX</div><code>按模型配置建立最大上下文预算：保留 system prompt + 最近 N 轮 + summary，超过预算时拒绝或摘要压缩；maxTokens 上限按模型能力和租户策略配置。</code></div>
+    <div class="fix-box" style="margin-top:6px;background:#fff8e1;border-color:#ffe082"><strong>⏱ 估计：</strong>1-2 天 &nbsp;·&nbsp; <strong>回归测试：</strong>创建 500 条历史消息后发送，断言上游 mock 收到的 messages 数/字符数在预算内，且摘要仍保留。</div>
+  </div>
+
+  <div class="finding severity-medium">
+    <div class="finding-header"><h4>9. 上游异常文本直接回传到 SSE/ASR 客户端</h4><span class="badge badge-medium">Medium</span><span class="badge badge-confirmed">Confirmed</span></div>
+    <div class="finding-meta"><span>📁 Security / Stability</span><span>📍 backend/apps/ai_models/views.py:1311-1313, realtime_asr.py:96</span><span>🎯 LLM/ASR error handling</span></div>
+    <div class="problem"><strong>问题：</strong>通用异常会把 `str(exc)` 的前 100/200 字符写入聊天消息或通过 SSE/ASR WebSocket 返回给前端。上游 SDK/HTTP 异常可能包含 URL、代理、证书、请求片段或供应商实现细节，客户端不需要这些上下文。</div>
+    <div class="evidence">backend/apps/ai_models/views.py:1311 full_content + f'[发生错误: {str(exc)[:100]}]'
+backend/apps/ai_models/views.py:1313 yield error content str(exc)[:200]
+backend/apps/ai_models/realtime_asr.py:96 json.dumps({'type': 'asr.error', 'message': str(exc)[:200]})</div>
+    <div class="fix-box"><div class="fix-label">MINIMAL FIX</div><code>客户端统一返回稳定错误码和用户可读短消息；详细异常只进结构化日志/Sentry，并附 correlation id。保存到 ChatMessage 的失败内容也使用脱敏模板。</code></div>
+    <div class="fix-box" style="margin-top:6px;background:#fff8e1;border-color:#ffe082"><strong>⏱ 估计：</strong>0.5 天 &nbsp;·&nbsp; <strong>回归测试：</strong>mock 上游抛出包含 URL/API key-like 字符串的异常，断言 SSE 和数据库消息不含异常原文，只含错误码。</div>
+  </div>
+
+  <div class="finding severity-medium">
+    <div class="finding-header"><h4>10. 前端缺 lint/test 脚本，静态脚本不能提供行为信心</h4><span class="badge badge-medium">Medium</span><span class="badge badge-confirmed">Confirmed</span></div>
+    <div class="finding-meta"><span>📁 Testing / Release</span><span>📍 web/package.json:6-9, web/scripts/*.mjs</span><span>🎯 frontend quality gate</span></div>
+    <div class="problem"><strong>问题：</strong>`package.json` 只有 dev/build/preview，`docker compose exec web npm run lint` 真实失败为 Missing script。现有 `web/scripts/test-*.mjs` 多数读取源码并断言字符串存在，能防回归片段，但不能验证组件行为、路由、请求状态或用户交互。</div>
+    <div class="evidence">web/package.json:6-9 scripts only dev/build/preview
+docker compose exec web npm run lint: Missing script: &quot;lint&quot;
+web/scripts/test-login-command-center-static.mjs: readFileSync + source.includes(...)
+web/scripts/test-audit-log-management-static.mjs: source.includes(...) and !source.includes(...)</div>
+    <div class="fix-box"><div class="fix-label">MINIMAL FIX</div><code>补充 lint 脚本和依赖；将静态脚本挂到 npm scripts；为登录、权限守卫、设备实时、资源上传、聊天流式至少加一层组件/集成测试或 Playwright smoke。</code></div>
+    <div class="fix-box" style="margin-top:6px;background:#fff8e1;border-color:#ffe082"><strong>⏱ 估计：</strong>1-2 天 &nbsp;·&nbsp; <strong>回归测试：</strong>`docker compose exec web npm run lint` 和 `npm run test` 均通过；至少一个测试在破坏按钮提交或权限守卫时失败。</div>
+  </div>
+
+  <div class="finding severity-medium">
+    <div class="finding-header"><h4>11. 多个前端页面和后端模块超过 800-1100 行</h4><span class="badge badge-medium">Medium</span><span class="badge badge-confirmed">Confirmed</span></div>
+    <div class="finding-meta"><span>📁 Maintainability / Frontend State</span><span>📍 web/src/views, backend/apps/*</span><span>🎯 large modules</span></div>
+    <div class="problem"><strong>问题：</strong>多个单文件承担数据请求、状态、表格、表单、弹窗、导入导出和渲染，已超过原则 1.1/1.2/1.3 的维护阈值。大文件本身不是 bug，但这里已经叠加高状态数量和多职责，增加回归测试与局部修改难度。</div>
+    <div class="evidence">web/src/views/command-management/workspace.tsx: 1188 lines, 24 useState
+web/src/views/chat-room/index.tsx: 1017 lines, 26 useState, 8 useEffect, 8 useCallback
+web/src/views/asr-management/index.tsx: 879 lines
+backend/apps/ai_models/views.py: 1170 lines, 54 def
+backend/apps/resources/views.py: 911 lines
+backend/apps/resources/serializers.py: 888 lines</div>
+    <div class="fix-box"><div class="fix-label">MINIMAL FIX</div><code>按风险热点拆最少的边界：聊天流式 hook、命令工作台分页/导入导出 hook、ASR WebSocket hook；后端把 LLM settings、chat send、ASR views 拆成同 app 下 service/view modules。</code></div>
+    <div class="fix-box" style="margin-top:6px;background:#fff8e1;border-color:#ffe082"><strong>⏱ 估计：</strong>2-5 天渐进完成 &nbsp;·&nbsp; <strong>回归测试：</strong>拆分前后 `npm run build`、相关静态/行为测试和后端 chat/asr/resource 测试通过。</div>
+  </div>
+
+  <div class="finding severity-medium">
+    <div class="finding-header"><h4>12. OpenAPI 生成对大量 APIView 降级忽略</h4><span class="badge badge-medium">Medium</span><span class="badge badge-confirmed">Confirmed</span></div>
+    <div class="finding-meta"><span>📁 Backend API / Documentation</span><span>📍 backend/apps/*/views.py, config/urls.py</span><span>🎯 drf-spectacular schema</span></div>
+    <div class="problem"><strong>问题：</strong>`manage.py check --deploy` 输出多条 drf-spectacular W001/W002，表示大量 APIView 无 serializer 推断，schema 生成时被忽略或类型退化。对于前后端联调和外部对接，API 文档会和真实契约脱节。</div>
+    <div class="evidence">check --deploy W002 examples:
+ASRSettingsView, ASRStatusView, ASRDeviceStatusView, CompanyLLMOptionsView, DeviceActivationView, DeviceRuntimeConfigView, MinioSettingsView, CommandDataLookupView, ApiV1RootView: unable to guess serializer / Ignoring view for now.
+W001: ChatConversationViewSet message_id path parameter defaulting to string; several SerializerMethodField type hints missing.</div>
+    <div class="fix-box"><div class="fix-label">MINIMAL FIX</div><code>为 APIView 添加 serializer_class 或 @extend_schema(request=..., responses=...)；给 SerializerMethodField 补 @extend_schema_field；把 schema warnings 加入 CI 预算。</code></div>
+    <div class="fix-box" style="margin-top:6px;background:#fff8e1;border-color:#ffe082"><strong>⏱ 估计：</strong>1-2 天 &nbsp;·&nbsp; <strong>回归测试：</strong>`python manage.py spectacular --fail-on-warn` 或等价命令在容器内通过；前端 API 类型与 schema 对齐。</div>
+  </div>
+
+  <div class="finding severity-low">
+    <div class="finding-header"><h4>13. npm 与 pnpm 双 lockfile 并存且 Docker 只使用 npm</h4><span class="badge badge-low">Low</span><span class="badge badge-confirmed">Confirmed</span></div>
+    <div class="finding-meta"><span>📁 Dependency / Release</span><span>📍 web/package-lock.json, web/pnpm-lock.yaml, web/Dockerfile:5-6</span><span>🎯 frontend package manager</span></div>
+    <div class="problem"><strong>问题：</strong>仓库同时跟踪 package-lock 与 pnpm-lock，但 Dockerfile 和 compose 都使用 npm install。pnpm-lock 最后修改时间明显早于 package-lock，容易让开发者误以为 pnpm 也是受支持路径。</div>
+    <div class="evidence">git ls-files: web/package-lock.json and web/pnpm-lock.yaml both tracked
+web/Dockerfile:5 COPY package.json package-lock.json* pnpm-lock.yaml* ./
+web/Dockerfile:6 RUN npm install
+web/package.json has no packageManager field</div>
+    <div class="fix-box"><div class="fix-label">MINIMAL FIX</div><code>选择 npm：删除 pnpm-lock.yaml，Dockerfile 用 npm ci；或选择 pnpm：声明 packageManager 并改 Dockerfile/compose。不要双轨漂移。</code></div>
+    <div class="fix-box" style="margin-top:6px;background:#fff8e1;border-color:#ffe082"><strong>⏱ 估计：</strong>0.25 天 &nbsp;·&nbsp; <strong>回归测试：</strong>干净构建容器内只使用选定包管理器，lockfile 无额外变更。</div>
+  </div>
+
+  <div class="finding severity-low">
+    <div class="finding-header"><h4>14. Antd Select 与 JSON 边界大量使用 type assertion</h4><span class="badge badge-low">Low</span><span class="badge badge-confirmed">Confirmed</span></div>
+    <div class="finding-meta"><span>📁 Type Safety</span><span>📍 web/src/views/*, web/src/store/auth.ts</span><span>🎯 TypeScript escape hatches</span></div>
+    <div class="problem"><strong>问题：</strong>多个页面用 `as unknown as { label: string; value: string }[]` 绕过 Antd Select option 类型，`JSON.parse` 结果也多处直接断言。当前多数是 UI 类型摩擦，但这种模式会把真实数据不匹配推迟到运行时。</div>
+    <div class="evidence">web/src/views/resource-management/index.tsx:755 categoryOptions as unknown as ...
+web/src/views/scrolling-text-management/index.tsx:299/344 statusOptions/i18nSchemeOptions as unknown as ...
+web/src/views/model-management/index.tsx:505/636/639 options as unknown as ...
+web/src/store/auth.ts:75 JSON.parse(value) as T</div>
+    <div class="fix-box"><div class="fix-label">MINIMAL FIX</div><code>定义共享 SelectOption&lt;T extends string | number&gt; helper；JSON.parse 使用小型 type guard 或 schema 校验，至少对 localStorage 的 role/menu/tenant 做边界验证。</code></div>
+    <div class="fix-box" style="margin-top:6px;background:#fff8e1;border-color:#ffe082"><strong>⏱ 估计：</strong>0.5-1 天 &nbsp;·&nbsp; <strong>回归测试：</strong>向 localStorage 注入坏 role/menu JSON，应用不崩溃且回退到安全默认；TypeScript 不再需要 unknown double cast。</div>
+  </div>
+
+  <div class="finding severity-low">
+    <div class="finding-header"><h4>15. 子文档仍保留宿主裸跑命令，和根硬约束冲突</h4><span class="badge badge-low">Low</span><span class="badge badge-confirmed">Confirmed</span></div>
+    <div class="finding-meta"><span>📁 Documentation / Code Consistency</span><span>📍 web/AGENTS.md:61-63, backend/AGENTS.md:71-86, CLAUDE.md:19/63</span><span>🎯 developer docs</span></div>
+    <div class="problem"><strong>问题：</strong>根 AGENTS 明确 Docker-only 且禁止宿主 npm/python，但 web/backend 子文档和 CLAUDE 仍列出裸跑命令，甚至说明 `cd web && npm install && npm run dev`。这会直接诱导依赖漂移和 `.env` 污染。</div>
+    <div class="evidence">AGENTS.md:13-21 Docker-only mandate forbids host npm/python
+web/AGENTS.md:61-63 lists npm run dev/build/preview without docker compose
+backend/AGENTS.md:71-86 lists python manage.py runserver/test without docker compose
+CLAUDE.md:19 and 63 describe host npm/python debug path</div>
+    <div class="fix-box"><div class="fix-label">MINIMAL FIX</div><code>统一文档命令为 docker compose exec/run 版本；保留裸命令只能标为“容器内执行命令体”，并明确禁止宿主运行。</code></div>
+    <div class="fix-box" style="margin-top:6px;background:#fff8e1;border-color:#ffe082"><strong>⏱ 估计：</strong>0.5 天 &nbsp;·&nbsp; <strong>回归测试：</strong>文档 grep 不再出现未限定的 `npm run` / `python manage.py` 日常命令；根例外说明保持一致。</div>
+  </div>
+
+  <div class="finding severity-low">
+    <div class="finding-header"><h4>16. 公开运行时接口依赖 deviceCode / tenant code，无速率限制证据</h4><span class="badge badge-low">Low</span><span class="badge badge-suspected">Suspected</span></div>
+    <div class="finding-meta"><span>📁 Security / Backend API</span><span>📍 backend/apps/devices/views.py:349-440, resources/point_views.py:86-104</span><span>🎯 runtime public endpoints</span></div>
+    <div class="problem"><strong>问题：</strong>项目明确要求安卓运行时无 JWT，这是合理的产品约束；但公开端点目前只基于 deviceCode 或 tenant code 解析上下文，没有看到速率限制、重放保护或设备码熵校验。若 deviceCode 泄漏或可猜，攻击者可拉取运行时配置、刷心跳/日志或枚举公开点位。</div>
+    <div class="evidence">backend/apps/devices/views.py:349-350 DeviceActivationView authentication_classes=[] permission_classes=[AllowAny]
+backend/apps/devices/views.py:439-440 DeviceRuntimeView authentication_classes=[] permission_classes=[AllowAny]
+backend/apps/resources/point_views.py:86/101 PointViewSet AllowAny and supports ?all=true
+AGENTS.md:56 says runtime only submits deviceCode by design</div>
+    <div class="fix-box"><div class="fix-label">MINIMAL FIX</div><code>保留 deviceCode-only 设计，但增加 per-IP/per-device rate limit、设备码格式/长度熵要求、异常激活告警；运行时配置接口记录 correlation id，避免被刷写日志。</code></div>
+    <div class="fix-box" style="margin-top:6px;background:#fff8e1;border-color:#ffe082"><strong>⏱ 估计：</strong>1 天 &nbsp;·&nbsp; <strong>回归测试：</strong>同 IP 高频激活/心跳超过阈值返回 429；短/弱 deviceCode 被拒绝；正常安卓链路仍无需 JWT。</div>
+  </div>
+
+  <h3 class="section-title" id="architecture">🏗️ Architecture & Module Boundaries</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 2 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>设备首次激活可并发创建同设备码重复记录</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>多个前端页面和后端模块超过 800-1100 行</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证架构亮点</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> 前后端职责清晰：React SPA + Django/DRF API + Celery worker/beat。</div><div class="check-item"><span class="check">✓</span> 业务 apps 按 accounts/tenants/devices/resources/ai_models/knowledge_base/audit 划分。</div><div class="check-item"><span class="check">✓</span> `TenantScopedQuerysetMixin` 与 `TenantManager` 明确承担租户边界。</div></div></div></div>
+
+  <h3 class="section-title" id="security">🔒 Security</h3>
+  <div class="card"><div class="card-header">已确认 / 疑似 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 7 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>compose 无条件创建已知超管账号 admin/admin123456</td><td><span class="badge badge-critical">Critical</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>当前运行时未加载 prod 安全设置，生产默认过宽</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>db 容器接收完整 backend/.env，最小权限边界失效</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>npm audit 报 2 个 high 与 6 个 moderate 漏洞</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>Sentry 全环境启用 send_default_pii 且 DSN 硬编码</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>上游异常文本直接回传到 SSE/ASR 客户端</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>公开运行时接口依赖 deviceCode / tenant code，无速率限制证据</td><td><span class="badge badge-low">Low</span></td><td><span class="badge badge-suspected">Suspected</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证安全</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> DRF 默认权限为 `IsAuthenticated`，例外端点显式声明。</div><div class="check-item"><span class="check">✓</span> 前端统一请求客户端注入 Bearer，401 统一清理登录态。</div><div class="check-item"><span class="check">✓</span> ASR/LLM API key 在普通状态接口里有 masking / 不返回测试覆盖。</div></div></div></div>
+
+  <h3 class="section-title" id="stability">⚡ Stability & Error Handling</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 4 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>设备首次激活可并发创建同设备码重复记录</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>业务缓存注册表无过期且按完整 URL 累积</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>聊天发送完整历史且 maxTokens 上限过大</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>上游异常文本直接回传到 SSE/ASR 客户端</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证稳健</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> 后端抽样 33 个关键测试通过。</div><div class="check-item"><span class="check">✓</span> 主要外部 HTTP/WebSocket 调用设置了 timeout/open_timeout/ping_timeout。</div><div class="check-item"><span class="check">✓</span> 设备状态 WebSocket 使用 bounded queue(maxsize=100) 防止订阅者积压。</div></div></div></div>
+
+  <h3 class="section-title" id="performance">🚀 Performance & Scalability</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 2 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>业务缓存注册表无过期且按完整 URL 累积</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>聊天发送完整历史且 maxTokens 上限过大</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证性能实践</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> 默认分页 `PAGE_SIZE=10`，`max_page_size=100`。</div><div class="check-item"><span class="check">✓</span> 设备/任务/知识库等多处使用 `select_related` / `prefetch_related`。</div><div class="check-item"><span class="check">✓</span> Vite 已拆出 antd / antd-icons / vendor chunk，build 通过。</div></div></div></div>
+
+  <h3 class="section-title" id="testing">🧪 Testing Quality</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 1 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>前端缺 lint/test 脚本，静态脚本不能提供行为信心</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证测试资产</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> 后端有 40+ 测试文件，覆盖租户隔离、设备授权、AI、资源、知识库、审计。</div><div class="check-item"><span class="check">✓</span> `test_isolation_contract` 自动检查 tenant-scoped model 是否使用 TenantManager。</div><div class="check-item"><span class="check">✓</span> 聊天流式测试覆盖无空格 `data:{...}` SSE 兼容路径。</div></div></div></div>
+
+  <h3 class="section-title" id="maintainability">📐 Maintainability</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 2 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>多个前端页面和后端模块超过 800-1100 行</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>子文档仍保留宿主裸跑命令，和根硬约束冲突</td><td><span class="badge badge-low">Low</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证可维护性</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> 前端 API modules 统一通过 `httpClient`，下载/流式例外有文档说明。</div><div class="check-item"><span class="check">✓</span> 后端 app 标准布局清楚，资源点位虽然同 app 拆分但有 AGENTS 说明。</div><div class="check-item"><span class="check">✓</span> 文档中明确了 Docker-only、双 `.env` 边界和运行时 deviceCode 约束。</div></div></div></div>
+
+  <h3 class="section-title" id="design">📋 Design Principles Compliance</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 6 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>当前运行时未加载 prod 安全设置，生产默认过宽</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>设备首次激活可并发创建同设备码重复记录</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>业务缓存注册表无过期且按完整 URL 累积</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>聊天发送完整历史且 maxTokens 上限过大</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>多个前端页面和后端模块超过 800-1100 行</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>Antd Select 与 JSON 边界大量使用 type assertion</td><td><span class="badge badge-low">Low</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证原则实践</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> Fail-closed 租户查询：`TenantManager.for_tenant(None)` 测试保证返回空集。</div><div class="check-item"><span class="check">✓</span> 公开运行时与后台管理路径有显式区分，不混用后台 JWT 给安卓端。</div><div class="check-item"><span class="check">✓</span> 关键写入路径使用 serializer validation 和局部 transaction。</div></div></div></div>
+
+  <h3 class="section-title" id="release">🚢 Release & Deployment Process</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 6 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>compose 无条件创建已知超管账号 admin/admin123456</td><td><span class="badge badge-critical">Critical</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>当前运行时未加载 prod 安全设置，生产默认过宽</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>npm audit 报 2 个 high 与 6 个 moderate 漏洞</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>前端缺 lint/test 脚本，静态脚本不能提供行为信心</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>OpenAPI 生成对大量 APIView 降级忽略</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>npm 与 pnpm 双 lockfile 并存且 Docker 只使用 npm</td><td><span class="badge badge-low">Low</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证发布资产</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> compose 健康检查和 `depends_on: service_healthy` 已覆盖 backend/web/worker 启动顺序。</div><div class="check-item"><span class="check">✓</span> 后端启动序列含 migrate、seed、collectstatic、uvicorn ASGI。</div><div class="check-item"><span class="check">✓</span> 前端 `docker compose exec web npm run build` 第二次验证通过。</div></div></div></div>
+
+  <h3 class="section-title" id="documentation">📚 Documentation Accuracy</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 2 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>OpenAPI 生成对大量 APIView 降级忽略</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>子文档仍保留宿主裸跑命令，和根硬约束冲突</td><td><span class="badge badge-low">Low</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证文档</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> 根 AGENTS 对 compose、端口、.env 边界、安卓运行时边界写得具体。</div><div class="check-item"><span class="check">✓</span> 子 app AGENTS 覆盖账号、设备、知识库、AI、资源模块入口。</div><div class="check-item"><span class="check">✓</span> docs/superpowers 中保留了近期实现计划和验证命令记录。</div></div></div></div>
+
+  <h3 class="section-title" id="configuration">⚙️ Configuration Safety</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 3 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>当前运行时未加载 prod 安全设置，生产默认过宽</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>db 容器接收完整 backend/.env，最小权限边界失效</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>Sentry 全环境启用 send_default_pii 且 DSN 硬编码</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证配置实践</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> `DATABASE_URL` 缺失会 raise ImproperlyConfigured。</div><div class="check-item"><span class="check">✓</span> 根 `.env` 只包含端口映射并被 git 显式允许。</div><div class="check-item"><span class="check">✓</span> Redis cache URL 有专门测试校验使用配置值。</div></div></div></div>
+
+  <h3 class="section-title" id="observability">📡 Observability</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 2 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>Sentry 全环境启用 send_default_pii 且 DSN 硬编码</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>OpenAPI 生成对大量 APIView 降级忽略</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证可观测性</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> 聊天发送链路有 `chat.send.*` 结构化日志。</div><div class="check-item"><span class="check">✓</span> 操作日志 middleware 覆盖成功写请求并有测试。</div><div class="check-item"><span class="check">✓</span> Sentry before_send 已过滤部分预期 Celery 噪音。</div></div></div></div>
+
+  <h3 class="section-title" id="fallback">🧯 Fallback / Defensive Code</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 3 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>当前运行时未加载 prod 安全设置，生产默认过宽</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>上游异常文本直接回传到 SSE/ASR 客户端</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>Antd Select 与 JSON 边界大量使用 type assertion</td><td><span class="badge badge-low">Low</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证兜底</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> 设备重复码、过期授权、停用公司等运行时路径返回明确 4xx。</div><div class="check-item"><span class="check">✓</span> MinIO/飞书外部服务不可用时会记录 warning，不阻断核心业务写入。</div><div class="check-item"><span class="check">✓</span> SSE parser 兼容 `data:` 与 `data: ` 两种格式。</div></div></div></div>
+
+  <h3 class="section-title" id="testing-authenticity">🧭 Testing Authenticity</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 1 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>前端缺 lint/test 脚本，静态脚本不能提供行为信心</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证测试真实性</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> 后端 API 测试通过真实 DRF client 断言 HTTP 响应和数据库状态。</div><div class="check-item"><span class="check">✓</span> 聊天测试驱动 streaming body，断言消息持久化而非只检查 mock 调用。</div><div class="check-item"><span class="check">✓</span> 跨租户测试包含 404、for_tenant(None)、公开运行时租户参数。</div></div></div></div>
+
+  <h3 class="section-title" id="type-safety">🧷 Type Safety</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 1 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>Antd Select 与 JSON 边界大量使用 type assertion</td><td><span class="badge badge-low">Low</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证类型安全</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> `tsconfig.app.json` 开启 strict、noUnusedLocals、noUnusedParameters、isolatedModules。</div><div class="check-item"><span class="check">✓</span> API modules 定义了大部分请求/响应类型。</div><div class="check-item"><span class="check">✓</span> 后端 serializers 对密码、maxTokens、租户资源引用等有显式 validation。</div></div></div></div>
+
+  <h3 class="section-title" id="frontend-state">🖥️ Frontend State</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 3 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>前端缺 lint/test 脚本，静态脚本不能提供行为信心</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>多个前端页面和后端模块超过 800-1100 行</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>Antd Select 与 JSON 边界大量使用 type assertion</td><td><span class="badge badge-low">Low</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证前端状态实践</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> 登录态集中在 Zustand auth store，租户作用域单独 store。</div><div class="check-item"><span class="check">✓</span> 401 响应统一清理 token 并跳转登录。</div><div class="check-item"><span class="check">✓</span> 设备实时 WebSocket 前端使用 token + tenantId，符合 AGENTS 约束。</div></div></div></div>
+
+  <h3 class="section-title" id="backend-api">🔌 Backend API</h3>
+  <div class="card"><div class="card-header">已确认 / 疑似 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 4 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>设备首次激活可并发创建同设备码重复记录</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>聊天发送完整历史且 maxTokens 上限过大</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>OpenAPI 生成对大量 APIView 降级忽略</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>公开运行时接口依赖 deviceCode / tenant code，无速率限制证据</td><td><span class="badge badge-low">Low</span></td><td><span class="badge badge-suspected">Suspected</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证 API 实践</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> REST_FRAMEWORK 默认使用 JWT + Session auth、IsAuthenticated、统一分页和异常 handler。</div><div class="check-item"><span class="check">✓</span> 成功响应与错误响应大多通过统一包络。</div><div class="check-item"><span class="check">✓</span> 知识库下载二进制例外在文档中明确说明。</div></div></div></div>
+
+  <h3 class="section-title" id="dependency-weight">📦 Dependency Weight</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 2 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>npm audit 报 2 个 high 与 6 个 moderate 漏洞</td><td><span class="badge badge-high">High</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>npm 与 pnpm 双 lockfile 并存且 Docker 只使用 npm</td><td><span class="badge badge-low">Low</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证依赖边界</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> 前端直接依赖数量克制，主要是 React/Antd/Axios/Dayjs/Zustand。</div><div class="check-item"><span class="check">✓</span> 后端 requirements 大多是框架、任务、存储、HTTP 客户端等项目实际使用依赖。</div><div class="check-item"><span class="check">✓</span> Docker 镜像固化 Node/Python 运行面，符合 Docker-only 目标。</div></div></div></div>
+
+  <h3 class="section-title" id="code-consistency">🧩 Code Consistency</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 3 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>多个前端页面和后端模块超过 800-1100 行</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>Antd Select 与 JSON 边界大量使用 type assertion</td><td><span class="badge badge-low">Low</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>子文档仍保留宿主裸跑命令，和根硬约束冲突</td><td><span class="badge badge-low">Low</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证一致性</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> 前端目录以 kebab-case views + index.tsx 为主。</div><div class="check-item"><span class="check">✓</span> 后端 URL 统一挂在 `/api/v1/`。</div><div class="check-item"><span class="check">✓</span> 权限码集中在 `apps.accounts.permissions`。</div></div></div></div>
+
+  <h3 class="section-title" id="comment-coverage">💬 Comment Coverage</h3>
+  <div class="card"><div class="card-header">已确认 <span style="font-weight:400;font-size:13px;color:var(--text-secondary)">· 2 个发现</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>发现</th><th style="width:100px">严重程度</th><th style="width:100px">状态</th></tr></thead><tbody><tr><td>OpenAPI 生成对大量 APIView 降级忽略</td><td><span class="badge badge-medium">Medium</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr><tr><td>子文档仍保留宿主裸跑命令，和根硬约束冲突</td><td><span class="badge badge-low">Low</span></td><td><span class="badge badge-confirmed">Confirmed</span></td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header">✅ 已验证注释质量</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> 关键租户隔离、MRO 约定、运行时公开端点均有解释性注释。</div><div class="check-item"><span class="check">✓</span> 聊天 SSE、ASGI 流式约束在 AGENTS/CLAUDE 中有背景说明。</div><div class="check-item"><span class="check">✓</span> 代码中未发现大面积无解释的注释掉旧代码。</div></div></div></div>
+
+  <h3 class="section-title" id="principles">📋 设计原则违规</h3>
+  <div class="card">
+    <div class="card-header">原则违规汇总</div>
+    <div class="card-body" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>原则</th><th>数量</th><th style="width:100px">严重程度</th><th>区域</th></tr></thead>
+          <tbody>
+            <tr><td>9.2 Fail on Missing Configuration</td><td>2</td><td><span class="badge badge-high">High</span></td><td>SECRET_KEY / ALLOWED_HOSTS / CORS / settings module</td></tr>
+            <tr><td>4.6 Principle of Least Privilege</td><td>2</td><td><span class="badge badge-high">High</span></td><td>默认超管、db env_file 过宽</td></tr>
+            <tr><td>10.2 Unbounded Resources</td><td>2</td><td><span class="badge badge-medium">Medium</span></td><td>业务缓存 registry、聊天完整历史</td></tr>
+            <tr><td>1.2 File Size Limit / 1.1 SRP</td><td>6+</td><td><span class="badge badge-medium">Medium</span></td><td>前端页面与 ai_models/resources 后端模块</td></tr>
+            <tr><td>6.2 Don't Lose Error Context / 6.1 Don't Swallow or Leak Errors</td><td>2</td><td><span class="badge badge-medium">Medium</span></td><td>LLM/ASR 错误处理</td></tr>
+            <tr><td>3.5 / Type Assertion Escape Hatches</td><td>10+</td><td><span class="badge badge-low">Low</span></td><td>Antd Select options、localStorage JSON</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="card"><div class="card-header">✅ 已遵循原则</div><div class="card-body"><div class="check-list"><div class="check-item"><span class="check">✓</span> Layered defaults：API 通过 serializers/views/services 分层，前端 API module 与 view 分离。</div><div class="check-item"><span class="check">✓</span> Fail-closed tenancy：普通用户无 membership 时数据收敛为空集。</div><div class="check-item"><span class="check">✓</span> Timeout external calls：Feishu、Aliyun、ASR、LLM 调用均有明确 timeout。</div><div class="check-item"><span class="check">✓</span> Behavior tests：后端跨租户与聊天流式测试验证可观察结果。</div></div></div></div>
+
+  <h3 class="section-title" id="fix-order">🎯 修复顺序</h3>
+  <div class="card"><div class="card-header"><span>⚡ 立即修复</span><span class="badge badge-critical">P0</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>#</th><th>修复</th><th>工作量</th><th>风险说明</th></tr></thead><tbody><tr><td>1</td><td>移除无条件默认超管，开发开关化并生产 fail-fast</td><td>0.5-1 天</td><td>避免公开已知后台凭据</td></tr><tr><td>2</td><td>强制生产 settings / secure cookies / CORS / ALLOWED_HOSTS / SECRET_KEY 校验</td><td>1 天</td><td>发布安全基线</td></tr><tr><td>3</td><td>拆分 db env，只给数据库 POSTGRES_* 变量</td><td>0.5 天</td><td>缩小密钥暴露面</td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header"><span>📅 短期修复</span><span class="badge badge-high">P1</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>#</th><th>修复</th><th>工作量</th></tr></thead><tbody><tr><td>4</td><td>修设备激活唯一性和并发测试</td><td>1 天</td></tr><tr><td>5</td><td>处理 npm audit high 项并建立 audit 门禁</td><td>0.5-2 天</td></tr><tr><td>6</td><td>Sentry 改环境变量初始化，关闭默认 PII</td><td>0.5 天</td></tr><tr><td>7</td><td>补 frontend lint/test scripts，替换最脆弱的静态字符串测试</td><td>1-2 天</td></tr></tbody></table></div></div></div>
+  <div class="card"><div class="card-header"><span>🧭 计划修复</span><span class="badge badge-medium">P2</span></div><div class="card-body" style="padding:0"><div class="table-wrap"><table><thead><tr><th>#</th><th>修复</th><th>工作量</th></tr></thead><tbody><tr><td>8</td><td>业务缓存 registry 改版本号失效或有界 TTL</td><td>1 天</td></tr><tr><td>9</td><td>聊天上下文预算和 maxTokens 策略</td><td>1-2 天</td></tr><tr><td>10</td><td>OpenAPI APIView serializer/extend_schema 补齐</td><td>1-2 天</td></tr><tr><td>11</td><td>拆分 chat/workspace/asr 大组件与 ai_models views</td><td>2-5 天</td></tr></tbody></table></div></div></div>
+
+  <h3 class="section-title" id="quick-wins">⚡ 快速收益</h3>
+  <div class="win-grid">
+    <div class="win-card"><div class="win-title">把 `DJANGO_SETTINGS_MODULE=config.settings.prod` 写入部署 env</div><div class="win-meta">30 分钟 · 立刻让 secure cookie 配置生效</div></div>
+    <div class="win-card"><div class="win-title">删除或归档 `web/pnpm-lock.yaml`</div><div class="win-meta">15 分钟 · 降低依赖安装歧义</div></div>
+    <div class="win-card"><div class="win-title">给 `package.json` 加 `lint` 脚本</div><div class="win-meta">30-60 分钟 · 文档命令不再假绿</div></div>
+    <div class="win-card"><div class="win-title">Sentry DSN 改为 env 缺省关闭</div><div class="win-meta">30 分钟 · 避免本地/测试异常入同一项目</div></div>
+    <div class="win-card"><div class="win-title">db env 改成 POSTGRES_* allowlist</div><div class="win-meta">30 分钟 · 立即缩小 secret 暴露面</div></div>
+    <div class="win-card"><div class="win-title">为 deviceCode 加最小长度/格式校验</div><div class="win-meta">半天 · 公开运行时接口先补一道低成本边界</div></div>
+  </div>
+
+  <div style="text-align:center;padding:40px 0 20px;color:var(--text-secondary);font-size:12px">
+    审计完成于 2026-06-11；命令验证均通过 docker compose 执行。报告未包含任何 .env 明文密钥。
+  </div>
+
+</div>
+
+<script>
+  const sections = document.querySelectorAll('[id]');
+  const navLinks = document.querySelectorAll('.sidebar-nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    let activeId = null;
+    entries.forEach(entry => {
+      if (entry.isIntersecting) activeId = entry.target.id;
+    });
+    if (activeId) {
+      navLinks.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + activeId);
+      });
+    }
+  }, { rootMargin: '-10% 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+
+  navLinks.forEach(a => {
+    a.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+</script>
+
+</body>
+</html>
