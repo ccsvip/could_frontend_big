@@ -1,0 +1,2367 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "backend/apps/devices/migrations/0006_device_authorization_ignored_at_and_log_actions.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 33,
+      "nonEmptyLines": 29,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 4,
+          "endLine": 33,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/knowledge_base/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/knowledge_base/AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 54,
+      "nonEmptyLines": 41,
+      "sections": [
+        {
+          "heading": "apps/knowledge_base AGENTS.md",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "OVERVIEW",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "STRUCTURE",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "WHERE TO LOOK",
+          "level": 2,
+          "line": 22
+        },
+        {
+          "heading": "CONVENTIONS",
+          "level": 2,
+          "line": 32
+        },
+        {
+          "heading": "ANTI-PATTERNS",
+          "level": 2,
+          "line": 41
+        },
+        {
+          "heading": "NOTES",
+          "level": 2,
+          "line": 50
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "backend/apps/knowledge_base/apps.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 8,
+      "nonEmptyLines": 5,
+      "classes": [
+        {
+          "name": "KnowledgeBaseConfig",
+          "startLine": 4,
+          "endLine": 7,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "KnowledgeBaseConfig",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/knowledge_base/migrations/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/knowledge_base/migrations/0001_initial.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 87,
+      "nonEmptyLines": 74,
+      "functions": [
+        {
+          "name": "seed_knowledge_base_access_data",
+          "startLine": 6,
+          "endLine": 43,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_knowledge_base_access_data",
+          "startLine": 46,
+          "endLine": 51,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 54,
+          "endLine": 86,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_knowledge_base_access_data",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_knowledge_base_access_data",
+          "line": 46,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 54,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 7
+        },
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 8
+        },
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 9
+        },
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 11
+        },
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 30
+        },
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "permission_points.append",
+          "lineNumber": 39
+        },
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "Role.objects.all",
+          "lineNumber": 41
+        },
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "role.menus.add",
+          "lineNumber": 42
+        },
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 43
+        },
+        {
+          "caller": "unseed_knowledge_base_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 47
+        },
+        {
+          "caller": "unseed_knowledge_base_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 48
+        },
+        {
+          "caller": "unseed_knowledge_base_access_data",
+          "callee": "PermissionPoint.objects.filter(code__startswith='knowledge_base.').delete",
+          "lineNumber": 50
+        },
+        {
+          "caller": "unseed_knowledge_base_access_data",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 50
+        },
+        {
+          "caller": "unseed_knowledge_base_access_data",
+          "callee": "Menu.objects.filter(key='/knowledge-base').delete",
+          "lineNumber": 51
+        },
+        {
+          "caller": "unseed_knowledge_base_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 51
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 61,
+      "nonEmptyLines": 49,
+      "functions": [
+        {
+          "name": "seed_knowledge_base_access_data",
+          "startLine": 4,
+          "endLine": 41,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_knowledge_base_access_data",
+          "startLine": 44,
+          "endLine": 49,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 52,
+          "endLine": 60,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_knowledge_base_access_data",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_knowledge_base_access_data",
+          "line": 44,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 52,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 5
+        },
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 6
+        },
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 7
+        },
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 9
+        },
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 28
+        },
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "permission_points.append",
+          "lineNumber": 37
+        },
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "Role.objects.all",
+          "lineNumber": 39
+        },
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "role.menus.add",
+          "lineNumber": 40
+        },
+        {
+          "caller": "seed_knowledge_base_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 41
+        },
+        {
+          "caller": "unseed_knowledge_base_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 45
+        },
+        {
+          "caller": "unseed_knowledge_base_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 46
+        },
+        {
+          "caller": "unseed_knowledge_base_access_data",
+          "callee": "PermissionPoint.objects.filter(code__startswith='knowledge_base.').delete",
+          "lineNumber": 48
+        },
+        {
+          "caller": "unseed_knowledge_base_access_data",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 48
+        },
+        {
+          "caller": "unseed_knowledge_base_access_data",
+          "callee": "Menu.objects.filter(key='/knowledge-base').delete",
+          "lineNumber": 49
+        },
+        {
+          "caller": "unseed_knowledge_base_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 49
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 20,
+      "nonEmptyLines": 15,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 7,
+          "endLine": 20,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/knowledge_base/tests/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/knowledge_base/tests/_helpers.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 160,
+      "nonEmptyLines": 128,
+      "functions": [
+        {
+          "name": "has_knowledge_base_app",
+          "startLine": 17,
+          "endLine": 22,
+          "params": []
+        },
+        {
+          "name": "get_knowledge_document_model",
+          "startLine": 25,
+          "endLine": 31,
+          "params": []
+        },
+        {
+          "name": "get_document_file_field_name",
+          "startLine": 34,
+          "endLine": 38,
+          "params": [
+            "model"
+          ]
+        },
+        {
+          "name": "build_document_upload",
+          "startLine": 41,
+          "endLine": 60,
+          "params": [
+            "filename",
+            "content",
+            "declared_size"
+          ]
+        },
+        {
+          "name": "cleanup_source_file",
+          "startLine": 63,
+          "endLine": 65,
+          "params": [
+            "source_path"
+          ]
+        },
+        {
+          "name": "create_document_instance",
+          "startLine": 68,
+          "endLine": 123,
+          "params": [
+            "user",
+            "title",
+            "filename",
+            "content",
+            "declared_size",
+            "**overrides"
+          ]
+        },
+        {
+          "name": "resolve_status_value",
+          "startLine": 126,
+          "endLine": 135,
+          "params": [
+            "model"
+          ]
+        },
+        {
+          "name": "get_response_bytes",
+          "startLine": 138,
+          "endLine": 141,
+          "params": [
+            "response"
+          ]
+        },
+        {
+          "name": "discover_access_seed",
+          "startLine": 144,
+          "endLine": 159,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "has_knowledge_base_app",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "get_knowledge_document_model",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "get_document_file_field_name",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "build_document_upload",
+          "line": 41,
+          "isDefault": false
+        },
+        {
+          "name": "cleanup_source_file",
+          "line": 63,
+          "isDefault": false
+        },
+        {
+          "name": "create_document_instance",
+          "line": 68,
+          "isDefault": false
+        },
+        {
+          "name": "resolve_status_value",
+          "line": 126,
+          "isDefault": false
+        },
+        {
+          "name": "get_response_bytes",
+          "line": 138,
+          "isDefault": false
+        },
+        {
+          "name": "discover_access_seed",
+          "line": 144,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "has_knowledge_base_app",
+          "callee": "django_apps.get_app_config",
+          "lineNumber": 19
+        },
+        {
+          "caller": "get_knowledge_document_model",
+          "callee": "django_apps.get_app_config",
+          "lineNumber": 26
+        },
+        {
+          "caller": "get_knowledge_document_model",
+          "callee": "app_config.get_models",
+          "lineNumber": 27
+        },
+        {
+          "caller": "get_knowledge_document_model",
+          "callee": "model._meta.get_fields",
+          "lineNumber": 28
+        },
+        {
+          "caller": "get_knowledge_document_model",
+          "callee": "{'processing_status', 'download_count'}.issubset",
+          "lineNumber": 29
+        },
+        {
+          "caller": "get_knowledge_document_model",
+          "callee": "AssertionError",
+          "lineNumber": 31
+        },
+        {
+          "caller": "get_document_file_field_name",
+          "callee": "isinstance",
+          "lineNumber": 36
+        },
+        {
+          "caller": "get_document_file_field_name",
+          "callee": "AssertionError",
+          "lineNumber": 38
+        },
+        {
+          "caller": "build_document_upload",
+          "callee": "mimetypes.guess_type",
+          "lineNumber": 47
+        },
+        {
+          "caller": "build_document_upload",
+          "callee": "len",
+          "lineNumber": 48
+        },
+        {
+          "caller": "build_document_upload",
+          "callee": "SimpleUploadedFile",
+          "lineNumber": 49
+        },
+        {
+          "caller": "build_document_upload",
+          "callee": "tempfile.NamedTemporaryFile",
+          "lineNumber": 51
+        },
+        {
+          "caller": "build_document_upload",
+          "callee": "handle.seek",
+          "lineNumber": 53
+        },
+        {
+          "caller": "build_document_upload",
+          "callee": "handle.write",
+          "lineNumber": 54
+        },
+        {
+          "caller": "build_document_upload",
+          "callee": "handle.flush",
+          "lineNumber": 55
+        },
+        {
+          "caller": "build_document_upload",
+          "callee": "handle.close",
+          "lineNumber": 57
+        },
+        {
+          "caller": "build_document_upload",
+          "callee": "open",
+          "lineNumber": 59
+        },
+        {
+          "caller": "build_document_upload",
+          "callee": "File",
+          "lineNumber": 60
+        },
+        {
+          "caller": "cleanup_source_file",
+          "callee": "os.path.exists",
+          "lineNumber": 64
+        },
+        {
+          "caller": "cleanup_source_file",
+          "callee": "os.remove",
+          "lineNumber": 65
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "get_knowledge_document_model",
+          "lineNumber": 77
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "get_document_file_field_name",
+          "lineNumber": 78
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "build_document_upload",
+          "lineNumber": 80
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "payload.setdefault",
+          "lineNumber": 87
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "resolve_status_value",
+          "lineNumber": 91
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "payload.setdefault",
+          "lineNumber": 93
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "payload.update",
+          "lineNumber": 98
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "model.objects.create",
+          "lineNumber": 99
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "getattr",
+          "lineNumber": 102
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "update_fields.append",
+          "lineNumber": 104
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "Path(filename).suffix.lower().lstrip",
+          "lineNumber": 106
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "Path(filename).suffix.lower",
+          "lineNumber": 106
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "Path",
+          "lineNumber": 106
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "getattr",
+          "lineNumber": 107
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "update_fields.append",
+          "lineNumber": 109
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "getattr",
+          "lineNumber": 110
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "update_fields.append",
+          "lineNumber": 112
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "instance.save",
+          "lineNumber": 115
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "upload.close",
+          "lineNumber": 120
+        },
+        {
+          "caller": "create_document_instance",
+          "callee": "cleanup_source_file",
+          "lineNumber": 123
+        },
+        {
+          "caller": "resolve_status_value",
+          "callee": "model._meta.get_field",
+          "lineNumber": 127
+        },
+        {
+          "caller": "resolve_status_value",
+          "callee": "list",
+          "lineNumber": 128
+        },
+        {
+          "caller": "resolve_status_value",
+          "callee": "getattr",
+          "lineNumber": 128
+        },
+        {
+          "caller": "get_response_bytes",
+          "callee": "hasattr",
+          "lineNumber": 139
+        },
+        {
+          "caller": "get_response_bytes",
+          "callee": "b''.join",
+          "lineNumber": 140
+        },
+        {
+          "caller": "discover_access_seed",
+          "callee": "import_module",
+          "lineNumber": 145
+        },
+        {
+          "caller": "discover_access_seed",
+          "callee": "sorted",
+          "lineNumber": 148
+        },
+        {
+          "caller": "discover_access_seed",
+          "callee": "pkgutil.iter_modules",
+          "lineNumber": 148
+        },
+        {
+          "caller": "discover_access_seed",
+          "callee": "module_info.name[:4].isdigit",
+          "lineNumber": 149
+        },
+        {
+          "caller": "discover_access_seed",
+          "callee": "import_module",
+          "lineNumber": 151
+        },
+        {
+          "caller": "discover_access_seed",
+          "callee": "inspect.getmembers",
+          "lineNumber": 152
+        },
+        {
+          "caller": "discover_access_seed",
+          "callee": "function_name.startswith",
+          "lineNumber": 153
+        },
+        {
+          "caller": "discover_access_seed",
+          "callee": "candidate_functions.append",
+          "lineNumber": 154
+        },
+        {
+          "caller": "discover_access_seed",
+          "callee": "AssertionError",
+          "lineNumber": 157
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 9,
+        "functionCount": 9,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/resources/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/resources/AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 48,
+      "nonEmptyLines": 37,
+      "sections": [
+        {
+          "heading": "apps/resources AGENTS.md",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "OVERVIEW",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "STRUCTURE",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "CONVENTIONS",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "ANTI-PATTERNS",
+          "level": 2,
+          "line": 36
+        },
+        {
+          "heading": "NOTES",
+          "level": 2,
+          "line": 43
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "backend/apps/resources/apps.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 7,
+      "nonEmptyLines": 5,
+      "classes": [
+        {
+          "name": "ResourcesConfig",
+          "startLine": 4,
+          "endLine": 7,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ResourcesConfig",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/resources/migrations/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/resources/migrations/0001_initial.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 32,
+      "nonEmptyLines": 26,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 6,
+          "endLine": 32,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/resources/migrations/0002_seed_access_data.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 86,
+      "nonEmptyLines": 71,
+      "functions": [
+        {
+          "name": "seed_resource_access_data",
+          "startLine": 6,
+          "endLine": 66,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_resource_access_data",
+          "startLine": 69,
+          "endLine": 74,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 77,
+          "endLine": 86,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_resource_access_data",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_resource_access_data",
+          "line": 69,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 77,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_resource_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 7
+        },
+        {
+          "caller": "seed_resource_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 8
+        },
+        {
+          "caller": "seed_resource_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 10
+        },
+        {
+          "caller": "seed_resource_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 44
+        },
+        {
+          "caller": "seed_resource_access_data",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 58
+        },
+        {
+          "caller": "unseed_resource_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 70
+        },
+        {
+          "caller": "unseed_resource_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 71
+        },
+        {
+          "caller": "unseed_resource_access_data",
+          "callee": "PermissionPoint.objects.filter(code__startswith='resources.').delete",
+          "lineNumber": 73
+        },
+        {
+          "caller": "unseed_resource_access_data",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 73
+        },
+        {
+          "caller": "unseed_resource_access_data",
+          "callee": "Menu.objects.filter(key__in=['/resources/images', '/resources/videos', '/resources']).delete",
+          "lineNumber": 74
+        },
+        {
+          "caller": "unseed_resource_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 74
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/resources/migrations/0003_voicetone_and_access_data.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 99,
+      "nonEmptyLines": 83,
+      "functions": [
+        {
+          "name": "seed_voice_tone_access_data",
+          "startLine": 6,
+          "endLine": 60,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_voice_tone_access_data",
+          "startLine": 63,
+          "endLine": 68,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 71,
+          "endLine": 99,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_voice_tone_access_data",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_voice_tone_access_data",
+          "line": 63,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 71,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_voice_tone_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 7
+        },
+        {
+          "caller": "seed_voice_tone_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 8
+        },
+        {
+          "caller": "seed_voice_tone_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 9
+        },
+        {
+          "caller": "seed_voice_tone_access_data",
+          "callee": "Menu.objects.filter(key='/resources').first",
+          "lineNumber": 11
+        },
+        {
+          "caller": "seed_voice_tone_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 11
+        },
+        {
+          "caller": "seed_voice_tone_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 13
+        },
+        {
+          "caller": "seed_voice_tone_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 25
+        },
+        {
+          "caller": "seed_voice_tone_access_data",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 47
+        },
+        {
+          "caller": "seed_voice_tone_access_data",
+          "callee": "created_permission_points.append",
+          "lineNumber": 56
+        },
+        {
+          "caller": "seed_voice_tone_access_data",
+          "callee": "Role.objects.all",
+          "lineNumber": 58
+        },
+        {
+          "caller": "seed_voice_tone_access_data",
+          "callee": "role.menus.add",
+          "lineNumber": 59
+        },
+        {
+          "caller": "seed_voice_tone_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 60
+        },
+        {
+          "caller": "unseed_voice_tone_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 64
+        },
+        {
+          "caller": "unseed_voice_tone_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 65
+        },
+        {
+          "caller": "unseed_voice_tone_access_data",
+          "callee": "PermissionPoint.objects.filter(code__startswith='resources.voice_tones.').delete",
+          "lineNumber": 67
+        },
+        {
+          "caller": "unseed_voice_tone_access_data",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 67
+        },
+        {
+          "caller": "unseed_voice_tone_access_data",
+          "callee": "Menu.objects.filter(key='/resources/voice-tones').delete",
+          "lineNumber": 68
+        },
+        {
+          "caller": "unseed_voice_tone_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 68
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/resources/migrations/0004_voicetone_remove_nickname_add_audio.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 27,
+      "nonEmptyLines": 22,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 6,
+          "endLine": 27,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/resources/migrations/0005_voicetone_icon_is_visible.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 28,
+      "nonEmptyLines": 23,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 6,
+          "endLine": 28,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/resources/migrations/0006_modelasset_and_access_data.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 98,
+      "nonEmptyLines": 84,
+      "functions": [
+        {
+          "name": "seed_model_access_data",
+          "startLine": 4,
+          "endLine": 57,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_model_access_data",
+          "startLine": 60,
+          "endLine": 65,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 68,
+          "endLine": 98,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_model_access_data",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_model_access_data",
+          "line": 60,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 68,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_model_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 5
+        },
+        {
+          "caller": "seed_model_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 6
+        },
+        {
+          "caller": "seed_model_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 7
+        },
+        {
+          "caller": "seed_model_access_data",
+          "callee": "Menu.objects.filter(key='/resources').first",
+          "lineNumber": 9
+        },
+        {
+          "caller": "seed_model_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 9
+        },
+        {
+          "caller": "seed_model_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 11
+        },
+        {
+          "caller": "seed_model_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 23
+        },
+        {
+          "caller": "seed_model_access_data",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 44
+        },
+        {
+          "caller": "seed_model_access_data",
+          "callee": "created_permission_points.append",
+          "lineNumber": 53
+        },
+        {
+          "caller": "seed_model_access_data",
+          "callee": "Role.objects.all",
+          "lineNumber": 55
+        },
+        {
+          "caller": "seed_model_access_data",
+          "callee": "role.menus.add",
+          "lineNumber": 56
+        },
+        {
+          "caller": "seed_model_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 57
+        },
+        {
+          "caller": "unseed_model_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 61
+        },
+        {
+          "caller": "unseed_model_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 62
+        },
+        {
+          "caller": "unseed_model_access_data",
+          "callee": "PermissionPoint.objects.filter(code__startswith='resources.models.').delete",
+          "lineNumber": 64
+        },
+        {
+          "caller": "unseed_model_access_data",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 64
+        },
+        {
+          "caller": "unseed_model_access_data",
+          "callee": "Menu.objects.filter(key='/resources/models').delete",
+          "lineNumber": 65
+        },
+        {
+          "caller": "unseed_model_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 65
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/resources/migrations/0007_update_admin_labels.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 23,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 4,
+          "endLine": 26,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/resources/migrations/0008_controlcommand_and_access_data.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 291,
+      "nonEmptyLines": 264,
+      "functions": [
+        {
+          "name": "normalize_line",
+          "startLine": 131,
+          "endLine": 132,
+          "params": [
+            "line"
+          ]
+        },
+        {
+          "name": "infer_category",
+          "startLine": 135,
+          "endLine": 139,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "infer_target",
+          "startLine": 142,
+          "endLine": 147,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "build_default_command_items",
+          "startLine": 150,
+          "endLine": 177,
+          "params": []
+        },
+        {
+          "name": "seed_control_command_access_data",
+          "startLine": 180,
+          "endLine": 244,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_control_command_access_data",
+          "startLine": 247,
+          "endLine": 255,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 258,
+          "endLine": 291,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "normalize_line",
+          "line": 131,
+          "isDefault": false
+        },
+        {
+          "name": "infer_category",
+          "line": 135,
+          "isDefault": false
+        },
+        {
+          "name": "infer_target",
+          "line": 142,
+          "isDefault": false
+        },
+        {
+          "name": "build_default_command_items",
+          "line": 150,
+          "isDefault": false
+        },
+        {
+          "name": "seed_control_command_access_data",
+          "line": 180,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_control_command_access_data",
+          "line": 247,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 258,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "normalize_line",
+          "callee": "' '.join",
+          "lineNumber": 132
+        },
+        {
+          "caller": "normalize_line",
+          "callee": "str(line or '').strip().split",
+          "lineNumber": 132
+        },
+        {
+          "caller": "normalize_line",
+          "callee": "str(line or '').strip",
+          "lineNumber": 132
+        },
+        {
+          "caller": "normalize_line",
+          "callee": "str",
+          "lineNumber": 132
+        },
+        {
+          "caller": "infer_category",
+          "callee": "any",
+          "lineNumber": 137
+        },
+        {
+          "caller": "infer_target",
+          "callee": "name.split('-', 1)[0].strip",
+          "lineNumber": 144
+        },
+        {
+          "caller": "infer_target",
+          "callee": "name.split",
+          "lineNumber": 144
+        },
+        {
+          "caller": "infer_target",
+          "callee": "name.startswith",
+          "lineNumber": 145
+        },
+        {
+          "caller": "infer_target",
+          "callee": "name.startswith",
+          "lineNumber": 145
+        },
+        {
+          "caller": "infer_target",
+          "callee": "name[2:].strip",
+          "lineNumber": 146
+        },
+        {
+          "caller": "infer_target",
+          "callee": "name.strip",
+          "lineNumber": 147
+        },
+        {
+          "caller": "build_default_command_items",
+          "callee": "normalize_line",
+          "lineNumber": 151
+        },
+        {
+          "caller": "build_default_command_items",
+          "callee": "DEFAULT_CONTROL_COMMANDS.splitlines",
+          "lineNumber": 151
+        },
+        {
+          "caller": "build_default_command_items",
+          "callee": "normalize_line",
+          "lineNumber": 151
+        },
+        {
+          "caller": "build_default_command_items",
+          "callee": "header.split",
+          "lineNumber": 153
+        },
+        {
+          "caller": "build_default_command_items",
+          "callee": "int",
+          "lineNumber": 156
+        },
+        {
+          "caller": "build_default_command_items",
+          "callee": "enumerate",
+          "lineNumber": 159
+        },
+        {
+          "caller": "build_default_command_items",
+          "callee": "line.rsplit",
+          "lineNumber": 160
+        },
+        {
+          "caller": "build_default_command_items",
+          "callee": "items.append",
+          "lineNumber": 161
+        },
+        {
+          "caller": "build_default_command_items",
+          "callee": "infer_category",
+          "lineNumber": 165
+        },
+        {
+          "caller": "build_default_command_items",
+          "callee": "infer_target",
+          "lineNumber": 166
+        },
+        {
+          "caller": "seed_control_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 181
+        },
+        {
+          "caller": "seed_control_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 182
+        },
+        {
+          "caller": "seed_control_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 183
+        },
+        {
+          "caller": "seed_control_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 184
+        },
+        {
+          "caller": "seed_control_command_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 186
+        },
+        {
+          "caller": "seed_control_command_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 198
+        },
+        {
+          "caller": "seed_control_command_access_data",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 219
+        },
+        {
+          "caller": "seed_control_command_access_data",
+          "callee": "permission_points.append",
+          "lineNumber": 228
+        },
+        {
+          "caller": "seed_control_command_access_data",
+          "callee": "Role.objects.all",
+          "lineNumber": 233
+        },
+        {
+          "caller": "seed_control_command_access_data",
+          "callee": "role.menus.add",
+          "lineNumber": 234
+        },
+        {
+          "caller": "seed_control_command_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 236
+        },
+        {
+          "caller": "seed_control_command_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 238
+        },
+        {
+          "caller": "seed_control_command_access_data",
+          "callee": "build_default_command_items",
+          "lineNumber": 240
+        },
+        {
+          "caller": "seed_control_command_access_data",
+          "callee": "ControlCommand.objects.update_or_create",
+          "lineNumber": 241
+        },
+        {
+          "caller": "unseed_control_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 248
+        },
+        {
+          "caller": "unseed_control_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 249
+        },
+        {
+          "caller": "unseed_control_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 250
+        },
+        {
+          "caller": "unseed_control_command_access_data",
+          "callee": "ControlCommand.objects.filter(command_code__startswith='BenControl').delete",
+          "lineNumber": 252
+        },
+        {
+          "caller": "unseed_control_command_access_data",
+          "callee": "ControlCommand.objects.filter",
+          "lineNumber": 252
+        },
+        {
+          "caller": "unseed_control_command_access_data",
+          "callee": "PermissionPoint.objects.filter(code__startswith='commands.control.').delete",
+          "lineNumber": 253
+        },
+        {
+          "caller": "unseed_control_command_access_data",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 253
+        },
+        {
+          "caller": "unseed_control_command_access_data",
+          "callee": "Menu.objects.filter(key='/commands/control').delete",
+          "lineNumber": 254
+        },
+        {
+          "caller": "unseed_control_command_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 254
+        },
+        {
+          "caller": "unseed_control_command_access_data",
+          "callee": "Menu.objects.filter(key='/commands').delete",
+          "lineNumber": 255
+        },
+        {
+          "caller": "unseed_control_command_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 255
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 7,
+        "functionCount": 6,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/resources/migrations/0009_aliyun_command_access_data.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 63,
+      "nonEmptyLines": 51,
+      "functions": [
+        {
+          "name": "seed_aliyun_command_access_data",
+          "startLine": 4,
+          "endLine": 45,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_aliyun_command_access_data",
+          "startLine": 48,
+          "endLine": 53,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 56,
+          "endLine": 63,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_aliyun_command_access_data",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_aliyun_command_access_data",
+          "line": 48,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 56,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_aliyun_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 5
+        },
+        {
+          "caller": "seed_aliyun_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 6
+        },
+        {
+          "caller": "seed_aliyun_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 7
+        },
+        {
+          "caller": "seed_aliyun_command_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 9
+        },
+        {
+          "caller": "seed_aliyun_command_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 21
+        },
+        {
+          "caller": "seed_aliyun_command_access_data",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 33
+        },
+        {
+          "caller": "seed_aliyun_command_access_data",
+          "callee": "Role.objects.all",
+          "lineNumber": 43
+        },
+        {
+          "caller": "seed_aliyun_command_access_data",
+          "callee": "role.menus.add",
+          "lineNumber": 44
+        },
+        {
+          "caller": "seed_aliyun_command_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 45
+        },
+        {
+          "caller": "unseed_aliyun_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 49
+        },
+        {
+          "caller": "unseed_aliyun_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 50
+        },
+        {
+          "caller": "unseed_aliyun_command_access_data",
+          "callee": "PermissionPoint.objects.filter(code='commands.aliyun.view').delete",
+          "lineNumber": 52
+        },
+        {
+          "caller": "unseed_aliyun_command_access_data",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 52
+        },
+        {
+          "caller": "unseed_aliyun_command_access_data",
+          "callee": "Menu.objects.filter(key='/commands/aliyun').delete",
+          "lineNumber": 53
+        },
+        {
+          "caller": "unseed_aliyun_command_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 53
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/resources/migrations/0010_point_resources_and_points.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 140,
+      "nonEmptyLines": 124,
+      "functions": [
+        {
+          "name": "seed_point_access_data",
+          "startLine": 17,
+          "endLine": 79,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_point_access_data",
+          "startLine": 82,
+          "endLine": 88,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 91,
+          "endLine": 140,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_point_access_data",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_point_access_data",
+          "line": 82,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 91,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_point_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 18
+        },
+        {
+          "caller": "seed_point_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 19
+        },
+        {
+          "caller": "seed_point_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 20
+        },
+        {
+          "caller": "seed_point_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 22
+        },
+        {
+          "caller": "seed_point_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 34
+        },
+        {
+          "caller": "seed_point_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 46
+        },
+        {
+          "caller": "seed_point_access_data",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 60
+        },
+        {
+          "caller": "seed_point_access_data",
+          "callee": "permission_points.append",
+          "lineNumber": 69
+        },
+        {
+          "caller": "seed_point_access_data",
+          "callee": "Role.objects.all",
+          "lineNumber": 74
+        },
+        {
+          "caller": "seed_point_access_data",
+          "callee": "role.menus.add",
+          "lineNumber": 75
+        },
+        {
+          "caller": "seed_point_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 77
+        },
+        {
+          "caller": "seed_point_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 79
+        },
+        {
+          "caller": "unseed_point_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 83
+        },
+        {
+          "caller": "unseed_point_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 84
+        },
+        {
+          "caller": "unseed_point_access_data",
+          "callee": "PermissionPoint.objects.filter(code__startswith='commands.point_resources.').delete",
+          "lineNumber": 86
+        },
+        {
+          "caller": "unseed_point_access_data",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 86
+        },
+        {
+          "caller": "unseed_point_access_data",
+          "callee": "PermissionPoint.objects.filter(code__startswith='commands.points.').delete",
+          "lineNumber": 87
+        },
+        {
+          "caller": "unseed_point_access_data",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 87
+        },
+        {
+          "caller": "unseed_point_access_data",
+          "callee": "Menu.objects.filter(key__in=['/commands/point-resources', '/commands/points']).delete",
+          "lineNumber": 88
+        },
+        {
+          "caller": "unseed_point_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 88
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/resources/migrations/0011_navigationcommand_and_access_data.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 157,
+      "nonEmptyLines": 140,
+      "functions": [
+        {
+          "name": "seed_navigation_command_access_data",
+          "startLine": 44,
+          "endLine": 112,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_navigation_command_access_data",
+          "startLine": 115,
+          "endLine": 127,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 130,
+          "endLine": 157,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_navigation_command_access_data",
+          "line": 44,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_navigation_command_access_data",
+          "line": 115,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 130,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 45
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 46
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 47
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 48
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 50
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "Menu.objects.filter(key='/commands/aliyun').update",
+          "lineNumber": 62
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 62
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "Menu.objects.filter(key='/commands/point-resources').update",
+          "lineNumber": 63
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 63
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "Menu.objects.filter(key='/commands/points').update",
+          "lineNumber": 64
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 64
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 66
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 87
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "permission_points.append",
+          "lineNumber": 96
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "Role.objects.all",
+          "lineNumber": 101
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "role.menus.add",
+          "lineNumber": 102
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 104
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 106
+        },
+        {
+          "caller": "seed_navigation_command_access_data",
+          "callee": "NavigationCommand.objects.update_or_create",
+          "lineNumber": 109
+        },
+        {
+          "caller": "unseed_navigation_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 116
+        },
+        {
+          "caller": "unseed_navigation_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 117
+        },
+        {
+          "caller": "unseed_navigation_command_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 118
+        },
+        {
+          "caller": "unseed_navigation_command_access_data",
+          "callee": "NavigationCommand.objects.filter(\r\n        command_code__in=[item['command_code'] for item in DEFAULT_NAVIGATION_COMMANDS]\r\n    ).delete",
+          "lineNumber": 120
+        },
+        {
+          "caller": "unseed_navigation_command_access_data",
+          "callee": "NavigationCommand.objects.filter",
+          "lineNumber": 120
+        },
+        {
+          "caller": "unseed_navigation_command_access_data",
+          "callee": "PermissionPoint.objects.filter(code__startswith='commands.navigation.').delete",
+          "lineNumber": 123
+        },
+        {
+          "caller": "unseed_navigation_command_access_data",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 123
+        },
+        {
+          "caller": "unseed_navigation_command_access_data",
+          "callee": "Menu.objects.filter(key='/commands/navigation').delete",
+          "lineNumber": 124
+        },
+        {
+          "caller": "unseed_navigation_command_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 124
+        },
+        {
+          "caller": "unseed_navigation_command_access_data",
+          "callee": "Menu.objects.filter(key='/commands/aliyun').update",
+          "lineNumber": 125
+        },
+        {
+          "caller": "unseed_navigation_command_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 125
+        },
+        {
+          "caller": "unseed_navigation_command_access_data",
+          "callee": "Menu.objects.filter(key='/commands/point-resources').update",
+          "lineNumber": 126
+        },
+        {
+          "caller": "unseed_navigation_command_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 126
+        },
+        {
+          "caller": "unseed_navigation_command_access_data",
+          "callee": "Menu.objects.filter(key='/commands/points').update",
+          "lineNumber": 127
+        },
+        {
+          "caller": "unseed_navigation_command_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 127
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    }
+  ]
+}

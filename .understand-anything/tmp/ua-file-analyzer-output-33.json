@@ -1,0 +1,1430 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "backend/apps/accounts/migrations/0005_accountapplication_username.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 18,
+      "nonEmptyLines": 13,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 6,
+          "endLine": 18,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 27,
+      "nonEmptyLines": 22,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 6,
+          "endLine": 27,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/accounts/migrations/0007_accountuser.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 31,
+      "nonEmptyLines": 26,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 7,
+          "endLine": 31,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/accounts/migrations/0008_accountapplication_tenant.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 20,
+      "nonEmptyLines": 15,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 7,
+          "endLine": 20,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/accounts/migrations/0009_menu_audience.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 18,
+      "nonEmptyLines": 13,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 6,
+          "endLine": 18,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 68,
+      "nonEmptyLines": 58,
+      "functions": [
+        {
+          "name": "seed_tenant_menus",
+          "startLine": 4,
+          "endLine": 50,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_tenant_menus",
+          "startLine": 53,
+          "endLine": 57,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 60,
+          "endLine": 68,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_tenant_menus",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_tenant_menus",
+          "line": 53,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 60,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_tenant_menus",
+          "callee": "apps.get_model",
+          "lineNumber": 5
+        },
+        {
+          "caller": "seed_tenant_menus",
+          "callee": "apps.get_model",
+          "lineNumber": 6
+        },
+        {
+          "caller": "seed_tenant_menus",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 31
+        },
+        {
+          "caller": "seed_tenant_menus",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 50
+        },
+        {
+          "caller": "unseed_tenant_menus",
+          "callee": "apps.get_model",
+          "lineNumber": 54
+        },
+        {
+          "caller": "unseed_tenant_menus",
+          "callee": "apps.get_model",
+          "lineNumber": 55
+        },
+        {
+          "caller": "unseed_tenant_menus",
+          "callee": "Menu.objects.filter(key__in=['/tenants', '/employees']).delete",
+          "lineNumber": 56
+        },
+        {
+          "caller": "unseed_tenant_menus",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 56
+        },
+        {
+          "caller": "unseed_tenant_menus",
+          "callee": "PermissionPoint.objects.filter(code__in=['tenant.management.view', 'tenant.employees.manage']).delete",
+          "lineNumber": 57
+        },
+        {
+          "caller": "unseed_tenant_menus",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 57
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 34,
+      "nonEmptyLines": 29,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 7,
+          "endLine": 34,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 45,
+      "nonEmptyLines": 36,
+      "functions": [
+        {
+          "name": "seed_audit_logs_menu",
+          "startLine": 4,
+          "endLine": 27,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_audit_logs_menu",
+          "startLine": 30,
+          "endLine": 34,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 37,
+          "endLine": 45,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_audit_logs_menu",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_audit_logs_menu",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 37,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_audit_logs_menu",
+          "callee": "apps.get_model",
+          "lineNumber": 5
+        },
+        {
+          "caller": "seed_audit_logs_menu",
+          "callee": "apps.get_model",
+          "lineNumber": 6
+        },
+        {
+          "caller": "seed_audit_logs_menu",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 8
+        },
+        {
+          "caller": "seed_audit_logs_menu",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 19
+        },
+        {
+          "caller": "unseed_audit_logs_menu",
+          "callee": "apps.get_model",
+          "lineNumber": 31
+        },
+        {
+          "caller": "unseed_audit_logs_menu",
+          "callee": "apps.get_model",
+          "lineNumber": 32
+        },
+        {
+          "caller": "unseed_audit_logs_menu",
+          "callee": "Menu.objects.filter(key='/logs').delete",
+          "lineNumber": 33
+        },
+        {
+          "caller": "unseed_audit_logs_menu",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 33
+        },
+        {
+          "caller": "unseed_audit_logs_menu",
+          "callee": "PermissionPoint.objects.filter(code='audit.logs.view').delete",
+          "lineNumber": 34
+        },
+        {
+          "caller": "unseed_audit_logs_menu",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 34
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/accounts/services/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 48,
+      "nonEmptyLines": 37,
+      "sections": [
+        {
+          "heading": "apps/ai_models AGENTS.md",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "OVERVIEW",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "STRUCTURE",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "CONVENTIONS",
+          "level": 2,
+          "line": 21
+        },
+        {
+          "heading": "ANTI-PATTERNS",
+          "level": 2,
+          "line": 34
+        },
+        {
+          "heading": "NOTES",
+          "level": 2,
+          "line": 44
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/apps.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 7,
+      "nonEmptyLines": 5,
+      "classes": [
+        {
+          "name": "AiModelsConfig",
+          "startLine": 4,
+          "endLine": 7,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "AiModelsConfig",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0001_initial.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 136,
+      "nonEmptyLines": 118,
+      "functions": [
+        {
+          "name": "seed_ai_models_access_data",
+          "startLine": 4,
+          "endLine": 89,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_ai_models_access_data",
+          "startLine": 92,
+          "endLine": 97,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 100,
+          "endLine": 136,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_ai_models_access_data",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_ai_models_access_data",
+          "line": 92,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 100,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_ai_models_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 5
+        },
+        {
+          "caller": "seed_ai_models_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 6
+        },
+        {
+          "caller": "seed_ai_models_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 7
+        },
+        {
+          "caller": "seed_ai_models_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 9
+        },
+        {
+          "caller": "seed_ai_models_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 21
+        },
+        {
+          "caller": "seed_ai_models_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 33
+        },
+        {
+          "caller": "seed_ai_models_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 45
+        },
+        {
+          "caller": "seed_ai_models_access_data",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 68
+        },
+        {
+          "caller": "seed_ai_models_access_data",
+          "callee": "permission_points.append",
+          "lineNumber": 77
+        },
+        {
+          "caller": "seed_ai_models_access_data",
+          "callee": "Role.objects.all",
+          "lineNumber": 84
+        },
+        {
+          "caller": "seed_ai_models_access_data",
+          "callee": "role.menus.add",
+          "lineNumber": 85
+        },
+        {
+          "caller": "seed_ai_models_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 87
+        },
+        {
+          "caller": "seed_ai_models_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 89
+        },
+        {
+          "caller": "unseed_ai_models_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 93
+        },
+        {
+          "caller": "unseed_ai_models_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 94
+        },
+        {
+          "caller": "unseed_ai_models_access_data",
+          "callee": "PermissionPoint.objects.filter(code__startswith='ai_models.').delete",
+          "lineNumber": 96
+        },
+        {
+          "caller": "unseed_ai_models_access_data",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 96
+        },
+        {
+          "caller": "unseed_ai_models_access_data",
+          "callee": "Menu.objects.filter(key__startswith='/ai-models').delete",
+          "lineNumber": 97
+        },
+        {
+          "caller": "unseed_ai_models_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 97
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 123,
+      "nonEmptyLines": 110,
+      "functions": [
+        {
+          "name": "seed_chat_access_data",
+          "startLine": 5,
+          "endLine": 53,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_chat_access_data",
+          "startLine": 56,
+          "endLine": 61,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 64,
+          "endLine": 123,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_chat_access_data",
+          "line": 5,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_chat_access_data",
+          "line": 56,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 64,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_chat_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 6
+        },
+        {
+          "caller": "seed_chat_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 7
+        },
+        {
+          "caller": "seed_chat_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 8
+        },
+        {
+          "caller": "seed_chat_access_data",
+          "callee": "Menu.objects.filter(key='/ai-models').first",
+          "lineNumber": 11
+        },
+        {
+          "caller": "seed_chat_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 11
+        },
+        {
+          "caller": "seed_chat_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 15
+        },
+        {
+          "caller": "seed_chat_access_data",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 35
+        },
+        {
+          "caller": "seed_chat_access_data",
+          "callee": "permission_points.append",
+          "lineNumber": 44
+        },
+        {
+          "caller": "seed_chat_access_data",
+          "callee": "Role.objects.all",
+          "lineNumber": 46
+        },
+        {
+          "caller": "seed_chat_access_data",
+          "callee": "role.menus.add",
+          "lineNumber": 47
+        },
+        {
+          "caller": "seed_chat_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 49
+        },
+        {
+          "caller": "seed_chat_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 53
+        },
+        {
+          "caller": "unseed_chat_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 57
+        },
+        {
+          "caller": "unseed_chat_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 58
+        },
+        {
+          "caller": "unseed_chat_access_data",
+          "callee": "PermissionPoint.objects.filter(code__startswith='ai_models.chat.').delete",
+          "lineNumber": 60
+        },
+        {
+          "caller": "unseed_chat_access_data",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 60
+        },
+        {
+          "caller": "unseed_chat_access_data",
+          "callee": "Menu.objects.filter(key='/ai-models/chat').delete",
+          "lineNumber": 61
+        },
+        {
+          "caller": "unseed_chat_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 61
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 16,
+      "nonEmptyLines": 12,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 4,
+          "endLine": 16,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 21,
+      "nonEmptyLines": 17,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 4,
+          "endLine": 21,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 22,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 4,
+          "endLine": 26,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 25,
+      "nonEmptyLines": 20,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 7,
+          "endLine": 25,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0007_asr_config.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 70,
+      "nonEmptyLines": 61,
+      "functions": [
+        {
+          "name": "seed_asr_access_data",
+          "startLine": 4,
+          "endLine": 38,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_asr_access_data",
+          "startLine": 41,
+          "endLine": 43,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 46,
+          "endLine": 70,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_asr_access_data",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_asr_access_data",
+          "line": 41,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 46,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_asr_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 5
+        },
+        {
+          "caller": "seed_asr_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 6
+        },
+        {
+          "caller": "seed_asr_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 8
+        },
+        {
+          "caller": "seed_asr_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 19
+        },
+        {
+          "caller": "seed_asr_access_data",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 30
+        },
+        {
+          "caller": "unseed_asr_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 42
+        },
+        {
+          "caller": "unseed_asr_access_data",
+          "callee": "PermissionPoint.objects.filter(code='ai_models.asr.view').delete",
+          "lineNumber": 43
+        },
+        {
+          "caller": "unseed_asr_access_data",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 43
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 32,
+      "nonEmptyLines": 27,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 6,
+          "endLine": 32,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0009_asr_replacement_rule.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 46,
+      "nonEmptyLines": 42,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 5,
+          "endLine": 46,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 5,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 21,
+      "nonEmptyLines": 16,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 6,
+          "endLine": 21,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 113,
+      "nonEmptyLines": 98,
+      "functions": [
+        {
+          "name": "seed_agent_application_access_data",
+          "startLine": 16,
+          "endLine": 57,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_agent_application_access_data",
+          "startLine": 60,
+          "endLine": 65,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 68,
+          "endLine": 113,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_agent_application_access_data",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_agent_application_access_data",
+          "line": 60,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 68,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 17
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 18
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 19
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 21
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 36
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "created_permissions.append",
+          "lineNumber": 45
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "Role.objects.all",
+          "lineNumber": 52
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "role.menus.add",
+          "lineNumber": 53
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 55
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 57
+        },
+        {
+          "caller": "unseed_agent_application_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 61
+        },
+        {
+          "caller": "unseed_agent_application_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 62
+        },
+        {
+          "caller": "unseed_agent_application_access_data",
+          "callee": "PermissionPoint.objects.filter(code__startswith='agent_applications.').delete",
+          "lineNumber": 64
+        },
+        {
+          "caller": "unseed_agent_application_access_data",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 64
+        },
+        {
+          "caller": "unseed_agent_application_access_data",
+          "callee": "Menu.objects.filter(key='/applications').delete",
+          "lineNumber": 65
+        },
+        {
+          "caller": "unseed_agent_application_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 65
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 53,
+      "nonEmptyLines": 40,
+      "functions": [
+        {
+          "name": "seed_agent_application_tenant_access",
+          "startLine": 11,
+          "endLine": 26,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_agent_application_tenant_access",
+          "startLine": 29,
+          "endLine": 42,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 45,
+          "endLine": 53,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_agent_application_tenant_access",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_agent_application_tenant_access",
+          "line": 29,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 45,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "apps.get_model",
+          "lineNumber": 12
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "apps.get_model",
+          "lineNumber": 13
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "apps.get_model",
+          "lineNumber": 14
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "Menu.objects.filter(key='/applications').first",
+          "lineNumber": 16
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 16
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "list",
+          "lineNumber": 20
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 21
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "Tenant.objects.all",
+          "lineNumber": 23
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "tenant.menus.add",
+          "lineNumber": 24
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "tenant.permission_points.add",
+          "lineNumber": 26
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "apps.get_model",
+          "lineNumber": 30
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "apps.get_model",
+          "lineNumber": 31
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "apps.get_model",
+          "lineNumber": 32
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "Menu.objects.filter(key='/applications').first",
+          "lineNumber": 34
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 34
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "list",
+          "lineNumber": 35
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 36
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "Tenant.objects.all",
+          "lineNumber": 38
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "tenant.menus.remove",
+          "lineNumber": 40
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "tenant.permission_points.remove",
+          "lineNumber": 42
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,215 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 6,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "flow-web/my-video/AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 62,
+      "nonEmptyLines": 44,
+      "sections": [
+        {
+          "heading": "HyperFrames Composition Project",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Skills",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Commands",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "Project Structure",
+          "level": 2,
+          "line": 27
+        },
+        {
+          "heading": "Linting — Always Run After Changes",
+          "level": 2,
+          "line": 35
+        },
+        {
+          "heading": "Key Rules",
+          "level": 2,
+          "line": 45
+        },
+        {
+          "heading": "Documentation",
+          "level": 2,
+          "line": 58
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "flow-web/my-video/CLAUDE.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 85,
+      "nonEmptyLines": 64,
+      "sections": [
+        {
+          "heading": "HyperFrames Composition Project",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Skills — USE THESE FIRST",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Commands",
+          "level": 2,
+          "line": 25
+        },
+        {
+          "heading": "Documentation",
+          "level": 2,
+          "line": 41
+        },
+        {
+          "heading": "Project Structure",
+          "level": 2,
+          "line": 57
+        },
+        {
+          "heading": "Linting — ALWAYS RUN AFTER CHANGES",
+          "level": 2,
+          "line": 64
+        },
+        {
+          "heading": "Key Rules",
+          "level": 2,
+          "line": 74
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "flow-web/my-video/hyperframes.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 9,
+      "nonEmptyLines": 9,
+      "sections": [
+        {
+          "heading": "$schema",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "registry",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "paths",
+          "level": 1,
+          "line": 4
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "flow-web/my-video/index.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 579,
+      "nonEmptyLines": 547,
+      "metrics": {}
+    },
+    {
+      "path": "flow-web/my-video/meta.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 5,
+      "nonEmptyLines": 5,
+      "sections": [
+        {
+          "heading": "id",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "createdAt",
+          "level": 1,
+          "line": 4
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "flow-web/my-video/package.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 11,
+      "nonEmptyLines": 11,
+      "sections": [
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "private",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "type",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "scripts",
+          "level": 1,
+          "line": 5
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    }
+  ]
+}

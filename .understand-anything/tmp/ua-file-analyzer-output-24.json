@@ -1,0 +1,504 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 10,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": ".env",
+      "language": "config",
+      "fileCategory": "config",
+      "totalLines": 4,
+      "nonEmptyLines": 4,
+      "definitions": [
+        {
+          "name": "WEB_PORT",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 1,
+          "endLine": 1
+        },
+        {
+          "name": "API_PORT",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 2,
+          "endLine": 2
+        },
+        {
+          "name": "DB_PORT",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 3,
+          "endLine": 3
+        },
+        {
+          "name": "REDIS_PORT",
+          "kind": "variable",
+          "fields": [],
+          "startLine": 4,
+          "endLine": 4
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "definitionCount": 4
+      }
+    },
+    {
+      "path": "AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 210,
+      "nonEmptyLines": 155,
+      "sections": [
+        {
+          "heading": "could_frontend - 项目根 AGENTS.md",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "OVERVIEW",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "ENVIRONMENT MANDATE（硬约束 / 不可绕开）",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "STRUCTURE",
+          "level": 2,
+          "line": 32
+        },
+        {
+          "heading": "WHERE TO LOOK",
+          "level": 2,
+          "line": 42
+        },
+        {
+          "heading": "CONVENTIONS",
+          "level": 2,
+          "line": 53
+        },
+        {
+          "heading": "ANTI-PATTERNS",
+          "level": 2,
+          "line": 64
+        },
+        {
+          "heading": "SERVICES & PORTS",
+          "level": 2,
+          "line": 75
+        },
+        {
+          "heading": "UNDERSTAND ANYTHING（AI 代码理解辅助）",
+          "level": 2,
+          "line": 86
+        },
+        {
+          "heading": "COMMANDS",
+          "level": 2,
+          "line": 109
+        },
+        {
+          "heading": "NOTES",
+          "level": 2,
+          "line": 133
+        },
+        {
+          "heading": "务必遵循",
+          "level": 2,
+          "line": 146
+        },
+        {
+          "heading": "1. Think Before Coding",
+          "level": 2,
+          "line": 152
+        },
+        {
+          "heading": "2. Simplicity First",
+          "level": 2,
+          "line": 162
+        },
+        {
+          "heading": "3. Surgical Changes",
+          "level": 2,
+          "line": 174
+        },
+        {
+          "heading": "4. Goal-Driven Execution",
+          "level": 2,
+          "line": 190
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 16
+      }
+    },
+    {
+      "path": "CLAUDE.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 155,
+      "nonEmptyLines": 110,
+      "sections": [
+        {
+          "heading": "could_frontend - 项目根 CLAUDE",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "项目职责",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "入口与启动",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "对外接口",
+          "level": 2,
+          "line": 21
+        },
+        {
+          "heading": "关键依赖与配置",
+          "level": 2,
+          "line": 29
+        },
+        {
+          "heading": "数据模型",
+          "level": 2,
+          "line": 35
+        },
+        {
+          "heading": "测试与质量",
+          "level": 2,
+          "line": 42
+        },
+        {
+          "heading": "常见问题 (FAQ)",
+          "level": 2,
+          "line": 48
+        },
+        {
+          "heading": "相关文件清单",
+          "level": 2,
+          "line": 69
+        },
+        {
+          "heading": "变更记录 (Changelog)",
+          "level": 2,
+          "line": 86
+        },
+        {
+          "heading": "务必遵循",
+          "level": 2,
+          "line": 91
+        },
+        {
+          "heading": "1. Think Before Coding",
+          "level": 2,
+          "line": 97
+        },
+        {
+          "heading": "2. Simplicity First",
+          "level": 2,
+          "line": 107
+        },
+        {
+          "heading": "3. Surgical Changes",
+          "level": 2,
+          "line": 119
+        },
+        {
+          "heading": "4. Goal-Driven Execution",
+          "level": 2,
+          "line": 135
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 15
+      }
+    },
+    {
+      "path": "DESIGN.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 139,
+      "nonEmptyLines": 114,
+      "sections": [
+        {
+          "heading": "Design System: Solin LLM Configuration",
+          "level": 1,
+          "line": 53
+        },
+        {
+          "heading": "1. Overview",
+          "level": 2,
+          "line": 55
+        },
+        {
+          "heading": "Key Characteristics:",
+          "level": 3,
+          "line": 61
+        },
+        {
+          "heading": "2. Colors",
+          "level": 2,
+          "line": 66
+        },
+        {
+          "heading": "Primary",
+          "level": 3,
+          "line": 70
+        },
+        {
+          "heading": "Neutral",
+          "level": 3,
+          "line": 75
+        },
+        {
+          "heading": "Named Rules",
+          "level": 3,
+          "line": 82
+        },
+        {
+          "heading": "3. Typography",
+          "level": 2,
+          "line": 85
+        },
+        {
+          "heading": "Hierarchy",
+          "level": 3,
+          "line": 91
+        },
+        {
+          "heading": "Named Rules",
+          "level": 3,
+          "line": 98
+        },
+        {
+          "heading": "4. Elevation",
+          "level": 2,
+          "line": 101
+        },
+        {
+          "heading": "Shadow Vocabulary",
+          "level": 3,
+          "line": 105
+        },
+        {
+          "heading": "5. Components",
+          "level": 2,
+          "line": 109
+        },
+        {
+          "heading": "Buttons",
+          "level": 3,
+          "line": 111
+        },
+        {
+          "heading": "Cards / Containers",
+          "level": 3,
+          "line": 116
+        },
+        {
+          "heading": "Inputs / Fields",
+          "level": 3,
+          "line": 121
+        },
+        {
+          "heading": "Tables",
+          "level": 3,
+          "line": 125
+        },
+        {
+          "heading": "6. Do's and Don'ts",
+          "level": 2,
+          "line": 129
+        },
+        {
+          "heading": "Do:",
+          "level": 3,
+          "line": 131
+        },
+        {
+          "heading": "Don't:",
+          "level": 3,
+          "line": 136
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 20
+      }
+    },
+    {
+      "path": "Makefile",
+      "language": "makefile",
+      "fileCategory": "infra",
+      "totalLines": 2,
+      "nonEmptyLines": 2,
+      "steps": [
+        {
+          "name": "up",
+          "startLine": 1,
+          "endLine": 2
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "stepCount": 1
+      }
+    },
+    {
+      "path": "PRODUCT.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 29,
+      "nonEmptyLines": 21,
+      "sections": [
+        {
+          "heading": "Product",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Register",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Users",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Product Purpose",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Brand Personality",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "Anti-references",
+          "level": 2,
+          "line": 16
+        },
+        {
+          "heading": "Design Principles",
+          "level": 2,
+          "line": 22
+        },
+        {
+          "heading": "Accessibility & Inclusion",
+          "level": 2,
+          "line": 27
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": "audit-report-could_frontend-2026-06-11.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 656,
+      "nonEmptyLines": 603,
+      "metrics": {}
+    },
+    {
+      "path": "docker-compose.yaml",
+      "language": "yaml",
+      "fileCategory": "infra",
+      "totalLines": 117,
+      "nonEmptyLines": 110,
+      "sections": [
+        {
+          "heading": "x-backend-build",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "services",
+          "level": 1,
+          "line": 10
+        },
+        {
+          "heading": "volumes",
+          "level": 1,
+          "line": 116
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "skills-lock.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 185,
+      "nonEmptyLines": 185,
+      "sections": [
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "skills",
+          "level": 1,
+          "line": 3
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "understand-anything-guide.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 456,
+      "nonEmptyLines": 411,
+      "metrics": {}
+    }
+  ]
+}

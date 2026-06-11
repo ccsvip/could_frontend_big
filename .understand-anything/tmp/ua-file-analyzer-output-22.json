@@ -1,0 +1,217 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 5,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": ".claude/skills/teach/GLOSSARY-FORMAT.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 35,
+      "nonEmptyLines": 25,
+      "sections": [
+        {
+          "heading": "GLOSSARY.md Format",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Structure",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Rules",
+          "level": 2,
+          "line": 27
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": ".claude/skills/teach/LEARNING-RECORD-FORMAT.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 46,
+      "nonEmptyLines": 28,
+      "sections": [
+        {
+          "heading": "Learning Record Format",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Template",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Optional sections",
+          "level": 2,
+          "line": 17
+        },
+        {
+          "heading": "Numbering",
+          "level": 2,
+          "line": 25
+        },
+        {
+          "heading": "When to write a learning record",
+          "level": 2,
+          "line": 29
+        },
+        {
+          "heading": "What does _not_ qualify",
+          "level": 3,
+          "line": 38
+        },
+        {
+          "heading": "Supersession",
+          "level": 2,
+          "line": 44
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": ".claude/skills/teach/MISSION-FORMAT.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 31,
+      "nonEmptyLines": 22,
+      "sections": [
+        {
+          "heading": "MISSION.md Format",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Template",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Rules",
+          "level": 2,
+          "line": 25
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": ".claude/skills/teach/RESOURCES-FORMAT.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 32,
+      "nonEmptyLines": 23,
+      "sections": [
+        {
+          "heading": "RESOURCES.md Format",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Structure",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Rules",
+          "level": 2,
+          "line": 25
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": ".claude/skills/teach/SKILL.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 113,
+      "nonEmptyLines": 67,
+      "sections": [
+        {
+          "heading": "Teaching Workspace",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Philosophy",
+          "level": 2,
+          "line": 21
+        },
+        {
+          "heading": "Lessons",
+          "level": 2,
+          "line": 33
+        },
+        {
+          "heading": "The Mission",
+          "level": 2,
+          "line": 45
+        },
+        {
+          "heading": "Zone Of Proximal Development",
+          "level": 2,
+          "line": 55
+        },
+        {
+          "heading": "Acquiring Knowledge & Skills",
+          "level": 2,
+          "line": 67
+        },
+        {
+          "heading": "Skills",
+          "level": 3,
+          "line": 75
+        },
+        {
+          "heading": "Acquiring Wisdom",
+          "level": 2,
+          "line": 85
+        },
+        {
+          "heading": "Reference Documents",
+          "level": 2,
+          "line": 95
+        },
+        {
+          "heading": "`NOTES.md`",
+          "level": 2,
+          "line": 111
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": ".claude/skills/prototype/LOGIC.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 79,
+      "nonEmptyLines": 47,
+      "sections": [
+        {
+          "heading": "Logic Prototype",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "When this is the right shape",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Process",
+          "level": 2,
+          "line": 14
+        },
+        {
+          "heading": "1. State the question",
+          "level": 3,
+          "line": 16
+        },
+        {
+          "heading": "2. Pick the language",
+          "level": 3,
+          "line": 20
+        },
+        {
+          "heading": "3. Isolate the logic in a portable module",
+          "level": 3,
+          "line": 26
+        },
+        {
+          "heading": "4. Build the smallest TUI that exposes the state",
+          "level": 3,
+          "line": 41
+        },
+        {
+          "heading": "5. Make it runnable in one command",
+          "level": 3,
+          "line": 59
+        },
+        {
+          "heading": "6. Hand it over",
+          "level": 3,
+          "line": 65
+        },
+        {
+          "heading": "7. Capture the answer",
+          "level": 3,
+          "line": 69
+        },
+        {
+          "heading": "Anti-patterns",
+          "level": 2,
+          "line": 73
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "path": ".claude/skills/prototype/SKILL.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 30,
+      "nonEmptyLines": 20,
+      "sections": [
+        {
+          "heading": "Prototype",
+          "level": 1,
+          "line": 6
+        },
+        {
+          "heading": "Pick a branch",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "Rules that apply to both",
+          "level": 2,
+          "line": 19
+        },
+        {
+          "heading": "When done",
+          "level": 2,
+          "line": 28
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": ".claude/skills/prototype/UI.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 112,
+      "nonEmptyLines": 69,
+      "sections": [
+        {
+          "heading": "UI Prototype",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "When this is the right shape",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Two sub-shapes — strongly prefer sub-shape A",
+          "level": 2,
+          "line": 14
+        },
+        {
+          "heading": "Sub-shape A — adjustment to an existing page (preferred)",
+          "level": 3,
+          "line": 18
+        },
+        {
+          "heading": "Sub-shape B — a new page (last resort)",
+          "level": 3,
+          "line": 24
+        },
+        {
+          "heading": "Process",
+          "level": 2,
+          "line": 34
+        },
+        {
+          "heading": "1. State the question and pick N",
+          "level": 3,
+          "line": 36
+        },
+        {
+          "heading": "2. Generate radically different variants",
+          "level": 3,
+          "line": 46
+        },
+        {
+          "heading": "3. Wire them together",
+          "level": 3,
+          "line": 56
+        },
+        {
+          "heading": "4. Build the floating switcher",
+          "level": 3,
+          "line": 77
+        },
+        {
+          "heading": "5. Hand it over",
+          "level": 3,
+          "line": 94
+        },
+        {
+          "heading": "6. Capture the answer and clean up",
+          "level": 3,
+          "line": 98
+        },
+        {
+          "heading": "Anti-patterns",
+          "level": 2,
+          "line": 107
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 13
+      }
+    }
+  ]
+}

@@ -1,0 +1,3819 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 12,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "backend/apps/ai_models/tests/test_agent_application_api.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 182,
+      "nonEmptyLines": 157,
+      "classes": [
+        {
+          "name": "AgentApplicationAccessDataTests",
+          "startLine": 22,
+          "endLine": 34,
+          "methods": [
+            "test_seed_adds_application_menu_and_permissions_to_existing_tenants"
+          ],
+          "properties": []
+        },
+        {
+          "name": "AgentApplicationApiTests",
+          "startLine": 37,
+          "endLine": 182,
+          "methods": [
+            "setUp",
+            "grant_permissions",
+            "agent_application_model",
+            "create_provider",
+            "create_model",
+            "create_document",
+            "test_list_agent_applications_requires_view_permission",
+            "test_create_agent_application_persists_model_config_and_knowledge_documents",
+            "test_create_agent_application_rejects_foreign_knowledge_document",
+            "test_create_debug_conversation_copies_application_chat_config"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "AgentApplicationAccessDataTests",
+          "line": 22,
+          "isDefault": false
+        },
+        {
+          "name": "AgentApplicationApiTests",
+          "line": 37,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "test_seed_adds_application_menu_and_permissions_to_existing_tenants",
+          "callee": "Tenant.objects.filter(code='default').first",
+          "lineNumber": 24
+        },
+        {
+          "caller": "test_seed_adds_application_menu_and_permissions_to_existing_tenants",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 24
+        },
+        {
+          "caller": "test_seed_adds_application_menu_and_permissions_to_existing_tenants",
+          "callee": "self.assertIsNotNone",
+          "lineNumber": 26
+        },
+        {
+          "caller": "test_seed_adds_application_menu_and_permissions_to_existing_tenants",
+          "callee": "self.assertTrue",
+          "lineNumber": 27
+        },
+        {
+          "caller": "test_seed_adds_application_menu_and_permissions_to_existing_tenants",
+          "callee": "default_tenant.menus.filter(path='/applications').exists",
+          "lineNumber": 27
+        },
+        {
+          "caller": "test_seed_adds_application_menu_and_permissions_to_existing_tenants",
+          "callee": "default_tenant.menus.filter",
+          "lineNumber": 27
+        },
+        {
+          "caller": "test_seed_adds_application_menu_and_permissions_to_existing_tenants",
+          "callee": "self.assertTrue",
+          "lineNumber": 28
+        },
+        {
+          "caller": "test_seed_adds_application_menu_and_permissions_to_existing_tenants",
+          "callee": "{\n                'agent_applications.view',\n                'agent_applications.create',\n                'agent_applications.update',\n            }.issubset",
+          "lineNumber": 29
+        },
+        {
+          "caller": "test_seed_adds_application_menu_and_permissions_to_existing_tenants",
+          "callee": "set",
+          "lineNumber": 33
+        },
+        {
+          "caller": "test_seed_adds_application_menu_and_permissions_to_existing_tenants",
+          "callee": "default_tenant.permission_points.values_list",
+          "lineNumber": 33
+        },
+        {
+          "caller": "setUp",
+          "callee": "User.objects.create_user",
+          "lineNumber": 39
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.setup_tenant",
+          "lineNumber": 40
+        },
+        {
+          "caller": "setUp",
+          "callee": "Role.objects.create",
+          "lineNumber": 41
+        },
+        {
+          "caller": "setUp",
+          "callee": "UserRole.objects.create",
+          "lineNumber": 42
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 43
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 48
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "permission_points.append",
+          "lineNumber": 57
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "self.grant_all_scope_to_tenant",
+          "lineNumber": 58
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "self.role.permission_points.set",
+          "lineNumber": 59
+        },
+        {
+          "caller": "agent_application_model",
+          "callee": "apps.get_model",
+          "lineNumber": 63
+        },
+        {
+          "caller": "create_provider",
+          "callee": "LLMProvider.objects.create",
+          "lineNumber": 66
+        },
+        {
+          "caller": "create_model",
+          "callee": "LLMModel.objects.create",
+          "lineNumber": 75
+        },
+        {
+          "caller": "create_model",
+          "callee": "TenantLLMModelGrant.objects.create",
+          "lineNumber": 81
+        },
+        {
+          "caller": "create_model",
+          "callee": "TenantLLMSettings.objects.update_or_create",
+          "lineNumber": 83
+        },
+        {
+          "caller": "create_document",
+          "callee": "KnowledgeDocument.objects.create",
+          "lineNumber": 90
+        },
+        {
+          "caller": "test_list_agent_applications_requires_view_permission",
+          "callee": "self.tenant.permission_points.clear",
+          "lineNumber": 98
+        },
+        {
+          "caller": "test_list_agent_applications_requires_view_permission",
+          "callee": "self.client.get",
+          "lineNumber": 100
+        },
+        {
+          "caller": "test_list_agent_applications_requires_view_permission",
+          "callee": "self.assertEqual",
+          "lineNumber": 102
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "self.grant_permissions",
+          "lineNumber": 105
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "self.create_provider",
+          "lineNumber": 106
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "self.create_model",
+          "lineNumber": 107
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "self.create_document",
+          "lineNumber": 108
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "self.client.post",
+          "lineNumber": 110
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "self.assertEqual",
+          "lineNumber": 124
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "self.assertEqual",
+          "lineNumber": 125
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "self.assertEqual",
+          "lineNumber": 126
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "self.assertEqual",
+          "lineNumber": 127
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "self.assertEqual",
+          "lineNumber": 128
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "self.assertEqual",
+          "lineNumber": 129
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "self.agent_application_model",
+          "lineNumber": 131
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "AgentApplication.objects.get",
+          "lineNumber": 132
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "self.assertEqual",
+          "lineNumber": 133
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "self.assertEqual",
+          "lineNumber": 134
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "self.assertEqual",
+          "lineNumber": 135
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "self.assertEqual",
+          "lineNumber": 136
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "list",
+          "lineNumber": 136
+        },
+        {
+          "caller": "test_create_agent_application_persists_model_config_and_knowledge_documents",
+          "callee": "application.knowledge_documents.values_list",
+          "lineNumber": 136
+        },
+        {
+          "caller": "test_create_agent_application_rejects_foreign_knowledge_document",
+          "callee": "self.grant_permissions",
+          "lineNumber": 139
+        },
+        {
+          "caller": "test_create_agent_application_rejects_foreign_knowledge_document",
+          "callee": "self.create_provider",
+          "lineNumber": 140
+        },
+        {
+          "caller": "test_create_agent_application_rejects_foreign_knowledge_document",
+          "callee": "self.create_model",
+          "lineNumber": 141
+        },
+        {
+          "caller": "test_create_agent_application_rejects_foreign_knowledge_document",
+          "callee": "Tenant.objects.create",
+          "lineNumber": 142
+        },
+        {
+          "caller": "test_create_agent_application_rejects_foreign_knowledge_document",
+          "callee": "self.create_document",
+          "lineNumber": 143
+        },
+        {
+          "caller": "test_create_agent_application_rejects_foreign_knowledge_document",
+          "callee": "self.client.post",
+          "lineNumber": 145
+        },
+        {
+          "caller": "test_create_agent_application_rejects_foreign_knowledge_document",
+          "callee": "self.assertEqual",
+          "lineNumber": 155
+        },
+        {
+          "caller": "test_create_agent_application_rejects_foreign_knowledge_document",
+          "callee": "self.assertIn",
+          "lineNumber": 156
+        },
+        {
+          "caller": "test_create_debug_conversation_copies_application_chat_config",
+          "callee": "self.grant_permissions",
+          "lineNumber": 159
+        },
+        {
+          "caller": "test_create_debug_conversation_copies_application_chat_config",
+          "callee": "self.create_provider",
+          "lineNumber": 160
+        },
+        {
+          "caller": "test_create_debug_conversation_copies_application_chat_config",
+          "callee": "self.create_model",
+          "lineNumber": 161
+        },
+        {
+          "caller": "test_create_debug_conversation_copies_application_chat_config",
+          "callee": "self.agent_application_model",
+          "lineNumber": 162
+        },
+        {
+          "caller": "test_create_debug_conversation_copies_application_chat_config",
+          "callee": "AgentApplication.objects.create",
+          "lineNumber": 163
+        },
+        {
+          "caller": "test_create_debug_conversation_copies_application_chat_config",
+          "callee": "self.client.post",
+          "lineNumber": 174
+        },
+        {
+          "caller": "test_create_debug_conversation_copies_application_chat_config",
+          "callee": "self.assertEqual",
+          "lineNumber": 176
+        },
+        {
+          "caller": "test_create_debug_conversation_copies_application_chat_config",
+          "callee": "ChatConversation.objects.get",
+          "lineNumber": 177
+        },
+        {
+          "caller": "test_create_debug_conversation_copies_application_chat_config",
+          "callee": "self.assertEqual",
+          "lineNumber": 178
+        },
+        {
+          "caller": "test_create_debug_conversation_copies_application_chat_config",
+          "callee": "self.assertEqual",
+          "lineNumber": 179
+        },
+        {
+          "caller": "test_create_debug_conversation_copies_application_chat_config",
+          "callee": "self.assertEqual",
+          "lineNumber": 180
+        },
+        {
+          "caller": "test_create_debug_conversation_copies_application_chat_config",
+          "callee": "self.assertEqual",
+          "lineNumber": 181
+        },
+        {
+          "caller": "test_create_debug_conversation_copies_application_chat_config",
+          "callee": "self.assertEqual",
+          "lineNumber": 182
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "backend/apps/knowledge_base/admin.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 53,
+      "nonEmptyLines": 46,
+      "classes": [
+        {
+          "name": "KnowledgeDocumentAdmin",
+          "startLine": 10,
+          "endLine": 52,
+          "methods": [
+            "file_link",
+            "save_model"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "KnowledgeDocumentAdmin",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "file_link",
+          "callee": "format_html",
+          "lineNumber": 44
+        },
+        {
+          "caller": "save_model",
+          "callee": "super().save_model",
+          "lineNumber": 51
+        },
+        {
+          "caller": "save_model",
+          "callee": "super",
+          "lineNumber": 51
+        },
+        {
+          "caller": "save_model",
+          "callee": "clear_business_cache_namespace",
+          "lineNumber": 52
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/knowledge_base/models.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 75,
+      "nonEmptyLines": 64,
+      "classes": [
+        {
+          "name": "KnowledgeDocument",
+          "startLine": 11,
+          "endLine": 74,
+          "methods": [
+            "__str__",
+            "save"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "KnowledgeDocument",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "save",
+          "callee": "Path",
+          "lineNumber": 61
+        },
+        {
+          "caller": "save",
+          "callee": "Path(original_name).suffix.lower().lstrip",
+          "lineNumber": 63
+        },
+        {
+          "caller": "save",
+          "callee": "Path(original_name).suffix.lower",
+          "lineNumber": 63
+        },
+        {
+          "caller": "save",
+          "callee": "Path",
+          "lineNumber": 63
+        },
+        {
+          "caller": "save",
+          "callee": "Path",
+          "lineNumber": 69
+        },
+        {
+          "caller": "save",
+          "callee": "super().save",
+          "lineNumber": 74
+        },
+        {
+          "caller": "save",
+          "callee": "super",
+          "lineNumber": 74
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/knowledge_base/serializers.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 101,
+      "nonEmptyLines": 87,
+      "classes": [
+        {
+          "name": "KnowledgeDocumentSerializer",
+          "startLine": 23,
+          "endLine": 92,
+          "methods": [
+            "get_uploadedBy",
+            "validate_file",
+            "validate",
+            "create"
+          ],
+          "properties": []
+        },
+        {
+          "name": "KnowledgeDocumentReviewSerializer",
+          "startLine": 95,
+          "endLine": 100,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "KnowledgeDocumentSerializer",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "KnowledgeDocumentReviewSerializer",
+          "line": 95,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_uploadedBy",
+          "callee": "obj.uploaded_by.get_full_name",
+          "lineNumber": 73
+        },
+        {
+          "caller": "validate_file",
+          "callee": "Path(value.name).suffix.lower",
+          "lineNumber": 76
+        },
+        {
+          "caller": "validate_file",
+          "callee": "Path",
+          "lineNumber": 76
+        },
+        {
+          "caller": "validate_file",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 78
+        },
+        {
+          "caller": "validate",
+          "callee": "super().validate",
+          "lineNumber": 82
+        },
+        {
+          "caller": "validate",
+          "callee": "super",
+          "lineNumber": 82
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 83
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 84
+        },
+        {
+          "caller": "validate",
+          "callee": "Path",
+          "lineNumber": 85
+        },
+        {
+          "caller": "create",
+          "callee": "self.context.get",
+          "lineNumber": 89
+        },
+        {
+          "caller": "create",
+          "callee": "super().create",
+          "lineNumber": 92
+        },
+        {
+          "caller": "create",
+          "callee": "super",
+          "lineNumber": 92
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "backend/apps/knowledge_base/services.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 79,
+      "nonEmptyLines": 64,
+      "functions": [
+        {
+          "name": "_document_display_name",
+          "startLine": 10,
+          "endLine": 11,
+          "params": [
+            "document"
+          ]
+        },
+        {
+          "name": "_document_company_name",
+          "startLine": 14,
+          "endLine": 15,
+          "params": [
+            "document"
+          ]
+        },
+        {
+          "name": "notify_knowledge_document_event",
+          "startLine": 18,
+          "endLine": 31,
+          "params": [
+            "action",
+            "user",
+            "document"
+          ]
+        },
+        {
+          "name": "notify_knowledge_document_reviewed",
+          "startLine": 34,
+          "endLine": 48,
+          "params": [
+            "user",
+            "document"
+          ]
+        },
+        {
+          "name": "notify_knowledge_document_deleted",
+          "startLine": 51,
+          "endLine": 64,
+          "params": [
+            "user",
+            "document_id",
+            "title",
+            "file_name",
+            "company_name"
+          ]
+        },
+        {
+          "name": "notify_knowledge_bulk_download",
+          "startLine": 67,
+          "endLine": 79,
+          "params": [
+            "user",
+            "documents"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "_document_display_name",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "_document_company_name",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "notify_knowledge_document_event",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "notify_knowledge_document_reviewed",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "notify_knowledge_document_deleted",
+          "line": 51,
+          "isDefault": false
+        },
+        {
+          "name": "notify_knowledge_bulk_download",
+          "line": 67,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_document_company_name",
+          "callee": "str(getattr(getattr(document, 'tenant', None), 'name', '') or '').strip",
+          "lineNumber": 15
+        },
+        {
+          "caller": "_document_company_name",
+          "callee": "str",
+          "lineNumber": 15
+        },
+        {
+          "caller": "_document_company_name",
+          "callee": "getattr",
+          "lineNumber": 15
+        },
+        {
+          "caller": "_document_company_name",
+          "callee": "getattr",
+          "lineNumber": 15
+        },
+        {
+          "caller": "notify_knowledge_document_event",
+          "callee": "notify_business_event_card",
+          "lineNumber": 20
+        },
+        {
+          "caller": "notify_knowledge_document_event",
+          "callee": "_document_display_name",
+          "lineNumber": 25
+        },
+        {
+          "caller": "notify_knowledge_document_event",
+          "callee": "_document_company_name",
+          "lineNumber": 30
+        },
+        {
+          "caller": "notify_knowledge_document_reviewed",
+          "callee": "notify_business_event_card",
+          "lineNumber": 36
+        },
+        {
+          "caller": "notify_knowledge_document_reviewed",
+          "callee": "_document_display_name",
+          "lineNumber": 41
+        },
+        {
+          "caller": "notify_knowledge_document_reviewed",
+          "callee": "document.get_processing_status_display",
+          "lineNumber": 44
+        },
+        {
+          "caller": "notify_knowledge_document_reviewed",
+          "callee": "_document_company_name",
+          "lineNumber": 47
+        },
+        {
+          "caller": "notify_knowledge_document_deleted",
+          "callee": "notify_business_event_card",
+          "lineNumber": 53
+        },
+        {
+          "caller": "notify_knowledge_bulk_download",
+          "callee": "list",
+          "lineNumber": 69
+        },
+        {
+          "caller": "notify_knowledge_bulk_download",
+          "callee": "'、'.join",
+          "lineNumber": 70
+        },
+        {
+          "caller": "notify_knowledge_bulk_download",
+          "callee": "_document_display_name",
+          "lineNumber": 70
+        },
+        {
+          "caller": "notify_knowledge_bulk_download",
+          "callee": "notify_business_event_card",
+          "lineNumber": 71
+        },
+        {
+          "caller": "notify_knowledge_bulk_download",
+          "callee": "len",
+          "lineNumber": 77
+        },
+        {
+          "caller": "notify_knowledge_bulk_download",
+          "callee": "_document_company_name",
+          "lineNumber": 78
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 6,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/knowledge_base/tests/test_api.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 311,
+      "nonEmptyLines": 254,
+      "functions": [
+        {
+          "name": "build_document_upload",
+          "startLine": 26,
+          "endLine": 27,
+          "params": [
+            "name",
+            "content"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "KnowledgeBaseApiTests",
+          "startLine": 30,
+          "endLine": 311,
+          "methods": [
+            "setUp",
+            "tearDown",
+            "grant_permissions",
+            "create_document",
+            "test_list_requires_view_permission",
+            "test_create_document_returns_raw_drf_shape",
+            "test_create_document_sends_feishu_notification",
+            "test_create_document_rejects_unsupported_extension",
+            "test_delete_document_requires_upload_permission",
+            "test_delete_document_removes_record_and_file",
+            "test_download_returns_binary_response_and_increments_count",
+            "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+            "test_bulk_download_requires_at_least_one_valid_document",
+            "test_bulk_download_enforces_count_limit",
+            "test_bulk_download_enforces_total_size_limit",
+            "test_status_update_api_is_not_available",
+            "test_admin_status_update_clears_cached_document_list",
+            "test_superuser_can_review_document_and_send_feishu_notification",
+            "test_non_superuser_cannot_review_document"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "build_document_upload",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "KnowledgeBaseApiTests",
+          "line": 30,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "build_document_upload",
+          "callee": "SimpleUploadedFile",
+          "lineNumber": 27
+        },
+        {
+          "caller": "setUp",
+          "callee": "tempfile.mkdtemp",
+          "lineNumber": 32
+        },
+        {
+          "caller": "setUp",
+          "callee": "override_settings",
+          "lineNumber": 33
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.override_media_root.enable",
+          "lineNumber": 34
+        },
+        {
+          "caller": "setUp",
+          "callee": "override_settings",
+          "lineNumber": 35
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.override_cache.enable",
+          "lineNumber": 43
+        },
+        {
+          "caller": "setUp",
+          "callee": "User.objects.create_user",
+          "lineNumber": 44
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.setup_tenant",
+          "lineNumber": 45
+        },
+        {
+          "caller": "setUp",
+          "callee": "Role.objects.create",
+          "lineNumber": 46
+        },
+        {
+          "caller": "setUp",
+          "callee": "UserRole.objects.create",
+          "lineNumber": 47
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 48
+        },
+        {
+          "caller": "tearDown",
+          "callee": "self.override_cache.disable",
+          "lineNumber": 51
+        },
+        {
+          "caller": "tearDown",
+          "callee": "self.override_media_root.disable",
+          "lineNumber": 52
+        },
+        {
+          "caller": "tearDown",
+          "callee": "shutil.rmtree",
+          "lineNumber": 53
+        },
+        {
+          "caller": "tearDown",
+          "callee": "super().tearDown",
+          "lineNumber": 54
+        },
+        {
+          "caller": "tearDown",
+          "callee": "super",
+          "lineNumber": 54
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 59
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "permission_points.append",
+          "lineNumber": 68
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "self.role.permission_points.set",
+          "lineNumber": 69
+        },
+        {
+          "caller": "create_document",
+          "callee": "KnowledgeDocument.objects.create",
+          "lineNumber": 72
+        },
+        {
+          "caller": "create_document",
+          "callee": "name.rsplit",
+          "lineNumber": 73
+        },
+        {
+          "caller": "create_document",
+          "callee": "build_document_upload",
+          "lineNumber": 74
+        },
+        {
+          "caller": "test_list_requires_view_permission",
+          "callee": "self.client.get",
+          "lineNumber": 80
+        },
+        {
+          "caller": "test_list_requires_view_permission",
+          "callee": "self.assertEqual",
+          "lineNumber": 82
+        },
+        {
+          "caller": "test_create_document_returns_raw_drf_shape",
+          "callee": "self.grant_permissions",
+          "lineNumber": 85
+        },
+        {
+          "caller": "test_create_document_returns_raw_drf_shape",
+          "callee": "self.client.post",
+          "lineNumber": 87
+        },
+        {
+          "caller": "test_create_document_returns_raw_drf_shape",
+          "callee": "build_document_upload",
+          "lineNumber": 90
+        },
+        {
+          "caller": "test_create_document_returns_raw_drf_shape",
+          "callee": "self.assertEqual",
+          "lineNumber": 96
+        },
+        {
+          "caller": "test_create_document_returns_raw_drf_shape",
+          "callee": "self.assertNotIn",
+          "lineNumber": 97
+        },
+        {
+          "caller": "test_create_document_returns_raw_drf_shape",
+          "callee": "self.assertNotIn",
+          "lineNumber": 98
+        },
+        {
+          "caller": "test_create_document_returns_raw_drf_shape",
+          "callee": "self.assertEqual",
+          "lineNumber": 99
+        },
+        {
+          "caller": "test_create_document_returns_raw_drf_shape",
+          "callee": "self.assertEqual",
+          "lineNumber": 100
+        },
+        {
+          "caller": "test_create_document_returns_raw_drf_shape",
+          "callee": "self.assertEqual",
+          "lineNumber": 101
+        },
+        {
+          "caller": "test_create_document_returns_raw_drf_shape",
+          "callee": "self.assertEqual",
+          "lineNumber": 102
+        },
+        {
+          "caller": "test_create_document_returns_raw_drf_shape",
+          "callee": "self.assertEqual",
+          "lineNumber": 103
+        },
+        {
+          "caller": "test_create_document_returns_raw_drf_shape",
+          "callee": "self.assertEqual",
+          "lineNumber": 104
+        },
+        {
+          "caller": "test_create_document_returns_raw_drf_shape",
+          "callee": "self.assertEqual",
+          "lineNumber": 105
+        },
+        {
+          "caller": "test_create_document_sends_feishu_notification",
+          "callee": "self.grant_permissions",
+          "lineNumber": 108
+        },
+        {
+          "caller": "test_create_document_sends_feishu_notification",
+          "callee": "patch",
+          "lineNumber": 110
+        },
+        {
+          "caller": "test_create_document_sends_feishu_notification",
+          "callee": "self.client.post",
+          "lineNumber": 111
+        },
+        {
+          "caller": "test_create_document_sends_feishu_notification",
+          "callee": "build_document_upload",
+          "lineNumber": 114
+        },
+        {
+          "caller": "test_create_document_sends_feishu_notification",
+          "callee": "self.assertEqual",
+          "lineNumber": 120
+        },
+        {
+          "caller": "test_create_document_sends_feishu_notification",
+          "callee": "send_card.assert_called_once",
+          "lineNumber": 121
+        },
+        {
+          "caller": "test_create_document_sends_feishu_notification",
+          "callee": "self.assertIn",
+          "lineNumber": 123
+        },
+        {
+          "caller": "test_create_document_sends_feishu_notification",
+          "callee": "str",
+          "lineNumber": 123
+        },
+        {
+          "caller": "test_create_document_sends_feishu_notification",
+          "callee": "self.assertIn",
+          "lineNumber": 124
+        },
+        {
+          "caller": "test_create_document_sends_feishu_notification",
+          "callee": "str",
+          "lineNumber": 124
+        },
+        {
+          "caller": "test_create_document_sends_feishu_notification",
+          "callee": "self.assertIn",
+          "lineNumber": 125
+        },
+        {
+          "caller": "test_create_document_sends_feishu_notification",
+          "callee": "str",
+          "lineNumber": 125
+        },
+        {
+          "caller": "test_create_document_rejects_unsupported_extension",
+          "callee": "self.grant_permissions",
+          "lineNumber": 128
+        },
+        {
+          "caller": "test_create_document_rejects_unsupported_extension",
+          "callee": "self.client.post",
+          "lineNumber": 130
+        },
+        {
+          "caller": "test_create_document_rejects_unsupported_extension",
+          "callee": "build_document_upload",
+          "lineNumber": 133
+        },
+        {
+          "caller": "test_create_document_rejects_unsupported_extension",
+          "callee": "self.assertEqual",
+          "lineNumber": 138
+        },
+        {
+          "caller": "test_create_document_rejects_unsupported_extension",
+          "callee": "self.assertEqual",
+          "lineNumber": 139
+        },
+        {
+          "caller": "test_delete_document_requires_upload_permission",
+          "callee": "self.grant_permissions",
+          "lineNumber": 142
+        },
+        {
+          "caller": "test_delete_document_requires_upload_permission",
+          "callee": "self.create_document",
+          "lineNumber": 143
+        },
+        {
+          "caller": "test_delete_document_requires_upload_permission",
+          "callee": "self.client.delete",
+          "lineNumber": 145
+        },
+        {
+          "caller": "test_delete_document_requires_upload_permission",
+          "callee": "self.assertEqual",
+          "lineNumber": 147
+        },
+        {
+          "caller": "test_delete_document_requires_upload_permission",
+          "callee": "self.assertTrue",
+          "lineNumber": 148
+        },
+        {
+          "caller": "test_delete_document_requires_upload_permission",
+          "callee": "KnowledgeDocument.objects.filter(pk=document.pk).exists",
+          "lineNumber": 148
+        },
+        {
+          "caller": "test_delete_document_requires_upload_permission",
+          "callee": "KnowledgeDocument.objects.filter",
+          "lineNumber": 148
+        },
+        {
+          "caller": "test_delete_document_removes_record_and_file",
+          "callee": "self.grant_permissions",
+          "lineNumber": 151
+        },
+        {
+          "caller": "test_delete_document_removes_record_and_file",
+          "callee": "self.create_document",
+          "lineNumber": 152
+        },
+        {
+          "caller": "test_delete_document_removes_record_and_file",
+          "callee": "patch",
+          "lineNumber": 155
+        },
+        {
+          "caller": "test_delete_document_removes_record_and_file",
+          "callee": "self.client.delete",
+          "lineNumber": 156
+        },
+        {
+          "caller": "test_delete_document_removes_record_and_file",
+          "callee": "self.assertEqual",
+          "lineNumber": 158
+        },
+        {
+          "caller": "test_delete_document_removes_record_and_file",
+          "callee": "self.assertFalse",
+          "lineNumber": 159
+        },
+        {
+          "caller": "test_delete_document_removes_record_and_file",
+          "callee": "KnowledgeDocument.objects.filter(pk=document.pk).exists",
+          "lineNumber": 159
+        },
+        {
+          "caller": "test_delete_document_removes_record_and_file",
+          "callee": "KnowledgeDocument.objects.filter",
+          "lineNumber": 159
+        },
+        {
+          "caller": "test_delete_document_removes_record_and_file",
+          "callee": "self.assertFalse",
+          "lineNumber": 160
+        },
+        {
+          "caller": "test_delete_document_removes_record_and_file",
+          "callee": "Path(file_path).exists",
+          "lineNumber": 160
+        },
+        {
+          "caller": "test_delete_document_removes_record_and_file",
+          "callee": "Path",
+          "lineNumber": 160
+        },
+        {
+          "caller": "test_delete_document_removes_record_and_file",
+          "callee": "self.assertIn",
+          "lineNumber": 161
+        },
+        {
+          "caller": "test_delete_document_removes_record_and_file",
+          "callee": "str",
+          "lineNumber": 161
+        },
+        {
+          "caller": "test_download_returns_binary_response_and_increments_count",
+          "callee": "self.grant_permissions",
+          "lineNumber": 164
+        },
+        {
+          "caller": "test_download_returns_binary_response_and_increments_count",
+          "callee": "self.create_document",
+          "lineNumber": 165
+        },
+        {
+          "caller": "test_download_returns_binary_response_and_increments_count",
+          "callee": "patch",
+          "lineNumber": 167
+        },
+        {
+          "caller": "test_download_returns_binary_response_and_increments_count",
+          "callee": "self.client.get",
+          "lineNumber": 168
+        },
+        {
+          "caller": "test_download_returns_binary_response_and_increments_count",
+          "callee": "self.assertEqual",
+          "lineNumber": 170
+        },
+        {
+          "caller": "test_download_returns_binary_response_and_increments_count",
+          "callee": "self.assertIn",
+          "lineNumber": 171
+        },
+        {
+          "caller": "test_download_returns_binary_response_and_increments_count",
+          "callee": "self.assertEqual",
+          "lineNumber": 172
+        },
+        {
+          "caller": "test_download_returns_binary_response_and_increments_count",
+          "callee": "b''.join",
+          "lineNumber": 172
+        },
+        {
+          "caller": "test_download_returns_binary_response_and_increments_count",
+          "callee": "document.refresh_from_db",
+          "lineNumber": 173
+        },
+        {
+          "caller": "test_download_returns_binary_response_and_increments_count",
+          "callee": "self.assertEqual",
+          "lineNumber": 174
+        },
+        {
+          "caller": "test_download_returns_binary_response_and_increments_count",
+          "callee": "self.assertIn",
+          "lineNumber": 175
+        },
+        {
+          "caller": "test_download_returns_binary_response_and_increments_count",
+          "callee": "str",
+          "lineNumber": 175
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "self.grant_permissions",
+          "lineNumber": 178
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "self.create_document",
+          "lineNumber": 179
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "self.create_document",
+          "lineNumber": 180
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "patch",
+          "lineNumber": 182
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "self.client.post",
+          "lineNumber": 183
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "self.assertEqual",
+          "lineNumber": 189
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "b''.join",
+          "lineNumber": 190
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "zipfile.ZipFile",
+          "lineNumber": 191
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "BytesIO",
+          "lineNumber": 191
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "self.assertCountEqual",
+          "lineNumber": 192
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "archive.namelist",
+          "lineNumber": 192
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "self.assertEqual",
+          "lineNumber": 193
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "archive.read",
+          "lineNumber": 193
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "self.assertEqual",
+          "lineNumber": 194
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "archive.read",
+          "lineNumber": 194
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "first.refresh_from_db",
+          "lineNumber": 196
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "second.refresh_from_db",
+          "lineNumber": 197
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "self.assertEqual",
+          "lineNumber": 198
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "self.assertEqual",
+          "lineNumber": 199
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "self.assertIn",
+          "lineNumber": 201
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "str",
+          "lineNumber": 201
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "self.assertIn",
+          "lineNumber": 202
+        },
+        {
+          "caller": "test_bulk_download_deduplicates_and_renames_duplicate_file_names",
+          "callee": "str",
+          "lineNumber": 202
+        },
+        {
+          "caller": "test_bulk_download_requires_at_least_one_valid_document",
+          "callee": "self.grant_permissions",
+          "lineNumber": 205
+        },
+        {
+          "caller": "test_bulk_download_requires_at_least_one_valid_document",
+          "callee": "self.client.post",
+          "lineNumber": 207
+        },
+        {
+          "caller": "test_bulk_download_requires_at_least_one_valid_document",
+          "callee": "self.assertEqual",
+          "lineNumber": 209
+        },
+        {
+          "caller": "test_bulk_download_requires_at_least_one_valid_document",
+          "callee": "self.assertEqual",
+          "lineNumber": 210
+        },
+        {
+          "caller": "test_bulk_download_enforces_count_limit",
+          "callee": "self.grant_permissions",
+          "lineNumber": 213
+        },
+        {
+          "caller": "test_bulk_download_enforces_count_limit",
+          "callee": "self.create_document",
+          "lineNumber": 214
+        },
+        {
+          "caller": "test_bulk_download_enforces_count_limit",
+          "callee": "f'doc-{i}'.encode",
+          "lineNumber": 214
+        },
+        {
+          "caller": "test_bulk_download_enforces_count_limit",
+          "callee": "range",
+          "lineNumber": 214
+        },
+        {
+          "caller": "test_bulk_download_enforces_count_limit",
+          "callee": "self.client.post",
+          "lineNumber": 216
+        },
+        {
+          "caller": "test_bulk_download_enforces_count_limit",
+          "callee": "self.assertEqual",
+          "lineNumber": 222
+        },
+        {
+          "caller": "test_bulk_download_enforces_count_limit",
+          "callee": "self.assertEqual",
+          "lineNumber": 223
+        },
+        {
+          "caller": "test_bulk_download_enforces_total_size_limit",
+          "callee": "self.grant_permissions",
+          "lineNumber": 226
+        },
+        {
+          "caller": "test_bulk_download_enforces_total_size_limit",
+          "callee": "self.create_document",
+          "lineNumber": 227
+        },
+        {
+          "caller": "test_bulk_download_enforces_total_size_limit",
+          "callee": "self.create_document",
+          "lineNumber": 228
+        },
+        {
+          "caller": "test_bulk_download_enforces_total_size_limit",
+          "callee": "KnowledgeDocument.objects.filter(pk=first.pk).update",
+          "lineNumber": 229
+        },
+        {
+          "caller": "test_bulk_download_enforces_total_size_limit",
+          "callee": "KnowledgeDocument.objects.filter",
+          "lineNumber": 229
+        },
+        {
+          "caller": "test_bulk_download_enforces_total_size_limit",
+          "callee": "KnowledgeDocument.objects.filter(pk=second.pk).update",
+          "lineNumber": 230
+        },
+        {
+          "caller": "test_bulk_download_enforces_total_size_limit",
+          "callee": "KnowledgeDocument.objects.filter",
+          "lineNumber": 230
+        },
+        {
+          "caller": "test_bulk_download_enforces_total_size_limit",
+          "callee": "self.client.post",
+          "lineNumber": 232
+        },
+        {
+          "caller": "test_bulk_download_enforces_total_size_limit",
+          "callee": "self.assertEqual",
+          "lineNumber": 238
+        },
+        {
+          "caller": "test_bulk_download_enforces_total_size_limit",
+          "callee": "self.assertEqual",
+          "lineNumber": 239
+        },
+        {
+          "caller": "test_status_update_api_is_not_available",
+          "callee": "self.grant_permissions",
+          "lineNumber": 242
+        },
+        {
+          "caller": "test_status_update_api_is_not_available",
+          "callee": "self.create_document",
+          "lineNumber": 243
+        },
+        {
+          "caller": "test_status_update_api_is_not_available",
+          "callee": "self.client.patch",
+          "lineNumber": 245
+        },
+        {
+          "caller": "test_status_update_api_is_not_available",
+          "callee": "self.assertEqual",
+          "lineNumber": 251
+        },
+        {
+          "caller": "test_admin_status_update_clears_cached_document_list",
+          "callee": "self.grant_permissions",
+          "lineNumber": 254
+        },
+        {
+          "caller": "test_admin_status_update_clears_cached_document_list",
+          "callee": "self.create_document",
+          "lineNumber": 255
+        },
+        {
+          "caller": "test_admin_status_update_clears_cached_document_list",
+          "callee": "self.client.get",
+          "lineNumber": 257
+        },
+        {
+          "caller": "test_admin_status_update_clears_cached_document_list",
+          "callee": "self.assertEqual",
+          "lineNumber": 258
+        },
+        {
+          "caller": "test_admin_status_update_clears_cached_document_list",
+          "callee": "self.assertEqual",
+          "lineNumber": 259
+        },
+        {
+          "caller": "test_admin_status_update_clears_cached_document_list",
+          "callee": "RequestFactory().post",
+          "lineNumber": 263
+        },
+        {
+          "caller": "test_admin_status_update_clears_cached_document_list",
+          "callee": "RequestFactory",
+          "lineNumber": 263
+        },
+        {
+          "caller": "test_admin_status_update_clears_cached_document_list",
+          "callee": "User.objects.create_superuser",
+          "lineNumber": 264
+        },
+        {
+          "caller": "test_admin_status_update_clears_cached_document_list",
+          "callee": "KnowledgeDocumentAdmin",
+          "lineNumber": 265
+        },
+        {
+          "caller": "test_admin_status_update_clears_cached_document_list",
+          "callee": "model_admin.save_model",
+          "lineNumber": 266
+        },
+        {
+          "caller": "test_admin_status_update_clears_cached_document_list",
+          "callee": "self.client.get",
+          "lineNumber": 268
+        },
+        {
+          "caller": "test_admin_status_update_clears_cached_document_list",
+          "callee": "self.assertEqual",
+          "lineNumber": 269
+        },
+        {
+          "caller": "test_admin_status_update_clears_cached_document_list",
+          "callee": "self.assertEqual",
+          "lineNumber": 270
+        },
+        {
+          "caller": "test_admin_status_update_clears_cached_document_list",
+          "callee": "self.assertEqual",
+          "lineNumber": 271
+        },
+        {
+          "caller": "test_superuser_can_review_document_and_send_feishu_notification",
+          "callee": "self.create_document",
+          "lineNumber": 274
+        },
+        {
+          "caller": "test_superuser_can_review_document_and_send_feishu_notification",
+          "callee": "User.objects.create_superuser",
+          "lineNumber": 275
+        },
+        {
+          "caller": "test_superuser_can_review_document_and_send_feishu_notification",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 276
+        },
+        {
+          "caller": "test_superuser_can_review_document_and_send_feishu_notification",
+          "callee": "patch",
+          "lineNumber": 278
+        },
+        {
+          "caller": "test_superuser_can_review_document_and_send_feishu_notification",
+          "callee": "self.client.post",
+          "lineNumber": 279
+        },
+        {
+          "caller": "test_superuser_can_review_document_and_send_feishu_notification",
+          "callee": "self.assertEqual",
+          "lineNumber": 288
+        },
+        {
+          "caller": "test_superuser_can_review_document_and_send_feishu_notification",
+          "callee": "self.assertEqual",
+          "lineNumber": 289
+        },
+        {
+          "caller": "test_superuser_can_review_document_and_send_feishu_notification",
+          "callee": "self.assertEqual",
+          "lineNumber": 290
+        },
+        {
+          "caller": "test_superuser_can_review_document_and_send_feishu_notification",
+          "callee": "document.refresh_from_db",
+          "lineNumber": 291
+        },
+        {
+          "caller": "test_superuser_can_review_document_and_send_feishu_notification",
+          "callee": "self.assertEqual",
+          "lineNumber": 292
+        },
+        {
+          "caller": "test_superuser_can_review_document_and_send_feishu_notification",
+          "callee": "self.assertEqual",
+          "lineNumber": 293
+        },
+        {
+          "caller": "test_superuser_can_review_document_and_send_feishu_notification",
+          "callee": "send_card.assert_called_once",
+          "lineNumber": 294
+        },
+        {
+          "caller": "test_non_superuser_cannot_review_document",
+          "callee": "self.create_document",
+          "lineNumber": 297
+        },
+        {
+          "caller": "test_non_superuser_cannot_review_document",
+          "callee": "self.grant_permissions",
+          "lineNumber": 298
+        },
+        {
+          "caller": "test_non_superuser_cannot_review_document",
+          "callee": "self.client.post",
+          "lineNumber": 300
+        },
+        {
+          "caller": "test_non_superuser_cannot_review_document",
+          "callee": "self.assertEqual",
+          "lineNumber": 309
+        },
+        {
+          "caller": "test_non_superuser_cannot_review_document",
+          "callee": "document.refresh_from_db",
+          "lineNumber": 310
+        },
+        {
+          "caller": "test_non_superuser_cannot_review_document",
+          "callee": "self.assertEqual",
+          "lineNumber": 311
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/knowledge_base/urls.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 9,
+      "nonEmptyLines": 5,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/knowledge_base/views.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 252,
+      "nonEmptyLines": 220,
+      "functions": [
+        {
+          "name": "get_document_size",
+          "startLine": 40,
+          "endLine": 46,
+          "params": [
+            "document"
+          ]
+        },
+        {
+          "name": "build_zip_entry_name",
+          "startLine": 57,
+          "endLine": 67,
+          "params": [
+            "file_name",
+            "existing_names"
+          ]
+        },
+        {
+          "name": "build_content_disposition",
+          "startLine": 70,
+          "endLine": 72,
+          "params": [
+            "filename"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "PermissionMappedViewSet",
+          "startLine": 49,
+          "endLine": 54,
+          "methods": [
+            "get_permissions"
+          ],
+          "properties": [
+            "permission_map"
+          ]
+        },
+        {
+          "name": "KnowledgeDocumentViewSet",
+          "startLine": 87,
+          "endLine": 252,
+          "methods": [
+            "get_queryset",
+            "perform_create",
+            "perform_destroy",
+            "download",
+            "bulk_download",
+            "review"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "get_document_size",
+          "line": 40,
+          "isDefault": false
+        },
+        {
+          "name": "PermissionMappedViewSet",
+          "line": 49,
+          "isDefault": false
+        },
+        {
+          "name": "build_zip_entry_name",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "build_content_disposition",
+          "line": 70,
+          "isDefault": false
+        },
+        {
+          "name": "KnowledgeDocumentViewSet",
+          "line": 75,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_permissions",
+          "callee": "self.permission_map.get",
+          "lineNumber": 53
+        },
+        {
+          "caller": "get_permissions",
+          "callee": "self.permission_map.get",
+          "lineNumber": 53
+        },
+        {
+          "caller": "get_permissions",
+          "callee": "permission",
+          "lineNumber": 54
+        },
+        {
+          "caller": "build_zip_entry_name",
+          "callee": "Path",
+          "lineNumber": 59
+        },
+        {
+          "caller": "build_zip_entry_name",
+          "callee": "Path",
+          "lineNumber": 60
+        },
+        {
+          "caller": "build_zip_entry_name",
+          "callee": "existing_names.add",
+          "lineNumber": 66
+        },
+        {
+          "caller": "build_content_disposition",
+          "callee": "quote",
+          "lineNumber": 71
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "super().get_queryset",
+          "lineNumber": 110
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "super",
+          "lineNumber": 110
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('keyword', '').strip",
+          "lineNumber": 111
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 111
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 113
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Q",
+          "lineNumber": 113
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Q",
+          "lineNumber": 113
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('processing_status', '').strip",
+          "lineNumber": 115
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 115
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 117
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.apply_tenant_scope",
+          "lineNumber": 118
+        },
+        {
+          "caller": "perform_create",
+          "callee": "serializer.save",
+          "lineNumber": 121
+        },
+        {
+          "caller": "perform_create",
+          "callee": "self.tenant_create_kwargs",
+          "lineNumber": 121
+        },
+        {
+          "caller": "perform_create",
+          "callee": "self.clear_cached_business_responses",
+          "lineNumber": 122
+        },
+        {
+          "caller": "perform_create",
+          "callee": "notify_knowledge_document_event",
+          "lineNumber": 123
+        },
+        {
+          "caller": "perform_create",
+          "callee": "getattr",
+          "lineNumber": 123
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "str(getattr(getattr(instance, 'tenant', None), 'name', '') or '').strip",
+          "lineNumber": 129
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "str",
+          "lineNumber": 129
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "getattr",
+          "lineNumber": 129
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "getattr",
+          "lineNumber": 129
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "super().perform_destroy",
+          "lineNumber": 131
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "super",
+          "lineNumber": 131
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "file_field.delete",
+          "lineNumber": 133
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "notify_knowledge_document_deleted",
+          "lineNumber": 134
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "getattr",
+          "lineNumber": 135
+        },
+        {
+          "caller": "download",
+          "callee": "self.get_object",
+          "lineNumber": 148
+        },
+        {
+          "caller": "download",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 150
+        },
+        {
+          "caller": "download",
+          "callee": "document.file.open",
+          "lineNumber": 152
+        },
+        {
+          "caller": "download",
+          "callee": "KnowledgeDocument.objects.filter(pk=document.pk).update",
+          "lineNumber": 153
+        },
+        {
+          "caller": "download",
+          "callee": "KnowledgeDocument.objects.filter",
+          "lineNumber": 153
+        },
+        {
+          "caller": "download",
+          "callee": "F",
+          "lineNumber": 153
+        },
+        {
+          "caller": "download",
+          "callee": "clear_business_cache_namespace",
+          "lineNumber": 154
+        },
+        {
+          "caller": "download",
+          "callee": "notify_knowledge_document_event",
+          "lineNumber": 155
+        },
+        {
+          "caller": "download",
+          "callee": "FileResponse",
+          "lineNumber": 157
+        },
+        {
+          "caller": "download",
+          "callee": "build_content_disposition",
+          "lineNumber": 158
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "request.data.get",
+          "lineNumber": 168
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "isinstance",
+          "lineNumber": 169
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 170
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "set",
+          "lineNumber": 173
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "int",
+          "lineNumber": 176
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "seen_ids.add",
+          "lineNumber": 181
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "deduped_ids.append",
+          "lineNumber": 182
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "self.get_queryset().filter(id__in=deduped_ids).order_by",
+          "lineNumber": 188
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "self.get_queryset().filter",
+          "lineNumber": 188
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "self.get_queryset",
+          "lineNumber": 188
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "documents_by_id.get",
+          "lineNumber": 193
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 198
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "len",
+          "lineNumber": 199
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 200
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "sum",
+          "lineNumber": 202
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "get_document_size",
+          "lineNumber": 202
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 204
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "tempfile.NamedTemporaryFile",
+          "lineNumber": 206
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "temp_file.close",
+          "lineNumber": 208
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "set",
+          "lineNumber": 209
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "zipfile.ZipFile",
+          "lineNumber": 211
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "build_zip_entry_name",
+          "lineNumber": 213
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "document.file.open",
+          "lineNumber": 214
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "zip_file.writestr",
+          "lineNumber": 215
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "file_handle.read",
+          "lineNumber": 215
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "os.path.exists",
+          "lineNumber": 217
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "os.remove",
+          "lineNumber": 218
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "KnowledgeDocument.objects.filter(pk__in=[document.pk for document in valid_documents]).update",
+          "lineNumber": 221
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "KnowledgeDocument.objects.filter",
+          "lineNumber": 221
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "F",
+          "lineNumber": 221
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "clear_business_cache_namespace",
+          "lineNumber": 222
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "notify_knowledge_bulk_download",
+          "lineNumber": 223
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "timezone.localtime().strftime",
+          "lineNumber": 225
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "timezone.localtime",
+          "lineNumber": 225
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "FileResponse",
+          "lineNumber": 226
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "open",
+          "lineNumber": 226
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "build_content_disposition",
+          "lineNumber": 227
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "response._resource_closers.append",
+          "lineNumber": 228
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "os.path.exists",
+          "lineNumber": 228
+        },
+        {
+          "caller": "bulk_download",
+          "callee": "os.remove",
+          "lineNumber": 228
+        },
+        {
+          "caller": "review",
+          "callee": "self.get_object",
+          "lineNumber": 238
+        },
+        {
+          "caller": "review",
+          "callee": "KnowledgeDocumentReviewSerializer",
+          "lineNumber": 239
+        },
+        {
+          "caller": "review",
+          "callee": "serializer.is_valid",
+          "lineNumber": 240
+        },
+        {
+          "caller": "review",
+          "callee": "serializer.validated_data.get",
+          "lineNumber": 242
+        },
+        {
+          "caller": "review",
+          "callee": "document.save",
+          "lineNumber": 243
+        },
+        {
+          "caller": "review",
+          "callee": "clear_business_cache_namespace",
+          "lineNumber": 244
+        },
+        {
+          "caller": "review",
+          "callee": "notify_knowledge_document_reviewed",
+          "lineNumber": 245
+        },
+        {
+          "caller": "review",
+          "callee": "Response",
+          "lineNumber": 246
+        },
+        {
+          "caller": "review",
+          "callee": "KnowledgeDocumentSerializer",
+          "lineNumber": 250
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 5,
+        "functionCount": 3,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "backend/apps/resources/tests/test_business_metadata_cache_api.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 140,
+      "nonEmptyLines": 118,
+      "classes": [
+        {
+          "name": "BusinessMetadataCacheApiTests",
+          "startLine": 29,
+          "endLine": 140,
+          "methods": [
+            "setUp",
+            "tearDown",
+            "grant_permissions",
+            "get_cache_key_count",
+            "test_resource_list_metadata_is_cached_and_invalidated_after_create",
+            "test_voice_tone_list_metadata_is_cached_and_invalidated_after_update",
+            "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BusinessMetadataCacheApiTests",
+          "line": 21,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "setUp",
+          "callee": "tempfile.mkdtemp",
+          "lineNumber": 31
+        },
+        {
+          "caller": "setUp",
+          "callee": "override_settings",
+          "lineNumber": 32
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.override_media_root.enable",
+          "lineNumber": 33
+        },
+        {
+          "caller": "setUp",
+          "callee": "User.objects.create_user",
+          "lineNumber": 34
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.setup_tenant",
+          "lineNumber": 35
+        },
+        {
+          "caller": "setUp",
+          "callee": "Role.objects.create",
+          "lineNumber": 36
+        },
+        {
+          "caller": "setUp",
+          "callee": "UserRole.objects.create",
+          "lineNumber": 37
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 38
+        },
+        {
+          "caller": "tearDown",
+          "callee": "cache.clear",
+          "lineNumber": 41
+        },
+        {
+          "caller": "tearDown",
+          "callee": "self.override_media_root.disable",
+          "lineNumber": 42
+        },
+        {
+          "caller": "tearDown",
+          "callee": "shutil.rmtree",
+          "lineNumber": 43
+        },
+        {
+          "caller": "tearDown",
+          "callee": "super().tearDown",
+          "lineNumber": 44
+        },
+        {
+          "caller": "tearDown",
+          "callee": "super",
+          "lineNumber": 44
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 49
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "permission_points.append",
+          "lineNumber": 58
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "self.role.permission_points.set",
+          "lineNumber": 59
+        },
+        {
+          "caller": "get_cache_key_count",
+          "callee": "get_business_cache_summaries",
+          "lineNumber": 62
+        },
+        {
+          "caller": "get_cache_key_count",
+          "callee": "AssertionError",
+          "lineNumber": 65
+        },
+        {
+          "caller": "test_resource_list_metadata_is_cached_and_invalidated_after_create",
+          "callee": "self.grant_permissions",
+          "lineNumber": 68
+        },
+        {
+          "caller": "test_resource_list_metadata_is_cached_and_invalidated_after_create",
+          "callee": "Resource.objects.create",
+          "lineNumber": 69
+        },
+        {
+          "caller": "test_resource_list_metadata_is_cached_and_invalidated_after_create",
+          "callee": "self.client.get",
+          "lineNumber": 76
+        },
+        {
+          "caller": "test_resource_list_metadata_is_cached_and_invalidated_after_create",
+          "callee": "self.assertEqual",
+          "lineNumber": 78
+        },
+        {
+          "caller": "test_resource_list_metadata_is_cached_and_invalidated_after_create",
+          "callee": "self.assertEqual",
+          "lineNumber": 79
+        },
+        {
+          "caller": "test_resource_list_metadata_is_cached_and_invalidated_after_create",
+          "callee": "self.assertEqual",
+          "lineNumber": 80
+        },
+        {
+          "caller": "test_resource_list_metadata_is_cached_and_invalidated_after_create",
+          "callee": "self.get_cache_key_count",
+          "lineNumber": 80
+        },
+        {
+          "caller": "test_resource_list_metadata_is_cached_and_invalidated_after_create",
+          "callee": "self.client.post",
+          "lineNumber": 82
+        },
+        {
+          "caller": "test_resource_list_metadata_is_cached_and_invalidated_after_create",
+          "callee": "self.assertEqual",
+          "lineNumber": 92
+        },
+        {
+          "caller": "test_resource_list_metadata_is_cached_and_invalidated_after_create",
+          "callee": "self.assertEqual",
+          "lineNumber": 93
+        },
+        {
+          "caller": "test_resource_list_metadata_is_cached_and_invalidated_after_create",
+          "callee": "self.get_cache_key_count",
+          "lineNumber": 93
+        },
+        {
+          "caller": "test_voice_tone_list_metadata_is_cached_and_invalidated_after_update",
+          "callee": "self.grant_permissions",
+          "lineNumber": 96
+        },
+        {
+          "caller": "test_voice_tone_list_metadata_is_cached_and_invalidated_after_update",
+          "callee": "VoiceTone.objects.create",
+          "lineNumber": 97
+        },
+        {
+          "caller": "test_voice_tone_list_metadata_is_cached_and_invalidated_after_update",
+          "callee": "self.client.get",
+          "lineNumber": 106
+        },
+        {
+          "caller": "test_voice_tone_list_metadata_is_cached_and_invalidated_after_update",
+          "callee": "self.assertEqual",
+          "lineNumber": 108
+        },
+        {
+          "caller": "test_voice_tone_list_metadata_is_cached_and_invalidated_after_update",
+          "callee": "self.assertEqual",
+          "lineNumber": 109
+        },
+        {
+          "caller": "test_voice_tone_list_metadata_is_cached_and_invalidated_after_update",
+          "callee": "self.assertEqual",
+          "lineNumber": 110
+        },
+        {
+          "caller": "test_voice_tone_list_metadata_is_cached_and_invalidated_after_update",
+          "callee": "self.get_cache_key_count",
+          "lineNumber": 110
+        },
+        {
+          "caller": "test_voice_tone_list_metadata_is_cached_and_invalidated_after_update",
+          "callee": "self.client.patch",
+          "lineNumber": 112
+        },
+        {
+          "caller": "test_voice_tone_list_metadata_is_cached_and_invalidated_after_update",
+          "callee": "self.assertEqual",
+          "lineNumber": 118
+        },
+        {
+          "caller": "test_voice_tone_list_metadata_is_cached_and_invalidated_after_update",
+          "callee": "self.assertEqual",
+          "lineNumber": 119
+        },
+        {
+          "caller": "test_voice_tone_list_metadata_is_cached_and_invalidated_after_update",
+          "callee": "self.get_cache_key_count",
+          "lineNumber": 119
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "self.grant_permissions",
+          "lineNumber": 122
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "KnowledgeDocument.objects.create",
+          "lineNumber": 123
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "SimpleUploadedFile",
+          "lineNumber": 125
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "self.client.get",
+          "lineNumber": 130
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "self.assertEqual",
+          "lineNumber": 132
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "self.assertEqual",
+          "lineNumber": 133
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "self.assertEqual",
+          "lineNumber": 134
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "self.get_cache_key_count",
+          "lineNumber": 134
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "self.client.get",
+          "lineNumber": 136
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "self.assertEqual",
+          "lineNumber": 137
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "self.assertEqual",
+          "lineNumber": 138
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "b''.join",
+          "lineNumber": 138
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "self.assertEqual",
+          "lineNumber": 139
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "self.get_cache_key_count",
+          "lineNumber": 139
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "self.assertTrue",
+          "lineNumber": 140
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "Path(document.file.path).exists",
+          "lineNumber": 140
+        },
+        {
+          "caller": "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes",
+          "callee": "Path",
+          "lineNumber": 140
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/resources/tests/test_scrolling_text_api.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 250,
+      "nonEmptyLines": 211,
+      "classes": [
+        {
+          "name": "ScrollingTextApiTests",
+          "startLine": 23,
+          "endLine": 250,
+          "methods": [
+            "setUp",
+            "grant_permissions",
+            "test_list_scrolling_texts_is_public",
+            "test_create_scrolling_text_success",
+            "test_create_scrolling_text_rejects_empty_items",
+            "test_create_scrolling_text_can_omit_title_and_active_state",
+            "test_create_scrolling_text_invalidates_cached_empty_list",
+            "test_list_scrolling_texts_returns_language_specific_texts",
+            "test_list_scrolling_texts_without_params_returns_pair_content_list",
+            "test_scrolling_text_content_action_supports_language_body",
+            "test_list_scrolling_texts_supports_exact_title_query",
+            "test_update_scrolling_text_replaces_items_in_order",
+            "get_cache_key_count"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ScrollingTextApiTests",
+          "line": 22,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "setUp",
+          "callee": "cache.clear",
+          "lineNumber": 25
+        },
+        {
+          "caller": "setUp",
+          "callee": "User.objects.create_user",
+          "lineNumber": 26
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.setup_tenant",
+          "lineNumber": 27
+        },
+        {
+          "caller": "setUp",
+          "callee": "Role.objects.create",
+          "lineNumber": 28
+        },
+        {
+          "caller": "setUp",
+          "callee": "UserRole.objects.create",
+          "lineNumber": 29
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 30
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 35
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "permission_points.append",
+          "lineNumber": 44
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "self.role.permission_points.set",
+          "lineNumber": 45
+        },
+        {
+          "caller": "test_list_scrolling_texts_is_public",
+          "callee": "self.client.get",
+          "lineNumber": 52
+        },
+        {
+          "caller": "test_list_scrolling_texts_is_public",
+          "callee": "self.assertEqual",
+          "lineNumber": 54
+        },
+        {
+          "caller": "test_create_scrolling_text_success",
+          "callee": "self.grant_permissions",
+          "lineNumber": 57
+        },
+        {
+          "caller": "test_create_scrolling_text_success",
+          "callee": "self.client.post",
+          "lineNumber": 59
+        },
+        {
+          "caller": "test_create_scrolling_text_success",
+          "callee": "self.assertEqual",
+          "lineNumber": 73
+        },
+        {
+          "caller": "test_create_scrolling_text_success",
+          "callee": "self.assertEqual",
+          "lineNumber": 74
+        },
+        {
+          "caller": "test_create_scrolling_text_success",
+          "callee": "self.assertEqual",
+          "lineNumber": 75
+        },
+        {
+          "caller": "test_create_scrolling_text_success",
+          "callee": "self.assertTrue",
+          "lineNumber": 76
+        },
+        {
+          "caller": "test_create_scrolling_text_success",
+          "callee": "self.assertEqual",
+          "lineNumber": 77
+        },
+        {
+          "caller": "test_create_scrolling_text_success",
+          "callee": "len",
+          "lineNumber": 77
+        },
+        {
+          "caller": "test_create_scrolling_text_success",
+          "callee": "self.assertEqual",
+          "lineNumber": 78
+        },
+        {
+          "caller": "test_create_scrolling_text_success",
+          "callee": "self.assertTrue",
+          "lineNumber": 79
+        },
+        {
+          "caller": "test_create_scrolling_text_success",
+          "callee": "ScrollingText.objects.filter(title='首页滚动公告', items__en_text='Welcome').exists",
+          "lineNumber": 79
+        },
+        {
+          "caller": "test_create_scrolling_text_success",
+          "callee": "ScrollingText.objects.filter",
+          "lineNumber": 79
+        },
+        {
+          "caller": "test_create_scrolling_text_rejects_empty_items",
+          "callee": "self.grant_permissions",
+          "lineNumber": 82
+        },
+        {
+          "caller": "test_create_scrolling_text_rejects_empty_items",
+          "callee": "self.client.post",
+          "lineNumber": 84
+        },
+        {
+          "caller": "test_create_scrolling_text_rejects_empty_items",
+          "callee": "self.assertEqual",
+          "lineNumber": 95
+        },
+        {
+          "caller": "test_create_scrolling_text_rejects_empty_items",
+          "callee": "self.assertIn",
+          "lineNumber": 96
+        },
+        {
+          "caller": "test_create_scrolling_text_can_omit_title_and_active_state",
+          "callee": "self.grant_permissions",
+          "lineNumber": 99
+        },
+        {
+          "caller": "test_create_scrolling_text_can_omit_title_and_active_state",
+          "callee": "self.client.post",
+          "lineNumber": 101
+        },
+        {
+          "caller": "test_create_scrolling_text_can_omit_title_and_active_state",
+          "callee": "self.assertEqual",
+          "lineNumber": 112
+        },
+        {
+          "caller": "test_create_scrolling_text_can_omit_title_and_active_state",
+          "callee": "self.assertEqual",
+          "lineNumber": 113
+        },
+        {
+          "caller": "test_create_scrolling_text_can_omit_title_and_active_state",
+          "callee": "self.assertTrue",
+          "lineNumber": 114
+        },
+        {
+          "caller": "test_create_scrolling_text_invalidates_cached_empty_list",
+          "callee": "self.grant_permissions",
+          "lineNumber": 117
+        },
+        {
+          "caller": "test_create_scrolling_text_invalidates_cached_empty_list",
+          "callee": "self.client.get",
+          "lineNumber": 118
+        },
+        {
+          "caller": "test_create_scrolling_text_invalidates_cached_empty_list",
+          "callee": "self.assertEqual",
+          "lineNumber": 120
+        },
+        {
+          "caller": "test_create_scrolling_text_invalidates_cached_empty_list",
+          "callee": "self.assertEqual",
+          "lineNumber": 121
+        },
+        {
+          "caller": "test_create_scrolling_text_invalidates_cached_empty_list",
+          "callee": "self.assertEqual",
+          "lineNumber": 122
+        },
+        {
+          "caller": "test_create_scrolling_text_invalidates_cached_empty_list",
+          "callee": "self.get_cache_key_count",
+          "lineNumber": 122
+        },
+        {
+          "caller": "test_create_scrolling_text_invalidates_cached_empty_list",
+          "callee": "self.client.post",
+          "lineNumber": 124
+        },
+        {
+          "caller": "test_create_scrolling_text_invalidates_cached_empty_list",
+          "callee": "self.assertEqual",
+          "lineNumber": 135
+        },
+        {
+          "caller": "test_create_scrolling_text_invalidates_cached_empty_list",
+          "callee": "self.assertEqual",
+          "lineNumber": 136
+        },
+        {
+          "caller": "test_create_scrolling_text_invalidates_cached_empty_list",
+          "callee": "self.get_cache_key_count",
+          "lineNumber": 136
+        },
+        {
+          "caller": "test_create_scrolling_text_invalidates_cached_empty_list",
+          "callee": "self.client.get",
+          "lineNumber": 138
+        },
+        {
+          "caller": "test_create_scrolling_text_invalidates_cached_empty_list",
+          "callee": "self.assertEqual",
+          "lineNumber": 140
+        },
+        {
+          "caller": "test_create_scrolling_text_invalidates_cached_empty_list",
+          "callee": "self.assertEqual",
+          "lineNumber": 141
+        },
+        {
+          "caller": "test_create_scrolling_text_invalidates_cached_empty_list",
+          "callee": "self.assertEqual",
+          "lineNumber": 142
+        },
+        {
+          "caller": "test_list_scrolling_texts_returns_language_specific_texts",
+          "callee": "self.grant_permissions",
+          "lineNumber": 145
+        },
+        {
+          "caller": "test_list_scrolling_texts_returns_language_specific_texts",
+          "callee": "ScrollingText.objects.create",
+          "lineNumber": 146
+        },
+        {
+          "caller": "test_list_scrolling_texts_returns_language_specific_texts",
+          "callee": "ScrollingTextItem.objects.create",
+          "lineNumber": 147
+        },
+        {
+          "caller": "test_list_scrolling_texts_returns_language_specific_texts",
+          "callee": "self.client.get",
+          "lineNumber": 154
+        },
+        {
+          "caller": "test_list_scrolling_texts_returns_language_specific_texts",
+          "callee": "self.client.get",
+          "lineNumber": 155
+        },
+        {
+          "caller": "test_list_scrolling_texts_returns_language_specific_texts",
+          "callee": "self.client.get",
+          "lineNumber": 156
+        },
+        {
+          "caller": "test_list_scrolling_texts_returns_language_specific_texts",
+          "callee": "self.assertEqual",
+          "lineNumber": 158
+        },
+        {
+          "caller": "test_list_scrolling_texts_returns_language_specific_texts",
+          "callee": "self.assertEqual",
+          "lineNumber": 159
+        },
+        {
+          "caller": "test_list_scrolling_texts_returns_language_specific_texts",
+          "callee": "self.assertEqual",
+          "lineNumber": 160
+        },
+        {
+          "caller": "test_list_scrolling_texts_returns_language_specific_texts",
+          "callee": "self.assertEqual",
+          "lineNumber": 161
+        },
+        {
+          "caller": "test_list_scrolling_texts_returns_language_specific_texts",
+          "callee": "self.assertEqual",
+          "lineNumber": 162
+        },
+        {
+          "caller": "test_list_scrolling_texts_returns_language_specific_texts",
+          "callee": "self.assertEqual",
+          "lineNumber": 163
+        },
+        {
+          "caller": "test_list_scrolling_texts_without_params_returns_pair_content_list",
+          "callee": "self.grant_permissions",
+          "lineNumber": 166
+        },
+        {
+          "caller": "test_list_scrolling_texts_without_params_returns_pair_content_list",
+          "callee": "ScrollingText.objects.create",
+          "lineNumber": 167
+        },
+        {
+          "caller": "test_list_scrolling_texts_without_params_returns_pair_content_list",
+          "callee": "ScrollingText.objects.create",
+          "lineNumber": 168
+        },
+        {
+          "caller": "test_list_scrolling_texts_without_params_returns_pair_content_list",
+          "callee": "ScrollingTextItem.objects.create",
+          "lineNumber": 169
+        },
+        {
+          "caller": "test_list_scrolling_texts_without_params_returns_pair_content_list",
+          "callee": "ScrollingTextItem.objects.create",
+          "lineNumber": 170
+        },
+        {
+          "caller": "test_list_scrolling_texts_without_params_returns_pair_content_list",
+          "callee": "self.client.get",
+          "lineNumber": 172
+        },
+        {
+          "caller": "test_list_scrolling_texts_without_params_returns_pair_content_list",
+          "callee": "self.assertEqual",
+          "lineNumber": 174
+        },
+        {
+          "caller": "test_list_scrolling_texts_without_params_returns_pair_content_list",
+          "callee": "self.assertEqual",
+          "lineNumber": 175
+        },
+        {
+          "caller": "test_scrolling_text_content_action_supports_language_body",
+          "callee": "self.grant_permissions",
+          "lineNumber": 178
+        },
+        {
+          "caller": "test_scrolling_text_content_action_supports_language_body",
+          "callee": "ScrollingText.objects.create",
+          "lineNumber": 179
+        },
+        {
+          "caller": "test_scrolling_text_content_action_supports_language_body",
+          "callee": "ScrollingTextItem.objects.create",
+          "lineNumber": 180
+        },
+        {
+          "caller": "test_scrolling_text_content_action_supports_language_body",
+          "callee": "ScrollingTextItem.objects.create",
+          "lineNumber": 181
+        },
+        {
+          "caller": "test_scrolling_text_content_action_supports_language_body",
+          "callee": "self.client.post",
+          "lineNumber": 183
+        },
+        {
+          "caller": "test_scrolling_text_content_action_supports_language_body",
+          "callee": "self.client.post",
+          "lineNumber": 184
+        },
+        {
+          "caller": "test_scrolling_text_content_action_supports_language_body",
+          "callee": "self.client.post",
+          "lineNumber": 185
+        },
+        {
+          "caller": "test_scrolling_text_content_action_supports_language_body",
+          "callee": "self.assertEqual",
+          "lineNumber": 187
+        },
+        {
+          "caller": "test_scrolling_text_content_action_supports_language_body",
+          "callee": "self.assertEqual",
+          "lineNumber": 188
+        },
+        {
+          "caller": "test_scrolling_text_content_action_supports_language_body",
+          "callee": "self.assertEqual",
+          "lineNumber": 189
+        },
+        {
+          "caller": "test_scrolling_text_content_action_supports_language_body",
+          "callee": "self.assertEqual",
+          "lineNumber": 190
+        },
+        {
+          "caller": "test_scrolling_text_content_action_supports_language_body",
+          "callee": "self.assertEqual",
+          "lineNumber": 191
+        },
+        {
+          "caller": "test_scrolling_text_content_action_supports_language_body",
+          "callee": "self.assertEqual",
+          "lineNumber": 192
+        },
+        {
+          "caller": "test_list_scrolling_texts_supports_exact_title_query",
+          "callee": "self.grant_permissions",
+          "lineNumber": 201
+        },
+        {
+          "caller": "test_list_scrolling_texts_supports_exact_title_query",
+          "callee": "ScrollingText.objects.create",
+          "lineNumber": 202
+        },
+        {
+          "caller": "test_list_scrolling_texts_supports_exact_title_query",
+          "callee": "ScrollingText.objects.create",
+          "lineNumber": 203
+        },
+        {
+          "caller": "test_list_scrolling_texts_supports_exact_title_query",
+          "callee": "ScrollingTextItem.objects.create",
+          "lineNumber": 204
+        },
+        {
+          "caller": "test_list_scrolling_texts_supports_exact_title_query",
+          "callee": "ScrollingTextItem.objects.create",
+          "lineNumber": 210
+        },
+        {
+          "caller": "test_list_scrolling_texts_supports_exact_title_query",
+          "callee": "self.client.get",
+          "lineNumber": 217
+        },
+        {
+          "caller": "test_list_scrolling_texts_supports_exact_title_query",
+          "callee": "self.assertEqual",
+          "lineNumber": 219
+        },
+        {
+          "caller": "test_list_scrolling_texts_supports_exact_title_query",
+          "callee": "self.assertEqual",
+          "lineNumber": 220
+        },
+        {
+          "caller": "test_list_scrolling_texts_supports_exact_title_query",
+          "callee": "self.assertEqual",
+          "lineNumber": 221
+        },
+        {
+          "caller": "test_list_scrolling_texts_supports_exact_title_query",
+          "callee": "self.assertEqual",
+          "lineNumber": 222
+        },
+        {
+          "caller": "test_update_scrolling_text_replaces_items_in_order",
+          "callee": "self.grant_permissions",
+          "lineNumber": 225
+        },
+        {
+          "caller": "test_update_scrolling_text_replaces_items_in_order",
+          "callee": "ScrollingText.objects.create",
+          "lineNumber": 226
+        },
+        {
+          "caller": "test_update_scrolling_text_replaces_items_in_order",
+          "callee": "ScrollingTextItem.objects.create",
+          "lineNumber": 227
+        },
+        {
+          "caller": "test_update_scrolling_text_replaces_items_in_order",
+          "callee": "self.client.patch",
+          "lineNumber": 229
+        },
+        {
+          "caller": "test_update_scrolling_text_replaces_items_in_order",
+          "callee": "self.assertEqual",
+          "lineNumber": 241
+        },
+        {
+          "caller": "test_update_scrolling_text_replaces_items_in_order",
+          "callee": "scrolling_text.refresh_from_db",
+          "lineNumber": 242
+        },
+        {
+          "caller": "test_update_scrolling_text_replaces_items_in_order",
+          "callee": "self.assertEqual",
+          "lineNumber": 243
+        },
+        {
+          "caller": "test_update_scrolling_text_replaces_items_in_order",
+          "callee": "self.assertEqual",
+          "lineNumber": 244
+        },
+        {
+          "caller": "test_update_scrolling_text_replaces_items_in_order",
+          "callee": "list",
+          "lineNumber": 244
+        },
+        {
+          "caller": "test_update_scrolling_text_replaces_items_in_order",
+          "callee": "scrolling_text.items.values_list",
+          "lineNumber": 244
+        },
+        {
+          "caller": "get_cache_key_count",
+          "callee": "get_business_cache_summaries",
+          "lineNumber": 247
+        },
+        {
+          "caller": "get_cache_key_count",
+          "callee": "AssertionError",
+          "lineNumber": 250
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/config/business_cache.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 185,
+      "nonEmptyLines": 142,
+      "functions": [
+        {
+          "name": "is_business_cache_enabled",
+          "startLine": 54,
+          "endLine": 55,
+          "params": []
+        },
+        {
+          "name": "get_business_cache_timeout",
+          "startLine": 58,
+          "endLine": 59,
+          "params": []
+        },
+        {
+          "name": "make_response_cache_key",
+          "startLine": 62,
+          "endLine": 70,
+          "params": [
+            "namespace",
+            "request"
+          ]
+        },
+        {
+          "name": "get_business_response_cache",
+          "startLine": 73,
+          "endLine": 76,
+          "params": [
+            "namespace",
+            "request"
+          ]
+        },
+        {
+          "name": "set_business_response_cache",
+          "startLine": 79,
+          "endLine": 86,
+          "params": [
+            "namespace",
+            "request",
+            "data",
+            "timeout"
+          ]
+        },
+        {
+          "name": "register_business_cache_key",
+          "startLine": 89,
+          "endLine": 95,
+          "params": [
+            "namespace",
+            "cache_key"
+          ]
+        },
+        {
+          "name": "clear_business_cache_namespace",
+          "startLine": 98,
+          "endLine": 105,
+          "params": [
+            "namespace"
+          ]
+        },
+        {
+          "name": "clear_all_business_cache",
+          "startLine": 108,
+          "endLine": 109,
+          "params": []
+        },
+        {
+          "name": "get_business_cache_summaries",
+          "startLine": 112,
+          "endLine": 124,
+          "params": []
+        },
+        {
+          "name": "make_registry_key",
+          "startLine": 127,
+          "endLine": 129,
+          "params": [
+            "namespace"
+          ]
+        },
+        {
+          "name": "validate_business_cache_namespace",
+          "startLine": 132,
+          "endLine": 134,
+          "params": [
+            "namespace"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "BusinessCacheNamespace",
+          "startLine": 13,
+          "endLine": 16,
+          "methods": [],
+          "properties": [
+            "key",
+            "label",
+            "description"
+          ]
+        },
+        {
+          "name": "BusinessCacheSummary",
+          "startLine": 20,
+          "endLine": 24,
+          "methods": [],
+          "properties": [
+            "namespace",
+            "label",
+            "description",
+            "cache_key_count"
+          ]
+        },
+        {
+          "name": "CachedBusinessResponseMixin",
+          "startLine": 137,
+          "endLine": 185,
+          "methods": [
+            "list",
+            "retrieve",
+            "perform_create",
+            "perform_update",
+            "perform_destroy",
+            "get_cached_business_response",
+            "set_cached_business_response",
+            "clear_cached_business_responses"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BusinessCacheNamespace",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "BusinessCacheSummary",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "is_business_cache_enabled",
+          "line": 54,
+          "isDefault": false
+        },
+        {
+          "name": "get_business_cache_timeout",
+          "line": 58,
+          "isDefault": false
+        },
+        {
+          "name": "make_response_cache_key",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "get_business_response_cache",
+          "line": 73,
+          "isDefault": false
+        },
+        {
+          "name": "set_business_response_cache",
+          "line": 79,
+          "isDefault": false
+        },
+        {
+          "name": "register_business_cache_key",
+          "line": 89,
+          "isDefault": false
+        },
+        {
+          "name": "clear_business_cache_namespace",
+          "line": 98,
+          "isDefault": false
+        },
+        {
+          "name": "clear_all_business_cache",
+          "line": 108,
+          "isDefault": false
+        },
+        {
+          "name": "get_business_cache_summaries",
+          "line": 112,
+          "isDefault": false
+        },
+        {
+          "name": "make_registry_key",
+          "line": 127,
+          "isDefault": false
+        },
+        {
+          "name": "validate_business_cache_namespace",
+          "line": 132,
+          "isDefault": false
+        },
+        {
+          "name": "CachedBusinessResponseMixin",
+          "line": 137,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "is_business_cache_enabled",
+          "callee": "bool",
+          "lineNumber": 55
+        },
+        {
+          "caller": "is_business_cache_enabled",
+          "callee": "getattr",
+          "lineNumber": 55
+        },
+        {
+          "caller": "get_business_cache_timeout",
+          "callee": "int",
+          "lineNumber": 59
+        },
+        {
+          "caller": "get_business_cache_timeout",
+          "callee": "getattr",
+          "lineNumber": 59
+        },
+        {
+          "caller": "make_response_cache_key",
+          "callee": "validate_business_cache_namespace",
+          "lineNumber": 63
+        },
+        {
+          "caller": "make_response_cache_key",
+          "callee": "get_request_tenant",
+          "lineNumber": 66
+        },
+        {
+          "caller": "make_response_cache_key",
+          "callee": "request.get_host",
+          "lineNumber": 68
+        },
+        {
+          "caller": "make_response_cache_key",
+          "callee": "request.get_full_path",
+          "lineNumber": 68
+        },
+        {
+          "caller": "make_response_cache_key",
+          "callee": "sha256(raw_key.encode('utf-8')).hexdigest",
+          "lineNumber": 69
+        },
+        {
+          "caller": "make_response_cache_key",
+          "callee": "sha256",
+          "lineNumber": 69
+        },
+        {
+          "caller": "make_response_cache_key",
+          "callee": "raw_key.encode",
+          "lineNumber": 69
+        },
+        {
+          "caller": "get_business_response_cache",
+          "callee": "is_business_cache_enabled",
+          "lineNumber": 74
+        },
+        {
+          "caller": "get_business_response_cache",
+          "callee": "cache.get",
+          "lineNumber": 76
+        },
+        {
+          "caller": "get_business_response_cache",
+          "callee": "make_response_cache_key",
+          "lineNumber": 76
+        },
+        {
+          "caller": "set_business_response_cache",
+          "callee": "is_business_cache_enabled",
+          "lineNumber": 80
+        },
+        {
+          "caller": "set_business_response_cache",
+          "callee": "make_response_cache_key",
+          "lineNumber": 83
+        },
+        {
+          "caller": "set_business_response_cache",
+          "callee": "cache.set",
+          "lineNumber": 84
+        },
+        {
+          "caller": "set_business_response_cache",
+          "callee": "get_business_cache_timeout",
+          "lineNumber": 84
+        },
+        {
+          "caller": "set_business_response_cache",
+          "callee": "register_business_cache_key",
+          "lineNumber": 85
+        },
+        {
+          "caller": "register_business_cache_key",
+          "callee": "validate_business_cache_namespace",
+          "lineNumber": 90
+        },
+        {
+          "caller": "register_business_cache_key",
+          "callee": "make_registry_key",
+          "lineNumber": 91
+        },
+        {
+          "caller": "register_business_cache_key",
+          "callee": "set",
+          "lineNumber": 92
+        },
+        {
+          "caller": "register_business_cache_key",
+          "callee": "cache.get",
+          "lineNumber": 92
+        },
+        {
+          "caller": "register_business_cache_key",
+          "callee": "registered_keys.add",
+          "lineNumber": 93
+        },
+        {
+          "caller": "register_business_cache_key",
+          "callee": "cache.set",
+          "lineNumber": 95
+        },
+        {
+          "caller": "register_business_cache_key",
+          "callee": "sorted",
+          "lineNumber": 95
+        },
+        {
+          "caller": "clear_business_cache_namespace",
+          "callee": "validate_business_cache_namespace",
+          "lineNumber": 99
+        },
+        {
+          "caller": "clear_business_cache_namespace",
+          "callee": "make_registry_key",
+          "lineNumber": 100
+        },
+        {
+          "caller": "clear_business_cache_namespace",
+          "callee": "list",
+          "lineNumber": 101
+        },
+        {
+          "caller": "clear_business_cache_namespace",
+          "callee": "cache.get",
+          "lineNumber": 101
+        },
+        {
+          "caller": "clear_business_cache_namespace",
+          "callee": "cache.delete_many",
+          "lineNumber": 103
+        },
+        {
+          "caller": "clear_business_cache_namespace",
+          "callee": "cache.delete",
+          "lineNumber": 104
+        },
+        {
+          "caller": "clear_business_cache_namespace",
+          "callee": "len",
+          "lineNumber": 105
+        },
+        {
+          "caller": "clear_all_business_cache",
+          "callee": "sum",
+          "lineNumber": 109
+        },
+        {
+          "caller": "clear_all_business_cache",
+          "callee": "clear_business_cache_namespace",
+          "lineNumber": 109
+        },
+        {
+          "caller": "get_business_cache_summaries",
+          "callee": "cache.get",
+          "lineNumber": 115
+        },
+        {
+          "caller": "get_business_cache_summaries",
+          "callee": "make_registry_key",
+          "lineNumber": 115
+        },
+        {
+          "caller": "get_business_cache_summaries",
+          "callee": "summaries.append",
+          "lineNumber": 116
+        },
+        {
+          "caller": "get_business_cache_summaries",
+          "callee": "BusinessCacheSummary",
+          "lineNumber": 117
+        },
+        {
+          "caller": "get_business_cache_summaries",
+          "callee": "len",
+          "lineNumber": 121
+        },
+        {
+          "caller": "make_registry_key",
+          "callee": "validate_business_cache_namespace",
+          "lineNumber": 128
+        },
+        {
+          "caller": "validate_business_cache_namespace",
+          "callee": "ValueError",
+          "lineNumber": 134
+        },
+        {
+          "caller": "list",
+          "callee": "self.get_cached_business_response",
+          "lineNumber": 141
+        },
+        {
+          "caller": "list",
+          "callee": "Response",
+          "lineNumber": 143
+        },
+        {
+          "caller": "list",
+          "callee": "super().list",
+          "lineNumber": 145
+        },
+        {
+          "caller": "list",
+          "callee": "super",
+          "lineNumber": 145
+        },
+        {
+          "caller": "list",
+          "callee": "self.set_cached_business_response",
+          "lineNumber": 146
+        },
+        {
+          "caller": "retrieve",
+          "callee": "self.get_cached_business_response",
+          "lineNumber": 150
+        },
+        {
+          "caller": "retrieve",
+          "callee": "Response",
+          "lineNumber": 152
+        },
+        {
+          "caller": "retrieve",
+          "callee": "super().retrieve",
+          "lineNumber": 154
+        },
+        {
+          "caller": "retrieve",
+          "callee": "super",
+          "lineNumber": 154
+        },
+        {
+          "caller": "retrieve",
+          "callee": "self.set_cached_business_response",
+          "lineNumber": 155
+        },
+        {
+          "caller": "perform_create",
+          "callee": "super().perform_create",
+          "lineNumber": 159
+        },
+        {
+          "caller": "perform_create",
+          "callee": "super",
+          "lineNumber": 159
+        },
+        {
+          "caller": "perform_create",
+          "callee": "self.clear_cached_business_responses",
+          "lineNumber": 160
+        },
+        {
+          "caller": "perform_update",
+          "callee": "super().perform_update",
+          "lineNumber": 164
+        },
+        {
+          "caller": "perform_update",
+          "callee": "super",
+          "lineNumber": 164
+        },
+        {
+          "caller": "perform_update",
+          "callee": "self.clear_cached_business_responses",
+          "lineNumber": 165
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "super().perform_destroy",
+          "lineNumber": 169
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "super",
+          "lineNumber": 169
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "self.clear_cached_business_responses",
+          "lineNumber": 170
+        },
+        {
+          "caller": "get_cached_business_response",
+          "callee": "get_business_response_cache",
+          "lineNumber": 176
+        },
+        {
+          "caller": "set_cached_business_response",
+          "callee": "set_business_response_cache",
+          "lineNumber": 181
+        },
+        {
+          "caller": "clear_cached_business_responses",
+          "callee": "clear_business_cache_namespace",
+          "lineNumber": 185
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 14,
+        "functionCount": 11,
+        "classCount": 3
+      }
+    },
+    {
+      "path": "backend/config/tests/test_business_cache.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 40,
+      "nonEmptyLines": 31,
+      "classes": [
+        {
+          "name": "BusinessCacheTests",
+          "startLine": 21,
+          "endLine": 39,
+          "methods": [
+            "tearDown",
+            "test_response_cache_registers_keys_for_namespace_cleanup"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BusinessCacheTests",
+          "line": 13,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "tearDown",
+          "callee": "cache.clear",
+          "lineNumber": 23
+        },
+        {
+          "caller": "tearDown",
+          "callee": "super().tearDown",
+          "lineNumber": 24
+        },
+        {
+          "caller": "tearDown",
+          "callee": "super",
+          "lineNumber": 24
+        },
+        {
+          "caller": "test_response_cache_registers_keys_for_namespace_cleanup",
+          "callee": "RequestFactory().get",
+          "lineNumber": 27
+        },
+        {
+          "caller": "test_response_cache_registers_keys_for_namespace_cleanup",
+          "callee": "RequestFactory",
+          "lineNumber": 27
+        },
+        {
+          "caller": "test_response_cache_registers_keys_for_namespace_cleanup",
+          "callee": "make_response_cache_key",
+          "lineNumber": 28
+        },
+        {
+          "caller": "test_response_cache_registers_keys_for_namespace_cleanup",
+          "callee": "set_business_response_cache",
+          "lineNumber": 30
+        },
+        {
+          "caller": "test_response_cache_registers_keys_for_namespace_cleanup",
+          "callee": "self.assertEqual",
+          "lineNumber": 32
+        },
+        {
+          "caller": "test_response_cache_registers_keys_for_namespace_cleanup",
+          "callee": "get_business_response_cache",
+          "lineNumber": 32
+        },
+        {
+          "caller": "test_response_cache_registers_keys_for_namespace_cleanup",
+          "callee": "self.assertEqual",
+          "lineNumber": 33
+        },
+        {
+          "caller": "test_response_cache_registers_keys_for_namespace_cleanup",
+          "callee": "get_business_cache_summaries",
+          "lineNumber": 33
+        },
+        {
+          "caller": "test_response_cache_registers_keys_for_namespace_cleanup",
+          "callee": "clear_business_cache_namespace",
+          "lineNumber": 35
+        },
+        {
+          "caller": "test_response_cache_registers_keys_for_namespace_cleanup",
+          "callee": "self.assertEqual",
+          "lineNumber": 37
+        },
+        {
+          "caller": "test_response_cache_registers_keys_for_namespace_cleanup",
+          "callee": "self.assertIsNone",
+          "lineNumber": 38
+        },
+        {
+          "caller": "test_response_cache_registers_keys_for_namespace_cleanup",
+          "callee": "cache.get",
+          "lineNumber": 38
+        },
+        {
+          "caller": "test_response_cache_registers_keys_for_namespace_cleanup",
+          "callee": "self.assertIsNone",
+          "lineNumber": 39
+        },
+        {
+          "caller": "test_response_cache_registers_keys_for_namespace_cleanup",
+          "callee": "get_business_response_cache",
+          "lineNumber": 39
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    }
+  ]
+}
