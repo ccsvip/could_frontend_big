@@ -58,8 +58,11 @@ class ModelAssetApiTests(TenantTestMixin, APITestCase):
             )
             permission_points.append(permission_point)
         self.role.permission_points.set(permission_points)
+        self.tenant.permission_points.set(permission_points)
 
     def test_list_model_assets_requires_view_permission(self):
+        self.tenant.permission_points.clear()
+
         response = self.client.get('/api/v1/resources/models/')
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

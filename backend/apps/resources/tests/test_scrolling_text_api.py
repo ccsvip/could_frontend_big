@@ -43,6 +43,7 @@ class ScrollingTextApiTests(TenantTestMixin, APITestCase):
             )
             permission_points.append(permission_point)
         self.role.permission_points.set(permission_points)
+        self.tenant.permission_points.set(permission_points)
 
     def test_list_scrolling_texts_is_public(self):
         # scrolling-texts 是多租户改造里明确定为公开的运行时端点：

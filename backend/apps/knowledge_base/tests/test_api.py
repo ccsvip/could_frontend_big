@@ -67,6 +67,7 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
             )
             permission_points.append(permission_point)
         self.role.permission_points.set(permission_points)
+        self.tenant.permission_points.set(permission_points)
 
     def create_document(self, *, name: str = '文档一.pdf', title: str | None = None, content: bytes = b'doc-1') -> KnowledgeDocument:
         return KnowledgeDocument.objects.create(
@@ -77,6 +78,8 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
         )
 
     def test_list_requires_view_permission(self):
+        self.tenant.permission_points.clear()
+
         response = self.client.get('/api/v1/knowledge-base/')
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

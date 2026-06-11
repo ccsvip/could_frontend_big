@@ -57,6 +57,7 @@ class BusinessMetadataCacheApiTests(TenantTestMixin, APITestCase):
             )
             permission_points.append(permission_point)
         self.role.permission_points.set(permission_points)
+        self.tenant.permission_points.set(permission_points)
 
     def get_cache_key_count(self, namespace: str) -> int:
         for summary in get_business_cache_summaries():

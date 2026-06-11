@@ -278,7 +278,7 @@ class AuthApiCsrfTests(APITestCase):
             },
         )
         role.permission_points.add(permission)
-        # 公司须被授权该权限点，员工权限 = 角色权限 ∩ 公司权限 才非空。
+        # 普通员工权限直接来自公司授权；测试内惰性创建的权限点需同步补授给公司。
         review_tenant.permission_points.add(permission)
         UserRole.objects.create(user=reviewer, role=role)
         application = AccountApplication.objects.create(

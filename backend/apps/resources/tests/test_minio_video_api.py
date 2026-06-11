@@ -29,7 +29,7 @@ class MinioVideoApiTests(TenantTestMixin, APITestCase):
             )
             permission_points.append(permission_point)
         self.role.permission_points.set(permission_points)
-        self.tenant.permission_points.add(*permission_points)
+        self.tenant.permission_points.set(permission_points)
 
     @patch('apps.resources.views.get_video_upload_config')
     def test_upload_config_requires_video_create_permission(self, mock_config):

@@ -36,7 +36,7 @@ DRF 的 JWT 鉴权在 **view 层**，Django middleware 阶段 `request.user` 还
 
 - 超管：`audience in (all, platform)` 全部菜单（含租户管理），不含 `tenant_admin`。
 - 公司管理员（`Membership.is_tenant_admin`）：`Tenant.menus`（all 类）+ 所有 `tenant_admin` 类菜单（员工管理）；权限 = `Tenant.permission_points` + `tenant.employees.manage`。
-- 员工：`Role.menus ∩ Tenant.menus`；权限 = `Role.permission_points ∩ Tenant.permission_points`。
+- 员工：`Tenant.menus` 中的通用业务菜单；权限 = `Tenant.permission_points` 中的启用权限点，但排除员工管理菜单与 `tenant.employees.manage`。`UserRole` 仅作历史/展示数据，不参与默认员工 access-context 计算。
 
 ## 对外接口
 
@@ -69,7 +69,7 @@ DRF 的 JWT 鉴权在 **view 层**，Django middleware 阶段 `request.user` 还
 - `test_llm_isolation`：LLM 供应商按公司隔离、聊天不跨租户兜底。
 - `test_isolation_contract`：隔离契约护栏（防回归）。
 
-测试辅助 `test_utils.TenantTestMixin.setup_tenant`：给「单租户时代」旧测试补 Membership + 全量授权（镜像默认公司）。旧测试在测试体内惰性建权限点时，需同步 `tenant.permission_points.add(...)`，否则 `role ∩ tenant` 交集为空导致 403。
+测试辅助 `test_utils.TenantTestMixin.setup_tenant`：给「单租户时代」旧测试补 Membership + 全量授权（镜像默认公司）。普通员工权限直接来自 `tenant.permission_points`，旧测试在测试体内惰性建权限点时，需同步 `tenant.permission_points.add(...)`，否则访问对应业务接口会因公司未授权返回 403。
 
 ## 常见问题 (FAQ)
 

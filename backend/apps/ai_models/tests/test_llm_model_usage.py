@@ -69,8 +69,8 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
                 },
             )
             permission_points.append(permission_point)
-        self.grant_all_scope_to_tenant()
         self.role.permission_points.set(permission_points)
+        self.tenant.permission_points.set(permission_points)
 
     def create_platform_provider(self, **overrides):
         Provider = self.provider_model()

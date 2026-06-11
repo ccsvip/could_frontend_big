@@ -47,9 +47,7 @@ class AliyunCommandApiTests(TenantTestMixin, APITestCase):
             )
             permission_points.append(permission_point)
         self.role.permission_points.set(permission_points)
-        # 同步授予公司：PR-4 后员工权限 = 角色权限 ∩ 公司权限。这些权限点是测试内惰性创建的，
-        # 晚于 setup_tenant 的全量快照，故需显式补授给 tenant，交集才非空。
-        self.tenant.permission_points.add(*permission_points)
+        self.tenant.permission_points.set(permission_points)
 
     @override_settings(
         MULTIMODAL_WORKSPACE_ID='workspace-1',

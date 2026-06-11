@@ -5,9 +5,23 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import Menu, PermissionPoint, Role, UserRole
+from apps.devices.models import Device
 from apps.tenants.models import Membership, Tenant
 
 User = get_user_model()
+
+
+def _menu_paths(ctx):
+    paths = []
+
+    def walk(items):
+        for it in items:
+            paths.append(it['path'])
+            if it.get('children'):
+                walk(it['children'])
+
+    walk(ctx['menus'])
+    return set(paths)
 
 
 class EmployeeManagementApiTests(APITestCase):
@@ -17,8 +31,10 @@ class EmployeeManagementApiTests(APITestCase):
         cls.tenant_a = Tenant.objects.create(name='公司A', code='comp-a')
         cls.menu = Menu.objects.create(name='设备', key='/e-devices', path='/e-devices', audience=Menu.AUDIENCE_ALL, sort_order=10)
         cls.perm = PermissionPoint.objects.create(name='查看设备', code='e.devices.view', module='devices')
+        cls.device_view_perm = PermissionPoint.objects.get(code='devices.view')
         cls.tenant_a.menus.set([cls.menu])
-        cls.tenant_a.permission_points.set([cls.perm])
+        cls.tenant_a.permission_points.set([cls.perm, cls.device_view_perm])
+        Device.objects.create(code='dev-a-001', name='公司A设备', tenant=cls.tenant_a)
         cls.admin_a = User.objects.create_user('admin_a', password='pw12345678')
         Membership.objects.create(user=cls.admin_a, tenant=cls.tenant_a, is_tenant_admin=True)
 
@@ -41,6 +57,26 @@ class EmployeeManagementApiTests(APITestCase):
         self.assertFalse(m.is_tenant_admin)
         self.assertTrue(m.must_change_password)
         self.assertEqual(m.role_name, '运营')
+
+    def test_created_employee_gets_default_tenant_access_without_role_binding(self):
+        self.client.force_authenticate(self.admin_a)
+        resp = self.client.post('/api/v1/employees/', {
+            'username': 'defaultEmp', 'displayName': '默认员工', 'password': 'init12345678', 'roleName': '运营',
+        }, format='json')
+        self.assertEqual(resp.status_code, 201)
+        emp = User.objects.get(username='defaultEmp')
+        self.assertFalse(UserRole.objects.filter(user=emp).exists())
+
+        self.client.force_authenticate(emp)
+        me = self.client.get('/api/v1/auth/me/')
+        self.assertEqual(me.status_code, 200)
+        self.assertEqual(_menu_paths(me.data), {'/e-devices'})
+        self.assertIn('devices.view', me.data['permissions'])
+        self.assertNotIn('tenant.employees.manage', me.data['permissions'])
+
+        self.assertEqual(self.client.get('/api/v1/devices/').status_code, 200)
+        self.assertEqual(self.client.get('/api/v1/employees/').status_code, 403)
+        self.assertEqual(self.client.get('/api/v1/roles/').status_code, 403)
 
     def test_employee_role_name_is_required_but_can_repeat(self):
         self.client.force_authenticate(self.admin_a)

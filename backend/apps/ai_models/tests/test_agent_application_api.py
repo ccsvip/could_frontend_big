@@ -55,8 +55,8 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
                 },
             )
             permission_points.append(permission_point)
-        self.grant_all_scope_to_tenant()
         self.role.permission_points.set(permission_points)
+        self.tenant.permission_points.set(permission_points)
 
     @staticmethod
     def agent_application_model():

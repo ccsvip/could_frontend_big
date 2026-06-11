@@ -47,7 +47,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             )
             permission_points.append(permission_point)
         self.role.permission_points.set(permission_points)
-        self.grant_all_scope_to_tenant()
+        self.tenant.permission_points.set(permission_points)
 
     def create_code(self, code='AUTH-0001', **overrides):
         defaults = {

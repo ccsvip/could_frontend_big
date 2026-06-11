@@ -39,6 +39,7 @@ class ResourceApiTests(TenantTestMixin, APITestCase):
             )
             permission_points.append(permission_point)
         self.role.permission_points.set(permission_points)
+        self.tenant.permission_points.set(permission_points)
 
     def test_create_video_resource_allows_cloud_url_without_file(self):
         self.grant_permissions('resources.videos.view', 'resources.videos.create')

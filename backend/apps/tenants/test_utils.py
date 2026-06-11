@@ -24,9 +24,9 @@ class TenantTestMixin:
     def grant_all_scope_to_tenant(self):
         """给测试公司授予「全量」菜单 + 权限点（镜像「默认公司」迁移）。
 
-        PR-4 后员工权限 = role.permission_points ∩ tenant.permission_points；旧单租户测试
-        的公司若没被授权任何权限点，交集恒空 → 全部 403。真实运营公司由超管授权过，
-        故测试公司也应被授权全量。tests 里惰性新建权限点后需再次调用本方法同步。
+        普通员工权限直接来自 tenant.permission_points；旧单租户测试的公司若没被授权
+        任何权限点，会全部 403。真实运营公司由超管授权过，故测试公司也应被授权全量。
+        tests 里惰性新建权限点后需再次同步到 tenant.permission_points。
         """
         self.tenant.menus.set(Menu.objects.all())
         self.tenant.permission_points.set(PermissionPoint.objects.all())

@@ -58,6 +58,7 @@ class BackendManagementFlowApiTests(TenantTestMixin, APITestCase):
             )
             points.append(permission_point)
         self.role.permission_points.set(points)
+        self.tenant.permission_points.set(points)
 
     def create_group(self, group_type: str, name: str, export_enabled: bool = False) -> int:
         response = self.client.post(

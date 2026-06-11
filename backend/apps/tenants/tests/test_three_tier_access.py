@@ -86,6 +86,40 @@ class ThreeTierAccessContextTests(APITestCase):
         self.assertEqual(ctx['permissions'], ['t.devices.view', 't.resources.view'])
         self.assertEqual(ctx['role']['name'], '运营')
 
+    def test_employee_without_role_gets_default_tenant_access(self):
+        employee = User.objects.create_user('emp_no_role', password='pw12345678')
+        Membership.objects.create(user=employee, tenant=self.tenant, role_name='客服', is_tenant_admin=False)
+        self.tenant.menus.add(self.m_employees)
+        self.tenant.permission_points.add(PermissionPoint.objects.get(code='tenant.employees.manage'))
+
+        ctx = build_user_access_context(employee)
+        paths = _menu_paths(ctx)
+
+        self.assertEqual(paths, {'/t-devices', '/t-resources'})
+        self.assertNotIn('/employees', paths)
+        self.assertEqual(ctx['permissions'], ['t.devices.view', 't.resources.view'])
+        self.assertNotIn('tenant.employees.manage', ctx['permissions'])
+
+    def test_employee_role_binding_does_not_limit_default_tenant_access(self):
+        self.employee_role.permission_points.set([self.p_dev_view])
+
+        ctx = build_user_access_context(self.employee)
+
+        self.assertEqual(ctx['permissions'], ['t.devices.view', 't.resources.view'])
+
+    def test_employee_access_context_follows_tenant_authorization_changes(self):
+        employee = User.objects.create_user('emp_dynamic_access', password='pw12345678')
+        Membership.objects.create(user=employee, tenant=self.tenant, role_name='客服', is_tenant_admin=False)
+
+        self.tenant.menus.set([self.m_resources])
+        self.tenant.permission_points.set([self.p_res_view])
+
+        ctx = build_user_access_context(employee)
+        paths = _menu_paths(ctx)
+
+        self.assertEqual(paths, {'/t-resources'})
+        self.assertEqual(ctx['permissions'], ['t.resources.view'])
+
     def test_inactive_tenant_users_have_no_menus_or_permissions(self):
         self.tenant.is_active = False
         self.tenant.save(update_fields=['is_active'])

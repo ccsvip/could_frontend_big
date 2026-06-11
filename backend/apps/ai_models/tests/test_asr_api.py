@@ -36,7 +36,7 @@ class ASRApiTests(TenantTestMixin, APITestCase):
             )
             permission_points.append(permission_point)
         self.role.permission_points.set(permission_points)
-        self.grant_all_scope_to_tenant()
+        self.tenant.permission_points.set(permission_points)
 
     @override_settings(
         MULTIMODAL_WORKSPACE_ID='env-workspace',
