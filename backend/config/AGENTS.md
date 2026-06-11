@@ -16,7 +16,7 @@ config/
 │   ├── prod.py           # DEBUG=False, ALLOWED_HOSTS / CSRF 严格
 │   └── tests/            # 测试专用 settings（如有）
 ├── urls.py               # /api/v1/* 路由根
-├── asgi.py               # uvicorn 入口（聊天室真流式所必需）
+├── asgi.py               # uvicorn 入口（聊天流式接口所必需）
 ├── wsgi.py               # 备份入口，不要默认用
 ├── celery.py             # Celery app + autodiscover
 ├── tasks.py              # config 级共享任务（不属于具体 app）
@@ -38,7 +38,7 @@ config/
 - ❌ 修改 `ApiV1RootView` 时漏更新接口列表：它是 browsable API 入口，前端联调和外部对接都看这里。
 - ❌ 在 `prod.py` 打开 `DEBUG=True`：除会泄露调试信息外，还会改变静态/媒体文件路径行为。
 - ❌ 绕过 `business_cache` 直接 `cache.set()` 业务数据：丢命名空间，跨进程清理失效。
-- ❌ 在 `wsgi.py` 上线：聊天室必须 `asgi.py`（uvicorn）才能真流式。
+- ❌ 在 `wsgi.py` 上线：聊天流式接口必须 `asgi.py`（uvicorn）才能真流式。
 
 ## NOTES
 

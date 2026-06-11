@@ -3,10 +3,11 @@ from unittest.mock import patch
 
 from asgiref.sync import async_to_sync
 from django.contrib.auth import get_user_model
+from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from apps.accounts.models import PermissionPoint, Role, UserRole
+from apps.accounts.models import Menu, PermissionPoint, Role, UserRole
 from apps.ai_models.models import ChatConversation, ChatMessage, LLMModel, LLMProvider, TenantLLMModelGrant
 from apps.ai_models.views import _build_chat_completions_url
 from apps.tenants.test_utils import TenantTestMixin
@@ -57,6 +58,12 @@ def _sse_content(streamed_body: str) -> str:
         if isinstance(obj, dict) and isinstance(obj.get('content'), str):
             parts.append(obj['content'])
     return ''.join(parts)
+
+
+class ChatAccessDataTests(TestCase):
+    def test_standalone_chat_room_menu_is_not_seeded(self):
+        self.assertFalse(Menu.objects.filter(key='/ai-models/chat').exists())
+        self.assertFalse(Menu.objects.filter(path='/ai-models/chat').exists())
 
 
 class _DummyStreamResponse:

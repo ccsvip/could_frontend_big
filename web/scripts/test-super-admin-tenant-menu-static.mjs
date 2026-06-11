@@ -11,6 +11,12 @@ const expectIncludes = (source, needle, label) => {
   }
 };
 
+const expectExcludes = (source, needle, label) => {
+  if (source.includes(needle)) {
+    failures.push(`${label}: should not include ${needle}`);
+  }
+};
+
 const sliceBetween = (source, startNeedle, endNeedle, label) => {
   const start = source.indexOf(startNeedle);
   const end = source.indexOf(endNeedle, start + startNeedle.length);
@@ -40,9 +46,10 @@ for (const segment of ['images', 'videos', 'scrolling-texts', 'voice-tones', 'mo
 }
 
 expectIncludes(aiModuleBlock, 'children:', 'super admin tenant sidebar ai-models');
-for (const segment of ['asr', 'llm', 'tts', 'chat']) {
+for (const segment of ['asr', 'llm', 'tts']) {
   expectIncludes(aiModuleBlock, `segment: '${segment}'`, 'super admin tenant sidebar ai-models');
 }
+expectExcludes(aiModuleBlock, "segment: 'chat'", 'super admin tenant sidebar ai-models');
 
 const tenantScopedRouteStart = routerSource.indexOf("path: 'tenants/:tenantId'");
 const tenantScopedRouteEnd = routerSource.indexOf("path: 'logs'", tenantScopedRouteStart);
@@ -64,12 +71,12 @@ const scopedRoutePaths = [
   'ai-models/asr',
   'ai-models/llm',
   'ai-models/tts',
-  'ai-models/chat',
 ];
 
 for (const path of scopedRoutePaths) {
   expectIncludes(tenantScopedRouteBlock, `path: '${path}'`, 'super admin tenant routes');
 }
+expectExcludes(tenantScopedRouteBlock, "path: 'ai-models/chat'", 'super admin tenant routes');
 
 if (failures.length > 0) {
   console.error(failures.join('\n'));

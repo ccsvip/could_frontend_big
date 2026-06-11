@@ -60,7 +60,6 @@ class ApiV1RootView(APIView):
                     'bulk_download': f'{base_url}/knowledge-base/bulk-download/',
                 },
                 'ai_models': {
-                    'conversations': f'{base_url}/ai-models/chat/conversations/',
                     'llm_options': f'{base_url}/ai-models/llm/options/',
                     'llm_settings': f'{base_url}/settings/llm/providers/',
                 },

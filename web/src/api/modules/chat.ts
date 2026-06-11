@@ -9,21 +9,6 @@ export type ChatMessage = {
   created_at: string;
 };
 
-export type ChatConversationListItem = {
-  id: number;
-  title: string;
-  applicationId: number | null;
-  llmModelId: number | null;
-  llmModelName: string;
-  llmModelDisplayName: string;
-  llmProviderName: string | null;
-  summary: string;
-  messageCount: number;
-  lastMessage: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
 export type ChatConversationDetail = {
   id: number;
   title: string;
@@ -41,15 +26,7 @@ export type ChatConversationDetail = {
   updated_at: string;
 };
 
-export type ChatConversationListResponse = {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: ChatConversationListItem[];
-};
-
-export type CreateConversationPayload = {
-  title?: string;
+export type ChatConversationConfigPayload = {
   llmModelId?: number | null;
   systemPrompt?: string;
   temperature?: number;
@@ -63,14 +40,6 @@ const parseSseDataLine = (line: string) => {
   return line.slice(5).trimStart();
 };
 
-export const fetchConversations = async (page = 1, keyword = '') => {
-  const response = await httpClient.get<ChatConversationListResponse>(
-    '/ai-models/chat/conversations/',
-    { params: { page, keyword: keyword || undefined } },
-  );
-  return response.data;
-};
-
 export const fetchConversation = async (id: number) => {
   const response = await httpClient.get<ChatConversationDetail>(
     `/ai-models/chat/conversations/${id}/`,
@@ -78,29 +47,9 @@ export const fetchConversation = async (id: number) => {
   return response.data;
 };
 
-export const createConversation = async (payload: CreateConversationPayload) => {
-  const response = await httpClient.post<ChatConversationListItem>(
-    '/ai-models/chat/conversations/',
-    payload,
-  );
-  return response.data;
-};
-
-export const deleteConversation = async (id: number) => {
-  await httpClient.delete(`/ai-models/chat/conversations/${id}/`);
-};
-
-export const updateConversationTitle = async (id: number, title: string) => {
-  const response = await httpClient.patch<ChatConversationListItem>(
-    `/ai-models/chat/conversations/${id}/update-title/`,
-    { title },
-  );
-  return response.data;
-};
-
 export const updateConversationConfig = async (
   id: number,
-  payload: Pick<CreateConversationPayload, 'llmModelId' | 'systemPrompt' | 'temperature' | 'maxTokens'>,
+  payload: ChatConversationConfigPayload,
 ) => {
   const response = await httpClient.patch<ChatConversationDetail>(
     `/ai-models/chat/conversations/${id}/update-config/`,
@@ -218,16 +167,4 @@ export const sendMessageStream = async (
   }
 
   return controller;
-};
-
-export const updateMessageFeedback = async (
-  conversationId: number,
-  messageId: number,
-  feedback: 'none' | 'up' | 'down',
-) => {
-  const response = await httpClient.patch<ChatMessage>(
-    `/ai-models/chat/conversations/${conversationId}/messages/${messageId}/feedback/`,
-    { feedback },
-  );
-  return response.data;
 };

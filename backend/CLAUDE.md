@@ -50,7 +50,7 @@
   - `POST /api/v1/knowledge-base/`
   - `GET /api/v1/knowledge-base/<pk>/download/`
   - `POST /api/v1/knowledge-base/bulk-download/`
- - 聊天室：
+ - 应用管理调试会话：
   - `GET /api/v1/ai-models/chat/conversations/`
   - `POST /api/v1/ai-models/chat/conversations/`
   - `GET /api/v1/ai-models/chat/conversations/<pk>/`
@@ -111,13 +111,13 @@
   - A: 任务触发处对 `OperationalError` 做了兜底，不阻断主流程。
 - Q: 为什么标准 OpenAI 兼容模式有时“发消息后没回复”？
   - A: 某些兼容供应商在 `stream=true` 时仍然返回普通 JSON 完整响应而不是 SSE 分片；`apps/ai_models/views.py` 的聊天流式端点现在会优先解析 SSE，若检测到 200 + 普通 JSON，则回退读取 `choices[0].message.content` 并照常转成前端可消费的 SSE 片段。
-- Q: 现在该看哪些日志排查聊天室问题？
+- Q: 现在该看哪些日志排查聊天流式问题？
   - A: 查看 `apps/ai_models/views.py` 输出的 `chat.send.*` 和 `chat.conversation.config_updated` 日志，重点看 `conversation_id`、`provider_id`、`model_name`、`api_url`、`status_code`、`content_type`、`completed_sse` / `completed_plain_json`、`timeout` / `exception`；日志不会打印 API Key 和完整用户消息正文。
 - Q: LongCat 明明返回了流式 chunk，为什么本地还是没显示？
   - A: LongCat 的 SSE 事件行为 `data:{...}`，冒号后没有空格；如果解析器只认 `data: `，整段流会被静默跳过。`apps/ai_models/views.py` 现在已兼容 `data:` 后可选空格格式。
 - Q: LongCat/OpenAI 兼容地址到底该填什么？
   - A: `apps/ai_models/views.py` 现在会统一规范化 `api_base_url`：支持填写 `https://api.longcat.chat/openai`、`https://api.longcat.chat/openai/v1` 或完整 `https://api.longcat.chat/openai/v1/chat/completions`，最终都会归一到正确的 chat completions 地址。
-- Q: 关闭聊天室“流式回复”后会怎样？
+- Q: 关闭调试会话“流式回复”后会怎样？
   - A: 后端仍通过 `/send/` 返回 SSE 给前端，但上游请求会改成非流式，待完整回答返回后一次性推送到页面，便于和流式模式做对比排查。
 - Q: 为什么明明上游按 chunk 返回，浏览器还是阻塞显示？
   - A: 在当前 `uvicorn + ASGI` 链路下，如果 `StreamingHttpResponse` 使用同步 generator，ASGI 适配层可能先把内容整体消费完再返回；`apps/ai_models/views.py` 现已改为 `httpx.AsyncClient` + 异步生成器，确保真正边到边流式输出。
@@ -174,3 +174,4 @@
 - 2026-04-20T18:45:00+08:00：聊天室新增自动标题生成逻辑，若会话标题仍为默认占位值，则在首轮回复完成后调用当前绑定模型生成简短标题并回写数据库。
 - 2026-04-20T19:05:00+08:00：聊天室会话新增 `temperature` / `max_tokens` 配置并真实参与上游请求，`send` 端点支持最后一条助手消息重生成；配合前端搜索与模板能力，聊天室进入第二阶段工作台形态。
 - 2026-04-21T13:20:00+08:00：新增知识库已批准约束说明，记录预期 API、文档模型字段、admin-only 状态维护边界、raw DRF + 二进制下载契约，以及 A/C 两种结构下需要补充的测试路径。
+- 2026-06-11T00:00:00+08:00：移除独立 `/ai-models/chat` 菜单入口；聊天会话 API 保留给应用管理调试会话使用。

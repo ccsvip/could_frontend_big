@@ -13,7 +13,7 @@ api/
 ├── client.ts                # httpClient 单例 + ApiResponse 类型 + 401 拦截
 └── modules/
     ├── auth.ts              # /auth/login, /me, /change-password, account-applications
-    ├── chat.ts              # /ai-models/chat/conversations/* + SSE 解析
+    ├── chat.ts              # 应用管理调试会话：/ai-models/chat/conversations/* + SSE 解析
     ├── commands.ts          # /commands/groups,control,tasks,export,import
     ├── devices.ts           # /devices/, /devices/stats/
     ├── knowledge-base.ts    # /knowledge-base + 独立 axios 下载 helper
@@ -30,7 +30,7 @@ api/
 - **唯一 axios 实例** = `httpClient`，`baseURL = VITE_API_BASE_URL || '/api/v1'`，`timeout = 10000`。
 - **响应解析**：服务端统一 envelope `{status, message, data}`；模块函数应返回 `data` 而非整包，错误由全局拦截器 `message.error()`，调用方仅处理业务分支。
 - **401**：拦截器自动 `clearAuth()` + 跳 `/login`，模块内**不要**重复处理。
-- **流式接口** (`chat.ts` 的 send)：用 `fetch` + `ReadableStream` 解析 SSE；事件行**必须**同时兼容 `data:{...}` 与 `data: {...}`（冒号后 0/1 个空格）。
+- **流式接口** (`chat.ts` 的 send)：应用管理调试会话用 `fetch` + `ReadableStream` 解析 SSE；事件行**必须**同时兼容 `data:{...}` 与 `data: {...}`（冒号后 0/1 个空格）。
 - **下载** (`knowledge-base.ts`)：独立 axios 实例，处理 Blob 成功体 / Blob(JSON) 错误体 / `Content-Disposition` 文件名解析；**不要**复用 `httpClient` 拦截器。
 - **大小写**：前端字段统一 camelCase，与后端 snake_case 在模块内做映射（如 `voice_code` ↔ `voiceCode`、`local_url` ↔ `localUrl`）。
 

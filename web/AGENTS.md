@@ -19,7 +19,7 @@ web/
 │   ├── router/       # 路由 + AuthGuard / GuestGuard / PermissionGuard
 │   ├── store/        # auth.ts（Zustand 唯一全局 store）
 │   ├── styles/       # tailwind 入口 + 自定义 CSS
-│   └── views/        # 14 个页面模块（kebab-case 目录 + index.tsx）
+│   └── views/        # 页面模块（kebab-case 目录 + index.tsx）
 ├── public/
 ├── scripts/          # 构建辅助脚本
 ├── index.html        # Vite 入口
@@ -52,7 +52,6 @@ web/
 - ❌ 用 `fetch` 或新建 axios 实例（除已有的 knowledge-base 下载 helper 外）。
 - ❌ 在前端硬编码菜单或权限：菜单/权限/角色三件套**唯一事实来源**是后端。
 - ❌ 在 `ResourceManagementPage` 上不传 `key` 复用：图片/视频会串状态。
-- ❌ 给 `chat-room` 加本地伪打字机：流式直接按 chunk 实时渲染 Markdown，不要队列模拟。
 - ❌ 在 `/login` 之外页面绕过 `AuthGuard` / `PermissionGuard`。
 
 ## COMMANDS

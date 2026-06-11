@@ -74,30 +74,14 @@
   - A: 后端返回的 `role`、`permissions`、`menus` 是唯一事实来源；前端只做展示层过滤与守卫。
 - Q: 为什么图片管理和视频管理不能直接复用同一份本地状态？
   - A: `src/views/resource-management/index.tsx` 会被两个资源路由复用，切换 `resourceType` 时必须通过路由 `key` 或组件内重置逻辑隔离实例，否则图片页的列表、筛选条件或弹窗状态会残留到视频页。
-- Q: 聊天室为什么需要显式选择模型？
-  - A: `src/views/chat-room/index.tsx` 现在直接读取 `src/api/modules/llm-providers.ts` 返回的已启用供应商/模型列表，用户可以在创建会话前或会话内切换模型，避免总是隐式回退到“第一个启用供应商的默认模型”导致发消息时命中错误模型或错误供应商。
+- Q: 独立聊天室页面还存在吗？
+  - A: 不存在。`/ai-models/chat` 和“AI大模型/聊天室”菜单已移除；聊天底层 API 仍用于应用管理里的调试会话。
 - Q: 为什么某些兼容供应商明明返回了 SSE，前端还是没字？
   - A: `src/api/modules/chat.ts` 的流解析必须同时兼容 `data:{...}` 与 `data: {...}`；LongCat 的 chunk 前缀是前者，如果只匹配带空格版本，浏览器端会把所有 chunk 都忽略掉。
-- Q: 聊天室里的“流式回复”开关是做什么的？
-  - A: `src/views/chat-room/index.tsx` 会把该开关透传给 `src/api/modules/chat.ts`；默认开启时请求上游 `stream=true` 并边到边显示，关闭后改成等待后端拿到完整回答再一次性展示，方便对比排查兼容供应商的流式行为。
-- Q: 为什么之前即使开启“流式回复”，界面也像阻塞返回？
-  - A: 根因不在浏览器端，而在后端 ASGI 链路。现在前端仍按 SSE 消费，但后端 `send` 已改成真正异步流生成器，只有这样在 `uvicorn + ASGI` 下浏览器才能实时收到 chunk。
-- Q: 现在流式模式为什么更接近 Dify 的连续富文本效果？
-  - A: `src/views/chat-room/index.tsx` 已移除本地伪打字机队列，改为直接按上游 chunk 实时更新 `streamingContent`，并让助手消息在流式阶段也走 `src/components/chat-markdown.tsx` 的 Markdown 渲染路径，因此不会再出现明显的“逐字模拟”和样式二次切换。
-- Q: 为什么现在回复结束后不会再闪一下？
-  - A: `src/views/chat-room/index.tsx` 现在直接复用同一份 `streamingContent` 作为本地占位显示，直到 `fetchConversation` 拉回正式持久化消息并确认内容一致后才清空，因此不会在“临时气泡”和“正式消息”之间切换出空窗。
-- Q: 为什么回复结束后会从纯文本变成更正常的富文本样式？
-  - A: 现在默认不再走“流式纯文本、结束后再富文本”这条路了。`src/components/chat-markdown.tsx` 会对流式中的助手消息也实时做 Markdown 渲染，目标是更接近 Dify 的连续富文本体验，只保留内容持续增长而不是样式突然切换。
-- Q: “复制全部回复”复制的是什么？
-  - A: 这条规则已经改了。`src/views/chat-room/index.tsx` 现在在每条助手回复顶部提供单独的“复制”按钮，复制的是该条消息本身的文本内容，而不是整页会话。
-- Q: 右侧系统提示词面板有什么作用？
-  - A: `src/views/chat-room/index.tsx` 右侧配置栏里的系统提示词会通过 `src/api/modules/chat.ts` 的 `createConversation/updateConversationConfig` 发送到后端，并持久化到当前会话，后续每次 `send` 都会把它作为 `system` 消息带给模型。
-- Q: 对话列表标题会自动更新吗？
-  - A: 会。`src/views/chat-room/index.tsx` 新建会话仍先显示“新对话”，但首轮回复完成后后端会自动用当前模型生成标题并回写；前端后续刷新会话列表时会自动拿到新的标题。
-- Q: 聊天室右侧现在多出来的参数面板有什么作用？
-  - A: `src/views/chat-room/index.tsx` 右侧“会话配置”现在除系统提示词外，还支持 `temperature` 和 `maxTokens` 调优，并通过 `src/api/modules/chat.ts` / 后端 `update-config` 持久化到当前会话，后续发送和重生成都会复用这些参数。
-- Q: “重新生成”支持到什么粒度？
-  - A: 当前实现为最近一条助手消息重生成。界面只在最新一条助手回复上显示“重新生成”，点击后会复用上一条用户消息重新请求模型，不会在旧回复中间插入分叉链。
+- Q: 应用管理里的调试会话怎样消费流式回复？
+  - A: `src/views/application-management/index.tsx` 调用 `src/api/modules/chat.ts` 的 `sendMessageStream`，直接按 chunk 更新 `streamingContent`，并通过 `src/components/chat-markdown.tsx` 实时渲染 Markdown。
+- Q: 应用管理里的系统提示词和参数怎样生效？
+  - A: 选择应用后，页面通过 `updateConversationConfig` 把应用的 `llmModelId`、`systemPrompt`、`temperature` 和 `maxTokens` 同步到调试会话；后续发送会沿用这些会话配置。
 - Q: 视频管理卡片上的缩略图和播放交互应该是什么行为？
   - A: 视频列表卡片应优先展示视频首帧缩略图；播放统一通过现有“预览”按钮进入弹窗控制，不在缩略图上叠加播放按钮；若首帧获取失败则退回占位态。
 - Q: 音色页面里哪个字段是实际传给后端业务方的？
@@ -157,3 +141,4 @@
 - 2026-04-20T18:45:00+08:00：聊天室支持首轮回复后自动生成会话标题，后端使用当前模型生成简短中文标题并回写列表，前端刷新会话列表后自动显示新标题。
 - 2026-04-20T19:05:00+08:00：聊天室进入第二阶段工作台形态：左侧支持会话搜索；右侧支持 `temperature` / `maxTokens` 参数调优与提示词模板；最新一条助手消息支持重新生成；代码块支持独立复制按钮。
 - 2026-04-21T13:20:00+08:00：新增知识库已批准约束说明，记录一级菜单 `/knowledge-base`、前端本地上传成功 toast、单文件并发池上限 3、独立 axios 下载 helper、前台只读状态展示与批量下载交互约束。
+- 2026-06-11T00:00:00+08:00：移除独立聊天室页面与 `/ai-models/chat` 路由；聊天底层 API 保留给应用管理调试会话使用。

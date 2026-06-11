@@ -44,9 +44,6 @@ const LlmManagementPage = lazy(() =>
 const TtsManagementPage = lazy(() =>
   import('../views/tts-management').then((module) => ({ default: module.TtsManagementPage })),
 );
-const ChatRoomPage = lazy(() =>
-  import('../views/chat-room').then((module) => ({ default: module.ChatRoomPage })),
-);
 const ApplicationManagementPage = lazy(() =>
   import('../views/application-management').then((module) => ({ default: module.ApplicationManagementPage })),
 );
@@ -341,7 +338,6 @@ export const AppRouter = () => {
             { path: 'ai-models/asr', element: <AsrManagementPage /> },
             { path: 'ai-models/llm', element: <LlmManagementPage /> },
             { path: 'ai-models/tts', element: <TtsManagementPage /> },
-            { path: 'ai-models/chat', element: <ChatRoomPage /> },
           ],
         },
         {
@@ -533,14 +529,6 @@ export const AppRouter = () => {
           element: (
             <PermissionGuard permission="ai_models.tts.view">
               <TtsManagementPage />
-            </PermissionGuard>
-          ),
-        },
-        {
-          path: 'ai-models/chat',
-          element: (
-            <PermissionGuard permission="ai_models.chat.view">
-              <ChatRoomPage />
             </PermissionGuard>
           ),
         },

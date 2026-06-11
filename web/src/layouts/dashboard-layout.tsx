@@ -16,7 +16,6 @@ import {
   MenuFoldOutlined,
   MenuOutlined,
   MenuUnfoldOutlined,
-  MessageOutlined,
   PictureOutlined,
   NotificationOutlined,
   RobotOutlined,
@@ -62,7 +61,6 @@ const menuIconMap = {
   CloudOutlined: <CloudOutlined />,
   AudioOutlined: <AudioOutlined />,
   SoundOutlined: <SoundOutlined />,
-  MessageOutlined: <MessageOutlined />,
   FileImageOutlined: <FileImageOutlined />,
   FileSearchOutlined: <FileSearchOutlined />,
   NotificationOutlined: <NotificationOutlined />,
@@ -107,7 +105,6 @@ const SUPER_ADMIN_TENANT_MODULES: ReadonlyArray<SuperAdminTenantModule> = [
       { segment: 'asr', label: 'ASR管理', icon: 'AudioOutlined' },
       { segment: 'llm', label: 'LLM设置', icon: 'CloudOutlined' },
       { segment: 'tts', label: 'TTS管理', icon: 'SoundOutlined' },
-      { segment: 'chat', label: '聊天室', icon: 'MessageOutlined' },
     ],
   },
 ];
