@@ -32,6 +32,7 @@ logs/
 backend/logs/
 
 # Local tooling state
+.agents/
 .playwright-mcp
 .understand-anything/intermediate/
 .understand-anything/tmp/
