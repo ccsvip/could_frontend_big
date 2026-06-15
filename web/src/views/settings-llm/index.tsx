@@ -55,8 +55,8 @@ import {
   type TenantLLMAuthorization,
 } from '../../api/modules/llm-settings';
 
-type ProviderFormValues = Omit<PlatformLLMProviderPayload, 'avatar' | 'clearAvatar' | 'providerType'>;
-type ModelFormValues = PlatformLLMModelPayload;
+type ProviderFormValues = Omit<PlatformLLMProviderPayload, 'avatar' | 'clearAvatar' | 'providerType' | 'isActive'>;
+type ModelFormValues = Omit<PlatformLLMModelPayload, 'isActive'>;
 
 const DEFAULT_TEST_SETTINGS: LLMTestSettings = {
   testPrompt: '请用一句中文回复：连接测试成功。',
@@ -149,7 +149,7 @@ export const LlmSettingsAdminPage = () => {
   const openCreateProvider = () => {
     setEditingProvider(null);
     providerForm.resetFields();
-    providerForm.setFieldsValue({ isActive: true, sortOrder: 0 });
+    providerForm.setFieldsValue({ sortOrder: 0 });
     setProviderLogoFile([]);
     setProviderModalOpen(true);
   };
@@ -159,7 +159,6 @@ export const LlmSettingsAdminPage = () => {
     providerForm.setFieldsValue({
       name: record.name,
       apiBaseUrl: record.apiBaseUrl,
-      isActive: record.isActive,
       sortOrder: record.sortOrder,
     });
     setProviderLogoFile(record.avatarUrl ? [{ uid: '-1', name: 'logo', status: 'done', url: record.avatarUrl }] : []);
@@ -187,7 +186,7 @@ export const LlmSettingsAdminPage = () => {
   const openCreateModel = (providerId?: number) => {
     setEditingModel(null);
     modelForm.resetFields();
-    modelForm.setFieldsValue({ providerId, isActive: true, sortOrder: 0 });
+    modelForm.setFieldsValue({ providerId, sortOrder: 0 });
     setModelModalOpen(true);
   };
 
@@ -197,7 +196,6 @@ export const LlmSettingsAdminPage = () => {
       providerId: record.providerId,
       name: record.name,
       displayName: record.displayName,
-      isActive: record.isActive,
       sortOrder: record.sortOrder,
     });
     setModelModalOpen(true);
@@ -703,17 +701,9 @@ export const LlmSettingsAdminPage = () => {
                 支持 1:1 图片，建议不超过 1MB
               </div>
             </Form.Item>
-            <div className="space-y-4">
-              <Form.Item name="sortOrder" label="排序">
-                <InputNumber min={0} className="!w-full rounded-lg" />
-              </Form.Item>
-              <Form.Item name="isActive" label="启用状态" valuePropName="checked">
-                <div className="bg-slate-50 border border-slate-200/60 rounded-xl p-3 flex items-center justify-between">
-                  <span className="text-xs text-slate-500 font-medium">启用此厂商配置</span>
-                  <Switch className="shadow-sm" />
-                </div>
-              </Form.Item>
-            </div>
+            <Form.Item name="sortOrder" label="排序">
+              <InputNumber min={0} className="!w-full rounded-lg" />
+            </Form.Item>
           </div>
         </Form>
       </Modal>
@@ -744,17 +734,9 @@ export const LlmSettingsAdminPage = () => {
           <Form.Item name="displayName" label="展示名称">
             <Input maxLength={128} className="rounded-lg" placeholder="如 OpenAI GPT-4o" />
           </Form.Item>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Form.Item name="sortOrder" label="排序">
-              <InputNumber min={0} className="!w-full rounded-lg" />
-            </Form.Item>
-            <Form.Item name="isActive" label="启用状态" valuePropName="checked">
-              <div className="bg-slate-50 border border-slate-200/60 rounded-xl p-3 flex items-center justify-between">
-                <span className="text-xs text-slate-500 font-medium">启用此模型配置</span>
-                <Switch className="shadow-sm" />
-              </div>
-            </Form.Item>
-          </div>
+          <Form.Item name="sortOrder" label="排序">
+            <InputNumber min={0} className="!w-full rounded-lg" />
+          </Form.Item>
         </Form>
       </Modal>
     </div>

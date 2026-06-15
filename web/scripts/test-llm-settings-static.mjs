@@ -23,6 +23,8 @@ assert(dashboardSource.includes("label: 'LLM设置'"), 'dashboard menu must labe
 assert(adminPageSource.includes('apiKeyMasked'), 'admin provider table must use masked key value');
 assert(adminPageSource.includes('apiKeyConfigured'), 'admin provider table must use key configured flag');
 assert(!/dataIndex:\s*['"]apiKey['"]/.test(adminPageSource), 'admin table must not display raw apiKey');
+assert(!adminPageSource.includes('启用此厂商配置'), 'platform provider modal must not expose enable status');
+assert(!adminPageSource.includes('启用此模型配置'), 'platform model modal must not expose enable status');
 
 if (existsSync(companyPagePath)) {
   const companyPageSource = read('src/views/llm-settings/index.tsx');
