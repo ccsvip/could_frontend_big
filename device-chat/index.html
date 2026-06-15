@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>数字人语音问答测试页</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Device Voice QA</p>
+          <h1>数字人语音问答测试页</h1>
+        </div>
+        <div class="status-pill" id="globalStatus" data-tone="idle">
+          <span class="status-dot"></span>
+          <span id="globalStatusText">未连接设备</span>
+        </div>
+      </header>
+
+      <section class="layout" aria-label="语音问答测试台">
+        <aside class="panel device-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Device</p>
+              <h2>设备连接</h2>
+            </div>
+            <button class="icon-button" id="resetButton" type="button" title="重置页面状态" aria-label="重置页面状态">
+              <span aria-hidden="true">↺</span>
+            </button>
+          </div>
+
+          <form class="form-stack" id="connectForm">
+            <label class="field">
+              <span>设备码</span>
+              <input id="deviceCodeInput" name="deviceCode" autocomplete="off" spellcheck="false" placeholder="DEVICE_001" />
+            </label>
+            <label class="field">
+              <span>API 地址</span>
+              <input id="apiBaseInput" name="apiBaseUrl" autocomplete="off" spellcheck="false" />
+            </label>
+            <button class="button primary" id="connectButton" type="submit">连接设备</button>
+          </form>
+
+          <dl class="meta-list">
+            <div>
+              <dt>当前设备</dt>
+              <dd id="deviceNameText">-</dd>
+            </div>
+            <div>
+              <dt>设备状态</dt>
+              <dd id="deviceStateText">未连接</dd>
+            </div>
+            <div>
+              <dt>绑定应用</dt>
+              <dd id="applicationText">-</dd>
+            </div>
+            <div>
+              <dt>会话 ID</dt>
+              <dd id="sessionIdText">-</dd>
+            </div>
+          </dl>
+        </aside>
+
+        <section class="panel action-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Recorder</p>
+              <h2>语音提问</h2>
+            </div>
+            <span class="compact-status" id="recordingTime">00:00</span>
+          </div>
+
+          <div class="recorder-stage" id="recorderStage">
+            <div class="meter" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <button class="record-button" id="recordButton" type="button" disabled>
+              <span id="recordButtonText">按下开始说话</span>
+            </button>
+          </div>
+
+          <div class="action-row">
+            <button class="button secondary" id="retryButton" type="button" disabled>重试上次录音</button>
+            <button class="button ghost" id="clearButton" type="button">清空结果</button>
+          </div>
+
+          <div class="notice" id="noticeBox" hidden></div>
+        </section>
+
+        <section class="panel result-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Response</p>
+              <h2>问答结果</h2>
+            </div>
+            <span class="compact-status" id="traceIdText">trace -</span>
+          </div>
+
+          <div class="text-block">
+            <div class="text-title">
+              <span>我说的问题</span>
+              <span id="questionCount">0 字</span>
+            </div>
+            <p id="questionText" class="placeholder">等待语音识别结果</p>
+          </div>
+
+          <div class="text-block answer-block">
+            <div class="text-title">
+              <span>系统回答</span>
+              <span id="answerCount">0 字</span>
+            </div>
+            <p id="answerText" class="placeholder">等待系统回答</p>
+          </div>
+
+          <div class="audio-row">
+            <audio id="answerAudio" controls preload="none"></audio>
+            <button class="button secondary" id="playButton" type="button" disabled>播放语音回复</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
