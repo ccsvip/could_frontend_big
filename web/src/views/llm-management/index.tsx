@@ -14,6 +14,7 @@ import {
   Table,
   Tag,
   Tooltip,
+  Typography,
   Upload,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
@@ -293,9 +294,12 @@ export const LlmManagementPage = () => {
       dataIndex: 'apiBaseUrl',
       ellipsis: true,
       render: (url: string) => (
-        <code className="text-xs text-slate-600 bg-slate-50 border border-slate-200/60 px-2 py-1 rounded select-all font-mono">
+        <Typography.Text
+          copyable={{ text: url }}
+          className="font-mono text-xs text-slate-600 bg-slate-50 border border-slate-200 px-2 py-1 rounded select-all"
+        >
           {url}
-        </code>
+        </Typography.Text>
       ),
     },
     {
@@ -304,9 +308,12 @@ export const LlmManagementPage = () => {
       width: 180,
       ellipsis: true,
       render: (key: string) => (
-        <span className="font-mono text-xs text-slate-400 select-all tracking-wider">
+        <Typography.Text
+          copyable={key ? { text: key } : false}
+          className="font-mono text-xs text-slate-400 tracking-wider"
+        >
           {key ? (key.length > 20 ? `${key.substring(0, 8)}...${key.substring(key.length - 8)}` : key) : '-'}
-        </span>
+        </Typography.Text>
       ),
     },
     {
@@ -429,7 +436,7 @@ export const LlmManagementPage = () => {
       </div>
 
       {/* 搜索过滤控制中心 */}
-      <div className="bg-white border border-slate-100 shadow-sm rounded-xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 transition-all hover:shadow-md duration-300">
+      <div className="bg-white border border-slate-100 shadow-card rounded-xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 transition-all hover:shadow-card-hover duration-300">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
           <Input
             placeholder="搜索供应商名称..."
@@ -469,7 +476,7 @@ export const LlmManagementPage = () => {
       </div>
 
       {/* 表格面板 */}
-      <div className="bg-white border border-slate-100 shadow-sm rounded-xl p-4 transition-all hover:shadow-md duration-300">
+      <div className="bg-white border border-slate-100 shadow-card rounded-xl p-4 transition-all hover:shadow-card-hover duration-300">
         <Table
           rowKey="id"
           columns={columns}
@@ -517,7 +524,7 @@ export const LlmManagementPage = () => {
           </div>
 
           <Form.Item name="apiBaseUrl" label="API 地址" rules={[{ required: true, message: '请输入 API 地址' }]}>
-            <Input placeholder="https://api.openai.com/v1" className="rounded-lg" />
+            <Input placeholder="https://api.openai.com/v1" className="rounded-lg font-mono" />
           </Form.Item>
 
           <Form.Item
@@ -525,7 +532,7 @@ export const LlmManagementPage = () => {
             label="API 密钥"
             rules={[{ required: true, message: '请输入 API 密钥' }]}
           >
-            <Input.TextArea placeholder="sk-..." rows={2} className="rounded-lg" />
+            <Input.TextArea placeholder="sk-..." rows={2} className="rounded-lg font-mono" />
           </Form.Item>
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -606,7 +613,7 @@ export const LlmManagementPage = () => {
                 value={newModelName}
                 onChange={(e) => setNewModelName(e.target.value)}
                 onPressEnter={handleAddModel}
-                className="rounded-l-lg py-1.5"
+                className="rounded-l-lg py-1.5 font-mono"
               />
               <Button
                 type="primary"

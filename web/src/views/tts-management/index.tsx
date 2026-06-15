@@ -95,20 +95,29 @@ export const TtsManagementPage = () => {
         key={voice.id}
         type="button"
         onClick={() => setSelectedVoiceId(voice.id)}
-        className={`flex min-h-[112px] w-full items-center gap-4 rounded-lg border bg-white p-4 text-left transition hover:border-teal-300 hover:shadow-sm ${
-          checked ? 'border-teal-500 ring-2 ring-teal-100' : 'border-slate-200'
+        className={`flex min-h-[112px] w-full items-center gap-4 rounded-xl border bg-white p-4 text-left transition duration-200 hover:border-brand-300 hover:shadow-card-hover ${
+          checked ? 'border-brand-500 ring-2 ring-brand-100' : 'border-slate-200 shadow-card'
         }`}
       >
         <Avatar src={voice.avatarPath} icon={<CustomerServiceOutlined />} size={56} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="truncate text-sm font-semibold text-slate-900">{voice.displayName}</span>
-            {voice.isDefault ? <Tag color="success" className="m-0">当前默认</Tag> : null}
+            {voice.isDefault ? <Tag color="success" className="m-0 border-0 rounded-md px-2 py-0.5">当前默认</Tag> : null}
           </div>
-          <code className="mt-1 block text-xs text-slate-500">{voice.voiceCode}</code>
-          <div className="mt-2 text-xs text-slate-400">{voice.gender || '-'}</div>
+          <div className="mt-1" onClick={(e) => e.stopPropagation()}>
+            <Typography.Text
+              copyable={{ text: voice.voiceCode }}
+              className="font-mono text-[11px] text-slate-500 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded inline-block"
+            >
+              {voice.voiceCode}
+            </Typography.Text>
+          </div>
+          <div className="mt-2 text-xs text-slate-400">
+            {voice.gender === 'female' ? '女声' : voice.gender === 'male' ? '男声' : voice.gender || '-'}
+          </div>
         </div>
-        <Radio checked={checked} />
+        <Radio checked={checked} className="text-brand-600" />
       </button>
     );
   };
@@ -119,7 +128,7 @@ export const TtsManagementPage = () => {
         <div className="page-hero">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-teal-100 bg-teal-50 text-teal-700">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand-100 bg-brand-50 text-brand-700">
                 <SoundOutlined className="text-xl" />
               </div>
               <div>
@@ -127,20 +136,20 @@ export const TtsManagementPage = () => {
                   <Typography.Title level={3} className="!m-0 !text-lg !tracking-normal !text-slate-900">
                     TTS 管理
                   </Typography.Title>
-                  <Tag color={options?.provider.isActive ? 'success' : 'default'} className="m-0">
+                  <Tag color={options?.provider.isActive ? 'success' : 'default'} className="m-0 border-0 rounded-md px-2 py-0.5">
                     {options?.provider.isActive ? '服务启用' : '服务停用'}
                   </Tag>
                 </div>
-                <div className="text-xs text-slate-500">
+                <div className="text-xs text-slate-500 font-mono">
                   {options?.provider.name || '阿里云 TTS'} · {options?.sampleRate || 24000}Hz · PCM 单声道
                 </div>
               </div>
             </div>
             <Space wrap>
-              <Button icon={<ReloadOutlined />} loading={loading} onClick={() => void loadOptions()}>
+              <Button icon={<ReloadOutlined />} className="rounded-md" loading={loading} onClick={() => void loadOptions()}>
                 刷新
               </Button>
-              <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={() => void saveDefaultVoice()}>
+              <Button type="primary" icon={<SaveOutlined />} className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 rounded-md" loading={saving} onClick={() => void saveDefaultVoice()}>
                 保存默认音色
               </Button>
             </Space>
@@ -149,19 +158,28 @@ export const TtsManagementPage = () => {
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
           <div className="space-y-4">
-            <Card className="shadow-sm">
+            <Card className="rounded-xl border border-slate-100 shadow-card">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar src={defaultVoice?.avatarPath} icon={<CustomerServiceOutlined />} size={48} />
                   <div>
-                    <div className="text-sm font-semibold text-slate-900">
+                    <div className="text-sm font-semibold text-slate-900 mb-1">
                       {defaultVoice?.displayName || '未选择默认音色'}
                     </div>
-                    <div className="text-xs text-slate-500">{defaultVoice?.voiceCode || '-'}</div>
+                    {defaultVoice?.voiceCode ? (
+                      <Typography.Text
+                        copyable={{ text: defaultVoice.voiceCode }}
+                        className="font-mono text-[11px] text-slate-500 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded cursor-pointer inline-block"
+                      >
+                        {defaultVoice.voiceCode}
+                      </Typography.Text>
+                    ) : (
+                      <div className="text-xs text-slate-400">-</div>
+                    )}
                   </div>
                 </div>
                 {selectedVoice ? (
-                  <div className="flex items-center gap-2 rounded-lg border border-teal-100 bg-teal-50 px-3 py-2 text-xs font-medium text-teal-700">
+                  <div className="flex items-center gap-2 rounded-lg border border-brand-100 bg-brand-50 px-3 py-2 text-xs font-medium text-brand-700">
                     <CheckCircleOutlined />
                     <span>已选择 {selectedVoice.displayName}</span>
                   </div>
@@ -174,7 +192,7 @@ export const TtsManagementPage = () => {
             </div>
           </div>
 
-          <Card title="测试播放" className="shadow-sm">
+          <Card title="测试播放" className="rounded-xl border border-slate-100 shadow-card">
             <div className="space-y-4">
               <Input.TextArea
                 rows={6}
@@ -183,18 +201,20 @@ export const TtsManagementPage = () => {
                 showCount
                 onChange={(event) => setTestText(event.target.value)}
                 placeholder={options?.defaultTestText || '留空时使用平台默认测试文本'}
+                className="rounded-lg"
               />
               <Button
                 type="primary"
                 icon={<PlayCircleOutlined />}
                 loading={testing}
                 block
+                className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 rounded-md"
                 onClick={() => void handleTest()}
               >
                 生成测试音频
               </Button>
               {audioUrl ? (
-                <audio controls src={audioUrl} className="w-full" />
+                <audio controls src={audioUrl} className="w-full mt-2" />
               ) : (
                 <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-xs text-slate-400">
                   暂无测试音频

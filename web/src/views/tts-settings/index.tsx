@@ -187,8 +187,13 @@ export const TtsSettingsPage = () => {
         <div className="flex items-center gap-3">
           <Avatar src={record.avatarPath} icon={<CustomerServiceOutlined />} size={40} />
           <div className="min-w-0">
-            <div className="truncate text-sm font-semibold text-slate-800">{value}</div>
-            <code className="text-xs text-slate-500">{record.voiceCode}</code>
+            <div className="truncate text-sm font-semibold text-slate-800 mb-1">{value}</div>
+            <Typography.Text
+              copyable={{ text: record.voiceCode }}
+              className="font-mono text-[11px] text-slate-500 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded cursor-pointer"
+            >
+              {record.voiceCode}
+            </Typography.Text>
           </div>
         </div>
       ),
@@ -197,7 +202,11 @@ export const TtsSettingsPage = () => {
       title: '性别',
       dataIndex: 'gender',
       width: 100,
-      render: (value: string) => <Tag color={value === 'female' ? 'magenta' : 'blue'}>{value || '-'}</Tag>,
+      render: (value: string) => (
+        <Tag color={value === 'female' ? 'magenta' : value === 'male' ? 'cyan' : 'default'} className="m-0 border-0 rounded-md px-2 py-0.5">
+          {value === 'female' ? '女声' : value === 'male' ? '男声' : value || '-'}
+        </Tag>
+      ),
     },
     {
       title: '默认',
@@ -205,9 +214,9 @@ export const TtsSettingsPage = () => {
       width: 96,
       render: (value: boolean, record) => (
         value ? (
-          <Tag color="success" className="m-0">默认</Tag>
+          <Tag color="success" className="m-0 border-0 rounded-md">默认</Tag>
         ) : (
-          <Button size="small" onClick={() => void handleDefaultVoice(record.id)}>
+          <Button size="small" className="rounded-md" onClick={() => void handleDefaultVoice(record.id)}>
             设为默认
           </Button>
         )
@@ -245,17 +254,17 @@ export const TtsSettingsPage = () => {
         <div className="page-hero">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-teal-100 bg-teal-50 text-teal-700">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand-100 bg-brand-50 text-brand-700">
                 <SoundOutlined className="text-xl" />
               </div>
               <div>
                 <Typography.Title level={3} className="!m-0 !text-lg !tracking-normal !text-slate-900">
                   TTS 设置
                 </Typography.Title>
-                <div className="mt-1 text-xs text-slate-500">供应商 {providers.length} 个</div>
+                <div className="mt-1 text-xs text-slate-500 font-mono">供应商 {providers.length} 个</div>
               </div>
             </div>
-            <Button icon={<ReloadOutlined />} loading={providersLoading} onClick={() => void loadProviders()}>
+            <Button icon={<ReloadOutlined />} loading={providersLoading} className="rounded-md" onClick={() => void loadProviders()}>
               同步状态
             </Button>
           </div>
@@ -263,39 +272,46 @@ export const TtsSettingsPage = () => {
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {providersLoading && providers.length === 0 ? (
-            <Card loading className="min-h-[180px] shadow-sm" />
+            <Card loading className="min-h-[180px] rounded-xl border border-slate-100 shadow-card" />
           ) : null}
 
           {providers.map((provider) => (
             <Card
               key={provider.code}
               hoverable
-              className="shadow-sm"
+              className="rounded-xl border border-slate-100 shadow-card hover:shadow-card-hover transition-all duration-200"
               onClick={() => navigate(`/settings/tts/${provider.code}`)}
             >
               <div className="flex h-full flex-col gap-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-sky-100 bg-sky-50 text-sky-700">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-100 bg-brand-50 text-brand-700">
                       <CloudOutlined className="text-lg" />
                     </div>
                     <div className="min-w-0">
-                      <div className="truncate text-base font-semibold text-slate-900">{provider.name}</div>
-                      <code className="text-xs text-slate-500">{provider.code}</code>
+                      <div className="truncate text-base font-semibold text-slate-900 mb-1">{provider.name}</div>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Typography.Text
+                          copyable={{ text: provider.code }}
+                          className="font-mono text-[11px] text-slate-500 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded cursor-pointer"
+                        >
+                          {provider.code}
+                        </Typography.Text>
+                      </div>
                     </div>
                   </div>
                   <RightOutlined className="mt-3 shrink-0 text-slate-300" />
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <Tag color={provider.isActive ? 'success' : 'default'} className="m-0">
+                  <Tag color={provider.isActive ? 'success' : 'default'} className="m-0 border-0 rounded-md px-2 py-0.5">
                     {provider.isActive ? '已启用' : '已停用'}
                   </Tag>
-                  <Tag color={provider.configured ? 'blue' : 'warning'} className="m-0">
+                  <Tag color={provider.configured ? 'cyan' : 'warning'} className="m-0 border-0 rounded-md px-2 py-0.5">
                     {provider.configured ? '配置完整' : '配置缺失'}
                   </Tag>
                   {provider.defaultVoiceName ? (
-                    <Tag icon={<CheckCircleOutlined />} color="cyan" className="m-0">
+                    <Tag icon={<CheckCircleOutlined />} color="processing" className="m-0 border-0 rounded-md px-2 py-0.5">
                       {provider.defaultVoiceName}
                     </Tag>
                   ) : null}
@@ -330,7 +346,7 @@ export const TtsSettingsPage = () => {
       <div className="page-hero">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-teal-100 bg-teal-50 text-teal-700">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand-100 bg-brand-50 text-brand-700">
               <SoundOutlined className="text-xl" />
             </div>
             <div>
@@ -338,23 +354,23 @@ export const TtsSettingsPage = () => {
                 <Typography.Title level={3} className="!m-0 !text-lg !tracking-normal !text-slate-900">
                   {settings?.name || 'TTS Provider'}
                 </Typography.Title>
-                <Tag color={settings?.isActive ? 'success' : 'default'} className="m-0">
+                <Tag color={settings?.isActive ? 'success' : 'default'} className="m-0 border-0 rounded-md px-2 py-0.5">
                   {settings?.isActive ? '已启用' : '已停用'}
                 </Tag>
-                <Tag color={settings?.configured ? 'blue' : 'warning'} className="m-0">
+                <Tag color={settings?.configured ? 'cyan' : 'warning'} className="m-0 border-0 rounded-md px-2 py-0.5">
                   {settings?.configured ? '配置完整' : '配置缺失'}
                 </Tag>
               </div>
-              <div className="text-xs text-slate-500">
+              <div className="text-xs text-slate-500 font-mono">
                 {settings?.code || activeProviderCode || '-'} · {settings?.sampleRate || 24000}Hz · PCM 单声道
               </div>
             </div>
           </div>
           <Space wrap>
-            <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/settings/tts')}>
+            <Button icon={<ArrowLeftOutlined />} className="rounded-md" onClick={() => navigate('/settings/tts')}>
               返回供应商
             </Button>
-            <Button icon={<ReloadOutlined />} loading={loading} onClick={() => void loadSettings()}>
+            <Button icon={<ReloadOutlined />} className="rounded-md" loading={loading} onClick={() => void loadSettings()}>
               同步状态
             </Button>
           </Space>
@@ -362,46 +378,47 @@ export const TtsSettingsPage = () => {
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
-        <Card title={settings?.name || 'TTS Provider'} loading={loading} className="shadow-sm">
+        <Card title={settings?.name || 'TTS Provider'} loading={loading} className="rounded-xl border border-slate-100 shadow-card">
           <Form form={form} layout="vertical" requiredMark="optional">
             <div className="grid gap-x-4 md:grid-cols-2">
               <Form.Item name="apiKey" label="API Key" tooltip="留空表示不修改当前密钥">
                 <Input.Password
                   autoComplete="new-password"
                   placeholder={settings?.apiKeyConfigured ? settings.apiKeyMasked : '请输入 DashScope API Key'}
+                  className="font-mono rounded-lg"
                 />
               </Form.Item>
               <Form.Item name="model" label="模型名称" rules={[{ required: true, message: '请输入模型名称' }]}>
-                <Input placeholder="qwen3-tts-flash-realtime" />
+                <Input placeholder="qwen3-tts-flash-realtime" className="font-mono rounded-lg" />
               </Form.Item>
             </div>
 
             <Form.Item name="baseUrl" label="WebSocket URL" rules={[{ required: true, message: '请输入 WebSocket URL' }]}>
-              <Input placeholder="wss://dashscope.aliyuncs.com/api-ws/v1/realtime" />
+              <Input placeholder="wss://dashscope.aliyuncs.com/api-ws/v1/realtime" className="font-mono rounded-lg" />
             </Form.Item>
 
             <div className="grid gap-x-4 md:grid-cols-2">
               <Form.Item name="sampleRate" label="返回采样率" rules={[{ required: true, message: '请选择采样率' }]}>
-                <Select options={SAMPLE_RATE_OPTIONS} />
+                <Select options={SAMPLE_RATE_OPTIONS} className="rounded-lg" />
               </Form.Item>
               <Form.Item name="defaultVoiceId" label="平台默认音色">
-                <Select options={voiceOptions} placeholder="请选择默认音色" showSearch optionFilterProp="label" />
+                <Select options={voiceOptions} placeholder="请选择默认音色" showSearch optionFilterProp="label" className="rounded-lg" />
               </Form.Item>
             </div>
 
             <Form.Item name="defaultTestText" label="默认测试文本" rules={[{ required: true, message: '请输入默认测试文本' }]}>
-              <Input.TextArea rows={4} showCount maxLength={500} />
+              <Input.TextArea rows={4} showCount maxLength={500} className="rounded-lg" />
             </Form.Item>
 
             <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
               <Form.Item name="isActive" valuePropName="checked" noStyle>
-                <Switch checkedChildren="启用" unCheckedChildren="停用" />
+                <Switch checkedChildren="启用" unCheckedChildren="停用" className="shadow-sm" />
               </Form.Item>
               <Space wrap>
-                <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={() => void handleSave()}>
+                <Button type="primary" icon={<SaveOutlined />} className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 rounded-md" loading={saving} onClick={() => void handleSave()}>
                   保存设置
                 </Button>
-                <Button icon={<ApiOutlined />} loading={testing} onClick={() => void handleTest()}>
+                <Button icon={<ApiOutlined />} className="rounded-md" loading={testing} onClick={() => void handleTest()}>
                   测试 TTS
                 </Button>
               </Space>
@@ -409,7 +426,7 @@ export const TtsSettingsPage = () => {
           </Form>
         </Card>
 
-        <Card title="测试播放" className="shadow-sm">
+        <Card title="测试播放" className="rounded-xl border border-slate-100 shadow-card">
           <div className="space-y-4">
             <Input.TextArea
               rows={6}
@@ -418,18 +435,20 @@ export const TtsSettingsPage = () => {
               showCount
               onChange={(event) => setTestText(event.target.value)}
               placeholder={settings?.defaultTestText || '留空时使用默认测试文本'}
+              className="rounded-lg"
             />
             <Button
               type="primary"
               icon={<PlayCircleOutlined />}
               loading={testing}
               block
+              className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 rounded-md"
               onClick={() => void handleTest()}
             >
               生成测试音频
             </Button>
             {audioUrl ? (
-              <audio controls src={audioUrl} className="w-full" />
+              <audio controls src={audioUrl} className="w-full mt-2" />
             ) : (
               <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-xs text-slate-400">
                 暂无测试音频
@@ -439,7 +458,7 @@ export const TtsSettingsPage = () => {
         </Card>
       </div>
 
-      <Card title="内置音色目录" className="shadow-sm">
+      <Card title="内置音色目录" className="rounded-xl border border-slate-100 shadow-card">
         <Table
           rowKey="id"
           columns={columns}
