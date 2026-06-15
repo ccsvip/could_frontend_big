@@ -322,7 +322,7 @@ export const LlmSettingsAdminPage = () => {
           </Button>
           <Popconfirm
             title="删除模型"
-            description="已授权或使用的模型不能删除，请停用。"
+            description="仍有公司启用授权的模型不能删除，请先取消授权。"
             onConfirm={() => deletePlatformLLMModel(record.id).then(loadPlatformData)}
           >
             <Button size="small" danger icon={<DeleteOutlined />} className="hover:bg-rose-50 rounded-md">

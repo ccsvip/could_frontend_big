@@ -44,7 +44,7 @@ from .llm_services import (
     get_effective_llm_models_for_tenant,
     get_tenant_llm_settings,
     is_llm_model_effective_for_tenant,
-    llm_model_has_usage,
+    llm_model_has_active_company_authorization,
     llm_provider_has_usage,
 )
 from .models import (
@@ -442,8 +442,8 @@ class PlatformLLMModelViewSet(PermissionMappedModelViewSet):
         return Response(PlatformLLMModelSerializer(model).data)
 
     def perform_destroy(self, instance):
-        if llm_model_has_usage(instance):
-            raise ValidationError({'detail': '该模型已被授权或使用，不能删除，请停用'})
+        if llm_model_has_active_company_authorization(instance):
+            raise ValidationError({'detail': '该模型仍有公司启用授权，不能删除，请先取消授权'})
         return super().perform_destroy(instance)
 
     @action(detail=True, methods=['post'], url_path='test')

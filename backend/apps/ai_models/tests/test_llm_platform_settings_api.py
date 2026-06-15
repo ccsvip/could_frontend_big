@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import ChatConversation
+from apps.ai_models.models import AgentApplication, ChatConversation
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
@@ -29,6 +29,14 @@ class LLMPlatformSettingsApiTests(TenantTestMixin, APITestCase):
     @staticmethod
     def llm_model_model():
         return apps.get_model('ai_models', 'LLMModel')
+
+    @staticmethod
+    def tenant_grant_model():
+        return apps.get_model('ai_models', 'TenantLLMModelGrant')
+
+    @staticmethod
+    def tenant_settings_model():
+        return apps.get_model('ai_models', 'TenantLLMSettings')
 
     def grant_permissions(self, *codes: str):
         permission_points = []
@@ -160,7 +168,48 @@ class LLMPlatformSettingsApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(model.name, 'gpt-4.1')
         self.assertIn('name', resp.data)
 
-    def test_used_provider_and_model_cannot_be_hard_deleted(self):
+    def test_model_with_active_company_authorization_cannot_be_deleted(self):
+        provider = self.create_platform_provider()
+        model = self.create_model(provider=provider)
+        self.tenant_grant_model().objects.create(tenant=self.tenant, model=model, is_active=True)
+        self.client.force_authenticate(self.superuser)
+
+        model_resp = self.client.delete(f'/api/v1/settings/llm/models/{model.id}/')
+
+        self.assertEqual(model_resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('仍有公司启用授权', str(model_resp.data))
+        self.assertTrue(self.llm_model_model().objects.filter(id=model.id).exists())
+
+    def test_model_without_active_company_authorization_can_be_deleted(self):
+        provider = self.create_platform_provider()
+        model = self.create_model(provider=provider)
+        self.tenant_grant_model().objects.create(tenant=self.tenant, model=model, is_active=False)
+        self.tenant_settings_model().objects.update_or_create(
+            tenant=self.tenant,
+            defaults={'default_model': model},
+        )
+        ChatConversation.objects.create(
+            tenant=self.tenant,
+            user=self.tenant_user,
+            title='Historical model conversation',
+            llm_model=model,
+        )
+        AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.tenant_user,
+            name='Historical model application',
+            llm_provider=provider,
+            llm_model=model,
+            model_name=model.name,
+        )
+        self.client.force_authenticate(self.superuser)
+
+        model_resp = self.client.delete(f'/api/v1/settings/llm/models/{model.id}/')
+
+        self.assertEqual(model_resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(self.llm_model_model().objects.filter(id=model.id).exists())
+
+    def test_provider_with_used_model_still_cannot_be_hard_deleted(self):
         provider = self.create_platform_provider()
         model = self.create_model(provider=provider)
         ChatConversation.objects.create(
@@ -171,12 +220,9 @@ class LLMPlatformSettingsApiTests(TenantTestMixin, APITestCase):
         )
         self.client.force_authenticate(self.superuser)
 
-        model_resp = self.client.delete(f'/api/v1/settings/llm/models/{model.id}/')
         provider_resp = self.client.delete(f'/api/v1/settings/llm/providers/{provider.id}/')
 
-        self.assertEqual(model_resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(provider_resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertTrue(self.llm_model_model().objects.filter(id=model.id).exists())
         self.assertTrue(self.provider_model().objects.filter(id=provider.id).exists())
 
     def test_test_settings_validation_rejects_invalid_bounds(self):

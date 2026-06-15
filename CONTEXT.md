@@ -27,3 +27,7 @@ _Avoid_: admin preview audio, WAV test audio
 **Company User**:
 A user operating inside a company workspace; company administrators and employees share the same business feature access, except that only company administrators can manage employees.
 _Avoid_: tenant admin feature split, employee-only business access
+
+**Active Company LLM Authorization**:
+A platform LLM model grant that is currently enabled for a company, making that model available to that company.
+_Avoid_: historical model usage, disabled authorization, chat history reference

@@ -61,6 +61,12 @@ def llm_model_has_usage(model) -> bool:
     )
 
 
+def llm_model_has_active_company_authorization(model) -> bool:
+    if model is None:
+        return False
+    return model.tenant_grants.filter(is_active=True).exists()
+
+
 def llm_provider_has_usage(provider) -> bool:
     if provider is None:
         return False

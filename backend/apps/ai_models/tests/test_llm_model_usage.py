@@ -12,6 +12,7 @@ from apps.ai_models.llm_services import (
     get_effective_llm_models_for_tenant,
     get_tenant_llm_settings,
     is_llm_model_effective_for_tenant,
+    llm_model_has_active_company_authorization,
     llm_model_has_usage,
     llm_provider_has_usage,
     mask_api_key,
@@ -150,6 +151,14 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
         self.assertTrue(llm_provider_has_usage(self.provider))
         self.assertFalse(llm_provider_has_usage(unused_provider))
         self.assertFalse(llm_provider_has_usage(None))
+
+    def test_active_company_authorization_helper_ignores_disabled_grants(self):
+        inactive_grant_model = self.create_model(provider=self.provider, name='inactive-grant-only')
+        self.grant_model(inactive_grant_model, is_active=False)
+
+        self.assertTrue(llm_model_has_active_company_authorization(self.default_model))
+        self.assertFalse(llm_model_has_active_company_authorization(inactive_grant_model))
+        self.assertFalse(llm_model_has_active_company_authorization(None))
 
     def test_validate_llm_test_settings_values_rejects_out_of_range_values(self):
         validate_llm_test_settings_values(
