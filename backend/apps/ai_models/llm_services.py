@@ -108,6 +108,103 @@ def _build_chat_completions_url(raw_url: str) -> str:
     return f'{api_url}/chat/completions'
 
 
+def run_llm_chat_completion(
+    *,
+    model: LLMModel,
+    messages: list[dict],
+    temperature: float = 0.7,
+    max_tokens: int = 1000,
+    timeout: int = 120,
+) -> str:
+    provider = model.provider
+    api_url = _build_chat_completions_url(provider.api_base_url)
+    response = None
+    try:
+        with httpx.Client(timeout=timeout) as client:
+            response = client.post(
+                api_url,
+                json={
+                    'model': model.name,
+                    'messages': messages,
+                    'stream': False,
+                    'temperature': temperature,
+                    'max_tokens': max_tokens,
+                },
+                headers={
+                    'Authorization': f'Bearer {provider.api_key}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            )
+    except httpx.TimeoutException as exc:
+        raise RuntimeError('LLM 请求超时') from exc
+    except httpx.HTTPError as exc:
+        raise RuntimeError('LLM 连接失败') from exc
+
+    if response.status_code != 200:
+        raise RuntimeError(f'LLM 请求失败 (HTTP {response.status_code})')
+
+    try:
+        payload = response.json()
+    except ValueError as exc:
+        raise RuntimeError('LLM 响应不是有效 JSON') from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError('LLM 响应格式错误')
+
+    error_message = _extract_openai_error_message(payload)
+    if error_message:
+        raise RuntimeError(error_message[:200])
+
+    text = _extract_openai_completion_text(payload)
+    if not text:
+        raise RuntimeError('LLM 响应为空')
+    return text
+
+
+def _extract_openai_completion_text(payload: dict) -> str:
+    choices = payload.get('choices')
+    if not isinstance(choices, list) or not choices:
+        return ''
+    first_choice = choices[0] if isinstance(choices[0], dict) else {}
+    message = first_choice.get('message')
+    if isinstance(message, dict):
+        content = _coerce_openai_content_to_text(message.get('content'))
+        if content:
+            return content
+    return _coerce_openai_content_to_text(first_choice.get('text'))
+
+
+def _coerce_openai_content_to_text(content) -> str:
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        chunks = []
+        for item in content:
+            if isinstance(item, str):
+                chunks.append(item)
+                continue
+            if not isinstance(item, dict):
+                continue
+            text = item.get('text')
+            if isinstance(text, str):
+                chunks.append(text)
+                continue
+            inner_text = item.get('content')
+            if isinstance(inner_text, str):
+                chunks.append(inner_text)
+        return ''.join(chunks)
+    return ''
+
+
+def _extract_openai_error_message(payload: dict) -> str:
+    error = payload.get('error')
+    if isinstance(error, dict):
+        message = error.get('message')
+        if isinstance(message, str):
+            return message
+    return ''
+
+
 def _test_summary(*, success: bool, message: str, start: float) -> dict:
     return {
         'success': success,

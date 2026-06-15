@@ -1,16 +1,19 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from unittest.mock import patch
 
 from asgiref.sync import async_to_sync, sync_to_async
 from asgiref.testing import ApplicationCommunicator
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
+from apps.ai_models.models import LLMModel, LLMProvider, TenantLLMModelGrant, TenantLLMSettings, TTSProvider, TTSVoice
 from apps.devices.models import Device, DeviceApplication, DeviceAuthorizationCode, DeviceGroup
 from apps.resources.models import ScrollingText, ScrollingTextItem
 from apps.tenants.models import Tenant
@@ -170,6 +173,85 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(len(scrolling_texts), 1)
         self.assertEqual(scrolling_texts[0]['title'], '大厅公告')
         self.assertEqual(scrolling_texts[0]['items'][0]['zh'], '欢迎光临')
+
+    def test_device_voice_chat_path_exists_without_trailing_slash(self):
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            name='Voice Device',
+            code='ANDROID-VOICE-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        response = self.client.post(
+            '/api/v1/device/voice-chat',
+            {'deviceCode': 'ANDROID-VOICE-001', 'text': '你好'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('默认 LLM 模型', response.data['message'])
+
+    def test_device_voice_chat_accepts_pcm_audio_for_bound_device(self):
+        provider = LLMProvider.objects.create(
+            name='OpenAI compatible',
+            provider_type='openai',
+            api_base_url='https://example.com/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='qwen/qwen3-32b', is_active=True)
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        TenantLLMSettings.objects.create(tenant=self.tenant, default_model=model)
+        tts_provider, _ = TTSProvider.objects.update_or_create(
+            code='aliyun',
+            defaults={
+                'name': 'Aliyun TTS',
+                'api_key': 'tts-secret',
+                'base_url': 'wss://tts.example/realtime',
+                'model': 'tts-model',
+                'is_active': True,
+            },
+        )
+        voice = TTSVoice.objects.create(
+            provider=tts_provider,
+            display_name='默认音色',
+            voice_code='voice-001',
+            is_active=True,
+            is_visible=True,
+        )
+        tts_provider.default_voice = voice
+        tts_provider.save(update_fields=['default_voice'])
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            name='Voice Device',
+            code='ANDROID-VOICE-002',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        with (
+            patch('apps.devices.views.asr_services.transcribe_pcm_audio', return_value='介绍一下展厅'),
+            patch('apps.devices.views.llm_services.run_llm_chat_completion', return_value='欢迎来到数字人展厅。'),
+            patch('apps.devices.views.tts_services.synthesize_tts_pcm', return_value=b'\x01\x02'),
+        ):
+            response = self.client.post(
+                '/api/v1/device/voice-chat',
+                {
+                    'deviceCode': 'ANDROID-VOICE-002',
+                    'format': 'pcm',
+                    'sampleRate': '16000',
+                    'audio': SimpleUploadedFile('voice.pcm', b'\x00\x01\x00\x01', content_type='application/octet-stream'),
+                },
+                format='multipart',
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['questionText'], '介绍一下展厅')
+        self.assertEqual(response.data['answerText'], '欢迎来到数字人展厅。')
+        self.assertTrue(response.data['audioBase64'])
 
     def test_activate_updates_bound_device_by_device_code(self):
         Device.objects.create(

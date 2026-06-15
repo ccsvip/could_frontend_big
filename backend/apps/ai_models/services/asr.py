@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import time
+import base64
 from dataclasses import dataclass
 from urllib.parse import urlencode
 
@@ -86,6 +87,65 @@ def is_asr_configured(config: EffectiveASRConfig) -> bool:
     return bool(config.workspace_id and config.api_key and config.base_url and config.model)
 
 
+def transcribe_pcm_audio(*, pcm: bytes, sample_rate: int = 16000, config: EffectiveASRConfig | None = None) -> str:
+    effective = config or get_effective_asr_config()
+    if not effective.is_active:
+        raise RuntimeError('ASR 服务未启用')
+    if not is_asr_configured(effective):
+        raise RuntimeError(_missing_config_message(effective))
+    if not pcm:
+        raise RuntimeError('音频内容为空')
+
+    ws = None
+    transcript = ''
+    try:
+        ws = websocket.create_connection(
+            build_asr_ws_url(effective),
+            timeout=30,
+            header=[
+                f'Authorization: Bearer {effective.api_key}',
+                'OpenAI-Beta: realtime=v1',
+                f'X-DashScope-WorkSpace: {effective.workspace_id}',
+                'User-Agent: solin-device-runtime/1.0',
+            ],
+        )
+        ws.send(json.dumps(_transcription_session_update_event(sample_rate)))
+        for offset in range(0, len(pcm), 32 * 1024):
+            chunk = pcm[offset:offset + 32 * 1024]
+            ws.send(json.dumps(_audio_append_event(chunk)))
+        ws.send(json.dumps(_session_finish_event()))
+
+        started_at = time.monotonic()
+        while time.monotonic() - started_at < 30:
+            raw_event = ws.recv()
+            event = json.loads(raw_event) if isinstance(raw_event, str) else {}
+            if not isinstance(event, dict):
+                continue
+            event_type = str(event.get('type') or '')
+            if event_type in {'error', 'session.error'}:
+                message = event.get('message') or event.get('error') or 'ASR upstream error'
+                raise RuntimeError(str(message)[:200])
+            text = _extract_transcript_text(event)
+            if text:
+                if event_type.endswith('.delta'):
+                    transcript += text
+                else:
+                    transcript = text
+            if event_type in {
+                'conversation.item.input_audio_transcription.completed',
+                'conversation.item.input_audio_transcription.finished',
+                'session.finished',
+            } and transcript.strip():
+                break
+        return transcript.strip()
+    finally:
+        if ws is not None:
+            try:
+                ws.close()
+            except Exception:
+                pass
+
+
 def _missing_config_message(config: EffectiveASRConfig) -> str:
     missing = []
     if not config.workspace_id:
@@ -97,6 +157,46 @@ def _missing_config_message(config: EffectiveASRConfig) -> str:
     if not config.model:
         missing.append('ASR_MODEL')
     return f'Missing ASR config: {", ".join(missing)}'
+
+
+def _transcription_session_update_event(sample_rate: int) -> dict:
+    return {
+        'event_id': 'event_device_voice_asr_session_update',
+        'type': 'session.update',
+        'session': {
+            'input_audio_format': 'pcm',
+            'sample_rate': sample_rate,
+            'input_audio_transcription': {'language': 'zh'},
+            'turn_detection': {
+                'type': 'server_vad',
+                'threshold': 0.0,
+                'silence_duration_ms': 400,
+            },
+        },
+    }
+
+
+def _audio_append_event(audio: bytes) -> dict:
+    return {
+        'event_id': 'event_device_voice_asr_audio_append',
+        'type': 'input_audio_buffer.append',
+        'audio': base64.b64encode(audio).decode('ascii'),
+    }
+
+
+def _session_finish_event() -> dict:
+    return {
+        'event_id': 'event_device_voice_asr_session_finish',
+        'type': 'session.finish',
+    }
+
+
+def _extract_transcript_text(event: dict) -> str:
+    for key in ('text', 'delta', 'transcript', 'content'):
+        value = event.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return ''
 
 
 def test_asr_connection() -> dict:

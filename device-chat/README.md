@@ -15,7 +15,7 @@ device-chat/index.html?deviceCode=DEVICE_001&apiBaseUrl=http://localhost:8880/ap
 ## 页面能力
 
 - 从 URL `deviceCode` 自动连接设备，或手动输入设备码连接。
-- 使用 `navigator.mediaDevices.getUserMedia` 与 `MediaRecorder` 录音。
+- 使用 `navigator.mediaDevices.getUserMedia` 与 Web Audio 录音，上传 16k PCM。
 - 录音结束后用 `multipart/form-data` 上传音频，并携带 `X-Device-Code`。
 - 展示 ASR 问题文本、LLM 回答文本、`traceId`、`sessionId`。
 - 支持 `audioUrl` 和 `audioBase64` 两种语音回复，自动播放失败时可手动播放。
@@ -56,9 +56,14 @@ X-Device-Code: DEVICE_001
 POST /api/v1/device/voice-chat
 X-Device-Code: DEVICE_001
 Content-Type: multipart/form-data
+
+audio=<16k pcm file>
+deviceCode=DEVICE_001
+format=pcm
+sampleRate=16000
 ```
 
-当前仓库已有设备运行时校验接口，但没有发现已落地的批量 `voice-chat` 后端接口；如果录音上传返回 404，需要后端补齐上述接口或通过 `voiceChatPath` 指向实际接口。
+该接口会按 `deviceCode` 校验设备绑定状态，再执行 ASR → LLM → TTS。未绑定设备会返回 403，页面会提示先完成授权绑定。
 
 如果后端实际使用 PRD 中的设备会话接口，可以通过 URL 覆盖：
 

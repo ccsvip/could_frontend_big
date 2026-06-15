@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import base64
+import uuid
+
 from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Count, Prefetch, Q
@@ -7,12 +10,16 @@ from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
+from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.permissions import SAFE_METHODS, AllowAny, BasePermission
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from apps.accounts.permissions import CanCreateDevices, CanDeleteDevices, CanUpdateDevices, CanViewDevices, IsSuperUser
+from apps.ai_models import llm_services
+from apps.ai_models.services import asr as asr_services
+from apps.ai_models.services import tts as tts_services
 from apps.tenants.mixins import TenantScopedQuerysetMixin
 from apps.tenants.services import get_request_tenant
 
@@ -611,3 +618,110 @@ class DeviceRuntimeHeartbeatView(DeviceRuntimeView):
             device_info=request.data.get('deviceInfo') or request.data.get('device_info') or {},
         )
         return Response({'status': 'success', 'message': '心跳成功'}, status=status.HTTP_200_OK)
+
+
+class DeviceVoiceChatView(DeviceRuntimeView):
+    parser_classes = [MultiPartParser, JSONParser]
+
+    @extend_schema(tags=['Device Runtime'])
+    def post(self, request):
+        device, error = self.validate_device(request)
+        if error is not None:
+            return error
+        if device.application is None or not device.application.is_active:
+            return Response({'message': '设备未绑定可用应用'}, status=status.HTTP_403_FORBIDDEN)
+
+        question_text = self._request_question_text(request)
+        if not question_text:
+            audio_file = request.FILES.get('audio')
+            if audio_file is None:
+                return Response({'message': '请上传语音或输入文本'}, status=status.HTTP_400_BAD_REQUEST)
+            audio_format = str(request.data.get('format') or 'pcm').strip().lower()
+            if audio_format != 'pcm':
+                return Response({'message': '语音问答接口暂只支持 16k PCM 音频'}, status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+            sample_rate, sample_error = self._request_sample_rate(request)
+            if sample_error is not None:
+                return sample_error
+            try:
+                question_text = asr_services.transcribe_pcm_audio(
+                    pcm=audio_file.read(),
+                    sample_rate=sample_rate,
+                )
+            except Exception as exc:
+                return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
+            if not question_text:
+                return Response({'message': 'ASR 没有识别出有效内容'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            answer_text = self._generate_answer(device, question_text)
+        except Exception as exc:
+            return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
+
+        payload = {
+            'sessionId': str(request.data.get('sessionId') or uuid.uuid4()),
+            'traceId': str(uuid.uuid4()),
+            'deviceCode': device.code,
+            'questionText': question_text,
+            'answerText': answer_text,
+            'audioBase64': None,
+            'audioContentType': 'audio/wav',
+        }
+        try:
+            payload['audioBase64'] = self._synthesize_answer_audio(device, answer_text)
+        except Exception as exc:
+            payload['ttsError'] = str(exc)[:200]
+        return Response(payload, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def _request_question_text(request) -> str:
+        return str(
+            request.data.get('text')
+            or request.data.get('questionText')
+            or request.data.get('question')
+            or ''
+        ).strip()
+
+    @staticmethod
+    def _request_sample_rate(request):
+        raw_sample_rate = request.data.get('sampleRate') or request.data.get('sample_rate') or 16000
+        try:
+            sample_rate = int(raw_sample_rate)
+        except (TypeError, ValueError):
+            return None, Response({'message': 'sampleRate 必须是整数'}, status=status.HTTP_400_BAD_REQUEST)
+        if sample_rate <= 0 or sample_rate > 48000:
+            return None, Response({'message': 'sampleRate 超出支持范围'}, status=status.HTTP_400_BAD_REQUEST)
+        return sample_rate, None
+
+    @staticmethod
+    def _generate_answer(device: Device, question_text: str) -> str:
+        settings = llm_services.get_tenant_llm_settings(device.tenant)
+        model = settings.default_model if settings is not None else None
+        if not llm_services.is_llm_model_effective_for_tenant(device.tenant, model):
+            raise RuntimeError('请先设置公司默认 LLM 模型')
+
+        system_prompt = (
+            '你是数字人设备的中文语音问答助手。'
+            '回答要自然、简洁，适合直接转成语音播报。'
+        )
+        if device.application is not None:
+            system_prompt += f' 当前设备应用：{device.application.name}。'
+        return llm_services.run_llm_chat_completion(
+            model=model,
+            messages=[
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': question_text},
+            ],
+            temperature=0.7,
+            max_tokens=1000,
+        )
+
+    @staticmethod
+    def _synthesize_answer_audio(device: Device, answer_text: str) -> str:
+        provider = tts_services.get_aliyun_tts_provider()
+        config = tts_services.get_effective_tts_config(provider)
+        voice = tts_services.get_effective_tts_voice_for_tenant(device.tenant, provider)
+        if voice is None:
+            raise RuntimeError('请先配置默认音色')
+        pcm = tts_services.synthesize_tts_pcm(text=answer_text, voice=voice, config=config)
+        wav = tts_services.pcm_to_wav(pcm, sample_rate=config.sample_rate)
+        return base64.b64encode(wav).decode('ascii')

@@ -9,6 +9,7 @@
     SESSION_PATH: '/device-runtime/config/',
     VOICE_CHAT_PATH: '/device/voice-chat',
     MAX_RECORD_SECONDS: 60,
+    PCM_SAMPLE_RATE: 16000,
     MIN_RECORD_MS: 700,
     REQUEST_TIMEOUT: 30000,
     AUTO_PLAY_AUDIO: true,
@@ -56,9 +57,12 @@
     deviceCode: '',
     device: null,
     sessionId: '',
-    mediaRecorder: null,
     mediaStream: null,
-    chunks: [],
+    audioContext: null,
+    audioSource: null,
+    audioProcessor: null,
+    audioGain: null,
+    pcmChunks: [],
     recordingStartedAt: 0,
     recordingTimer: 0,
     maxRecordTimer: 0,
@@ -66,6 +70,7 @@
     lastAudioFormat: '',
     phase: 'idle',
     discardRecording: false,
+    recordingStopPending: false,
   };
 
   function init() {
@@ -216,21 +221,13 @@
         : '麦克风打开失败，请检查浏览器权限和输入设备。');
     }
 
-    const mimeType = selectMimeType();
-    const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
     state.discardRecording = false;
+    state.recordingStopPending = false;
     state.mediaStream = stream;
-    state.mediaRecorder = recorder;
-    state.chunks = [];
+    state.pcmChunks = [];
     state.recordingStartedAt = Date.now();
 
-    recorder.addEventListener('dataavailable', (event) => {
-      if (event.data && event.data.size > 0) {
-        state.chunks.push(event.data);
-      }
-    });
-    recorder.addEventListener('stop', () => handleRecordingStopped(mimeType));
-    recorder.start(250);
+    setupPcmCapture(stream);
     setPhase('recording');
     showNotice('正在录音，请开始说话...', 'warn');
     startRecordingClock();
@@ -238,14 +235,17 @@
   }
 
   function stopRecording() {
-    if (state.mediaRecorder && state.mediaRecorder.state !== 'inactive') {
-      state.mediaRecorder.stop();
+    if (state.phase !== 'recording' || state.recordingStopPending) {
+      return;
     }
+    state.recordingStopPending = true;
+    handleRecordingStopped().catch((error) => showError(error));
   }
 
-  async function handleRecordingStopped(mimeType) {
+  async function handleRecordingStopped() {
     stopRecordingClock();
     stopStream();
+    state.recordingStopPending = false;
     if (state.discardRecording) {
       state.discardRecording = false;
       return;
@@ -257,8 +257,8 @@
       return;
     }
 
-    const format = mimeToFormat(mimeType);
-    const blob = new Blob(state.chunks, { type: mimeType || 'audio/webm' });
+    const format = 'pcm';
+    const blob = new Blob(state.pcmChunks, { type: 'application/octet-stream' });
     if (!blob.size) {
       setPhase('ready');
       showError(new Error('麦克风音频为空，请重新说一遍'));
@@ -285,6 +285,9 @@
     formData.append('audio', audioBlob, `voice-${Date.now()}.${format || 'webm'}`);
     formData.append('deviceCode', state.deviceCode);
     formData.append('format', format || 'webm');
+    if (format === 'pcm') {
+      formData.append('sampleRate', String(CONFIG.PCM_SAMPLE_RATE));
+    }
     if (state.sessionId) {
       formData.append('sessionId', state.sessionId);
     }
@@ -360,6 +363,9 @@
     if (!answer) {
       throw new Error('回答生成失败，请稍后重试');
     }
+    if (data.ttsError) {
+      showNotice(`回答已生成，语音合成失败：${data.ttsError}`, 'warn');
+    }
 
     state.sessionId = data.sessionId || state.sessionId;
     els.sessionIdText.textContent = state.sessionId || '-';
@@ -389,7 +395,7 @@
       if (value.startsWith('data:')) {
         return value;
       }
-      return `data:audio/mpeg;base64,${value}`;
+      return `data:${data.audioContentType || 'audio/mpeg'};base64,${value}`;
     }
     return '';
   }
@@ -498,27 +504,69 @@
   }
 
   function ensureRecorderSupport() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !AudioContextClass) {
       throw new Error('当前浏览器不支持录音功能，请更换 Chrome、Edge 或 Safari 浏览器。');
     }
   }
 
-  function selectMimeType() {
-    const candidates = [
-      'audio/webm;codecs=opus',
-      'audio/webm',
-      'audio/mp4',
-      'audio/wav',
-    ];
-    return candidates.find((type) => MediaRecorder.isTypeSupported(type)) || '';
+  function setupPcmCapture(stream) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    const audioContext = new AudioContextClass();
+    const source = audioContext.createMediaStreamSource(stream);
+    const processor = audioContext.createScriptProcessor(4096, 1, 1);
+    const silentGain = audioContext.createGain();
+    silentGain.gain.value = 0;
+
+    processor.onaudioprocess = (event) => {
+      if (state.phase !== 'recording' || state.recordingStopPending) {
+        return;
+      }
+      const channelData = event.inputBuffer.getChannelData(0);
+      const pcm = encodePCM16(downsampleBuffer(channelData, audioContext.sampleRate));
+      state.pcmChunks.push(pcm.buffer.slice(0));
+    };
+
+    source.connect(processor);
+    processor.connect(silentGain);
+    silentGain.connect(audioContext.destination);
+    state.audioContext = audioContext;
+    state.audioSource = source;
+    state.audioProcessor = processor;
+    state.audioGain = silentGain;
   }
 
-  function mimeToFormat(mimeType) {
-    if (!mimeType) return 'webm';
-    if (mimeType.includes('wav')) return 'wav';
-    if (mimeType.includes('mp4')) return 'mp4';
-    if (mimeType.includes('mpeg')) return 'mp3';
-    return 'webm';
+  function downsampleBuffer(buffer, inputSampleRate) {
+    if (inputSampleRate === CONFIG.PCM_SAMPLE_RATE) {
+      return buffer;
+    }
+    const sampleRateRatio = inputSampleRate / CONFIG.PCM_SAMPLE_RATE;
+    const newLength = Math.round(buffer.length / sampleRateRatio);
+    const result = new Float32Array(newLength);
+    let offsetResult = 0;
+    let offsetBuffer = 0;
+    while (offsetResult < result.length) {
+      const nextOffsetBuffer = Math.round((offsetResult + 1) * sampleRateRatio);
+      let accum = 0;
+      let count = 0;
+      for (let i = offsetBuffer; i < nextOffsetBuffer && i < buffer.length; i += 1) {
+        accum += buffer[i];
+        count += 1;
+      }
+      result[offsetResult] = count ? accum / count : 0;
+      offsetResult += 1;
+      offsetBuffer = nextOffsetBuffer;
+    }
+    return result;
+  }
+
+  function encodePCM16(samples) {
+    const output = new Int16Array(samples.length);
+    for (let i = 0; i < samples.length; i += 1) {
+      const sample = Math.max(-1, Math.min(1, samples[i]));
+      output[i] = sample < 0 ? sample * 0x8000 : sample * 0x7fff;
+    }
+    return output;
   }
 
   function startRecordingClock() {
@@ -542,11 +590,18 @@
   }
 
   function stopStream() {
+    if (state.audioProcessor) state.audioProcessor.disconnect();
+    if (state.audioSource) state.audioSource.disconnect();
+    if (state.audioGain) state.audioGain.disconnect();
+    if (state.audioContext) state.audioContext.close().catch(() => {});
+    state.audioContext = null;
+    state.audioSource = null;
+    state.audioProcessor = null;
+    state.audioGain = null;
     if (state.mediaStream) {
       state.mediaStream.getTracks().forEach((track) => track.stop());
       state.mediaStream = null;
     }
-    state.mediaRecorder = null;
   }
 
   function toApiUrl(path) {
