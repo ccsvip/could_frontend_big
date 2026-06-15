@@ -221,6 +221,7 @@ h2 {
 }
 
 .status-pill[data-tone="busy"],
+.status-pill[data-tone="pending"],
 .status-pill[data-tone="recording"],
 .status-pill[data-tone="processing"] {
   color: var(--warning);

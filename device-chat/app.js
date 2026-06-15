@@ -5,6 +5,7 @@
     API_BASE_URL: location.protocol === 'file:' ? 'http://localhost:8880/api/v1' : `${location.origin}/api/v1`,
     DEVICE_CODE_QUERY_KEY: 'deviceCode',
     DEVICE_CODE_HEADER: 'X-Device-Code',
+    ACTIVATE_PATH: '/device-auth/activate/',
     SESSION_PATH: '/device-runtime/config/',
     VOICE_CHAT_PATH: '/device/voice-chat',
     MAX_RECORD_SECONDS: 60,
@@ -19,6 +20,7 @@
     ...(window.DEVICE_CHAT_CONFIG || {}),
   };
   CONFIG.API_BASE_URL = query.get('apiBaseUrl') || CONFIG.API_BASE_URL;
+  CONFIG.ACTIVATE_PATH = query.get('activatePath') || CONFIG.ACTIVATE_PATH;
   CONFIG.SESSION_PATH = query.get('sessionPath') || CONFIG.SESSION_PATH;
   CONFIG.VOICE_CHAT_PATH = query.get('voiceChatPath') || CONFIG.VOICE_CHAT_PATH;
 
@@ -113,14 +115,37 @@
     els.apiBaseInput.value = CONFIG.API_BASE_URL;
 
     setPhase('connecting');
-    showNotice('正在连接设备...', 'warn');
-    const payload = await apiRequest(buildSessionPath(deviceCode), {
+    showNotice('正在上报设备并检查授权...', 'warn');
+    const activationPayload = await apiRequest(CONFIG.ACTIVATE_PATH, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        [CONFIG.DEVICE_CODE_HEADER]: deviceCode,
+      },
+      body: JSON.stringify(buildActivationPayload(deviceCode)),
+    });
+    const activationSession = normalizeSessionPayload(activationPayload, deviceCode);
+    state.device = activationSession;
+    renderDevice(activationSession);
+
+    if (activationSession.bindingStatus !== 'bound') {
+      setPhase('pending');
+      showNotice('设备已上报，待超级管理员在设备请求中绑定公司和应用。', 'warn');
+      logDiagnostic('device.pending', {
+        deviceCode,
+        bindingStatus: activationSession.bindingStatus,
+      });
+      return;
+    }
+
+    showNotice('设备已授权，正在拉取运行配置...', 'warn');
+    const configPayload = await apiRequest(buildSessionPath(deviceCode), {
       method: 'GET',
       headers: {
         [CONFIG.DEVICE_CODE_HEADER]: deviceCode,
       },
     });
-    const session = normalizeSessionPayload(payload, deviceCode);
+    const session = normalizeSessionPayload(configPayload, deviceCode);
     state.device = session;
     renderDevice(session);
     setPhase('ready');
@@ -130,6 +155,23 @@
       tenantId: session.tenantId || '',
       applicationId: session.applicationId || '',
     });
+  }
+
+  function buildActivationPayload(deviceCode) {
+    const userAgent = navigator.userAgent || '';
+    return {
+      deviceCode,
+      softwareVersion: 'device-chat-html-demo',
+      systemVersion: userAgent,
+      mainboardInfo: 'browser',
+      deviceInfo: {
+        source: 'device-chat',
+        userAgent,
+        language: navigator.language || '',
+        pageUrl: location.href,
+        screen: window.screen ? `${window.screen.width}x${window.screen.height}` : '',
+      },
+    };
   }
 
   function buildSessionPath(deviceCode) {
@@ -154,6 +196,7 @@
       llmEnabled: data.llmEnabled,
       applicationId: data.applicationId || application.id || '',
       applicationName: data.applicationName || application.name || '',
+      bindingStatus: data.bindingStatus || device.bindingStatus || (data.application || device.applicationId ? 'bound' : 'pending'),
     };
   }
 
@@ -303,7 +346,7 @@
 
   function renderDevice(session) {
     els.deviceNameText.textContent = session.deviceName || session.deviceCode || '-';
-    els.deviceStateText.textContent = normalizeDeviceState(session.status);
+    els.deviceStateText.textContent = normalizeDeviceState(session);
     els.applicationText.textContent = session.applicationName || '-';
     els.sessionIdText.textContent = state.sessionId || '-';
   }
@@ -408,6 +451,7 @@
     const labels = {
       idle: '未连接设备',
       connecting: '正在连接设备...',
+      pending: '设备待授权',
       ready: '设备连接成功',
       recording: '正在录音，请开始说话...',
       processing: '正在识别语音并生成回答...',
@@ -559,11 +603,13 @@
     return payload.message || payload.detail || payload.error || '';
   }
 
-  function normalizeDeviceState(status) {
-    const value = String(status || '').toLowerCase();
+  function normalizeDeviceState(session) {
+    if (session.bindingStatus === 'pending') return '待授权';
+    if (session.bindingStatus === 'ignored') return '已忽略';
+    const value = String(session.status || '').toLowerCase();
     if (['active', 'online', 'enabled', 'success'].includes(value)) return '已连接';
     if (['disabled', 'inactive'].includes(value)) return '已禁用';
-    return status || '已连接';
+    return session.status || '已连接';
   }
 
   function mapErrorCode(code) {

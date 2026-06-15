@@ -23,7 +23,27 @@ device-chat/index.html?deviceCode=DEVICE_001&apiBaseUrl=http://localhost:8880/ap
 
 ## 默认接口
 
-页面默认按当前仓库已有运行时接口校验设备：
+页面默认先按当前仓库已有设备激活接口上报设备：
+
+```http
+POST /api/v1/device-auth/activate/
+X-Device-Code: DEVICE_001
+Content-Type: application/json
+
+{
+  "deviceCode": "DEVICE_001",
+  "softwareVersion": "device-chat-html-demo",
+  "systemVersion": "<browser user agent>",
+  "mainboardInfo": "browser",
+  "deviceInfo": {
+    "source": "device-chat"
+  }
+}
+```
+
+如果设备不存在，后端会创建待绑定设备，超级管理员可在“设备请求”页面看到该设备。页面会停在“设备待授权”状态，不允许录音。
+
+当激活接口返回 `bindingStatus: "bound"` 后，页面再拉取运行时配置：
 
 ```http
 GET /api/v1/device-runtime/config/?deviceCode=DEVICE_001
@@ -43,7 +63,7 @@ Content-Type: multipart/form-data
 如果后端实际使用 PRD 中的设备会话接口，可以通过 URL 覆盖：
 
 ```text
-device-chat/index.html?deviceCode=DEVICE_001&sessionPath=/device/session&voiceChatPath=/device/voice-chat
+device-chat/index.html?deviceCode=DEVICE_001&activatePath=/device-auth/activate/&sessionPath=/device/session&voiceChatPath=/device/voice-chat
 ```
 
 ## 语音问答响应格式
