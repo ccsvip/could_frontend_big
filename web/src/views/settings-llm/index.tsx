@@ -407,7 +407,7 @@ export const LlmSettingsAdminPage = () => {
           </Button>
           <Popconfirm
             title="删除厂商"
-            description="已授权或使用的厂商不能删除，请停用。"
+            description="仍有公司启用授权的厂商不能删除，请先取消授权。"
             onConfirm={() => deletePlatformLLMProvider(record.id).then(loadPlatformData)}
           >
             <Button size="small" danger icon={<DeleteOutlined />} className="hover:bg-rose-50 rounded-md">

@@ -45,7 +45,7 @@ from .llm_services import (
     get_tenant_llm_settings,
     is_llm_model_effective_for_tenant,
     llm_model_has_active_company_authorization,
-    llm_provider_has_usage,
+    llm_provider_has_active_company_authorization,
 )
 from .models import (
     ASRReplacementRule,
@@ -385,8 +385,8 @@ class PlatformLLMProviderViewSet(PermissionMappedModelViewSet):
         return Response(PlatformLLMProviderSerializer(provider, context=self.get_serializer_context()).data)
 
     def perform_destroy(self, instance):
-        if llm_provider_has_usage(instance):
-            raise ValidationError({'detail': '该厂商已被授权或使用，不能删除，请停用'})
+        if llm_provider_has_active_company_authorization(instance):
+            raise ValidationError({'detail': '该厂商仍有公司启用授权，不能删除，请先取消授权'})
         return super().perform_destroy(instance)
 
 

@@ -209,21 +209,46 @@ class LLMPlatformSettingsApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(model_resp.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(self.llm_model_model().objects.filter(id=model.id).exists())
 
-    def test_provider_with_used_model_still_cannot_be_hard_deleted(self):
+    def test_provider_with_active_company_authorization_cannot_be_deleted(self):
         provider = self.create_platform_provider()
         model = self.create_model(provider=provider)
-        ChatConversation.objects.create(
-            tenant=self.tenant,
-            user=self.tenant_user,
-            title='Used model conversation',
-            llm_model=model,
-        )
+        self.tenant_grant_model().objects.create(tenant=self.tenant, model=model, is_active=True)
         self.client.force_authenticate(self.superuser)
 
         provider_resp = self.client.delete(f'/api/v1/settings/llm/providers/{provider.id}/')
 
         self.assertEqual(provider_resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('仍有公司启用授权', str(provider_resp.data))
         self.assertTrue(self.provider_model().objects.filter(id=provider.id).exists())
+
+    def test_provider_without_active_company_authorization_can_be_deleted(self):
+        provider = self.create_platform_provider()
+        model = self.create_model(provider=provider)
+        self.tenant_grant_model().objects.create(tenant=self.tenant, model=model, is_active=False)
+        self.tenant_settings_model().objects.update_or_create(
+            tenant=self.tenant,
+            defaults={'default_model': model},
+        )
+        ChatConversation.objects.create(
+            tenant=self.tenant,
+            user=self.tenant_user,
+            title='Historical model conversation',
+            llm_model=model,
+        )
+        AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.tenant_user,
+            name='Historical provider application',
+            llm_provider=provider,
+            llm_model=model,
+            model_name=model.name,
+        )
+        self.client.force_authenticate(self.superuser)
+
+        provider_resp = self.client.delete(f'/api/v1/settings/llm/providers/{provider.id}/')
+
+        self.assertEqual(provider_resp.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(self.provider_model().objects.filter(id=provider.id).exists())
 
     def test_test_settings_validation_rejects_invalid_bounds(self):
         self.client.force_authenticate(self.superuser)
