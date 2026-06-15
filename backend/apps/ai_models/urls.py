@@ -22,6 +22,7 @@ from .views import (
     PlatformLLMProviderViewSet,
     TenantLLMAuthorizationView,
     TTSRuntimeView,
+    TTSProviderListView,
     TTSSettingsTestView,
     TTSSettingsView,
 )
@@ -36,6 +37,9 @@ router.register('ai-models/chat/conversations', ChatConversationViewSet, basenam
 urlpatterns = [
     path('settings/asr/', ASRSettingsView.as_view(), name='asr-settings'),
     path('settings/asr/test/', ASRSettingsTestView.as_view(), name='asr-settings-test'),
+    path('settings/tts/providers/', TTSProviderListView.as_view(), name='tts-provider-list'),
+    path('settings/tts/providers/<slug:provider_code>/', TTSSettingsView.as_view(), name='tts-provider-settings'),
+    path('settings/tts/providers/<slug:provider_code>/test/', TTSSettingsTestView.as_view(), name='tts-provider-settings-test'),
     path('settings/tts/', TTSSettingsView.as_view(), name='tts-settings'),
     path('settings/tts/test/', TTSSettingsTestView.as_view(), name='tts-settings-test'),
     path('settings/llm/providers/<int:provider_id>/models/', PlatformLLMProviderModelsView.as_view(), name='platform-llm-provider-models'),

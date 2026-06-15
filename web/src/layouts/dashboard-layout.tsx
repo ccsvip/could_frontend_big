@@ -203,6 +203,8 @@ const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
 const commandWorkspacePaths = new Set(['/commands/groups', 'commands/groups']);
 const commandInlineWorkspacePaths = new Set(['/commands/control', 'commands/control', '/commands/tasks', 'commands/tasks']);
 const isApplicationMenuPath = (path: string) => path === '/applications' || path.endsWith('/applications');
+const isSettingsDetailMenuPath = (path: string, pathname: string) =>
+  path.startsWith('/settings/') && pathname.startsWith(`${path}/`);
 
 const filterVisibleMenus = (menus: AppMenu[]): AppMenu[] => {
   return menus
@@ -276,6 +278,10 @@ const findMenuTrail = (menus: AppMenu[], pathname: string, ancestors: AppMenu[] 
     }
 
     if (isApplicationMenuPath(menu.path || menu.key) && pathname.startsWith(`${menu.path || menu.key}/`)) {
+      return trail;
+    }
+
+    if (menu.path && isSettingsDetailMenuPath(menu.path, pathname)) {
       return trail;
     }
 

@@ -331,6 +331,44 @@ class TTSVoiceWriteSerializer(serializers.ModelSerializer):
         fields = ['displayName', 'voiceCode', 'gender', 'avatarPath', 'isActive', 'isVisible', 'sortOrder']
 
 
+class PlatformTTSProviderSummarySerializer(serializers.ModelSerializer):
+    defaultVoiceId = serializers.IntegerField(source='default_voice_id', allow_null=True)
+    defaultVoiceName = serializers.SerializerMethodField()
+    sampleRate = serializers.IntegerField(source='sample_rate')
+    isActive = serializers.BooleanField(source='is_active')
+    configured = serializers.SerializerMethodField()
+    voiceCount = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TTSProvider
+        fields = [
+            'id',
+            'code',
+            'name',
+            'defaultVoiceId',
+            'defaultVoiceName',
+            'sampleRate',
+            'isActive',
+            'configured',
+            'voiceCount',
+            'updated_at',
+        ]
+        read_only_fields = fields
+
+    @extend_schema_field(serializers.CharField(allow_blank=True))
+    def get_defaultVoiceName(self, obj: TTSProvider) -> str:
+        return obj.default_voice.display_name if obj.default_voice else ''
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_configured(self, obj: TTSProvider) -> bool:
+        config = get_effective_tts_config(obj)
+        return bool(config.api_key and config.base_url and config.model and config.is_active)
+
+    @extend_schema_field(serializers.IntegerField())
+    def get_voiceCount(self, obj: TTSProvider) -> int:
+        return obj.voices.count()
+
+
 class PlatformTTSSettingsSerializer(serializers.ModelSerializer):
     apiKeyMasked = serializers.SerializerMethodField()
     apiKeyConfigured = serializers.SerializerMethodField()

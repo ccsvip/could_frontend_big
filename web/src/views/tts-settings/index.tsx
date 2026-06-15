@@ -14,18 +14,25 @@ import {
   message,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   ApiOutlined,
+  ArrowLeftOutlined,
+  CheckCircleOutlined,
+  CloudOutlined,
   CustomerServiceOutlined,
   PlayCircleOutlined,
   ReloadOutlined,
+  RightOutlined,
   SaveOutlined,
   SoundOutlined,
 } from '@ant-design/icons';
 import {
+  fetchTtsProviders,
   fetchTtsSettings,
   testPlatformTts,
   updateTtsSettings,
+  type TtsProviderSummary,
   type TtsSettings,
   type TtsSettingsPayload,
   type TtsVoiceRecord,
@@ -48,6 +55,12 @@ const SAMPLE_RATE_OPTIONS = [
 
 export const TtsSettingsPage = () => {
   const [form] = Form.useForm<TtsSettingsFormValues>();
+  const { providerCode } = useParams<{ providerCode?: string }>();
+  const navigate = useNavigate();
+  const activeProviderCode = providerCode?.trim();
+  const isProviderListMode = !activeProviderCode;
+  const [providers, setProviders] = useState<TtsProviderSummary[]>([]);
+  const [providersLoading, setProvidersLoading] = useState(false);
   const [settings, setSettings] = useState<TtsSettings | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -66,10 +79,23 @@ export const TtsSettingsPage = () => {
     if (audioUrl) URL.revokeObjectURL(audioUrl);
   }, [audioUrl]);
 
+  const loadProviders = useCallback(async () => {
+    setProvidersLoading(true);
+    try {
+      const data = await fetchTtsProviders();
+      setProviders(data);
+    } finally {
+      setProvidersLoading(false);
+    }
+  }, []);
+
   const loadSettings = useCallback(async () => {
+    if (!activeProviderCode) {
+      return;
+    }
     setLoading(true);
     try {
-      const data = await fetchTtsSettings();
+      const data = await fetchTtsSettings(activeProviderCode);
       setSettings(data);
       form.setFieldsValue({
         apiKey: '',
@@ -83,11 +109,16 @@ export const TtsSettingsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [form]);
+  }, [activeProviderCode, form]);
 
   useEffect(() => {
+    if (isProviderListMode) {
+      setSettings(null);
+      void loadProviders();
+      return;
+    }
     void loadSettings();
-  }, [loadSettings]);
+  }, [isProviderListMode, loadProviders, loadSettings]);
 
   const voiceOptions = useMemo(
     () => settings?.voices.map((voice) => ({ label: `${voice.displayName} (${voice.voiceCode})`, value: voice.id })) ?? [],
@@ -95,6 +126,9 @@ export const TtsSettingsPage = () => {
   );
 
   const handleSave = async () => {
+    if (!activeProviderCode) {
+      return;
+    }
     const values = await form.validateFields();
     const payload: TtsSettingsPayload = { ...values };
     if (!payload.apiKey?.trim()) {
@@ -103,7 +137,7 @@ export const TtsSettingsPage = () => {
 
     setSaving(true);
     try {
-      const data = await updateTtsSettings(payload);
+      const data = await updateTtsSettings(payload, activeProviderCode);
       setSettings(data);
       form.setFieldsValue({ ...values, apiKey: '' });
       message.success('TTS 设置已保存');
@@ -113,22 +147,31 @@ export const TtsSettingsPage = () => {
   };
 
   const handleVoicePatch = async (voiceId: number, patch: Partial<TtsVoiceRecord>) => {
-    const data = await updateTtsSettings({ voices: [{ id: voiceId, ...patch }] });
+    if (!activeProviderCode) {
+      return;
+    }
+    const data = await updateTtsSettings({ voices: [{ id: voiceId, ...patch }] }, activeProviderCode);
     setSettings(data);
   };
 
   const handleDefaultVoice = async (voiceId: number) => {
-    const data = await updateTtsSettings({ defaultVoiceId: voiceId });
+    if (!activeProviderCode) {
+      return;
+    }
+    const data = await updateTtsSettings({ defaultVoiceId: voiceId }, activeProviderCode);
     setSettings(data);
     form.setFieldsValue({ defaultVoiceId: voiceId });
     message.success('默认音色已更新');
   };
 
   const handleTest = async () => {
+    if (!activeProviderCode) {
+      return;
+    }
     const voiceId = form.getFieldValue('defaultVoiceId');
     setTesting(true);
     try {
-      const blob = await testPlatformTts({ text: testText, voiceId });
+      const blob = await testPlatformTts({ text: testText, voiceId }, activeProviderCode);
       setAudioBlob(blob);
       message.success('TTS 测试音频已生成');
     } finally {
@@ -196,6 +239,92 @@ export const TtsSettingsPage = () => {
     },
   ];
 
+  if (isProviderListMode) {
+    return (
+      <div className="space-y-5">
+        <div className="page-hero">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-teal-100 bg-teal-50 text-teal-700">
+                <SoundOutlined className="text-xl" />
+              </div>
+              <div>
+                <Typography.Title level={3} className="!m-0 !text-lg !tracking-normal !text-slate-900">
+                  TTS 设置
+                </Typography.Title>
+                <div className="mt-1 text-xs text-slate-500">供应商 {providers.length} 个</div>
+              </div>
+            </div>
+            <Button icon={<ReloadOutlined />} loading={providersLoading} onClick={() => void loadProviders()}>
+              同步状态
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {providersLoading && providers.length === 0 ? (
+            <Card loading className="min-h-[180px] shadow-sm" />
+          ) : null}
+
+          {providers.map((provider) => (
+            <Card
+              key={provider.code}
+              hoverable
+              className="shadow-sm"
+              onClick={() => navigate(`/settings/tts/${provider.code}`)}
+            >
+              <div className="flex h-full flex-col gap-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-sky-100 bg-sky-50 text-sky-700">
+                      <CloudOutlined className="text-lg" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="truncate text-base font-semibold text-slate-900">{provider.name}</div>
+                      <code className="text-xs text-slate-500">{provider.code}</code>
+                    </div>
+                  </div>
+                  <RightOutlined className="mt-3 shrink-0 text-slate-300" />
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Tag color={provider.isActive ? 'success' : 'default'} className="m-0">
+                    {provider.isActive ? '已启用' : '已停用'}
+                  </Tag>
+                  <Tag color={provider.configured ? 'blue' : 'warning'} className="m-0">
+                    {provider.configured ? '配置完整' : '配置缺失'}
+                  </Tag>
+                  {provider.defaultVoiceName ? (
+                    <Tag icon={<CheckCircleOutlined />} color="cyan" className="m-0">
+                      {provider.defaultVoiceName}
+                    </Tag>
+                  ) : null}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 border-t border-slate-100 pt-3 text-xs text-slate-500">
+                  <div>
+                    <div className="font-medium text-slate-900">{provider.sampleRate}Hz</div>
+                    <div>返回采样率</div>
+                  </div>
+                  <div>
+                    <div className="font-medium text-slate-900">{provider.voiceCount}</div>
+                    <div>内置音色</div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
+
+          {!providersLoading && providers.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-400">
+              暂无 TTS 供应商
+            </div>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5">
       <div className="page-hero">
@@ -207,7 +336,7 @@ export const TtsSettingsPage = () => {
             <div>
               <div className="mb-1 flex flex-wrap items-center gap-2">
                 <Typography.Title level={3} className="!m-0 !text-lg !tracking-normal !text-slate-900">
-                  TTS 设置
+                  {settings?.name || 'TTS Provider'}
                 </Typography.Title>
                 <Tag color={settings?.isActive ? 'success' : 'default'} className="m-0">
                   {settings?.isActive ? '已启用' : '已停用'}
@@ -217,18 +346,23 @@ export const TtsSettingsPage = () => {
                 </Tag>
               </div>
               <div className="text-xs text-slate-500">
-                {settings?.name || '阿里云 TTS'} · {settings?.sampleRate || 24000}Hz · PCM 单声道
+                {settings?.code || activeProviderCode || '-'} · {settings?.sampleRate || 24000}Hz · PCM 单声道
               </div>
             </div>
           </div>
-          <Button icon={<ReloadOutlined />} loading={loading} onClick={() => void loadSettings()}>
-            同步状态
-          </Button>
+          <Space wrap>
+            <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/settings/tts')}>
+              返回供应商
+            </Button>
+            <Button icon={<ReloadOutlined />} loading={loading} onClick={() => void loadSettings()}>
+              同步状态
+            </Button>
+          </Space>
         </div>
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
-        <Card title="阿里云 TTS" loading={loading} className="shadow-sm">
+        <Card title={settings?.name || 'TTS Provider'} loading={loading} className="shadow-sm">
           <Form form={form} layout="vertical" requiredMark="optional">
             <div className="grid gap-x-4 md:grid-cols-2">
               <Form.Item name="apiKey" label="API Key" tooltip="留空表示不修改当前密钥">

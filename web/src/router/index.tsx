@@ -376,6 +376,14 @@ export const AppRouter = () => {
           ),
         },
         {
+          path: 'settings/tts/:providerCode',
+          element: (
+            <PermissionGuard permission="tenant.management.view">
+              <TtsSettingsPage />
+            </PermissionGuard>
+          ),
+        },
+        {
           path: 'settings/llm',
           element: (
             <PermissionGuard permission="tenant.management.view">

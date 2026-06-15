@@ -58,6 +58,7 @@ from .models import (
     TenantLLMModelGrant,
     TenantLLMSettings,
     TenantTTSSettings,
+    TTSProvider,
     TTSVoice,
 )
 from .realtime_asr import resolve_asr_device_connection
@@ -77,6 +78,7 @@ from .serializers import (
     PlatformLLMModelWriteSerializer,
     PlatformLLMProviderSerializer,
     PlatformLLMProviderWriteSerializer,
+    PlatformTTSProviderSummarySerializer,
     PlatformTTSSettingsSerializer,
     PlatformTTSSettingsWriteSerializer,
     CompanyTTSVoiceSerializer,
@@ -211,6 +213,12 @@ def _select_platform_tts_voice(provider, raw_voice_id=None) -> TTSVoice | None:
     return tts_services.get_default_tts_voice(provider)
 
 
+def _get_platform_tts_provider(provider_code: str | None = None) -> TTSProvider:
+    if provider_code is None:
+        return tts_services.get_aliyun_tts_provider()
+    return get_object_or_404(TTSProvider, code=provider_code)
+
+
 def _build_company_tts_options_payload(tenant, request=None):
     provider = tts_services.get_aliyun_tts_provider()
     config = tts_services.get_effective_tts_config(provider)
@@ -236,15 +244,24 @@ def _build_company_tts_options_payload(tenant, request=None):
     }
 
 
-class TTSSettingsView(APIView):
+class TTSProviderListView(APIView):
     permission_classes = [IsSuperUser]
 
     def get(self, request):
-        provider = tts_services.get_aliyun_tts_provider()
+        tts_services.get_aliyun_tts_provider()
+        providers = TTSProvider.objects.select_related('default_voice').prefetch_related('voices').order_by('id')
+        return Response(PlatformTTSProviderSummarySerializer(providers, many=True).data)
+
+
+class TTSSettingsView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def get(self, request, provider_code=None):
+        provider = _get_platform_tts_provider(provider_code)
         return Response(PlatformTTSSettingsSerializer(provider, context={'request': request}).data)
 
-    def patch(self, request):
-        provider = tts_services.get_aliyun_tts_provider()
+    def patch(self, request, provider_code=None):
+        provider = _get_platform_tts_provider(provider_code)
         serializer = PlatformTTSSettingsWriteSerializer(provider, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         provider = serializer.save()
@@ -254,8 +271,8 @@ class TTSSettingsView(APIView):
 class TTSSettingsTestView(APIView):
     permission_classes = [IsSuperUser]
 
-    def post(self, request):
-        provider = tts_services.get_aliyun_tts_provider()
+    def post(self, request, provider_code=None):
+        provider = _get_platform_tts_provider(provider_code)
         config = tts_services.get_effective_tts_config(provider)
         voice = _select_platform_tts_voice(provider, request.data.get('voiceId'))
         if voice is None:

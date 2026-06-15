@@ -48,21 +48,36 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(tts_services.response_format_for_sample_rate(24000), 'pcm')
         self.assertEqual(tts_services.response_format_for_sample_rate(16000), 'pcm')
 
+    def test_superuser_can_list_tts_providers_for_card_entry(self):
+        superuser = User.objects.create_superuser(username='tts-provider-root', password='test123456')
+        self.provider.api_key = 'dashscope-secret'
+        self.provider.save(update_fields=['api_key'])
+        self.client.force_authenticate(user=superuser)
+
+        response = self.client.get('/api/v1/settings/tts/providers/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['code'], 'aliyun')
+        self.assertEqual(response.data[0]['name'], '阿里云 TTS')
+        self.assertIn('voiceCount', response.data[0])
+        self.assertNotIn('dashscope-secret', str(response.data))
+
     def test_superuser_can_read_and_update_tts_settings_without_raw_key(self):
         superuser = User.objects.create_superuser(username='tts-root', password='test123456')
         self.provider.api_key = 'dashscope-secret'
         self.provider.save(update_fields=['api_key'])
         self.client.force_authenticate(user=superuser)
 
-        read_response = self.client.get('/api/v1/settings/tts/')
+        read_response = self.client.get('/api/v1/settings/tts/providers/aliyun/')
 
         self.assertEqual(read_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(read_response.data['code'], 'aliyun')
         self.assertEqual(read_response.data['apiKeyMasked'], 'das...cret')
         self.assertTrue(read_response.data['voices'][0]['avatarPath'].startswith('http://testserver/static/tts/voices/'))
         self.assertNotIn('dashscope-secret', str(read_response.data))
 
         update_response = self.client.patch(
-            '/api/v1/settings/tts/',
+            '/api/v1/settings/tts/providers/aliyun/',
             {
                 'apiKey': 'new-dashscope-secret',
                 'baseUrl': 'wss://dashscope.aliyuncs.com/api-ws/v1/realtime',

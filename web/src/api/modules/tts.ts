@@ -12,6 +12,19 @@ export type TtsVoiceRecord = {
   isDefault: boolean;
 };
 
+export type TtsProviderSummary = {
+  id: number;
+  code: string;
+  name: string;
+  defaultVoiceId: number | null;
+  defaultVoiceName: string;
+  sampleRate: number;
+  isActive: boolean;
+  configured: boolean;
+  voiceCount: number;
+  updated_at: string | null;
+};
+
 export type TtsSettings = {
   id: number;
   code: string;
@@ -62,18 +75,29 @@ const blobRequestConfig = {
   timeout: 60000,
 };
 
-export const fetchTtsSettings = async () => {
-  const response = await httpClient.get<TtsSettings>('/settings/tts/');
+const ttsSettingsPath = (providerCode?: string) =>
+  providerCode ? `/settings/tts/providers/${providerCode}/` : '/settings/tts/';
+
+const ttsSettingsTestPath = (providerCode?: string) =>
+  providerCode ? `/settings/tts/providers/${providerCode}/test/` : '/settings/tts/test/';
+
+export const fetchTtsProviders = async () => {
+  const response = await httpClient.get<TtsProviderSummary[]>('/settings/tts/providers/');
   return response.data;
 };
 
-export const updateTtsSettings = async (payload: TtsSettingsPayload) => {
-  const response = await httpClient.patch<TtsSettings>('/settings/tts/', payload);
+export const fetchTtsSettings = async (providerCode?: string) => {
+  const response = await httpClient.get<TtsSettings>(ttsSettingsPath(providerCode));
   return response.data;
 };
 
-export const testPlatformTts = async (payload: TtsTestPayload) => {
-  const response = await httpClient.post<Blob>('/settings/tts/test/', payload, blobRequestConfig);
+export const updateTtsSettings = async (payload: TtsSettingsPayload, providerCode?: string) => {
+  const response = await httpClient.patch<TtsSettings>(ttsSettingsPath(providerCode), payload);
+  return response.data;
+};
+
+export const testPlatformTts = async (payload: TtsTestPayload, providerCode?: string) => {
+  const response = await httpClient.post<Blob>(ttsSettingsTestPath(providerCode), payload, blobRequestConfig);
   return response.data;
 };
 

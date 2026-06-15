@@ -8,6 +8,10 @@ This context defines product language for the Solin digital human administration
 A built-in voice option supplied by a TTS provider, identified by the provider's voice code and selected from a platform-maintained catalog.
 _Avoid_: VoiceTone, voice asset, custom voice
 
+**TTS Provider**:
+A platform-level text-to-speech service option, such as Aliyun, that owns a Provider Voice catalog and the credentials used for synthesis.
+_Avoid_: custom voice, voice asset, tenant voice
+
 **Platform TTS Configuration**:
 The platform-owned text-to-speech provider settings used as the effective service configuration for companies and devices, with environment variables only serving as initial defaults or fallback values.
 _Avoid_: company TTS credentials, frontend TTS settings
