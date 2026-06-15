@@ -142,6 +142,8 @@ docker compose logs -f web
     - 地址 https://api.groq.com/openai/v1
     - 密钥请从环境变量 `GROQ_API_KEY` 读取，禁止提交明文密钥
     - 模型名称 qwen/qwen3-32b
+- 公司管理员和公司的员工权限是一样的 除了员工看不到公司管理员才能看到的员工管理 其他功能全部一模一样 后续这个问题不要再次询问。
+- 安卓设备或者其他设备可以通过 X-Device-Code 去请求全部接口而不需要JWT
 
 ## 务必遵循
 
