@@ -10,6 +10,7 @@ from .llm_services import (
     mask_api_key,
     validate_llm_test_settings_values,
 )
+from .services.tts import get_effective_tts_config, mask_api_key as mask_tts_api_key
 from .models import (
     ASRConfig,
     ASRReplacementRule,
@@ -19,6 +20,8 @@ from .models import (
     LLMModel,
     LLMProvider,
     LLMTestSettings,
+    TTSProvider,
+    TTSVoice,
 )
 
 
@@ -275,6 +278,168 @@ class ASRReplacementRuleSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError('替换词不能为空')
         return value
+
+
+class TTSVoiceSerializer(serializers.ModelSerializer):
+    displayName = serializers.CharField(source='display_name')
+    voiceCode = serializers.CharField(source='voice_code')
+    avatarPath = serializers.SerializerMethodField()
+    isActive = serializers.BooleanField(source='is_active')
+    isVisible = serializers.BooleanField(source='is_visible')
+    sortOrder = serializers.IntegerField(source='sort_order')
+    isDefault = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TTSVoice
+        fields = [
+            'id',
+            'displayName',
+            'voiceCode',
+            'gender',
+            'avatarPath',
+            'isActive',
+            'isVisible',
+            'sortOrder',
+            'isDefault',
+        ]
+        read_only_fields = fields
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_isDefault(self, obj: TTSVoice) -> bool:
+        default_voice_id = self.context.get('default_voice_id')
+        return bool(default_voice_id and obj.id == default_voice_id)
+
+    @extend_schema_field(serializers.CharField())
+    def get_avatarPath(self, obj: TTSVoice) -> str:
+        value = obj.avatar_path or ''
+        request = self.context.get('request')
+        if value.startswith('/') and request is not None:
+            return request.build_absolute_uri(value)
+        return value
+
+
+class TTSVoiceWriteSerializer(serializers.ModelSerializer):
+    displayName = serializers.CharField(source='display_name', required=False)
+    voiceCode = serializers.CharField(source='voice_code', required=False)
+    avatarPath = serializers.CharField(source='avatar_path', required=False, allow_blank=True)
+    isActive = serializers.BooleanField(source='is_active', required=False)
+    isVisible = serializers.BooleanField(source='is_visible', required=False)
+    sortOrder = serializers.IntegerField(source='sort_order', required=False)
+
+    class Meta:
+        model = TTSVoice
+        fields = ['displayName', 'voiceCode', 'gender', 'avatarPath', 'isActive', 'isVisible', 'sortOrder']
+
+
+class PlatformTTSSettingsSerializer(serializers.ModelSerializer):
+    apiKeyMasked = serializers.SerializerMethodField()
+    apiKeyConfigured = serializers.SerializerMethodField()
+    baseUrl = serializers.CharField(source='base_url')
+    defaultVoiceId = serializers.IntegerField(source='default_voice_id', allow_null=True)
+    sampleRate = serializers.IntegerField(source='sample_rate')
+    defaultTestText = serializers.CharField(source='default_test_text')
+    isActive = serializers.BooleanField(source='is_active')
+    configured = serializers.SerializerMethodField()
+    voices = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TTSProvider
+        fields = [
+            'id',
+            'code',
+            'name',
+            'apiKeyMasked',
+            'apiKeyConfigured',
+            'baseUrl',
+            'model',
+            'sampleRate',
+            'defaultVoiceId',
+            'defaultTestText',
+            'isActive',
+            'configured',
+            'voices',
+            'updated_at',
+        ]
+        read_only_fields = fields
+
+    @extend_schema_field(serializers.CharField())
+    def get_apiKeyMasked(self, obj: TTSProvider) -> str:
+        return mask_tts_api_key(get_effective_tts_config(obj).api_key)
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_apiKeyConfigured(self, obj: TTSProvider) -> bool:
+        return bool(get_effective_tts_config(obj).api_key)
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_configured(self, obj: TTSProvider) -> bool:
+        config = get_effective_tts_config(obj)
+        return bool(config.api_key and config.base_url and config.model and config.is_active)
+
+    @extend_schema_field(TTSVoiceSerializer(many=True))
+    def get_voices(self, obj: TTSProvider) -> list[dict]:
+        return TTSVoiceSerializer(
+            obj.voices.order_by('sort_order', 'id'),
+            many=True,
+            context={
+                'default_voice_id': obj.default_voice_id,
+                'request': self.context.get('request'),
+            },
+        ).data
+
+
+class PlatformTTSSettingsWriteSerializer(serializers.ModelSerializer):
+    apiKey = serializers.CharField(source='api_key', required=False, allow_blank=True, write_only=True)
+    baseUrl = serializers.CharField(source='base_url', required=False, allow_blank=True, max_length=512)
+    defaultVoiceId = serializers.PrimaryKeyRelatedField(
+        source='default_voice',
+        queryset=TTSVoice.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    sampleRate = serializers.IntegerField(source='sample_rate', required=False)
+    defaultTestText = serializers.CharField(source='default_test_text', required=False, allow_blank=True)
+    isActive = serializers.BooleanField(source='is_active', required=False)
+    voices = serializers.ListField(child=serializers.DictField(), required=False, write_only=True)
+
+    class Meta:
+        model = TTSProvider
+        fields = ['apiKey', 'baseUrl', 'model', 'sampleRate', 'defaultVoiceId', 'defaultTestText', 'isActive', 'voices']
+
+    def validate_sampleRate(self, value: int) -> int:
+        if value not in {16000, 24000}:
+            raise serializers.ValidationError('采样率暂只支持 16000 或 24000')
+        return value
+
+    def validate_defaultVoiceId(self, value: TTSVoice | None) -> TTSVoice | None:
+        if value is not None and self.instance is not None and value.provider_id != self.instance.id:
+            raise serializers.ValidationError('默认音色不属于当前供应商')
+        return value
+
+    def update(self, instance, validated_data):
+        voices = validated_data.pop('voices', None)
+        if validated_data.get('api_key', None) == '':
+            validated_data.pop('api_key', None)
+        provider = super().update(instance, validated_data)
+        if voices is not None:
+            self._update_voices(provider, voices)
+        return provider
+
+    def _update_voices(self, provider: TTSProvider, voices: list[dict]) -> None:
+        for item in voices:
+            voice_id = item.get('id')
+            if not voice_id:
+                continue
+            voice = provider.voices.filter(id=voice_id).first()
+            if voice is None:
+                continue
+            serializer = TTSVoiceWriteSerializer(voice, data=item, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+
+class CompanyTTSVoiceSerializer(TTSVoiceSerializer):
+    class Meta(TTSVoiceSerializer.Meta):
+        fields = ['id', 'displayName', 'voiceCode', 'gender', 'avatarPath', 'isDefault']
 
 
 class AgentKnowledgeDocumentSerializer(serializers.ModelSerializer):

@@ -10,6 +10,9 @@ from .views import (
     ASRReplacementRuleViewSet,
     AgentApplicationViewSet,
     ChatConversationViewSet,
+    CompanyTTSDefaultVoiceView,
+    CompanyTTSTestView,
+    CompanyTTSOptionsView,
     CompanyLLMDefaultModelView,
     CompanyLLMModelTestView,
     CompanyLLMOptionsView,
@@ -18,6 +21,9 @@ from .views import (
     PlatformLLMProviderModelsView,
     PlatformLLMProviderViewSet,
     TenantLLMAuthorizationView,
+    TTSRuntimeView,
+    TTSSettingsTestView,
+    TTSSettingsView,
 )
 
 router = DefaultRouter()
@@ -30,12 +36,18 @@ router.register('ai-models/chat/conversations', ChatConversationViewSet, basenam
 urlpatterns = [
     path('settings/asr/', ASRSettingsView.as_view(), name='asr-settings'),
     path('settings/asr/test/', ASRSettingsTestView.as_view(), name='asr-settings-test'),
+    path('settings/tts/', TTSSettingsView.as_view(), name='tts-settings'),
+    path('settings/tts/test/', TTSSettingsTestView.as_view(), name='tts-settings-test'),
     path('settings/llm/providers/<int:provider_id>/models/', PlatformLLMProviderModelsView.as_view(), name='platform-llm-provider-models'),
     path('settings/llm/test-settings/', LLMTestSettingsView.as_view(), name='platform-llm-test-settings'),
     path('settings/llm/tenants/<int:tenant_id>/authorization/', TenantLLMAuthorizationView.as_view(), name='platform-llm-tenant-authorization'),
     path('ai-models/llm/options/', CompanyLLMOptionsView.as_view(), name='company-llm-options'),
     path('ai-models/llm/default-model/', CompanyLLMDefaultModelView.as_view(), name='company-llm-default-model'),
     path('ai-models/llm/models/<int:model_id>/test/', CompanyLLMModelTestView.as_view(), name='company-llm-model-test'),
+    path('ai-models/tts/options/', CompanyTTSOptionsView.as_view(), name='company-tts-options'),
+    path('ai-models/tts/default-voice/', CompanyTTSDefaultVoiceView.as_view(), name='company-tts-default-voice'),
+    path('ai-models/tts/test/', CompanyTTSTestView.as_view(), name='company-tts-test'),
+    path('ai-models/tts/runtime/', TTSRuntimeView.as_view(), name='tts-runtime'),
     path('ai-models/asr/status/', ASRStatusView.as_view(), name='asr-status'),
     path('ai-models/asr/device-status/', ASRDeviceStatusView.as_view(), name='asr-device-status'),
     path('ai-models/asr/test/', ASRTestView.as_view(), name='asr-test'),

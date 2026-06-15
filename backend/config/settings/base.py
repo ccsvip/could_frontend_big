@@ -288,6 +288,25 @@ MULTIMODAL_WORKSPACE_ID = os.getenv('MULTIMODAL_WORKSPACE_ID', '').strip()
 MULTIMODAL_API_KEY = os.getenv('MULTIMODAL_API_KEY', '').strip()
 ASR_BASE_URL = os.getenv('ASR_BASE_URL', 'wss://dashscope.aliyuncs.com/api-ws/v1/realtime').strip()
 ASR_MODEL = os.getenv('ASR_MODEL', 'qwen3-asr-flash-realtime').strip()
+ALIYUN_TTS_API_KEY = (
+    os.getenv('ALIYUN_TTS_API_KEY')
+    or os.getenv('DASHSCOPE_API_KEY')
+    or os.getenv('MULTIMODAL_API_KEY')
+    or ''
+).strip()
+ALIYUN_TTS_BASE_URL = (
+    os.getenv('ALIYUN_TTS_BASE_URL')
+    or os.getenv('ALIYUN_TTS_API_URL')
+    or 'wss://dashscope.aliyuncs.com/api-ws/v1/realtime'
+).strip()
+ALIYUN_TTS_MODEL = os.getenv('ALIYUN_TTS_MODEL', 'qwen3-tts-flash-realtime').strip()
+ALIYUN_TTS_DEFAULT_VOICE = os.getenv('ALIYUN_TTS_VOICE', 'Cherry').strip() or 'Cherry'
+ALIYUN_TTS_RESPONSE_FORMAT = os.getenv('ALIYUN_TTS_RESPONSE_FORMAT', 'pcm').strip() or 'pcm'
+ALIYUN_TTS_SAMPLE_RATE = int(os.getenv('ALIYUN_TTS_SAMPLE_RATE', '24000'))
+ALIYUN_TTS_DEFAULT_TEST_TEXT = os.getenv(
+    'ALIYUN_TTS_DEFAULT_TEST_TEXT',
+    '对吧~我就特别喜欢这种超市，尤其是过年的时候去逛超市就会觉得超级超级开心！想买好多好多的东西呢！',
+).strip()
 ALIYUN_MM_APP_ID = os.getenv('ALIYUN_MM_APP_ID', '').strip()
 ALIYUN_MM_DOMAIN_CODE = os.getenv('ALIYUN_MM_DOMAIN_CODE', '').strip()
 ALIYUN_MM_ACCESS_KEY_ID = os.getenv('ALIYUN_MM_ACCESS_KEY_ID', '').strip()

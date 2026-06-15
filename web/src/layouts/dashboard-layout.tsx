@@ -179,6 +179,12 @@ const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
         path: '/settings/asr',
       },
       {
+        key: 'settings-tts',
+        label: 'TTS设置',
+        icon: 'SoundOutlined',
+        path: '/settings/tts',
+      },
+      {
         key: 'settings-llm',
         label: 'LLM设置',
         icon: 'RobotOutlined',

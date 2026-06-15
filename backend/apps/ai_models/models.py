@@ -164,6 +164,108 @@ class ASRConfig(models.Model):
         return instance
 
 
+class TTSProvider(models.Model):
+    code = models.CharField('供应商编码', max_length=32, unique=True, default='aliyun')
+    name = models.CharField('供应商名称', max_length=128, default='阿里云 TTS')
+    api_key = models.CharField('API Key', max_length=512, blank=True, default='')
+    base_url = models.CharField('WebSocket URL', max_length=512, blank=True, default='')
+    model = models.CharField('模型名称', max_length=128, blank=True, default='')
+    default_voice = models.ForeignKey(
+        'TTSVoice',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+        verbose_name='默认音色',
+    )
+    sample_rate = models.PositiveIntegerField('采样率', default=24000)
+    default_test_text = models.TextField(
+        '默认测试文本',
+        default='对吧~我就特别喜欢这种超市，尤其是过年的时候去逛超市就会觉得超级超级开心！想买好多好多的东西呢！',
+    )
+    is_active = models.BooleanField('是否启用', default=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = 'TTS 供应商'
+        verbose_name_plural = 'TTS 供应商'
+        ordering = ['id']
+
+    def __str__(self):
+        return f'{self.name} ({self.code})'
+
+    @classmethod
+    def load_aliyun(cls) -> 'TTSProvider':
+        provider, _ = cls.objects.get_or_create(
+            code='aliyun',
+            defaults={
+                'name': '阿里云 TTS',
+                'api_key': getattr(settings, 'ALIYUN_TTS_API_KEY', ''),
+                'base_url': getattr(settings, 'ALIYUN_TTS_BASE_URL', ''),
+                'model': getattr(settings, 'ALIYUN_TTS_MODEL', ''),
+                'sample_rate': getattr(settings, 'ALIYUN_TTS_SAMPLE_RATE', 24000),
+                'default_test_text': getattr(settings, 'ALIYUN_TTS_DEFAULT_TEST_TEXT', ''),
+                'is_active': True,
+            },
+        )
+        return provider
+
+
+class TTSVoice(models.Model):
+    provider = models.ForeignKey(
+        TTSProvider,
+        on_delete=models.CASCADE,
+        related_name='voices',
+        verbose_name='所属供应商',
+    )
+    display_name = models.CharField('展示名称', max_length=128)
+    voice_code = models.CharField('音色编码', max_length=128)
+    gender = models.CharField('性别', max_length=16, blank=True, default='')
+    avatar_path = models.CharField('头像路径', max_length=255, blank=True, default='')
+    is_active = models.BooleanField('是否启用', default=True)
+    is_visible = models.BooleanField('是否展示', default=True)
+    sort_order = models.PositiveIntegerField('排序', default=0)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = 'TTS 音色'
+        verbose_name_plural = 'TTS 音色'
+        ordering = ['sort_order', 'id']
+        constraints = [
+            models.UniqueConstraint(fields=['provider', 'voice_code'], name='uniq_tts_voice_provider_code'),
+        ]
+
+    def __str__(self):
+        return f'{self.display_name} ({self.voice_code})'
+
+
+class TenantTTSSettings(models.Model):
+    tenant = models.OneToOneField(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='tts_settings',
+        verbose_name='所属公司',
+    )
+    default_voice = models.ForeignKey(
+        TTSVoice,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='tenant_default_settings',
+        verbose_name='默认音色',
+    )
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        verbose_name = '公司 TTS 设置'
+        verbose_name_plural = '公司 TTS 设置'
+
+    def __str__(self):
+        return f'{self.tenant_id}:{self.default_voice_id or "unset"}'
+
+
 class ASRReplacementRule(models.Model):
     source_text = models.CharField('原词', max_length=128)
     replacement_text = models.CharField('替换词', max_length=128)

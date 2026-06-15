@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AgentApplication, ChatConversation, ChatMessage, LLMProvider
+from .models import AgentApplication, ChatConversation, ChatMessage, LLMProvider, TTSProvider, TTSVoice
 
 
 @admin.register(LLMProvider)
@@ -8,6 +8,21 @@ class LLMProviderAdmin(admin.ModelAdmin):
     list_display = ('name', 'provider_type', 'api_base_url', 'is_active', 'created_at')
     list_filter = ('provider_type', 'is_active')
     search_fields = ('name',)
+
+
+@admin.register(TTSProvider)
+class TTSProviderAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'model', 'sample_rate', 'is_active', 'updated_at')
+    list_filter = ('is_active',)
+    search_fields = ('name', 'code', 'model')
+    raw_id_fields = ('default_voice',)
+
+
+@admin.register(TTSVoice)
+class TTSVoiceAdmin(admin.ModelAdmin):
+    list_display = ('display_name', 'voice_code', 'provider', 'gender', 'is_active', 'is_visible', 'sort_order')
+    list_filter = ('provider', 'gender', 'is_active', 'is_visible')
+    search_fields = ('display_name', 'voice_code')
 
 
 @admin.register(ChatConversation)

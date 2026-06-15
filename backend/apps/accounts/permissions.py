@@ -285,6 +285,14 @@ class CanViewASR(HasPermissionCode):
     required_permission = 'ai_models.asr.view'
 
 
+class CanViewTTS(HasPermissionCode):
+    required_permission = 'ai_models.tts.view'
+
+
+class CanUpdateTTS(HasPermissionCode):
+    required_permission = 'ai_models.tts.update'
+
+
 class CanCreateLLMProviders(HasPermissionCode):
     required_permission = 'ai_models.llm.create'
 

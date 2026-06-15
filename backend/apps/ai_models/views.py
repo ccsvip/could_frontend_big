@@ -7,7 +7,7 @@ from django.core.cache import cache
 from django.db import transaction
 from django.db import connections
 from django.db.models import Q
-from django.http import StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import status
@@ -21,6 +21,7 @@ from rest_framework.views import APIView
 from apps.accounts.permissions import (
     CanCreateAgentApplications,
     CanViewASR,
+    CanUpdateTTS,
     CanCreateChat,
     CanDeleteAgentApplications,
     CanDeleteChat,
@@ -29,6 +30,7 @@ from apps.accounts.permissions import (
     CanUpdateLLMProviders,
     CanViewChat,
     CanViewLLMProviders,
+    CanViewTTS,
     IsSuperUser,
 )
 from apps.devices.models import Device
@@ -55,6 +57,8 @@ from .models import (
     LLMTestSettings,
     TenantLLMModelGrant,
     TenantLLMSettings,
+    TenantTTSSettings,
+    TTSVoice,
 )
 from .realtime_asr import resolve_asr_device_connection
 from .serializers import (
@@ -73,8 +77,12 @@ from .serializers import (
     PlatformLLMModelWriteSerializer,
     PlatformLLMProviderSerializer,
     PlatformLLMProviderWriteSerializer,
+    PlatformTTSSettingsSerializer,
+    PlatformTTSSettingsWriteSerializer,
+    CompanyTTSVoiceSerializer,
     TenantLLMAuthorizationSerializer,
 )
+from .services import tts as tts_services
 from .services.asr import (
     get_effective_asr_config,
     serialize_asr_settings,
@@ -173,6 +181,167 @@ class ASRReplacementRuleViewSet(TenantScopedQuerysetMixin, PermissionMappedModel
         if tenant is None:
             raise ValidationError({'tenant': ['当前账号未归属公司，无法保存替换词']})
         return {'tenant': tenant}
+
+
+def _tts_audio_response(*, pcm: bytes, config, voice: TTSVoice, wrap_wav: bool) -> HttpResponse:
+    if wrap_wav:
+        response = HttpResponse(
+            tts_services.pcm_to_wav(pcm, sample_rate=config.sample_rate),
+            content_type='audio/wav',
+        )
+    else:
+        response = HttpResponse(pcm, content_type='audio/pcm')
+    response['X-Audio-Source-Format'] = tts_services.PCM_SOURCE_FORMAT
+    response['X-Audio-Sample-Rate'] = str(config.sample_rate)
+    response['X-Audio-Channels'] = '1'
+    response['X-TTS-Voice'] = voice.voice_code
+    return response
+
+
+def _select_platform_tts_voice(provider, raw_voice_id=None) -> TTSVoice | None:
+    if raw_voice_id not in (None, ''):
+        try:
+            voice_id = int(raw_voice_id)
+        except (TypeError, ValueError):
+            raise ValidationError({'voiceId': '音色不能为空'})
+        voice = provider.voices.filter(id=voice_id).first()
+        if voice is None:
+            raise ValidationError({'voiceId': '音色不存在'})
+        return voice
+    return tts_services.get_default_tts_voice(provider)
+
+
+def _build_company_tts_options_payload(tenant, request=None):
+    provider = tts_services.get_aliyun_tts_provider()
+    config = tts_services.get_effective_tts_config(provider)
+    selected_voice = tts_services.get_effective_tts_voice_for_tenant(tenant, provider)
+    voices = tts_services.get_available_tts_voices(provider)
+    return {
+        'provider': {
+            'code': provider.code,
+            'name': provider.name,
+            'isActive': provider.is_active,
+        },
+        'defaultVoiceId': selected_voice.id if selected_voice else None,
+        'sampleRate': config.sample_rate,
+        'defaultTestText': config.default_test_text,
+        'voices': CompanyTTSVoiceSerializer(
+            voices,
+            many=True,
+            context={
+                'default_voice_id': selected_voice.id if selected_voice else None,
+                'request': request,
+            },
+        ).data,
+    }
+
+
+class TTSSettingsView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def get(self, request):
+        provider = tts_services.get_aliyun_tts_provider()
+        return Response(PlatformTTSSettingsSerializer(provider, context={'request': request}).data)
+
+    def patch(self, request):
+        provider = tts_services.get_aliyun_tts_provider()
+        serializer = PlatformTTSSettingsWriteSerializer(provider, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        provider = serializer.save()
+        return Response(PlatformTTSSettingsSerializer(provider, context={'request': request}).data)
+
+
+class TTSSettingsTestView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def post(self, request):
+        provider = tts_services.get_aliyun_tts_provider()
+        config = tts_services.get_effective_tts_config(provider)
+        voice = _select_platform_tts_voice(provider, request.data.get('voiceId'))
+        if voice is None:
+            return Response({'voiceId': '请先配置默认音色'}, status=status.HTTP_400_BAD_REQUEST)
+        text = tts_services.normalize_tts_text(request.data.get('text'), config)
+        try:
+            pcm = tts_services.synthesize_tts_pcm(text=text, voice=voice, config=config)
+        except Exception as exc:
+            return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
+        return _tts_audio_response(pcm=pcm, config=config, voice=voice, wrap_wav=True)
+
+
+class CompanyTTSOptionsView(TenantScopedQuerysetMixin, APIView):
+    permission_classes = [CanViewTTS]
+
+    def get(self, request):
+        return Response(_build_company_tts_options_payload(self.request_tenant, request))
+
+
+class CompanyTTSDefaultVoiceView(TenantScopedQuerysetMixin, APIView):
+    permission_classes = [CanUpdateTTS]
+
+    def patch(self, request):
+        tenant = self.request_tenant
+        if tenant is None:
+            return Response({'tenant': '当前账号未归属公司'}, status=status.HTTP_400_BAD_REQUEST)
+        raw_voice_id = request.data.get('voiceId')
+        try:
+            voice_id = int(raw_voice_id)
+        except (TypeError, ValueError):
+            return Response({'voiceId': '音色不能为空'}, status=status.HTTP_400_BAD_REQUEST)
+        provider = tts_services.get_aliyun_tts_provider()
+        voice = tts_services.get_available_tts_voices(provider).filter(id=voice_id).first()
+        if voice is None:
+            return Response({'voiceId': '所选音色不可用'}, status=status.HTTP_400_BAD_REQUEST)
+
+        TenantTTSSettings.objects.update_or_create(
+            tenant=tenant,
+            defaults={'default_voice': voice},
+        )
+        return Response(_build_company_tts_options_payload(tenant, request))
+
+
+class CompanyTTSTestView(TenantScopedQuerysetMixin, APIView):
+    permission_classes = [CanViewTTS]
+
+    def post(self, request):
+        tenant = self.request_tenant
+        provider = tts_services.get_aliyun_tts_provider()
+        config = tts_services.get_effective_tts_config(provider)
+        voice = tts_services.get_effective_tts_voice_for_tenant(tenant, provider)
+        if voice is None:
+            return Response({'voiceId': '请先配置默认音色'}, status=status.HTTP_400_BAD_REQUEST)
+        text = tts_services.normalize_tts_text(request.data.get('text'), config)
+        try:
+            pcm = tts_services.synthesize_tts_pcm(text=text, voice=voice, config=config)
+        except Exception as exc:
+            return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
+        return _tts_audio_response(pcm=pcm, config=config, voice=voice, wrap_wav=True)
+
+
+class TTSRuntimeView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        device_code = str(request.headers.get('X-Device-Code') or '').strip()
+        if not device_code:
+            return Response({'message': '设备号不能为空'}, status=status.HTTP_400_BAD_REQUEST)
+
+        connection = resolve_asr_device_connection(device_code)
+        if connection is None:
+            return Response({'message': '设备未绑定公司或不可用'}, status=status.HTTP_403_FORBIDDEN)
+
+        device = Device.objects.select_related('tenant').get(id=connection['device_id'])
+        provider = tts_services.get_aliyun_tts_provider()
+        config = tts_services.get_effective_tts_config(provider)
+        voice = tts_services.get_effective_tts_voice_for_tenant(device.tenant, provider)
+        if voice is None:
+            return Response({'voiceId': '请先配置默认音色'}, status=status.HTTP_400_BAD_REQUEST)
+        text = tts_services.normalize_tts_text(request.data.get('text'), config)
+        try:
+            pcm = tts_services.synthesize_tts_pcm(text=text, voice=voice, config=config)
+        except Exception as exc:
+            return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
+        return _tts_audio_response(pcm=pcm, config=config, voice=voice, wrap_wav=False)
 
 
 _PLATFORM_LLM_PERMISSION_MAP = {
