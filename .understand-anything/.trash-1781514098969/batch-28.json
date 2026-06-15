@@ -1,0 +1,60 @@
+{
+  "nodes": [
+    {
+      "id": "document:docs/superpowers/specs/2026-06-05-asr-settings-design.md",
+      "type": "document",
+      "name": "2026-06-05-asr-settings-design.md",
+      "filePath": "docs/superpowers/specs/2026-06-05-asr-settings-design.md",
+      "summary": "语音识别 (ASR) 配置模块的系统设计与规范说明。",
+      "tags": [
+        "documentation",
+        "specification",
+        "speech-recognition"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:docs/superpowers/specs/2026-06-05-audit-log-management-design.md",
+      "type": "document",
+      "name": "2026-06-05-audit-log-management-design.md",
+      "filePath": "docs/superpowers/specs/2026-06-05-audit-log-management-design.md",
+      "summary": "系统审计日志管理功能的设计规范及架构文档。",
+      "tags": [
+        "documentation",
+        "specification",
+        "audit",
+        "security"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:docs/superpowers/specs/2026-06-06-login-command-center-design.md",
+      "type": "document",
+      "name": "2026-06-06-login-command-center-design.md",
+      "filePath": "docs/superpowers/specs/2026-06-06-login-command-center-design.md",
+      "summary": "统一登录入口与指挥中心的设计说明及交互规范。",
+      "tags": [
+        "documentation",
+        "specification",
+        "authentication",
+        "entry-point"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:docs/superpowers/specs/2026-06-11-default-employee-access-design.md",
+      "type": "document",
+      "name": "2026-06-11-default-employee-access-design.md",
+      "filePath": "docs/superpowers/specs/2026-06-11-default-employee-access-design.md",
+      "summary": "员工默认权限分配机制的设计与安全访问控制规范。",
+      "tags": [
+        "documentation",
+        "specification",
+        "authorization",
+        "security"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": []
+}

@@ -1,0 +1,693 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/apps/resources/tests/test_aliyun_command_api.py",
+      "type": "file",
+      "name": "test_aliyun_command_api.py",
+      "filePath": "backend/apps/resources/tests/test_aliyun_command_api.py",
+      "summary": "包含用于测试 aliyun_command_api 模块的单元测试和集成测试。",
+      "tags": [
+        "test",
+        "api-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_aliyun_command_api.py:_MockHttpxResponse",
+      "type": "class",
+      "name": "_MockHttpxResponse",
+      "filePath": "backend/apps/resources/tests/test_aliyun_command_api.py",
+      "lineRange": [
+        16,
+        23
+      ],
+      "summary": "实现 _MockHttpxResponse 相关功能的核心类封装。",
+      "tags": [
+        "test",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_aliyun_command_api.py:AliyunCommandApiTests",
+      "type": "class",
+      "name": "AliyunCommandApiTests",
+      "filePath": "backend/apps/resources/tests/test_aliyun_command_api.py",
+      "lineRange": [
+        26,
+        217
+      ],
+      "summary": "测试用例类：AliyunCommandApiTests",
+      "tags": [
+        "test",
+        "api-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "type": "file",
+      "name": "test_backend_management_flow_api.py",
+      "filePath": "backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "summary": "包含用于测试 backend_management_flow_api 模块的单元测试和集成测试。",
+      "tags": [
+        "test",
+        "api-handler"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_backend_management_flow_api.py:BackendManagementFlowApiTests",
+      "type": "class",
+      "name": "BackendManagementFlowApiTests",
+      "filePath": "backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "lineRange": [
+        24,
+        767
+      ],
+      "summary": "测试用例类：BackendManagementFlowApiTests",
+      "tags": [
+        "test",
+        "api-handler"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:backend/apps/resources/tests/test_backend_management_flow_api.py:build_upload",
+      "type": "function",
+      "name": "build_upload",
+      "filePath": "backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "lineRange": [
+        20,
+        21
+      ],
+      "summary": "执行 build_upload 操作的函数实现。",
+      "tags": [
+        "test",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_business_metadata_cache_api.py",
+      "type": "file",
+      "name": "test_business_metadata_cache_api.py",
+      "filePath": "backend/apps/resources/tests/test_business_metadata_cache_api.py",
+      "summary": "包含用于测试 business_metadata_cache_api 模块的单元测试和集成测试。",
+      "tags": [
+        "test",
+        "api-handler",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_business_metadata_cache_api.py:BusinessMetadataCacheApiTests",
+      "type": "class",
+      "name": "BusinessMetadataCacheApiTests",
+      "filePath": "backend/apps/resources/tests/test_business_metadata_cache_api.py",
+      "lineRange": [
+        29,
+        141
+      ],
+      "summary": "测试用例类：BusinessMetadataCacheApiTests",
+      "tags": [
+        "test",
+        "api-handler",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_control_command_access_data.py",
+      "type": "file",
+      "name": "test_control_command_access_data.py",
+      "filePath": "backend/apps/resources/tests/test_control_command_access_data.py",
+      "summary": "包含用于测试 control_command_access_data 模块的单元测试和集成测试。",
+      "tags": [
+        "test"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_control_command_access_data.py:ControlCommandAccessDataMigrationTests",
+      "type": "class",
+      "name": "ControlCommandAccessDataMigrationTests",
+      "filePath": "backend/apps/resources/tests/test_control_command_access_data.py",
+      "lineRange": [
+        12,
+        40
+      ],
+      "summary": "测试用例类：ControlCommandAccessDataMigrationTests",
+      "tags": [
+        "test"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_minio_video_api.py",
+      "type": "file",
+      "name": "test_minio_video_api.py",
+      "filePath": "backend/apps/resources/tests/test_minio_video_api.py",
+      "summary": "包含用于测试 minio_video_api 模块的单元测试和集成测试。",
+      "tags": [
+        "test",
+        "api-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_minio_video_api.py:MinioVideoApiTests",
+      "type": "class",
+      "name": "MinioVideoApiTests",
+      "filePath": "backend/apps/resources/tests/test_minio_video_api.py",
+      "lineRange": [
+        15,
+        164
+      ],
+      "summary": "测试用例类：MinioVideoApiTests",
+      "tags": [
+        "test",
+        "api-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_model_asset_access_data.py",
+      "type": "file",
+      "name": "test_model_asset_access_data.py",
+      "filePath": "backend/apps/resources/tests/test_model_asset_access_data.py",
+      "summary": "包含用于测试 model_asset_access_data 模块的单元测试和集成测试。",
+      "tags": [
+        "test",
+        "data-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_model_asset_access_data.py:ModelAssetAccessDataMigrationTests",
+      "type": "class",
+      "name": "ModelAssetAccessDataMigrationTests",
+      "filePath": "backend/apps/resources/tests/test_model_asset_access_data.py",
+      "lineRange": [
+        12,
+        27
+      ],
+      "summary": "测试用例类：ModelAssetAccessDataMigrationTests",
+      "tags": [
+        "test",
+        "data-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_model_asset_api.py",
+      "type": "file",
+      "name": "test_model_asset_api.py",
+      "filePath": "backend/apps/resources/tests/test_model_asset_api.py",
+      "summary": "包含用于测试 model_asset_api 模块的单元测试和集成测试。",
+      "tags": [
+        "test",
+        "api-handler",
+        "data-model"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_model_asset_api.py:ModelAssetApiTests",
+      "type": "class",
+      "name": "ModelAssetApiTests",
+      "filePath": "backend/apps/resources/tests/test_model_asset_api.py",
+      "lineRange": [
+        31,
+        218
+      ],
+      "summary": "测试用例类：ModelAssetApiTests",
+      "tags": [
+        "test",
+        "api-handler",
+        "data-model"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/resources/tests/test_model_asset_api.py:build_test_png",
+      "type": "function",
+      "name": "build_test_png",
+      "filePath": "backend/apps/resources/tests/test_model_asset_api.py",
+      "lineRange": [
+        19,
+        24
+      ],
+      "summary": "执行 build_test_png 操作的函数实现。",
+      "tags": [
+        "test",
+        "api-handler",
+        "data-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/tests/test_model_asset_api.py:build_test_model_file",
+      "type": "function",
+      "name": "build_test_model_file",
+      "filePath": "backend/apps/resources/tests/test_model_asset_api.py",
+      "lineRange": [
+        27,
+        28
+      ],
+      "summary": "执行 build_test_model_file 操作的函数实现。",
+      "tags": [
+        "test",
+        "api-handler",
+        "data-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_point_access_data.py",
+      "type": "file",
+      "name": "test_point_access_data.py",
+      "filePath": "backend/apps/resources/tests/test_point_access_data.py",
+      "summary": "包含用于测试 point_access_data 模块的单元测试和集成测试。",
+      "tags": [
+        "test"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_point_access_data.py:BackendManagementFlowAccessMigrationTests",
+      "type": "class",
+      "name": "BackendManagementFlowAccessMigrationTests",
+      "filePath": "backend/apps/resources/tests/test_point_access_data.py",
+      "lineRange": [
+        12,
+        65
+      ],
+      "summary": "测试用例类：BackendManagementFlowAccessMigrationTests",
+      "tags": [
+        "test"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_resource_api.py",
+      "type": "file",
+      "name": "test_resource_api.py",
+      "filePath": "backend/apps/resources/tests/test_resource_api.py",
+      "summary": "包含用于测试 resource_api 模块的单元测试和集成测试。",
+      "tags": [
+        "test",
+        "api-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_resource_api.py:ResourceApiTests",
+      "type": "class",
+      "name": "ResourceApiTests",
+      "filePath": "backend/apps/resources/tests/test_resource_api.py",
+      "lineRange": [
+        20,
+        118
+      ],
+      "summary": "测试用例类：ResourceApiTests",
+      "tags": [
+        "test",
+        "api-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_scrolling_text_access_data.py",
+      "type": "file",
+      "name": "test_scrolling_text_access_data.py",
+      "filePath": "backend/apps/resources/tests/test_scrolling_text_access_data.py",
+      "summary": "包含用于测试 scrolling_text_access_data 模块的单元测试和集成测试。",
+      "tags": [
+        "test"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_scrolling_text_access_data.py:ScrollingTextAccessDataMigrationTests",
+      "type": "class",
+      "name": "ScrollingTextAccessDataMigrationTests",
+      "filePath": "backend/apps/resources/tests/test_scrolling_text_access_data.py",
+      "lineRange": [
+        12,
+        38
+      ],
+      "summary": "测试用例类：ScrollingTextAccessDataMigrationTests",
+      "tags": [
+        "test"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_scrolling_text_api.py",
+      "type": "file",
+      "name": "test_scrolling_text_api.py",
+      "filePath": "backend/apps/resources/tests/test_scrolling_text_api.py",
+      "summary": "包含用于测试 scrolling_text_api 模块的单元测试和集成测试。",
+      "tags": [
+        "test",
+        "api-handler"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_scrolling_text_api.py:ScrollingTextApiTests",
+      "type": "class",
+      "name": "ScrollingTextApiTests",
+      "filePath": "backend/apps/resources/tests/test_scrolling_text_api.py",
+      "lineRange": [
+        23,
+        251
+      ],
+      "summary": "测试用例类：ScrollingTextApiTests",
+      "tags": [
+        "test",
+        "api-handler"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/resources/tests/test_aliyun_command_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_aliyun_command_api.py",
+      "target": "file:backend/apps/tenants/test_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_aliyun_command_api.py",
+      "target": "class:backend/apps/resources/tests/test_aliyun_command_api.py:_MockHttpxResponse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_aliyun_command_api.py",
+      "target": "class:backend/apps/resources/tests/test_aliyun_command_api.py:AliyunCommandApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "target": "file:backend/apps/resources/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "target": "file:backend/apps/resources/services/feishu.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "target": "file:backend/apps/resources/tasks.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "target": "file:backend/apps/tenants/test_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "target": "class:backend/apps/resources/tests/test_backend_management_flow_api.py:BackendManagementFlowApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "target": "function:backend/apps/resources/tests/test_backend_management_flow_api.py:build_upload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_business_metadata_cache_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_business_metadata_cache_api.py",
+      "target": "file:backend/apps/knowledge_base/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_business_metadata_cache_api.py",
+      "target": "file:backend/apps/resources/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_business_metadata_cache_api.py",
+      "target": "file:backend/apps/tenants/test_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_business_metadata_cache_api.py",
+      "target": "file:backend/config/business_cache.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_business_metadata_cache_api.py",
+      "target": "class:backend/apps/resources/tests/test_business_metadata_cache_api.py:BusinessMetadataCacheApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_control_command_access_data.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_control_command_access_data.py",
+      "target": "class:backend/apps/resources/tests/test_control_command_access_data.py:ControlCommandAccessDataMigrationTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_minio_video_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_minio_video_api.py",
+      "target": "file:backend/apps/resources/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_minio_video_api.py",
+      "target": "file:backend/apps/tenants/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_minio_video_api.py",
+      "target": "file:backend/apps/tenants/test_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_minio_video_api.py",
+      "target": "class:backend/apps/resources/tests/test_minio_video_api.py:MinioVideoApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_model_asset_access_data.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_model_asset_access_data.py",
+      "target": "class:backend/apps/resources/tests/test_model_asset_access_data.py:ModelAssetAccessDataMigrationTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_model_asset_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_model_asset_api.py",
+      "target": "file:backend/apps/resources/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_model_asset_api.py",
+      "target": "file:backend/apps/tenants/test_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_model_asset_api.py",
+      "target": "class:backend/apps/resources/tests/test_model_asset_api.py:ModelAssetApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_model_asset_api.py",
+      "target": "function:backend/apps/resources/tests/test_model_asset_api.py:build_test_png",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_model_asset_api.py",
+      "target": "function:backend/apps/resources/tests/test_model_asset_api.py:build_test_model_file",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_point_access_data.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_point_access_data.py",
+      "target": "class:backend/apps/resources/tests/test_point_access_data.py:BackendManagementFlowAccessMigrationTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_resource_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_resource_api.py",
+      "target": "file:backend/apps/resources/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_resource_api.py",
+      "target": "file:backend/apps/tenants/test_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_resource_api.py",
+      "target": "class:backend/apps/resources/tests/test_resource_api.py:ResourceApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_scrolling_text_access_data.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_scrolling_text_access_data.py",
+      "target": "class:backend/apps/resources/tests/test_scrolling_text_access_data.py:ScrollingTextAccessDataMigrationTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_scrolling_text_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_scrolling_text_api.py",
+      "target": "file:backend/apps/resources/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_scrolling_text_api.py",
+      "target": "file:backend/apps/tenants/test_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_scrolling_text_api.py",
+      "target": "file:backend/config/business_cache.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_scrolling_text_api.py",
+      "target": "class:backend/apps/resources/tests/test_scrolling_text_api.py:ScrollingTextApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    }
+  ]
+}

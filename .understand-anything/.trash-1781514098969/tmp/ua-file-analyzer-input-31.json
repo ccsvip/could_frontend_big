@@ -1,0 +1,97 @@
+{
+    "projectRoot":  "C:\\SVN_CODE\\branches\\real\\could_frontend",
+    "batchImportData":  {
+                            "wiki/404.html":  [
+
+                                              ],
+                            "wiki/TTS鏁欑▼.md":  [
+
+                                               ],
+                            "wiki/android-device-runtime-simulator.html":  [
+
+                                                                           ],
+                            "wiki/asr-websocket-tutorial.md":  [
+
+                                                               ],
+                            "wiki/container-dependencies.md":  [
+
+                                                               ],
+                            "wiki/design-audit.html":  [
+
+                                                       ],
+                            "wiki/device-api-latest.html":  [
+
+                                                            ],
+                            "wiki/sentry-mcp-codex-guide.html":  [
+
+                                                                 ],
+                            "wiki/sentry-mcp-codex-guide.md":  [
+
+                                                               ],
+                            "wiki/voices_qwen3.json":  [
+
+                                                       ]
+                        },
+    "batchFiles":  [
+                       {
+                           "path":  "wiki/404.html",
+                           "language":  "html",
+                           "sizeLines":  234,
+                           "fileCategory":  "markup"
+                       },
+                       {
+                           "path":  "wiki/TTS鏁欑▼.md",
+                           "language":  "markdown",
+                           "sizeLines":  120,
+                           "fileCategory":  "docs"
+                       },
+                       {
+                           "path":  "wiki/android-device-runtime-simulator.html",
+                           "language":  "html",
+                           "sizeLines":  984,
+                           "fileCategory":  "markup"
+                       },
+                       {
+                           "path":  "wiki/asr-websocket-tutorial.md",
+                           "language":  "markdown",
+                           "sizeLines":  266,
+                           "fileCategory":  "docs"
+                       },
+                       {
+                           "path":  "wiki/container-dependencies.md",
+                           "language":  "markdown",
+                           "sizeLines":  235,
+                           "fileCategory":  "docs"
+                       },
+                       {
+                           "path":  "wiki/design-audit.html",
+                           "language":  "html",
+                           "sizeLines":  693,
+                           "fileCategory":  "markup"
+                       },
+                       {
+                           "path":  "wiki/device-api-latest.html",
+                           "language":  "html",
+                           "sizeLines":  511,
+                           "fileCategory":  "markup"
+                       },
+                       {
+                           "path":  "wiki/sentry-mcp-codex-guide.html",
+                           "language":  "html",
+                           "sizeLines":  556,
+                           "fileCategory":  "markup"
+                       },
+                       {
+                           "path":  "wiki/sentry-mcp-codex-guide.md",
+                           "language":  "markdown",
+                           "sizeLines":  202,
+                           "fileCategory":  "docs"
+                       },
+                       {
+                           "path":  "wiki/voices_qwen3.json",
+                           "language":  "json",
+                           "sizeLines":  340,
+                           "fileCategory":  "config"
+                       }
+                   ]
+}

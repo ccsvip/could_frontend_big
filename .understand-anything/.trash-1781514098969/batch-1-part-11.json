@@ -1,0 +1,56 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/apps/resources/point_serializers.py",
+      "type": "file",
+      "name": "point_serializers.py",
+      "filePath": "backend/apps/resources/point_serializers.py",
+      "summary": "点位数据的序列化器，用于前端展示与API通信。",
+      "tags": [
+        "serialization",
+        "point",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/resources/point_serializers.py:PointSerializer",
+      "type": "class",
+      "name": "PointSerializer",
+      "filePath": "backend/apps/resources/point_serializers.py",
+      "lineRange": [
+        6,
+        34
+      ],
+      "summary": "PointSerializer 类的实现，负责数据序列化与校验。",
+      "tags": [
+        "serialization",
+        "data-validation"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/resources/point_serializers.py",
+      "target": "class:backend/apps/resources/point_serializers.py:PointSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/resources/point_serializers.py",
+      "target": "class:backend/apps/resources/point_serializers.py:PointSerializer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/resources/point_serializers.py",
+      "target": "file:backend/apps/resources/point_models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

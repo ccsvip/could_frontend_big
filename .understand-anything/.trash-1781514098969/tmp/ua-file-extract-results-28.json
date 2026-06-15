@@ -1,0 +1,291 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 4,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "docs/superpowers/specs/2026-06-05-asr-settings-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 90,
+      "nonEmptyLines": 55,
+      "sections": [
+        {
+          "heading": "ASR Settings Design",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Goal",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Configuration",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "Backend",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "Permissions And Menus",
+          "level": 2,
+          "line": 48
+        },
+        {
+          "heading": "Frontend",
+          "level": 2,
+          "line": 58
+        },
+        {
+          "heading": "Validation",
+          "level": 2,
+          "line": 74
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-05-audit-log-management-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 205,
+      "nonEmptyLines": 136,
+      "sections": [
+        {
+          "heading": "Audit Log Management Design",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Goal",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Current Context",
+          "level": 2,
+          "line": 20
+        },
+        {
+          "heading": "Recommended Approach",
+          "level": 2,
+          "line": 36
+        },
+        {
+          "heading": "Data Model",
+          "level": 2,
+          "line": 44
+        },
+        {
+          "heading": "Backend Behavior",
+          "level": 2,
+          "line": 63
+        },
+        {
+          "heading": "Logging",
+          "level": 3,
+          "line": 65
+        },
+        {
+          "heading": "Operation Detail",
+          "level": 3,
+          "line": 87
+        },
+        {
+          "heading": "Listing Permissions",
+          "level": 3,
+          "line": 108
+        },
+        {
+          "heading": "Clearing Logs",
+          "level": 3,
+          "line": 119
+        },
+        {
+          "heading": "Frontend Behavior",
+          "level": 2,
+          "line": 135
+        },
+        {
+          "heading": "Routing And Menu",
+          "level": 2,
+          "line": 157
+        },
+        {
+          "heading": "Tests",
+          "level": 2,
+          "line": 170
+        },
+        {
+          "heading": "Out Of Scope",
+          "level": 2,
+          "line": 199
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 14
+      }
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-06-login-command-center-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 125,
+      "nonEmptyLines": 84,
+      "sections": [
+        {
+          "heading": "登录页数字人指挥中心视觉改造设计",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "背景",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "目标",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "非目标",
+          "level": 2,
+          "line": 16
+        },
+        {
+          "heading": "视觉方向",
+          "level": 2,
+          "line": 23
+        },
+        {
+          "heading": "页面结构",
+          "level": 2,
+          "line": 33
+        },
+        {
+          "heading": "AI 主视觉资产",
+          "level": 2,
+          "line": 55
+        },
+        {
+          "heading": "技术方案",
+          "level": 2,
+          "line": 70
+        },
+        {
+          "heading": "agy 使用方式",
+          "level": 2,
+          "line": 85
+        },
+        {
+          "heading": "响应式要求",
+          "level": 2,
+          "line": 99
+        },
+        {
+          "heading": "验证",
+          "level": 2,
+          "line": 106
+        },
+        {
+          "heading": "风险与约束",
+          "level": 2,
+          "line": 120
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-11-default-employee-access-design.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 60,
+      "nonEmptyLines": 38,
+      "sections": [
+        {
+          "heading": "公司员工默认全权限设计",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "背景",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "目标",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "非目标",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "权限规则",
+          "level": 2,
+          "line": 18
+        },
+        {
+          "heading": "公司管理员",
+          "level": 3,
+          "line": 20
+        },
+        {
+          "heading": "普通员工",
+          "level": 3,
+          "line": 27
+        },
+        {
+          "heading": "数据流",
+          "level": 2,
+          "line": 38
+        },
+        {
+          "heading": "现有数据处理",
+          "level": 2,
+          "line": 46
+        },
+        {
+          "heading": "测试要求",
+          "level": 2,
+          "line": 50
+        },
+        {
+          "heading": "推荐实现",
+          "level": 2,
+          "line": 58
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    }
+  ]
+}

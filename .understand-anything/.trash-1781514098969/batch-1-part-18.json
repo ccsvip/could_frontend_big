@@ -1,0 +1,57 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/apps/tenants/mixins.py",
+      "type": "file",
+      "name": "mixins.py",
+      "filePath": "backend/apps/tenants/mixins.py",
+      "summary": "多租户Mixin扩展，为视图自动注入基于当前登录用户的租户过滤逻辑。",
+      "tags": [
+        "utility",
+        "mixin",
+        "tenant",
+        "security"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/tenants/mixins.py:TenantScopedQuerysetMixin",
+      "type": "class",
+      "name": "TenantScopedQuerysetMixin",
+      "filePath": "backend/apps/tenants/mixins.py",
+      "lineRange": [
+        4,
+        68
+      ],
+      "summary": "TenantScopedQuerysetMixin 类的实现，封装相关的数据模型或业务功能。",
+      "tags": [
+        "class",
+        "component"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/tenants/mixins.py",
+      "target": "class:backend/apps/tenants/mixins.py:TenantScopedQuerysetMixin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/mixins.py",
+      "target": "class:backend/apps/tenants/mixins.py:TenantScopedQuerysetMixin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/mixins.py",
+      "target": "file:backend/apps/tenants/services.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

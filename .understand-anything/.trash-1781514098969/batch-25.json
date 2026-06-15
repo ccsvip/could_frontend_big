@@ -1,0 +1,141 @@
+{
+  "nodes": [
+    {
+      "id": "config:.env",
+      "type": "config",
+      "name": ".env",
+      "filePath": ".env",
+      "summary": "根级环境变量配置文件，主要定义了前端、API、数据库和 Redis 等宿主端口映射。",
+      "tags": ["configuration", "environment", "ports"],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "AGENTS.md",
+      "summary": "项目根目录的 AI 协作指南，定义了硬约束规范、跨前后端架构结构以及服务编排约定。",
+      "tags": ["documentation", "guidelines", "architecture", "conventions"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:CLAUDE.md",
+      "type": "document",
+      "name": "CLAUDE.md",
+      "filePath": "CLAUDE.md",
+      "summary": "面向 Claude 代理的系统级说明文档，包含项目职责、启动说明、接口定义与开发变更日志。",
+      "tags": ["documentation", "agent-instructions", "faq"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:CONTEXT.md",
+      "type": "document",
+      "name": "CONTEXT.md",
+      "filePath": "CONTEXT.md",
+      "summary": "领域上下文档，定义了 Solin 平台的核心概念与专业术语语言。",
+      "tags": ["documentation", "domain", "terminology"],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:DESIGN.md",
+      "type": "document",
+      "name": "DESIGN.md",
+      "filePath": "DESIGN.md",
+      "summary": "Solin 平台的设计系统规范，详细说明了色彩、排版、阴影层级及核心组件的视觉准则。",
+      "tags": ["documentation", "design-system", "ui-ux"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "pipeline:Makefile",
+      "type": "pipeline",
+      "name": "Makefile",
+      "filePath": "Makefile",
+      "summary": "提供快捷命令入口（如 up）的基础构建或启动脚本。",
+      "tags": ["infra", "build-system", "commands"],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:PRODUCT.md",
+      "type": "document",
+      "name": "PRODUCT.md",
+      "filePath": "PRODUCT.md",
+      "summary": "产品定义文档，阐述了产品的核心目的、品牌调性、设计原则及无障碍要求。",
+      "tags": ["documentation", "product", "design-principles"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:audit-report-could_frontend-2026-06-11.html",
+      "type": "file",
+      "name": "audit-report-could_frontend-2026-06-11.html",
+      "filePath": "audit-report-could_frontend-2026-06-11.html",
+      "summary": "2026年6月11日生成的前端项目代码审计或安全审查报告。",
+      "tags": ["report", "audit", "html"],
+      "complexity": "complex"
+    },
+    {
+      "id": "service:docker-compose.yaml",
+      "type": "service",
+      "name": "docker-compose.yaml",
+      "filePath": "docker-compose.yaml",
+      "summary": "全栈服务的 Docker 编排配置，定义了数据库、缓存、后端应用及前端开发的容器拓扑与网络。",
+      "tags": ["infrastructure", "orchestration", "docker"],
+      "complexity": "moderate",
+      "languageNotes": "使用了 YAML 锚点复用后端构建配置（x-backend-build）。"
+    },
+    {
+      "id": "config:skills-lock.json",
+      "type": "config",
+      "name": "skills-lock.json",
+      "filePath": "skills-lock.json",
+      "summary": "AI 代理技能版本或依赖锁定文件，确保使用的代理指令版本一致。",
+      "tags": ["configuration", "agent-skills", "lockfile"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:understand-anything-guide.html",
+      "type": "file",
+      "name": "understand-anything-guide.html",
+      "filePath": "understand-anything-guide.html",
+      "summary": "Understand Anything 工具的用户使用指南与图谱可视化说明书。",
+      "tags": ["documentation", "guide", "html"],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:AGENTS.md",
+      "target": "service:docker-compose.yaml",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:AGENTS.md",
+      "target": "config:.env",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:CLAUDE.md",
+      "target": "document:AGENTS.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:DESIGN.md",
+      "target": "document:PRODUCT.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "pipeline:Makefile",
+      "target": "service:docker-compose.yaml",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

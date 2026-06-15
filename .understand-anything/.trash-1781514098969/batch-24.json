@@ -1,0 +1,32 @@
+{
+  "nodes": [
+    {
+      "id": "document:.claude/skills/triage/AGENT-BRIEF.md",
+      "type": "document",
+      "name": "AGENT-BRIEF.md",
+      "filePath": ".claude/skills/triage/AGENT-BRIEF.md",
+      "summary": "AI 代理简报编写指南，强调了基于行为准则、验收标准明确以及边界清晰的任务描述方法。",
+      "tags": ["documentation", "agent", "brief", "guidelines"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/triage/OUT-OF-SCOPE.md",
+      "type": "document",
+      "name": "OUT-OF-SCOPE.md",
+      "filePath": ".claude/skills/triage/OUT-OF-SCOPE.md",
+      "summary": "超范围知识库文档说明，指导如何记录项目中不予处理或超出范围的需求与议题。",
+      "tags": ["documentation", "scope-management", "triage"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/triage/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/triage/SKILL.md",
+      "summary": "问题分拣（Triage）技能主文档，定义了分拣角色、工作流程、状态覆盖规则及需求信息模板。",
+      "tags": ["documentation", "triage", "workflow", "management"],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": []
+}

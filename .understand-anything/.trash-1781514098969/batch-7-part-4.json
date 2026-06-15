@@ -1,0 +1,1456 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/apps/ai_models/tests/test_tts_api.py",
+      "type": "file",
+      "name": "test_tts_api.py",
+      "filePath": "backend/apps/ai_models/tests/test_tts_api.py",
+      "summary": "针对文本转语音（TTS）API 的测试用例。",
+      "tags": [
+        "test",
+        "api-test",
+        "quality-assurance"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/ai_models/tests/test_tts_api.py:TTSApiTests",
+      "type": "class",
+      "name": "TTSApiTests",
+      "filePath": "backend/apps/ai_models/tests/test_tts_api.py",
+      "lineRange": [
+        16,
+        164
+      ],
+      "summary": "定义 TTSApiTests 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/apps/ai_models/urls.py",
+      "type": "file",
+      "name": "urls.py",
+      "filePath": "backend/apps/ai_models/urls.py",
+      "summary": "定义 AI 模型相关功能的 URL 路由映射。",
+      "tags": [
+        "router",
+        "api",
+        "configuration"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/ai_models/views.py",
+      "type": "file",
+      "name": "views.py",
+      "filePath": "backend/apps/ai_models/views.py",
+      "summary": "DRF 视图层，处理与 AI 模型（含 LLM、ASR、TTS）有关的所有 HTTP 接口请求。",
+      "tags": [
+        "api-handler",
+        "controller",
+        "endpoint"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:backend/apps/ai_models/views.py:_tts_audio_response",
+      "type": "function",
+      "name": "_tts_audio_response",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        188,
+        200
+      ],
+      "summary": "提供 _tts_audio_response 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/views.py:_select_platform_tts_voice",
+      "type": "function",
+      "name": "_select_platform_tts_voice",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        203,
+        213
+      ],
+      "summary": "提供 _select_platform_tts_voice 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/views.py:_get_platform_tts_provider",
+      "type": "function",
+      "name": "_get_platform_tts_provider",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        216,
+        219
+      ],
+      "summary": "提供 _get_platform_tts_provider 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/views.py:_build_company_tts_options_payload",
+      "type": "function",
+      "name": "_build_company_tts_options_payload",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        222,
+        244
+      ],
+      "summary": "提供 _build_company_tts_options_payload 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/views.py:_build_company_llm_options_payload",
+      "type": "function",
+      "name": "_build_company_llm_options_payload",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        565,
+        606
+      ],
+      "summary": "提供 _build_company_llm_options_payload 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/views.py:_build_chat_completions_url",
+      "type": "function",
+      "name": "_build_chat_completions_url",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        660,
+        668
+      ],
+      "summary": "提供 _build_chat_completions_url 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/views.py:_resolve_tenant_llm_model",
+      "type": "function",
+      "name": "_resolve_tenant_llm_model",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        671,
+        684
+      ],
+      "summary": "提供 _resolve_tenant_llm_model 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/views.py:_coerce_openai_content_to_text",
+      "type": "function",
+      "name": "_coerce_openai_content_to_text",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        687,
+        706
+      ],
+      "summary": "提供 _coerce_openai_content_to_text 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/views.py:_extract_openai_completion_text",
+      "type": "function",
+      "name": "_extract_openai_completion_text",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        709,
+        728
+      ],
+      "summary": "提供 _extract_openai_completion_text 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/views.py:_extract_openai_error_message",
+      "type": "function",
+      "name": "_extract_openai_error_message",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        731,
+        737
+      ],
+      "summary": "提供 _extract_openai_error_message 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/views.py:_parse_sse_data_line",
+      "type": "function",
+      "name": "_parse_sse_data_line",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        740,
+        743
+      ],
+      "summary": "提供 _parse_sse_data_line 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/views.py:_normalize_generated_title",
+      "type": "function",
+      "name": "_normalize_generated_title",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        746,
+        751
+      ],
+      "summary": "提供 _normalize_generated_title 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/views.py:_generate_conversation_title",
+      "type": "function",
+      "name": "_generate_conversation_title",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        754,
+        799
+      ],
+      "summary": "提供 _generate_conversation_title 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/views.py:_generate_conversation_summary",
+      "type": "function",
+      "name": "_generate_conversation_summary",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        802,
+        845
+      ],
+      "summary": "提供 _generate_conversation_summary 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:ASRSettingsView",
+      "type": "class",
+      "name": "ASRSettingsView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        98,
+        111
+      ],
+      "summary": "定义 ASRSettingsView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:ASRSettingsTestView",
+      "type": "class",
+      "name": "ASRSettingsTestView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        114,
+        118
+      ],
+      "summary": "定义 ASRSettingsTestView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:ASRStatusView",
+      "type": "class",
+      "name": "ASRStatusView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        121,
+        125
+      ],
+      "summary": "定义 ASRStatusView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:ASRDeviceStatusView",
+      "type": "class",
+      "name": "ASRDeviceStatusView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        128,
+        150
+      ],
+      "summary": "定义 ASRDeviceStatusView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:ASRTestView",
+      "type": "class",
+      "name": "ASRTestView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        153,
+        157
+      ],
+      "summary": "定义 ASRTestView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:ASRReplacementRuleViewSet",
+      "type": "class",
+      "name": "ASRReplacementRuleViewSet",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        160,
+        185
+      ],
+      "summary": "定义 ASRReplacementRuleViewSet 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:TTSProviderListView",
+      "type": "class",
+      "name": "TTSProviderListView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        247,
+        253
+      ],
+      "summary": "定义 TTSProviderListView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:TTSSettingsView",
+      "type": "class",
+      "name": "TTSSettingsView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        256,
+        268
+      ],
+      "summary": "定义 TTSSettingsView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:TTSSettingsTestView",
+      "type": "class",
+      "name": "TTSSettingsTestView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        271,
+        285
+      ],
+      "summary": "定义 TTSSettingsTestView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:CompanyTTSOptionsView",
+      "type": "class",
+      "name": "CompanyTTSOptionsView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        288,
+        292
+      ],
+      "summary": "定义 CompanyTTSOptionsView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:CompanyTTSDefaultVoiceView",
+      "type": "class",
+      "name": "CompanyTTSDefaultVoiceView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        295,
+        316
+      ],
+      "summary": "定义 CompanyTTSDefaultVoiceView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:CompanyTTSTestView",
+      "type": "class",
+      "name": "CompanyTTSTestView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        319,
+        334
+      ],
+      "summary": "定义 CompanyTTSTestView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:TTSRuntimeView",
+      "type": "class",
+      "name": "TTSRuntimeView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        337,
+        361
+      ],
+      "summary": "定义 TTSRuntimeView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:PlatformLLMProviderViewSet",
+      "type": "class",
+      "name": "PlatformLLMProviderViewSet",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        375,
+        407
+      ],
+      "summary": "定义 PlatformLLMProviderViewSet 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:PlatformLLMProviderModelsView",
+      "type": "class",
+      "name": "PlatformLLMProviderModelsView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        410,
+        433
+      ],
+      "summary": "定义 PlatformLLMProviderModelsView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:PlatformLLMModelViewSet",
+      "type": "class",
+      "name": "PlatformLLMModelViewSet",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        436,
+        469
+      ],
+      "summary": "定义 PlatformLLMModelViewSet 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:LLMTestSettingsView",
+      "type": "class",
+      "name": "LLMTestSettingsView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        472,
+        484
+      ],
+      "summary": "定义 LLMTestSettingsView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:TenantLLMAuthorizationView",
+      "type": "class",
+      "name": "TenantLLMAuthorizationView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        487,
+        562
+      ],
+      "summary": "定义 TenantLLMAuthorizationView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:CompanyLLMOptionsView",
+      "type": "class",
+      "name": "CompanyLLMOptionsView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        609,
+        613
+      ],
+      "summary": "定义 CompanyLLMOptionsView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:CompanyLLMDefaultModelView",
+      "type": "class",
+      "name": "CompanyLLMDefaultModelView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        616,
+        635
+      ],
+      "summary": "定义 CompanyLLMDefaultModelView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:CompanyLLMModelTestView",
+      "type": "class",
+      "name": "CompanyLLMModelTestView",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        638,
+        657
+      ],
+      "summary": "定义 CompanyLLMModelTestView 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:AgentApplicationViewSet",
+      "type": "class",
+      "name": "AgentApplicationViewSet",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        857,
+        928
+      ],
+      "summary": "定义 AgentApplicationViewSet 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/ai_models/views.py:ChatConversationViewSet",
+      "type": "class",
+      "name": "ChatConversationViewSet",
+      "filePath": "backend/apps/ai_models/views.py",
+      "lineRange": [
+        940,
+        1505
+      ],
+      "summary": "定义 ChatConversationViewSet 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/apps/tenants/tests/test_llm_isolation.py",
+      "type": "file",
+      "name": "test_llm_isolation.py",
+      "filePath": "backend/apps/tenants/tests/test_llm_isolation.py",
+      "summary": "测试多租户环境下 LLM 模型数据与调用的隔离性。",
+      "tags": [
+        "test",
+        "security",
+        "multi-tenant"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/tenants/tests/test_llm_isolation.py:LLMTenantIsolationTests",
+      "type": "class",
+      "name": "LLMTenantIsolationTests",
+      "filePath": "backend/apps/tenants/tests/test_llm_isolation.py",
+      "lineRange": [
+        14,
+        79
+      ],
+      "summary": "定义 LLMTenantIsolationTests 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/ai_models/tests/test_tts_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_tts_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_tts_api.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_tts_api.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_tts_api.py",
+      "target": "file:backend/apps/ai_models/services/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_tts_api.py",
+      "target": "file:backend/apps/ai_models/services/__init__.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_tts_api.py",
+      "target": "file:backend/apps/devices/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_tts_api.py",
+      "target": "file:backend/apps/devices/models.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_tts_api.py",
+      "target": "file:backend/apps/tenants/test_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_tts_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_tts_api.py:TTSApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_tts_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_tts_api.py:TTSApiTests",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/urls.py",
+      "target": "file:backend/apps/ai_models/views.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "file:backend/apps/accounts/permissions.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "file:backend/apps/ai_models/llm_services.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "file:backend/apps/ai_models/realtime_asr.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "file:backend/apps/ai_models/serializers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "file:backend/apps/ai_models/services/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "file:backend/apps/ai_models/services/asr.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "file:backend/apps/devices/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "file:backend/apps/resources/views.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "file:backend/apps/tenants/mixins.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "file:backend/apps/tenants/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_tts_audio_response",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_tts_audio_response",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_select_platform_tts_voice",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_select_platform_tts_voice",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_get_platform_tts_provider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_get_platform_tts_provider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_build_company_tts_options_payload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_build_company_tts_options_payload",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_build_company_llm_options_payload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_build_company_llm_options_payload",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_build_chat_completions_url",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_build_chat_completions_url",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_resolve_tenant_llm_model",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_resolve_tenant_llm_model",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_coerce_openai_content_to_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_coerce_openai_content_to_text",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_extract_openai_completion_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_extract_openai_completion_text",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_extract_openai_error_message",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_extract_openai_error_message",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_parse_sse_data_line",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_parse_sse_data_line",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_normalize_generated_title",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_normalize_generated_title",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_generate_conversation_title",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_generate_conversation_title",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_generate_conversation_summary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "function:backend/apps/ai_models/views.py:_generate_conversation_summary",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:ASRSettingsView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:ASRSettingsView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:ASRSettingsTestView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:ASRSettingsTestView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:ASRStatusView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:ASRStatusView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:ASRDeviceStatusView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:ASRDeviceStatusView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:ASRTestView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:ASRTestView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:ASRReplacementRuleViewSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:ASRReplacementRuleViewSet",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:TTSProviderListView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:TTSProviderListView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:TTSSettingsView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:TTSSettingsView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:TTSSettingsTestView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:TTSSettingsTestView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:CompanyTTSOptionsView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:CompanyTTSOptionsView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:CompanyTTSDefaultVoiceView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:CompanyTTSDefaultVoiceView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:CompanyTTSTestView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:CompanyTTSTestView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:TTSRuntimeView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:TTSRuntimeView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:PlatformLLMProviderViewSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:PlatformLLMProviderViewSet",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:PlatformLLMProviderModelsView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:PlatformLLMProviderModelsView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:PlatformLLMModelViewSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:PlatformLLMModelViewSet",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:LLMTestSettingsView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:LLMTestSettingsView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:TenantLLMAuthorizationView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:TenantLLMAuthorizationView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:CompanyLLMOptionsView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:CompanyLLMOptionsView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:CompanyLLMDefaultModelView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:CompanyLLMDefaultModelView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:CompanyLLMModelTestView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:CompanyLLMModelTestView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:AgentApplicationViewSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:AgentApplicationViewSet",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:ChatConversationViewSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/views.py",
+      "target": "class:backend/apps/ai_models/views.py:ChatConversationViewSet",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_llm_isolation.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_llm_isolation.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_llm_isolation.py",
+      "target": "file:backend/apps/tenants/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_llm_isolation.py",
+      "target": "file:backend/apps/tenants/models.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_llm_isolation.py",
+      "target": "class:backend/apps/tenants/tests/test_llm_isolation.py:LLMTenantIsolationTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_llm_isolation.py",
+      "target": "class:backend/apps/tenants/tests/test_llm_isolation.py:LLMTenantIsolationTests",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

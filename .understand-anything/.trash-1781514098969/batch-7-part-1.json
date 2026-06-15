@@ -1,0 +1,1574 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/apps/ai_models/admin.py",
+      "type": "file",
+      "name": "admin.py",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "summary": "Django admin 配置文件，用于管理 AI 模型和相关资源的后台界面。",
+      "tags": [
+        "admin",
+        "configuration",
+        "data-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/admin.py:LLMProviderAdmin",
+      "type": "class",
+      "name": "LLMProviderAdmin",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "lineRange": [
+        7,
+        10
+      ],
+      "summary": "定义 LLMProviderAdmin 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/admin.py:TTSProviderAdmin",
+      "type": "class",
+      "name": "TTSProviderAdmin",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "lineRange": [
+        14,
+        18
+      ],
+      "summary": "定义 TTSProviderAdmin 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/admin.py:TTSVoiceAdmin",
+      "type": "class",
+      "name": "TTSVoiceAdmin",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "lineRange": [
+        22,
+        25
+      ],
+      "summary": "定义 TTSVoiceAdmin 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/admin.py:ChatConversationAdmin",
+      "type": "class",
+      "name": "ChatConversationAdmin",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "lineRange": [
+        29,
+        33
+      ],
+      "summary": "定义 ChatConversationAdmin 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/admin.py:AgentApplicationAdmin",
+      "type": "class",
+      "name": "AgentApplicationAdmin",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "lineRange": [
+        37,
+        42
+      ],
+      "summary": "定义 AgentApplicationAdmin 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/admin.py:ChatMessageAdmin",
+      "type": "class",
+      "name": "ChatMessageAdmin",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "lineRange": [
+        46,
+        54
+      ],
+      "summary": "定义 ChatMessageAdmin 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/llm_services.py",
+      "type": "file",
+      "name": "llm_services.py",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "大语言模型（LLM）服务封装层，提供与多种底层大模型平台的统一交互接口。",
+      "tags": [
+        "service",
+        "llm",
+        "api-wrapper"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:mask_api_key",
+      "type": "function",
+      "name": "mask_api_key",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "lineRange": [
+        11,
+        16
+      ],
+      "summary": "提供 mask_api_key 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:get_effective_llm_models_for_tenant",
+      "type": "function",
+      "name": "get_effective_llm_models_for_tenant",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "lineRange": [
+        19,
+        33
+      ],
+      "summary": "提供 get_effective_llm_models_for_tenant 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:get_effective_llm_model_for_tenant",
+      "type": "function",
+      "name": "get_effective_llm_model_for_tenant",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "lineRange": [
+        36,
+        37
+      ],
+      "summary": "提供 get_effective_llm_model_for_tenant 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:get_tenant_llm_settings",
+      "type": "function",
+      "name": "get_tenant_llm_settings",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "lineRange": [
+        40,
+        44
+      ],
+      "summary": "提供 get_tenant_llm_settings 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:is_llm_model_effective_for_tenant",
+      "type": "function",
+      "name": "is_llm_model_effective_for_tenant",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "lineRange": [
+        47,
+        50
+      ],
+      "summary": "提供 is_llm_model_effective_for_tenant 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:llm_model_has_usage",
+      "type": "function",
+      "name": "llm_model_has_usage",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "lineRange": [
+        53,
+        61
+      ],
+      "summary": "提供 llm_model_has_usage 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:llm_model_has_active_company_authorization",
+      "type": "function",
+      "name": "llm_model_has_active_company_authorization",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "lineRange": [
+        64,
+        67
+      ],
+      "summary": "提供 llm_model_has_active_company_authorization 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:llm_provider_has_active_company_authorization",
+      "type": "function",
+      "name": "llm_provider_has_active_company_authorization",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "lineRange": [
+        70,
+        73
+      ],
+      "summary": "提供 llm_provider_has_active_company_authorization 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:llm_provider_has_usage",
+      "type": "function",
+      "name": "llm_provider_has_usage",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "lineRange": [
+        76,
+        84
+      ],
+      "summary": "提供 llm_provider_has_usage 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:validate_llm_test_settings_values",
+      "type": "function",
+      "name": "validate_llm_test_settings_values",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "lineRange": [
+        87,
+        97
+      ],
+      "summary": "提供 validate_llm_test_settings_values 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:_build_chat_completions_url",
+      "type": "function",
+      "name": "_build_chat_completions_url",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "lineRange": [
+        100,
+        108
+      ],
+      "summary": "提供 _build_chat_completions_url 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:_test_summary",
+      "type": "function",
+      "name": "_test_summary",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "lineRange": [
+        111,
+        117
+      ],
+      "summary": "提供 _test_summary 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:run_llm_model_test",
+      "type": "function",
+      "name": "run_llm_model_test",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "lineRange": [
+        120,
+        159
+      ],
+      "summary": "提供 run_llm_model_test 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/models.py",
+      "type": "file",
+      "name": "models.py",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "定义 AI 模型的数据库结构，包括模型配置、租户隔离等核心业务表。",
+      "tags": [
+        "data-model",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:LLMProvider",
+      "type": "class",
+      "name": "LLMProvider",
+      "filePath": "backend/apps/ai_models/models.py",
+      "lineRange": [
+        20,
+        37
+      ],
+      "summary": "定义 LLMProvider 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:LLMModel",
+      "type": "class",
+      "name": "LLMModel",
+      "filePath": "backend/apps/ai_models/models.py",
+      "lineRange": [
+        40,
+        60
+      ],
+      "summary": "定义 LLMModel 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:TenantLLMModelGrant",
+      "type": "class",
+      "name": "TenantLLMModelGrant",
+      "filePath": "backend/apps/ai_models/models.py",
+      "lineRange": [
+        63,
+        88
+      ],
+      "summary": "定义 TenantLLMModelGrant 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:TenantLLMSettings",
+      "type": "class",
+      "name": "TenantLLMSettings",
+      "filePath": "backend/apps/ai_models/models.py",
+      "lineRange": [
+        91,
+        111
+      ],
+      "summary": "定义 TenantLLMSettings 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:LLMTestSettings",
+      "type": "class",
+      "name": "LLMTestSettings",
+      "filePath": "backend/apps/ai_models/models.py",
+      "lineRange": [
+        114,
+        127
+      ],
+      "summary": "定义 LLMTestSettings 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:ASRConfig",
+      "type": "class",
+      "name": "ASRConfig",
+      "filePath": "backend/apps/ai_models/models.py",
+      "lineRange": [
+        130,
+        164
+      ],
+      "summary": "定义 ASRConfig 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:TTSProvider",
+      "type": "class",
+      "name": "TTSProvider",
+      "filePath": "backend/apps/ai_models/models.py",
+      "lineRange": [
+        167,
+        211
+      ],
+      "summary": "定义 TTSProvider 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:TTSVoice",
+      "type": "class",
+      "name": "TTSVoice",
+      "filePath": "backend/apps/ai_models/models.py",
+      "lineRange": [
+        214,
+        239
+      ],
+      "summary": "定义 TTSVoice 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:TenantTTSSettings",
+      "type": "class",
+      "name": "TenantTTSSettings",
+      "filePath": "backend/apps/ai_models/models.py",
+      "lineRange": [
+        242,
+        266
+      ],
+      "summary": "定义 TenantTTSSettings 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:ASRReplacementRule",
+      "type": "class",
+      "name": "ASRReplacementRule",
+      "filePath": "backend/apps/ai_models/models.py",
+      "lineRange": [
+        269,
+        293
+      ],
+      "summary": "定义 ASRReplacementRule 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:AgentApplication",
+      "type": "class",
+      "name": "AgentApplication",
+      "filePath": "backend/apps/ai_models/models.py",
+      "lineRange": [
+        296,
+        357
+      ],
+      "summary": "定义 AgentApplication 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:ChatConversation",
+      "type": "class",
+      "name": "ChatConversation",
+      "filePath": "backend/apps/ai_models/models.py",
+      "lineRange": [
+        360,
+        417
+      ],
+      "summary": "定义 ChatConversation 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:ChatMessage",
+      "type": "class",
+      "name": "ChatMessage",
+      "filePath": "backend/apps/ai_models/models.py",
+      "lineRange": [
+        420,
+        456
+      ],
+      "summary": "定义 ChatMessage 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/ai_models/realtime_asr.py",
+      "type": "file",
+      "name": "realtime_asr.py",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "summary": "处理实时语音识别（ASR）的逻辑，包含音频流接收与转写服务对接。",
+      "tags": [
+        "api-handler",
+        "audio-processing",
+        "service"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:asr_realtime_websocket_application",
+      "type": "function",
+      "name": "asr_realtime_websocket_application",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "lineRange": [
+        33,
+        100
+      ],
+      "summary": "提供 asr_realtime_websocket_application 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:resolve_asr_realtime_connection",
+      "type": "function",
+      "name": "resolve_asr_realtime_connection",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "lineRange": [
+        103,
+        132
+      ],
+      "summary": "提供 resolve_asr_realtime_connection 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:resolve_asr_device_connection",
+      "type": "function",
+      "name": "resolve_asr_device_connection",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "lineRange": [
+        135,
+        160
+      ],
+      "summary": "提供 resolve_asr_device_connection 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:_extract_device_code",
+      "type": "function",
+      "name": "_extract_device_code",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "lineRange": [
+        163,
+        176
+      ],
+      "summary": "提供 _extract_device_code 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:_extract_superuser_tenant",
+      "type": "function",
+      "name": "_extract_superuser_tenant",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "lineRange": [
+        179,
+        187
+      ],
+      "summary": "提供 _extract_superuser_tenant 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:load_asr_replacement_pairs",
+      "type": "function",
+      "name": "load_asr_replacement_pairs",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "lineRange": [
+        190,
+        197
+      ],
+      "summary": "提供 load_asr_replacement_pairs 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:apply_asr_replacement_rules",
+      "type": "function",
+      "name": "apply_asr_replacement_rules",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "lineRange": [
+        200,
+        205
+      ],
+      "summary": "提供 apply_asr_replacement_rules 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:extract_transcript_payload",
+      "type": "function",
+      "name": "extract_transcript_payload",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "lineRange": [
+        208,
+        227
+      ],
+      "summary": "提供 extract_transcript_payload 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:_browser_to_upstream",
+      "type": "function",
+      "name": "_browser_to_upstream",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "lineRange": [
+        230,
+        256
+      ],
+      "summary": "提供 _browser_to_upstream 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:_upstream_to_browser",
+      "type": "function",
+      "name": "_upstream_to_browser",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "lineRange": [
+        259,
+        275
+      ],
+      "summary": "提供 _upstream_to_browser 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:_session_update_event",
+      "type": "function",
+      "name": "_session_update_event",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "lineRange": [
+        278,
+        292
+      ],
+      "summary": "提供 _session_update_event 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:_session_finish_event",
+      "type": "function",
+      "name": "_session_finish_event",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "lineRange": [
+        295,
+        299
+      ],
+      "summary": "提供 _session_finish_event 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:_audio_append_event",
+      "type": "function",
+      "name": "_audio_append_event",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "lineRange": [
+        302,
+        307
+      ],
+      "summary": "提供 _audio_append_event 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:_extract_text",
+      "type": "function",
+      "name": "_extract_text",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "lineRange": [
+        310,
+        315
+      ],
+      "summary": "提供 _extract_text 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:LLMProviderAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:LLMProviderAdmin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:TTSProviderAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:TTSProviderAdmin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:TTSVoiceAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:TTSVoiceAdmin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:ChatConversationAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:ChatConversationAdmin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:AgentApplicationAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:AgentApplicationAdmin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:ChatMessageAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:ChatMessageAdmin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:mask_api_key",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:mask_api_key",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:get_effective_llm_models_for_tenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:get_effective_llm_models_for_tenant",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:get_effective_llm_model_for_tenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:get_effective_llm_model_for_tenant",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:get_tenant_llm_settings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:get_tenant_llm_settings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:is_llm_model_effective_for_tenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:is_llm_model_effective_for_tenant",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:llm_model_has_usage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:llm_model_has_usage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:llm_model_has_active_company_authorization",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:llm_model_has_active_company_authorization",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:llm_provider_has_active_company_authorization",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:llm_provider_has_active_company_authorization",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:llm_provider_has_usage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:llm_provider_has_usage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:validate_llm_test_settings_values",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:validate_llm_test_settings_values",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:_build_chat_completions_url",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:_build_chat_completions_url",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:_test_summary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:_test_summary",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:run_llm_model_test",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:run_llm_model_test",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "file:backend/apps/tenants/managers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:LLMProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:LLMProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:LLMModel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:LLMModel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:TenantLLMModelGrant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:TenantLLMModelGrant",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:TenantLLMSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:TenantLLMSettings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:LLMTestSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:LLMTestSettings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:ASRConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:ASRConfig",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:TTSProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:TTSProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:TTSVoice",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:TTSVoice",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:TenantTTSSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:TenantTTSSettings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:ASRReplacementRule",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:ASRReplacementRule",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:AgentApplication",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:AgentApplication",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:ChatConversation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:ChatConversation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:ChatMessage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:ChatMessage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "file:backend/apps/accounts/services/permissions.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "file:backend/apps/ai_models/services/asr.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "file:backend/apps/devices/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "file:backend/apps/tenants/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "file:backend/apps/tenants/services.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:asr_realtime_websocket_application",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:asr_realtime_websocket_application",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:resolve_asr_realtime_connection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:resolve_asr_realtime_connection",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:resolve_asr_device_connection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:resolve_asr_device_connection",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_extract_device_code",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_extract_device_code",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_extract_superuser_tenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_extract_superuser_tenant",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:load_asr_replacement_pairs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:load_asr_replacement_pairs",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:apply_asr_replacement_rules",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:apply_asr_replacement_rules",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:extract_transcript_payload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:extract_transcript_payload",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_browser_to_upstream",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_browser_to_upstream",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_upstream_to_browser",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_upstream_to_browser",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_session_update_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_session_update_event",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_session_finish_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_session_finish_event",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_audio_append_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_audio_append_event",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_extract_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_extract_text",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

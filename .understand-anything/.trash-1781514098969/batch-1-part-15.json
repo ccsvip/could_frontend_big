@@ -1,0 +1,91 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/apps/resources/tests/test_minio_settings_api.py",
+      "type": "file",
+      "name": "test_minio_settings_api.py",
+      "filePath": "backend/apps/resources/tests/test_minio_settings_api.py",
+      "summary": "Minio设置与视频配额相关的API接口测试。",
+      "tags": [
+        "test",
+        "api",
+        "storage",
+        "configuration"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_minio_settings_api.py:MinioSettingsApiTests",
+      "type": "class",
+      "name": "MinioSettingsApiTests",
+      "filePath": "backend/apps/resources/tests/test_minio_settings_api.py",
+      "lineRange": [
+        12,
+        122
+      ],
+      "summary": "MinioSettingsApiTests 类的实现，定义相关模块的自动化测试套件。",
+      "tags": [
+        "test",
+        "unit-test"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/resources/urls.py",
+      "type": "file",
+      "name": "urls.py",
+      "filePath": "backend/apps/resources/urls.py",
+      "summary": "资源模块路由配置，映射各资源类型及指令相关的接口路由。",
+      "tags": [
+        "configuration",
+        "routing",
+        "resource"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/resources/tests/test_minio_settings_api.py",
+      "target": "class:backend/apps/resources/tests/test_minio_settings_api.py:MinioSettingsApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_minio_settings_api.py",
+      "target": "class:backend/apps/resources/tests/test_minio_settings_api.py:MinioSettingsApiTests",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_minio_settings_api.py",
+      "target": "file:backend/apps/resources/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_minio_settings_api.py",
+      "target": "file:backend/apps/tenants/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/urls.py",
+      "target": "file:backend/apps/resources/point_views.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/urls.py",
+      "target": "file:backend/apps/resources/views.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

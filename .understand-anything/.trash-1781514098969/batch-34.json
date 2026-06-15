@@ -1,0 +1,1392 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/apps/accounts/migrations/0005_accountapplication_username.py",
+      "type": "file",
+      "name": "0005_accountapplication_username.py",
+      "filePath": "backend/apps/accounts/migrations/0005_accountapplication_username.py",
+      "summary": "Django 数据迁移文件，为 AccountApplication 模型添加 username 字段。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0005_accountapplication_username.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0005_accountapplication_username.py",
+      "lineRange": [
+        6,
+        18
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py",
+      "type": "file",
+      "name": "0006_remove_accountapplication_email_and_more.py",
+      "filePath": "backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py",
+      "summary": "Django 数据迁移文件，移除 AccountApplication 模型的 email 等字段，调整字段定义。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py",
+      "lineRange": [
+        6,
+        27
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/accounts/migrations/0007_accountuser.py",
+      "type": "file",
+      "name": "0007_accountuser.py",
+      "filePath": "backend/apps/accounts/migrations/0007_accountuser.py",
+      "summary": "Django 数据迁移文件，新增 AccountUser 账户用户模型。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0007_accountuser.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0007_accountuser.py",
+      "lineRange": [
+        7,
+        31
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/accounts/migrations/0008_accountapplication_tenant.py",
+      "type": "file",
+      "name": "0008_accountapplication_tenant.py",
+      "filePath": "backend/apps/accounts/migrations/0008_accountapplication_tenant.py",
+      "summary": "Django 数据迁移文件，为 AccountApplication 添加多租户 tenant 关联字段。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0008_accountapplication_tenant.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0008_accountapplication_tenant.py",
+      "lineRange": [
+        7,
+        20
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/accounts/migrations/0009_menu_audience.py",
+      "type": "file",
+      "name": "0009_menu_audience.py",
+      "filePath": "backend/apps/accounts/migrations/0009_menu_audience.py",
+      "summary": "Django 数据迁移文件，为 Menu 菜单模型添加 audience 受众字段。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0009_menu_audience.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0009_menu_audience.py",
+      "lineRange": [
+        6,
+        18
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "type": "file",
+      "name": "0010_seed_tenant_menus.py",
+      "filePath": "backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "summary": "Django 数据迁移文件，用于初始化（seed）租户的默认菜单数据。",
+      "tags": [
+        "migration",
+        "database",
+        "data-seed"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/accounts/migrations/0010_seed_tenant_menus.py:seed_tenant_menus",
+      "type": "function",
+      "name": "seed_tenant_menus",
+      "filePath": "backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "lineRange": [
+        4,
+        50
+      ],
+      "summary": "实现 seed_tenant_menus 逻辑的函数或方法。",
+      "tags": [
+        "function",
+        "logic",
+        "handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/accounts/migrations/0010_seed_tenant_menus.py:unseed_tenant_menus",
+      "type": "function",
+      "name": "unseed_tenant_menus",
+      "filePath": "backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "lineRange": [
+        53,
+        57
+      ],
+      "summary": "实现 unseed_tenant_menus 逻辑的函数或方法。",
+      "tags": [
+        "function",
+        "logic",
+        "handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0010_seed_tenant_menus.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "lineRange": [
+        60,
+        68
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py",
+      "type": "file",
+      "name": "0011_role_is_template_role_tenant_alter_role_code_and_more.py",
+      "filePath": "backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py",
+      "summary": "Django 数据迁移文件，为 Role 角色模型增加模板标识 is_template 和 tenant 字段，并修改角色代码字段。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py",
+      "lineRange": [
+        7,
+        34
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "type": "file",
+      "name": "0012_seed_audit_logs_menu.py",
+      "filePath": "backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "summary": "Django 数据迁移文件，用于向系统中预置审计日志（audit logs）的菜单数据。",
+      "tags": [
+        "migration",
+        "database",
+        "data-seed"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py:seed_audit_logs_menu",
+      "type": "function",
+      "name": "seed_audit_logs_menu",
+      "filePath": "backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "lineRange": [
+        4,
+        27
+      ],
+      "summary": "实现 seed_audit_logs_menu 逻辑的函数或方法。",
+      "tags": [
+        "function",
+        "logic",
+        "handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py:unseed_audit_logs_menu",
+      "type": "function",
+      "name": "unseed_audit_logs_menu",
+      "filePath": "backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "lineRange": [
+        30,
+        34
+      ],
+      "summary": "实现 unseed_audit_logs_menu 逻辑的函数或方法。",
+      "tags": [
+        "function",
+        "logic",
+        "handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "lineRange": [
+        37,
+        45
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/accounts/services/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/accounts/services/__init__.py",
+      "summary": "账户服务模块的初始化文件（__init__.py），通常作为包入口。",
+      "tags": [
+        "entry-point",
+        "service"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/ai_models/__init__.py",
+      "summary": "AI 模型应用的初始化文件。",
+      "tags": [
+        "entry-point",
+        "module"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:backend/apps/ai_models/AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "backend/apps/ai_models/AGENTS.md",
+      "summary": "AI 模型应用的说明文档，包含应用设计、代理模型使用相关的上下文及架构信息。",
+      "tags": [
+        "documentation",
+        "overview",
+        "architecture"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/apps.py",
+      "type": "file",
+      "name": "apps.py",
+      "filePath": "backend/apps/ai_models/apps.py",
+      "summary": "Django 应用配置文件，定义 ai_models 应用的基础配置信息。",
+      "tags": [
+        "configuration",
+        "app-config"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/apps.py:AiModelsConfig",
+      "type": "class",
+      "name": "AiModelsConfig",
+      "filePath": "backend/apps/ai_models/apps.py",
+      "lineRange": [
+        4,
+        7
+      ],
+      "summary": "定义 AiModelsConfig 的类结构。",
+      "tags": [
+        "class",
+        "schema-definition",
+        "data-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/migrations/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/ai_models/migrations/__init__.py",
+      "summary": "AI 模型应用迁移模块的初始化文件。",
+      "tags": [
+        "entry-point",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/migrations/0001_initial.py",
+      "type": "file",
+      "name": "0001_initial.py",
+      "filePath": "backend/apps/ai_models/migrations/0001_initial.py",
+      "summary": "AI 模型应用的初始数据迁移文件，创建应用的基础数据库表结构。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0001_initial.py:seed_ai_models_access_data",
+      "type": "function",
+      "name": "seed_ai_models_access_data",
+      "filePath": "backend/apps/ai_models/migrations/0001_initial.py",
+      "lineRange": [
+        4,
+        89
+      ],
+      "summary": "实现 seed_ai_models_access_data 逻辑的函数或方法。",
+      "tags": [
+        "function",
+        "logic",
+        "handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0001_initial.py:unseed_ai_models_access_data",
+      "type": "function",
+      "name": "unseed_ai_models_access_data",
+      "filePath": "backend/apps/ai_models/migrations/0001_initial.py",
+      "lineRange": [
+        92,
+        97
+      ],
+      "summary": "实现 unseed_ai_models_access_data 逻辑的函数或方法。",
+      "tags": [
+        "function",
+        "logic",
+        "handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0001_initial.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0001_initial.py",
+      "lineRange": [
+        100,
+        136
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "type": "file",
+      "name": "0002_chatconversation_chatmessage.py",
+      "filePath": "backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "summary": "Django 数据迁移文件，创建 ChatConversation 会话和 ChatMessage 消息模型表。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py:seed_chat_access_data",
+      "type": "function",
+      "name": "seed_chat_access_data",
+      "filePath": "backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "lineRange": [
+        5,
+        53
+      ],
+      "summary": "实现 seed_chat_access_data 逻辑的函数或方法。",
+      "tags": [
+        "function",
+        "logic",
+        "handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py:unseed_chat_access_data",
+      "type": "function",
+      "name": "unseed_chat_access_data",
+      "filePath": "backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "lineRange": [
+        56,
+        61
+      ],
+      "summary": "实现 unseed_chat_access_data 逻辑的函数或方法。",
+      "tags": [
+        "function",
+        "logic",
+        "handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "lineRange": [
+        64,
+        123
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py",
+      "type": "file",
+      "name": "0003_chatconversation_system_prompt.py",
+      "filePath": "backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py",
+      "summary": "Django 数据迁移文件，为聊天会话模型增加 system_prompt 系统提示词字段。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py",
+      "lineRange": [
+        4,
+        16
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py",
+      "type": "file",
+      "name": "0004_chatconversation_temperature_and_more.py",
+      "filePath": "backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py",
+      "summary": "Django 数据迁移文件，为会话模型增加 temperature 等生成参数字段。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py",
+      "lineRange": [
+        4,
+        21
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py",
+      "type": "file",
+      "name": "0005_chat_summary_message_feedback.py",
+      "filePath": "backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py",
+      "summary": "Django 数据迁移文件，添加聊天总结以及消息反馈相关的字段或模型。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py",
+      "lineRange": [
+        4,
+        26
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py",
+      "type": "file",
+      "name": "0006_chatconversation_tenant_llmprovider_tenant.py",
+      "filePath": "backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py",
+      "summary": "Django 数据迁移文件，为会话和 LLM 提供商增加多租户 tenant 关联。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py",
+      "lineRange": [
+        7,
+        25
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/migrations/0007_asr_config.py",
+      "type": "file",
+      "name": "0007_asr_config.py",
+      "filePath": "backend/apps/ai_models/migrations/0007_asr_config.py",
+      "summary": "Django 数据迁移文件，新增语音识别 ASRConfig 配置模型。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0007_asr_config.py:seed_asr_access_data",
+      "type": "function",
+      "name": "seed_asr_access_data",
+      "filePath": "backend/apps/ai_models/migrations/0007_asr_config.py",
+      "lineRange": [
+        4,
+        38
+      ],
+      "summary": "实现 seed_asr_access_data 逻辑的函数或方法。",
+      "tags": [
+        "function",
+        "logic",
+        "handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0007_asr_config.py:unseed_asr_access_data",
+      "type": "function",
+      "name": "unseed_asr_access_data",
+      "filePath": "backend/apps/ai_models/migrations/0007_asr_config.py",
+      "lineRange": [
+        41,
+        43
+      ],
+      "summary": "实现 unseed_asr_access_data 逻辑的函数或方法。",
+      "tags": [
+        "function",
+        "logic",
+        "handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0007_asr_config.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0007_asr_config.py",
+      "lineRange": [
+        46,
+        70
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py",
+      "type": "file",
+      "name": "0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py",
+      "filePath": "backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py",
+      "summary": "Django 数据迁移文件，修改 ASR 配置的选项及激活状态字段等属性。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py",
+      "lineRange": [
+        6,
+        32
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/migrations/0009_asr_replacement_rule.py",
+      "type": "file",
+      "name": "0009_asr_replacement_rule.py",
+      "filePath": "backend/apps/ai_models/migrations/0009_asr_replacement_rule.py",
+      "summary": "Django 数据迁移文件，新增 ASR 文本替换规则模型。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0009_asr_replacement_rule.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0009_asr_replacement_rule.py",
+      "lineRange": [
+        5,
+        46
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py",
+      "type": "file",
+      "name": "0010_remove_asr_replacement_sort_order.py",
+      "filePath": "backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py",
+      "summary": "Django 数据迁移文件，移除 ASR 替换规则中的排序字段。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py",
+      "lineRange": [
+        6,
+        21
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "type": "file",
+      "name": "0011_agentapplication_chatconversation_application_and_more.py",
+      "filePath": "backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "summary": "Django 数据迁移文件，创建智能体应用 AgentApplication 模型，并将其与聊天会话建立关联。",
+      "tags": [
+        "migration",
+        "database",
+        "schema-definition"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py:seed_agent_application_access_data",
+      "type": "function",
+      "name": "seed_agent_application_access_data",
+      "filePath": "backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "lineRange": [
+        16,
+        57
+      ],
+      "summary": "实现 seed_agent_application_access_data 逻辑的函数或方法。",
+      "tags": [
+        "function",
+        "logic",
+        "handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py:unseed_agent_application_access_data",
+      "type": "function",
+      "name": "unseed_agent_application_access_data",
+      "filePath": "backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "lineRange": [
+        60,
+        65
+      ],
+      "summary": "实现 unseed_agent_application_access_data 逻辑的函数或方法。",
+      "tags": [
+        "function",
+        "logic",
+        "handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "lineRange": [
+        68,
+        113
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "type": "file",
+      "name": "0012_seed_agent_application_tenant_access.py",
+      "filePath": "backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "summary": "Django 数据迁移文件，预置智能体应用针对不同租户的访问权限数据。",
+      "tags": [
+        "migration",
+        "database",
+        "data-seed"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py:seed_agent_application_tenant_access",
+      "type": "function",
+      "name": "seed_agent_application_tenant_access",
+      "filePath": "backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "lineRange": [
+        11,
+        26
+      ],
+      "summary": "实现 seed_agent_application_tenant_access 逻辑的函数或方法。",
+      "tags": [
+        "function",
+        "logic",
+        "handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py:unseed_agent_application_tenant_access",
+      "type": "function",
+      "name": "unseed_agent_application_tenant_access",
+      "filePath": "backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "lineRange": [
+        29,
+        42
+      ],
+      "summary": "实现 unseed_agent_application_tenant_access 逻辑的函数或方法。",
+      "tags": [
+        "function",
+        "logic",
+        "handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "lineRange": [
+        45,
+        53
+      ],
+      "summary": "定义 Migration 的类结构。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/accounts/migrations/0005_accountapplication_username.py",
+      "target": "class:backend/apps/accounts/migrations/0005_accountapplication_username.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0005_accountapplication_username.py",
+      "target": "class:backend/apps/accounts/migrations/0005_accountapplication_username.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py",
+      "target": "class:backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py",
+      "target": "class:backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0007_accountuser.py",
+      "target": "class:backend/apps/accounts/migrations/0007_accountuser.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0007_accountuser.py",
+      "target": "class:backend/apps/accounts/migrations/0007_accountuser.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0008_accountapplication_tenant.py",
+      "target": "class:backend/apps/accounts/migrations/0008_accountapplication_tenant.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0008_accountapplication_tenant.py",
+      "target": "class:backend/apps/accounts/migrations/0008_accountapplication_tenant.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0009_menu_audience.py",
+      "target": "class:backend/apps/accounts/migrations/0009_menu_audience.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0009_menu_audience.py",
+      "target": "class:backend/apps/accounts/migrations/0009_menu_audience.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "target": "function:backend/apps/accounts/migrations/0010_seed_tenant_menus.py:seed_tenant_menus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "target": "function:backend/apps/accounts/migrations/0010_seed_tenant_menus.py:seed_tenant_menus",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "target": "function:backend/apps/accounts/migrations/0010_seed_tenant_menus.py:unseed_tenant_menus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "target": "function:backend/apps/accounts/migrations/0010_seed_tenant_menus.py:unseed_tenant_menus",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "target": "class:backend/apps/accounts/migrations/0010_seed_tenant_menus.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "target": "class:backend/apps/accounts/migrations/0010_seed_tenant_menus.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py",
+      "target": "class:backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py",
+      "target": "class:backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "target": "function:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py:seed_audit_logs_menu",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "target": "function:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py:seed_audit_logs_menu",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "target": "function:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py:unseed_audit_logs_menu",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "target": "function:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py:unseed_audit_logs_menu",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "target": "class:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "target": "class:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/apps.py",
+      "target": "class:backend/apps/ai_models/apps.py:AiModelsConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/apps.py",
+      "target": "class:backend/apps/ai_models/apps.py:AiModelsConfig",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0001_initial.py",
+      "target": "function:backend/apps/ai_models/migrations/0001_initial.py:seed_ai_models_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0001_initial.py",
+      "target": "function:backend/apps/ai_models/migrations/0001_initial.py:seed_ai_models_access_data",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0001_initial.py",
+      "target": "function:backend/apps/ai_models/migrations/0001_initial.py:unseed_ai_models_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0001_initial.py",
+      "target": "function:backend/apps/ai_models/migrations/0001_initial.py:unseed_ai_models_access_data",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0001_initial.py",
+      "target": "class:backend/apps/ai_models/migrations/0001_initial.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0001_initial.py",
+      "target": "class:backend/apps/ai_models/migrations/0001_initial.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "target": "function:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py:seed_chat_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "target": "function:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py:seed_chat_access_data",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "target": "function:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py:unseed_chat_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "target": "function:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py:unseed_chat_access_data",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "target": "class:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "target": "class:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py",
+      "target": "class:backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py",
+      "target": "class:backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py",
+      "target": "class:backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py",
+      "target": "class:backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py",
+      "target": "class:backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py",
+      "target": "class:backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py",
+      "target": "class:backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py",
+      "target": "class:backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0007_asr_config.py",
+      "target": "function:backend/apps/ai_models/migrations/0007_asr_config.py:seed_asr_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0007_asr_config.py",
+      "target": "function:backend/apps/ai_models/migrations/0007_asr_config.py:seed_asr_access_data",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0007_asr_config.py",
+      "target": "function:backend/apps/ai_models/migrations/0007_asr_config.py:unseed_asr_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0007_asr_config.py",
+      "target": "function:backend/apps/ai_models/migrations/0007_asr_config.py:unseed_asr_access_data",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0007_asr_config.py",
+      "target": "class:backend/apps/ai_models/migrations/0007_asr_config.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0007_asr_config.py",
+      "target": "class:backend/apps/ai_models/migrations/0007_asr_config.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py",
+      "target": "class:backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py",
+      "target": "class:backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0009_asr_replacement_rule.py",
+      "target": "class:backend/apps/ai_models/migrations/0009_asr_replacement_rule.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0009_asr_replacement_rule.py",
+      "target": "class:backend/apps/ai_models/migrations/0009_asr_replacement_rule.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py",
+      "target": "class:backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py",
+      "target": "class:backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "target": "function:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py:seed_agent_application_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "target": "function:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py:seed_agent_application_access_data",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "target": "function:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py:unseed_agent_application_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "target": "function:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py:unseed_agent_application_access_data",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "target": "class:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "target": "class:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "target": "function:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py:seed_agent_application_tenant_access",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "target": "function:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py:seed_agent_application_tenant_access",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "target": "function:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py:unseed_agent_application_tenant_access",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "target": "function:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py:unseed_agent_application_tenant_access",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "target": "class:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "target": "class:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

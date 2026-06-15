@@ -1,0 +1,758 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/apps/devices/migrations/0005_deviceapplication_scrolling_texts.py",
+      "type": "file",
+      "name": "0005_deviceapplication_scrolling_texts.py",
+      "filePath": "backend/apps/devices/migrations/0005_deviceapplication_scrolling_texts.py",
+      "summary": "数据库迁移文件，用于为设备应用添加滚动文本相关字段。",
+      "tags": [
+        "migration",
+        "database",
+        "devices"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Django 迁移文件。通过 seed 和 unseed 方法在数据库结构变更时同步更新权限配置。"
+    },
+    {
+      "id": "class:backend/apps/devices/migrations/0005_deviceapplication_scrolling_texts.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/devices/migrations/0005_deviceapplication_scrolling_texts.py",
+      "lineRange": [
+        6,
+        24
+      ],
+      "summary": "Django 迁移配置类，定义了迁移步骤及其依赖项。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/devices/migrations/0006_device_authorization_ignored_at_and_log_actions.py",
+      "type": "file",
+      "name": "0006_device_authorization_ignored_at_and_log_actions.py",
+      "filePath": "backend/apps/devices/migrations/0006_device_authorization_ignored_at_and_log_actions.py",
+      "summary": "数据库迁移文件，用于在设备模型中添加授权忽略时间及日志操作相关字段。",
+      "tags": [
+        "migration",
+        "database",
+        "devices"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Django 迁移文件。通过 seed 和 unseed 方法在数据库结构变更时同步更新权限配置。"
+    },
+    {
+      "id": "class:backend/apps/devices/migrations/0006_device_authorization_ignored_at_and_log_actions.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/devices/migrations/0006_device_authorization_ignored_at_and_log_actions.py",
+      "lineRange": [
+        4,
+        33
+      ],
+      "summary": "Django 迁移配置类，定义了迁移步骤及其依赖项。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/knowledge_base/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/knowledge_base/__init__.py",
+      "summary": "知识库应用的 Python 包初始化文件。",
+      "tags": [
+        "entry-point",
+        "package-init",
+        "knowledge-base"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:backend/apps/knowledge_base/AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "backend/apps/knowledge_base/AGENTS.md",
+      "summary": "知识库模块的 AI 代理开发指南与架构约定，包含模块结构、约定和反模式说明。",
+      "tags": [
+        "documentation",
+        "development-guide",
+        "knowledge-base"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/knowledge_base/apps.py",
+      "type": "file",
+      "name": "apps.py",
+      "filePath": "backend/apps/knowledge_base/apps.py",
+      "summary": "知识库应用的 Django 应用配置类定义。",
+      "tags": [
+        "configuration",
+        "django-app",
+        "knowledge-base"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/apps.py:KnowledgeBaseConfig",
+      "type": "class",
+      "name": "KnowledgeBaseConfig",
+      "filePath": "backend/apps/knowledge_base/apps.py",
+      "lineRange": [
+        4,
+        7
+      ],
+      "summary": "Django 应用配置类，注册应用属性与元数据。",
+      "tags": [
+        "class",
+        "config"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/knowledge_base/migrations/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/knowledge_base/migrations/__init__.py",
+      "summary": "知识库应用数据库迁移包的初始化文件。",
+      "tags": [
+        "entry-point",
+        "package-init",
+        "knowledge-base"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Django 迁移文件。通过 seed 和 unseed 方法在数据库结构变更时同步更新权限配置。"
+    },
+    {
+      "id": "file:backend/apps/knowledge_base/migrations/0001_initial.py",
+      "type": "file",
+      "name": "0001_initial.py",
+      "filePath": "backend/apps/knowledge_base/migrations/0001_initial.py",
+      "summary": "知识库应用的初始数据库迁移，包含权限数据和菜单的初始化种子逻辑。",
+      "tags": [
+        "migration",
+        "database",
+        "seed",
+        "knowledge-base"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Django 迁移文件。通过 seed 和 unseed 方法在数据库结构变更时同步更新权限配置。"
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/migrations/0001_initial.py:seed_knowledge_base_access_data",
+      "type": "function",
+      "name": "seed_knowledge_base_access_data",
+      "filePath": "backend/apps/knowledge_base/migrations/0001_initial.py",
+      "lineRange": [
+        6,
+        43
+      ],
+      "summary": "初始化知识库模块的菜单及角色权限种子数据。",
+      "tags": [
+        "function",
+        "utility",
+        "seed"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/migrations/0001_initial.py:unseed_knowledge_base_access_data",
+      "type": "function",
+      "name": "unseed_knowledge_base_access_data",
+      "filePath": "backend/apps/knowledge_base/migrations/0001_initial.py",
+      "lineRange": [
+        46,
+        51
+      ],
+      "summary": "撤销知识库模块相关的权限点和菜单数据。",
+      "tags": [
+        "function",
+        "utility",
+        "unseed"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/migrations/0001_initial.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/knowledge_base/migrations/0001_initial.py",
+      "lineRange": [
+        54,
+        86
+      ],
+      "summary": "Django 迁移配置类，定义了迁移步骤及其依赖项。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "type": "file",
+      "name": "0002_access_data.py",
+      "filePath": "backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "summary": "数据迁移文件，用于补充或更新知识库应用的访问权限和菜单数据。",
+      "tags": [
+        "migration",
+        "database",
+        "seed",
+        "knowledge-base"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Django 迁移文件。通过 seed 和 unseed 方法在数据库结构变更时同步更新权限配置。"
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/migrations/0002_access_data.py:seed_knowledge_base_access_data",
+      "type": "function",
+      "name": "seed_knowledge_base_access_data",
+      "filePath": "backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "lineRange": [
+        4,
+        41
+      ],
+      "summary": "初始化知识库模块的菜单及角色权限种子数据。",
+      "tags": [
+        "function",
+        "utility",
+        "seed"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/migrations/0002_access_data.py:unseed_knowledge_base_access_data",
+      "type": "function",
+      "name": "unseed_knowledge_base_access_data",
+      "filePath": "backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "lineRange": [
+        44,
+        49
+      ],
+      "summary": "撤销知识库模块相关的权限点和菜单数据。",
+      "tags": [
+        "function",
+        "utility",
+        "unseed"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/migrations/0002_access_data.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "lineRange": [
+        52,
+        60
+      ],
+      "summary": "Django 迁移配置类，定义了迁移步骤及其依赖项。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py",
+      "type": "file",
+      "name": "0003_knowledgedocument_tenant.py",
+      "filePath": "backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py",
+      "summary": "数据库迁移文件，为知识文档模型添加租户（tenant）关联字段。",
+      "tags": [
+        "migration",
+        "database",
+        "knowledge-base"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Django 迁移文件。通过 seed 和 unseed 方法在数据库结构变更时同步更新权限配置。"
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py",
+      "lineRange": [
+        7,
+        20
+      ],
+      "summary": "Django 迁移配置类，定义了迁移步骤及其依赖项。",
+      "tags": [
+        "class",
+        "migration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/knowledge_base/tests/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/knowledge_base/tests/__init__.py",
+      "summary": "知识库应用测试包的初始化文件。",
+      "tags": [
+        "entry-point",
+        "package-init",
+        "test"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "type": "file",
+      "name": "_helpers.py",
+      "filePath": "backend/apps/knowledge_base/tests/_helpers.py",
+      "summary": "测试辅助模块，提供文档上传模拟、模型实例化及权限探测等通用函数，用于知识库测试。",
+      "tags": [
+        "test",
+        "utility",
+        "knowledge-base"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/tests/_helpers.py:has_knowledge_base_app",
+      "type": "function",
+      "name": "has_knowledge_base_app",
+      "filePath": "backend/apps/knowledge_base/tests/_helpers.py",
+      "lineRange": [
+        17,
+        22
+      ],
+      "summary": "检查知识库应用是否在 Django 配置中安装。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/tests/_helpers.py:get_knowledge_document_model",
+      "type": "function",
+      "name": "get_knowledge_document_model",
+      "filePath": "backend/apps/knowledge_base/tests/_helpers.py",
+      "lineRange": [
+        25,
+        31
+      ],
+      "summary": "动态获取知识文档模型，并断言其包含必要的字段。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/tests/_helpers.py:get_document_file_field_name",
+      "type": "function",
+      "name": "get_document_file_field_name",
+      "filePath": "backend/apps/knowledge_base/tests/_helpers.py",
+      "lineRange": [
+        34,
+        38
+      ],
+      "summary": "获取文档模型中的文件类型字段名。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/tests/_helpers.py:build_document_upload",
+      "type": "function",
+      "name": "build_document_upload",
+      "filePath": "backend/apps/knowledge_base/tests/_helpers.py",
+      "lineRange": [
+        41,
+        60
+      ],
+      "summary": "生成测试用的上传文件对象（SimpleUploadedFile）。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/tests/_helpers.py:cleanup_source_file",
+      "type": "function",
+      "name": "cleanup_source_file",
+      "filePath": "backend/apps/knowledge_base/tests/_helpers.py",
+      "lineRange": [
+        63,
+        65
+      ],
+      "summary": "清理临时生成的测试源文件。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/tests/_helpers.py:create_document_instance",
+      "type": "function",
+      "name": "create_document_instance",
+      "filePath": "backend/apps/knowledge_base/tests/_helpers.py",
+      "lineRange": [
+        68,
+        123
+      ],
+      "summary": "使用指定参数或默认数据创建知识文档测试实例。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/tests/_helpers.py:resolve_status_value",
+      "type": "function",
+      "name": "resolve_status_value",
+      "filePath": "backend/apps/knowledge_base/tests/_helpers.py",
+      "lineRange": [
+        126,
+        135
+      ],
+      "summary": "动态解析处理状态字段中的指定状态值。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/tests/_helpers.py:get_response_bytes",
+      "type": "function",
+      "name": "get_response_bytes",
+      "filePath": "backend/apps/knowledge_base/tests/_helpers.py",
+      "lineRange": [
+        138,
+        141
+      ],
+      "summary": "将响应对象的数据提取并拼接为字节串。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/tests/_helpers.py:discover_access_seed",
+      "type": "function",
+      "name": "discover_access_seed",
+      "filePath": "backend/apps/knowledge_base/tests/_helpers.py",
+      "lineRange": [
+        144,
+        159
+      ],
+      "summary": "在应用迁移目录下自动探索权限相关的种子函数。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:backend/apps/resources/AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "backend/apps/resources/AGENTS.md",
+      "summary": "资源模块的 AI 代理开发指南，涵盖模块结构、开发规约和反模式指引。",
+      "tags": [
+        "documentation",
+        "development-guide",
+        "resources"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/devices/migrations/0005_deviceapplication_scrolling_texts.py",
+      "target": "class:backend/apps/devices/migrations/0005_deviceapplication_scrolling_texts.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/devices/migrations/0005_deviceapplication_scrolling_texts.py",
+      "target": "class:backend/apps/devices/migrations/0005_deviceapplication_scrolling_texts.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/devices/migrations/0006_device_authorization_ignored_at_and_log_actions.py",
+      "target": "class:backend/apps/devices/migrations/0006_device_authorization_ignored_at_and_log_actions.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/devices/migrations/0006_device_authorization_ignored_at_and_log_actions.py",
+      "target": "class:backend/apps/devices/migrations/0006_device_authorization_ignored_at_and_log_actions.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "document:backend/apps/knowledge_base/AGENTS.md",
+      "target": "file:backend/apps/knowledge_base/__init__.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/apps.py",
+      "target": "class:backend/apps/knowledge_base/apps.py:KnowledgeBaseConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/apps.py",
+      "target": "class:backend/apps/knowledge_base/apps.py:KnowledgeBaseConfig",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/migrations/0001_initial.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0001_initial.py:seed_knowledge_base_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/migrations/0001_initial.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0001_initial.py:seed_knowledge_base_access_data",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/migrations/0001_initial.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0001_initial.py:unseed_knowledge_base_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/migrations/0001_initial.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0001_initial.py:unseed_knowledge_base_access_data",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/migrations/0001_initial.py",
+      "target": "class:backend/apps/knowledge_base/migrations/0001_initial.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/migrations/0001_initial.py",
+      "target": "class:backend/apps/knowledge_base/migrations/0001_initial.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0002_access_data.py:seed_knowledge_base_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0002_access_data.py:seed_knowledge_base_access_data",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0002_access_data.py:unseed_knowledge_base_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0002_access_data.py:unseed_knowledge_base_access_data",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "target": "class:backend/apps/knowledge_base/migrations/0002_access_data.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "target": "class:backend/apps/knowledge_base/migrations/0002_access_data.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py",
+      "target": "class:backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py",
+      "target": "class:backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py:Migration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:has_knowledge_base_app",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:has_knowledge_base_app",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:get_knowledge_document_model",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:get_knowledge_document_model",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:get_document_file_field_name",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:get_document_file_field_name",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:build_document_upload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:build_document_upload",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:cleanup_source_file",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:cleanup_source_file",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:create_document_instance",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:create_document_instance",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:resolve_status_value",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:resolve_status_value",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:get_response_bytes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:get_response_bytes",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:discover_access_seed",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/tests/_helpers.py",
+      "target": "function:backend/apps/knowledge_base/tests/_helpers.py:discover_access_seed",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "document:backend/apps/resources/AGENTS.md",
+      "target": "file:backend/apps/resources/__init__.py",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

@@ -1,0 +1,751 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/apps/tenants/models.py",
+      "type": "file",
+      "name": "models.py",
+      "filePath": "backend/apps/tenants/models.py",
+      "summary": "多租户核心数据模型，定义公司(Tenant)和用户关联(Membership)表。",
+      "tags": [
+        "data-model",
+        "tenant",
+        "database"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/tenants/models.py:Tenant",
+      "type": "class",
+      "name": "Tenant",
+      "filePath": "backend/apps/tenants/models.py",
+      "lineRange": [
+        7,
+        37
+      ],
+      "summary": "Tenant 类的实现，定义数据库表结构和实体关系。",
+      "tags": [
+        "data-model",
+        "database"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/tenants/models.py:Membership",
+      "type": "class",
+      "name": "Membership",
+      "filePath": "backend/apps/tenants/models.py",
+      "lineRange": [
+        40,
+        76
+      ],
+      "summary": "Membership 类的实现，定义数据库表结构和实体关系。",
+      "tags": [
+        "data-model",
+        "database"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/tenants/services.py",
+      "type": "file",
+      "name": "services.py",
+      "filePath": "backend/apps/tenants/services.py",
+      "summary": "多租户核心业务服务，处理基于上下文解析租户、构建数据隔离域等逻辑。",
+      "tags": [
+        "service",
+        "tenant",
+        "business-logic",
+        "isolation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/tenants/services.py:get_user_membership",
+      "type": "function",
+      "name": "get_user_membership",
+      "filePath": "backend/apps/tenants/services.py",
+      "lineRange": [
+        9,
+        16
+      ],
+      "summary": "get_user_membership 方法的实现，提供具体的数据处理或业务计算。",
+      "tags": [
+        "function",
+        "implementation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/tenants/services.py:get_user_tenant",
+      "type": "function",
+      "name": "get_user_tenant",
+      "filePath": "backend/apps/tenants/services.py",
+      "lineRange": [
+        19,
+        27
+      ],
+      "summary": "get_user_tenant 方法的实现，提供具体的数据处理或业务计算。",
+      "tags": [
+        "function",
+        "implementation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/tenants/services.py:get_request_tenant",
+      "type": "function",
+      "name": "get_request_tenant",
+      "filePath": "backend/apps/tenants/services.py",
+      "lineRange": [
+        30,
+        39
+      ],
+      "summary": "get_request_tenant 方法的实现，提供具体的数据处理或业务计算。",
+      "tags": [
+        "function",
+        "implementation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/tenants/services.py:get_tenant_from_code_param",
+      "type": "function",
+      "name": "get_tenant_from_code_param",
+      "filePath": "backend/apps/tenants/services.py",
+      "lineRange": [
+        42,
+        52
+      ],
+      "summary": "get_tenant_from_code_param 方法的实现，提供具体的数据处理或业务计算。",
+      "tags": [
+        "function",
+        "implementation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/tenants/services.py:scope_queryset_member_or_public",
+      "type": "function",
+      "name": "scope_queryset_member_or_public",
+      "filePath": "backend/apps/tenants/services.py",
+      "lineRange": [
+        55,
+        66
+      ],
+      "summary": "scope_queryset_member_or_public 方法的实现，提供具体的数据处理或业务计算。",
+      "tags": [
+        "function",
+        "implementation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/tenants/services.py:resolve_member_or_public_tenant",
+      "type": "function",
+      "name": "resolve_member_or_public_tenant",
+      "filePath": "backend/apps/tenants/services.py",
+      "lineRange": [
+        69,
+        74
+      ],
+      "summary": "resolve_member_or_public_tenant 方法的实现，提供具体的数据处理或业务计算。",
+      "tags": [
+        "function",
+        "implementation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/tenants/services.py:generate_unique_tenant_code",
+      "type": "function",
+      "name": "generate_unique_tenant_code",
+      "filePath": "backend/apps/tenants/services.py",
+      "lineRange": [
+        77,
+        86
+      ],
+      "summary": "generate_unique_tenant_code 方法的实现，提供具体的数据处理或业务计算。",
+      "tags": [
+        "function",
+        "implementation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/tenants/services.py:provision_company",
+      "type": "function",
+      "name": "provision_company",
+      "filePath": "backend/apps/tenants/services.py",
+      "lineRange": [
+        90,
+        102
+      ],
+      "summary": "provision_company 方法的实现，提供具体的数据处理或业务计算。",
+      "tags": [
+        "function",
+        "implementation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/tenants/tests/test_cross_tenant_isolation.py",
+      "type": "file",
+      "name": "test_cross_tenant_isolation.py",
+      "filePath": "backend/apps/tenants/tests/test_cross_tenant_isolation.py",
+      "summary": "跨租户数据隔离机制测试，验证API和数据模型层面的防越权控制。",
+      "tags": [
+        "test",
+        "security",
+        "tenant",
+        "isolation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/tenants/tests/test_cross_tenant_isolation.py:CrossTenantIsolationTests",
+      "type": "class",
+      "name": "CrossTenantIsolationTests",
+      "filePath": "backend/apps/tenants/tests/test_cross_tenant_isolation.py",
+      "lineRange": [
+        27,
+        128
+      ],
+      "summary": "CrossTenantIsolationTests 类的实现，定义相关模块的自动化测试套件。",
+      "tags": [
+        "test",
+        "unit-test"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/tenants/tests/test_employee_management_api.py",
+      "type": "file",
+      "name": "test_employee_management_api.py",
+      "filePath": "backend/apps/tenants/tests/test_employee_management_api.py",
+      "summary": "员工管理相关API的测试用例，校验租户内人员增删改查的逻辑。",
+      "tags": [
+        "test",
+        "api",
+        "employee",
+        "tenant"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/tenants/tests/test_employee_management_api.py:_menu_paths",
+      "type": "function",
+      "name": "_menu_paths",
+      "filePath": "backend/apps/tenants/tests/test_employee_management_api.py",
+      "lineRange": [
+        14,
+        24
+      ],
+      "summary": "_menu_paths 方法的实现，提供具体的数据处理或业务计算。",
+      "tags": [
+        "function",
+        "implementation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/tenants/tests/test_employee_management_api.py:EmployeeManagementApiTests",
+      "type": "class",
+      "name": "EmployeeManagementApiTests",
+      "filePath": "backend/apps/tenants/tests/test_employee_management_api.py",
+      "lineRange": [
+        27,
+        202
+      ],
+      "summary": "EmployeeManagementApiTests 类的实现，定义相关模块的自动化测试套件。",
+      "tags": [
+        "test",
+        "unit-test"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/tenants/tests/test_isolation_contract.py",
+      "type": "file",
+      "name": "test_isolation_contract.py",
+      "filePath": "backend/apps/tenants/tests/test_isolation_contract.py",
+      "summary": "租户数据契约测试，检查所有定义了tenant外键的模型是否都应用了隔离策略。",
+      "tags": [
+        "test",
+        "security",
+        "database",
+        "contract"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/tenants/tests/test_isolation_contract.py:_model_has_tenant_fk",
+      "type": "function",
+      "name": "_model_has_tenant_fk",
+      "filePath": "backend/apps/tenants/tests/test_isolation_contract.py",
+      "lineRange": [
+        33,
+        34
+      ],
+      "summary": "_model_has_tenant_fk 方法的实现，提供具体的数据处理或业务计算。",
+      "tags": [
+        "function",
+        "implementation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/tenants/tests/test_isolation_contract.py:TenantIsolationContractTests",
+      "type": "class",
+      "name": "TenantIsolationContractTests",
+      "filePath": "backend/apps/tenants/tests/test_isolation_contract.py",
+      "lineRange": [
+        37,
+        78
+      ],
+      "summary": "TenantIsolationContractTests 类的实现，定义相关模块的自动化测试套件。",
+      "tags": [
+        "test",
+        "unit-test"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/tenants/tests/test_tenant_management_api.py",
+      "type": "file",
+      "name": "test_tenant_management_api.py",
+      "filePath": "backend/apps/tenants/tests/test_tenant_management_api.py",
+      "summary": "租户主体管理API测试用例。",
+      "tags": [
+        "test",
+        "api",
+        "tenant",
+        "management"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/tenants/tests/test_tenant_management_api.py:TenantManagementApiTests",
+      "type": "class",
+      "name": "TenantManagementApiTests",
+      "filePath": "backend/apps/tenants/tests/test_tenant_management_api.py",
+      "lineRange": [
+        13,
+        123
+      ],
+      "summary": "TenantManagementApiTests 类的实现，定义相关模块的自动化测试套件。",
+      "tags": [
+        "test",
+        "unit-test"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/tenants/models.py",
+      "target": "file:backend/apps/devices/tests/test_device_authorization_api.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/tenants/models.py",
+      "target": "file:backend/apps/resources/tests/test_minio_client.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/tenants/models.py",
+      "target": "file:backend/apps/resources/tests/test_minio_settings_api.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/tenants/models.py",
+      "target": "class:backend/apps/tenants/models.py:Tenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/models.py",
+      "target": "class:backend/apps/tenants/models.py:Tenant",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/models.py",
+      "target": "class:backend/apps/tenants/models.py:Membership",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/models.py",
+      "target": "class:backend/apps/tenants/models.py:Membership",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/models.py",
+      "target": "file:backend/apps/tenants/managers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "function:backend/apps/tenants/services.py:get_user_membership",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "function:backend/apps/tenants/services.py:get_user_membership",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "function:backend/apps/tenants/services.py:get_user_tenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "function:backend/apps/tenants/services.py:get_user_tenant",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "function:backend/apps/tenants/services.py:get_request_tenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "function:backend/apps/tenants/services.py:get_request_tenant",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "function:backend/apps/tenants/services.py:get_tenant_from_code_param",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "function:backend/apps/tenants/services.py:get_tenant_from_code_param",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "function:backend/apps/tenants/services.py:scope_queryset_member_or_public",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "function:backend/apps/tenants/services.py:scope_queryset_member_or_public",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "function:backend/apps/tenants/services.py:resolve_member_or_public_tenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "function:backend/apps/tenants/services.py:resolve_member_or_public_tenant",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "function:backend/apps/tenants/services.py:generate_unique_tenant_code",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "function:backend/apps/tenants/services.py:generate_unique_tenant_code",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "function:backend/apps/tenants/services.py:provision_company",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "function:backend/apps/tenants/services.py:provision_company",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/services.py",
+      "target": "file:backend/apps/tenants/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_cross_tenant_isolation.py",
+      "target": "class:backend/apps/tenants/tests/test_cross_tenant_isolation.py:CrossTenantIsolationTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_cross_tenant_isolation.py",
+      "target": "class:backend/apps/tenants/tests/test_cross_tenant_isolation.py:CrossTenantIsolationTests",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_cross_tenant_isolation.py",
+      "target": "file:backend/apps/devices/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_cross_tenant_isolation.py",
+      "target": "file:backend/apps/resources/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_cross_tenant_isolation.py",
+      "target": "file:backend/apps/resources/point_models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_cross_tenant_isolation.py",
+      "target": "file:backend/apps/tenants/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/tenants/models.py",
+      "target": "file:backend/apps/tenants/tests/test_cross_tenant_isolation.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_employee_management_api.py",
+      "target": "function:backend/apps/tenants/tests/test_employee_management_api.py:_menu_paths",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_employee_management_api.py",
+      "target": "function:backend/apps/tenants/tests/test_employee_management_api.py:_menu_paths",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_employee_management_api.py",
+      "target": "class:backend/apps/tenants/tests/test_employee_management_api.py:EmployeeManagementApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_employee_management_api.py",
+      "target": "class:backend/apps/tenants/tests/test_employee_management_api.py:EmployeeManagementApiTests",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_employee_management_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_employee_management_api.py",
+      "target": "file:backend/apps/devices/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_employee_management_api.py",
+      "target": "file:backend/apps/tenants/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/tenants/models.py",
+      "target": "file:backend/apps/tenants/tests/test_employee_management_api.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_isolation_contract.py",
+      "target": "function:backend/apps/tenants/tests/test_isolation_contract.py:_model_has_tenant_fk",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_isolation_contract.py",
+      "target": "function:backend/apps/tenants/tests/test_isolation_contract.py:_model_has_tenant_fk",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_isolation_contract.py",
+      "target": "class:backend/apps/tenants/tests/test_isolation_contract.py:TenantIsolationContractTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_isolation_contract.py",
+      "target": "class:backend/apps/tenants/tests/test_isolation_contract.py:TenantIsolationContractTests",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_isolation_contract.py",
+      "target": "file:backend/apps/tenants/managers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_tenant_management_api.py",
+      "target": "class:backend/apps/tenants/tests/test_tenant_management_api.py:TenantManagementApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_tenant_management_api.py",
+      "target": "class:backend/apps/tenants/tests/test_tenant_management_api.py:TenantManagementApiTests",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_tenant_management_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/tenants/tests/test_tenant_management_api.py",
+      "target": "file:backend/apps/tenants/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/tenants/models.py",
+      "target": "file:backend/apps/tenants/tests/test_tenant_management_api.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "function:backend/apps/tenants/services.py:get_user_tenant",
+      "target": "function:backend/apps/tenants/services.py:get_user_membership",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/tenants/services.py:get_request_tenant",
+      "target": "function:backend/apps/tenants/services.py:get_user_tenant",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/tenants/services.py:scope_queryset_member_or_public",
+      "target": "function:backend/apps/tenants/services.py:get_user_tenant",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/tenants/services.py:scope_queryset_member_or_public",
+      "target": "function:backend/apps/tenants/services.py:get_tenant_from_code_param",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/tenants/services.py:resolve_member_or_public_tenant",
+      "target": "function:backend/apps/tenants/services.py:get_user_tenant",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/tenants/services.py:resolve_member_or_public_tenant",
+      "target": "function:backend/apps/tenants/services.py:get_tenant_from_code_param",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/tenants/services.py:provision_company",
+      "target": "function:backend/apps/tenants/services.py:get_user_membership",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/tenants/services.py:provision_company",
+      "target": "function:backend/apps/tenants/services.py:generate_unique_tenant_code",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

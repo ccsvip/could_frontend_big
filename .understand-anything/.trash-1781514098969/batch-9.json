@@ -1,0 +1,554 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/apps/audit/admin.py",
+      "type": "file",
+      "name": "admin.py",
+      "filePath": "backend/apps/audit/admin.py",
+      "summary": "配置 Django Admin 以管理和查看 OperationLog 审计日志模型。",
+      "tags": [
+        "configuration",
+        "admin",
+        "audit-log"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/audit/admin.py:OperationLogAdmin",
+      "type": "class",
+      "name": "OperationLogAdmin",
+      "filePath": "backend/apps/audit/admin.py",
+      "lineRange": [
+        7,
+        20
+      ],
+      "summary": "OperationLogAdmin 的类定义。",
+      "tags": [
+        "class"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/audit/descriptions.py",
+      "type": "file",
+      "name": "descriptions.py",
+      "filePath": "backend/apps/audit/descriptions.py",
+      "summary": "提供辅助函数，根据请求的方法、路径和载荷生成易于理解的中文操作描述。",
+      "tags": [
+        "utility",
+        "audit-log",
+        "formatting"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/audit/descriptions.py:describe_operation",
+      "type": "function",
+      "name": "describe_operation",
+      "filePath": "backend/apps/audit/descriptions.py",
+      "lineRange": [
+        65,
+        78
+      ],
+      "summary": "根据 HTTP 请求详情映射并生成特定的业务操作中文描述。",
+      "tags": [
+        "utility",
+        "formatting"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/audit/descriptions.py:_describe_route",
+      "type": "function",
+      "name": "_describe_route",
+      "filePath": "backend/apps/audit/descriptions.py",
+      "lineRange": [
+        81,
+        106
+      ],
+      "summary": "_describe_route 的具体实现代码。",
+      "tags": [
+        "function"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/audit/descriptions.py:_describe_special_operation",
+      "type": "function",
+      "name": "_describe_special_operation",
+      "filePath": "backend/apps/audit/descriptions.py",
+      "lineRange": [
+        109,
+        113
+      ],
+      "summary": "_describe_special_operation 的具体实现代码。",
+      "tags": [
+        "function"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/audit/descriptions.py:_describe_knowledge_review_operation",
+      "type": "function",
+      "name": "_describe_knowledge_review_operation",
+      "filePath": "backend/apps/audit/descriptions.py",
+      "lineRange": [
+        116,
+        125
+      ],
+      "summary": "_describe_knowledge_review_operation 的具体实现代码。",
+      "tags": [
+        "function"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/audit/descriptions.py:_normalize_path",
+      "type": "function",
+      "name": "_normalize_path",
+      "filePath": "backend/apps/audit/descriptions.py",
+      "lineRange": [
+        128,
+        129
+      ],
+      "summary": "_normalize_path 的具体实现代码。",
+      "tags": [
+        "function"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/audit/descriptions.py:_extract_resource_name",
+      "type": "function",
+      "name": "_extract_resource_name",
+      "filePath": "backend/apps/audit/descriptions.py",
+      "lineRange": [
+        132,
+        158
+      ],
+      "summary": "_extract_resource_name 的具体实现代码。",
+      "tags": [
+        "function"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/audit/descriptions.py:_extract_processing_status",
+      "type": "function",
+      "name": "_extract_processing_status",
+      "filePath": "backend/apps/audit/descriptions.py",
+      "lineRange": [
+        161,
+        185
+      ],
+      "summary": "_extract_processing_status 的具体实现代码。",
+      "tags": [
+        "function"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/audit/descriptions.py:_clean_text",
+      "type": "function",
+      "name": "_clean_text",
+      "filePath": "backend/apps/audit/descriptions.py",
+      "lineRange": [
+        188,
+        191
+      ],
+      "summary": "_clean_text 的具体实现代码。",
+      "tags": [
+        "function"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/audit/models.py",
+      "type": "file",
+      "name": "models.py",
+      "filePath": "backend/apps/audit/models.py",
+      "summary": "定义 OperationLog 数据库模型，用于记录用户的各类操作行为、IP 地址、租户信息及请求详情。",
+      "tags": [
+        "data-model",
+        "audit-log",
+        "database"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/audit/models.py:OperationLog",
+      "type": "class",
+      "name": "OperationLog",
+      "filePath": "backend/apps/audit/models.py",
+      "lineRange": [
+        5,
+        55
+      ],
+      "summary": "记录用户操作详情的数据库模型，包含租户关联、执行用户及请求路径等元数据。",
+      "tags": [
+        "data-model",
+        "database"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/audit/serializers.py",
+      "type": "file",
+      "name": "serializers.py",
+      "filePath": "backend/apps/audit/serializers.py",
+      "summary": "提供 OperationLog 的 DRF 序列化器，用于在 API 响应中格式化审计日志并嵌套展示操作者信息。",
+      "tags": [
+        "serialization",
+        "audit-log",
+        "api-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/audit/serializers.py:OperationLogSerializer",
+      "type": "class",
+      "name": "OperationLogSerializer",
+      "filePath": "backend/apps/audit/serializers.py",
+      "lineRange": [
+        6,
+        32
+      ],
+      "summary": "将审计日志模型实例转换为 JSON 数据，包含关联的用户详情解析。",
+      "tags": [
+        "serialization"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/audit/tests/test_operation_log_api.py",
+      "type": "file",
+      "name": "test_operation_log_api.py",
+      "filePath": "backend/apps/audit/tests/test_operation_log_api.py",
+      "summary": "审计日志模块的集成测试用例，覆盖日志查询、权限控制、租户数据隔离及日志清空等核心功能。",
+      "tags": [
+        "test",
+        "audit-log",
+        "api-handler"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/apps/audit/tests/test_operation_log_api.py:OperationLogMiddlewareTests",
+      "type": "class",
+      "name": "OperationLogMiddlewareTests",
+      "filePath": "backend/apps/audit/tests/test_operation_log_api.py",
+      "lineRange": [
+        22,
+        260
+      ],
+      "summary": "OperationLogMiddlewareTests 的类定义。",
+      "tags": [
+        "class"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/apps/audit/urls.py",
+      "type": "file",
+      "name": "urls.py",
+      "filePath": "backend/apps/audit/urls.py",
+      "summary": "注册并路由审计日志相关的 DRF ViewSet，提供 /audit-logs/ 访问端点。",
+      "tags": [
+        "entry-point",
+        "routing",
+        "audit-log"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/audit/views.py",
+      "type": "file",
+      "name": "views.py",
+      "filePath": "backend/apps/audit/views.py",
+      "summary": "处理审计日志的 API 视图集，支持按租户查询日志及具备特定权限时清空日志的高级操作。",
+      "tags": [
+        "api-handler",
+        "audit-log",
+        "controller"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/audit/views.py:OperationLogViewSet",
+      "type": "class",
+      "name": "OperationLogViewSet",
+      "filePath": "backend/apps/audit/views.py",
+      "lineRange": [
+        27,
+        63
+      ],
+      "summary": "提供只读的日志查询接口及清空功能的视图集，内置多租户数据隔离逻辑。",
+      "tags": [
+        "api-handler",
+        "controller"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/audit/admin.py",
+      "target": "class:backend/apps/audit/admin.py:OperationLogAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/audit/admin.py",
+      "target": "class:backend/apps/audit/admin.py:OperationLogAdmin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/audit/admin.py",
+      "target": "file:backend/apps/audit/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/audit/descriptions.py",
+      "target": "function:backend/apps/audit/descriptions.py:describe_operation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/audit/descriptions.py",
+      "target": "function:backend/apps/audit/descriptions.py:describe_operation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/audit/descriptions.py",
+      "target": "function:backend/apps/audit/descriptions.py:_describe_route",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/audit/descriptions.py",
+      "target": "function:backend/apps/audit/descriptions.py:_describe_route",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/audit/descriptions.py",
+      "target": "function:backend/apps/audit/descriptions.py:_describe_special_operation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/audit/descriptions.py",
+      "target": "function:backend/apps/audit/descriptions.py:_describe_special_operation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/audit/descriptions.py",
+      "target": "function:backend/apps/audit/descriptions.py:_describe_knowledge_review_operation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/audit/descriptions.py",
+      "target": "function:backend/apps/audit/descriptions.py:_describe_knowledge_review_operation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/audit/descriptions.py",
+      "target": "function:backend/apps/audit/descriptions.py:_normalize_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/audit/descriptions.py",
+      "target": "function:backend/apps/audit/descriptions.py:_normalize_path",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/audit/descriptions.py",
+      "target": "function:backend/apps/audit/descriptions.py:_extract_resource_name",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/audit/descriptions.py",
+      "target": "function:backend/apps/audit/descriptions.py:_extract_resource_name",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/audit/descriptions.py",
+      "target": "function:backend/apps/audit/descriptions.py:_extract_processing_status",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/audit/descriptions.py",
+      "target": "function:backend/apps/audit/descriptions.py:_extract_processing_status",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/audit/descriptions.py",
+      "target": "function:backend/apps/audit/descriptions.py:_clean_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/audit/descriptions.py",
+      "target": "function:backend/apps/audit/descriptions.py:_clean_text",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/audit/models.py",
+      "target": "class:backend/apps/audit/models.py:OperationLog",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/audit/models.py",
+      "target": "class:backend/apps/audit/models.py:OperationLog",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/audit/serializers.py",
+      "target": "class:backend/apps/audit/serializers.py:OperationLogSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/audit/serializers.py",
+      "target": "class:backend/apps/audit/serializers.py:OperationLogSerializer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/audit/serializers.py",
+      "target": "file:backend/apps/audit/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/audit/tests/test_operation_log_api.py",
+      "target": "class:backend/apps/audit/tests/test_operation_log_api.py:OperationLogMiddlewareTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/audit/tests/test_operation_log_api.py",
+      "target": "class:backend/apps/audit/tests/test_operation_log_api.py:OperationLogMiddlewareTests",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/audit/tests/test_operation_log_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/audit/tests/test_operation_log_api.py",
+      "target": "file:backend/apps/audit/descriptions.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/audit/tests/test_operation_log_api.py",
+      "target": "file:backend/apps/audit/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/audit/tests/test_operation_log_api.py",
+      "target": "file:backend/apps/tenants/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/audit/urls.py",
+      "target": "file:backend/apps/audit/views.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/audit/views.py",
+      "target": "class:backend/apps/audit/views.py:OperationLogViewSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/audit/views.py",
+      "target": "class:backend/apps/audit/views.py:OperationLogViewSet",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/audit/views.py",
+      "target": "file:backend/apps/accounts/permissions.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/audit/views.py",
+      "target": "file:backend/apps/audit/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/audit/views.py",
+      "target": "file:backend/apps/audit/serializers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/audit/views.py",
+      "target": "file:backend/apps/tenants/services.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

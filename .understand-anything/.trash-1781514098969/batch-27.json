@@ -1,0 +1,86 @@
+{
+  "nodes": [
+    {
+      "id": "document:docs/superpowers/plans/2026-06-04-minio-settings.md",
+      "type": "document",
+      "name": "2026-06-04-minio-settings.md",
+      "filePath": "docs/superpowers/plans/2026-06-04-minio-settings.md",
+      "summary": "MinIO 对象存储相关配置项的开发与调整计划文档。",
+      "tags": [
+        "documentation",
+        "planning",
+        "storage"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:docs/superpowers/plans/2026-06-05-asr-settings.md",
+      "type": "document",
+      "name": "2026-06-05-asr-settings.md",
+      "filePath": "docs/superpowers/plans/2026-06-05-asr-settings.md",
+      "summary": "语音识别 (ASR) 配置管理模块的开发计划及实现细节。",
+      "tags": [
+        "documentation",
+        "planning",
+        "speech-recognition"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:docs/superpowers/plans/2026-06-05-audit-log-management.md",
+      "type": "document",
+      "name": "2026-06-05-audit-log-management.md",
+      "filePath": "docs/superpowers/plans/2026-06-05-audit-log-management.md",
+      "summary": "系统审计日志管理功能的详细规划文档，涵盖记录策略与展示方案。",
+      "tags": [
+        "documentation",
+        "planning",
+        "audit",
+        "security"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:docs/superpowers/plans/2026-06-06-login-command-center.md",
+      "type": "document",
+      "name": "2026-06-06-login-command-center.md",
+      "filePath": "docs/superpowers/plans/2026-06-06-login-command-center.md",
+      "summary": "登录中枢系统与命令中心的开发演进计划。",
+      "tags": [
+        "documentation",
+        "planning",
+        "authentication",
+        "entry-point"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:docs/superpowers/plans/2026-06-10-llm-settings.md",
+      "type": "document",
+      "name": "2026-06-10-llm-settings.md",
+      "filePath": "docs/superpowers/plans/2026-06-10-llm-settings.md",
+      "summary": "大型语言模型 (LLM) 服务集成与参数配置的综合开发计划文档。",
+      "tags": [
+        "documentation",
+        "planning",
+        "llm",
+        "configuration"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:docs/superpowers/plans/2026-06-15-tts-settings.md",
+      "type": "document",
+      "name": "2026-06-15-tts-settings.md",
+      "filePath": "docs/superpowers/plans/2026-06-15-tts-settings.md",
+      "summary": "语音合成 (TTS) 相关配置的系统开发与接入计划说明。",
+      "tags": [
+        "documentation",
+        "planning",
+        "text-to-speech"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": []
+}

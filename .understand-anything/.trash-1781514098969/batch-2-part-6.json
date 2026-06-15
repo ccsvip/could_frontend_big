@@ -1,0 +1,1886 @@
+{
+  "nodes": [
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "type": "file",
+      "name": "manual-edit-routes.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "summary": "定义API或页面的路由处理器。",
+      "tags": [
+        "module",
+        "tooling",
+        "utility",
+        "script"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs:createManualEditRoutes",
+      "type": "function",
+      "name": "createManualEditRoutes",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "lineRange": [
+        17,
+        338
+      ],
+      "summary": "执行createManualEditRoutes相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs:summarizePendingManualEditBatch",
+      "type": "function",
+      "name": "summarizePendingManualEditBatch",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "lineRange": [
+        345,
+        357
+      ],
+      "summary": "执行summarizePendingManualEditBatch相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "type": "file",
+      "name": "manual-edits-buffer.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "summary": "提供核心业务逻辑支持或通用工具函数的代码文件。",
+      "tags": [
+        "module",
+        "tooling",
+        "utility",
+        "script"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:getBufferPath",
+      "type": "function",
+      "name": "getBufferPath",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "lineRange": [
+        20,
+        22
+      ],
+      "summary": "获取或计算BufferPath相关的属性与状态。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:readBuffer",
+      "type": "function",
+      "name": "readBuffer",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "lineRange": [
+        24,
+        26
+      ],
+      "summary": "执行readBuffer相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:readBufferStrict",
+      "type": "function",
+      "name": "readBufferStrict",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "lineRange": [
+        28,
+        30
+      ],
+      "summary": "执行readBufferStrict相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:readBufferInternal",
+      "type": "function",
+      "name": "readBufferInternal",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "lineRange": [
+        32,
+        48
+      ],
+      "summary": "执行readBufferInternal相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:writeBuffer",
+      "type": "function",
+      "name": "writeBuffer",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "lineRange": [
+        50,
+        54
+      ],
+      "summary": "持久化或写入eBuffer相关数据。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:stageEntry",
+      "type": "function",
+      "name": "stageEntry",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "lineRange": [
+        64,
+        104
+      ],
+      "summary": "执行stageEntry相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:removeEntries",
+      "type": "function",
+      "name": "removeEntries",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "lineRange": [
+        111,
+        125
+      ],
+      "summary": "执行removeEntries相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:countByPage",
+      "type": "function",
+      "name": "countByPage",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "lineRange": [
+        130,
+        140
+      ],
+      "summary": "执行countByPage相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:truncateBuffer",
+      "type": "function",
+      "name": "truncateBuffer",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "lineRange": [
+        146,
+        152
+      ],
+      "summary": "执行truncateBuffer相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live/session-store.mjs",
+      "type": "file",
+      "name": "session-store.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live/session-store.mjs",
+      "summary": "用于持久化或在内存中存储状态的存储模块。",
+      "tags": [
+        "utility",
+        "tooling",
+        "data-model",
+        "script"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:createLiveSessionStore",
+      "type": "function",
+      "name": "createLiveSessionStore",
+      "filePath": ".claude/skills/impeccable/scripts/live/session-store.mjs",
+      "lineRange": [
+        7,
+        80
+      ],
+      "summary": "执行createLiveSessionStore相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:baseSnapshot",
+      "type": "function",
+      "name": "baseSnapshot",
+      "filePath": ".claude/skills/impeccable/scripts/live/session-store.mjs",
+      "lineRange": [
+        103,
+        126
+      ],
+      "summary": "执行baseSnapshot相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:rebuildSnapshotFromJournal",
+      "type": "function",
+      "name": "rebuildSnapshotFromJournal",
+      "filePath": ".claude/skills/impeccable/scripts/live/session-store.mjs",
+      "lineRange": [
+        128,
+        153
+      ],
+      "summary": "执行rebuildSnapshotFromJournal相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:applyEvent",
+      "type": "function",
+      "name": "applyEvent",
+      "filePath": ".claude/skills/impeccable/scripts/live/session-store.mjs",
+      "lineRange": [
+        155,
+        273
+      ],
+      "summary": "执行applyEvent相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "type": "file",
+      "name": "svelte-component.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "summary": "负责用户界面组件渲染和管理的模块。",
+      "tags": [
+        "component",
+        "utility",
+        "tooling",
+        "script"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:shouldUseSvelteComponentInjection",
+      "type": "function",
+      "name": "shouldUseSvelteComponentInjection",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        20,
+        23
+      ],
+      "summary": "执行shouldUseSvelteComponentInjection相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:componentSessionDir",
+      "type": "function",
+      "name": "componentSessionDir",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        25,
+        27
+      ],
+      "summary": "执行componentSessionDir相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:manifestPathForSession",
+      "type": "function",
+      "name": "manifestPathForSession",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        29,
+        31
+      ],
+      "summary": "执行manifestPathForSession相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:ensureRuntimeHelper",
+      "type": "function",
+      "name": "ensureRuntimeHelper",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        33,
+        39
+      ],
+      "summary": "执行ensureRuntimeHelper相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:extractMustacheExpressions",
+      "type": "function",
+      "name": "extractMustacheExpressions",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        44,
+        61
+      ],
+      "summary": "执行extractMustacheExpressions相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:buildPropContract",
+      "type": "function",
+      "name": "buildPropContract",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        63,
+        72
+      ],
+      "summary": "执行buildPropContract相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:substituteExprsWithProps",
+      "type": "function",
+      "name": "substituteExprsWithProps",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        82,
+        88
+      ],
+      "summary": "执行substituteExprsWithProps相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:substitutePropsWithExprs",
+      "type": "function",
+      "name": "substitutePropsWithExprs",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        90,
+        96
+      ],
+      "summary": "执行substitutePropsWithExprs相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:parseSvelteComponentFile",
+      "type": "function",
+      "name": "parseSvelteComponentFile",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        98,
+        117
+      ],
+      "summary": "解析给定的SvelteComponentFile数据并转换为结构化对象。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:scaffoldSvelteComponentSession",
+      "type": "function",
+      "name": "scaffoldSvelteComponentSession",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        139,
+        184
+      ],
+      "summary": "执行scaffoldSvelteComponentSession相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:scaffoldSvelteComponentInsertSession",
+      "type": "function",
+      "name": "scaffoldSvelteComponentInsertSession",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        186,
+        234
+      ],
+      "summary": "执行scaffoldSvelteComponentInsertSession相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:findSvelteComponentManifest",
+      "type": "function",
+      "name": "findSvelteComponentManifest",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        236,
+        253
+      ],
+      "summary": "执行findSvelteComponentManifest相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:readManifest",
+      "type": "function",
+      "name": "readManifest",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        255,
+        261
+      ],
+      "summary": "执行readManifest相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:resolveSourceFile",
+      "type": "function",
+      "name": "resolveSourceFile",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        263,
+        276
+      ],
+      "summary": "执行resolveSourceFile相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:appendCssToSvelteStyle",
+      "type": "function",
+      "name": "appendCssToSvelteStyle",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        278,
+        289
+      ],
+      "summary": "执行appendCssToSvelteStyle相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:bakeParamValuesInCss",
+      "type": "function",
+      "name": "bakeParamValuesInCss",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        298,
+        308
+      ],
+      "summary": "执行bakeParamValuesInCss相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:sanitizeAcceptedSvelteCss",
+      "type": "function",
+      "name": "sanitizeAcceptedSvelteCss",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        310,
+        323
+      ],
+      "summary": "执行sanitizeAcceptedSvelteCss相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:appendSanitizedCssRule",
+      "type": "function",
+      "name": "appendSanitizedCssRule",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        325,
+        344
+      ],
+      "summary": "执行appendSanitizedCssRule相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:parseCssRules",
+      "type": "function",
+      "name": "parseCssRules",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        346,
+        400
+      ],
+      "summary": "解析给定的CssRules数据并转换为结构化对象。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:rewriteAcceptedSvelteSelectorPart",
+      "type": "function",
+      "name": "rewriteAcceptedSvelteSelectorPart",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        412,
+        434
+      ],
+      "summary": "执行rewriteAcceptedSvelteSelectorPart相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:rewriteParamSelectors",
+      "type": "function",
+      "name": "rewriteParamSelectors",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        436,
+        452
+      ],
+      "summary": "执行rewriteParamSelectors相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:splitSelectorList",
+      "type": "function",
+      "name": "splitSelectorList",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        454,
+        482
+      ],
+      "summary": "执行splitSelectorList相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:inlineSvelteComponentAccept",
+      "type": "function",
+      "name": "inlineSvelteComponentAccept",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        500,
+        572
+      ],
+      "summary": "执行inlineSvelteComponentAccept相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:inlineSvelteComponentInsertAccept",
+      "type": "function",
+      "name": "inlineSvelteComponentInsertAccept",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        574,
+        632
+      ],
+      "summary": "执行inlineSvelteComponentInsertAccept相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:svelteMarkupHasVisibleContent",
+      "type": "function",
+      "name": "svelteMarkupHasVisibleContent",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        634,
+        644
+      ],
+      "summary": "执行svelteMarkupHasVisibleContent相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:mergeOriginalTopLevelAttrs",
+      "type": "function",
+      "name": "mergeOriginalTopLevelAttrs",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        646,
+        681
+      ],
+      "summary": "执行mergeOriginalTopLevelAttrs相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:matchOpeningTag",
+      "type": "function",
+      "name": "matchOpeningTag",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        683,
+        694
+      ],
+      "summary": "执行matchOpeningTag相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:parseAttrSegments",
+      "type": "function",
+      "name": "parseAttrSegments",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        696,
+        711
+      ],
+      "summary": "解析给定的AttrSegments数据并转换为结构化对象。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:mergeStaticClassAttr",
+      "type": "function",
+      "name": "mergeStaticClassAttr",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        713,
+        723
+      ],
+      "summary": "执行mergeStaticClassAttr相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:removeSvelteComponentSession",
+      "type": "function",
+      "name": "removeSvelteComponentSession",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        725,
+        730
+      ],
+      "summary": "执行removeSvelteComponentSession相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:removeAllSvelteComponentSessions",
+      "type": "function",
+      "name": "removeAllSvelteComponentSessions",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        732,
+        742
+      ],
+      "summary": "执行removeAllSvelteComponentSessions相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:deferredAcceptsPath",
+      "type": "function",
+      "name": "deferredAcceptsPath",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        744,
+        747
+      ],
+      "summary": "执行deferredAcceptsPath相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:readDeferredAccepts",
+      "type": "function",
+      "name": "readDeferredAccepts",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        749,
+        756
+      ],
+      "summary": "执行readDeferredAccepts相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:writeDeferredAccept",
+      "type": "function",
+      "name": "writeDeferredAccept",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        758,
+        765
+      ],
+      "summary": "持久化或写入eDeferredAccept相关数据。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:applyDeferredSvelteComponentAccepts",
+      "type": "function",
+      "name": "applyDeferredSvelteComponentAccepts",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        767,
+        800
+      ],
+      "summary": "执行applyDeferredSvelteComponentAccepts相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:buildSvelteComponentCssAuthoring",
+      "type": "function",
+      "name": "buildSvelteComponentCssAuthoring",
+      "filePath": ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "lineRange": [
+        802,
+        826
+      ],
+      "summary": "执行buildSvelteComponentCssAuthoring相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "type": "file",
+      "name": "sveltekit-adapter.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "summary": "提供核心业务逻辑支持或通用工具函数的代码文件。",
+      "tags": [
+        "module",
+        "tooling",
+        "utility",
+        "script"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:detectSvelteKitProject",
+      "type": "function",
+      "name": "detectSvelteKitProject",
+      "filePath": ".claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "lineRange": [
+        18,
+        37
+      ],
+      "summary": "执行detectSvelteKitProject相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:applySvelteKitLiveAdapter",
+      "type": "function",
+      "name": "applySvelteKitLiveAdapter",
+      "filePath": ".claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "lineRange": [
+        39,
+        63
+      ],
+      "summary": "执行applySvelteKitLiveAdapter相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:removeSvelteKitLiveAdapter",
+      "type": "function",
+      "name": "removeSvelteKitLiveAdapter",
+      "filePath": ".claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "lineRange": [
+        65,
+        95
+      ],
+      "summary": "执行removeSvelteKitLiveAdapter相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:patchSvelteLayout",
+      "type": "function",
+      "name": "patchSvelteLayout",
+      "filePath": ".claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "lineRange": [
+        97,
+        122
+      ],
+      "summary": "执行patchSvelteLayout相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:unpatchSvelteLayout",
+      "type": "function",
+      "name": "unpatchSvelteLayout",
+      "filePath": ".claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "lineRange": [
+        124,
+        137
+      ],
+      "summary": "执行unpatchSvelteLayout相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:ensureSvelteLiveRootComponent",
+      "type": "function",
+      "name": "ensureSvelteLiveRootComponent",
+      "filePath": ".claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "lineRange": [
+        139,
+        144
+      ],
+      "summary": "执行ensureSvelteLiveRootComponent相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:buildSvelteLiveRootComponent",
+      "type": "function",
+      "name": "buildSvelteLiveRootComponent",
+      "filePath": ".claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "lineRange": [
+        146,
+        205
+      ],
+      "summary": "执行buildSvelteLiveRootComponent相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "exported",
+        "api"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:findSvelteKitAppHtml",
+      "type": "function",
+      "name": "findSvelteKitAppHtml",
+      "filePath": ".claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "lineRange": [
+        207,
+        218
+      ],
+      "summary": "执行findSvelteKitAppHtml相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:findSvelteKitLayout",
+      "type": "function",
+      "name": "findSvelteKitLayout",
+      "filePath": ".claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "lineRange": [
+        220,
+        229
+      ],
+      "summary": "执行findSvelteKitLayout相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:packageHasSvelteKit",
+      "type": "function",
+      "name": "packageHasSvelteKit",
+      "filePath": ".claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "lineRange": [
+        235,
+        249
+      ],
+      "summary": "执行packageHasSvelteKit相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:pruneEmptyDir",
+      "type": "function",
+      "name": "pruneEmptyDir",
+      "filePath": ".claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "lineRange": [
+        259,
+        270
+      ],
+      "summary": "执行pruneEmptyDir相关操作或逻辑处理。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live-commit-manual-edits.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live-manual-edit-evidence.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/event-validation.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs:createManualEditRoutes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs:createManualEditRoutes",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs:summarizePendingManualEditBatch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:getBufferPath",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:getBufferPath",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:readBuffer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:readBuffer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:readBufferStrict",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:readBufferStrict",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:readBufferInternal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:writeBuffer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:writeBuffer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:stageEntry",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:stageEntry",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:removeEntries",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:removeEntries",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:countByPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:countByPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:truncateBuffer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:truncateBuffer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/session-store.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/session-store.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:createLiveSessionStore",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/session-store.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:createLiveSessionStore",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/session-store.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:baseSnapshot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/session-store.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:rebuildSnapshotFromJournal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/session-store.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:applyEvent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:shouldUseSvelteComponentInjection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:shouldUseSvelteComponentInjection",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:componentSessionDir",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:componentSessionDir",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:manifestPathForSession",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:manifestPathForSession",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:ensureRuntimeHelper",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:ensureRuntimeHelper",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:extractMustacheExpressions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:extractMustacheExpressions",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:buildPropContract",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:buildPropContract",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:substituteExprsWithProps",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:substituteExprsWithProps",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:substitutePropsWithExprs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:substitutePropsWithExprs",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:parseSvelteComponentFile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:parseSvelteComponentFile",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:scaffoldSvelteComponentSession",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:scaffoldSvelteComponentSession",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:scaffoldSvelteComponentInsertSession",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:scaffoldSvelteComponentInsertSession",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:findSvelteComponentManifest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:findSvelteComponentManifest",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:readManifest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:readManifest",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:resolveSourceFile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:resolveSourceFile",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:appendCssToSvelteStyle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:bakeParamValuesInCss",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:sanitizeAcceptedSvelteCss",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:appendSanitizedCssRule",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:parseCssRules",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:rewriteAcceptedSvelteSelectorPart",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:rewriteParamSelectors",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:splitSelectorList",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:inlineSvelteComponentAccept",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:inlineSvelteComponentAccept",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:inlineSvelteComponentInsertAccept",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:svelteMarkupHasVisibleContent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:mergeOriginalTopLevelAttrs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:matchOpeningTag",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:parseAttrSegments",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:mergeStaticClassAttr",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:removeSvelteComponentSession",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:removeSvelteComponentSession",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:removeAllSvelteComponentSessions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:removeAllSvelteComponentSessions",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:deferredAcceptsPath",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:deferredAcceptsPath",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:readDeferredAccepts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:readDeferredAccepts",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:writeDeferredAccept",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:writeDeferredAccept",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:applyDeferredSvelteComponentAccepts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:applyDeferredSvelteComponentAccepts",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:buildSvelteComponentCssAuthoring",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/svelte-component.mjs:buildSvelteComponentCssAuthoring",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:detectSvelteKitProject",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:detectSvelteKitProject",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:applySvelteKitLiveAdapter",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:applySvelteKitLiveAdapter",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:removeSvelteKitLiveAdapter",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:removeSvelteKitLiveAdapter",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:patchSvelteLayout",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:patchSvelteLayout",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:unpatchSvelteLayout",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:unpatchSvelteLayout",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:ensureSvelteLiveRootComponent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:ensureSvelteLiveRootComponent",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:buildSvelteLiveRootComponent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:buildSvelteLiveRootComponent",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:findSvelteKitAppHtml",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:findSvelteKitLayout",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:packageHasSvelteKit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs:pruneEmptyDir",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {"path": ".env", "language": "config", "sizeLines": 4, "fileCategory": "config"},
+    {"path": "AGENTS.md", "language": "markdown", "sizeLines": 213, "fileCategory": "docs"},
+    {"path": "CLAUDE.md", "language": "markdown", "sizeLines": 154, "fileCategory": "docs"},
+    {"path": "CONTEXT.md", "language": "markdown", "sizeLines": 37, "fileCategory": "docs"},
+    {"path": "DESIGN.md", "language": "markdown", "sizeLines": 139, "fileCategory": "docs"},
+    {"path": "Makefile", "language": "makefile", "sizeLines": 1, "fileCategory": "infra"},
+    {"path": "PRODUCT.md", "language": "markdown", "sizeLines": 29, "fileCategory": "docs"},
+    {"path": "audit-report-could_frontend-2026-06-11.html", "language": "html", "sizeLines": 656, "fileCategory": "markup"},
+    {"path": "docker-compose.yaml", "language": "yaml", "sizeLines": 117, "fileCategory": "infra"},
+    {"path": "skills-lock.json", "language": "json", "sizeLines": 185, "fileCategory": "config"},
+    {"path": "understand-anything-guide.html", "language": "html", "sizeLines": 456, "fileCategory": "markup"}
+  ],
+  "batchImportData": {
+    ".env": [],
+    "AGENTS.md": [],
+    "CLAUDE.md": [],
+    "CONTEXT.md": [],
+    "DESIGN.md": [],
+    "Makefile": [],
+    "PRODUCT.md": [],
+    "audit-report-could_frontend-2026-06-11.html": [],
+    "docker-compose.yaml": [],
+    "skills-lock.json": [],
+    "understand-anything-guide.html": []
+  }
+}

@@ -1,0 +1,1385 @@
+{
+  "nodes": [
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live-poll.mjs",
+      "type": "file",
+      "name": "live-poll.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live-poll.mjs",
+      "summary": "与 Live Server 建立轮询机制，接收代理指令并触发本地操作。",
+      "tags": [
+        "entry-point",
+        "network",
+        "polling"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-poll.mjs:parseReplyArgs",
+      "type": "function",
+      "name": "parseReplyArgs",
+      "filePath": ".claude/skills/impeccable/scripts/live-poll.mjs",
+      "lineRange": [
+        56,
+        82
+      ],
+      "summary": "执行 parseReplyArgs 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-poll.mjs:validateReplyArgs",
+      "type": "function",
+      "name": "validateReplyArgs",
+      "filePath": ".claude/skills/impeccable/scripts/live-poll.mjs",
+      "lineRange": [
+        84,
+        101
+      ],
+      "summary": "执行 validateReplyArgs 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-poll.mjs:postReply",
+      "type": "function",
+      "name": "postReply",
+      "filePath": ".claude/skills/impeccable/scripts/live-poll.mjs",
+      "lineRange": [
+        107,
+        118
+      ],
+      "summary": "执行 postReply 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-poll.mjs:fetchServerStatus",
+      "type": "function",
+      "name": "fetchServerStatus",
+      "filePath": ".claude/skills/impeccable/scripts/live-poll.mjs",
+      "lineRange": [
+        120,
+        131
+      ],
+      "summary": "执行 fetchServerStatus 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-poll.mjs:waitForEventAck",
+      "type": "function",
+      "name": "waitForEventAck",
+      "filePath": ".claude/skills/impeccable/scripts/live-poll.mjs",
+      "lineRange": [
+        137,
+        148
+      ],
+      "summary": "执行 waitForEventAck 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-poll.mjs:fetchNextEvent",
+      "type": "function",
+      "name": "fetchNextEvent",
+      "filePath": ".claude/skills/impeccable/scripts/live-poll.mjs",
+      "lineRange": [
+        150,
+        180
+      ],
+      "summary": "执行 fetchNextEvent 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-poll.mjs:augmentEventWithAcceptHandling",
+      "type": "function",
+      "name": "augmentEventWithAcceptHandling",
+      "filePath": ".claude/skills/impeccable/scripts/live-poll.mjs",
+      "lineRange": [
+        182,
+        217
+      ],
+      "summary": "执行 augmentEventWithAcceptHandling 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-poll.mjs:runPollStream",
+      "type": "function",
+      "name": "runPollStream",
+      "filePath": ".claude/skills/impeccable/scripts/live-poll.mjs",
+      "lineRange": [
+        252,
+        281
+      ],
+      "summary": "执行 runPollStream 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-poll.mjs:handlePollError",
+      "type": "function",
+      "name": "handlePollError",
+      "filePath": ".claude/skills/impeccable/scripts/live-poll.mjs",
+      "lineRange": [
+        283,
+        299
+      ],
+      "summary": "执行 handlePollError 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-poll.mjs:pollCli",
+      "type": "function",
+      "name": "pollCli",
+      "filePath": ".claude/skills/impeccable/scripts/live-poll.mjs",
+      "lineRange": [
+        301,
+        373
+      ],
+      "summary": "执行 pollCli 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live-resume.mjs",
+      "type": "file",
+      "name": "live-resume.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live-resume.mjs",
+      "summary": "恢复之前断开或异常终止的 Live 编辑会话状态。",
+      "tags": [
+        "entry-point",
+        "lifecycle",
+        "action"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-resume.mjs:manualApplyResumeHint",
+      "type": "function",
+      "name": "manualApplyResumeHint",
+      "filePath": ".claude/skills/impeccable/scripts/live-resume.mjs",
+      "lineRange": [
+        13,
+        23
+      ],
+      "summary": "执行 manualApplyResumeHint 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-resume.mjs:summarizeManualApplyEvent",
+      "type": "function",
+      "name": "summarizeManualApplyEvent",
+      "filePath": ".claude/skills/impeccable/scripts/live-resume.mjs",
+      "lineRange": [
+        25,
+        35
+      ],
+      "summary": "执行 summarizeManualApplyEvent 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-resume.mjs:collectManualApplyFiles",
+      "type": "function",
+      "name": "collectManualApplyFiles",
+      "filePath": ".claude/skills/impeccable/scripts/live-resume.mjs",
+      "lineRange": [
+        37,
+        50
+      ],
+      "summary": "执行 collectManualApplyFiles 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-resume.mjs:resumeCli",
+      "type": "function",
+      "name": "resumeCli",
+      "filePath": ".claude/skills/impeccable/scripts/live-resume.mjs",
+      "lineRange": [
+        63,
+        89
+      ],
+      "summary": "执行 resumeCli 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "type": "file",
+      "name": "live-server.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live-server.mjs",
+      "summary": "核心 Live 模式服务器，负责处理 HTTP 路由、SSE 事件流和客户端连接管理。",
+      "tags": [
+        "server",
+        "entry-point",
+        "networking"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-server.mjs:leaseEvent",
+      "type": "function",
+      "name": "leaseEvent",
+      "filePath": ".claude/skills/impeccable/scripts/live-server.mjs",
+      "lineRange": [
+        162,
+        172
+      ],
+      "summary": "执行 leaseEvent 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-server.mjs:summarizePendingEventForStatus",
+      "type": "function",
+      "name": "summarizePendingEventForStatus",
+      "filePath": ".claude/skills/impeccable/scripts/live-server.mjs",
+      "lineRange": [
+        191,
+        208
+      ],
+      "summary": "执行 summarizePendingEventForStatus 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-server.mjs:summarizeActiveSessionForClient",
+      "type": "function",
+      "name": "summarizeActiveSessionForClient",
+      "filePath": ".claude/skills/impeccable/scripts/live-server.mjs",
+      "lineRange": [
+        210,
+        224
+      ],
+      "summary": "执行 summarizeActiveSessionForClient 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-server.mjs:cancelQueuedAnonymousExitEvents",
+      "type": "function",
+      "name": "cancelQueuedAnonymousExitEvents",
+      "filePath": ".claude/skills/impeccable/scripts/live-server.mjs",
+      "lineRange": [
+        231,
+        244
+      ],
+      "summary": "执行 cancelQueuedAnonymousExitEvents 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-server.mjs:scheduleLeaseFlush",
+      "type": "function",
+      "name": "scheduleLeaseFlush",
+      "filePath": ".claude/skills/impeccable/scripts/live-server.mjs",
+      "lineRange": [
+        246,
+        262
+      ],
+      "summary": "执行 scheduleLeaseFlush 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-server.mjs:flushPendingPolls",
+      "type": "function",
+      "name": "flushPendingPolls",
+      "filePath": ".claude/skills/impeccable/scripts/live-server.mjs",
+      "lineRange": [
+        264,
+        279
+      ],
+      "summary": "执行 flushPendingPolls 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-server.mjs:recordManualEditActivity",
+      "type": "function",
+      "name": "recordManualEditActivity",
+      "filePath": ".claude/skills/impeccable/scripts/live-server.mjs",
+      "lineRange": [
+        302,
+        321
+      ],
+      "summary": "执行 recordManualEditActivity 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-server.mjs:getManualEditStatus",
+      "type": "function",
+      "name": "getManualEditStatus",
+      "filePath": ".claude/skills/impeccable/scripts/live-server.mjs",
+      "lineRange": [
+        323,
+        335
+      ],
+      "summary": "执行 getManualEditStatus 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-server.mjs:loadBrowserScripts",
+      "type": "function",
+      "name": "loadBrowserScripts",
+      "filePath": ".claude/skills/impeccable/scripts/live-server.mjs",
+      "lineRange": [
+        341,
+        368
+      ],
+      "summary": "执行 loadBrowserScripts 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-server.mjs:createRequestHandler",
+      "type": "function",
+      "name": "createRequestHandler",
+      "filePath": ".claude/skills/impeccable/scripts/live-server.mjs",
+      "lineRange": [
+        387,
+        732
+      ],
+      "summary": "执行 createRequestHandler 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-server.mjs:handlePollGet",
+      "type": "function",
+      "name": "handlePollGet",
+      "filePath": ".claude/skills/impeccable/scripts/live-server.mjs",
+      "lineRange": [
+        738,
+        777
+      ],
+      "summary": "执行 handlePollGet 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-server.mjs:sessionFileMetadataFromPollReply",
+      "type": "function",
+      "name": "sessionFileMetadataFromPollReply",
+      "filePath": ".claude/skills/impeccable/scripts/live-server.mjs",
+      "lineRange": [
+        779,
+        807
+      ],
+      "summary": "执行 sessionFileMetadataFromPollReply 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-server.mjs:handlePollPost",
+      "type": "function",
+      "name": "handlePollPost",
+      "filePath": ".claude/skills/impeccable/scripts/live-server.mjs",
+      "lineRange": [
+        809,
+        941
+      ],
+      "summary": "执行 handlePollPost 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-server.mjs:shutdown",
+      "type": "function",
+      "name": "shutdown",
+      "filePath": ".claude/skills/impeccable/scripts/live-server.mjs",
+      "lineRange": [
+        949,
+        963
+      ],
+      "summary": "执行 shutdown 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live-status.mjs",
+      "type": "file",
+      "name": "live-status.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live-status.mjs",
+      "summary": "获取并展示当前 Live Server 与会话的运行状态信息。",
+      "tags": [
+        "entry-point",
+        "cli",
+        "status"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-status.mjs:statusCli",
+      "type": "function",
+      "name": "statusCli",
+      "filePath": ".claude/skills/impeccable/scripts/live-status.mjs",
+      "lineRange": [
+        25,
+        47
+      ],
+      "summary": "执行 statusCli 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "type": "file",
+      "name": "live-wrap.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live-wrap.mjs",
+      "summary": "生成并插入注释包裹块，用于界定后续 AI 生成代码的替换范围。",
+      "tags": [
+        "entry-point",
+        "action",
+        "ast"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:wrapCli",
+      "type": "function",
+      "name": "wrapCli",
+      "filePath": ".claude/skills/impeccable/scripts/live-wrap.mjs",
+      "lineRange": [
+        26,
+        383
+      ],
+      "summary": "执行 wrapCli 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:manualEditHintFallsInsideSelection",
+      "type": "function",
+      "name": "manualEditHintFallsInsideSelection",
+      "filePath": ".claude/skills/impeccable/scripts/live-wrap.mjs",
+      "lineRange": [
+        417,
+        428
+      ],
+      "summary": "执行 manualEditHintFallsInsideSelection 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:applyBufferedManualEditToLines",
+      "type": "function",
+      "name": "applyBufferedManualEditToLines",
+      "filePath": ".claude/skills/impeccable/scripts/live-wrap.mjs",
+      "lineRange": [
+        437,
+        480
+      ],
+      "summary": "执行 applyBufferedManualEditToLines 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:lineMatchesManualEditLocator",
+      "type": "function",
+      "name": "lineMatchesManualEditLocator",
+      "filePath": ".claude/skills/impeccable/scripts/live-wrap.mjs",
+      "lineRange": [
+        482,
+        500
+      ],
+      "summary": "执行 lineMatchesManualEditLocator 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:countOccurrences",
+      "type": "function",
+      "name": "countOccurrences",
+      "filePath": ".claude/skills/impeccable/scripts/live-wrap.mjs",
+      "lineRange": [
+        508,
+        518
+      ],
+      "summary": "执行 countOccurrences 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:buildSearchQueries",
+      "type": "function",
+      "name": "buildSearchQueries",
+      "filePath": ".claude/skills/impeccable/scripts/live-wrap.mjs",
+      "lineRange": [
+        528,
+        568
+      ],
+      "summary": "执行 buildSearchQueries 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:detectStyleMode",
+      "type": "function",
+      "name": "detectStyleMode",
+      "filePath": ".claude/skills/impeccable/scripts/live-wrap.mjs",
+      "lineRange": [
+        591,
+        603
+      ],
+      "summary": "执行 detectStyleMode 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:buildCssAuthoring",
+      "type": "function",
+      "name": "buildCssAuthoring",
+      "filePath": ".claude/skills/impeccable/scripts/live-wrap.mjs",
+      "lineRange": [
+        610,
+        648
+      ],
+      "summary": "执行 buildCssAuthoring 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:findFileWithQuery",
+      "type": "function",
+      "name": "findFileWithQuery",
+      "filePath": ".claude/skills/impeccable/scripts/live-wrap.mjs",
+      "lineRange": [
+        654,
+        665
+      ],
+      "summary": "执行 findFileWithQuery 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:searchDir",
+      "type": "function",
+      "name": "searchDir",
+      "filePath": ".claude/skills/impeccable/scripts/live-wrap.mjs",
+      "lineRange": [
+        667,
+        703
+      ],
+      "summary": "执行 searchDir 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:findElement",
+      "type": "function",
+      "name": "findElement",
+      "filePath": ".claude/skills/impeccable/scripts/live-wrap.mjs",
+      "lineRange": [
+        738,
+        756
+      ],
+      "summary": "执行 findElement 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:findAllElements",
+      "type": "function",
+      "name": "findAllElements",
+      "filePath": ".claude/skills/impeccable/scripts/live-wrap.mjs",
+      "lineRange": [
+        765,
+        781
+      ],
+      "summary": "执行 findAllElements 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:filterByText",
+      "type": "function",
+      "name": "filterByText",
+      "filePath": ".claude/skills/impeccable/scripts/live-wrap.mjs",
+      "lineRange": [
+        798,
+        819
+      ],
+      "summary": "执行 filterByText 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:findOpenerLine",
+      "type": "function",
+      "name": "findOpenerLine",
+      "filePath": ".claude/skills/impeccable/scripts/live-wrap.mjs",
+      "lineRange": [
+        830,
+        845
+      ],
+      "summary": "执行 findOpenerLine 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:findClosingLine",
+      "type": "function",
+      "name": "findClosingLine",
+      "filePath": ".claude/skills/impeccable/scripts/live-wrap.mjs",
+      "lineRange": [
+        851,
+        874
+      ],
+      "summary": "执行 findClosingLine 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live.mjs",
+      "type": "file",
+      "name": "live.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live.mjs",
+      "summary": "Impeccable Live 模式的主 CLI 入口与调度器。",
+      "tags": [
+        "entry-point",
+        "cli",
+        "orchestrator"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live.mjs:liveCli",
+      "type": "function",
+      "name": "liveCli",
+      "filePath": ".claude/skills/impeccable/scripts/live.mjs",
+      "lineRange": [
+        30,
+        106
+      ],
+      "summary": "执行 liveCli 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live.mjs:scanForDrift",
+      "type": "function",
+      "name": "scanForDrift",
+      "filePath": ".claude/skills/impeccable/scripts/live.mjs",
+      "lineRange": [
+        118,
+        166
+      ],
+      "summary": "执行 scanForDrift 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live.mjs:globToRegex",
+      "type": "function",
+      "name": "globToRegex",
+      "filePath": ".claude/skills/impeccable/scripts/live.mjs",
+      "lineRange": [
+        173,
+        198
+      ],
+      "summary": "执行 globToRegex 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live.mjs:ensureServerRunning",
+      "type": "function",
+      "name": "ensureServerRunning",
+      "filePath": ".claude/skills/impeccable/scripts/live.mjs",
+      "lineRange": [
+        222,
+        237
+      ],
+      "summary": "执行 ensureServerRunning 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live/browser-script-parts.mjs",
+      "type": "file",
+      "name": "browser-script-parts.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live/browser-script-parts.mjs",
+      "summary": "组装用于浏览器端注入的脚本各个组件。",
+      "tags": [
+        "module",
+        "client-side",
+        "assembly"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/browser-script-parts.mjs:assembleLiveBrowserScript",
+      "type": "function",
+      "name": "assembleLiveBrowserScript",
+      "filePath": ".claude/skills/impeccable/scripts/live/browser-script-parts.mjs",
+      "lineRange": [
+        35,
+        49
+      ],
+      "summary": "执行 assembleLiveBrowserScript 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-poll.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-poll.mjs:parseReplyArgs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-poll.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-poll.mjs:validateReplyArgs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-poll.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-poll.mjs:postReply",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-poll.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-poll.mjs:fetchServerStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-poll.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-poll.mjs:waitForEventAck",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-poll.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-poll.mjs:fetchNextEvent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-poll.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-poll.mjs:augmentEventWithAcceptHandling",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-poll.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-poll.mjs:runPollStream",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-poll.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-poll.mjs:handlePollError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-poll.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-poll.mjs:pollCli",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-poll.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-poll.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/completion.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-resume.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-resume.mjs:manualApplyResumeHint",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-resume.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-resume.mjs:summarizeManualApplyEvent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-resume.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-resume.mjs:collectManualApplyFiles",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-resume.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-resume.mjs:resumeCli",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-resume.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/session-store.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-server.mjs:leaseEvent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-server.mjs:summarizePendingEventForStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-server.mjs:summarizeActiveSessionForClient",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-server.mjs:cancelQueuedAnonymousExitEvents",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-server.mjs:scheduleLeaseFlush",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-server.mjs:flushPendingPolls",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-server.mjs:recordManualEditActivity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-server.mjs:getManualEditStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-server.mjs:loadBrowserScripts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-server.mjs:createRequestHandler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-server.mjs:handlePollGet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-server.mjs:sessionFileMetadataFromPollReply",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-server.mjs:handlePollPost",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-server.mjs:shutdown",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/context.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/lib/design-parser.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/browser-script-parts.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/event-validation.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/session-store.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-server.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/vocabulary.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-status.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-status.mjs:statusCli",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-status.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-status.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live-resume.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-status.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/session-store.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:wrapCli",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:manualEditHintFallsInsideSelection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:applyBufferedManualEditToLines",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:lineMatchesManualEditLocator",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:countOccurrences",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:buildSearchQueries",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:detectStyleMode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:buildCssAuthoring",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:findFileWithQuery",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:searchDir",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:findElement",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:findAllElements",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:filterByText",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:findOpenerLine",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live-wrap.mjs:findClosingLine",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/lib/is-generated.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live-wrap.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/svelte-component.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live.mjs:liveCli",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live.mjs:scanForDrift",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live.mjs:globToRegex",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live.mjs:ensureServerRunning",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/context.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live-inject.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/browser-script-parts.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/browser-script-parts.mjs:assembleLiveBrowserScript",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    }
+  ]
+}

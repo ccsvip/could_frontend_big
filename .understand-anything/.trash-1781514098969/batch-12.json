@@ -1,0 +1,338 @@
+{
+  "nodes": [
+    {
+      "id": "file:web/src/api/modules/tts.ts",
+      "type": "file",
+      "name": "tts.ts",
+      "filePath": "web/src/api/modules/tts.ts",
+      "summary": "封装与语音合成 (TTS) 相关的 HTTP 接口调用逻辑，提供清晰的前端 API 访问层。",
+      "tags": [
+        "api-handler",
+        "tts",
+        "integration"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:web/src/api/modules/tts.ts:fetchTtsProviders",
+      "type": "function",
+      "name": "fetchTtsProviders",
+      "filePath": "web/src/api/modules/tts.ts",
+      "lineRange": [
+        84,
+        87
+      ],
+      "summary": "获取支持的文本转语音 (TTS) 平台服务商列表。",
+      "tags": [
+        "api-handler",
+        "tts"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/tts.ts:fetchTtsSettings",
+      "type": "function",
+      "name": "fetchTtsSettings",
+      "filePath": "web/src/api/modules/tts.ts",
+      "lineRange": [
+        89,
+        92
+      ],
+      "summary": "获取当前全局或应用的文本转语音配置参数。",
+      "tags": [
+        "api-handler",
+        "tts"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/tts.ts:updateTtsSettings",
+      "type": "function",
+      "name": "updateTtsSettings",
+      "filePath": "web/src/api/modules/tts.ts",
+      "lineRange": [
+        94,
+        97
+      ],
+      "summary": "更新系统的文本转语音设置，如音量和语速。",
+      "tags": [
+        "api-handler",
+        "tts"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/tts.ts:testPlatformTts",
+      "type": "function",
+      "name": "testPlatformTts",
+      "filePath": "web/src/api/modules/tts.ts",
+      "lineRange": [
+        99,
+        102
+      ],
+      "summary": "调用指定平台的 TTS 接口进行语音合成测试。",
+      "tags": [
+        "api-handler",
+        "tts"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/tts.ts:fetchCompanyTtsOptions",
+      "type": "function",
+      "name": "fetchCompanyTtsOptions",
+      "filePath": "web/src/api/modules/tts.ts",
+      "lineRange": [
+        104,
+        107
+      ],
+      "summary": "获取特定租户/公司的专属 TTS 音色和配置选项。",
+      "tags": [
+        "api-handler",
+        "tts"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/tts.ts:updateCompanyDefaultTtsVoice",
+      "type": "function",
+      "name": "updateCompanyDefaultTtsVoice",
+      "filePath": "web/src/api/modules/tts.ts",
+      "lineRange": [
+        109,
+        112
+      ],
+      "summary": "设置并更新公司的默认文本转语音音色。",
+      "tags": [
+        "api-handler",
+        "tts"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/tts.ts:testCompanyTts",
+      "type": "function",
+      "name": "testCompanyTts",
+      "filePath": "web/src/api/modules/tts.ts",
+      "lineRange": [
+        114,
+        117
+      ],
+      "summary": "使用公司特定的配置参数测试语音合成功能。",
+      "tags": [
+        "api-handler",
+        "tts"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/views/tts-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/tts-management/index.tsx",
+      "summary": "用于管理音色模型及相关资源的 React 视图页面组件。",
+      "tags": [
+        "component",
+        "view",
+        "tts"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/tts-management/index.tsx:TtsManagementPage",
+      "type": "function",
+      "name": "TtsManagementPage",
+      "filePath": "web/src/views/tts-management/index.tsx",
+      "lineRange": [
+        19,
+        209
+      ],
+      "summary": "渲染文本转语音 (TTS) 音色模型管理页面，支持配置和测试不同服务商的语音能力。",
+      "tags": [
+        "component",
+        "view",
+        "tts"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/tts-settings/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/tts-settings/index.tsx",
+      "summary": "提供全局或特定应用的语音合成参数设置页面，例如语速、音量及默认声音的调节。",
+      "tags": [
+        "component",
+        "view",
+        "tts"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/tts-settings/index.tsx:TtsSettingsPage",
+      "type": "function",
+      "name": "TtsSettingsPage",
+      "filePath": "web/src/views/tts-settings/index.tsx",
+      "lineRange": [
+        56,
+        454
+      ],
+      "summary": "渲染文本转语音的应用级配置页面，允许调整默认音量、语速及首选音色。",
+      "tags": [
+        "component",
+        "view",
+        "tts"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:web/src/api/modules/tts.ts",
+      "target": "function:web/src/api/modules/tts.ts:fetchTtsProviders",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/tts.ts",
+      "target": "function:web/src/api/modules/tts.ts:fetchTtsProviders",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/tts.ts",
+      "target": "function:web/src/api/modules/tts.ts:fetchTtsSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/tts.ts",
+      "target": "function:web/src/api/modules/tts.ts:fetchTtsSettings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/tts.ts",
+      "target": "function:web/src/api/modules/tts.ts:updateTtsSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/tts.ts",
+      "target": "function:web/src/api/modules/tts.ts:updateTtsSettings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/tts.ts",
+      "target": "function:web/src/api/modules/tts.ts:testPlatformTts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/tts.ts",
+      "target": "function:web/src/api/modules/tts.ts:testPlatformTts",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/tts.ts",
+      "target": "function:web/src/api/modules/tts.ts:fetchCompanyTtsOptions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/tts.ts",
+      "target": "function:web/src/api/modules/tts.ts:fetchCompanyTtsOptions",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/tts.ts",
+      "target": "function:web/src/api/modules/tts.ts:updateCompanyDefaultTtsVoice",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/tts.ts",
+      "target": "function:web/src/api/modules/tts.ts:updateCompanyDefaultTtsVoice",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/tts.ts",
+      "target": "function:web/src/api/modules/tts.ts:testCompanyTts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/tts.ts",
+      "target": "function:web/src/api/modules/tts.ts:testCompanyTts",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/tts.ts",
+      "target": "file:web/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/tts-management/index.tsx",
+      "target": "function:web/src/views/tts-management/index.tsx:TtsManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/tts-management/index.tsx",
+      "target": "function:web/src/views/tts-management/index.tsx:TtsManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/tts-management/index.tsx",
+      "target": "file:web/src/api/modules/tts.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/tts-settings/index.tsx",
+      "target": "function:web/src/views/tts-settings/index.tsx:TtsSettingsPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/tts-settings/index.tsx",
+      "target": "function:web/src/views/tts-settings/index.tsx:TtsSettingsPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/tts-settings/index.tsx",
+      "target": "file:web/src/api/modules/tts.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

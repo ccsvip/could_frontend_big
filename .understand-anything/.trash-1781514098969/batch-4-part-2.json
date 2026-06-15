@@ -1,0 +1,1223 @@
+{
+  "nodes": [
+    {
+      "id": "file:web/src/views/employee-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/employee-management/index.tsx",
+      "summary": "员工或企业子用户管理页面，包括人员列表、角色分配和密码重置功能。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "employee",
+        "management"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/employee-management/index.tsx:EmployeesTab",
+      "type": "function",
+      "name": "EmployeesTab",
+      "filePath": "web/src/views/employee-management/index.tsx",
+      "lineRange": [
+        25,
+        268
+      ],
+      "summary": "函数 EmployeesTab，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/employee-management/index.tsx:EmployeeManagementPage",
+      "type": "function",
+      "name": "EmployeeManagementPage",
+      "filePath": "web/src/views/employee-management/index.tsx",
+      "lineRange": [
+        270,
+        277
+      ],
+      "summary": "函数 EmployeeManagementPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/views/force-password-change/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/force-password-change/index.tsx",
+      "summary": "强制密码修改页面，处理首次登录或密码过期时的重置逻辑。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "auth",
+        "password"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:web/src/views/force-password-change/index.tsx:ForcePasswordChangePage",
+      "type": "function",
+      "name": "ForcePasswordChangePage",
+      "filePath": "web/src/views/force-password-change/index.tsx",
+      "lineRange": [
+        19,
+        99
+      ],
+      "summary": "函数 ForcePasswordChangePage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:web/src/views/knowledge-base/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/knowledge-base/index.tsx",
+      "summary": "知识库管理页面，提供知识文档的上传、解析状态查看和内容审核功能。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "knowledge-base",
+        "document"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/knowledge-base/index.tsx:formatFileSize",
+      "type": "function",
+      "name": "formatFileSize",
+      "filePath": "web/src/views/knowledge-base/index.tsx",
+      "lineRange": [
+        66,
+        84
+      ],
+      "summary": "函数 formatFileSize，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/knowledge-base/index.tsx:getStatusTag",
+      "type": "function",
+      "name": "getStatusTag",
+      "filePath": "web/src/views/knowledge-base/index.tsx",
+      "lineRange": [
+        86,
+        96
+      ],
+      "summary": "函数 getStatusTag，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/knowledge-base/index.tsx:KnowledgeBasePage",
+      "type": "function",
+      "name": "KnowledgeBasePage",
+      "filePath": "web/src/views/knowledge-base/index.tsx",
+      "lineRange": [
+        98,
+        563
+      ],
+      "summary": "函数 KnowledgeBasePage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/llm-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/llm-management/index.tsx",
+      "summary": "大语言模型（LLM）提供商管理页面，用于配置和测试底层大模型接口。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "llm",
+        "provider"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/llm-management/index.tsx:LlmManagementPage",
+      "type": "function",
+      "name": "LlmManagementPage",
+      "filePath": "web/src/views/llm-management/index.tsx",
+      "lineRange": [
+        58,
+        625
+      ],
+      "summary": "函数 LlmManagementPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/llm-settings/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/llm-settings/index.tsx",
+      "summary": "大语言模型设置页面，针对具体租户或应用配置模型参数和默认调用选项。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "llm",
+        "settings"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:web/src/views/llm-settings/index.tsx:LlmSettingsPage",
+      "type": "function",
+      "name": "LlmSettingsPage",
+      "filePath": "web/src/views/llm-settings/index.tsx",
+      "lineRange": [
+        15,
+        174
+      ],
+      "summary": "函数 LlmSettingsPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:web/src/views/log-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/log-management/index.tsx",
+      "summary": "审计日志管理页面，提供系统操作日志的查询和追踪能力。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "log",
+        "audit"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/log-management/index.tsx:LogManagementPage",
+      "type": "function",
+      "name": "LogManagementPage",
+      "filePath": "web/src/views/log-management/index.tsx",
+      "lineRange": [
+        22,
+        213
+      ],
+      "summary": "函数 LogManagementPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:web/src/views/login/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/login/index.tsx",
+      "summary": "系统登录页面，负责用户身份验证、凭证状态校验及登录异常处理。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "auth",
+        "login"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/login/index.tsx:CpuIcon",
+      "type": "function",
+      "name": "CpuIcon",
+      "filePath": "web/src/views/login/index.tsx",
+      "lineRange": [
+        63,
+        76
+      ],
+      "summary": "函数 CpuIcon，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/login/index.tsx:FingerprintIcon",
+      "type": "function",
+      "name": "FingerprintIcon",
+      "filePath": "web/src/views/login/index.tsx",
+      "lineRange": [
+        92,
+        103
+      ],
+      "summary": "函数 FingerprintIcon，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/login/index.tsx:LoginPage",
+      "type": "function",
+      "name": "LoginPage",
+      "filePath": "web/src/views/login/index.tsx",
+      "lineRange": [
+        105,
+        453
+      ],
+      "summary": "函数 LoginPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/minio-settings/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/minio-settings/index.tsx",
+      "summary": "MinIO对象存储设置页面，用于配置存储桶策略和视频等资源的配额。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "storage",
+        "minio"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:web/src/views/minio-settings/index.tsx:MinioSettingsPage",
+      "type": "function",
+      "name": "MinioSettingsPage",
+      "filePath": "web/src/views/minio-settings/index.tsx",
+      "lineRange": [
+        20,
+        204
+      ],
+      "summary": "函数 MinioSettingsPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:web/src/views/model-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "summary": "数字人模型资产管理页面，维护3D模型资源和相关配置信息。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "model",
+        "asset"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/model-management/index.tsx:formatFileSize",
+      "type": "function",
+      "name": "formatFileSize",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "lineRange": [
+        125,
+        140
+      ],
+      "summary": "函数 formatFileSize，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/model-management/index.tsx:renderModelAvatar",
+      "type": "function",
+      "name": "renderModelAvatar",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "lineRange": [
+        157,
+        184
+      ],
+      "summary": "函数 renderModelAvatar，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/model-management/index.tsx:renderDownloadLink",
+      "type": "function",
+      "name": "renderDownloadLink",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "lineRange": [
+        186,
+        202
+      ],
+      "summary": "函数 renderDownloadLink，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/model-management/index.tsx:renderAddressLink",
+      "type": "function",
+      "name": "renderAddressLink",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "lineRange": [
+        204,
+        214
+      ],
+      "summary": "函数 renderAddressLink，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/model-management/index.tsx:renderModelPreviewImage",
+      "type": "function",
+      "name": "renderModelPreviewImage",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "lineRange": [
+        216,
+        237
+      ],
+      "summary": "函数 renderModelPreviewImage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/model-management/index.tsx:ModelManagementPage",
+      "type": "function",
+      "name": "ModelManagementPage",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "lineRange": [
+        239,
+        706
+      ],
+      "summary": "函数 ModelManagementPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/resource-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "summary": "媒体资源管理页面，支持图片、视频等多媒体文件的上传和统一管理。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "resource",
+        "media"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/resource-management/index.tsx:captureVideoThumbnail",
+      "type": "function",
+      "name": "captureVideoThumbnail",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "lineRange": [
+        144,
+        257
+      ],
+      "summary": "函数 captureVideoThumbnail，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:web/src/views/resource-management/index.tsx:loadVideoThumbnail",
+      "type": "function",
+      "name": "loadVideoThumbnail",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "lineRange": [
+        259,
+        295
+      ],
+      "summary": "函数 loadVideoThumbnail，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/resource-management/index.tsx:VideoFramePreview",
+      "type": "function",
+      "name": "VideoFramePreview",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "lineRange": [
+        303,
+        382
+      ],
+      "summary": "函数 VideoFramePreview，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:web/src/views/resource-management/index.tsx:VideoResourceCardCover",
+      "type": "function",
+      "name": "VideoResourceCardCover",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "lineRange": [
+        397,
+        486
+      ],
+      "summary": "函数 VideoResourceCardCover，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:web/src/views/resource-management/index.tsx:ResourceManagementPage",
+      "type": "function",
+      "name": "ResourceManagementPage",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "lineRange": [
+        488,
+        973
+      ],
+      "summary": "函数 ResourceManagementPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/scrolling-text-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/scrolling-text-management/index.tsx",
+      "summary": "走马灯（滚动字幕）管理页面，用于配置展示在数字人屏幕上的滚动文本内容。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "scrolling-text",
+        "ui"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/scrolling-text-management/index.tsx:ScrollingTextManagementPage",
+      "type": "function",
+      "name": "ScrollingTextManagementPage",
+      "filePath": "web/src/views/scrolling-text-management/index.tsx",
+      "lineRange": [
+        64,
+        443
+      ],
+      "summary": "函数 ScrollingTextManagementPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/settings-llm/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/settings-llm/index.tsx",
+      "summary": "全局或高级大模型设置面板，配置模型分配策略与底层能力权限。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "llm",
+        "settings"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/settings-llm/index.tsx:LlmSettingsAdminPage",
+      "type": "function",
+      "name": "LlmSettingsAdminPage",
+      "filePath": "web/src/views/settings-llm/index.tsx",
+      "lineRange": [
+        77,
+        744
+      ],
+      "summary": "函数 LlmSettingsAdminPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/tenant-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/tenant-management/index.tsx",
+      "summary": "租户管理页面，负责多租户体系下的企业账号创建、权限分配和配额管理。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "tenant",
+        "management"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/tenant-management/index.tsx:buildMenuTree",
+      "type": "function",
+      "name": "buildMenuTree",
+      "filePath": "web/src/views/tenant-management/index.tsx",
+      "lineRange": [
+        38,
+        49
+      ],
+      "summary": "函数 buildMenuTree，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/tenant-management/index.tsx:TenantManagementPage",
+      "type": "function",
+      "name": "TenantManagementPage",
+      "filePath": "web/src/views/tenant-management/index.tsx",
+      "lineRange": [
+        51,
+        320
+      ],
+      "summary": "函数 TenantManagementPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/voice-tone-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/voice-tone-management/index.tsx",
+      "summary": "音色管理页面，用于配置和维护TTS语音合成时的发音人及音色参数。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "voice",
+        "tts"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/voice-tone-management/index.tsx:renderVoiceToneAvatar",
+      "type": "function",
+      "name": "renderVoiceToneAvatar",
+      "filePath": "web/src/views/voice-tone-management/index.tsx",
+      "lineRange": [
+        91,
+        115
+      ],
+      "summary": "函数 renderVoiceToneAvatar，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/voice-tone-management/index.tsx:VoiceToneManagementPage",
+      "type": "function",
+      "name": "VoiceToneManagementPage",
+      "filePath": "web/src/views/voice-tone-management/index.tsx",
+      "lineRange": [
+        117,
+        624
+      ],
+      "summary": "函数 VoiceToneManagementPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:web/src/views/employee-management/index.tsx",
+      "target": "function:web/src/views/employee-management/index.tsx:EmployeesTab",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/employee-management/index.tsx",
+      "target": "function:web/src/views/employee-management/index.tsx:EmployeeManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/employee-management/index.tsx",
+      "target": "function:web/src/views/employee-management/index.tsx:EmployeeManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/employee-management/index.tsx",
+      "target": "file:web/src/api/modules/employees.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/force-password-change/index.tsx",
+      "target": "function:web/src/views/force-password-change/index.tsx:ForcePasswordChangePage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/force-password-change/index.tsx",
+      "target": "function:web/src/views/force-password-change/index.tsx:ForcePasswordChangePage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/force-password-change/index.tsx",
+      "target": "file:web/src/api/modules/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/force-password-change/index.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/knowledge-base/index.tsx",
+      "target": "function:web/src/views/knowledge-base/index.tsx:formatFileSize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/knowledge-base/index.tsx",
+      "target": "function:web/src/views/knowledge-base/index.tsx:getStatusTag",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/knowledge-base/index.tsx",
+      "target": "function:web/src/views/knowledge-base/index.tsx:KnowledgeBasePage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/knowledge-base/index.tsx",
+      "target": "function:web/src/views/knowledge-base/index.tsx:KnowledgeBasePage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/knowledge-base/index.tsx",
+      "target": "file:web/src/api/modules/knowledge-base.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/knowledge-base/index.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/llm-management/index.tsx",
+      "target": "function:web/src/views/llm-management/index.tsx:LlmManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/llm-management/index.tsx",
+      "target": "function:web/src/views/llm-management/index.tsx:LlmManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/llm-management/index.tsx",
+      "target": "file:web/src/api/modules/llm-providers.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/llm-management/index.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/llm-settings/index.tsx",
+      "target": "function:web/src/views/llm-settings/index.tsx:LlmSettingsPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/llm-settings/index.tsx",
+      "target": "function:web/src/views/llm-settings/index.tsx:LlmSettingsPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/llm-settings/index.tsx",
+      "target": "file:web/src/api/modules/llm-settings.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/llm-settings/index.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/log-management/index.tsx",
+      "target": "function:web/src/views/log-management/index.tsx:LogManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/log-management/index.tsx",
+      "target": "function:web/src/views/log-management/index.tsx:LogManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/log-management/index.tsx",
+      "target": "file:web/src/api/modules/audit.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/log-management/index.tsx",
+      "target": "file:web/src/api/modules/tenants.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/log-management/index.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/login/index.tsx",
+      "target": "function:web/src/views/login/index.tsx:CpuIcon",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/login/index.tsx",
+      "target": "function:web/src/views/login/index.tsx:FingerprintIcon",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/login/index.tsx",
+      "target": "function:web/src/views/login/index.tsx:LoginPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/login/index.tsx",
+      "target": "function:web/src/views/login/index.tsx:LoginPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/login/index.tsx",
+      "target": "file:web/src/api/modules/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/login/index.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/minio-settings/index.tsx",
+      "target": "function:web/src/views/minio-settings/index.tsx:MinioSettingsPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/minio-settings/index.tsx",
+      "target": "function:web/src/views/minio-settings/index.tsx:MinioSettingsPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/minio-settings/index.tsx",
+      "target": "file:web/src/api/modules/settings.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:formatFileSize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:renderModelAvatar",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:renderDownloadLink",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:renderAddressLink",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:renderModelPreviewImage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:ModelManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:ModelManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "file:web/src/api/modules/models.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:captureVideoThumbnail",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:loadVideoThumbnail",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:VideoFramePreview",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:VideoResourceCardCover",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:ResourceManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:ResourceManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "file:web/src/api/modules/resources.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/scrolling-text-management/index.tsx",
+      "target": "function:web/src/views/scrolling-text-management/index.tsx:ScrollingTextManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/scrolling-text-management/index.tsx",
+      "target": "function:web/src/views/scrolling-text-management/index.tsx:ScrollingTextManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/scrolling-text-management/index.tsx",
+      "target": "file:web/src/api/modules/scrolling-texts.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/scrolling-text-management/index.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/settings-llm/index.tsx",
+      "target": "function:web/src/views/settings-llm/index.tsx:LlmSettingsAdminPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/settings-llm/index.tsx",
+      "target": "function:web/src/views/settings-llm/index.tsx:LlmSettingsAdminPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/settings-llm/index.tsx",
+      "target": "file:web/src/api/modules/llm-settings.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/settings-llm/index.tsx",
+      "target": "file:web/src/api/modules/tenants.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/tenant-management/index.tsx",
+      "target": "function:web/src/views/tenant-management/index.tsx:buildMenuTree",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/tenant-management/index.tsx",
+      "target": "function:web/src/views/tenant-management/index.tsx:TenantManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/tenant-management/index.tsx",
+      "target": "function:web/src/views/tenant-management/index.tsx:TenantManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/tenant-management/index.tsx",
+      "target": "file:web/src/api/modules/tenants.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/tenant-management/index.tsx",
+      "target": "file:web/src/store/tenant-scope.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/voice-tone-management/index.tsx",
+      "target": "function:web/src/views/voice-tone-management/index.tsx:renderVoiceToneAvatar",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/voice-tone-management/index.tsx",
+      "target": "function:web/src/views/voice-tone-management/index.tsx:VoiceToneManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/voice-tone-management/index.tsx",
+      "target": "function:web/src/views/voice-tone-management/index.tsx:VoiceToneManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/voice-tone-management/index.tsx",
+      "target": "file:web/src/api/modules/voice-tones.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/voice-tone-management/index.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

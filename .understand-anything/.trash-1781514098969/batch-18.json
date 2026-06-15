@@ -1,0 +1,103 @@
+{
+  "nodes": [
+    {
+      "id": "document:.claude/skills/impeccable/reference/optimize.md",
+      "type": "document",
+      "name": "optimize.md",
+      "filePath": ".claude/skills/impeccable/reference/optimize.md",
+      "summary": "性能与体验优化规范文档，提供针对前端界面及交互的极致优化指南。",
+      "tags": [
+        "documentation",
+        "optimization",
+        "performance",
+        "skill"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:.claude/skills/impeccable/reference/overdrive.md",
+      "type": "document",
+      "name": "overdrive.md",
+      "filePath": ".claude/skills/impeccable/reference/overdrive.md",
+      "summary": "高级与深度优化指南，探讨超越常规的极端性能和体验提升策略。",
+      "tags": [
+        "documentation",
+        "advanced-optimization",
+        "performance",
+        "skill"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/impeccable/reference/polish.md",
+      "type": "document",
+      "name": "polish.md",
+      "filePath": ".claude/skills/impeccable/reference/polish.md",
+      "summary": "界面打磨和细节完善规范，指导如何提升前端视觉和交互的细腻度。",
+      "tags": [
+        "documentation",
+        "ui-polish",
+        "design",
+        "skill"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:.claude/skills/impeccable/reference/product.md",
+      "type": "document",
+      "name": "product.md",
+      "filePath": ".claude/skills/impeccable/reference/product.md",
+      "summary": "产品级考量和规范，关注功能与用户体验在产品层面的对齐与落地。",
+      "tags": [
+        "documentation",
+        "product-design",
+        "user-experience",
+        "skill"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/impeccable/reference/quieter.md",
+      "type": "document",
+      "name": "quieter.md",
+      "filePath": ".claude/skills/impeccable/reference/quieter.md",
+      "summary": "降低视觉噪音、简化界面的设计指南，提倡简约和克制的设计哲学。",
+      "tags": [
+        "documentation",
+        "minimalism",
+        "ui-design",
+        "skill"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/impeccable/reference/shape.md",
+      "type": "document",
+      "name": "shape.md",
+      "filePath": ".claude/skills/impeccable/reference/shape.md",
+      "summary": "界面形态和结构设计指南，涵盖从布局结构到组件形态的设计原则。",
+      "tags": [
+        "documentation",
+        "layout-design",
+        "ui-structure",
+        "skill"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/impeccable/reference/typeset.md",
+      "type": "document",
+      "name": "typeset.md",
+      "filePath": ".claude/skills/impeccable/reference/typeset.md",
+      "summary": "排版和字体设计规范，包含字体选择、层级划分及可读性优化的详细规则。",
+      "tags": [
+        "documentation",
+        "typography",
+        "design",
+        "skill"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": []
+}

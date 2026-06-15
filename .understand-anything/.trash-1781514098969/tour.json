@@ -1,0 +1,26 @@
+[
+  {
+    "order": 1,
+    "title": "项目概览 (Project Overview)",
+    "description": "这是项目的根目录文档，包含所有日常开发、调试、测试和运行的硬性约束。务必阅读此文件以了解 Docker-only 执行面的规定。",
+    "nodeIds": ["document:AGENTS.md"]
+  },
+  {
+    "order": 2,
+    "title": "基础设施编排 (Infrastructure Orchestration)",
+    "description": "项目的服务架构由 docker-compose 进行编排，包含 db, redis, backend, celery, web 等容器。这里是服务启动和端口映射的中枢。",
+    "nodeIds": ["service:docker-compose.yaml"]
+  },
+  {
+    "order": 3,
+    "title": "后端入口 (Backend Entry Point)",
+    "description": "Django 应用的执行入口与 ASGI 配置，支撑了 REST API 和流式事件输出的基础逻辑。",
+    "nodeIds": ["file:backend/manage.py", "file:backend/config/asgi.py"]
+  },
+  {
+    "order": 4,
+    "title": "前端入口 (Frontend Entry Point)",
+    "description": "React SPA 的主渲染入口。Vite 会从这里加载前端应用并挂载到 DOM 上。",
+    "nodeIds": ["file:web/src/main.tsx"]
+  }
+]

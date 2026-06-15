@@ -1,0 +1,2251 @@
+{
+  "nodes": [
+    {
+      "id": "file:web/src/api/modules/devices.ts",
+      "type": "file",
+      "name": "devices.ts",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "提供通用功能模块的类型定义、常量或工具函数。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "complex",
+      "languageNotes": ""
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:fetchDevices",
+      "type": "function",
+      "name": "fetchDevices",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        170,
+        173
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:fetchDeviceStats",
+      "type": "function",
+      "name": "fetchDeviceStats",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        175,
+        178
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:updateDevice",
+      "type": "function",
+      "name": "updateDevice",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        180,
+        183
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:fetchDeviceAuthorizationRequests",
+      "type": "function",
+      "name": "fetchDeviceAuthorizationRequests",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        185,
+        198
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:fetchDeviceAuthorizations",
+      "type": "function",
+      "name": "fetchDeviceAuthorizations",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        200,
+        206
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:updateDeviceAuthorizationRequestName",
+      "type": "function",
+      "name": "updateDeviceAuthorizationRequestName",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        208,
+        214
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:fetchDeviceActivationLogs",
+      "type": "function",
+      "name": "fetchDeviceActivationLogs",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        216,
+        222
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:bindDeviceAuthorizationRequest",
+      "type": "function",
+      "name": "bindDeviceAuthorizationRequest",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        224,
+        230
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:ignoreDeviceAuthorizationRequest",
+      "type": "function",
+      "name": "ignoreDeviceAuthorizationRequest",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        232,
+        237
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:authorizeDevice",
+      "type": "function",
+      "name": "authorizeDevice",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        239,
+        245
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:revokeDeviceAuthorization",
+      "type": "function",
+      "name": "revokeDeviceAuthorization",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        247,
+        252
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:fetchDeviceGroups",
+      "type": "function",
+      "name": "fetchDeviceGroups",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        254,
+        259
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:createDeviceGroup",
+      "type": "function",
+      "name": "createDeviceGroup",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        261,
+        264
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:updateDeviceGroup",
+      "type": "function",
+      "name": "updateDeviceGroup",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        266,
+        269
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:deleteDeviceGroup",
+      "type": "function",
+      "name": "deleteDeviceGroup",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        271,
+        273
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:fetchDeviceApplications",
+      "type": "function",
+      "name": "fetchDeviceApplications",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        275,
+        281
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:createDeviceApplication",
+      "type": "function",
+      "name": "createDeviceApplication",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        283,
+        286
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:updateDeviceApplication",
+      "type": "function",
+      "name": "updateDeviceApplication",
+      "filePath": "web/src/api/modules/devices.ts",
+      "lineRange": [
+        288,
+        291
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/api/modules/employees.ts",
+      "type": "file",
+      "name": "employees.ts",
+      "filePath": "web/src/api/modules/employees.ts",
+      "summary": "提供通用功能模块的类型定义、常量或工具函数。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "moderate",
+      "languageNotes": ""
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:fetchEmployees",
+      "type": "function",
+      "name": "fetchEmployees",
+      "filePath": "web/src/api/modules/employees.ts",
+      "lineRange": [
+        41,
+        44
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:createEmployee",
+      "type": "function",
+      "name": "createEmployee",
+      "filePath": "web/src/api/modules/employees.ts",
+      "lineRange": [
+        46,
+        54
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:updateEmployee",
+      "type": "function",
+      "name": "updateEmployee",
+      "filePath": "web/src/api/modules/employees.ts",
+      "lineRange": [
+        56,
+        62
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:deleteEmployee",
+      "type": "function",
+      "name": "deleteEmployee",
+      "filePath": "web/src/api/modules/employees.ts",
+      "lineRange": [
+        64,
+        67
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:resetEmployeePassword",
+      "type": "function",
+      "name": "resetEmployeePassword",
+      "filePath": "web/src/api/modules/employees.ts",
+      "lineRange": [
+        69,
+        72
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:fetchTenantRoles",
+      "type": "function",
+      "name": "fetchTenantRoles",
+      "filePath": "web/src/api/modules/employees.ts",
+      "lineRange": [
+        74,
+        77
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:createTenantRole",
+      "type": "function",
+      "name": "createTenantRole",
+      "filePath": "web/src/api/modules/employees.ts",
+      "lineRange": [
+        79,
+        88
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:updateTenantRole",
+      "type": "function",
+      "name": "updateTenantRole",
+      "filePath": "web/src/api/modules/employees.ts",
+      "lineRange": [
+        90,
+        96
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:deleteTenantRole",
+      "type": "function",
+      "name": "deleteTenantRole",
+      "filePath": "web/src/api/modules/employees.ts",
+      "lineRange": [
+        98,
+        101
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:fetchMyTenantCatalog",
+      "type": "function",
+      "name": "fetchMyTenantCatalog",
+      "filePath": "web/src/api/modules/employees.ts",
+      "lineRange": [
+        103,
+        106
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/api/modules/knowledge-base.ts",
+      "type": "file",
+      "name": "knowledge-base.ts",
+      "filePath": "web/src/api/modules/knowledge-base.ts",
+      "summary": "提供知识库管理模块的类型定义、常量或工具函数。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "moderate",
+      "languageNotes": ""
+    },
+    {
+      "id": "function:web/src/api/modules/knowledge-base.ts:buildUploadFormData",
+      "type": "function",
+      "name": "buildUploadFormData",
+      "filePath": "web/src/api/modules/knowledge-base.ts",
+      "lineRange": [
+        70,
+        80
+      ],
+      "summary": "实现知识库管理相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/knowledge-base.ts:readBlobErrorMessage",
+      "type": "function",
+      "name": "readBlobErrorMessage",
+      "filePath": "web/src/api/modules/knowledge-base.ts",
+      "lineRange": [
+        82,
+        97
+      ],
+      "summary": "实现知识库管理相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/knowledge-base.ts:extractFileName",
+      "type": "function",
+      "name": "extractFileName",
+      "filePath": "web/src/api/modules/knowledge-base.ts",
+      "lineRange": [
+        99,
+        115
+      ],
+      "summary": "实现知识库管理相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/knowledge-base.ts:saveBlob",
+      "type": "function",
+      "name": "saveBlob",
+      "filePath": "web/src/api/modules/knowledge-base.ts",
+      "lineRange": [
+        117,
+        126
+      ],
+      "summary": "实现知识库管理相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/knowledge-base.ts:authorizedDownloadRequest",
+      "type": "function",
+      "name": "authorizedDownloadRequest",
+      "filePath": "web/src/api/modules/knowledge-base.ts",
+      "lineRange": [
+        128,
+        156
+      ],
+      "summary": "实现知识库管理相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/knowledge-base.ts:fetchKnowledgeDocuments",
+      "type": "function",
+      "name": "fetchKnowledgeDocuments",
+      "filePath": "web/src/api/modules/knowledge-base.ts",
+      "lineRange": [
+        158,
+        163
+      ],
+      "summary": "实现知识库管理相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/knowledge-base.ts:uploadKnowledgeDocument",
+      "type": "function",
+      "name": "uploadKnowledgeDocument",
+      "filePath": "web/src/api/modules/knowledge-base.ts",
+      "lineRange": [
+        165,
+        185
+      ],
+      "summary": "实现知识库管理相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/knowledge-base.ts:downloadKnowledgeDocument",
+      "type": "function",
+      "name": "downloadKnowledgeDocument",
+      "filePath": "web/src/api/modules/knowledge-base.ts",
+      "lineRange": [
+        187,
+        195
+      ],
+      "summary": "实现知识库管理相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/knowledge-base.ts:deleteKnowledgeDocument",
+      "type": "function",
+      "name": "deleteKnowledgeDocument",
+      "filePath": "web/src/api/modules/knowledge-base.ts",
+      "lineRange": [
+        197,
+        199
+      ],
+      "summary": "实现知识库管理相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/knowledge-base.ts:reviewKnowledgeDocument",
+      "type": "function",
+      "name": "reviewKnowledgeDocument",
+      "filePath": "web/src/api/modules/knowledge-base.ts",
+      "lineRange": [
+        201,
+        204
+      ],
+      "summary": "实现知识库管理相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/knowledge-base.ts:bulkDownloadKnowledgeDocuments",
+      "type": "function",
+      "name": "bulkDownloadKnowledgeDocuments",
+      "filePath": "web/src/api/modules/knowledge-base.ts",
+      "lineRange": [
+        206,
+        215
+      ],
+      "summary": "实现知识库管理相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/api/modules/llm-providers.ts",
+      "type": "file",
+      "name": "llm-providers.ts",
+      "filePath": "web/src/api/modules/llm-providers.ts",
+      "summary": "提供通用功能模块的类型定义、常量或工具函数。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "moderate",
+      "languageNotes": ""
+    },
+    {
+      "id": "function:web/src/api/modules/llm-providers.ts:buildListParams",
+      "type": "function",
+      "name": "buildListParams",
+      "filePath": "web/src/api/modules/llm-providers.ts",
+      "lineRange": [
+        53,
+        63
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-providers.ts:buildFormData",
+      "type": "function",
+      "name": "buildFormData",
+      "filePath": "web/src/api/modules/llm-providers.ts",
+      "lineRange": [
+        65,
+        76
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-providers.ts:fetchLLMProviders",
+      "type": "function",
+      "name": "fetchLLMProviders",
+      "filePath": "web/src/api/modules/llm-providers.ts",
+      "lineRange": [
+        78,
+        83
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-providers.ts:createLLMProvider",
+      "type": "function",
+      "name": "createLLMProvider",
+      "filePath": "web/src/api/modules/llm-providers.ts",
+      "lineRange": [
+        85,
+        88
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-providers.ts:updateLLMProvider",
+      "type": "function",
+      "name": "updateLLMProvider",
+      "filePath": "web/src/api/modules/llm-providers.ts",
+      "lineRange": [
+        90,
+        102
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-providers.ts:deleteLLMProvider",
+      "type": "function",
+      "name": "deleteLLMProvider",
+      "filePath": "web/src/api/modules/llm-providers.ts",
+      "lineRange": [
+        104,
+        106
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-providers.ts:testLLMConnection",
+      "type": "function",
+      "name": "testLLMConnection",
+      "filePath": "web/src/api/modules/llm-providers.ts",
+      "lineRange": [
+        108,
+        111
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/api/modules/llm-settings.ts",
+      "type": "file",
+      "name": "llm-settings.ts",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "summary": "提供大语言模型(LLM)配置模块的类型定义、常量或工具函数。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "complex",
+      "languageNotes": ""
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:buildProviderFormData",
+      "type": "function",
+      "name": "buildProviderFormData",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        132,
+        143
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:fetchCompanyLLMOptions",
+      "type": "function",
+      "name": "fetchCompanyLLMOptions",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        145,
+        148
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:updateCompanyDefaultLLMModel",
+      "type": "function",
+      "name": "updateCompanyDefaultLLMModel",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        150,
+        153
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:testCompanyLLMModel",
+      "type": "function",
+      "name": "testCompanyLLMModel",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        155,
+        158
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:fetchPlatformLLMProviders",
+      "type": "function",
+      "name": "fetchPlatformLLMProviders",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        160,
+        163
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:createPlatformLLMProvider",
+      "type": "function",
+      "name": "createPlatformLLMProvider",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        165,
+        171
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:updatePlatformLLMProvider",
+      "type": "function",
+      "name": "updatePlatformLLMProvider",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        173,
+        179
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:deletePlatformLLMProvider",
+      "type": "function",
+      "name": "deletePlatformLLMProvider",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        181,
+        183
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:fetchPlatformLLMModels",
+      "type": "function",
+      "name": "fetchPlatformLLMModels",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        185,
+        188
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:createPlatformLLMModel",
+      "type": "function",
+      "name": "createPlatformLLMModel",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        190,
+        193
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:updatePlatformLLMModel",
+      "type": "function",
+      "name": "updatePlatformLLMModel",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        195,
+        198
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:deletePlatformLLMModel",
+      "type": "function",
+      "name": "deletePlatformLLMModel",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        200,
+        202
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:fetchPlatformLLMTestSettings",
+      "type": "function",
+      "name": "fetchPlatformLLMTestSettings",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        204,
+        207
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:updatePlatformLLMTestSettings",
+      "type": "function",
+      "name": "updatePlatformLLMTestSettings",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        209,
+        212
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:fetchTenantLLMAuthorization",
+      "type": "function",
+      "name": "fetchTenantLLMAuthorization",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        214,
+        217
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:updateTenantLLMAuthorization",
+      "type": "function",
+      "name": "updateTenantLLMAuthorization",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        219,
+        228
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/llm-settings.ts:testPlatformLLMModel",
+      "type": "function",
+      "name": "testPlatformLLMModel",
+      "filePath": "web/src/api/modules/llm-settings.ts",
+      "lineRange": [
+        230,
+        233
+      ],
+      "summary": "实现大语言模型(LLM)配置相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/api/modules/models.ts",
+      "type": "file",
+      "name": "models.ts",
+      "filePath": "web/src/api/modules/models.ts",
+      "summary": "提供通用功能模块的类型定义、常量或工具函数。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "moderate",
+      "languageNotes": ""
+    },
+    {
+      "id": "function:web/src/api/modules/models.ts:buildFormData",
+      "type": "function",
+      "name": "buildFormData",
+      "filePath": "web/src/api/modules/models.ts",
+      "lineRange": [
+        56,
+        76
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/models.ts:buildListParams",
+      "type": "function",
+      "name": "buildListParams",
+      "filePath": "web/src/api/modules/models.ts",
+      "lineRange": [
+        78,
+        90
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/models.ts:fetchModelAssets",
+      "type": "function",
+      "name": "fetchModelAssets",
+      "filePath": "web/src/api/modules/models.ts",
+      "lineRange": [
+        92,
+        97
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/models.ts:createModelAsset",
+      "type": "function",
+      "name": "createModelAsset",
+      "filePath": "web/src/api/modules/models.ts",
+      "lineRange": [
+        99,
+        102
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/models.ts:updateModelAsset",
+      "type": "function",
+      "name": "updateModelAsset",
+      "filePath": "web/src/api/modules/models.ts",
+      "lineRange": [
+        104,
+        107
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/models.ts:deleteModelAsset",
+      "type": "function",
+      "name": "deleteModelAsset",
+      "filePath": "web/src/api/modules/models.ts",
+      "lineRange": [
+        109,
+        111
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/api/modules/point-management.ts",
+      "type": "file",
+      "name": "point-management.ts",
+      "filePath": "web/src/api/modules/point-management.ts",
+      "summary": "提供通用功能模块的类型定义、常量或工具函数。",
+      "tags": [
+        "frontend-view",
+        "admin-management"
+      ],
+      "complexity": "moderate",
+      "languageNotes": ""
+    },
+    {
+      "id": "function:web/src/api/modules/point-management.ts:fetchPoints",
+      "type": "function",
+      "name": "fetchPoints",
+      "filePath": "web/src/api/modules/point-management.ts",
+      "lineRange": [
+        51,
+        56
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "admin-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/point-management.ts:createPoint",
+      "type": "function",
+      "name": "createPoint",
+      "filePath": "web/src/api/modules/point-management.ts",
+      "lineRange": [
+        58,
+        61
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "admin-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/point-management.ts:updatePoint",
+      "type": "function",
+      "name": "updatePoint",
+      "filePath": "web/src/api/modules/point-management.ts",
+      "lineRange": [
+        63,
+        66
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "admin-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/point-management.ts:deletePoint",
+      "type": "function",
+      "name": "deletePoint",
+      "filePath": "web/src/api/modules/point-management.ts",
+      "lineRange": [
+        68,
+        70
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "admin-management"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDevices",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDevices",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceStats",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceStats",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:updateDevice",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:updateDevice",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceAuthorizationRequests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceAuthorizationRequests",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceAuthorizations",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceAuthorizations",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:updateDeviceAuthorizationRequestName",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:updateDeviceAuthorizationRequestName",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceActivationLogs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceActivationLogs",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:bindDeviceAuthorizationRequest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:bindDeviceAuthorizationRequest",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:ignoreDeviceAuthorizationRequest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:ignoreDeviceAuthorizationRequest",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:authorizeDevice",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:authorizeDevice",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:revokeDeviceAuthorization",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:revokeDeviceAuthorization",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceGroups",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceGroups",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:createDeviceGroup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:createDeviceGroup",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:updateDeviceGroup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:updateDeviceGroup",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:deleteDeviceGroup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:deleteDeviceGroup",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceApplications",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceApplications",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:createDeviceApplication",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:createDeviceApplication",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:updateDeviceApplication",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:updateDeviceApplication",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:fetchEmployees",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:fetchEmployees",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:createEmployee",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:createEmployee",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:updateEmployee",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:updateEmployee",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:deleteEmployee",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:deleteEmployee",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:resetEmployeePassword",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:resetEmployeePassword",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:fetchTenantRoles",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:fetchTenantRoles",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:createTenantRole",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:createTenantRole",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:updateTenantRole",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:updateTenantRole",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:deleteTenantRole",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:deleteTenantRole",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:fetchMyTenantCatalog",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:fetchMyTenantCatalog",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:buildUploadFormData",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:readBlobErrorMessage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:extractFileName",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:saveBlob",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:authorizedDownloadRequest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:fetchKnowledgeDocuments",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:fetchKnowledgeDocuments",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:uploadKnowledgeDocument",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:uploadKnowledgeDocument",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:downloadKnowledgeDocument",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:downloadKnowledgeDocument",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:deleteKnowledgeDocument",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:deleteKnowledgeDocument",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:reviewKnowledgeDocument",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:reviewKnowledgeDocument",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:bulkDownloadKnowledgeDocuments",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/knowledge-base.ts",
+      "target": "function:web/src/api/modules/knowledge-base.ts:bulkDownloadKnowledgeDocuments",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/api/modules/knowledge-base.ts:authorizedDownloadRequest",
+      "target": "function:web/src/api/modules/knowledge-base.ts:extractFileName",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/api/modules/knowledge-base.ts:authorizedDownloadRequest",
+      "target": "function:web/src/api/modules/knowledge-base.ts:saveBlob",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/api/modules/knowledge-base.ts:authorizedDownloadRequest",
+      "target": "function:web/src/api/modules/knowledge-base.ts:readBlobErrorMessage",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/api/modules/knowledge-base.ts:uploadKnowledgeDocument",
+      "target": "function:web/src/api/modules/knowledge-base.ts:buildUploadFormData",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/api/modules/knowledge-base.ts:downloadKnowledgeDocument",
+      "target": "function:web/src/api/modules/knowledge-base.ts:authorizedDownloadRequest",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/api/modules/knowledge-base.ts:bulkDownloadKnowledgeDocuments",
+      "target": "function:web/src/api/modules/knowledge-base.ts:authorizedDownloadRequest",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-providers.ts",
+      "target": "function:web/src/api/modules/llm-providers.ts:buildListParams",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-providers.ts",
+      "target": "function:web/src/api/modules/llm-providers.ts:buildFormData",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-providers.ts",
+      "target": "function:web/src/api/modules/llm-providers.ts:fetchLLMProviders",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-providers.ts",
+      "target": "function:web/src/api/modules/llm-providers.ts:fetchLLMProviders",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-providers.ts",
+      "target": "function:web/src/api/modules/llm-providers.ts:createLLMProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-providers.ts",
+      "target": "function:web/src/api/modules/llm-providers.ts:createLLMProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-providers.ts",
+      "target": "function:web/src/api/modules/llm-providers.ts:updateLLMProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-providers.ts",
+      "target": "function:web/src/api/modules/llm-providers.ts:updateLLMProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-providers.ts",
+      "target": "function:web/src/api/modules/llm-providers.ts:deleteLLMProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-providers.ts",
+      "target": "function:web/src/api/modules/llm-providers.ts:deleteLLMProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-providers.ts",
+      "target": "function:web/src/api/modules/llm-providers.ts:testLLMConnection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-providers.ts",
+      "target": "function:web/src/api/modules/llm-providers.ts:testLLMConnection",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/api/modules/llm-providers.ts:fetchLLMProviders",
+      "target": "function:web/src/api/modules/llm-providers.ts:buildListParams",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/api/modules/llm-providers.ts:createLLMProvider",
+      "target": "function:web/src/api/modules/llm-providers.ts:buildFormData",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:buildProviderFormData",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:fetchCompanyLLMOptions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:fetchCompanyLLMOptions",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:updateCompanyDefaultLLMModel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:updateCompanyDefaultLLMModel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:testCompanyLLMModel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:testCompanyLLMModel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:fetchPlatformLLMProviders",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:fetchPlatformLLMProviders",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:createPlatformLLMProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:createPlatformLLMProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:updatePlatformLLMProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:updatePlatformLLMProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:deletePlatformLLMProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:deletePlatformLLMProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:fetchPlatformLLMModels",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:fetchPlatformLLMModels",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:createPlatformLLMModel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:createPlatformLLMModel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:updatePlatformLLMModel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:updatePlatformLLMModel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:deletePlatformLLMModel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:deletePlatformLLMModel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:fetchPlatformLLMTestSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:fetchPlatformLLMTestSettings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:updatePlatformLLMTestSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:updatePlatformLLMTestSettings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:fetchTenantLLMAuthorization",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:fetchTenantLLMAuthorization",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:updateTenantLLMAuthorization",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:updateTenantLLMAuthorization",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:testPlatformLLMModel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/llm-settings.ts",
+      "target": "function:web/src/api/modules/llm-settings.ts:testPlatformLLMModel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/api/modules/llm-settings.ts:createPlatformLLMProvider",
+      "target": "function:web/src/api/modules/llm-settings.ts:buildProviderFormData",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/api/modules/llm-settings.ts:updatePlatformLLMProvider",
+      "target": "function:web/src/api/modules/llm-settings.ts:buildProviderFormData",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/models.ts",
+      "target": "function:web/src/api/modules/models.ts:buildFormData",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/models.ts",
+      "target": "function:web/src/api/modules/models.ts:buildListParams",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/models.ts",
+      "target": "function:web/src/api/modules/models.ts:fetchModelAssets",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/models.ts",
+      "target": "function:web/src/api/modules/models.ts:fetchModelAssets",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/models.ts",
+      "target": "function:web/src/api/modules/models.ts:createModelAsset",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/models.ts",
+      "target": "function:web/src/api/modules/models.ts:createModelAsset",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/models.ts",
+      "target": "function:web/src/api/modules/models.ts:updateModelAsset",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/models.ts",
+      "target": "function:web/src/api/modules/models.ts:updateModelAsset",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/models.ts",
+      "target": "function:web/src/api/modules/models.ts:deleteModelAsset",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/models.ts",
+      "target": "function:web/src/api/modules/models.ts:deleteModelAsset",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/api/modules/models.ts:fetchModelAssets",
+      "target": "function:web/src/api/modules/models.ts:buildListParams",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/api/modules/models.ts:createModelAsset",
+      "target": "function:web/src/api/modules/models.ts:buildFormData",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/api/modules/models.ts:updateModelAsset",
+      "target": "function:web/src/api/modules/models.ts:buildFormData",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/point-management.ts",
+      "target": "function:web/src/api/modules/point-management.ts:fetchPoints",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/point-management.ts",
+      "target": "function:web/src/api/modules/point-management.ts:fetchPoints",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/point-management.ts",
+      "target": "function:web/src/api/modules/point-management.ts:createPoint",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/point-management.ts",
+      "target": "function:web/src/api/modules/point-management.ts:createPoint",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/point-management.ts",
+      "target": "function:web/src/api/modules/point-management.ts:updatePoint",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/point-management.ts",
+      "target": "function:web/src/api/modules/point-management.ts:updatePoint",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/point-management.ts",
+      "target": "function:web/src/api/modules/point-management.ts:deletePoint",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/point-management.ts",
+      "target": "function:web/src/api/modules/point-management.ts:deletePoint",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

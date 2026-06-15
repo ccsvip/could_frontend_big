@@ -1,0 +1,1054 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/apps/knowledge_base/urls.py",
+      "type": "file",
+      "name": "urls.py",
+      "filePath": "backend/apps/knowledge_base/urls.py",
+      "summary": "该文件配置了应用的URL路由映射，关联请求路径与对应的视图函数。",
+      "tags": [
+        "routing",
+        "configuration",
+        "entry-point"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/knowledge_base/views.py",
+      "type": "file",
+      "name": "views.py",
+      "filePath": "backend/apps/knowledge_base/views.py",
+      "summary": "该文件包含了处理前端请求的API视图和业务逻辑接口，负责参数校验与响应。",
+      "tags": [
+        "api-handler",
+        "controller",
+        "web-endpoint"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/views.py:get_document_size",
+      "type": "function",
+      "name": "get_document_size",
+      "filePath": "backend/apps/knowledge_base/views.py",
+      "lineRange": [
+        40,
+        46
+      ],
+      "summary": "该文件包含了处理前端请求的API视图和业务逻辑接口，负责参数校验与响应。",
+      "tags": [
+        "api-handler",
+        "controller",
+        "web-endpoint"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/views.py:build_zip_entry_name",
+      "type": "function",
+      "name": "build_zip_entry_name",
+      "filePath": "backend/apps/knowledge_base/views.py",
+      "lineRange": [
+        57,
+        67
+      ],
+      "summary": "该文件包含了处理前端请求的API视图和业务逻辑接口，负责参数校验与响应。",
+      "tags": [
+        "api-handler",
+        "controller",
+        "web-endpoint"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/views.py:build_content_disposition",
+      "type": "function",
+      "name": "build_content_disposition",
+      "filePath": "backend/apps/knowledge_base/views.py",
+      "lineRange": [
+        70,
+        72
+      ],
+      "summary": "该文件包含了处理前端请求的API视图和业务逻辑接口，负责参数校验与响应。",
+      "tags": [
+        "api-handler",
+        "controller",
+        "web-endpoint"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/views.py:PermissionMappedViewSet",
+      "type": "class",
+      "name": "PermissionMappedViewSet",
+      "filePath": "backend/apps/knowledge_base/views.py",
+      "lineRange": [
+        49,
+        54
+      ],
+      "summary": "该文件包含了处理前端请求的API视图和业务逻辑接口，负责参数校验与响应。",
+      "tags": [
+        "api-handler",
+        "controller",
+        "web-endpoint"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/views.py:KnowledgeDocumentViewSet",
+      "type": "class",
+      "name": "KnowledgeDocumentViewSet",
+      "filePath": "backend/apps/knowledge_base/views.py",
+      "lineRange": [
+        87,
+        252
+      ],
+      "summary": "该文件包含了处理前端请求的API视图和业务逻辑接口，负责参数校验与响应。",
+      "tags": [
+        "api-handler",
+        "controller",
+        "web-endpoint"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/resources/services/feishu.py",
+      "type": "file",
+      "name": "feishu.py",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:_build_signature",
+      "type": "function",
+      "name": "_build_signature",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        37,
+        44
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:_format_beijing_now",
+      "type": "function",
+      "name": "_format_beijing_now",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        47,
+        49
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:_is_localhost",
+      "type": "function",
+      "name": "_is_localhost",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        52,
+        54
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:_resolve_server_ip",
+      "type": "function",
+      "name": "_resolve_server_ip",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        57,
+        99
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:_append_server_ip",
+      "type": "function",
+      "name": "_append_server_ip",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        102,
+        105
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:send_feishu_text",
+      "type": "function",
+      "name": "send_feishu_text",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        108,
+        156
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:_resolve_username",
+      "type": "function",
+      "name": "_resolve_username",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        159,
+        179
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:_resolve_company_name",
+      "type": "function",
+      "name": "_resolve_company_name",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        182,
+        190
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:notify_business_event",
+      "type": "function",
+      "name": "notify_business_event",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        193,
+        226
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:notify_command_event",
+      "type": "function",
+      "name": "notify_command_event",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        229,
+        251
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:notify_control_command_event",
+      "type": "function",
+      "name": "notify_control_command_event",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        254,
+        262
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:send_feishu_card",
+      "type": "function",
+      "name": "send_feishu_card",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        288,
+        331
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:build_business_event_card",
+      "type": "function",
+      "name": "build_business_event_card",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        334,
+        399
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:notify_business_event_card",
+      "type": "function",
+      "name": "notify_business_event_card",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        402,
+        421
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:_diff_field_element",
+      "type": "function",
+      "name": "_diff_field_element",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        424,
+        441
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:build_command_change_card",
+      "type": "function",
+      "name": "build_command_change_card",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        444,
+        522
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:notify_command_change",
+      "type": "function",
+      "name": "notify_command_change",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "lineRange": [
+        525,
+        549
+      ],
+      "summary": "该文件封装了与飞书（Feishu）API集成的相关服务接口，处理外部平台的交互。",
+      "tags": [
+        "integration",
+        "third-party",
+        "external-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/resources/tasks.py",
+      "type": "file",
+      "name": "tasks.py",
+      "filePath": "backend/apps/resources/tasks.py",
+      "summary": "该文件包含后台异步执行的Celery任务，处理耗时计算与定时操作。",
+      "tags": [
+        "background-task",
+        "async",
+        "job-queue"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/resources/tasks.py:_resolve_notification_user",
+      "type": "function",
+      "name": "_resolve_notification_user",
+      "filePath": "backend/apps/resources/tasks.py",
+      "lineRange": [
+        13,
+        33
+      ],
+      "summary": "该文件包含后台异步执行的Celery任务，处理耗时计算与定时操作。",
+      "tags": [
+        "background-task",
+        "async",
+        "job-queue"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/tasks.py:_resolve_notification_company",
+      "type": "function",
+      "name": "_resolve_notification_company",
+      "filePath": "backend/apps/resources/tasks.py",
+      "lineRange": [
+        36,
+        45
+      ],
+      "summary": "该文件包含后台异步执行的Celery任务，处理耗时计算与定时操作。",
+      "tags": [
+        "background-task",
+        "async",
+        "job-queue"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/tasks.py:notify_command_event_task",
+      "type": "function",
+      "name": "notify_command_event_task",
+      "filePath": "backend/apps/resources/tasks.py",
+      "lineRange": [
+        49,
+        59
+      ],
+      "summary": "该文件包含后台异步执行的Celery任务，处理耗时计算与定时操作。",
+      "tags": [
+        "background-task",
+        "async",
+        "job-queue"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/tasks.py:enqueue_command_notification",
+      "type": "function",
+      "name": "enqueue_command_notification",
+      "filePath": "backend/apps/resources/tasks.py",
+      "lineRange": [
+        62,
+        78
+      ],
+      "summary": "该文件包含后台异步执行的Celery任务，处理耗时计算与定时操作。",
+      "tags": [
+        "background-task",
+        "async",
+        "job-queue"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/tasks.py:notify_command_change_task",
+      "type": "function",
+      "name": "notify_command_change_task",
+      "filePath": "backend/apps/resources/tasks.py",
+      "lineRange": [
+        82,
+        105
+      ],
+      "summary": "该文件包含后台异步执行的Celery任务，处理耗时计算与定时操作。",
+      "tags": [
+        "background-task",
+        "async",
+        "job-queue"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/resources/tasks.py:enqueue_command_change_notification",
+      "type": "function",
+      "name": "enqueue_command_change_notification",
+      "filePath": "backend/apps/resources/tasks.py",
+      "lineRange": [
+        108,
+        137
+      ],
+      "summary": "该文件包含后台异步执行的Celery任务，处理耗时计算与定时操作。",
+      "tags": [
+        "background-task",
+        "async",
+        "job-queue"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_aliyun_command_access_data.py",
+      "type": "file",
+      "name": "test_aliyun_command_access_data.py",
+      "filePath": "backend/apps/resources/tests/test_aliyun_command_access_data.py",
+      "summary": "该文件包含用于验证业务逻辑的自动化测试用例，确保系统稳定性。",
+      "tags": [
+        "test",
+        "quality-assurance",
+        "unit-testing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_aliyun_command_access_data.py:AliyunCommandAccessDataMigrationTests",
+      "type": "class",
+      "name": "AliyunCommandAccessDataMigrationTests",
+      "filePath": "backend/apps/resources/tests/test_aliyun_command_access_data.py",
+      "lineRange": [
+        12,
+        42
+      ],
+      "summary": "该文件包含用于验证业务逻辑的自动化测试用例，确保系统稳定性。",
+      "tags": [
+        "test",
+        "quality-assurance",
+        "unit-testing"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/knowledge_base/views.py",
+      "target": "function:backend/apps/knowledge_base/views.py:get_document_size",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/views.py",
+      "target": "function:backend/apps/knowledge_base/views.py:build_zip_entry_name",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/views.py",
+      "target": "function:backend/apps/knowledge_base/views.py:build_content_disposition",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/views.py",
+      "target": "class:backend/apps/knowledge_base/views.py:PermissionMappedViewSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/views.py",
+      "target": "class:backend/apps/knowledge_base/views.py:KnowledgeDocumentViewSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:_build_signature",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:_format_beijing_now",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:_is_localhost",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:_resolve_server_ip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:_append_server_ip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:send_feishu_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:_resolve_username",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:_resolve_company_name",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:notify_business_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:notify_command_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:notify_control_command_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:send_feishu_card",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:build_business_event_card",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:notify_business_event_card",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:_diff_field_element",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:build_command_change_card",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:notify_command_change",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tasks.py",
+      "target": "function:backend/apps/resources/tasks.py:_resolve_notification_user",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tasks.py",
+      "target": "function:backend/apps/resources/tasks.py:_resolve_notification_company",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tasks.py",
+      "target": "function:backend/apps/resources/tasks.py:notify_command_event_task",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tasks.py",
+      "target": "function:backend/apps/resources/tasks.py:enqueue_command_notification",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tasks.py",
+      "target": "function:backend/apps/resources/tasks.py:notify_command_change_task",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tasks.py",
+      "target": "function:backend/apps/resources/tasks.py:enqueue_command_change_notification",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_aliyun_command_access_data.py",
+      "target": "class:backend/apps/resources/tests/test_aliyun_command_access_data.py:AliyunCommandAccessDataMigrationTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/urls.py",
+      "target": "file:backend/apps/knowledge_base/views.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/views.py",
+      "target": "file:backend/apps/accounts/permissions.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/views.py",
+      "target": "file:backend/apps/knowledge_base/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/views.py",
+      "target": "file:backend/apps/knowledge_base/serializers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/views.py",
+      "target": "file:backend/apps/knowledge_base/services.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/views.py",
+      "target": "file:backend/apps/tenants/mixins.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/views.py",
+      "target": "file:backend/config/business_cache.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tasks.py",
+      "target": "file:backend/apps/resources/services/feishu.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_aliyun_command_access_data.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:_resolve_server_ip",
+      "target": "function:backend/apps/resources/services/feishu.py:_is_localhost",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:_resolve_server_ip",
+      "target": "function:backend/apps/resources/services/feishu.py:_is_localhost",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:_resolve_server_ip",
+      "target": "function:backend/apps/resources/services/feishu.py:_is_localhost",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:_resolve_server_ip",
+      "target": "function:backend/apps/resources/services/feishu.py:_is_localhost",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:_append_server_ip",
+      "target": "function:backend/apps/resources/services/feishu.py:_resolve_server_ip",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:send_feishu_text",
+      "target": "function:backend/apps/resources/services/feishu.py:_append_server_ip",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:send_feishu_text",
+      "target": "function:backend/apps/resources/services/feishu.py:_build_signature",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:notify_business_event",
+      "target": "function:backend/apps/resources/services/feishu.py:_resolve_company_name",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:notify_business_event",
+      "target": "function:backend/apps/resources/services/feishu.py:_resolve_username",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:notify_business_event",
+      "target": "function:backend/apps/resources/services/feishu.py:_format_beijing_now",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:notify_business_event",
+      "target": "function:backend/apps/resources/services/feishu.py:send_feishu_text",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:notify_command_event",
+      "target": "function:backend/apps/resources/services/feishu.py:notify_business_event_card",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:notify_control_command_event",
+      "target": "function:backend/apps/resources/services/feishu.py:notify_command_event",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:send_feishu_card",
+      "target": "function:backend/apps/resources/services/feishu.py:_build_signature",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:build_business_event_card",
+      "target": "function:backend/apps/resources/services/feishu.py:_resolve_company_name",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:build_business_event_card",
+      "target": "function:backend/apps/resources/services/feishu.py:_resolve_username",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:build_business_event_card",
+      "target": "function:backend/apps/resources/services/feishu.py:_format_beijing_now",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:build_business_event_card",
+      "target": "function:backend/apps/resources/services/feishu.py:_resolve_server_ip",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:notify_business_event_card",
+      "target": "function:backend/apps/resources/services/feishu.py:send_feishu_card",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:notify_business_event_card",
+      "target": "function:backend/apps/resources/services/feishu.py:build_business_event_card",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:build_command_change_card",
+      "target": "function:backend/apps/resources/services/feishu.py:_diff_field_element",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:build_command_change_card",
+      "target": "function:backend/apps/resources/services/feishu.py:_diff_field_element",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:build_command_change_card",
+      "target": "function:backend/apps/resources/services/feishu.py:_format_beijing_now",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:build_command_change_card",
+      "target": "function:backend/apps/resources/services/feishu.py:_resolve_server_ip",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:notify_command_change",
+      "target": "function:backend/apps/resources/services/feishu.py:build_command_change_card",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:notify_command_change",
+      "target": "function:backend/apps/resources/services/feishu.py:_resolve_username",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:notify_command_change",
+      "target": "function:backend/apps/resources/services/feishu.py:_resolve_company_name",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/services/feishu.py:notify_command_change",
+      "target": "function:backend/apps/resources/services/feishu.py:send_feishu_card",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/tasks.py:enqueue_command_notification",
+      "target": "function:backend/apps/resources/tasks.py:_resolve_notification_user",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/tasks.py:enqueue_command_notification",
+      "target": "function:backend/apps/resources/tasks.py:_resolve_notification_company",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/tasks.py:enqueue_command_change_notification",
+      "target": "function:backend/apps/resources/tasks.py:_resolve_notification_user",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/apps/resources/tasks.py:enqueue_command_change_notification",
+      "target": "function:backend/apps/resources/tasks.py:_resolve_notification_company",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

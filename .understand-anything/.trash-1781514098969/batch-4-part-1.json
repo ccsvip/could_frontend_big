@@ -1,0 +1,1258 @@
+{
+  "nodes": [
+    {
+      "id": "file:web/src/views/asr-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/asr-management/index.tsx",
+      "summary": "语音识别（ASR）管理页面，包含服务状态监控、实时测试和替换规则配置。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "asr",
+        "management"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/asr-management/index.tsx:downsampleBuffer",
+      "type": "function",
+      "name": "downsampleBuffer",
+      "filePath": "web/src/views/asr-management/index.tsx",
+      "lineRange": [
+        115,
+        139
+      ],
+      "summary": "函数 downsampleBuffer，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/asr-management/index.tsx:AsrManagementPage",
+      "type": "function",
+      "name": "AsrManagementPage",
+      "filePath": "web/src/views/asr-management/index.tsx",
+      "lineRange": [
+        150,
+        947
+      ],
+      "summary": "函数 AsrManagementPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/asr-settings/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/asr-settings/index.tsx",
+      "summary": "语音识别（ASR）系统设置页面，用于配置ASR服务的基础参数。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "asr",
+        "settings"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/asr-settings/index.tsx:AsrSettingsPage",
+      "type": "function",
+      "name": "AsrSettingsPage",
+      "filePath": "web/src/views/asr-settings/index.tsx",
+      "lineRange": [
+        35,
+        369
+      ],
+      "summary": "函数 AsrSettingsPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/command-management/command-export-format.ts",
+      "type": "file",
+      "name": "command-export-format.ts",
+      "filePath": "web/src/views/command-management/command-export-format.ts",
+      "summary": "定义指令导出的格式标准和相关工具函数。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "command",
+        "export"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:web/src/views/command-management/command-export-format.ts:buildExportTool",
+      "type": "function",
+      "name": "buildExportTool",
+      "filePath": "web/src/views/command-management/command-export-format.ts",
+      "lineRange": [
+        51,
+        87
+      ],
+      "summary": "函数 buildExportTool，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/command-management/command-export-format.ts:buildCommandGroupExportPayload",
+      "type": "function",
+      "name": "buildCommandGroupExportPayload",
+      "filePath": "web/src/views/command-management/command-export-format.ts",
+      "lineRange": [
+        89,
+        98
+      ],
+      "summary": "函数 buildCommandGroupExportPayload，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/command-management/command-export-format.ts:buildCommandGroupExportCollectionPayload",
+      "type": "function",
+      "name": "buildCommandGroupExportCollectionPayload",
+      "filePath": "web/src/views/command-management/command-export-format.ts",
+      "lineRange": [
+        100,
+        108
+      ],
+      "summary": "函数 buildCommandGroupExportCollectionPayload，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/command-management/command-export-format.ts:buildCommandGroupExportFilename",
+      "type": "function",
+      "name": "buildCommandGroupExportFilename",
+      "filePath": "web/src/views/command-management/command-export-format.ts",
+      "lineRange": [
+        110,
+        113
+      ],
+      "summary": "函数 buildCommandGroupExportFilename，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/views/command-management/command-export-state.ts",
+      "type": "file",
+      "name": "command-export-state.ts",
+      "filePath": "web/src/views/command-management/command-export-state.ts",
+      "summary": "管理指令导出的状态和进度信息。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "command",
+        "export"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/command-management/command-export-state.ts:collectCommandGroupPages",
+      "type": "function",
+      "name": "collectCommandGroupPages",
+      "filePath": "web/src/views/command-management/command-export-state.ts",
+      "lineRange": [
+        8,
+        22
+      ],
+      "summary": "函数 collectCommandGroupPages，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/command-management/command-export-state.ts:getCommandGroupExportActionState",
+      "type": "function",
+      "name": "getCommandGroupExportActionState",
+      "filePath": "web/src/views/command-management/command-export-state.ts",
+      "lineRange": [
+        24,
+        43
+      ],
+      "summary": "函数 getCommandGroupExportActionState，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/views/command-management/export.tsx",
+      "type": "file",
+      "name": "export.tsx",
+      "filePath": "web/src/views/command-management/export.tsx",
+      "summary": "指令管理模块的导出页面，支持选择不同格式导出指令数据。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "command",
+        "export"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:web/src/views/command-management/export.tsx:CommandExportManagementPage",
+      "type": "function",
+      "name": "CommandExportManagementPage",
+      "filePath": "web/src/views/command-management/export.tsx",
+      "lineRange": [
+        39,
+        161
+      ],
+      "summary": "函数 CommandExportManagementPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:web/src/views/command-management/groups.tsx",
+      "type": "file",
+      "name": "groups.tsx",
+      "filePath": "web/src/views/command-management/groups.tsx",
+      "summary": "指令分组管理视图，用于维护和分类相关联的指令集合。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "command",
+        "group"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:web/src/views/command-management/groups.tsx:CommandGroupManagementPage",
+      "type": "function",
+      "name": "CommandGroupManagementPage",
+      "filePath": "web/src/views/command-management/groups.tsx",
+      "lineRange": [
+        37,
+        217
+      ],
+      "summary": "函数 CommandGroupManagementPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:web/src/views/command-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/command-management/index.tsx",
+      "summary": "指令管理入口页面，集成各级指令、任务和分组的配置入口。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "command",
+        "entry-point"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/command-management/index.tsx:ControlCommandManagementPage",
+      "type": "function",
+      "name": "ControlCommandManagementPage",
+      "filePath": "web/src/views/command-management/index.tsx",
+      "lineRange": [
+        68,
+        311
+      ],
+      "summary": "函数 ControlCommandManagementPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/command-management/points.tsx",
+      "type": "file",
+      "name": "points.tsx",
+      "filePath": "web/src/views/command-management/points.tsx",
+      "summary": "埋点或关键点管理页面，用于配置指令执行路径中的关键位置点。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "command",
+        "points"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/command-management/points.tsx:PointManagementPage",
+      "type": "function",
+      "name": "PointManagementPage",
+      "filePath": "web/src/views/command-management/points.tsx",
+      "lineRange": [
+        32,
+        243
+      ],
+      "summary": "函数 PointManagementPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/command-management/task-step-form-list.tsx",
+      "type": "file",
+      "name": "task-step-form-list.tsx",
+      "filePath": "web/src/views/command-management/task-step-form-list.tsx",
+      "summary": "任务步骤表单列表组件，用于编辑和编排指令任务的具体执行步骤。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "command",
+        "task"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/command-management/task-step-form-list.tsx:buildStepPayload",
+      "type": "function",
+      "name": "buildStepPayload",
+      "filePath": "web/src/views/command-management/task-step-form-list.tsx",
+      "lineRange": [
+        85,
+        109
+      ],
+      "summary": "函数 buildStepPayload，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/command-management/task-step-form-list.tsx:mapStepRecordToFormValue",
+      "type": "function",
+      "name": "mapStepRecordToFormValue",
+      "filePath": "web/src/views/command-management/task-step-form-list.tsx",
+      "lineRange": [
+        111,
+        122
+      ],
+      "summary": "函数 mapStepRecordToFormValue，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/command-management/task-step-form-list.tsx:getDragScrollContainer",
+      "type": "function",
+      "name": "getDragScrollContainer",
+      "filePath": "web/src/views/command-management/task-step-form-list.tsx",
+      "lineRange": [
+        126,
+        140
+      ],
+      "summary": "函数 getDragScrollContainer，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/command-management/task-step-form-list.tsx:TaskStepFormList",
+      "type": "function",
+      "name": "TaskStepFormList",
+      "filePath": "web/src/views/command-management/task-step-form-list.tsx",
+      "lineRange": [
+        142,
+        535
+      ],
+      "summary": "函数 TaskStepFormList，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/command-management/tasks.tsx",
+      "type": "file",
+      "name": "tasks.tsx",
+      "filePath": "web/src/views/command-management/tasks.tsx",
+      "summary": "指令任务管理页面，用于创建和维护由多个指令步骤组成的执行任务。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "command",
+        "task"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/command-management/tasks.tsx:collectPages",
+      "type": "function",
+      "name": "collectPages",
+      "filePath": "web/src/views/command-management/tasks.tsx",
+      "lineRange": [
+        60,
+        71
+      ],
+      "summary": "函数 collectPages，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/command-management/tasks.tsx:getStepSummary",
+      "type": "function",
+      "name": "getStepSummary",
+      "filePath": "web/src/views/command-management/tasks.tsx",
+      "lineRange": [
+        73,
+        84
+      ],
+      "summary": "函数 getStepSummary，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/command-management/tasks.tsx:TaskCommandManagementPage",
+      "type": "function",
+      "name": "TaskCommandManagementPage",
+      "filePath": "web/src/views/command-management/tasks.tsx",
+      "lineRange": [
+        86,
+        369
+      ],
+      "summary": "函数 TaskCommandManagementPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/command-management/workspace.tsx",
+      "type": "file",
+      "name": "workspace.tsx",
+      "filePath": "web/src/views/command-management/workspace.tsx",
+      "summary": "指令管理的工作区视图，提供可视化的指令编排和配置环境。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "command",
+        "workspace"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/command-management/workspace.tsx:collectPages",
+      "type": "function",
+      "name": "collectPages",
+      "filePath": "web/src/views/command-management/workspace.tsx",
+      "lineRange": [
+        123,
+        136
+      ],
+      "summary": "函数 collectPages，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/command-management/workspace.tsx:fetchTaskLookupsWithCache",
+      "type": "function",
+      "name": "fetchTaskLookupsWithCache",
+      "filePath": "web/src/views/command-management/workspace.tsx",
+      "lineRange": [
+        138,
+        162
+      ],
+      "summary": "函数 fetchTaskLookupsWithCache，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/command-management/workspace.tsx:isCommandGroupFullExportPayload",
+      "type": "function",
+      "name": "isCommandGroupFullExportPayload",
+      "filePath": "web/src/views/command-management/workspace.tsx",
+      "lineRange": [
+        184,
+        194
+      ],
+      "summary": "函数 isCommandGroupFullExportPayload，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/command-management/workspace.tsx:getStepSummary",
+      "type": "function",
+      "name": "getStepSummary",
+      "filePath": "web/src/views/command-management/workspace.tsx",
+      "lineRange": [
+        196,
+        207
+      ],
+      "summary": "函数 getStepSummary，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/command-management/workspace.tsx:CommandWorkspacePage",
+      "type": "function",
+      "name": "CommandWorkspacePage",
+      "filePath": "web/src/views/command-management/workspace.tsx",
+      "lineRange": [
+        209,
+        1292
+      ],
+      "summary": "函数 CommandWorkspacePage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/device-authorization-center/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/device-authorization-center/index.tsx",
+      "summary": "设备授权中心页面，处理设备接入请求、授权审批和激活日志查询。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "device",
+        "authorization"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/device-authorization-center/index.tsx:DeviceAuthorizationCenterPage",
+      "type": "function",
+      "name": "DeviceAuthorizationCenterPage",
+      "filePath": "web/src/views/device-authorization-center/index.tsx",
+      "lineRange": [
+        83,
+        785
+      ],
+      "summary": "函数 DeviceAuthorizationCenterPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/device-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/device-management/index.tsx",
+      "summary": "设备管理页面，用于查看、控制和维护已接入系统的数字人终端设备。",
+      "tags": [
+        "frontend",
+        "react",
+        "view",
+        "device",
+        "management"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:web/src/views/device-management/index.tsx:buildDeviceEventsWebSocketUrl",
+      "type": "function",
+      "name": "buildDeviceEventsWebSocketUrl",
+      "filePath": "web/src/views/device-management/index.tsx",
+      "lineRange": [
+        96,
+        108
+      ],
+      "summary": "函数 buildDeviceEventsWebSocketUrl，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "internal"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/device-management/index.tsx:DeviceManagementPage",
+      "type": "function",
+      "name": "DeviceManagementPage",
+      "filePath": "web/src/views/device-management/index.tsx",
+      "lineRange": [
+        110,
+        861
+      ],
+      "summary": "函数 DeviceManagementPage，负责处理特定逻辑或组件渲染。",
+      "tags": [
+        "function",
+        "logic",
+        "exported"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:web/src/views/asr-management/index.tsx",
+      "target": "function:web/src/views/asr-management/index.tsx:downsampleBuffer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/asr-management/index.tsx",
+      "target": "function:web/src/views/asr-management/index.tsx:AsrManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/asr-management/index.tsx",
+      "target": "function:web/src/views/asr-management/index.tsx:AsrManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/asr-management/index.tsx",
+      "target": "file:web/src/api/modules/asr.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/asr-management/index.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/asr-management/index.tsx",
+      "target": "file:web/src/store/tenant-scope.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/asr-settings/index.tsx",
+      "target": "function:web/src/views/asr-settings/index.tsx:AsrSettingsPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/asr-settings/index.tsx",
+      "target": "function:web/src/views/asr-settings/index.tsx:AsrSettingsPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/asr-settings/index.tsx",
+      "target": "file:web/src/api/modules/asr.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/command-export-format.ts",
+      "target": "function:web/src/views/command-management/command-export-format.ts:buildExportTool",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/command-export-format.ts",
+      "target": "function:web/src/views/command-management/command-export-format.ts:buildCommandGroupExportPayload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/command-export-format.ts",
+      "target": "function:web/src/views/command-management/command-export-format.ts:buildCommandGroupExportPayload",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/command-management/command-export-format.ts",
+      "target": "function:web/src/views/command-management/command-export-format.ts:buildCommandGroupExportCollectionPayload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/command-export-format.ts",
+      "target": "function:web/src/views/command-management/command-export-format.ts:buildCommandGroupExportCollectionPayload",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/command-management/command-export-format.ts",
+      "target": "function:web/src/views/command-management/command-export-format.ts:buildCommandGroupExportFilename",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/command-export-format.ts",
+      "target": "function:web/src/views/command-management/command-export-format.ts:buildCommandGroupExportFilename",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/command-management/command-export-format.ts",
+      "target": "file:web/src/api/modules/commands.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/command-export-state.ts",
+      "target": "function:web/src/views/command-management/command-export-state.ts:collectCommandGroupPages",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/command-export-state.ts",
+      "target": "function:web/src/views/command-management/command-export-state.ts:collectCommandGroupPages",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/command-management/command-export-state.ts",
+      "target": "function:web/src/views/command-management/command-export-state.ts:getCommandGroupExportActionState",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/command-export-state.ts",
+      "target": "function:web/src/views/command-management/command-export-state.ts:getCommandGroupExportActionState",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/command-management/export.tsx",
+      "target": "function:web/src/views/command-management/export.tsx:CommandExportManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/export.tsx",
+      "target": "function:web/src/views/command-management/export.tsx:CommandExportManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/command-management/export.tsx",
+      "target": "file:web/src/api/modules/commands.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/export.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/export.tsx",
+      "target": "file:web/src/views/command-management/command-export-format.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/export.tsx",
+      "target": "file:web/src/views/command-management/command-export-state.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/groups.tsx",
+      "target": "function:web/src/views/command-management/groups.tsx:CommandGroupManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/groups.tsx",
+      "target": "function:web/src/views/command-management/groups.tsx:CommandGroupManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/command-management/groups.tsx",
+      "target": "file:web/src/api/modules/commands.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/groups.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/index.tsx",
+      "target": "function:web/src/views/command-management/index.tsx:ControlCommandManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/index.tsx",
+      "target": "function:web/src/views/command-management/index.tsx:ControlCommandManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/command-management/index.tsx",
+      "target": "file:web/src/api/modules/commands.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/index.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/points.tsx",
+      "target": "function:web/src/views/command-management/points.tsx:PointManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/points.tsx",
+      "target": "function:web/src/views/command-management/points.tsx:PointManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/command-management/points.tsx",
+      "target": "file:web/src/api/modules/point-management.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/points.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/task-step-form-list.tsx",
+      "target": "function:web/src/views/command-management/task-step-form-list.tsx:buildStepPayload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/task-step-form-list.tsx",
+      "target": "function:web/src/views/command-management/task-step-form-list.tsx:buildStepPayload",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/command-management/task-step-form-list.tsx",
+      "target": "function:web/src/views/command-management/task-step-form-list.tsx:mapStepRecordToFormValue",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/task-step-form-list.tsx",
+      "target": "function:web/src/views/command-management/task-step-form-list.tsx:mapStepRecordToFormValue",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/command-management/task-step-form-list.tsx",
+      "target": "function:web/src/views/command-management/task-step-form-list.tsx:getDragScrollContainer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/task-step-form-list.tsx",
+      "target": "function:web/src/views/command-management/task-step-form-list.tsx:TaskStepFormList",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/task-step-form-list.tsx",
+      "target": "function:web/src/views/command-management/task-step-form-list.tsx:TaskStepFormList",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/command-management/task-step-form-list.tsx",
+      "target": "file:web/src/api/modules/commands.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/tasks.tsx",
+      "target": "function:web/src/views/command-management/tasks.tsx:collectPages",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/tasks.tsx",
+      "target": "function:web/src/views/command-management/tasks.tsx:getStepSummary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/tasks.tsx",
+      "target": "function:web/src/views/command-management/tasks.tsx:TaskCommandManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/tasks.tsx",
+      "target": "function:web/src/views/command-management/tasks.tsx:TaskCommandManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/command-management/tasks.tsx",
+      "target": "file:web/src/api/modules/commands.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/tasks.tsx",
+      "target": "file:web/src/api/modules/point-management.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/tasks.tsx",
+      "target": "file:web/src/api/modules/resources.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/tasks.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/tasks.tsx",
+      "target": "file:web/src/views/command-management/task-step-form-list.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/workspace.tsx",
+      "target": "function:web/src/views/command-management/workspace.tsx:collectPages",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/workspace.tsx",
+      "target": "function:web/src/views/command-management/workspace.tsx:fetchTaskLookupsWithCache",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/workspace.tsx",
+      "target": "function:web/src/views/command-management/workspace.tsx:isCommandGroupFullExportPayload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/workspace.tsx",
+      "target": "function:web/src/views/command-management/workspace.tsx:getStepSummary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/workspace.tsx",
+      "target": "function:web/src/views/command-management/workspace.tsx:CommandWorkspacePage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/command-management/workspace.tsx",
+      "target": "function:web/src/views/command-management/workspace.tsx:CommandWorkspacePage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/command-management/workspace.tsx",
+      "target": "file:web/src/api/modules/commands.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/workspace.tsx",
+      "target": "file:web/src/api/modules/point-management.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/workspace.tsx",
+      "target": "file:web/src/api/modules/resources.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/workspace.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/command-management/workspace.tsx",
+      "target": "file:web/src/views/command-management/task-step-form-list.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/device-authorization-center/index.tsx",
+      "target": "function:web/src/views/device-authorization-center/index.tsx:DeviceAuthorizationCenterPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/device-authorization-center/index.tsx",
+      "target": "function:web/src/views/device-authorization-center/index.tsx:DeviceAuthorizationCenterPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/device-authorization-center/index.tsx",
+      "target": "file:web/src/api/modules/devices.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/device-authorization-center/index.tsx",
+      "target": "file:web/src/api/modules/tenants.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "function:web/src/views/device-management/index.tsx:buildDeviceEventsWebSocketUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "function:web/src/views/device-management/index.tsx:DeviceManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "function:web/src/views/device-management/index.tsx:DeviceManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "file:web/src/api/client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "file:web/src/api/modules/commands.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "file:web/src/api/modules/devices.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "file:web/src/api/modules/models.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "file:web/src/api/modules/resources.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "file:web/src/api/modules/scrolling-texts.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "file:web/src/api/modules/voice-tones.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "file:web/src/store/auth.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "file:web/src/store/tenant-scope.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

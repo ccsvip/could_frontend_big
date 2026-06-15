@@ -1,0 +1,140 @@
+{
+  "nodes": [
+    {
+      "id": "file:wiki/404.html",
+      "type": "file",
+      "name": "404.html",
+      "filePath": "wiki/404.html",
+      "summary": "项目的自定义 404 错误页面，提供未找到页面的友好提示。",
+      "tags": [
+        "error-page",
+        "markup",
+        "frontend"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:wiki/TTS鏁欑▼.md",
+      "type": "document",
+      "name": "TTS鏁欑▼.md",
+      "filePath": "wiki/TTS鏁欑▼.md",
+      "summary": "TTS (Text-to-Speech) 模块的接入与使用教程，指导如何调用语音合成功能。",
+      "tags": [
+        "documentation",
+        "tutorial",
+        "tts",
+        "audio"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:wiki/android-device-runtime-simulator.html",
+      "type": "file",
+      "name": "android-device-runtime-simulator.html",
+      "filePath": "wiki/android-device-runtime-simulator.html",
+      "summary": "安卓设备运行时模拟器页面，用于在浏览器中模拟安卓客户端行为和调试。",
+      "tags": [
+        "simulator",
+        "testing",
+        "android",
+        "development"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:wiki/asr-websocket-tutorial.md",
+      "type": "document",
+      "name": "asr-websocket-tutorial.md",
+      "filePath": "wiki/asr-websocket-tutorial.md",
+      "summary": "ASR WebSocket 最小接入教程，包含环境变量配置、会话流程及客户端代码示例。",
+      "tags": [
+        "documentation",
+        "tutorial",
+        "websocket",
+        "asr"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:wiki/container-dependencies.md",
+      "type": "document",
+      "name": "container-dependencies.md",
+      "filePath": "wiki/container-dependencies.md",
+      "summary": "详细记录了 Solin 容器的依赖关系、启动顺序和数据流走向，是后端架构的重要指导文档。",
+      "tags": [
+        "documentation",
+        "architecture",
+        "docker",
+        "infrastructure"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:wiki/design-audit.html",
+      "type": "file",
+      "name": "design-audit.html",
+      "filePath": "wiki/design-audit.html",
+      "summary": "UI/UX 设计审查页面，包含视觉样式和交互组件的检查清单和参考。",
+      "tags": [
+        "design",
+        "ui-ux",
+        "audit"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:wiki/device-api-latest.html",
+      "type": "file",
+      "name": "device-api-latest.html",
+      "filePath": "wiki/device-api-latest.html",
+      "summary": "最新版本的设备 API 文档或接口展示页面，供前端和设备端开发者参考。",
+      "tags": [
+        "api-docs",
+        "device",
+        "reference"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:wiki/sentry-mcp-codex-guide.html",
+      "type": "file",
+      "name": "sentry-mcp-codex-guide.html",
+      "filePath": "wiki/sentry-mcp-codex-guide.html",
+      "summary": "Sentry MCP 与 Codex 集成指南的 HTML 渲染版本，包含鉴权和故障排查步骤。",
+      "tags": [
+        "sentry",
+        "guide",
+        "monitoring"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:wiki/sentry-mcp-codex-guide.md",
+      "type": "document",
+      "name": "sentry-mcp-codex-guide.md",
+      "filePath": "wiki/sentry-mcp-codex-guide.md",
+      "summary": "Sentry MCP 与 Codex 集成指南，指导开发者如何配置凭证和在 Codex 中使用 Sentry 工具。",
+      "tags": [
+        "documentation",
+        "sentry",
+        "guide",
+        "monitoring"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:wiki/voices_qwen3.json",
+      "type": "config",
+      "name": "voices_qwen3.json",
+      "filePath": "wiki/voices_qwen3.json",
+      "summary": "针对 Qwen3 模型的语音配置文件，定义了可用声音列表及其相关参数。",
+      "tags": [
+        "configuration",
+        "voice",
+        "qwen3"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": []
+}

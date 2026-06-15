@@ -1,0 +1,27 @@
+{
+  "nodes": [
+    {
+      "id": "service:backend/Dockerfile",
+      "type": "service",
+      "name": "Dockerfile",
+      "filePath": "backend/Dockerfile",
+      "summary": "构建包含 Django、DRF 和 Celery 运行环境的镜像，通过多阶段构建优化体积，并封装服务启动序列。",
+      "tags": [
+        "containerization",
+        "infrastructure",
+        "django"
+      ],
+      "complexity": "simple",
+      "languageNotes": "容器内启动序列和健康检查由根目录的 docker-compose 编排，本 Dockerfile 主要固化 Python 系统依赖。"
+    }
+  ],
+  "edges": [
+    {
+      "source": "service:backend/Dockerfile",
+      "target": "file:backend/config/settings/base.py",
+      "type": "deploys",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

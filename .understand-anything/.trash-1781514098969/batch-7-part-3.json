@@ -1,0 +1,566 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/apps/ai_models/tests/test_asr_api.py",
+      "type": "file",
+      "name": "test_asr_api.py",
+      "filePath": "backend/apps/ai_models/tests/test_asr_api.py",
+      "summary": "针对语音识别（ASR）API 的自动化测试用例，覆盖不同请求场景及权限验证。",
+      "tags": [
+        "test",
+        "api-test",
+        "quality-assurance"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/apps/ai_models/tests/test_asr_api.py:ASRApiTests",
+      "type": "class",
+      "name": "ASRApiTests",
+      "filePath": "backend/apps/ai_models/tests/test_asr_api.py",
+      "lineRange": [
+        17,
+        266
+      ],
+      "summary": "定义 ASRApiTests 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "type": "file",
+      "name": "test_chat_api.py",
+      "filePath": "backend/apps/ai_models/tests/test_chat_api.py",
+      "summary": "针对对话大模型（Chat）API 的自动化测试用例，包含多轮对话和上下文验证。",
+      "tags": [
+        "test",
+        "api-test",
+        "quality-assurance"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:backend/apps/ai_models/tests/test_chat_api.py:_read_streaming_body",
+      "type": "function",
+      "name": "_read_streaming_body",
+      "filePath": "backend/apps/ai_models/tests/test_chat_api.py",
+      "lineRange": [
+        18,
+        35
+      ],
+      "summary": "提供 _read_streaming_body 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/ai_models/tests/test_chat_api.py:_sse_content",
+      "type": "function",
+      "name": "_sse_content",
+      "filePath": "backend/apps/ai_models/tests/test_chat_api.py",
+      "lineRange": [
+        38,
+        60
+      ],
+      "summary": "提供 _sse_content 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/tests/test_chat_api.py:ChatAccessDataTests",
+      "type": "class",
+      "name": "ChatAccessDataTests",
+      "filePath": "backend/apps/ai_models/tests/test_chat_api.py",
+      "lineRange": [
+        63,
+        66
+      ],
+      "summary": "定义 ChatAccessDataTests 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/tests/test_chat_api.py:_DummyStreamResponse",
+      "type": "class",
+      "name": "_DummyStreamResponse",
+      "filePath": "backend/apps/ai_models/tests/test_chat_api.py",
+      "lineRange": [
+        69,
+        98
+      ],
+      "summary": "定义 _DummyStreamResponse 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/tests/test_chat_api.py:_DummyJsonResponse",
+      "type": "class",
+      "name": "_DummyJsonResponse",
+      "filePath": "backend/apps/ai_models/tests/test_chat_api.py",
+      "lineRange": [
+        101,
+        109
+      ],
+      "summary": "定义 _DummyJsonResponse 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/tests/test_chat_api.py:_DummyHttpxClient",
+      "type": "class",
+      "name": "_DummyHttpxClient",
+      "filePath": "backend/apps/ai_models/tests/test_chat_api.py",
+      "lineRange": [
+        112,
+        137
+      ],
+      "summary": "定义 _DummyHttpxClient 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/tests/test_chat_api.py:ChatApiTests",
+      "type": "class",
+      "name": "ChatApiTests",
+      "filePath": "backend/apps/ai_models/tests/test_chat_api.py",
+      "lineRange": [
+        140,
+        486
+      ],
+      "summary": "定义 ChatApiTests 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/apps/ai_models/tests/test_llm_model_usage.py",
+      "type": "file",
+      "name": "test_llm_model_usage.py",
+      "filePath": "backend/apps/ai_models/tests/test_llm_model_usage.py",
+      "summary": "验证 LLM 模型用量统计与限流规则的测试用例。",
+      "tags": [
+        "test",
+        "metrics",
+        "quality-assurance"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/apps/ai_models/tests/test_llm_model_usage.py:LLMModelUsageTests",
+      "type": "class",
+      "name": "LLMModelUsageTests",
+      "filePath": "backend/apps/ai_models/tests/test_llm_model_usage.py",
+      "lineRange": [
+        29,
+        380
+      ],
+      "summary": "定义 LLMModelUsageTests 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/apps/ai_models/tests/test_llm_platform_settings_api.py",
+      "type": "file",
+      "name": "test_llm_platform_settings_api.py",
+      "filePath": "backend/apps/ai_models/tests/test_llm_platform_settings_api.py",
+      "summary": "针对底层 LLM 平台配置与管理 API 的测试集。",
+      "tags": [
+        "test",
+        "api-test",
+        "quality-assurance"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/apps/ai_models/tests/test_llm_platform_settings_api.py:LLMPlatformSettingsApiTests",
+      "type": "class",
+      "name": "LLMPlatformSettingsApiTests",
+      "filePath": "backend/apps/ai_models/tests/test_llm_platform_settings_api.py",
+      "lineRange": [
+        13,
+        286
+      ],
+      "summary": "定义 LLMPlatformSettingsApiTests 类，提供相关数据模型或业务逻辑。",
+      "tags": [
+        "class",
+        "data-model",
+        "exported"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/ai_models/tests/test_asr_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_asr_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_asr_api.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_asr_api.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_asr_api.py",
+      "target": "file:backend/apps/devices/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_asr_api.py",
+      "target": "file:backend/apps/devices/models.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_asr_api.py",
+      "target": "file:backend/apps/tenants/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_asr_api.py",
+      "target": "file:backend/apps/tenants/models.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_asr_api.py",
+      "target": "file:backend/apps/tenants/test_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_asr_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_asr_api.py:ASRApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_asr_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_asr_api.py:ASRApiTests",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "file:backend/apps/ai_models/views.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "file:backend/apps/ai_models/views.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "file:backend/apps/tenants/test_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "function:backend/apps/ai_models/tests/test_chat_api.py:_read_streaming_body",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "function:backend/apps/ai_models/tests/test_chat_api.py:_read_streaming_body",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "function:backend/apps/ai_models/tests/test_chat_api.py:_sse_content",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "function:backend/apps/ai_models/tests/test_chat_api.py:_sse_content",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_chat_api.py:ChatAccessDataTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_chat_api.py:ChatAccessDataTests",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_chat_api.py:_DummyStreamResponse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_chat_api.py:_DummyStreamResponse",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_chat_api.py:_DummyJsonResponse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_chat_api.py:_DummyJsonResponse",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_chat_api.py:_DummyHttpxClient",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_chat_api.py:_DummyHttpxClient",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_chat_api.py:ChatApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_chat_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_chat_api.py:ChatApiTests",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_model_usage.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_model_usage.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_model_usage.py",
+      "target": "file:backend/apps/ai_models/llm_services.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_model_usage.py",
+      "target": "file:backend/apps/ai_models/llm_services.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_model_usage.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_model_usage.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_model_usage.py",
+      "target": "file:backend/apps/tenants/test_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_model_usage.py",
+      "target": "class:backend/apps/ai_models/tests/test_llm_model_usage.py:LLMModelUsageTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_model_usage.py",
+      "target": "class:backend/apps/ai_models/tests/test_llm_model_usage.py:LLMModelUsageTests",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_platform_settings_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_platform_settings_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_platform_settings_api.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_platform_settings_api.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_platform_settings_api.py",
+      "target": "file:backend/apps/tenants/test_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_platform_settings_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_llm_platform_settings_api.py:LLMPlatformSettingsApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_platform_settings_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_llm_platform_settings_api.py:LLMPlatformSettingsApiTests",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

@@ -1,0 +1,1162 @@
+[
+  {
+    "batchIndex": 1,
+    "files": [
+      {
+        "path": "backend/apps/ai_models/tests/test_asr_realtime.py",
+        "language": "python",
+        "sizeLines": 253,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/audit/middleware.py",
+        "language": "python",
+        "sizeLines": 99,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/admin.py",
+        "language": "python",
+        "sizeLines": 53,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/management/commands/seed_devices.py",
+        "language": "python",
+        "sizeLines": 69,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/models.py",
+        "language": "python",
+        "sizeLines": 267,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/realtime.py",
+        "language": "python",
+        "sizeLines": 148,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/serializers.py",
+        "language": "python",
+        "sizeLines": 420,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/tests/test_device_authorization_api.py",
+        "language": "python",
+        "sizeLines": 727,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/tokens.py",
+        "language": "python",
+        "sizeLines": 34,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/urls.py",
+        "language": "python",
+        "sizeLines": 27,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/views.py",
+        "language": "python",
+        "sizeLines": 613,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/websocket.py",
+        "language": "python",
+        "sizeLines": 87,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/resources/admin.py",
+        "language": "python",
+        "sizeLines": 207,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/resources/models.py",
+        "language": "python",
+        "sizeLines": 448,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/resources/point_models.py",
+        "language": "python",
+        "sizeLines": 33,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/resources/point_runtime.py",
+        "language": "python",
+        "sizeLines": 38,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/resources/point_serializers.py",
+        "language": "python",
+        "sizeLines": 34,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/resources/point_views.py",
+        "language": "python",
+        "sizeLines": 135,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/resources/serializers.py",
+        "language": "python",
+        "sizeLines": 1012,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/resources/services/aliyun_commands.py",
+        "language": "python",
+        "sizeLines": 271,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/resources/services/minio_client.py",
+        "language": "python",
+        "sizeLines": 322,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/resources/tests/test_minio_client.py",
+        "language": "python",
+        "sizeLines": 171,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/resources/tests/test_minio_settings_api.py",
+        "language": "python",
+        "sizeLines": 122,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/resources/urls.py",
+        "language": "python",
+        "sizeLines": 45,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/resources/views.py",
+        "language": "python",
+        "sizeLines": 1012,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/admin.py",
+        "language": "python",
+        "sizeLines": 21,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/managers.py",
+        "language": "python",
+        "sizeLines": 19,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/mixins.py",
+        "language": "python",
+        "sizeLines": 68,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/models.py",
+        "language": "python",
+        "sizeLines": 76,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/services.py",
+        "language": "python",
+        "sizeLines": 102,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/tests/test_cross_tenant_isolation.py",
+        "language": "python",
+        "sizeLines": 128,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/tests/test_employee_management_api.py",
+        "language": "python",
+        "sizeLines": 202,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/tests/test_isolation_contract.py",
+        "language": "python",
+        "sizeLines": 78,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/tests/test_tenant_management_api.py",
+        "language": "python",
+        "sizeLines": 123,
+        "fileCategory": "code"
+      }
+    ],
+    "batchImportData": {
+      "backend/apps/ai_models/tests/test_asr_realtime.py": [
+        "backend/apps/accounts/models.py",
+        "backend/apps/ai_models/models.py",
+        "backend/apps/devices/models.py",
+        "backend/apps/tenants/test_utils.py"
+      ],
+      "backend/apps/audit/middleware.py": [
+        "backend/apps/tenants/services.py"
+      ],
+      "backend/apps/devices/admin.py": [
+        "backend/apps/devices/models.py"
+      ],
+      "backend/apps/devices/management/commands/seed_devices.py": [
+        "backend/apps/devices/models.py",
+        "backend/apps/tenants/models.py"
+      ],
+      "backend/apps/devices/models.py": [
+        "backend/apps/tenants/managers.py"
+      ],
+      "backend/apps/devices/realtime.py": [
+        "backend/apps/accounts/services/permissions.py",
+        "backend/apps/tenants/services.py"
+      ],
+      "backend/apps/devices/serializers.py": [
+        "backend/apps/devices/models.py",
+        "backend/apps/resources/models.py",
+        "backend/apps/tenants/models.py"
+      ],
+      "backend/apps/devices/tests/test_device_authorization_api.py": [
+        "backend/apps/accounts/models.py",
+        "backend/apps/devices/models.py",
+        "backend/apps/resources/models.py",
+        "backend/apps/tenants/models.py",
+        "backend/apps/tenants/test_utils.py"
+      ],
+      "backend/apps/devices/tokens.py": [
+        "backend/apps/devices/models.py"
+      ],
+      "backend/apps/devices/urls.py": [
+        "backend/apps/devices/views.py"
+      ],
+      "backend/apps/devices/views.py": [
+        "backend/apps/accounts/permissions.py",
+        "backend/apps/devices/models.py",
+        "backend/apps/devices/realtime.py",
+        "backend/apps/devices/serializers.py",
+        "backend/apps/tenants/mixins.py",
+        "backend/apps/tenants/services.py"
+      ],
+      "backend/apps/devices/websocket.py": [
+        "backend/apps/devices/models.py",
+        "backend/apps/devices/realtime.py"
+      ],
+      "backend/apps/resources/admin.py": [
+        "backend/apps/resources/models.py",
+        "backend/apps/resources/point_models.py"
+      ],
+      "backend/apps/resources/models.py": [
+        "backend/apps/resources/point_models.py",
+        "backend/apps/tenants/managers.py"
+      ],
+      "backend/apps/resources/point_models.py": [
+        "backend/apps/tenants/managers.py"
+      ],
+      "backend/apps/resources/point_runtime.py": [
+        "backend/apps/resources/models.py",
+        "backend/apps/resources/serializers.py"
+      ],
+      "backend/apps/resources/point_serializers.py": [
+        "backend/apps/resources/point_models.py"
+      ],
+      "backend/apps/resources/point_views.py": [
+        "backend/apps/resources/point_models.py",
+        "backend/apps/resources/point_serializers.py",
+        "backend/apps/resources/views.py",
+        "backend/apps/tenants/services.py"
+      ],
+      "backend/apps/resources/serializers.py": [
+        "backend/apps/resources/models.py",
+        "backend/apps/resources/point_models.py",
+        "backend/apps/resources/services/minio_client.py"
+      ],
+      "backend/apps/resources/services/aliyun_commands.py": [],
+      "backend/apps/resources/services/minio_client.py": [],
+      "backend/apps/resources/tests/test_minio_client.py": [
+        "backend/apps/resources/models.py",
+        "backend/apps/resources/services/minio_client.py",
+        "backend/apps/tenants/models.py"
+      ],
+      "backend/apps/resources/tests/test_minio_settings_api.py": [
+        "backend/apps/resources/models.py",
+        "backend/apps/tenants/models.py"
+      ],
+      "backend/apps/resources/urls.py": [
+        "backend/apps/resources/point_views.py",
+        "backend/apps/resources/views.py"
+      ],
+      "backend/apps/resources/views.py": [
+        "backend/apps/accounts/permissions.py",
+        "backend/apps/resources/models.py",
+        "backend/apps/resources/serializers.py",
+        "backend/apps/resources/services/aliyun_commands.py",
+        "backend/apps/resources/services/minio_client.py",
+        "backend/apps/resources/tasks.py",
+        "backend/apps/tenants/mixins.py",
+        "backend/apps/tenants/models.py",
+        "backend/apps/tenants/services.py",
+        "backend/config/business_cache.py"
+      ],
+      "backend/apps/tenants/admin.py": [
+        "backend/apps/tenants/models.py"
+      ],
+      "backend/apps/tenants/managers.py": [],
+      "backend/apps/tenants/mixins.py": [
+        "backend/apps/tenants/services.py"
+      ],
+      "backend/apps/tenants/models.py": [
+        "backend/apps/tenants/managers.py"
+      ],
+      "backend/apps/tenants/services.py": [
+        "backend/apps/tenants/models.py"
+      ],
+      "backend/apps/tenants/tests/test_cross_tenant_isolation.py": [
+        "backend/apps/devices/models.py",
+        "backend/apps/resources/models.py",
+        "backend/apps/resources/point_models.py",
+        "backend/apps/tenants/models.py"
+      ],
+      "backend/apps/tenants/tests/test_employee_management_api.py": [
+        "backend/apps/accounts/models.py",
+        "backend/apps/devices/models.py",
+        "backend/apps/tenants/models.py"
+      ],
+      "backend/apps/tenants/tests/test_isolation_contract.py": [
+        "backend/apps/tenants/managers.py"
+      ],
+      "backend/apps/tenants/tests/test_tenant_management_api.py": [
+        "backend/apps/accounts/models.py",
+        "backend/apps/tenants/models.py"
+      ]
+    },
+    "neighborMap": {
+      "backend/apps/ai_models/tests/test_asr_realtime.py": [
+        {
+          "path": "backend/apps/accounts/models.py",
+          "batchIndex": 5,
+          "symbols": [
+            "AccountUser",
+            "AccountApplication",
+            "Menu",
+            "PermissionPoint",
+            "Role",
+            "UserRole"
+          ]
+        },
+        {
+          "path": "backend/apps/ai_models/models.py",
+          "batchIndex": 7,
+          "symbols": [
+            "LLMProvider",
+            "LLMModel",
+            "TenantLLMModelGrant",
+            "TenantLLMSettings",
+            "LLMTestSettings",
+            "ASRConfig",
+            "TTSProvider",
+            "TTSVoice",
+            "TenantTTSSettings",
+            "ASRReplacementRule",
+            "AgentApplication",
+            "ChatConversation",
+            "ChatMessage"
+          ]
+        },
+        {
+          "path": "backend/apps/tenants/test_utils.py",
+          "batchIndex": 6,
+          "symbols": [
+            "TenantTestMixin"
+          ]
+        }
+      ],
+      "backend/apps/devices/models.py": [
+        {
+          "path": "backend/apps/ai_models/realtime_asr.py",
+          "batchIndex": 7,
+          "symbols": [
+            "asr_realtime_websocket_application",
+            "resolve_asr_realtime_connection",
+            "resolve_asr_device_connection",
+            "_extract_device_code",
+            "_extract_superuser_tenant",
+            "load_asr_replacement_pairs",
+            "apply_asr_replacement_rules",
+            "extract_transcript_payload",
+            "_browser_to_upstream",
+            "_upstream_to_browser",
+            "_session_update_event",
+            "_session_finish_event",
+            "_audio_append_event",
+            "_extract_text"
+          ]
+        },
+        {
+          "path": "backend/apps/ai_models/tests/test_asr_api.py",
+          "batchIndex": 7,
+          "symbols": [
+            "ASRApiTests"
+          ]
+        },
+        {
+          "path": "backend/apps/ai_models/tests/test_tts_api.py",
+          "batchIndex": 7,
+          "symbols": [
+            "TTSApiTests"
+          ]
+        },
+        {
+          "path": "backend/apps/ai_models/views.py",
+          "batchIndex": 7,
+          "symbols": [
+            "ASRSettingsView",
+            "ASRSettingsTestView",
+            "ASRStatusView",
+            "ASRDeviceStatusView",
+            "ASRTestView",
+            "ASRReplacementRuleViewSet",
+            "_tts_audio_response",
+            "_select_platform_tts_voice",
+            "_get_platform_tts_provider",
+            "_build_company_tts_options_payload",
+            "TTSProviderListView",
+            "TTSSettingsView",
+            "TTSSettingsTestView",
+            "CompanyTTSOptionsView",
+            "CompanyTTSDefaultVoiceView",
+            "CompanyTTSTestView",
+            "TTSRuntimeView",
+            "PlatformLLMProviderViewSet",
+            "PlatformLLMProviderModelsView",
+            "PlatformLLMModelViewSet",
+            "LLMTestSettingsView",
+            "TenantLLMAuthorizationView",
+            "_build_company_llm_options_payload",
+            "CompanyLLMOptionsView",
+            "CompanyLLMDefaultModelView",
+            "CompanyLLMModelTestView",
+            "_build_chat_completions_url",
+            "_resolve_tenant_llm_model",
+            "_coerce_openai_content_to_text",
+            "_extract_openai_completion_text",
+            "_extract_openai_error_message",
+            "_parse_sse_data_line",
+            "_normalize_generated_title",
+            "_generate_conversation_title",
+            "_generate_conversation_summary",
+            "AgentApplicationViewSet",
+            "ChatConversationViewSet"
+          ]
+        }
+      ],
+      "backend/apps/devices/realtime.py": [
+        {
+          "path": "backend/apps/accounts/services/permissions.py",
+          "batchIndex": 5,
+          "symbols": [
+            "is_admin_user",
+            "get_role_payload",
+            "_get_membership",
+            "_collect_with_ancestors",
+            "serialize_menu_tree",
+            "_assemble_menu_tree",
+            "get_active_menus_for_user",
+            "get_active_permission_codes_for_user",
+            "build_user_access_context"
+          ]
+        }
+      ],
+      "backend/apps/devices/tests/test_device_authorization_api.py": [
+        {
+          "path": "backend/apps/accounts/models.py",
+          "batchIndex": 5,
+          "symbols": [
+            "AccountUser",
+            "AccountApplication",
+            "Menu",
+            "PermissionPoint",
+            "Role",
+            "UserRole"
+          ]
+        },
+        {
+          "path": "backend/apps/tenants/test_utils.py",
+          "batchIndex": 6,
+          "symbols": [
+            "TenantTestMixin"
+          ]
+        }
+      ],
+      "backend/apps/devices/views.py": [
+        {
+          "path": "backend/apps/accounts/permissions.py",
+          "batchIndex": 5,
+          "symbols": [
+            "IsAdminRole",
+            "IsSuperUser",
+            "IsAuthenticatedReadOnlyOrAdminWrite",
+            "HasPermissionCode",
+            "CanViewAccountApplications",
+            "CanReviewAccountApplications",
+            "CanManageTenants",
+            "CanManageEmployees",
+            "CanViewAuditLogs",
+            "CanClearAuditLogs",
+            "CanViewDevices",
+            "CanCreateDevices",
+            "CanUpdateDevices",
+            "CanDeleteDevices",
+            "CanViewImageResources",
+            "CanCreateImageResources",
+            "CanUpdateImageResources",
+            "CanDeleteImageResources",
+            "CanViewVideoResources",
+            "CanCreateVideoResources",
+            "CanUpdateVideoResources",
+            "CanDeleteVideoResources",
+            "CanViewScrollingTexts",
+            "CanCreateScrollingTexts",
+            "CanUpdateScrollingTexts",
+            "CanDeleteScrollingTexts",
+            "CanViewVoiceTones",
+            "CanCreateVoiceTones",
+            "CanUpdateVoiceTones",
+            "CanDeleteVoiceTones",
+            "CanViewModels",
+            "CanCreateModels",
+            "CanUpdateModels",
+            "CanDeleteModels",
+            "CanViewKnowledgeBase",
+            "CanUploadKnowledgeBase",
+            "CanDownloadKnowledgeBase",
+            "CanBulkDownloadKnowledgeBase",
+            "CanViewControlCommands",
+            "CanCreateControlCommands",
+            "CanUpdateControlCommands",
+            "CanDeleteControlCommands",
+            "CanViewCommandGroups",
+            "CanCreateCommandGroups",
+            "CanUpdateCommandGroups",
+            "CanDeleteCommandGroups",
+            "CanViewTaskCommands",
+            "CanCreateTaskCommands",
+            "CanUpdateTaskCommands",
+            "CanDeleteTaskCommands",
+            "CanViewCommandExports",
+            "CanDownloadCommandExports",
+            "CanViewAliyunCommands",
+            "CanViewPoints",
+            "CanCreatePoints",
+            "CanUpdatePoints",
+            "CanDeletePoints",
+            "CanViewLLMProviders",
+            "CanViewASR",
+            "CanViewTTS",
+            "CanUpdateTTS",
+            "CanCreateLLMProviders",
+            "CanUpdateLLMProviders",
+            "CanDeleteLLMProviders",
+            "CanViewChat",
+            "CanCreateChat",
+            "CanDeleteChat",
+            "CanViewAgentApplications",
+            "CanCreateAgentApplications",
+            "CanUpdateAgentApplications",
+            "CanDeleteAgentApplications",
+            "CanViewKnowledgeBaseDocuments",
+            "CanUploadKnowledgeBaseDocuments",
+            "CanDownloadKnowledgeBaseDocuments",
+            "CanBulkDownloadKnowledgeBaseDocuments"
+          ]
+        }
+      ],
+      "backend/apps/resources/models.py": [
+        {
+          "path": "backend/apps/resources/tests/test_backend_management_flow_api.py",
+          "batchIndex": 6,
+          "symbols": [
+            "build_upload",
+            "BackendManagementFlowApiTests"
+          ]
+        },
+        {
+          "path": "backend/apps/resources/tests/test_business_metadata_cache_api.py",
+          "batchIndex": 6,
+          "symbols": [
+            "BusinessMetadataCacheApiTests"
+          ]
+        },
+        {
+          "path": "backend/apps/resources/tests/test_minio_video_api.py",
+          "batchIndex": 6,
+          "symbols": [
+            "MinioVideoApiTests"
+          ]
+        },
+        {
+          "path": "backend/apps/resources/tests/test_model_asset_api.py",
+          "batchIndex": 6,
+          "symbols": [
+            "build_test_png",
+            "build_test_model_file",
+            "ModelAssetApiTests"
+          ]
+        },
+        {
+          "path": "backend/apps/resources/tests/test_resource_api.py",
+          "batchIndex": 6,
+          "symbols": [
+            "ResourceApiTests"
+          ]
+        },
+        {
+          "path": "backend/apps/resources/tests/test_scrolling_text_api.py",
+          "batchIndex": 6,
+          "symbols": [
+            "ScrollingTextApiTests"
+          ]
+        },
+        {
+          "path": "backend/apps/resources/tests/test_voice_tone_api.py",
+          "batchIndex": 6,
+          "symbols": [
+            "build_test_png",
+            "VoiceToneApiTests"
+          ]
+        }
+      ],
+      "backend/apps/resources/views.py": [
+        {
+          "path": "backend/apps/accounts/permissions.py",
+          "batchIndex": 5,
+          "symbols": [
+            "IsAdminRole",
+            "IsSuperUser",
+            "IsAuthenticatedReadOnlyOrAdminWrite",
+            "HasPermissionCode",
+            "CanViewAccountApplications",
+            "CanReviewAccountApplications",
+            "CanManageTenants",
+            "CanManageEmployees",
+            "CanViewAuditLogs",
+            "CanClearAuditLogs",
+            "CanViewDevices",
+            "CanCreateDevices",
+            "CanUpdateDevices",
+            "CanDeleteDevices",
+            "CanViewImageResources",
+            "CanCreateImageResources",
+            "CanUpdateImageResources",
+            "CanDeleteImageResources",
+            "CanViewVideoResources",
+            "CanCreateVideoResources",
+            "CanUpdateVideoResources",
+            "CanDeleteVideoResources",
+            "CanViewScrollingTexts",
+            "CanCreateScrollingTexts",
+            "CanUpdateScrollingTexts",
+            "CanDeleteScrollingTexts",
+            "CanViewVoiceTones",
+            "CanCreateVoiceTones",
+            "CanUpdateVoiceTones",
+            "CanDeleteVoiceTones",
+            "CanViewModels",
+            "CanCreateModels",
+            "CanUpdateModels",
+            "CanDeleteModels",
+            "CanViewKnowledgeBase",
+            "CanUploadKnowledgeBase",
+            "CanDownloadKnowledgeBase",
+            "CanBulkDownloadKnowledgeBase",
+            "CanViewControlCommands",
+            "CanCreateControlCommands",
+            "CanUpdateControlCommands",
+            "CanDeleteControlCommands",
+            "CanViewCommandGroups",
+            "CanCreateCommandGroups",
+            "CanUpdateCommandGroups",
+            "CanDeleteCommandGroups",
+            "CanViewTaskCommands",
+            "CanCreateTaskCommands",
+            "CanUpdateTaskCommands",
+            "CanDeleteTaskCommands",
+            "CanViewCommandExports",
+            "CanDownloadCommandExports",
+            "CanViewAliyunCommands",
+            "CanViewPoints",
+            "CanCreatePoints",
+            "CanUpdatePoints",
+            "CanDeletePoints",
+            "CanViewLLMProviders",
+            "CanViewASR",
+            "CanViewTTS",
+            "CanUpdateTTS",
+            "CanCreateLLMProviders",
+            "CanUpdateLLMProviders",
+            "CanDeleteLLMProviders",
+            "CanViewChat",
+            "CanCreateChat",
+            "CanDeleteChat",
+            "CanViewAgentApplications",
+            "CanCreateAgentApplications",
+            "CanUpdateAgentApplications",
+            "CanDeleteAgentApplications",
+            "CanViewKnowledgeBaseDocuments",
+            "CanUploadKnowledgeBaseDocuments",
+            "CanDownloadKnowledgeBaseDocuments",
+            "CanBulkDownloadKnowledgeBaseDocuments"
+          ]
+        },
+        {
+          "path": "backend/apps/resources/tasks.py",
+          "batchIndex": 5,
+          "symbols": [
+            "_resolve_notification_user",
+            "_resolve_notification_company",
+            "notify_command_event_task",
+            "enqueue_command_notification",
+            "notify_command_change_task",
+            "enqueue_command_change_notification"
+          ]
+        },
+        {
+          "path": "backend/config/business_cache.py",
+          "batchIndex": 6,
+          "symbols": [
+            "BusinessCacheNamespace",
+            "BusinessCacheSummary",
+            "is_business_cache_enabled",
+            "get_business_cache_timeout",
+            "make_response_cache_key",
+            "get_business_response_cache",
+            "set_business_response_cache",
+            "register_business_cache_key",
+            "clear_business_cache_namespace",
+            "clear_all_business_cache",
+            "get_business_cache_summaries",
+            "make_registry_key",
+            "validate_business_cache_namespace",
+            "CachedBusinessResponseMixin"
+          ]
+        },
+        {
+          "path": "backend/apps/ai_models/views.py",
+          "batchIndex": 7,
+          "symbols": [
+            "ASRSettingsView",
+            "ASRSettingsTestView",
+            "ASRStatusView",
+            "ASRDeviceStatusView",
+            "ASRTestView",
+            "ASRReplacementRuleViewSet",
+            "_tts_audio_response",
+            "_select_platform_tts_voice",
+            "_get_platform_tts_provider",
+            "_build_company_tts_options_payload",
+            "TTSProviderListView",
+            "TTSSettingsView",
+            "TTSSettingsTestView",
+            "CompanyTTSOptionsView",
+            "CompanyTTSDefaultVoiceView",
+            "CompanyTTSTestView",
+            "TTSRuntimeView",
+            "PlatformLLMProviderViewSet",
+            "PlatformLLMProviderModelsView",
+            "PlatformLLMModelViewSet",
+            "LLMTestSettingsView",
+            "TenantLLMAuthorizationView",
+            "_build_company_llm_options_payload",
+            "CompanyLLMOptionsView",
+            "CompanyLLMDefaultModelView",
+            "CompanyLLMModelTestView",
+            "_build_chat_completions_url",
+            "_resolve_tenant_llm_model",
+            "_coerce_openai_content_to_text",
+            "_extract_openai_completion_text",
+            "_extract_openai_error_message",
+            "_parse_sse_data_line",
+            "_normalize_generated_title",
+            "_generate_conversation_title",
+            "_generate_conversation_summary",
+            "AgentApplicationViewSet",
+            "ChatConversationViewSet"
+          ]
+        }
+      ],
+      "backend/apps/tenants/managers.py": [
+        {
+          "path": "backend/apps/ai_models/models.py",
+          "batchIndex": 7,
+          "symbols": [
+            "LLMProvider",
+            "LLMModel",
+            "TenantLLMModelGrant",
+            "TenantLLMSettings",
+            "LLMTestSettings",
+            "ASRConfig",
+            "TTSProvider",
+            "TTSVoice",
+            "TenantTTSSettings",
+            "ASRReplacementRule",
+            "AgentApplication",
+            "ChatConversation",
+            "ChatMessage"
+          ]
+        },
+        {
+          "path": "backend/apps/knowledge_base/models.py",
+          "batchIndex": 5,
+          "symbols": [
+            "KnowledgeDocument"
+          ]
+        }
+      ],
+      "backend/apps/tenants/mixins.py": [
+        {
+          "path": "backend/apps/ai_models/views.py",
+          "batchIndex": 7,
+          "symbols": [
+            "ASRSettingsView",
+            "ASRSettingsTestView",
+            "ASRStatusView",
+            "ASRDeviceStatusView",
+            "ASRTestView",
+            "ASRReplacementRuleViewSet",
+            "_tts_audio_response",
+            "_select_platform_tts_voice",
+            "_get_platform_tts_provider",
+            "_build_company_tts_options_payload",
+            "TTSProviderListView",
+            "TTSSettingsView",
+            "TTSSettingsTestView",
+            "CompanyTTSOptionsView",
+            "CompanyTTSDefaultVoiceView",
+            "CompanyTTSTestView",
+            "TTSRuntimeView",
+            "PlatformLLMProviderViewSet",
+            "PlatformLLMProviderModelsView",
+            "PlatformLLMModelViewSet",
+            "LLMTestSettingsView",
+            "TenantLLMAuthorizationView",
+            "_build_company_llm_options_payload",
+            "CompanyLLMOptionsView",
+            "CompanyLLMDefaultModelView",
+            "CompanyLLMModelTestView",
+            "_build_chat_completions_url",
+            "_resolve_tenant_llm_model",
+            "_coerce_openai_content_to_text",
+            "_extract_openai_completion_text",
+            "_extract_openai_error_message",
+            "_parse_sse_data_line",
+            "_normalize_generated_title",
+            "_generate_conversation_title",
+            "_generate_conversation_summary",
+            "AgentApplicationViewSet",
+            "ChatConversationViewSet"
+          ]
+        },
+        {
+          "path": "backend/apps/knowledge_base/views.py",
+          "batchIndex": 5,
+          "symbols": [
+            "get_document_size",
+            "PermissionMappedViewSet",
+            "build_zip_entry_name",
+            "build_content_disposition",
+            "KnowledgeDocumentViewSet"
+          ]
+        }
+      ],
+      "backend/apps/tenants/models.py": [
+        {
+          "path": "backend/apps/ai_models/realtime_asr.py",
+          "batchIndex": 7,
+          "symbols": [
+            "asr_realtime_websocket_application",
+            "resolve_asr_realtime_connection",
+            "resolve_asr_device_connection",
+            "_extract_device_code",
+            "_extract_superuser_tenant",
+            "load_asr_replacement_pairs",
+            "apply_asr_replacement_rules",
+            "extract_transcript_payload",
+            "_browser_to_upstream",
+            "_upstream_to_browser",
+            "_session_update_event",
+            "_session_finish_event",
+            "_audio_append_event",
+            "_extract_text"
+          ]
+        },
+        {
+          "path": "backend/apps/ai_models/serializers.py",
+          "batchIndex": 7,
+          "symbols": [
+            "PlatformLLMProviderSerializer",
+            "PlatformLLMProviderWriteSerializer",
+            "PlatformLLMModelSerializer",
+            "PlatformLLMModelWriteSerializer",
+            "LLMTestSettingsSerializer",
+            "TenantLLMAuthorizationSerializer",
+            "ASRConfigSerializer",
+            "ASRReplacementRuleSerializer",
+            "TTSVoiceSerializer",
+            "TTSVoiceWriteSerializer",
+            "PlatformTTSProviderSummarySerializer",
+            "PlatformTTSSettingsSerializer",
+            "PlatformTTSSettingsWriteSerializer",
+            "CompanyTTSVoiceSerializer",
+            "AgentKnowledgeDocumentSerializer",
+            "AgentApplicationSerializer",
+            "ChatMessageSerializer",
+            "ChatConversationListSerializer",
+            "ChatConversationDetailSerializer",
+            "ChatConversationConfigSerializer",
+            "ChatConversationCreateSerializer",
+            "ChatMessageFeedbackSerializer",
+            "ChatSendSerializer"
+          ]
+        },
+        {
+          "path": "backend/apps/ai_models/tests/test_agent_application_api.py",
+          "batchIndex": 5,
+          "symbols": [
+            "AgentApplicationAccessDataTests",
+            "AgentApplicationApiTests"
+          ]
+        },
+        {
+          "path": "backend/apps/ai_models/tests/test_asr_api.py",
+          "batchIndex": 7,
+          "symbols": [
+            "ASRApiTests"
+          ]
+        },
+        {
+          "path": "backend/apps/ai_models/views.py",
+          "batchIndex": 7,
+          "symbols": [
+            "ASRSettingsView",
+            "ASRSettingsTestView",
+            "ASRStatusView",
+            "ASRDeviceStatusView",
+            "ASRTestView",
+            "ASRReplacementRuleViewSet",
+            "_tts_audio_response",
+            "_select_platform_tts_voice",
+            "_get_platform_tts_provider",
+            "_build_company_tts_options_payload",
+            "TTSProviderListView",
+            "TTSSettingsView",
+            "TTSSettingsTestView",
+            "CompanyTTSOptionsView",
+            "CompanyTTSDefaultVoiceView",
+            "CompanyTTSTestView",
+            "TTSRuntimeView",
+            "PlatformLLMProviderViewSet",
+            "PlatformLLMProviderModelsView",
+            "PlatformLLMModelViewSet",
+            "LLMTestSettingsView",
+            "TenantLLMAuthorizationView",
+            "_build_company_llm_options_payload",
+            "CompanyLLMOptionsView",
+            "CompanyLLMDefaultModelView",
+            "CompanyLLMModelTestView",
+            "_build_chat_completions_url",
+            "_resolve_tenant_llm_model",
+            "_coerce_openai_content_to_text",
+            "_extract_openai_completion_text",
+            "_extract_openai_error_message",
+            "_parse_sse_data_line",
+            "_normalize_generated_title",
+            "_generate_conversation_title",
+            "_generate_conversation_summary",
+            "AgentApplicationViewSet",
+            "ChatConversationViewSet"
+          ]
+        },
+        {
+          "path": "backend/apps/audit/tests/test_operation_log_api.py",
+          "batchIndex": 9,
+          "symbols": [
+            "OperationLogMiddlewareTests"
+          ]
+        },
+        {
+          "path": "backend/apps/resources/tests/test_minio_video_api.py",
+          "batchIndex": 6,
+          "symbols": [
+            "MinioVideoApiTests"
+          ]
+        },
+        {
+          "path": "backend/apps/tenants/employee_serializers.py",
+          "batchIndex": 6,
+          "symbols": [
+            "_tenant_from_context",
+            "EmployeeSerializer",
+            "EmployeeCreateSerializer",
+            "EmployeeUpdateSerializer",
+            "ResetPasswordSerializer",
+            "TenantRoleSerializer"
+          ]
+        },
+        {
+          "path": "backend/apps/tenants/employee_views.py",
+          "batchIndex": 6,
+          "symbols": [
+            "MyTenantCatalogView",
+            "EmployeeViewSet",
+            "TenantRoleViewSet"
+          ]
+        },
+        {
+          "path": "backend/apps/tenants/serializers.py",
+          "batchIndex": 6,
+          "symbols": [
+            "TenantSerializer",
+            "TenantCreateSerializer",
+            "TenantMenuAssignmentSerializer",
+            "MenuCatalogItemSerializer",
+            "PermissionPointCatalogSerializer"
+          ]
+        },
+        {
+          "path": "backend/apps/tenants/test_utils.py",
+          "batchIndex": 6,
+          "symbols": [
+            "TenantTestMixin"
+          ]
+        },
+        {
+          "path": "backend/apps/tenants/tests/test_approval_provisioning.py",
+          "batchIndex": 6,
+          "symbols": [
+            "ApprovalProvisionsCompanyTests"
+          ]
+        },
+        {
+          "path": "backend/apps/tenants/tests/test_llm_isolation.py",
+          "batchIndex": 7,
+          "symbols": [
+            "LLMTenantIsolationTests"
+          ]
+        },
+        {
+          "path": "backend/apps/tenants/tests/test_three_tier_access.py",
+          "batchIndex": 6,
+          "symbols": [
+            "_menu_paths",
+            "ThreeTierAccessContextTests"
+          ]
+        },
+        {
+          "path": "backend/apps/tenants/views.py",
+          "batchIndex": 6,
+          "symbols": [
+            "TenantViewSet",
+            "MenuCatalogView"
+          ]
+        }
+      ],
+      "backend/apps/tenants/services.py": [
+        {
+          "path": "backend/apps/accounts/views.py",
+          "batchIndex": 5,
+          "symbols": [
+            "LoginView",
+            "MeView",
+            "ChangePasswordView",
+            "AccountApplicationCreateView",
+            "AccountApplicationListView",
+            "AccountApplicationDetailView"
+          ]
+        },
+        {
+          "path": "backend/apps/ai_models/realtime_asr.py",
+          "batchIndex": 7,
+          "symbols": [
+            "asr_realtime_websocket_application",
+            "resolve_asr_realtime_connection",
+            "resolve_asr_device_connection",
+            "_extract_device_code",
+            "_extract_superuser_tenant",
+            "load_asr_replacement_pairs",
+            "apply_asr_replacement_rules",
+            "extract_transcript_payload",
+            "_browser_to_upstream",
+            "_upstream_to_browser",
+            "_session_update_event",
+            "_session_finish_event",
+            "_audio_append_event",
+            "_extract_text"
+          ]
+        },
+        {
+          "path": "backend/apps/audit/views.py",
+          "batchIndex": 9,
+          "symbols": [
+            "OperationLogViewSet"
+          ]
+        },
+        {
+          "path": "backend/apps/tenants/employee_views.py",
+          "batchIndex": 6,
+          "symbols": [
+            "MyTenantCatalogView",
+            "EmployeeViewSet",
+            "TenantRoleViewSet"
+          ]
+        }
+      ],
+      "backend/apps/tenants/tests/test_employee_management_api.py": [
+        {
+          "path": "backend/apps/accounts/models.py",
+          "batchIndex": 5,
+          "symbols": [
+            "AccountUser",
+            "AccountApplication",
+            "Menu",
+            "PermissionPoint",
+            "Role",
+            "UserRole"
+          ]
+        }
+      ],
+      "backend/apps/tenants/tests/test_tenant_management_api.py": [
+        {
+          "path": "backend/apps/accounts/models.py",
+          "batchIndex": 5,
+          "symbols": [
+            "AccountUser",
+            "AccountApplication",
+            "Menu",
+            "PermissionPoint",
+            "Role",
+            "UserRole"
+          ]
+        }
+      ]
+    }
+  }
+]

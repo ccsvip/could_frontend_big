@@ -1,0 +1,151 @@
+{
+  "nodes": [
+    {
+      "id": "document:web/AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "web/AGENTS.md",
+      "summary": "前端 React 项目的核心协作约定、目录结构及开发准则。",
+      "tags": [
+        "documentation",
+        "development",
+        "frontend"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:web/CLAUDE.md",
+      "type": "document",
+      "name": "CLAUDE.md",
+      "filePath": "web/CLAUDE.md",
+      "summary": "前端项目专属 AI 辅助开发指南与常见问题收录。",
+      "tags": [
+        "documentation",
+        "development",
+        "ai-guide"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:web/asr-replacement-test.html",
+      "type": "file",
+      "name": "asr-replacement-test.html",
+      "filePath": "web/asr-replacement-test.html",
+      "summary": "用于测试语音识别 (ASR) 替换方案的独立 HTML 测试页面，包含丰富的交互与数据展示。",
+      "tags": [
+        "test",
+        "markup",
+        "speech-recognition"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/index.html",
+      "type": "file",
+      "name": "index.html",
+      "filePath": "web/index.html",
+      "summary": "前端单页应用 (SPA) 的 HTML 骨架与应用挂载点。",
+      "tags": [
+        "entry-point",
+        "markup",
+        "frontend"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/multi-tenant-design.html",
+      "type": "file",
+      "name": "multi-tenant-design.html",
+      "filePath": "web/multi-tenant-design.html",
+      "summary": "多租户架构设计原型的静态展示或说明页面。",
+      "tags": [
+        "markup",
+        "design-prototype",
+        "architecture"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "config:web/package.json",
+      "type": "config",
+      "name": "package.json",
+      "filePath": "web/package.json",
+      "summary": "前端工程依赖配置中心，定义项目元数据、启动脚本与第三方库。",
+      "tags": [
+        "configuration",
+        "dependency",
+        "build-system"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:web/tsconfig.app.json",
+      "type": "config",
+      "name": "tsconfig.app.json",
+      "filePath": "web/tsconfig.app.json",
+      "summary": "应用层专属 TypeScript 编译选项配置，确保业务代码的类型校验。",
+      "tags": [
+        "configuration",
+        "typescript",
+        "frontend"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:web/tsconfig.json",
+      "type": "config",
+      "name": "tsconfig.json",
+      "filePath": "web/tsconfig.json",
+      "summary": "TypeScript 主配置文件，继承并组织其他子模块编译设定。",
+      "tags": [
+        "configuration",
+        "typescript",
+        "build-system"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:web/tsconfig.node.json",
+      "type": "config",
+      "name": "tsconfig.node.json",
+      "filePath": "web/tsconfig.node.json",
+      "summary": "Node 环境下构建脚本专属 TypeScript 编译选项配置文件。",
+      "tags": [
+        "configuration",
+        "typescript",
+        "build-system"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:web/package.json",
+      "target": "file:web/index.html",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:web/tsconfig.json",
+      "target": "file:web/index.html",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:web/tsconfig.app.json",
+      "target": "file:web/index.html",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:web/tsconfig.node.json",
+      "target": "config:web/package.json",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

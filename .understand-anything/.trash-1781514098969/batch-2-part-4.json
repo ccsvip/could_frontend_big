@@ -1,0 +1,1186 @@
+{
+  "nodes": [
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live/completion.mjs",
+      "type": "file",
+      "name": "completion.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live/completion.mjs",
+      "summary": "定义代码接受时的自动补全和标识相关的辅助逻辑。",
+      "tags": [
+        "utility",
+        "completion",
+        "module"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live/event-validation.mjs",
+      "type": "file",
+      "name": "event-validation.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live/event-validation.mjs",
+      "summary": "对服务端与客户端收发的数据事件进行合法性和格式校验。",
+      "tags": [
+        "validation",
+        "event-handler",
+        "security"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/event-validation.mjs:validateAnnotationFields",
+      "type": "function",
+      "name": "validateAnnotationFields",
+      "filePath": ".claude/skills/impeccable/scripts/live/event-validation.mjs",
+      "lineRange": [
+        28,
+        39
+      ],
+      "summary": "执行 validateAnnotationFields 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/event-validation.mjs:validateInsertGenerate",
+      "type": "function",
+      "name": "validateInsertGenerate",
+      "filePath": ".claude/skills/impeccable/scripts/live/event-validation.mjs",
+      "lineRange": [
+        41,
+        61
+      ],
+      "summary": "执行 validateInsertGenerate 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/event-validation.mjs:validateManualEditEvent",
+      "type": "function",
+      "name": "validateManualEditEvent",
+      "filePath": ".claude/skills/impeccable/scripts/live/event-validation.mjs",
+      "lineRange": [
+        69,
+        93
+      ],
+      "summary": "执行 validateManualEditEvent 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/event-validation.mjs:validateEvent",
+      "type": "function",
+      "name": "validateEvent",
+      "filePath": ".claude/skills/impeccable/scripts/live/event-validation.mjs",
+      "lineRange": [
+        95,
+        137
+      ],
+      "summary": "执行 validateEvent 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "type": "file",
+      "name": "insert-ui.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "summary": "处理 UI 层的插入光标位置计算及占位符生成。",
+      "tags": [
+        "ui-component",
+        "geometry",
+        "module"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:detectInsertAxisFromStyle",
+      "type": "function",
+      "name": "detectInsertAxisFromStyle",
+      "filePath": ".claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "lineRange": [
+        18,
+        35
+      ],
+      "summary": "执行 detectInsertAxisFromStyle 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:computeInsertPosition",
+      "type": "function",
+      "name": "computeInsertPosition",
+      "filePath": ".claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "lineRange": [
+        45,
+        55
+      ],
+      "summary": "执行 computeInsertPosition 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:groupSiblingRows",
+      "type": "function",
+      "name": "groupSiblingRows",
+      "filePath": ".claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "lineRange": [
+        98,
+        113
+      ],
+      "summary": "执行 groupSiblingRows 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:hitSiblingInsertGap",
+      "type": "function",
+      "name": "hitSiblingInsertGap",
+      "filePath": ".claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "lineRange": [
+        128,
+        196
+      ],
+      "summary": "执行 hitSiblingInsertGap 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:placeholderSizing",
+      "type": "function",
+      "name": "placeholderSizing",
+      "filePath": ".claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "lineRange": [
+        215,
+        239
+      ],
+      "summary": "执行 placeholderSizing 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:resizePlaceholderFromEdge",
+      "type": "function",
+      "name": "resizePlaceholderFromEdge",
+      "filePath": ".claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "lineRange": [
+        274,
+        304
+      ],
+      "summary": "执行 resizePlaceholderFromEdge 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:buildInsertGeneratePayload",
+      "type": "function",
+      "name": "buildInsertGeneratePayload",
+      "filePath": ".claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "lineRange": [
+        326,
+        355
+      ],
+      "summary": "执行 buildInsertGeneratePayload 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:resolveInsertSessionAnchor",
+      "type": "function",
+      "name": "resolveInsertSessionAnchor",
+      "filePath": ".claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "lineRange": [
+        395,
+        409
+      ],
+      "summary": "执行 resolveInsertSessionAnchor 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:buildInsertPlaceholderSnapshot",
+      "type": "function",
+      "name": "buildInsertPlaceholderSnapshot",
+      "filePath": ".claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "lineRange": [
+        425,
+        437
+      ],
+      "summary": "执行 buildInsertPlaceholderSnapshot 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:findInsertAnchorInDom",
+      "type": "function",
+      "name": "findInsertAnchorInDom",
+      "filePath": ".claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "lineRange": [
+        445,
+        458
+      ],
+      "summary": "执行 findInsertAnchorInDom 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "type": "file",
+      "name": "manual-apply.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "summary": "用于将手动编辑变更安全、精准地应用回工程源码的核心逻辑。",
+      "tags": [
+        "action",
+        "core-logic",
+        "merging"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:createManualApplyController",
+      "type": "function",
+      "name": "createManualApplyController",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        15,
+        307
+      ],
+      "summary": "执行 createManualApplyController 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:compactManualApplyBatch",
+      "type": "function",
+      "name": "compactManualApplyBatch",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        358,
+        377
+      ],
+      "summary": "执行 compactManualApplyBatch 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:compactManualApplyCandidates",
+      "type": "function",
+      "name": "compactManualApplyCandidates",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        379,
+        391
+      ],
+      "summary": "执行 compactManualApplyCandidates 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:compactManualApplySourceMatch",
+      "type": "function",
+      "name": "compactManualApplySourceMatch",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        400,
+        411
+      ],
+      "summary": "执行 compactManualApplySourceMatch 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:compactManualApplyOp",
+      "type": "function",
+      "name": "compactManualApplyOp",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        423,
+        440
+      ],
+      "summary": "执行 compactManualApplyOp 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:normalizeApplyChunkResult",
+      "type": "function",
+      "name": "normalizeApplyChunkResult",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        469,
+        479
+      ],
+      "summary": "执行 normalizeApplyChunkResult 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:invalidManualApplyResult",
+      "type": "function",
+      "name": "invalidManualApplyResult",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        485,
+        495
+      ],
+      "summary": "执行 invalidManualApplyResult 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:validateManualApplyResultMessage",
+      "type": "function",
+      "name": "validateManualApplyResultMessage",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        497,
+        581
+      ],
+      "summary": "执行 validateManualApplyResultMessage 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:splitManualApplyBatch",
+      "type": "function",
+      "name": "splitManualApplyBatch",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        595,
+        657
+      ],
+      "summary": "执行 splitManualApplyBatch 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:createManualApplyChunkBuilder",
+      "type": "function",
+      "name": "createManualApplyChunkBuilder",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        659,
+        669
+      ],
+      "summary": "执行 createManualApplyChunkBuilder 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:addOpToManualApplyChunk",
+      "type": "function",
+      "name": "addOpToManualApplyChunk",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        671,
+        685
+      ],
+      "summary": "执行 addOpToManualApplyChunk 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:snapshotApplyEventFiles",
+      "type": "function",
+      "name": "snapshotApplyEventFiles",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        696,
+        710
+      ],
+      "summary": "执行 snapshotApplyEventFiles 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:writeManualApplyTransaction",
+      "type": "function",
+      "name": "writeManualApplyTransaction",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        726,
+        749
+      ],
+      "summary": "执行 writeManualApplyTransaction 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:clearManualApplyTransaction",
+      "type": "function",
+      "name": "clearManualApplyTransaction",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        751,
+        764
+      ],
+      "summary": "执行 clearManualApplyTransaction 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:rollbackManualApplyTransaction",
+      "type": "function",
+      "name": "rollbackManualApplyTransaction",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        766,
+        817
+      ],
+      "summary": "执行 rollbackManualApplyTransaction 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:collectManualApplyFiles",
+      "type": "function",
+      "name": "collectManualApplyFiles",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        819,
+        835
+      ],
+      "summary": "执行 collectManualApplyFiles 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:rollbackApplySnapshot",
+      "type": "function",
+      "name": "rollbackApplySnapshot",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        845,
+        872
+      ],
+      "summary": "执行 rollbackApplySnapshot 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:summarizeManualApplyEvent",
+      "type": "function",
+      "name": "summarizeManualApplyEvent",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        888,
+        898
+      ],
+      "summary": "执行 summarizeManualApplyEvent 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:summarizeManualApplyFailures",
+      "type": "function",
+      "name": "summarizeManualApplyFailures",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        900,
+        911
+      ],
+      "summary": "执行 summarizeManualApplyFailures 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:summarizeManualDiagnostics",
+      "type": "function",
+      "name": "summarizeManualDiagnostics",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "lineRange": [
+        913,
+        925
+      ],
+      "summary": "执行 summarizeManualDiagnostics 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "type": "file",
+      "name": "manual-edit-routes.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "summary": "声明和挂载处理手动编辑相关操作的 HTTP 路由端点。",
+      "tags": [
+        "api-handler",
+        "routing",
+        "module"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs:createManualEditRoutes",
+      "type": "function",
+      "name": "createManualEditRoutes",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "lineRange": [
+        17,
+        338
+      ],
+      "summary": "执行 createManualEditRoutes 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs:summarizePendingManualEditBatch",
+      "type": "function",
+      "name": "summarizePendingManualEditBatch",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "lineRange": [
+        345,
+        357
+      ],
+      "summary": "执行 summarizePendingManualEditBatch 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "type": "file",
+      "name": "manual-edits-buffer.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "summary": "负责管理和持久化本地未提交的手动修改记录缓冲区。",
+      "tags": [
+        "storage",
+        "buffer",
+        "module"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:readBufferInternal",
+      "type": "function",
+      "name": "readBufferInternal",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "lineRange": [
+        32,
+        48
+      ],
+      "summary": "执行 readBufferInternal 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:stageEntry",
+      "type": "function",
+      "name": "stageEntry",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "lineRange": [
+        64,
+        104
+      ],
+      "summary": "执行 stageEntry 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:removeEntries",
+      "type": "function",
+      "name": "removeEntries",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "lineRange": [
+        111,
+        125
+      ],
+      "summary": "执行 removeEntries 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:countByPage",
+      "type": "function",
+      "name": "countByPage",
+      "filePath": ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "lineRange": [
+        130,
+        140
+      ],
+      "summary": "执行 countByPage 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live/session-store.mjs",
+      "type": "file",
+      "name": "session-store.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live/session-store.mjs",
+      "summary": "负责 Live 编辑会话数据快照和状态机持久化的存储层。",
+      "tags": [
+        "storage",
+        "session",
+        "module"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:createLiveSessionStore",
+      "type": "function",
+      "name": "createLiveSessionStore",
+      "filePath": ".claude/skills/impeccable/scripts/live/session-store.mjs",
+      "lineRange": [
+        7,
+        80
+      ],
+      "summary": "执行 createLiveSessionStore 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:baseSnapshot",
+      "type": "function",
+      "name": "baseSnapshot",
+      "filePath": ".claude/skills/impeccable/scripts/live/session-store.mjs",
+      "lineRange": [
+        103,
+        126
+      ],
+      "summary": "执行 baseSnapshot 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:rebuildSnapshotFromJournal",
+      "type": "function",
+      "name": "rebuildSnapshotFromJournal",
+      "filePath": ".claude/skills/impeccable/scripts/live/session-store.mjs",
+      "lineRange": [
+        128,
+        153
+      ],
+      "summary": "执行 rebuildSnapshotFromJournal 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:applyEvent",
+      "type": "function",
+      "name": "applyEvent",
+      "filePath": ".claude/skills/impeccable/scripts/live/session-store.mjs",
+      "lineRange": [
+        155,
+        273
+      ],
+      "summary": "执行 applyEvent 相关的操作流程和业务逻辑。",
+      "tags": [
+        "function",
+        "utility"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/event-validation.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/event-validation.mjs:validateAnnotationFields",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/event-validation.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/event-validation.mjs:validateInsertGenerate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/event-validation.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/event-validation.mjs:validateManualEditEvent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/event-validation.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/event-validation.mjs:validateEvent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/event-validation.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/event-validation.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/vocabulary.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:detectInsertAxisFromStyle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:computeInsertPosition",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:groupSiblingRows",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:hitSiblingInsertGap",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:placeholderSizing",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:resizePlaceholderFromEdge",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:buildInsertGeneratePayload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:resolveInsertSessionAnchor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:buildInsertPlaceholderSnapshot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/insert-ui.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/insert-ui.mjs:findInsertAnchorInDom",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:createManualApplyController",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:compactManualApplyBatch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:compactManualApplyCandidates",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:compactManualApplySourceMatch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:compactManualApplyOp",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:normalizeApplyChunkResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:invalidManualApplyResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:validateManualApplyResultMessage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:splitManualApplyBatch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:createManualApplyChunkBuilder",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:addOpToManualApplyChunk",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:snapshotApplyEventFiles",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:writeManualApplyTransaction",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:clearManualApplyTransaction",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:rollbackManualApplyTransaction",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:collectManualApplyFiles",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:rollbackApplySnapshot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:summarizeManualApplyEvent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:summarizeManualApplyFailures",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-apply.mjs:summarizeManualDiagnostics",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs:createManualEditRoutes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs:summarizePendingManualEditBatch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live-commit-manual-edits.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live-manual-edit-evidence.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/event-validation.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/manual-apply.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:readBufferInternal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:stageEntry",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:removeEntries",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs:countByPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/session-store.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:createLiveSessionStore",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/session-store.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:baseSnapshot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/session-store.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:rebuildSnapshotFromJournal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/session-store.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/session-store.mjs:applyEvent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/session-store.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

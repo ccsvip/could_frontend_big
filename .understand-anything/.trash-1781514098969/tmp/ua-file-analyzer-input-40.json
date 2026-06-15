@@ -1,0 +1,77 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": "web/src/views/model-management.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/resource-management.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/scrolling-text-management.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/tts-management.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/tts-settings.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/voice-tone-management.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/vite-env.d.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/tailwind.config.ts",
+      "language": "typescript",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/vite.config.ts",
+      "language": "typescript",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "wiki/voices/voices_qwen3.json",
+      "language": "json",
+      "sizeLines": 340,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "web/src/views/model-management.ts": [],
+    "web/src/views/resource-management.ts": [],
+    "web/src/views/scrolling-text-management.ts": [],
+    "web/src/views/tts-management.ts": [],
+    "web/src/views/tts-settings.ts": [],
+    "web/src/views/voice-tone-management.ts": [],
+    "web/src/vite-env.d.ts": [],
+    "web/tailwind.config.ts": [],
+    "web/vite.config.ts": [],
+    "wiki/voices/voices_qwen3.json": []
+  }
+}

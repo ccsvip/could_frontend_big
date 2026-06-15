@@ -1,0 +1,44 @@
+{
+  "nodes": [
+    {
+      "id": "config:.claude/skills/impeccable/agents/impeccable_asset_producer.toml",
+      "type": "config",
+      "name": "impeccable_asset_producer.toml",
+      "filePath": ".claude/skills/impeccable/agents/impeccable_asset_producer.toml",
+      "summary": "impeccable 技能中负责生成资产文件的智能体配置，定义了提示词和相关行为约束。",
+      "tags": [
+        "configuration",
+        "agent",
+        "skill"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:.claude/skills/impeccable/agents/impeccable_manual_edit_applier.toml",
+      "type": "config",
+      "name": "impeccable_manual_edit_applier.toml",
+      "filePath": ".claude/skills/impeccable/agents/impeccable_manual_edit_applier.toml",
+      "summary": "impeccable 技能中负责应用手动代码修改的智能体配置，包含差异解析和文件更新规则。",
+      "tags": [
+        "configuration",
+        "agent",
+        "skill"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:.claude/skills/impeccable/agents/openai.yaml",
+      "type": "config",
+      "name": "openai.yaml",
+      "filePath": ".claude/skills/impeccable/agents/openai.yaml",
+      "summary": "OpenAI 接口调用的配置文件，声明了与大语言模型交互时的参数及接口映射。",
+      "tags": [
+        "configuration",
+        "llm",
+        "skill"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": []
+}

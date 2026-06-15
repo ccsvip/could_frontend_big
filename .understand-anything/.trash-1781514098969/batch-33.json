@@ -1,0 +1,462 @@
+{
+  "nodes": [
+    {
+      "id": "document:.claude/skills/request-refactor-plan/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/request-refactor-plan/SKILL.md",
+      "summary": "定义 request-refactor-plan 的 AI 技能指令和工作流。",
+      "tags": [
+        "documentation",
+        "ai-skill",
+        "workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/review/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/review/SKILL.md",
+      "summary": "定义 review 的 AI 技能指令和工作流。",
+      "tags": [
+        "documentation",
+        "ai-skill",
+        "workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/scaffold-exercises/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/scaffold-exercises/SKILL.md",
+      "summary": "定义 scaffold-exercises 的 AI 技能指令和工作流。",
+      "tags": [
+        "documentation",
+        "ai-skill",
+        "workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/setup-pre-commit/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/setup-pre-commit/SKILL.md",
+      "summary": "定义 setup-pre-commit 的 AI 技能指令和工作流。",
+      "tags": [
+        "documentation",
+        "ai-skill",
+        "workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/to-issues/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/to-issues/SKILL.md",
+      "summary": "定义 to-issues 的 AI 技能指令和工作流。",
+      "tags": [
+        "documentation",
+        "ai-skill",
+        "workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/to-prd/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/to-prd/SKILL.md",
+      "summary": "定义 to-prd 的 AI 技能指令和工作流。",
+      "tags": [
+        "documentation",
+        "ai-skill",
+        "workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/ubiquitous-language/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/ubiquitous-language/SKILL.md",
+      "summary": "定义 ubiquitous-language 的 AI 技能指令和工作流。",
+      "tags": [
+        "documentation",
+        "ai-skill",
+        "workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/write-a-skill/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/write-a-skill/SKILL.md",
+      "summary": "定义 write-a-skill 的 AI 技能指令和工作流。",
+      "tags": [
+        "documentation",
+        "ai-skill",
+        "workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/writing-beats/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/writing-beats/SKILL.md",
+      "summary": "定义 writing-beats 的 AI 技能指令和工作流。",
+      "tags": [
+        "documentation",
+        "ai-skill",
+        "workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/writing-fragments/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/writing-fragments/SKILL.md",
+      "summary": "定义 writing-fragments 的 AI 技能指令和工作流。",
+      "tags": [
+        "documentation",
+        "ai-skill",
+        "workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/writing-shape/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/writing-shape/SKILL.md",
+      "summary": "定义 writing-shape 的 AI 技能指令和工作流。",
+      "tags": [
+        "documentation",
+        "ai-skill",
+        "workflow"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/zoom-out/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/zoom-out/SKILL.md",
+      "summary": "定义 zoom-out 的 AI 技能指令和工作流。",
+      "tags": [
+        "documentation",
+        "ai-skill",
+        "workflow"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.gitattributes",
+      "type": "file",
+      "name": ".gitattributes",
+      "filePath": ".gitattributes",
+      "summary": "Git 属性配置文件，用于设置特定文件路径的 Git 行为（如换行符处理）。",
+      "tags": [
+        "configuration",
+        "git"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:.understand-anything/.understandignore",
+      "type": "file",
+      "name": ".understandignore",
+      "filePath": ".understand-anything/.understandignore",
+      "summary": "Understand Anything 工具的忽略列表配置。",
+      "tags": [
+        "configuration",
+        "tool-config"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:.understand-anything/config.json",
+      "type": "config",
+      "name": "config.json",
+      "filePath": ".understand-anything/config.json",
+      "summary": "项目级别的配置文件：config.json",
+      "tags": [
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:.understand-anything/domain-graph.json",
+      "type": "config",
+      "name": "domain-graph.json",
+      "filePath": ".understand-anything/domain-graph.json",
+      "summary": "由 Understand Anything 提取的领域知识图谱数据文件。",
+      "tags": [
+        "configuration",
+        "knowledge-graph",
+        "domain-model"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/apps/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/__init__.py",
+      "summary": "Python 包初始化文件，用于将目录标记为模块。",
+      "tags": [
+        "entry-point",
+        "package-init"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/accounts/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/accounts/__init__.py",
+      "summary": "Python 包初始化文件，用于将目录标记为模块。",
+      "tags": [
+        "entry-point",
+        "package-init"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:backend/apps/accounts/AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "backend/apps/accounts/AGENTS.md",
+      "summary": "定义当前模块的 AI 代理行为规范和领域约束。",
+      "tags": [
+        "documentation",
+        "agent-rules",
+        "guidelines"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/accounts/apps.py",
+      "type": "file",
+      "name": "apps.py",
+      "filePath": "backend/apps/accounts/apps.py",
+      "summary": "Django 应用程序配置，注册应用及其信号等初始化逻辑。",
+      "tags": [
+        "configuration",
+        "django-app"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/apps.py:AccountsConfig",
+      "type": "class",
+      "name": "AccountsConfig",
+      "filePath": "backend/apps/accounts/apps.py",
+      "lineRange": [
+        4,
+        7
+      ],
+      "summary": "定义 AccountsConfig 类结构。",
+      "tags": [
+        "class",
+        "data-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/accounts/migrations/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/accounts/migrations/__init__.py",
+      "summary": "Django 数据库迁移文件，用于定义数据库表结构的变更。",
+      "tags": [
+        "database",
+        "migration",
+        "django"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/accounts/migrations/0001_initial.py",
+      "type": "file",
+      "name": "0001_initial.py",
+      "filePath": "backend/apps/accounts/migrations/0001_initial.py",
+      "summary": "Django 数据库迁移文件，用于定义数据库表结构的变更。",
+      "tags": [
+        "database",
+        "migration",
+        "django"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0001_initial.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0001_initial.py",
+      "lineRange": [
+        6,
+        32
+      ],
+      "summary": "定义 Migration 类结构。",
+      "tags": [
+        "class",
+        "data-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/accounts/migrations/0002_alter_accountapplication_phone.py",
+      "type": "file",
+      "name": "0002_alter_accountapplication_phone.py",
+      "filePath": "backend/apps/accounts/migrations/0002_alter_accountapplication_phone.py",
+      "summary": "Django 数据库迁移文件，用于定义数据库表结构的变更。",
+      "tags": [
+        "database",
+        "migration",
+        "django"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0002_alter_accountapplication_phone.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0002_alter_accountapplication_phone.py",
+      "lineRange": [
+        6,
+        18
+      ],
+      "summary": "定义 Migration 类结构。",
+      "tags": [
+        "class",
+        "data-model"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py",
+      "type": "file",
+      "name": "0003_role_menu_permissionpoint_userrole.py",
+      "filePath": "backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py",
+      "summary": "Django 数据库迁移文件，用于定义数据库表结构的变更。",
+      "tags": [
+        "database",
+        "migration",
+        "django"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py:seed_initial_access_data",
+      "type": "function",
+      "name": "seed_initial_access_data",
+      "filePath": "backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py",
+      "lineRange": [
+        5,
+        83
+      ],
+      "summary": "实现 seed_initial_access_data 的功能逻辑。",
+      "tags": [
+        "function",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py",
+      "lineRange": [
+        86,
+        166
+      ],
+      "summary": "定义 Migration 类结构。",
+      "tags": [
+        "class",
+        "data-model"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/accounts/migrations/0004_menu_parent.py",
+      "type": "file",
+      "name": "0004_menu_parent.py",
+      "filePath": "backend/apps/accounts/migrations/0004_menu_parent.py",
+      "summary": "Django 数据库迁移文件，用于定义数据库表结构的变更。",
+      "tags": [
+        "database",
+        "migration",
+        "django"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0004_menu_parent.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0004_menu_parent.py",
+      "lineRange": [
+        7,
+        19
+      ],
+      "summary": "定义 Migration 类结构。",
+      "tags": [
+        "class",
+        "data-model"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/accounts/apps.py",
+      "target": "class:backend/apps/accounts/apps.py:AccountsConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0001_initial.py",
+      "target": "class:backend/apps/accounts/migrations/0001_initial.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0002_alter_accountapplication_phone.py",
+      "target": "class:backend/apps/accounts/migrations/0002_alter_accountapplication_phone.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py",
+      "target": "function:backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py:seed_initial_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py",
+      "target": "class:backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/migrations/0004_menu_parent.py",
+      "target": "class:backend/apps/accounts/migrations/0004_menu_parent.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    }
+  ]
+}

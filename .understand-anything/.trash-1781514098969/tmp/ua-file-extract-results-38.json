@@ -1,0 +1,1224 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "backend/apps/resources/tests/test_admin_model_asset.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 36,
+      "nonEmptyLines": 26,
+      "classes": [
+        {
+          "name": "ResourceAdminEntryTests",
+          "startLine": 9,
+          "endLine": 36,
+          "methods": [
+            "setUp",
+            "test_resources_app_list_points_model_management_to_model_asset_admin",
+            "test_model_management_admin_page_renders_model_fields"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ResourceAdminEntryTests",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "setUp",
+          "callee": "User.objects.create_superuser",
+          "lineNumber": 11
+        },
+        {
+          "caller": "test_resources_app_list_points_model_management_to_model_asset_admin",
+          "callee": "RequestFactory().get",
+          "lineNumber": 18
+        },
+        {
+          "caller": "test_resources_app_list_points_model_management_to_model_asset_admin",
+          "callee": "RequestFactory",
+          "lineNumber": 18
+        },
+        {
+          "caller": "test_resources_app_list_points_model_management_to_model_asset_admin",
+          "callee": "next",
+          "lineNumber": 21
+        },
+        {
+          "caller": "test_resources_app_list_points_model_management_to_model_asset_admin",
+          "callee": "admin.site.get_app_list",
+          "lineNumber": 21
+        },
+        {
+          "caller": "test_resources_app_list_points_model_management_to_model_asset_admin",
+          "callee": "self.assertEqual",
+          "lineNumber": 24
+        },
+        {
+          "caller": "test_resources_app_list_points_model_management_to_model_asset_admin",
+          "callee": "self.assertEqual",
+          "lineNumber": 25
+        },
+        {
+          "caller": "test_model_management_admin_page_renders_model_fields",
+          "callee": "self.client.force_login",
+          "lineNumber": 28
+        },
+        {
+          "caller": "test_model_management_admin_page_renders_model_fields",
+          "callee": "self.client.get",
+          "lineNumber": 30
+        },
+        {
+          "caller": "test_model_management_admin_page_renders_model_fields",
+          "callee": "self.assertEqual",
+          "lineNumber": 32
+        },
+        {
+          "caller": "test_model_management_admin_page_renders_model_fields",
+          "callee": "self.assertContains",
+          "lineNumber": 33
+        },
+        {
+          "caller": "test_model_management_admin_page_renders_model_fields",
+          "callee": "self.assertContains",
+          "lineNumber": 34
+        },
+        {
+          "caller": "test_model_management_admin_page_renders_model_fields",
+          "callee": "self.assertContains",
+          "lineNumber": 35
+        },
+        {
+          "caller": "test_model_management_admin_page_renders_model_fields",
+          "callee": "self.assertNotContains",
+          "lineNumber": 36
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/tenants/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/tenants/AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 98,
+      "nonEmptyLines": 69,
+      "sections": [
+        {
+          "heading": "tenants 模块 AGENTS",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "模块职责",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "三道防线（任一层都能挡跨租户读取）",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "租户解析（关键：为什么不用 middleware）",
+          "level": 2,
+          "line": 23
+        },
+        {
+          "heading": "三级菜单（在 accounts，不在本模块）",
+          "level": 2,
+          "line": 33
+        },
+        {
+          "heading": "对外接口",
+          "level": 2,
+          "line": 41
+        },
+        {
+          "heading": "数据模型",
+          "level": 2,
+          "line": 53
+        },
+        {
+          "heading": "测试与质量",
+          "level": 2,
+          "line": 61
+        },
+        {
+          "heading": "常见问题 (FAQ)",
+          "level": 2,
+          "line": 74
+        },
+        {
+          "heading": "相关文件清单",
+          "level": 2,
+          "line": 87
+        },
+        {
+          "heading": "变更记录 (Changelog)",
+          "level": 2,
+          "line": 96
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "path": "backend/apps/tenants/apps.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 7,
+      "nonEmptyLines": 5,
+      "classes": [
+        {
+          "name": "TenantsConfig",
+          "startLine": 4,
+          "endLine": 7,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TenantsConfig",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/tenants/migrations/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/tenants/migrations/0001_initial.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 54,
+      "nonEmptyLines": 48,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 8,
+          "endLine": 54,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/tenants/migrations/0002_default_company.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 58,
+      "nonEmptyLines": 44,
+      "functions": [
+        {
+          "name": "create_default_company",
+          "startLine": 8,
+          "endLine": 29,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "remove_default_company",
+          "startLine": 32,
+          "endLine": 40,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 43,
+          "endLine": 58,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "create_default_company",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "remove_default_company",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 43,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create_default_company",
+          "callee": "apps.get_model",
+          "lineNumber": 9
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "apps.get_model",
+          "lineNumber": 10
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "apps.get_model",
+          "lineNumber": 11
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "apps.get_model",
+          "lineNumber": 12
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "apps.get_model",
+          "lineNumber": 13
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "Tenant.objects.get_or_create",
+          "lineNumber": 15
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "tenant.menus.set",
+          "lineNumber": 21
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "Menu.objects.all",
+          "lineNumber": 21
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "tenant.permission_points.set",
+          "lineNumber": 22
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "PermissionPoint.objects.all",
+          "lineNumber": 22
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "User.objects.filter",
+          "lineNumber": 25
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "Membership.objects.get_or_create",
+          "lineNumber": 26
+        },
+        {
+          "caller": "remove_default_company",
+          "callee": "apps.get_model",
+          "lineNumber": 33
+        },
+        {
+          "caller": "remove_default_company",
+          "callee": "apps.get_model",
+          "lineNumber": 34
+        },
+        {
+          "caller": "remove_default_company",
+          "callee": "Tenant.objects.filter(code=DEFAULT_TENANT_CODE).first",
+          "lineNumber": 36
+        },
+        {
+          "caller": "remove_default_company",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 36
+        },
+        {
+          "caller": "remove_default_company",
+          "callee": "Membership.objects.filter(tenant=tenant).delete",
+          "lineNumber": 39
+        },
+        {
+          "caller": "remove_default_company",
+          "callee": "Membership.objects.filter",
+          "lineNumber": 39
+        },
+        {
+          "caller": "remove_default_company",
+          "callee": "tenant.delete",
+          "lineNumber": 40
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/tenants/migrations/0003_backfill_business_tenants.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 56,
+      "nonEmptyLines": 46,
+      "functions": [
+        {
+          "name": "backfill_default_tenant",
+          "startLine": 21,
+          "endLine": 30,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "clear_default_tenant",
+          "startLine": 33,
+          "endLine": 41,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 44,
+          "endLine": 56,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "backfill_default_tenant",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "clear_default_tenant",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 44,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "backfill_default_tenant",
+          "callee": "apps.get_model",
+          "lineNumber": 22
+        },
+        {
+          "caller": "backfill_default_tenant",
+          "callee": "Tenant.objects.filter(code='default').first",
+          "lineNumber": 23
+        },
+        {
+          "caller": "backfill_default_tenant",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 23
+        },
+        {
+          "caller": "backfill_default_tenant",
+          "callee": "apps.get_model",
+          "lineNumber": 29
+        },
+        {
+          "caller": "backfill_default_tenant",
+          "callee": "model.objects.filter(tenant__isnull=True).update",
+          "lineNumber": 30
+        },
+        {
+          "caller": "backfill_default_tenant",
+          "callee": "model.objects.filter",
+          "lineNumber": 30
+        },
+        {
+          "caller": "clear_default_tenant",
+          "callee": "apps.get_model",
+          "lineNumber": 35
+        },
+        {
+          "caller": "clear_default_tenant",
+          "callee": "Tenant.objects.filter(code='default').first",
+          "lineNumber": 36
+        },
+        {
+          "caller": "clear_default_tenant",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 36
+        },
+        {
+          "caller": "clear_default_tenant",
+          "callee": "apps.get_model",
+          "lineNumber": 40
+        },
+        {
+          "caller": "clear_default_tenant",
+          "callee": "model.objects.filter(tenant=tenant).update",
+          "lineNumber": 41
+        },
+        {
+          "caller": "clear_default_tenant",
+          "callee": "model.objects.filter",
+          "lineNumber": 41
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/tenants/migrations/0004_membership_role_name.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 18,
+      "nonEmptyLines": 13,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 6,
+          "endLine": 18,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/tenants/tests/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/config/AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 48,
+      "nonEmptyLines": 37,
+      "sections": [
+        {
+          "heading": "backend/config AGENTS.md",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "OVERVIEW",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "STRUCTURE",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "CONVENTIONS",
+          "level": 2,
+          "line": 27
+        },
+        {
+          "heading": "ANTI-PATTERNS",
+          "level": 2,
+          "line": 35
+        },
+        {
+          "heading": "NOTES",
+          "level": 2,
+          "line": 43
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "backend/config/asgi.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 27,
+      "nonEmptyLines": 18,
+      "functions": [
+        {
+          "name": "application",
+          "startLine": 10,
+          "endLine": 27,
+          "params": [
+            "scope",
+            "receive",
+            "send"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "application",
+          "line": 10,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "application",
+          "callee": "scope.get",
+          "lineNumber": 11
+        },
+        {
+          "caller": "application",
+          "callee": "scope.get",
+          "lineNumber": 11
+        },
+        {
+          "caller": "application",
+          "callee": "device_status_websocket_application",
+          "lineNumber": 14
+        },
+        {
+          "caller": "application",
+          "callee": "scope.get",
+          "lineNumber": 16
+        },
+        {
+          "caller": "application",
+          "callee": "scope.get",
+          "lineNumber": 16
+        },
+        {
+          "caller": "application",
+          "callee": "device_events_websocket_application",
+          "lineNumber": 19
+        },
+        {
+          "caller": "application",
+          "callee": "scope.get",
+          "lineNumber": 21
+        },
+        {
+          "caller": "application",
+          "callee": "scope.get",
+          "lineNumber": 21
+        },
+        {
+          "caller": "application",
+          "callee": "asr_realtime_websocket_application",
+          "lineNumber": 24
+        },
+        {
+          "caller": "application",
+          "callee": "django_application",
+          "lineNumber": 27
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/config/exceptions.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 99,
+      "nonEmptyLines": 90,
+      "functions": [
+        {
+          "name": "custom_exception_handler",
+          "startLine": 9,
+          "endLine": 99,
+          "params": [
+            "exc",
+            "context"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "custom_exception_handler",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "custom_exception_handler",
+          "callee": "drf_exception_handler",
+          "lineNumber": 19
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "isinstance",
+          "lineNumber": 30
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "response.data.items",
+          "lineNumber": 36
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "isinstance",
+          "lineNumber": 37
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "str",
+          "lineNumber": 39
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "errors.append",
+          "lineNumber": 42
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "errors.append",
+          "lineNumber": 44
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "str",
+          "lineNumber": 46
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "errors.append",
+          "lineNumber": 49
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "errors.append",
+          "lineNumber": 51
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "'；'.join",
+          "lineNumber": 52
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "isinstance",
+          "lineNumber": 53
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "'；'.join",
+          "lineNumber": 54
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "str",
+          "lineNumber": 54
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "str",
+          "lineNumber": 56
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "isinstance",
+          "lineNumber": 62
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "str",
+          "lineNumber": 63
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "error_message.lower",
+          "lineNumber": 66
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "error_message.lower",
+          "lineNumber": 66
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "Response",
+          "lineNumber": 71
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "isinstance",
+          "lineNumber": 81
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "Response",
+          "lineNumber": 82
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "'；'.join",
+          "lineNumber": 85
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "hasattr",
+          "lineNumber": 85
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "str",
+          "lineNumber": 85
+        },
+        {
+          "caller": "custom_exception_handler",
+          "callee": "Response",
+          "lineNumber": 92
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/config/pagination.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 6,
+      "nonEmptyLines": 4,
+      "classes": [
+        {
+          "name": "StandardPageNumberPagination",
+          "startLine": 4,
+          "endLine": 6,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "StandardPageNumberPagination",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/config/settings/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/config/tests/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/config/tests/test_cache_settings.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 15,
+      "nonEmptyLines": 11,
+      "classes": [
+        {
+          "name": "CacheSettingsTests",
+          "startLine": 7,
+          "endLine": 15,
+          "methods": [
+            "test_default_cache_uses_configured_redis_url"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "CacheSettingsTests",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "test_default_cache_uses_configured_redis_url",
+          "callee": "os.getenv",
+          "lineNumber": 9
+        },
+        {
+          "caller": "test_default_cache_uses_configured_redis_url",
+          "callee": "os.getenv",
+          "lineNumber": 9
+        },
+        {
+          "caller": "test_default_cache_uses_configured_redis_url",
+          "callee": "self.assertEqual",
+          "lineNumber": 11
+        },
+        {
+          "caller": "test_default_cache_uses_configured_redis_url",
+          "callee": "self.assertEqual",
+          "lineNumber": 15
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/config/urls.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 114,
+      "nonEmptyLines": 104,
+      "functions": [
+        {
+          "name": "backend_not_found_view",
+          "startLine": 14,
+          "endLine": 15,
+          "params": [
+            "request"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "ApiV1RootView",
+          "startLine": 18,
+          "endLine": 67,
+          "methods": [
+            "get"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "backend_not_found_view",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "ApiV1RootView",
+          "line": 18,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "backend_not_found_view",
+          "callee": "render",
+          "lineNumber": 15
+        },
+        {
+          "caller": "get",
+          "callee": "request.build_absolute_uri('/api/v1/').rstrip",
+          "lineNumber": 22
+        },
+        {
+          "caller": "get",
+          "callee": "request.build_absolute_uri",
+          "lineNumber": 22
+        },
+        {
+          "caller": "get",
+          "callee": "Response",
+          "lineNumber": 23
+        },
+        {
+          "caller": "get",
+          "callee": "base_url.replace",
+          "lineNumber": 26
+        },
+        {
+          "caller": "get",
+          "callee": "base_url.replace",
+          "lineNumber": 27
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/config/wsgi.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 7,
+      "nonEmptyLines": 4,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/manage.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 14,
+      "nonEmptyLines": 9,
+      "functions": [
+        {
+          "name": "main",
+          "startLine": 6,
+          "endLine": 10,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "main",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "main",
+          "callee": "os.environ.setdefault",
+          "lineNumber": 7
+        },
+        {
+          "caller": "main",
+          "callee": "execute_from_command_line",
+          "lineNumber": 10
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/templates/404.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 234,
+      "nonEmptyLines": 207,
+      "metrics": {}
+    },
+    {
+      "path": "flow-web/index.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 488,
+      "nonEmptyLines": 463,
+      "metrics": {}
+    },
+    {
+      "path": "flow-web/my-video/renders/my-video_2026-05-31_00-51-48.meta.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "sections": [
+        {
+          "heading": "status",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "durationMs",
+          "level": 1,
+          "line": 1
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "flow-web/TERMINAL-ENCODING.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 88,
+      "nonEmptyLines": 61,
+      "sections": [
+        {
+          "heading": "Windows 终端编码修复说明",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. cmd 里中文 / traceback / `docker compose logs` 乱码",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "临时（当前窗口生效）",
+          "level": 3,
+          "line": 17
+        },
+        {
+          "heading": "永久（推荐其一）",
+          "level": 3,
+          "line": 26
+        },
+        {
+          "heading": "2. 中文文件名被显示成 `\\xxx` 八进制转义",
+          "level": 2,
+          "line": 36
+        },
+        {
+          "heading": "3. `git add` 一直刷 `LF will be replaced by CRLF`",
+          "level": 2,
+          "line": 50
+        },
+        {
+          "heading": "4. 宿主直接跑 Python（非容器）时 traceback 乱码（可选）",
+          "level": 2,
+          "line": 70
+        },
+        {
+          "heading": "不在本说明范围",
+          "level": 2,
+          "line": 84
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": "scripts/asr-replacement-test.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 1152,
+      "nonEmptyLines": 1032,
+      "metrics": {}
+    }
+  ]
+}

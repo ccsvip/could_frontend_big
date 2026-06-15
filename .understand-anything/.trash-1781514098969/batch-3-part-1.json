@@ -1,0 +1,1396 @@
+{
+  "nodes": [
+    {
+      "id": "file:web/src/api/client.ts",
+      "type": "file",
+      "name": "client.ts",
+      "filePath": "web/src/api/client.ts",
+      "summary": "提供通用功能模块的类型定义、常量或工具函数。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "moderate",
+      "languageNotes": ""
+    },
+    {
+      "id": "function:web/src/api/client.ts:isTenantScopedUrl",
+      "type": "function",
+      "name": "isTenantScopedUrl",
+      "filePath": "web/src/api/client.ts",
+      "lineRange": [
+        20,
+        35
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/client.ts:normalizeDevMediaUrl",
+      "type": "function",
+      "name": "normalizeDevMediaUrl",
+      "filePath": "web/src/api/client.ts",
+      "lineRange": [
+        49,
+        67
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/client.ts:normalizeDevMediaUrls",
+      "type": "function",
+      "name": "normalizeDevMediaUrls",
+      "filePath": "web/src/api/client.ts",
+      "lineRange": [
+        69,
+        98
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/client.ts:handleUnauthorizedResponse",
+      "type": "function",
+      "name": "handleUnauthorizedResponse",
+      "filePath": "web/src/api/client.ts",
+      "lineRange": [
+        104,
+        109
+      ],
+      "summary": "处理通用功能视图中的特定事件交互。",
+      "tags": [
+        "frontend-view",
+        "event-handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/api/modules/applications.ts",
+      "type": "file",
+      "name": "applications.ts",
+      "filePath": "web/src/api/modules/applications.ts",
+      "summary": "提供通用功能模块的类型定义、常量或工具函数。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "moderate",
+      "languageNotes": ""
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:fetchAgentApplications",
+      "type": "function",
+      "name": "fetchAgentApplications",
+      "filePath": "web/src/api/modules/applications.ts",
+      "lineRange": [
+        59,
+        64
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:fetchAgentApplication",
+      "type": "function",
+      "name": "fetchAgentApplication",
+      "filePath": "web/src/api/modules/applications.ts",
+      "lineRange": [
+        66,
+        69
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:createAgentApplication",
+      "type": "function",
+      "name": "createAgentApplication",
+      "filePath": "web/src/api/modules/applications.ts",
+      "lineRange": [
+        71,
+        74
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:updateAgentApplication",
+      "type": "function",
+      "name": "updateAgentApplication",
+      "filePath": "web/src/api/modules/applications.ts",
+      "lineRange": [
+        76,
+        79
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:deleteAgentApplication",
+      "type": "function",
+      "name": "deleteAgentApplication",
+      "filePath": "web/src/api/modules/applications.ts",
+      "lineRange": [
+        81,
+        83
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:createAgentApplicationConversation",
+      "type": "function",
+      "name": "createAgentApplicationConversation",
+      "filePath": "web/src/api/modules/applications.ts",
+      "lineRange": [
+        85,
+        88
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/api/modules/asr.ts",
+      "type": "file",
+      "name": "asr.ts",
+      "filePath": "web/src/api/modules/asr.ts",
+      "summary": "提供通用功能模块的类型定义、常量或工具函数。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "moderate",
+      "languageNotes": ""
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:fetchAsrSettings",
+      "type": "function",
+      "name": "fetchAsrSettings",
+      "filePath": "web/src/api/modules/asr.ts",
+      "lineRange": [
+        52,
+        55
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:updateAsrSettings",
+      "type": "function",
+      "name": "updateAsrSettings",
+      "filePath": "web/src/api/modules/asr.ts",
+      "lineRange": [
+        57,
+        60
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:testAsrSettings",
+      "type": "function",
+      "name": "testAsrSettings",
+      "filePath": "web/src/api/modules/asr.ts",
+      "lineRange": [
+        62,
+        65
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:fetchAsrStatus",
+      "type": "function",
+      "name": "fetchAsrStatus",
+      "filePath": "web/src/api/modules/asr.ts",
+      "lineRange": [
+        67,
+        70
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:testAsr",
+      "type": "function",
+      "name": "testAsr",
+      "filePath": "web/src/api/modules/asr.ts",
+      "lineRange": [
+        72,
+        75
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:fetchAsrReplacementRules",
+      "type": "function",
+      "name": "fetchAsrReplacementRules",
+      "filePath": "web/src/api/modules/asr.ts",
+      "lineRange": [
+        77,
+        82
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:createAsrReplacementRule",
+      "type": "function",
+      "name": "createAsrReplacementRule",
+      "filePath": "web/src/api/modules/asr.ts",
+      "lineRange": [
+        84,
+        87
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:updateAsrReplacementRule",
+      "type": "function",
+      "name": "updateAsrReplacementRule",
+      "filePath": "web/src/api/modules/asr.ts",
+      "lineRange": [
+        89,
+        92
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:deleteAsrReplacementRule",
+      "type": "function",
+      "name": "deleteAsrReplacementRule",
+      "filePath": "web/src/api/modules/asr.ts",
+      "lineRange": [
+        94,
+        96
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:buildAsrRealtimeWebSocketUrl",
+      "type": "function",
+      "name": "buildAsrRealtimeWebSocketUrl",
+      "filePath": "web/src/api/modules/asr.ts",
+      "lineRange": [
+        98,
+        110
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/api/modules/audit.ts",
+      "type": "file",
+      "name": "audit.ts",
+      "filePath": "web/src/api/modules/audit.ts",
+      "summary": "提供通用功能模块的类型定义、常量或工具函数。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple",
+      "languageNotes": ""
+    },
+    {
+      "id": "function:web/src/api/modules/audit.ts:fetchOperationLogs",
+      "type": "function",
+      "name": "fetchOperationLogs",
+      "filePath": "web/src/api/modules/audit.ts",
+      "lineRange": [
+        34,
+        37
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/audit.ts:clearOperationLogs",
+      "type": "function",
+      "name": "clearOperationLogs",
+      "filePath": "web/src/api/modules/audit.ts",
+      "lineRange": [
+        39,
+        42
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/api/modules/auth.ts",
+      "type": "file",
+      "name": "auth.ts",
+      "filePath": "web/src/api/modules/auth.ts",
+      "summary": "提供通用功能模块的类型定义、常量或工具函数。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "moderate",
+      "languageNotes": ""
+    },
+    {
+      "id": "function:web/src/api/modules/auth.ts:loginRequest",
+      "type": "function",
+      "name": "loginRequest",
+      "filePath": "web/src/api/modules/auth.ts",
+      "lineRange": [
+        73,
+        76
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/auth.ts:fetchCurrentUser",
+      "type": "function",
+      "name": "fetchCurrentUser",
+      "filePath": "web/src/api/modules/auth.ts",
+      "lineRange": [
+        78,
+        81
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/auth.ts:applyAccountRequest",
+      "type": "function",
+      "name": "applyAccountRequest",
+      "filePath": "web/src/api/modules/auth.ts",
+      "lineRange": [
+        83,
+        86
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/auth.ts:fetchAccountApplications",
+      "type": "function",
+      "name": "fetchAccountApplications",
+      "filePath": "web/src/api/modules/auth.ts",
+      "lineRange": [
+        88,
+        91
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/auth.ts:updateAccountApplicationStatus",
+      "type": "function",
+      "name": "updateAccountApplicationStatus",
+      "filePath": "web/src/api/modules/auth.ts",
+      "lineRange": [
+        93,
+        96
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/auth.ts:changePasswordRequest",
+      "type": "function",
+      "name": "changePasswordRequest",
+      "filePath": "web/src/api/modules/auth.ts",
+      "lineRange": [
+        98,
+        101
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/api/modules/chat.ts",
+      "type": "file",
+      "name": "chat.ts",
+      "filePath": "web/src/api/modules/chat.ts",
+      "summary": "提供通用功能模块的类型定义、常量或工具函数。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "moderate",
+      "languageNotes": ""
+    },
+    {
+      "id": "function:web/src/api/modules/chat.ts:fetchConversation",
+      "type": "function",
+      "name": "fetchConversation",
+      "filePath": "web/src/api/modules/chat.ts",
+      "lineRange": [
+        43,
+        48
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/chat.ts:updateConversationConfig",
+      "type": "function",
+      "name": "updateConversationConfig",
+      "filePath": "web/src/api/modules/chat.ts",
+      "lineRange": [
+        50,
+        59
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/chat.ts:sendMessageStream",
+      "type": "function",
+      "name": "sendMessageStream",
+      "filePath": "web/src/api/modules/chat.ts",
+      "lineRange": [
+        65,
+        170
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/api/modules/commands.ts",
+      "type": "file",
+      "name": "commands.ts",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "提供通用功能模块的类型定义、常量或工具函数。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "complex",
+      "languageNotes": ""
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:fetchCommandGroups",
+      "type": "function",
+      "name": "fetchCommandGroups",
+      "filePath": "web/src/api/modules/commands.ts",
+      "lineRange": [
+        155,
+        160
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:createCommandGroup",
+      "type": "function",
+      "name": "createCommandGroup",
+      "filePath": "web/src/api/modules/commands.ts",
+      "lineRange": [
+        162,
+        165
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:updateCommandGroup",
+      "type": "function",
+      "name": "updateCommandGroup",
+      "filePath": "web/src/api/modules/commands.ts",
+      "lineRange": [
+        167,
+        170
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:deleteCommandGroup",
+      "type": "function",
+      "name": "deleteCommandGroup",
+      "filePath": "web/src/api/modules/commands.ts",
+      "lineRange": [
+        172,
+        174
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:fetchControlCommands",
+      "type": "function",
+      "name": "fetchControlCommands",
+      "filePath": "web/src/api/modules/commands.ts",
+      "lineRange": [
+        176,
+        181
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:createControlCommand",
+      "type": "function",
+      "name": "createControlCommand",
+      "filePath": "web/src/api/modules/commands.ts",
+      "lineRange": [
+        183,
+        186
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:updateControlCommand",
+      "type": "function",
+      "name": "updateControlCommand",
+      "filePath": "web/src/api/modules/commands.ts",
+      "lineRange": [
+        188,
+        191
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:deleteControlCommand",
+      "type": "function",
+      "name": "deleteControlCommand",
+      "filePath": "web/src/api/modules/commands.ts",
+      "lineRange": [
+        193,
+        195
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:fetchTaskCommands",
+      "type": "function",
+      "name": "fetchTaskCommands",
+      "filePath": "web/src/api/modules/commands.ts",
+      "lineRange": [
+        197,
+        202
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:createTaskCommand",
+      "type": "function",
+      "name": "createTaskCommand",
+      "filePath": "web/src/api/modules/commands.ts",
+      "lineRange": [
+        204,
+        207
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:updateTaskCommand",
+      "type": "function",
+      "name": "updateTaskCommand",
+      "filePath": "web/src/api/modules/commands.ts",
+      "lineRange": [
+        209,
+        212
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:deleteTaskCommand",
+      "type": "function",
+      "name": "deleteTaskCommand",
+      "filePath": "web/src/api/modules/commands.ts",
+      "lineRange": [
+        214,
+        216
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:exportEnabledCommandGroups",
+      "type": "function",
+      "name": "exportEnabledCommandGroups",
+      "filePath": "web/src/api/modules/commands.ts",
+      "lineRange": [
+        218,
+        221
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:exportAllCommands",
+      "type": "function",
+      "name": "exportAllCommands",
+      "filePath": "web/src/api/modules/commands.ts",
+      "lineRange": [
+        223,
+        233
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:web/src/api/client.ts",
+      "target": "function:web/src/api/client.ts:isTenantScopedUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/client.ts",
+      "target": "function:web/src/api/client.ts:normalizeDevMediaUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/client.ts",
+      "target": "function:web/src/api/client.ts:normalizeDevMediaUrls",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/client.ts",
+      "target": "function:web/src/api/client.ts:handleUnauthorizedResponse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/client.ts",
+      "target": "function:web/src/api/client.ts:handleUnauthorizedResponse",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/api/client.ts:normalizeDevMediaUrls",
+      "target": "function:web/src/api/client.ts:normalizeDevMediaUrl",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/api/client.ts:normalizeDevMediaUrls",
+      "target": "function:web/src/api/client.ts:normalizeDevMediaUrls",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/api/client.ts:normalizeDevMediaUrls",
+      "target": "function:web/src/api/client.ts:normalizeDevMediaUrls",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:fetchAgentApplications",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:fetchAgentApplications",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:fetchAgentApplication",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:fetchAgentApplication",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:createAgentApplication",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:createAgentApplication",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:updateAgentApplication",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:updateAgentApplication",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:deleteAgentApplication",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:deleteAgentApplication",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:createAgentApplicationConversation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:createAgentApplicationConversation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:fetchAsrSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:fetchAsrSettings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:updateAsrSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:updateAsrSettings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:testAsrSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:testAsrSettings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:fetchAsrStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:fetchAsrStatus",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:testAsr",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:testAsr",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:fetchAsrReplacementRules",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:fetchAsrReplacementRules",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:createAsrReplacementRule",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:createAsrReplacementRule",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:updateAsrReplacementRule",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:updateAsrReplacementRule",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:deleteAsrReplacementRule",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:deleteAsrReplacementRule",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:buildAsrRealtimeWebSocketUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:buildAsrRealtimeWebSocketUrl",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/audit.ts",
+      "target": "function:web/src/api/modules/audit.ts:fetchOperationLogs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/audit.ts",
+      "target": "function:web/src/api/modules/audit.ts:fetchOperationLogs",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/audit.ts",
+      "target": "function:web/src/api/modules/audit.ts:clearOperationLogs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/audit.ts",
+      "target": "function:web/src/api/modules/audit.ts:clearOperationLogs",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:loginRequest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:loginRequest",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:fetchCurrentUser",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:fetchCurrentUser",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:applyAccountRequest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:applyAccountRequest",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:fetchAccountApplications",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:fetchAccountApplications",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:updateAccountApplicationStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:updateAccountApplicationStatus",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:changePasswordRequest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:changePasswordRequest",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/chat.ts",
+      "target": "function:web/src/api/modules/chat.ts:fetchConversation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/chat.ts",
+      "target": "function:web/src/api/modules/chat.ts:fetchConversation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/chat.ts",
+      "target": "function:web/src/api/modules/chat.ts:updateConversationConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/chat.ts",
+      "target": "function:web/src/api/modules/chat.ts:updateConversationConfig",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/chat.ts",
+      "target": "function:web/src/api/modules/chat.ts:sendMessageStream",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/chat.ts",
+      "target": "function:web/src/api/modules/chat.ts:sendMessageStream",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:fetchCommandGroups",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:fetchCommandGroups",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:createCommandGroup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:createCommandGroup",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:updateCommandGroup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:updateCommandGroup",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:deleteCommandGroup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:deleteCommandGroup",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:fetchControlCommands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:fetchControlCommands",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:createControlCommand",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:createControlCommand",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:updateControlCommand",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:updateControlCommand",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:deleteControlCommand",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:deleteControlCommand",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:fetchTaskCommands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:fetchTaskCommands",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:createTaskCommand",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:createTaskCommand",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:updateTaskCommand",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:updateTaskCommand",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:deleteTaskCommand",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:deleteTaskCommand",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:exportEnabledCommandGroups",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:exportEnabledCommandGroups",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:exportAllCommands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:exportAllCommands",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

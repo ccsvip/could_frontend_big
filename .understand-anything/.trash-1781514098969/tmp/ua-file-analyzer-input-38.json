@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+      {
+        "path": "backend/apps/resources/tests/test_admin_model_asset.py",
+        "language": "python",
+        "sizeLines": 36,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/__init__.py",
+        "language": "python",
+        "sizeLines": 0,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/AGENTS.md",
+        "language": "markdown",
+        "sizeLines": 98,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "backend/apps/tenants/apps.py",
+        "language": "python",
+        "sizeLines": 7,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/migrations/__init__.py",
+        "language": "python",
+        "sizeLines": 0,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/migrations/0001_initial.py",
+        "language": "python",
+        "sizeLines": 54,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/migrations/0002_default_company.py",
+        "language": "python",
+        "sizeLines": 58,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/migrations/0003_backfill_business_tenants.py",
+        "language": "python",
+        "sizeLines": 56,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/migrations/0004_membership_role_name.py",
+        "language": "python",
+        "sizeLines": 18,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/tenants/tests/__init__.py",
+        "language": "python",
+        "sizeLines": 0,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/config/AGENTS.md",
+        "language": "markdown",
+        "sizeLines": 48,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "backend/config/asgi.py",
+        "language": "python",
+        "sizeLines": 27,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/config/exceptions.py",
+        "language": "python",
+        "sizeLines": 99,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/config/pagination.py",
+        "language": "python",
+        "sizeLines": 6,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/config/settings/__init__.py",
+        "language": "python",
+        "sizeLines": 1,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/config/tests/__init__.py",
+        "language": "python",
+        "sizeLines": 1,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/config/tests/test_cache_settings.py",
+        "language": "python",
+        "sizeLines": 15,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/config/urls.py",
+        "language": "python",
+        "sizeLines": 114,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/config/wsgi.py",
+        "language": "python",
+        "sizeLines": 7,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/manage.py",
+        "language": "python",
+        "sizeLines": 14,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/templates/404.html",
+        "language": "html",
+        "sizeLines": 234,
+        "fileCategory": "markup"
+      },
+      {
+        "path": "flow-web/index.html",
+        "language": "html",
+        "sizeLines": 488,
+        "fileCategory": "markup"
+      },
+      {
+        "path": "flow-web/my-video/renders/my-video_2026-05-31_00-51-48.meta.json",
+        "language": "json",
+        "sizeLines": 0,
+        "fileCategory": "config"
+      },
+      {
+        "path": "flow-web/TERMINAL-ENCODING.md",
+        "language": "markdown",
+        "sizeLines": 88,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "scripts/asr-replacement-test.html",
+        "language": "html",
+        "sizeLines": 1152,
+        "fileCategory": "markup"
+      }
+  ],
+  "batchImportData": {
+      "backend/apps/resources/tests/test_admin_model_asset.py": [],
+      "backend/apps/tenants/__init__.py": [],
+      "backend/apps/tenants/AGENTS.md": [],
+      "backend/apps/tenants/apps.py": [],
+      "backend/apps/tenants/migrations/__init__.py": [],
+      "backend/apps/tenants/migrations/0001_initial.py": [],
+      "backend/apps/tenants/migrations/0002_default_company.py": [],
+      "backend/apps/tenants/migrations/0003_backfill_business_tenants.py": [],
+      "backend/apps/tenants/migrations/0004_membership_role_name.py": [],
+      "backend/apps/tenants/tests/__init__.py": [],
+      "backend/config/AGENTS.md": [],
+      "backend/config/asgi.py": [],
+      "backend/config/exceptions.py": [],
+      "backend/config/pagination.py": [],
+      "backend/config/settings/__init__.py": [],
+      "backend/config/tests/__init__.py": [],
+      "backend/config/tests/test_cache_settings.py": [],
+      "backend/config/urls.py": [],
+      "backend/config/wsgi.py": [],
+      "backend/manage.py": [],
+      "backend/templates/404.html": [],
+      "flow-web/index.html": [],
+      "flow-web/my-video/renders/my-video_2026-05-31_00-51-48.meta.json": [],
+      "flow-web/TERMINAL-ENCODING.md": [],
+      "scripts/asr-replacement-test.html": []
+  }
+}

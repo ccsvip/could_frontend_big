@@ -1,0 +1,150 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": ".claude/skills/grill-with-docs/ADR-FORMAT.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 47,
+      "nonEmptyLines": 30,
+      "sections": [
+        {
+          "heading": "ADR Format",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Template",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Optional sections",
+          "level": 2,
+          "line": 17
+        },
+        {
+          "heading": "Numbering",
+          "level": 2,
+          "line": 25
+        },
+        {
+          "heading": "When to offer an ADR",
+          "level": 2,
+          "line": 29
+        },
+        {
+          "heading": "What qualifies",
+          "level": 3,
+          "line": 39
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": ".claude/skills/grill-with-docs/CONTEXT-FORMAT.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 60,
+      "nonEmptyLines": 40,
+      "sections": [
+        {
+          "heading": "CONTEXT.md Format",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Structure",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Rules",
+          "level": 2,
+          "line": 25
+        },
+        {
+          "heading": "Single vs multi-context repos",
+          "level": 2,
+          "line": 32
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": ".claude/skills/grill-with-docs/SKILL.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 88,
+      "nonEmptyLines": 57,
+      "sections": [
+        {
+          "heading": "Domain awareness",
+          "level": 2,
+          "line": 18
+        },
+        {
+          "heading": "File structure",
+          "level": 3,
+          "line": 22
+        },
+        {
+          "heading": "During the session",
+          "level": 2,
+          "line": 54
+        },
+        {
+          "heading": "Challenge against the glossary",
+          "level": 3,
+          "line": 56
+        },
+        {
+          "heading": "Sharpen fuzzy language",
+          "level": 3,
+          "line": 60
+        },
+        {
+          "heading": "Discuss concrete scenarios",
+          "level": 3,
+          "line": 64
+        },
+        {
+          "heading": "Cross-reference with code",
+          "level": 3,
+          "line": 68
+        },
+        {
+          "heading": "Update CONTEXT.md inline",
+          "level": 3,
+          "line": 72
+        },
+        {
+          "heading": "Offer ADRs sparingly",
+          "level": 3,
+          "line": 78
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    }
+  ]
+}

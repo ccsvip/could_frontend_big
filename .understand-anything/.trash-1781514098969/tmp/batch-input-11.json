@@ -1,0 +1,238 @@
+[
+  {
+    "batchIndex": 26,
+    "files": [
+      {
+        "path": "backend/AGENTS.md",
+        "language": "markdown",
+        "sizeLines": 157,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "backend/CLAUDE.md",
+        "language": "markdown",
+        "sizeLines": 177,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "backend/requirements.txt",
+        "language": "txt",
+        "sizeLines": 20,
+        "fileCategory": "docs"
+      }
+    ],
+    "batchImportData": {
+      "backend/AGENTS.md": [],
+      "backend/CLAUDE.md": [],
+      "backend/requirements.txt": []
+    },
+    "neighborMap": {}
+  },
+  {
+    "batchIndex": 27,
+    "files": [
+      {
+        "path": "docs/superpowers/plans/2026-06-04-minio-settings.md",
+        "language": "markdown",
+        "sizeLines": 154,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "docs/superpowers/plans/2026-06-05-asr-settings.md",
+        "language": "markdown",
+        "sizeLines": 251,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "docs/superpowers/plans/2026-06-05-audit-log-management.md",
+        "language": "markdown",
+        "sizeLines": 779,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "docs/superpowers/plans/2026-06-06-login-command-center.md",
+        "language": "markdown",
+        "sizeLines": 335,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "docs/superpowers/plans/2026-06-10-llm-settings.md",
+        "language": "markdown",
+        "sizeLines": 1280,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "docs/superpowers/plans/2026-06-15-tts-settings.md",
+        "language": "markdown",
+        "sizeLines": 267,
+        "fileCategory": "docs"
+      }
+    ],
+    "batchImportData": {
+      "docs/superpowers/plans/2026-06-04-minio-settings.md": [],
+      "docs/superpowers/plans/2026-06-05-asr-settings.md": [],
+      "docs/superpowers/plans/2026-06-05-audit-log-management.md": [],
+      "docs/superpowers/plans/2026-06-06-login-command-center.md": [],
+      "docs/superpowers/plans/2026-06-10-llm-settings.md": [],
+      "docs/superpowers/plans/2026-06-15-tts-settings.md": []
+    },
+    "neighborMap": {}
+  },
+  {
+    "batchIndex": 28,
+    "files": [
+      {
+        "path": "docs/superpowers/specs/2026-06-05-asr-settings-design.md",
+        "language": "markdown",
+        "sizeLines": 90,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "docs/superpowers/specs/2026-06-05-audit-log-management-design.md",
+        "language": "markdown",
+        "sizeLines": 205,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "docs/superpowers/specs/2026-06-06-login-command-center-design.md",
+        "language": "markdown",
+        "sizeLines": 125,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "docs/superpowers/specs/2026-06-11-default-employee-access-design.md",
+        "language": "markdown",
+        "sizeLines": 60,
+        "fileCategory": "docs"
+      }
+    ],
+    "batchImportData": {
+      "docs/superpowers/specs/2026-06-05-asr-settings-design.md": [],
+      "docs/superpowers/specs/2026-06-05-audit-log-management-design.md": [],
+      "docs/superpowers/specs/2026-06-06-login-command-center-design.md": [],
+      "docs/superpowers/specs/2026-06-11-default-employee-access-design.md": []
+    },
+    "neighborMap": {}
+  },
+  {
+    "batchIndex": 29,
+    "files": [
+      {
+        "path": "flow-web/my-video/AGENTS.md",
+        "language": "markdown",
+        "sizeLines": 62,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "flow-web/my-video/CLAUDE.md",
+        "language": "markdown",
+        "sizeLines": 85,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "flow-web/my-video/hyperframes.json",
+        "language": "json",
+        "sizeLines": 9,
+        "fileCategory": "config"
+      },
+      {
+        "path": "flow-web/my-video/index.html",
+        "language": "html",
+        "sizeLines": 579,
+        "fileCategory": "markup"
+      },
+      {
+        "path": "flow-web/my-video/meta.json",
+        "language": "json",
+        "sizeLines": 4,
+        "fileCategory": "config"
+      },
+      {
+        "path": "flow-web/my-video/package.json",
+        "language": "json",
+        "sizeLines": 11,
+        "fileCategory": "config"
+      }
+    ],
+    "batchImportData": {
+      "flow-web/my-video/AGENTS.md": [],
+      "flow-web/my-video/CLAUDE.md": [],
+      "flow-web/my-video/hyperframes.json": [],
+      "flow-web/my-video/index.html": [],
+      "flow-web/my-video/meta.json": [],
+      "flow-web/my-video/package.json": []
+    },
+    "neighborMap": {}
+  },
+  {
+    "batchIndex": 30,
+    "files": [
+      {
+        "path": "web/AGENTS.md",
+        "language": "markdown",
+        "sizeLines": 70,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "web/CLAUDE.md",
+        "language": "markdown",
+        "sizeLines": 144,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "web/asr-replacement-test.html",
+        "language": "html",
+        "sizeLines": 1152,
+        "fileCategory": "markup"
+      },
+      {
+        "path": "web/index.html",
+        "language": "html",
+        "sizeLines": 13,
+        "fileCategory": "markup"
+      },
+      {
+        "path": "web/multi-tenant-design.html",
+        "language": "html",
+        "sizeLines": 593,
+        "fileCategory": "markup"
+      },
+      {
+        "path": "web/package.json",
+        "language": "json",
+        "sizeLines": 32,
+        "fileCategory": "config"
+      },
+      {
+        "path": "web/tsconfig.app.json",
+        "language": "json",
+        "sizeLines": 20,
+        "fileCategory": "config"
+      },
+      {
+        "path": "web/tsconfig.json",
+        "language": "json",
+        "sizeLines": 7,
+        "fileCategory": "config"
+      },
+      {
+        "path": "web/tsconfig.node.json",
+        "language": "json",
+        "sizeLines": 10,
+        "fileCategory": "config"
+      }
+    ],
+    "batchImportData": {
+      "web/AGENTS.md": [],
+      "web/CLAUDE.md": [],
+      "web/asr-replacement-test.html": [],
+      "web/index.html": [],
+      "web/multi-tenant-design.html": [],
+      "web/package.json": [],
+      "web/tsconfig.app.json": [],
+      "web/tsconfig.json": [],
+      "web/tsconfig.node.json": []
+    },
+    "neighborMap": {}
+  }
+]

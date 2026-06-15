@@ -1,0 +1,245 @@
+{
+  "nodes": [
+    {
+      "id": "file:scripts/multi-tenant-design.html",
+      "type": "file",
+      "name": "multi-tenant-design.html",
+      "filePath": "scripts/multi-tenant-design.html",
+      "summary": "多租户架构设计的 HTML 原型演示文档，用于前端界面的静态预览。",
+      "tags": ["prototype", "markup", "multi-tenant"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:web/postcss.config.js",
+      "type": "config",
+      "name": "postcss.config.js",
+      "filePath": "web/postcss.config.js",
+      "summary": "前端 PostCSS 配置文件，用于引入 CSS 预处理器插件和处理样式规则。",
+      "tags": ["configuration", "build-system", "css"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/public/asr-replacement-test.html",
+      "type": "file",
+      "name": "asr-replacement-test.html",
+      "filePath": "web/public/asr-replacement-test.html",
+      "summary": "自动语音识别 (ASR) 替换功能的静态测试页面。",
+      "tags": ["test", "markup", "asr"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/public/multi-tenant-design.html",
+      "type": "file",
+      "name": "multi-tenant-design.html",
+      "filePath": "web/public/multi-tenant-design.html",
+      "summary": "Web端多租户架构设计的静态 HTML 演示页面。",
+      "tags": ["prototype", "markup", "multi-tenant"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:web/scripts/test-audit-log-management-static.mjs",
+      "type": "file",
+      "name": "test-audit-log-management-static.mjs",
+      "filePath": "web/scripts/test-audit-log-management-static.mjs",
+      "summary": "审计日志管理静态页面的自动化测试脚本。",
+      "tags": ["test", "script", "audit-log"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/scripts/test-auth-client-unauthorized-static.mjs",
+      "type": "file",
+      "name": "test-auth-client-unauthorized-static.mjs",
+      "filePath": "web/scripts/test-auth-client-unauthorized-static.mjs",
+      "summary": "客户端未授权 (Unauthorized) 状态的静态页面测试脚本。",
+      "tags": ["test", "script", "authentication"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/scripts/test-command-export-format.mjs",
+      "type": "file",
+      "name": "test-command-export-format.mjs",
+      "filePath": "web/scripts/test-command-export-format.mjs",
+      "summary": "验证指令导出格式的自动化测试脚本。",
+      "tags": ["test", "script", "export"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/scripts/test-command-export-management-state.mjs",
+      "type": "file",
+      "name": "test-command-export-management-state.mjs",
+      "filePath": "web/scripts/test-command-export-management-state.mjs",
+      "summary": "指令导出管理状态验证的静态页面测试脚本。",
+      "tags": ["test", "script", "export"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/scripts/test-command-workspace-card-layout.mjs",
+      "type": "file",
+      "name": "test-command-workspace-card-layout.mjs",
+      "filePath": "web/scripts/test-command-workspace-card-layout.mjs",
+      "summary": "验证指令工作区卡片布局的自动化测试脚本。",
+      "tags": ["test", "script", "layout"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/scripts/test-command-workspace-pagination.mjs",
+      "type": "file",
+      "name": "test-command-workspace-pagination.mjs",
+      "filePath": "web/scripts/test-command-workspace-pagination.mjs",
+      "summary": "验证指令工作区分页功能的自动化测试脚本。",
+      "tags": ["test", "script", "pagination"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/scripts/test-llm-settings-static.mjs",
+      "type": "file",
+      "name": "test-llm-settings-static.mjs",
+      "filePath": "web/scripts/test-llm-settings-static.mjs",
+      "summary": "大语言模型 (LLM) 设置页面的静态测试脚本。",
+      "tags": ["test", "script", "llm"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/scripts/test-login-command-center-static.mjs",
+      "type": "file",
+      "name": "test-login-command-center-static.mjs",
+      "filePath": "web/scripts/test-login-command-center-static.mjs",
+      "summary": "登录页面及指令中心功能的静态测试脚本。",
+      "tags": ["test", "script", "login"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/scripts/test-minio-settings-static.mjs",
+      "type": "file",
+      "name": "test-minio-settings-static.mjs",
+      "filePath": "web/scripts/test-minio-settings-static.mjs",
+      "summary": "MinIO 对象存储设置页面的静态测试脚本。",
+      "tags": ["test", "script", "storage"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/scripts/test-scrolling-text-management-static.mjs",
+      "type": "file",
+      "name": "test-scrolling-text-management-static.mjs",
+      "filePath": "web/scripts/test-scrolling-text-management-static.mjs",
+      "summary": "滚动字幕管理页面的静态测试脚本。",
+      "tags": ["test", "script", "ui-component"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/scripts/test-sidebar-open-keys-static.mjs",
+      "type": "file",
+      "name": "test-sidebar-open-keys-static.mjs",
+      "filePath": "web/scripts/test-sidebar-open-keys-static.mjs",
+      "summary": "侧边栏菜单展开项 (open keys) 状态的静态测试脚本。",
+      "tags": ["test", "script", "navigation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/scripts/test-super-admin-tenant-menu-static.mjs",
+      "type": "file",
+      "name": "test-super-admin-tenant-menu-static.mjs",
+      "filePath": "web/scripts/test-super-admin-tenant-menu-static.mjs",
+      "summary": "验证超级管理员和普通租户菜单渲染隔离的静态测试脚本。",
+      "tags": ["test", "script", "authorization"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/scripts/test-task-step-form-list-static.mjs",
+      "type": "file",
+      "name": "test-task-step-form-list-static.mjs",
+      "filePath": "web/scripts/test-task-step-form-list-static.mjs",
+      "summary": "任务步骤动态表单列表的静态页面测试脚本。",
+      "tags": ["test", "script", "form"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:web/src/api/AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "web/src/api/AGENTS.md",
+      "summary": "API 层的开发者指南文档，定义了接口请求、响应处理和代码约定的标准规范。",
+      "tags": ["documentation", "api", "guidelines"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/styles/index.css",
+      "type": "file",
+      "name": "index.css",
+      "filePath": "web/src/styles/index.css",
+      "summary": "前端项目的全局 CSS 样式文件，提供基础排版与通用组件的样式定义。",
+      "tags": ["stylesheet", "markup", "global"],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:web/src/views/AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "web/src/views/AGENTS.md",
+      "summary": "前端视图层 (Views) 的开发者指南文档，规范了页面组件的结构与最佳实践。",
+      "tags": ["documentation", "view-layer", "guidelines"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/views/asr-management.ts",
+      "type": "file",
+      "name": "asr-management.ts",
+      "filePath": "web/src/views/asr-management.ts",
+      "summary": "ASR（自动语音识别）管理页面的单行入口文件，提供模块导出。",
+      "tags": ["entry-point", "export", "asr"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/views/asr-settings.ts",
+      "type": "file",
+      "name": "asr-settings.ts",
+      "filePath": "web/src/views/asr-settings.ts",
+      "summary": "ASR（自动语音识别）设置页面的单行入口文件，提供模块导出。",
+      "tags": ["entry-point", "export", "asr"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/views/command-management.ts",
+      "type": "file",
+      "name": "command-management.ts",
+      "filePath": "web/src/views/command-management.ts",
+      "summary": "指令管理模块的统一入口 (Barrel) 文件，集中导出该模块下的各个页面组件。",
+      "tags": ["barrel", "entry-point", "command"],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:web/src/views/command-management/AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "web/src/views/command-management/AGENTS.md",
+      "summary": "指令管理模块的专属开发约定与业务说明文档，帮助开发者理解其特有架构。",
+      "tags": ["documentation", "command", "guidelines"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/views/llm-management.ts",
+      "type": "file",
+      "name": "llm-management.ts",
+      "filePath": "web/src/views/llm-management.ts",
+      "summary": "大语言模型 (LLM) 管理页面的单行入口文件，提供模块导出。",
+      "tags": ["entry-point", "export", "llm"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "config:web/postcss.config.js",
+      "target": "file:web/src/styles/index.css",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "document:web/src/views/command-management/AGENTS.md",
+      "target": "file:web/src/views/command-management.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

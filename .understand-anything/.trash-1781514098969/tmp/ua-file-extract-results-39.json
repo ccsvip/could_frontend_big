@@ -1,0 +1,746 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "scripts/multi-tenant-design.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 593,
+      "nonEmptyLines": 553,
+      "metrics": {}
+    },
+    {
+      "path": "web/postcss.config.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 6,
+      "nonEmptyLines": 6,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/public/asr-replacement-test.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 1152,
+      "nonEmptyLines": 1032,
+      "metrics": {}
+    },
+    {
+      "path": "web/public/multi-tenant-design.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 593,
+      "nonEmptyLines": 553,
+      "metrics": {}
+    },
+    {
+      "path": "web/scripts/test-audit-log-management-static.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 28,
+      "nonEmptyLines": 25,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/scripts/test-auth-client-unauthorized-static.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 32,
+      "nonEmptyLines": 24,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/scripts/test-command-export-format.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 73,
+      "nonEmptyLines": 67,
+      "functions": [
+        {
+          "name": "assert",
+          "startLine": 3,
+          "endLine": 7,
+          "params": [
+            "condition",
+            "message"
+          ]
+        },
+        {
+          "name": "assertKeys",
+          "startLine": 9,
+          "endLine": 11,
+          "params": [
+            "value",
+            "expected",
+            "message"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "assertKeys",
+          "callee": "assert",
+          "lineNumber": 10
+        },
+        {
+          "caller": "assertKeys",
+          "callee": "JSON.stringify",
+          "lineNumber": 10
+        },
+        {
+          "caller": "assertKeys",
+          "callee": "Object.keys",
+          "lineNumber": 10
+        },
+        {
+          "caller": "assertKeys",
+          "callee": "JSON.stringify",
+          "lineNumber": 10
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/scripts/test-command-export-management-state.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 51,
+      "nonEmptyLines": 43,
+      "functions": [
+        {
+          "name": "assert",
+          "startLine": 6,
+          "endLine": 10,
+          "params": [
+            "condition",
+            "message"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/scripts/test-command-workspace-card-layout.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 49,
+      "nonEmptyLines": 40,
+      "functions": [
+        {
+          "name": "assert",
+          "startLine": 8,
+          "endLine": 12,
+          "params": [
+            "condition",
+            "message"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/scripts/test-command-workspace-pagination.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 37,
+      "functions": [
+        {
+          "name": "assert",
+          "startLine": 11,
+          "endLine": 15,
+          "params": [
+            "condition",
+            "message"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/scripts/test-llm-settings-static.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 37,
+      "nonEmptyLines": 29,
+      "functions": [
+        {
+          "name": "read",
+          "startLine": 6,
+          "endLine": 6,
+          "params": [
+            "path"
+          ]
+        },
+        {
+          "name": "assert",
+          "startLine": 8,
+          "endLine": 12,
+          "params": [
+            "condition",
+            "message"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "read",
+          "callee": "readFileSync",
+          "lineNumber": 6
+        },
+        {
+          "caller": "read",
+          "callee": "resolve",
+          "lineNumber": 6
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/scripts/test-login-command-center-static.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 53,
+      "nonEmptyLines": 43,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/scripts/test-minio-settings-static.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 79,
+      "nonEmptyLines": 73,
+      "functions": [
+        {
+          "name": "read",
+          "startLine": 3,
+          "endLine": 3,
+          "params": [
+            "path"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "read",
+          "callee": "fs.readFileSync",
+          "lineNumber": 3
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/scripts/test-scrolling-text-management-static.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 62,
+      "nonEmptyLines": 56,
+      "functions": [
+        {
+          "name": "read",
+          "startLine": 3,
+          "endLine": 3,
+          "params": [
+            "path"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "read",
+          "callee": "fs.readFileSync",
+          "lineNumber": 3
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/scripts/test-sidebar-open-keys-static.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 55,
+      "nonEmptyLines": 48,
+      "functions": [
+        {
+          "name": "expectIncludes",
+          "startLine": 7,
+          "endLine": 11,
+          "params": [
+            "source",
+            "needle",
+            "label"
+          ]
+        },
+        {
+          "name": "expectExcludes",
+          "startLine": 13,
+          "endLine": 17,
+          "params": [
+            "source",
+            "needle",
+            "label"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "expectIncludes",
+          "callee": "source.includes",
+          "lineNumber": 8
+        },
+        {
+          "caller": "expectIncludes",
+          "callee": "failures.push",
+          "lineNumber": 9
+        },
+        {
+          "caller": "expectExcludes",
+          "callee": "source.includes",
+          "lineNumber": 14
+        },
+        {
+          "caller": "expectExcludes",
+          "callee": "failures.push",
+          "lineNumber": 15
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/scripts/test-super-admin-tenant-menu-static.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 86,
+      "nonEmptyLines": 72,
+      "functions": [
+        {
+          "name": "expectIncludes",
+          "startLine": 8,
+          "endLine": 12,
+          "params": [
+            "source",
+            "needle",
+            "label"
+          ]
+        },
+        {
+          "name": "expectExcludes",
+          "startLine": 14,
+          "endLine": 18,
+          "params": [
+            "source",
+            "needle",
+            "label"
+          ]
+        },
+        {
+          "name": "sliceBetween",
+          "startLine": 20,
+          "endLine": 28,
+          "params": [
+            "source",
+            "startNeedle",
+            "endNeedle",
+            "label"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "expectIncludes",
+          "callee": "source.includes",
+          "lineNumber": 9
+        },
+        {
+          "caller": "expectIncludes",
+          "callee": "failures.push",
+          "lineNumber": 10
+        },
+        {
+          "caller": "expectExcludes",
+          "callee": "source.includes",
+          "lineNumber": 15
+        },
+        {
+          "caller": "expectExcludes",
+          "callee": "failures.push",
+          "lineNumber": 16
+        },
+        {
+          "caller": "sliceBetween",
+          "callee": "source.indexOf",
+          "lineNumber": 21
+        },
+        {
+          "caller": "sliceBetween",
+          "callee": "source.indexOf",
+          "lineNumber": 22
+        },
+        {
+          "caller": "sliceBetween",
+          "callee": "failures.push",
+          "lineNumber": 24
+        },
+        {
+          "caller": "sliceBetween",
+          "callee": "source.slice",
+          "lineNumber": 27
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/scripts/test-task-step-form-list-static.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 107,
+      "nonEmptyLines": 101,
+      "functions": [
+        {
+          "name": "read",
+          "startLine": 3,
+          "endLine": 3,
+          "params": [
+            "path"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "read",
+          "callee": "readFileSync",
+          "lineNumber": 3
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/src/api/AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 48,
+      "nonEmptyLines": 37,
+      "sections": [
+        {
+          "heading": "web/src/api AGENTS.md",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "OVERVIEW",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "STRUCTURE",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "CONVENTIONS",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "ANTI-PATTERNS",
+          "level": 2,
+          "line": 37
+        },
+        {
+          "heading": "NOTES",
+          "level": 2,
+          "line": 44
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "web/src/styles/index.css",
+      "language": "css",
+      "fileCategory": "markup",
+      "totalLines": 614,
+      "nonEmptyLines": 518,
+      "metrics": {}
+    },
+    {
+      "path": "web/src/views/AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 48,
+      "nonEmptyLines": 37,
+      "sections": [
+        {
+          "heading": "web/src/views AGENTS.md",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "OVERVIEW",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "STRUCTURE",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "CONVENTIONS",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "ANTI-PATTERNS",
+          "level": 2,
+          "line": 36
+        },
+        {
+          "heading": "NOTES",
+          "level": 2,
+          "line": 43
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "web/src/views/asr-management.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "exports": [
+        {
+          "name": "AsrManagementPage",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/src/views/asr-settings.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "exports": [
+        {
+          "name": "AsrSettingsPage",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/src/views/command-management.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 6,
+      "nonEmptyLines": 6,
+      "exports": [
+        {
+          "name": "CommandGroupManagementPage",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "CommandManagementPage",
+          "line": 2,
+          "isDefault": false
+        },
+        {
+          "name": "ControlCommandManagementPage",
+          "line": 2,
+          "isDefault": false
+        },
+        {
+          "name": "TaskCommandManagementPage",
+          "line": 3,
+          "isDefault": false
+        },
+        {
+          "name": "CommandWorkspacePage",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "PointManagementPage",
+          "line": 5,
+          "isDefault": false
+        },
+        {
+          "name": "CommandExportManagementPage",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 7,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/src/views/command-management/AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 39,
+      "nonEmptyLines": 28,
+      "sections": [
+        {
+          "heading": "command-management AGENTS.md",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "OVERVIEW",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "STRUCTURE",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "CONVENTIONS",
+          "level": 2,
+          "line": 24
+        },
+        {
+          "heading": "ANTI-PATTERNS",
+          "level": 2,
+          "line": 30
+        },
+        {
+          "heading": "NOTES",
+          "level": 2,
+          "line": 36
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "web/src/views/llm-management.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "exports": [
+        {
+          "name": "LlmManagementPage",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

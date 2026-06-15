@@ -1,0 +1,522 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/apps/accounts/tasks.py",
+      "type": "file",
+      "name": "tasks.py",
+      "filePath": "backend/apps/accounts/tasks.py",
+      "summary": "该文件包含后台异步执行的Celery任务，处理耗时计算与定时操作。",
+      "tags": [
+        "background-task",
+        "async",
+        "job-queue"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/apps/accounts/tasks.py:notify_account_application",
+      "type": "function",
+      "name": "notify_account_application",
+      "filePath": "backend/apps/accounts/tasks.py",
+      "lineRange": [
+        8,
+        11
+      ],
+      "summary": "该文件包含后台异步执行的Celery任务，处理耗时计算与定时操作。",
+      "tags": [
+        "background-task",
+        "async",
+        "job-queue"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/accounts/tests.py",
+      "type": "file",
+      "name": "tests.py",
+      "filePath": "backend/apps/accounts/tests.py",
+      "summary": "该文件包含用于验证业务逻辑的自动化测试用例，确保系统稳定性。",
+      "tags": [
+        "test",
+        "quality-assurance",
+        "unit-testing"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/apps/accounts/tests.py:AuthApiCsrfTests",
+      "type": "class",
+      "name": "AuthApiCsrfTests",
+      "filePath": "backend/apps/accounts/tests.py",
+      "lineRange": [
+        15,
+        307
+      ],
+      "summary": "该文件包含用于验证业务逻辑的自动化测试用例，确保系统稳定性。",
+      "tags": [
+        "test",
+        "quality-assurance",
+        "unit-testing"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/apps/accounts/tests.py:ChangePasswordApiTests",
+      "type": "class",
+      "name": "ChangePasswordApiTests",
+      "filePath": "backend/apps/accounts/tests.py",
+      "lineRange": [
+        310,
+        341
+      ],
+      "summary": "该文件包含用于验证业务逻辑的自动化测试用例，确保系统稳定性。",
+      "tags": [
+        "test",
+        "quality-assurance",
+        "unit-testing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/tests.py:UserAdminPasswordResetEntryTests",
+      "type": "class",
+      "name": "UserAdminPasswordResetEntryTests",
+      "filePath": "backend/apps/accounts/tests.py",
+      "lineRange": [
+        344,
+        385
+      ],
+      "summary": "该文件包含用于验证业务逻辑的自动化测试用例，确保系统稳定性。",
+      "tags": [
+        "test",
+        "quality-assurance",
+        "unit-testing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/accounts/urls.py",
+      "type": "file",
+      "name": "urls.py",
+      "filePath": "backend/apps/accounts/urls.py",
+      "summary": "该文件配置了应用的URL路由映射，关联请求路径与对应的视图函数。",
+      "tags": [
+        "routing",
+        "configuration",
+        "entry-point"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/accounts/views.py",
+      "type": "file",
+      "name": "views.py",
+      "filePath": "backend/apps/accounts/views.py",
+      "summary": "该文件包含了处理前端请求的API视图和业务逻辑接口，负责参数校验与响应。",
+      "tags": [
+        "api-handler",
+        "controller",
+        "web-endpoint"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/accounts/views.py:LoginView",
+      "type": "class",
+      "name": "LoginView",
+      "filePath": "backend/apps/accounts/views.py",
+      "lineRange": [
+        24,
+        64
+      ],
+      "summary": "该文件包含了处理前端请求的API视图和业务逻辑接口，负责参数校验与响应。",
+      "tags": [
+        "api-handler",
+        "controller",
+        "web-endpoint"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/views.py:MeView",
+      "type": "class",
+      "name": "MeView",
+      "filePath": "backend/apps/accounts/views.py",
+      "lineRange": [
+        67,
+        72
+      ],
+      "summary": "该文件包含了处理前端请求的API视图和业务逻辑接口，负责参数校验与响应。",
+      "tags": [
+        "api-handler",
+        "controller",
+        "web-endpoint"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/views.py:ChangePasswordView",
+      "type": "class",
+      "name": "ChangePasswordView",
+      "filePath": "backend/apps/accounts/views.py",
+      "lineRange": [
+        75,
+        97
+      ],
+      "summary": "该文件包含了处理前端请求的API视图和业务逻辑接口，负责参数校验与响应。",
+      "tags": [
+        "api-handler",
+        "controller",
+        "web-endpoint"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/views.py:AccountApplicationCreateView",
+      "type": "class",
+      "name": "AccountApplicationCreateView",
+      "filePath": "backend/apps/accounts/views.py",
+      "lineRange": [
+        100,
+        128
+      ],
+      "summary": "该文件包含了处理前端请求的API视图和业务逻辑接口，负责参数校验与响应。",
+      "tags": [
+        "api-handler",
+        "controller",
+        "web-endpoint"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/views.py:AccountApplicationListView",
+      "type": "class",
+      "name": "AccountApplicationListView",
+      "filePath": "backend/apps/accounts/views.py",
+      "lineRange": [
+        131,
+        134
+      ],
+      "summary": "该文件包含了处理前端请求的API视图和业务逻辑接口，负责参数校验与响应。",
+      "tags": [
+        "api-handler",
+        "controller",
+        "web-endpoint"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/accounts/views.py:AccountApplicationDetailView",
+      "type": "class",
+      "name": "AccountApplicationDetailView",
+      "filePath": "backend/apps/accounts/views.py",
+      "lineRange": [
+        137,
+        172
+      ],
+      "summary": "该文件包含了处理前端请求的API视图和业务逻辑接口，负责参数校验与响应。",
+      "tags": [
+        "api-handler",
+        "controller",
+        "web-endpoint"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/apps/ai_models/tests/test_agent_application_api.py",
+      "type": "file",
+      "name": "test_agent_application_api.py",
+      "filePath": "backend/apps/ai_models/tests/test_agent_application_api.py",
+      "summary": "该文件包含用于验证业务逻辑的自动化测试用例，确保系统稳定性。",
+      "tags": [
+        "test",
+        "quality-assurance",
+        "unit-testing"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/apps/ai_models/tests/test_agent_application_api.py:AgentApplicationAccessDataTests",
+      "type": "class",
+      "name": "AgentApplicationAccessDataTests",
+      "filePath": "backend/apps/ai_models/tests/test_agent_application_api.py",
+      "lineRange": [
+        22,
+        34
+      ],
+      "summary": "该文件包含用于验证业务逻辑的自动化测试用例，确保系统稳定性。",
+      "tags": [
+        "test",
+        "quality-assurance",
+        "unit-testing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/apps/ai_models/tests/test_agent_application_api.py:AgentApplicationApiTests",
+      "type": "class",
+      "name": "AgentApplicationApiTests",
+      "filePath": "backend/apps/ai_models/tests/test_agent_application_api.py",
+      "lineRange": [
+        37,
+        182
+      ],
+      "summary": "该文件包含用于验证业务逻辑的自动化测试用例，确保系统稳定性。",
+      "tags": [
+        "test",
+        "quality-assurance",
+        "unit-testing"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/apps/ai_models/tests/test_llm_company_settings_api.py",
+      "type": "file",
+      "name": "test_llm_company_settings_api.py",
+      "filePath": "backend/apps/ai_models/tests/test_llm_company_settings_api.py",
+      "summary": "该文件包含用于验证业务逻辑的自动化测试用例，确保系统稳定性。",
+      "tags": [
+        "test",
+        "quality-assurance",
+        "unit-testing"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/apps/ai_models/tests/test_llm_company_settings_api.py:LLMCompanySettingsApiTests",
+      "type": "class",
+      "name": "LLMCompanySettingsApiTests",
+      "filePath": "backend/apps/ai_models/tests/test_llm_company_settings_api.py",
+      "lineRange": [
+        15,
+        288
+      ],
+      "summary": "该文件包含用于验证业务逻辑的自动化测试用例，确保系统稳定性。",
+      "tags": [
+        "test",
+        "quality-assurance",
+        "unit-testing"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/accounts/tasks.py",
+      "target": "function:backend/apps/accounts/tasks.py:notify_account_application",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/tests.py",
+      "target": "class:backend/apps/accounts/tests.py:AuthApiCsrfTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/tests.py",
+      "target": "class:backend/apps/accounts/tests.py:ChangePasswordApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/tests.py",
+      "target": "class:backend/apps/accounts/tests.py:UserAdminPasswordResetEntryTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "class:backend/apps/accounts/views.py:LoginView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "class:backend/apps/accounts/views.py:MeView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "class:backend/apps/accounts/views.py:ChangePasswordView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "class:backend/apps/accounts/views.py:AccountApplicationCreateView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "class:backend/apps/accounts/views.py:AccountApplicationListView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "class:backend/apps/accounts/views.py:AccountApplicationDetailView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_agent_application_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_agent_application_api.py:AgentApplicationAccessDataTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_agent_application_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_agent_application_api.py:AgentApplicationApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_company_settings_api.py",
+      "target": "class:backend/apps/ai_models/tests/test_llm_company_settings_api.py:LLMCompanySettingsApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/tasks.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/accounts/tasks.py",
+      "target": "file:backend/apps/accounts/services/notifications.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/accounts/tests.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/accounts/tests.py",
+      "target": "file:backend/apps/accounts/tasks.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/accounts/urls.py",
+      "target": "file:backend/apps/accounts/views.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "file:backend/apps/accounts/permissions.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "file:backend/apps/accounts/serializers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "file:backend/apps/accounts/services/notifications.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "file:backend/apps/accounts/tasks.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "file:backend/apps/tenants/services.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_agent_application_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_agent_application_api.py",
+      "target": "file:backend/apps/ai_models/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_agent_application_api.py",
+      "target": "file:backend/apps/knowledge_base/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_agent_application_api.py",
+      "target": "file:backend/apps/tenants/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_agent_application_api.py",
+      "target": "file:backend/apps/tenants/test_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_company_settings_api.py",
+      "target": "file:backend/apps/accounts/models.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/apps/ai_models/tests/test_llm_company_settings_api.py",
+      "target": "file:backend/apps/tenants/test_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

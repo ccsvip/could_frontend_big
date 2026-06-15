@@ -1,0 +1,59 @@
+{
+  "nodes": [
+    {
+      "id": "document:.claude/skills/tdd/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/tdd/SKILL.md",
+      "summary": "TDD (测试驱动开发) 技能的主指导文档，定义了开发理念、增量开发工作流以及各周期的检查清单。",
+      "tags": ["documentation", "tdd", "workflow", "methodology"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/tdd/deep-modules.md",
+      "type": "document",
+      "name": "deep-modules.md",
+      "filePath": ".claude/skills/tdd/deep-modules.md",
+      "summary": "关于深模块（Deep Modules）设计的指导文档，强调模块设计的抽象深度和封装原则。",
+      "tags": ["documentation", "design-pattern", "architecture"],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/skills/tdd/interface-design.md",
+      "type": "document",
+      "name": "interface-design.md",
+      "filePath": ".claude/skills/tdd/interface-design.md",
+      "summary": "面向可测试性的接口设计指南，指导如何构建易于测试的 API 和代码结构。",
+      "tags": ["documentation", "interface", "design", "testability"],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/skills/tdd/mocking.md",
+      "type": "document",
+      "name": "mocking.md",
+      "filePath": ".claude/skills/tdd/mocking.md",
+      "summary": "测试中的 Mock 策略指导，说明何时使用 Mock 以及如何为可 Mock 性设计代码。",
+      "tags": ["documentation", "testing", "mock", "design"],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/skills/tdd/refactoring.md",
+      "type": "document",
+      "name": "refactoring.md",
+      "filePath": ".claude/skills/tdd/refactoring.md",
+      "summary": "重构策略指南，定义了重构的候选对象和执行 TDD 时的代码改进原则。",
+      "tags": ["documentation", "refactoring", "tdd"],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/skills/tdd/tests.md",
+      "type": "document",
+      "name": "tests.md",
+      "filePath": ".claude/skills/tdd/tests.md",
+      "summary": "测试用例质量规范，对比了好测试与坏测试的特征及最佳实践。",
+      "tags": ["documentation", "testing", "best-practices"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": []
+}

@@ -1,0 +1,665 @@
+{
+  "nodes": [
+    {
+      "id": "document:.claude/skills/caveman/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/caveman/SKILL.md",
+      "summary": "Caveman 技能配置文件，定义了一种极简沟通模式，通过去除冗余词汇来降低 token 消耗。",
+      "tags": [
+        "skill",
+        "prompt",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/skills/design-an-interface/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/design-an-interface/SKILL.md",
+      "summary": "接口设计技能配置，指导 AI 如何通过并行子代理生成和比较多种界面设计方案。",
+      "tags": [
+        "skill",
+        "design",
+        "interface"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/diagnose/scripts/hitl-loop.template.sh",
+      "type": "file",
+      "name": "hitl-loop.template.sh",
+      "filePath": ".claude/skills/diagnose/scripts/hitl-loop.template.sh",
+      "summary": "Human-in-the-loop (HITL) 诊断脚本模板，用于在调试过程中构建人工干预循环。",
+      "tags": [
+        "script",
+        "testing",
+        "diagnostics"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/skills/diagnose/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/diagnose/SKILL.md",
+      "summary": "诊断技能说明文档，定义了解决复杂 bug 和性能倒退的标准化调试工作流。",
+      "tags": [
+        "skill",
+        "debugging",
+        "workflow"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/skills/edit-article/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/edit-article/SKILL.md",
+      "summary": "文章编辑技能配置，指导 AI 如何重构和润色文章段落以提升清晰度。",
+      "tags": [
+        "skill",
+        "editing",
+        "content"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/git-guardrails-claude-code/scripts/block-dangerous-git.sh",
+      "type": "file",
+      "name": "block-dangerous-git.sh",
+      "filePath": ".claude/skills/git-guardrails-claude-code/scripts/block-dangerous-git.sh",
+      "summary": "Git 安全拦截脚本，用于防止在自动执行过程中意外运行破坏性的 Git 命令。",
+      "tags": [
+        "script",
+        "git",
+        "security",
+        "hooks"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/skills/git-guardrails-claude-code/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/git-guardrails-claude-code/SKILL.md",
+      "summary": "Git 安全护栏技能说明，描述了如何配置钩子拦截高风险的 Git 变更操作。",
+      "tags": [
+        "skill",
+        "git",
+        "security"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/skills/grill-me/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/grill-me/SKILL.md",
+      "summary": "质询技能配置，要求 AI 对用户的计划和设计进行严格盘问，直至达成共识。",
+      "tags": [
+        "skill",
+        "planning",
+        "review"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/skills/handoff/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/handoff/SKILL.md",
+      "summary": "交接技能配置，用于将当前对话上下文压缩为供其他代理阅读的移交文档。",
+      "tags": [
+        "skill",
+        "context",
+        "handoff"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:.claude/skills/impeccable/scripts/command-metadata.json",
+      "type": "config",
+      "name": "command-metadata.json",
+      "filePath": ".claude/skills/impeccable/scripts/command-metadata.json",
+      "summary": "Impeccable 技能相关的命令元数据配置，定义了可用命令及其参数列表。",
+      "tags": [
+        "configuration",
+        "metadata",
+        "skill"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/detect-csp.mjs",
+      "type": "file",
+      "name": "detect-csp.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/detect-csp.mjs",
+      "summary": "CSP（内容安全策略）检测脚本，用于在浏览器自动化测试时检查页面安全策略。",
+      "tags": [
+        "script",
+        "security",
+        "csp",
+        "browser"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detect-csp.mjs:detectCsp",
+      "type": "function",
+      "name": "detectCsp",
+      "filePath": ".claude/skills/impeccable/scripts/detect-csp.mjs",
+      "lineRange": [
+        87,
+        162
+      ],
+      "summary": "detectCsp 功能函数，提供局部逻辑处理或对外接口。",
+      "tags": [
+        "function",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detect-csp.mjs:walk",
+      "type": "function",
+      "name": "walk",
+      "filePath": ".claude/skills/impeccable/scripts/detect-csp.mjs",
+      "lineRange": [
+        164,
+        191
+      ],
+      "summary": "walk 功能函数，提供局部逻辑处理或对外接口。",
+      "tags": [
+        "function",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/detect.mjs",
+      "type": "file",
+      "name": "detect.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/detect.mjs",
+      "summary": "自动化检测脚本入口，负责调用具体的检测器进行页面分析。",
+      "tags": [
+        "script",
+        "testing",
+        "entry-point"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/detector/browser/injected/index.mjs",
+      "type": "file",
+      "name": "index.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/detector/browser/injected/index.mjs",
+      "summary": "注入到浏览器上下文执行的核心检测脚本，用于提取和分析 DOM 信息。",
+      "tags": [
+        "script",
+        "browser",
+        "injection",
+        "dom"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/detector/detect-antipatterns-browser.js",
+      "type": "file",
+      "name": "detect-antipatterns-browser.js",
+      "filePath": ".claude/skills/impeccable/scripts/detector/detect-antipatterns-browser.js",
+      "summary": "反模式检测脚本，用于扫描浏览器页面中的常见 UI 和交互反模式。",
+      "tags": [
+        "script",
+        "browser",
+        "anti-pattern",
+        "testing"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live-browser-dom.js",
+      "type": "file",
+      "name": "live-browser-dom.js",
+      "filePath": ".claude/skills/impeccable/scripts/live-browser-dom.js",
+      "summary": "实时浏览器 DOM 交互脚本，封装了页面元素的定位与操作方法。",
+      "tags": [
+        "script",
+        "browser",
+        "dom",
+        "automation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live-browser-session.js",
+      "type": "file",
+      "name": "live-browser-session.js",
+      "filePath": ".claude/skills/impeccable/scripts/live-browser-session.js",
+      "summary": "浏览器会话管理脚本，用于在自动化测试过程中维护浏览器连接和上下文。",
+      "tags": [
+        "script",
+        "browser",
+        "session",
+        "automation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live-browser.js",
+      "type": "file",
+      "name": "live-browser.js",
+      "filePath": ".claude/skills/impeccable/scripts/live-browser.js",
+      "summary": "实时浏览器核心控制器，协调 DOM 操作、会话管理以及自动化行为。",
+      "tags": [
+        "script",
+        "browser",
+        "controller",
+        "automation"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/live/ui-core.mjs",
+      "type": "file",
+      "name": "ui-core.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/live/ui-core.mjs",
+      "summary": "UI 核心测试脚本，提供基础的界面交互和断言功能。",
+      "tags": [
+        "script",
+        "ui",
+        "testing",
+        "core"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/ui-core.mjs:resolveLiveUiRoot",
+      "type": "function",
+      "name": "resolveLiveUiRoot",
+      "filePath": ".claude/skills/impeccable/scripts/live/ui-core.mjs",
+      "lineRange": [
+        125,
+        131
+      ],
+      "summary": "resolveLiveUiRoot 功能函数，提供局部逻辑处理或对外接口。",
+      "tags": [
+        "function",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/ui-core.mjs:getLiveUiElementById",
+      "type": "function",
+      "name": "getLiveUiElementById",
+      "filePath": ".claude/skills/impeccable/scripts/live/ui-core.mjs",
+      "lineRange": [
+        133,
+        146
+      ],
+      "summary": "getLiveUiElementById 功能函数，提供局部逻辑处理或对外接口。",
+      "tags": [
+        "function",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/ui-core.mjs:appendToLiveUiRoot",
+      "type": "function",
+      "name": "appendToLiveUiRoot",
+      "filePath": ".claude/skills/impeccable/scripts/live/ui-core.mjs",
+      "lineRange": [
+        148,
+        153
+      ],
+      "summary": "appendToLiveUiRoot 功能函数，提供局部逻辑处理或对外接口。",
+      "tags": [
+        "function",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/ui-core.mjs:appendStyleToLiveUiRoot",
+      "type": "function",
+      "name": "appendStyleToLiveUiRoot",
+      "filePath": ".claude/skills/impeccable/scripts/live/ui-core.mjs",
+      "lineRange": [
+        155,
+        164
+      ],
+      "summary": "appendStyleToLiveUiRoot 功能函数，提供局部逻辑处理或对外接口。",
+      "tags": [
+        "function",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/live/ui-core.mjs:activeElementDeep",
+      "type": "function",
+      "name": "activeElementDeep",
+      "filePath": ".claude/skills/impeccable/scripts/live/ui-core.mjs",
+      "lineRange": [
+        166,
+        172
+      ],
+      "summary": "activeElementDeep 功能函数，提供局部逻辑处理或对外接口。",
+      "tags": [
+        "function",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/modern-screenshot.umd.js",
+      "type": "file",
+      "name": "modern-screenshot.umd.js",
+      "filePath": ".claude/skills/impeccable/scripts/modern-screenshot.umd.js",
+      "summary": "现代化网页截图工具的 UMD 构建版本，用于生成页面的高质量快照。",
+      "tags": [
+        "script",
+        "screenshot",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/palette.mjs",
+      "type": "file",
+      "name": "palette.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/palette.mjs",
+      "summary": "色彩面板提取脚本，负责从页面中解析和生成 UI 的主题色配置。",
+      "tags": [
+        "script",
+        "color",
+        "theme",
+        "ui"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/palette.mjs:pickSeed",
+      "type": "function",
+      "name": "pickSeed",
+      "filePath": ".claude/skills/impeccable/scripts/palette.mjs",
+      "lineRange": [
+        466,
+        476
+      ],
+      "summary": "pickSeed 功能函数，提供局部逻辑处理或对外接口。",
+      "tags": [
+        "function",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/palette.mjs:hueWord",
+      "type": "function",
+      "name": "hueWord",
+      "filePath": ".claude/skills/impeccable/scripts/palette.mjs",
+      "lineRange": [
+        482,
+        496
+      ],
+      "summary": "hueWord 功能函数，提供局部逻辑处理或对外接口。",
+      "tags": [
+        "function",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/pin.mjs",
+      "type": "file",
+      "name": "pin.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/pin.mjs",
+      "summary": "模块固定与锁定脚本，用于在测试或部署期间固定特定组件的版本或状态。",
+      "tags": [
+        "script",
+        "utility",
+        "deployment"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/pin.mjs:findProjectRoot",
+      "type": "function",
+      "name": "findProjectRoot",
+      "filePath": ".claude/skills/impeccable/scripts/pin.mjs",
+      "lineRange": [
+        43,
+        58
+      ],
+      "summary": "findProjectRoot 功能函数，提供局部逻辑处理或对外接口。",
+      "tags": [
+        "function",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/pin.mjs:findHarnessDirs",
+      "type": "function",
+      "name": "findHarnessDirs",
+      "filePath": ".claude/skills/impeccable/scripts/pin.mjs",
+      "lineRange": [
+        63,
+        74
+      ],
+      "summary": "findHarnessDirs 功能函数，提供局部逻辑处理或对外接口。",
+      "tags": [
+        "function",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/pin.mjs:generatePinnedSkill",
+      "type": "function",
+      "name": "generatePinnedSkill",
+      "filePath": ".claude/skills/impeccable/scripts/pin.mjs",
+      "lineRange": [
+        90,
+        107
+      ],
+      "summary": "generatePinnedSkill 功能函数，提供局部逻辑处理或对外接口。",
+      "tags": [
+        "function",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/pin.mjs:pin",
+      "type": "function",
+      "name": "pin",
+      "filePath": ".claude/skills/impeccable/scripts/pin.mjs",
+      "lineRange": [
+        112,
+        150
+      ],
+      "summary": "pin 功能函数，提供局部逻辑处理或对外接口。",
+      "tags": [
+        "function",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/pin.mjs:unpin",
+      "type": "function",
+      "name": "unpin",
+      "filePath": ".claude/skills/impeccable/scripts/pin.mjs",
+      "lineRange": [
+        155,
+        186
+      ],
+      "summary": "unpin 功能函数，提供局部逻辑处理或对外接口。",
+      "tags": [
+        "function",
+        "logic"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/skills/impeccable/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/impeccable/SKILL.md",
+      "summary": "Impeccable 技能主文档，涵盖了前端界面的极致优化和设计审查规则。",
+      "tags": [
+        "skill",
+        "design",
+        "frontend",
+        "optimization"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/migrate-to-shoehorn/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/migrate-to-shoehorn/SKILL.md",
+      "summary": "Shoehorn 迁移技能文档，指导如何将测试代码中的类型断言替换为更安全的方案。",
+      "tags": [
+        "skill",
+        "testing",
+        "migration",
+        "typescript"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/obsidian-vault/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/obsidian-vault/SKILL.md",
+      "summary": "Obsidian Vault 技能配置，说明了如何管理和组织本地知识库的笔记结构。",
+      "tags": [
+        "skill",
+        "knowledge-base",
+        "obsidian"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/skills/qa/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/qa/SKILL.md",
+      "summary": "QA 会话技能指南，定义了交互式测试、问题追踪和 GitHub Issue 的提报流程。",
+      "tags": [
+        "skill",
+        "qa",
+        "testing",
+        "issue-tracking"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detect-csp.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detect-csp.mjs:detectCsp",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detect-csp.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detect-csp.mjs:walk",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/ui-core.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/ui-core.mjs:resolveLiveUiRoot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/ui-core.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/ui-core.mjs:getLiveUiElementById",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/ui-core.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/ui-core.mjs:appendToLiveUiRoot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/ui-core.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/ui-core.mjs:appendStyleToLiveUiRoot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/live/ui-core.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/live/ui-core.mjs:activeElementDeep",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/palette.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/palette.mjs:pickSeed",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/palette.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/palette.mjs:hueWord",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/pin.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/pin.mjs:findProjectRoot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/pin.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/pin.mjs:findHarnessDirs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/pin.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/pin.mjs:generatePinnedSkill",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/pin.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/pin.mjs:pin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/pin.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/pin.mjs:unpin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    }
+  ]
+}

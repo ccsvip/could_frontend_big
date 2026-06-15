@@ -1,0 +1,47 @@
+{
+  "nodes": [
+    {
+      "id": "document:.claude/skills/prototype/LOGIC.md",
+      "type": "document",
+      "name": "LOGIC.md",
+      "filePath": ".claude/skills/prototype/LOGIC.md",
+      "summary": "原型开发中的逻辑层实现指南，指导如何快速构建用于验证业务逻辑的终端应用。",
+      "tags": [
+        "documentation",
+        "prototyping",
+        "business-logic",
+        "skill"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:.claude/skills/prototype/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/prototype/SKILL.md",
+      "summary": "原型开发技能的整体说明文档，提供快速构建丢弃式原型以验证设计的流程指引。",
+      "tags": [
+        "documentation",
+        "prototyping",
+        "overview",
+        "skill"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:.claude/skills/prototype/UI.md",
+      "type": "document",
+      "name": "UI.md",
+      "filePath": ".claude/skills/prototype/UI.md",
+      "summary": "原型开发中的用户界面实现指南，介绍如何快速搭建多种 UI 变体并进行对比。",
+      "tags": [
+        "documentation",
+        "prototyping",
+        "ui-design",
+        "skill"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": []
+}

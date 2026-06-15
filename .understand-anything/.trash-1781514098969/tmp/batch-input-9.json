@@ -1,0 +1,181 @@
+[
+  {
+    "batchIndex": 18,
+    "files": [
+      {
+        "path": ".claude/skills/impeccable/reference/optimize.md",
+        "language": "markdown",
+        "sizeLines": 258,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/impeccable/reference/overdrive.md",
+        "language": "markdown",
+        "sizeLines": 130,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/impeccable/reference/polish.md",
+        "language": "markdown",
+        "sizeLines": 241,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/impeccable/reference/product.md",
+        "language": "markdown",
+        "sizeLines": 60,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/impeccable/reference/quieter.md",
+        "language": "markdown",
+        "sizeLines": 99,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/impeccable/reference/shape.md",
+        "language": "markdown",
+        "sizeLines": 165,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/impeccable/reference/typeset.md",
+        "language": "markdown",
+        "sizeLines": 279,
+        "fileCategory": "docs"
+      }
+    ],
+    "batchImportData": {
+      ".claude/skills/impeccable/reference/optimize.md": [],
+      ".claude/skills/impeccable/reference/overdrive.md": [],
+      ".claude/skills/impeccable/reference/polish.md": [],
+      ".claude/skills/impeccable/reference/product.md": [],
+      ".claude/skills/impeccable/reference/quieter.md": [],
+      ".claude/skills/impeccable/reference/shape.md": [],
+      ".claude/skills/impeccable/reference/typeset.md": []
+    },
+    "neighborMap": {}
+  },
+  {
+    "batchIndex": 19,
+    "files": [
+      {
+        "path": ".claude/skills/improve-codebase-architecture/DEEPENING.md",
+        "language": "markdown",
+        "sizeLines": 37,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/improve-codebase-architecture/HTML-REPORT.md",
+        "language": "markdown",
+        "sizeLines": 123,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/improve-codebase-architecture/INTERFACE-DESIGN.md",
+        "language": "markdown",
+        "sizeLines": 44,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/improve-codebase-architecture/LANGUAGE.md",
+        "language": "markdown",
+        "sizeLines": 53,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/improve-codebase-architecture/SKILL.md",
+        "language": "markdown",
+        "sizeLines": 81,
+        "fileCategory": "docs"
+      }
+    ],
+    "batchImportData": {
+      ".claude/skills/improve-codebase-architecture/DEEPENING.md": [],
+      ".claude/skills/improve-codebase-architecture/HTML-REPORT.md": [],
+      ".claude/skills/improve-codebase-architecture/INTERFACE-DESIGN.md": [],
+      ".claude/skills/improve-codebase-architecture/LANGUAGE.md": [],
+      ".claude/skills/improve-codebase-architecture/SKILL.md": []
+    },
+    "neighborMap": {}
+  },
+  {
+    "batchIndex": 20,
+    "files": [
+      {
+        "path": ".claude/skills/prototype/LOGIC.md",
+        "language": "markdown",
+        "sizeLines": 79,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/prototype/SKILL.md",
+        "language": "markdown",
+        "sizeLines": 30,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/prototype/UI.md",
+        "language": "markdown",
+        "sizeLines": 112,
+        "fileCategory": "docs"
+      }
+    ],
+    "batchImportData": {
+      ".claude/skills/prototype/LOGIC.md": [],
+      ".claude/skills/prototype/SKILL.md": [],
+      ".claude/skills/prototype/UI.md": []
+    },
+    "neighborMap": {}
+  },
+  {
+    "batchIndex": 21,
+    "files": [
+      {
+        "path": ".claude/skills/setup-matt-pocock-skills/SKILL.md",
+        "language": "markdown",
+        "sizeLines": 121,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/setup-matt-pocock-skills/domain.md",
+        "language": "markdown",
+        "sizeLines": 51,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/setup-matt-pocock-skills/issue-tracker-github.md",
+        "language": "markdown",
+        "sizeLines": 22,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/setup-matt-pocock-skills/issue-tracker-gitlab.md",
+        "language": "markdown",
+        "sizeLines": 23,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/setup-matt-pocock-skills/issue-tracker-local.md",
+        "language": "markdown",
+        "sizeLines": 19,
+        "fileCategory": "docs"
+      },
+      {
+        "path": ".claude/skills/setup-matt-pocock-skills/triage-labels.md",
+        "language": "markdown",
+        "sizeLines": 15,
+        "fileCategory": "docs"
+      }
+    ],
+    "batchImportData": {
+      ".claude/skills/setup-matt-pocock-skills/SKILL.md": [],
+      ".claude/skills/setup-matt-pocock-skills/domain.md": [],
+      ".claude/skills/setup-matt-pocock-skills/issue-tracker-github.md": [],
+      ".claude/skills/setup-matt-pocock-skills/issue-tracker-gitlab.md": [],
+      ".claude/skills/setup-matt-pocock-skills/issue-tracker-local.md": [],
+      ".claude/skills/setup-matt-pocock-skills/triage-labels.md": []
+    },
+    "neighborMap": {}
+  }
+]

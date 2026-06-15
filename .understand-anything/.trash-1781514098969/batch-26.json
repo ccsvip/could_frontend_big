@@ -1,0 +1,44 @@
+{
+  "nodes": [
+    {
+      "id": "document:backend/AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "backend/AGENTS.md",
+      "summary": "后端模块的开发协作规范与架构指南，包含核心约定和模块拆分说明。",
+      "tags": [
+        "documentation",
+        "development",
+        "architecture"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:backend/CLAUDE.md",
+      "type": "document",
+      "name": "CLAUDE.md",
+      "filePath": "backend/CLAUDE.md",
+      "summary": "为 AI 辅助开发提供的后端模块专属指南，记录常见问题解答与变更日志。",
+      "tags": [
+        "documentation",
+        "development",
+        "ai-guide"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:backend/requirements.txt",
+      "type": "config",
+      "name": "requirements.txt",
+      "filePath": "backend/requirements.txt",
+      "summary": "Python 后端服务的依赖清单，列出所有必要的 Pip 包及版本要求。",
+      "tags": [
+        "configuration",
+        "dependency",
+        "python"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": []
+}

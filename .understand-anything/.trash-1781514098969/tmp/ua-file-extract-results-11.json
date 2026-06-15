@@ -1,0 +1,107 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "backend/config/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 3,
+      "nonEmptyLines": 2,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/config/celery.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 15,
+      "nonEmptyLines": 11,
+      "functions": [
+        {
+          "name": "debug_task",
+          "startLine": 14,
+          "endLine": 15,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "debug_task",
+          "line": 13,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "debug_task",
+          "callee": "print",
+          "lineNumber": 15
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/config/tasks.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 13,
+      "nonEmptyLines": 10,
+      "functions": [
+        {
+          "name": "cleanup_old_celery_results",
+          "startLine": 9,
+          "endLine": 13,
+          "params": [
+            "days"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "cleanup_old_celery_results",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "cleanup_old_celery_results",
+          "callee": "timezone.now",
+          "lineNumber": 11
+        },
+        {
+          "caller": "cleanup_old_celery_results",
+          "callee": "timedelta",
+          "lineNumber": 11
+        },
+        {
+          "caller": "cleanup_old_celery_results",
+          "callee": "TaskResult.objects.filter(date_done__lt=cutoff).delete",
+          "lineNumber": 12
+        },
+        {
+          "caller": "cleanup_old_celery_results",
+          "callee": "TaskResult.objects.filter",
+          "lineNumber": 12
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    }
+  ]
+}

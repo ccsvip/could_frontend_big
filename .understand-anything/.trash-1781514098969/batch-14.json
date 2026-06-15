@@ -1,0 +1,27 @@
+{
+  "nodes": [
+    {
+      "id": "service:web/Dockerfile",
+      "type": "service",
+      "name": "Dockerfile",
+      "filePath": "web/Dockerfile",
+      "summary": "构建 React 开发环境的 Docker 镜像，用于在容器内通过 Node 运行 Vite 开发服务器以支持热更新。",
+      "tags": [
+        "containerization",
+        "infrastructure",
+        "frontend"
+      ],
+      "complexity": "simple",
+      "languageNotes": "本镜像为开发态使用 (npm run dev) 设计，通过匿名数据卷挂载依赖以规避宿主 npm 安装的污染问题。"
+    }
+  ],
+  "edges": [
+    {
+      "source": "service:web/Dockerfile",
+      "target": "file:web/package.json",
+      "type": "deploys",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

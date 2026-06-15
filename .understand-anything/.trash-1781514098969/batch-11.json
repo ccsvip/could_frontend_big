@@ -1,0 +1,124 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/config/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/config/__init__.py",
+      "summary": "项目配置包的初始化入口，确保在 Django 启动时预先加载并注册 Celery 实例。",
+      "tags": [
+        "entry-point",
+        "configuration",
+        "django"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/config/celery.py",
+      "type": "file",
+      "name": "celery.py",
+      "filePath": "backend/config/celery.py",
+      "summary": "Celery 应用实例化及配置，负责从 Django settings 加载异步任务队列的参数配置。",
+      "tags": [
+        "configuration",
+        "task-queue",
+        "async"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/config/celery.py:debug_task",
+      "type": "function",
+      "name": "debug_task",
+      "filePath": "backend/config/celery.py",
+      "lineRange": [
+        14,
+        15
+      ],
+      "summary": "debug_task 的具体实现代码。",
+      "tags": [
+        "function"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/config/tasks.py",
+      "type": "file",
+      "name": "tasks.py",
+      "filePath": "backend/config/tasks.py",
+      "summary": "存放跨模块或通用的 Celery 异步任务，例如简单的调试探测任务。",
+      "tags": [
+        "task-queue",
+        "utility",
+        "background-job"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/config/tasks.py:cleanup_old_celery_results",
+      "type": "function",
+      "name": "cleanup_old_celery_results",
+      "filePath": "backend/config/tasks.py",
+      "lineRange": [
+        9,
+        13
+      ],
+      "summary": "cleanup_old_celery_results 的具体实现代码。",
+      "tags": [
+        "function"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/config/__init__.py",
+      "target": "file:backend/config/celery.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/config/celery.py",
+      "target": "function:backend/config/celery.py:debug_task",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/config/celery.py",
+      "target": "function:backend/config/celery.py:debug_task",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/config/celery.py",
+      "target": "file:backend/config/celery.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/config/tasks.py",
+      "target": "function:backend/config/tasks.py:cleanup_old_celery_results",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/config/tasks.py",
+      "target": "function:backend/config/tasks.py:cleanup_old_celery_results",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/config/tasks.py",
+      "target": "file:backend/config/celery.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

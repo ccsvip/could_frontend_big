@@ -1,0 +1,768 @@
+[
+  {
+    "batchIndex": 3,
+    "files": [
+      {
+        "path": "web/src/api/client.ts",
+        "language": "typescript",
+        "sizeLines": 151,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/applications.ts",
+        "language": "typescript",
+        "sizeLines": 88,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/asr.ts",
+        "language": "typescript",
+        "sizeLines": 110,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/audit.ts",
+        "language": "typescript",
+        "sizeLines": 42,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/auth.ts",
+        "language": "typescript",
+        "sizeLines": 101,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/chat.ts",
+        "language": "typescript",
+        "sizeLines": 170,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/commands.ts",
+        "language": "typescript",
+        "sizeLines": 233,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/devices.ts",
+        "language": "typescript",
+        "sizeLines": 291,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/employees.ts",
+        "language": "typescript",
+        "sizeLines": 106,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/knowledge-base.ts",
+        "language": "typescript",
+        "sizeLines": 216,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/llm-providers.ts",
+        "language": "typescript",
+        "sizeLines": 111,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/llm-settings.ts",
+        "language": "typescript",
+        "sizeLines": 233,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/models.ts",
+        "language": "typescript",
+        "sizeLines": 111,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/point-management.ts",
+        "language": "typescript",
+        "sizeLines": 70,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/resources.ts",
+        "language": "typescript",
+        "sizeLines": 190,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/scrolling-texts.ts",
+        "language": "typescript",
+        "sizeLines": 87,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/settings.ts",
+        "language": "typescript",
+        "sizeLines": 63,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/tenants.ts",
+        "language": "typescript",
+        "sizeLines": 77,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/api/modules/voice-tones.ts",
+        "language": "typescript",
+        "sizeLines": 97,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/components/brand-mark.tsx",
+        "language": "typescript",
+        "sizeLines": 41,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/components/chat-markdown.tsx",
+        "language": "typescript",
+        "sizeLines": 198,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/layouts/dashboard-layout.tsx",
+        "language": "typescript",
+        "sizeLines": 755,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/main.tsx",
+        "language": "typescript",
+        "sizeLines": 161,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/router/index.tsx",
+        "language": "typescript",
+        "sizeLines": 560,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/store/auth.ts",
+        "language": "typescript",
+        "sizeLines": 222,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/store/tenant-scope.ts",
+        "language": "typescript",
+        "sizeLines": 20,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/views/account-applications/index.tsx",
+        "language": "typescript",
+        "sizeLines": 210,
+        "fileCategory": "code"
+      },
+      {
+        "path": "web/src/views/application-management/index.tsx",
+        "language": "typescript",
+        "sizeLines": 749,
+        "fileCategory": "code"
+      }
+    ],
+    "batchImportData": {
+      "web/src/api/client.ts": [
+        "web/src/store/auth.ts",
+        "web/src/store/tenant-scope.ts"
+      ],
+      "web/src/api/modules/applications.ts": [
+        "web/src/api/client.ts",
+        "web/src/api/modules/chat.ts"
+      ],
+      "web/src/api/modules/asr.ts": [
+        "web/src/api/client.ts"
+      ],
+      "web/src/api/modules/audit.ts": [
+        "web/src/api/client.ts"
+      ],
+      "web/src/api/modules/auth.ts": [
+        "web/src/api/client.ts",
+        "web/src/store/auth.ts"
+      ],
+      "web/src/api/modules/chat.ts": [
+        "web/src/api/client.ts"
+      ],
+      "web/src/api/modules/commands.ts": [
+        "web/src/api/client.ts"
+      ],
+      "web/src/api/modules/devices.ts": [
+        "web/src/api/client.ts"
+      ],
+      "web/src/api/modules/employees.ts": [
+        "web/src/api/client.ts",
+        "web/src/api/modules/tenants.ts"
+      ],
+      "web/src/api/modules/knowledge-base.ts": [
+        "web/src/api/client.ts"
+      ],
+      "web/src/api/modules/llm-providers.ts": [
+        "web/src/api/client.ts"
+      ],
+      "web/src/api/modules/llm-settings.ts": [
+        "web/src/api/client.ts",
+        "web/src/api/modules/llm-providers.ts"
+      ],
+      "web/src/api/modules/models.ts": [
+        "web/src/api/client.ts"
+      ],
+      "web/src/api/modules/point-management.ts": [
+        "web/src/api/client.ts"
+      ],
+      "web/src/api/modules/resources.ts": [
+        "web/src/api/client.ts"
+      ],
+      "web/src/api/modules/scrolling-texts.ts": [
+        "web/src/api/client.ts"
+      ],
+      "web/src/api/modules/settings.ts": [
+        "web/src/api/client.ts"
+      ],
+      "web/src/api/modules/tenants.ts": [
+        "web/src/api/client.ts"
+      ],
+      "web/src/api/modules/voice-tones.ts": [
+        "web/src/api/client.ts"
+      ],
+      "web/src/components/brand-mark.tsx": [],
+      "web/src/components/chat-markdown.tsx": [],
+      "web/src/layouts/dashboard-layout.tsx": [
+        "web/src/api/modules/auth.ts",
+        "web/src/api/modules/tenants.ts",
+        "web/src/components/brand-mark.tsx",
+        "web/src/store/auth.ts",
+        "web/src/store/tenant-scope.ts"
+      ],
+      "web/src/main.tsx": [
+        "web/src/router/index.tsx",
+        "web/src/styles/index.css"
+      ],
+      "web/src/router/index.tsx": [
+        "web/src/api/modules/auth.ts",
+        "web/src/layouts/dashboard-layout.tsx",
+        "web/src/store/auth.ts",
+        "web/src/store/tenant-scope.ts"
+      ],
+      "web/src/store/auth.ts": [],
+      "web/src/store/tenant-scope.ts": [],
+      "web/src/views/account-applications/index.tsx": [
+        "web/src/api/modules/auth.ts",
+        "web/src/store/auth.ts"
+      ],
+      "web/src/views/application-management/index.tsx": [
+        "web/src/api/modules/applications.ts",
+        "web/src/api/modules/chat.ts",
+        "web/src/api/modules/knowledge-base.ts",
+        "web/src/api/modules/llm-settings.ts",
+        "web/src/components/chat-markdown.tsx",
+        "web/src/store/auth.ts"
+      ]
+    },
+    "neighborMap": {
+      "web/src/api/client.ts": [
+        {
+          "path": "web/src/api/modules/tts.ts",
+          "batchIndex": 12,
+          "symbols": [
+            "fetchTtsProviders",
+            "fetchTtsSettings",
+            "updateTtsSettings",
+            "testPlatformTts",
+            "fetchCompanyTtsOptions",
+            "updateCompanyDefaultTtsVoice",
+            "testCompanyTts"
+          ]
+        },
+        {
+          "path": "web/src/views/device-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "DeviceManagementPage"
+          ]
+        }
+      ],
+      "web/src/api/modules/asr.ts": [
+        {
+          "path": "web/src/views/asr-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "AsrManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/asr-settings/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "AsrSettingsPage"
+          ]
+        }
+      ],
+      "web/src/api/modules/audit.ts": [
+        {
+          "path": "web/src/views/log-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "LogManagementPage"
+          ]
+        }
+      ],
+      "web/src/api/modules/auth.ts": [
+        {
+          "path": "web/src/views/force-password-change/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "ForcePasswordChangePage"
+          ]
+        },
+        {
+          "path": "web/src/views/login/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "LoginPage"
+          ]
+        }
+      ],
+      "web/src/api/modules/commands.ts": [
+        {
+          "path": "web/src/views/command-management/command-export-format.ts",
+          "batchIndex": 4,
+          "symbols": [
+            "buildCommandGroupExportPayload",
+            "buildCommandGroupExportCollectionPayload",
+            "buildCommandGroupExportFilename"
+          ]
+        },
+        {
+          "path": "web/src/views/command-management/export.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "CommandExportManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/command-management/groups.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "CommandGroupManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/command-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "ControlCommandManagementPage",
+            "CommandManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/command-management/task-step-form-list.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "TEXT_TASK_MAX_LENGTH",
+            "taskCommandModalClassName",
+            "taskCommandModalBodyStyle",
+            "taskTypeOptions",
+            "taskTypeLabels",
+            "taskTypeColors",
+            "buildStepPayload",
+            "mapStepRecordToFormValue",
+            "TaskStepFormList"
+          ]
+        },
+        {
+          "path": "web/src/views/command-management/tasks.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "TaskCommandManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/command-management/workspace.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "CommandWorkspacePage",
+            "CommandManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/device-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "DeviceManagementPage"
+          ]
+        }
+      ],
+      "web/src/api/modules/devices.ts": [
+        {
+          "path": "web/src/views/device-authorization-center/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "DeviceAuthorizationCenterPage"
+          ]
+        },
+        {
+          "path": "web/src/views/device-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "DeviceManagementPage"
+          ]
+        }
+      ],
+      "web/src/api/modules/employees.ts": [
+        {
+          "path": "web/src/views/employee-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "EmployeeManagementPage"
+          ]
+        }
+      ],
+      "web/src/api/modules/knowledge-base.ts": [
+        {
+          "path": "web/src/views/knowledge-base/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "KnowledgeBasePage"
+          ]
+        }
+      ],
+      "web/src/api/modules/llm-providers.ts": [
+        {
+          "path": "web/src/views/llm-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "LlmManagementPage"
+          ]
+        }
+      ],
+      "web/src/api/modules/llm-settings.ts": [
+        {
+          "path": "web/src/views/llm-settings/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "LlmSettingsPage"
+          ]
+        },
+        {
+          "path": "web/src/views/settings-llm/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "LlmSettingsAdminPage"
+          ]
+        }
+      ],
+      "web/src/api/modules/models.ts": [
+        {
+          "path": "web/src/views/device-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "DeviceManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/model-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "ModelManagementPage"
+          ]
+        }
+      ],
+      "web/src/api/modules/point-management.ts": [
+        {
+          "path": "web/src/views/command-management/points.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "PointManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/command-management/tasks.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "TaskCommandManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/command-management/workspace.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "CommandWorkspacePage",
+            "CommandManagementPage"
+          ]
+        }
+      ],
+      "web/src/api/modules/resources.ts": [
+        {
+          "path": "web/src/views/command-management/tasks.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "TaskCommandManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/command-management/workspace.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "CommandWorkspacePage",
+            "CommandManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/device-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "DeviceManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/resource-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "ResourceManagementPage"
+          ]
+        }
+      ],
+      "web/src/api/modules/scrolling-texts.ts": [
+        {
+          "path": "web/src/views/device-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "DeviceManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/scrolling-text-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "ScrollingTextManagementPage"
+          ]
+        }
+      ],
+      "web/src/api/modules/settings.ts": [
+        {
+          "path": "web/src/views/minio-settings/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "MinioSettingsPage"
+          ]
+        }
+      ],
+      "web/src/api/modules/tenants.ts": [
+        {
+          "path": "web/src/views/device-authorization-center/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "DeviceAuthorizationCenterPage"
+          ]
+        },
+        {
+          "path": "web/src/views/log-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "LogManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/settings-llm/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "LlmSettingsAdminPage"
+          ]
+        },
+        {
+          "path": "web/src/views/tenant-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "TenantManagementPage"
+          ]
+        }
+      ],
+      "web/src/api/modules/voice-tones.ts": [
+        {
+          "path": "web/src/views/device-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "DeviceManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/voice-tone-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "VoiceToneManagementPage"
+          ]
+        }
+      ],
+      "web/src/main.tsx": [
+        {
+          "path": "web/src/styles/index.css",
+          "batchIndex": 39,
+          "symbols": []
+        }
+      ],
+      "web/src/store/auth.ts": [
+        {
+          "path": "web/src/views/asr-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "AsrManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/command-management/export.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "CommandExportManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/command-management/groups.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "CommandGroupManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/command-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "ControlCommandManagementPage",
+            "CommandManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/command-management/points.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "PointManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/command-management/tasks.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "TaskCommandManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/command-management/workspace.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "CommandWorkspacePage",
+            "CommandManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/device-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "DeviceManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/force-password-change/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "ForcePasswordChangePage"
+          ]
+        },
+        {
+          "path": "web/src/views/knowledge-base/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "KnowledgeBasePage"
+          ]
+        },
+        {
+          "path": "web/src/views/llm-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "LlmManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/llm-settings/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "LlmSettingsPage"
+          ]
+        },
+        {
+          "path": "web/src/views/log-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "LogManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/login/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "LoginPage"
+          ]
+        },
+        {
+          "path": "web/src/views/model-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "ModelManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/resource-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "ResourceManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/scrolling-text-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "ScrollingTextManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/voice-tone-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "VoiceToneManagementPage"
+          ]
+        }
+      ],
+      "web/src/store/tenant-scope.ts": [
+        {
+          "path": "web/src/views/asr-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "AsrManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/device-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "DeviceManagementPage"
+          ]
+        },
+        {
+          "path": "web/src/views/tenant-management/index.tsx",
+          "batchIndex": 4,
+          "symbols": [
+            "TenantManagementPage"
+          ]
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,956 @@
+{
+  "nodes": [
+    {
+      "id": "file:web/src/layouts/dashboard-layout.tsx",
+      "type": "file",
+      "name": "dashboard-layout.tsx",
+      "filePath": "web/src/layouts/dashboard-layout.tsx",
+      "summary": "提供通用功能模块中的【dashboard-layout】UI组件及视图逻辑。",
+      "tags": [
+        "frontend-view",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "complex",
+      "languageNotes": "使用React Hooks与函数式组件构成的视图层。"
+    },
+    {
+      "id": "function:web/src/layouts/dashboard-layout.tsx:buildSuperAdminTenantModuleMenus",
+      "type": "function",
+      "name": "buildSuperAdminTenantModuleMenus",
+      "filePath": "web/src/layouts/dashboard-layout.tsx",
+      "lineRange": [
+        112,
+        130
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/layouts/dashboard-layout.tsx:buildSuperAdminMenus",
+      "type": "function",
+      "name": "buildSuperAdminMenus",
+      "filePath": "web/src/layouts/dashboard-layout.tsx",
+      "lineRange": [
+        134,
+        201
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:web/src/layouts/dashboard-layout.tsx:filterVisibleMenus",
+      "type": "function",
+      "name": "filterVisibleMenus",
+      "filePath": "web/src/layouts/dashboard-layout.tsx",
+      "lineRange": [
+        209,
+        219
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/layouts/dashboard-layout.tsx:normalizeSidebarMenus",
+      "type": "function",
+      "name": "normalizeSidebarMenus",
+      "filePath": "web/src/layouts/dashboard-layout.tsx",
+      "lineRange": [
+        221,
+        243
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/layouts/dashboard-layout.tsx:buildMenuItem",
+      "type": "function",
+      "name": "buildMenuItem",
+      "filePath": "web/src/layouts/dashboard-layout.tsx",
+      "lineRange": [
+        245,
+        262
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/layouts/dashboard-layout.tsx:findMenuTrail",
+      "type": "function",
+      "name": "findMenuTrail",
+      "filePath": "web/src/layouts/dashboard-layout.tsx",
+      "lineRange": [
+        264,
+        294
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:web/src/layouts/dashboard-layout.tsx:findMenuTrailByKey",
+      "type": "function",
+      "name": "findMenuTrailByKey",
+      "filePath": "web/src/layouts/dashboard-layout.tsx",
+      "lineRange": [
+        296,
+        313
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/layouts/dashboard-layout.tsx:useLiveNow",
+      "type": "function",
+      "name": "useLiveNow",
+      "filePath": "web/src/layouts/dashboard-layout.tsx",
+      "lineRange": [
+        315,
+        325
+      ],
+      "summary": "为通用功能提供特定的React Hook状态逻辑。",
+      "tags": [
+        "frontend-view",
+        "react-component",
+        "ui",
+        "hook"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/layouts/dashboard-layout.tsx:SidebarContent",
+      "type": "function",
+      "name": "SidebarContent",
+      "filePath": "web/src/layouts/dashboard-layout.tsx",
+      "lineRange": [
+        336,
+        404
+      ],
+      "summary": "通用功能的子视图React组件。",
+      "tags": [
+        "frontend-view",
+        "react-component",
+        "ui",
+        "component"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:web/src/layouts/dashboard-layout.tsx:DashboardLayout",
+      "type": "function",
+      "name": "DashboardLayout",
+      "filePath": "web/src/layouts/dashboard-layout.tsx",
+      "lineRange": [
+        406,
+        755
+      ],
+      "summary": "通用功能的子视图React组件。",
+      "tags": [
+        "frontend-view",
+        "react-component",
+        "ui",
+        "component"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/main.tsx",
+      "type": "file",
+      "name": "main.tsx",
+      "filePath": "web/src/main.tsx",
+      "summary": "提供通用功能模块中的【main】UI组件及视图逻辑。",
+      "tags": [
+        "frontend-view",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "使用React Hooks与函数式组件构成的视图层。"
+    },
+    {
+      "id": "file:web/src/router/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/router/index.tsx",
+      "summary": "提供通用功能页面的主视图入口、路由挂载和顶级状态管理。",
+      "tags": [
+        "frontend-view",
+        "entry-point",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "complex",
+      "languageNotes": "使用React Hooks与函数式组件构成的视图层。"
+    },
+    {
+      "id": "function:web/src/router/index.tsx:filterRouteMenus",
+      "type": "function",
+      "name": "filterRouteMenus",
+      "filePath": "web/src/router/index.tsx",
+      "lineRange": [
+        95,
+        105
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "entry-point",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/router/index.tsx:getFirstAccessiblePath",
+      "type": "function",
+      "name": "getFirstAccessiblePath",
+      "filePath": "web/src/router/index.tsx",
+      "lineRange": [
+        107,
+        126
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "entry-point",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/router/index.tsx:TenantScopeOutlet",
+      "type": "function",
+      "name": "TenantScopeOutlet",
+      "filePath": "web/src/router/index.tsx",
+      "lineRange": [
+        138,
+        152
+      ],
+      "summary": "通用功能的子视图React组件。",
+      "tags": [
+        "frontend-view",
+        "entry-point",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/router/index.tsx:AuthGuard",
+      "type": "function",
+      "name": "AuthGuard",
+      "filePath": "web/src/router/index.tsx",
+      "lineRange": [
+        163,
+        182
+      ],
+      "summary": "通用功能的子视图React组件。",
+      "tags": [
+        "frontend-view",
+        "entry-point",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/router/index.tsx:GuestGuard",
+      "type": "function",
+      "name": "GuestGuard",
+      "filePath": "web/src/router/index.tsx",
+      "lineRange": [
+        184,
+        199
+      ],
+      "summary": "通用功能的子视图React组件。",
+      "tags": [
+        "frontend-view",
+        "entry-point",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/router/index.tsx:PermissionGuard",
+      "type": "function",
+      "name": "PermissionGuard",
+      "filePath": "web/src/router/index.tsx",
+      "lineRange": [
+        201,
+        215
+      ],
+      "summary": "通用功能的子视图React组件。",
+      "tags": [
+        "frontend-view",
+        "entry-point",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/router/index.tsx:AuditLogGuard",
+      "type": "function",
+      "name": "AuditLogGuard",
+      "filePath": "web/src/router/index.tsx",
+      "lineRange": [
+        217,
+        233
+      ],
+      "summary": "通用功能的子视图React组件。",
+      "tags": [
+        "frontend-view",
+        "entry-point",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/router/index.tsx:DefaultAuthedRoute",
+      "type": "function",
+      "name": "DefaultAuthedRoute",
+      "filePath": "web/src/router/index.tsx",
+      "lineRange": [
+        235,
+        245
+      ],
+      "summary": "通用功能的子视图React组件。",
+      "tags": [
+        "frontend-view",
+        "entry-point",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/router/index.tsx:AppRouter",
+      "type": "function",
+      "name": "AppRouter",
+      "filePath": "web/src/router/index.tsx",
+      "lineRange": [
+        247,
+        560
+      ],
+      "summary": "通用功能的子视图React组件。",
+      "tags": [
+        "frontend-view",
+        "entry-point",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/store/auth.ts",
+      "type": "file",
+      "name": "auth.ts",
+      "filePath": "web/src/store/auth.ts",
+      "summary": "提供通用功能模块的类型定义、常量或工具函数。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "moderate",
+      "languageNotes": ""
+    },
+    {
+      "id": "function:web/src/store/auth.ts:readStoredJson",
+      "type": "function",
+      "name": "readStoredJson",
+      "filePath": "web/src/store/auth.ts",
+      "lineRange": [
+        68,
+        79
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/store/auth.ts:readStoredRole",
+      "type": "function",
+      "name": "readStoredRole",
+      "filePath": "web/src/store/auth.ts",
+      "lineRange": [
+        81,
+        107
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/store/auth.ts:readStoredMenus",
+      "type": "function",
+      "name": "readStoredMenus",
+      "filePath": "web/src/store/auth.ts",
+      "lineRange": [
+        114,
+        142
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/store/auth.ts:readStoredTenant",
+      "type": "function",
+      "name": "readStoredTenant",
+      "filePath": "web/src/store/auth.ts",
+      "lineRange": [
+        154,
+        171
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/store/auth.ts:clearAuthStorage",
+      "type": "function",
+      "name": "clearAuthStorage",
+      "filePath": "web/src/store/auth.ts",
+      "lineRange": [
+        177,
+        187
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:web/src/store/tenant-scope.ts",
+      "type": "file",
+      "name": "tenant-scope.ts",
+      "filePath": "web/src/store/tenant-scope.ts",
+      "summary": "提供通用功能模块的类型定义、常量或工具函数。",
+      "tags": [
+        "frontend-view"
+      ],
+      "complexity": "simple",
+      "languageNotes": ""
+    },
+    {
+      "id": "file:web/src/views/account-applications/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/account-applications/index.tsx",
+      "summary": "提供通用功能页面的主视图入口、路由挂载和顶级状态管理。",
+      "tags": [
+        "frontend-view",
+        "entry-point",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "使用React Hooks与函数式组件构成的视图层。"
+    },
+    {
+      "id": "function:web/src/views/account-applications/index.tsx:AccountApplicationsPage",
+      "type": "function",
+      "name": "AccountApplicationsPage",
+      "filePath": "web/src/views/account-applications/index.tsx",
+      "lineRange": [
+        18,
+        210
+      ],
+      "summary": "通用功能页面的顶级React组件。",
+      "tags": [
+        "frontend-view",
+        "entry-point",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:web/src/views/application-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/application-management/index.tsx",
+      "summary": "提供通用功能页面的主视图入口、路由挂载和顶级状态管理。",
+      "tags": [
+        "frontend-view",
+        "entry-point",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "complex",
+      "languageNotes": "使用React Hooks与函数式组件构成的视图层。"
+    },
+    {
+      "id": "function:web/src/views/application-management/index.tsx:fetchAllKnowledgeDocuments",
+      "type": "function",
+      "name": "fetchAllKnowledgeDocuments",
+      "filePath": "web/src/views/application-management/index.tsx",
+      "lineRange": [
+        70,
+        81
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "entry-point",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/application-management/index.tsx:buildApplicationPayload",
+      "type": "function",
+      "name": "buildApplicationPayload",
+      "filePath": "web/src/views/application-management/index.tsx",
+      "lineRange": [
+        83,
+        92
+      ],
+      "summary": "实现通用功能相关的一项业务或辅助逻辑。",
+      "tags": [
+        "frontend-view",
+        "entry-point",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:web/src/views/application-management/index.tsx:ApplicationManagementPage",
+      "type": "function",
+      "name": "ApplicationManagementPage",
+      "filePath": "web/src/views/application-management/index.tsx",
+      "lineRange": [
+        94,
+        749
+      ],
+      "summary": "通用功能页面的顶级React组件。",
+      "tags": [
+        "frontend-view",
+        "entry-point",
+        "react-component",
+        "ui"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:web/src/layouts/dashboard-layout.tsx",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:buildSuperAdminTenantModuleMenus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/layouts/dashboard-layout.tsx",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:buildSuperAdminMenus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/layouts/dashboard-layout.tsx",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:filterVisibleMenus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/layouts/dashboard-layout.tsx",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:normalizeSidebarMenus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/layouts/dashboard-layout.tsx",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:buildMenuItem",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/layouts/dashboard-layout.tsx",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:findMenuTrail",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/layouts/dashboard-layout.tsx",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:findMenuTrailByKey",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/layouts/dashboard-layout.tsx",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:useLiveNow",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/layouts/dashboard-layout.tsx",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:SidebarContent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/layouts/dashboard-layout.tsx",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:DashboardLayout",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/layouts/dashboard-layout.tsx",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:DashboardLayout",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/layouts/dashboard-layout.tsx:buildSuperAdminTenantModuleMenus",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:buildSuperAdminTenantModuleMenus",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/layouts/dashboard-layout.tsx:buildSuperAdminMenus",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:buildSuperAdminTenantModuleMenus",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/layouts/dashboard-layout.tsx:filterVisibleMenus",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:filterVisibleMenus",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/layouts/dashboard-layout.tsx:normalizeSidebarMenus",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:normalizeSidebarMenus",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/layouts/dashboard-layout.tsx:buildMenuItem",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:buildMenuItem",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/layouts/dashboard-layout.tsx:findMenuTrail",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:findMenuTrail",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/layouts/dashboard-layout.tsx:findMenuTrailByKey",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:findMenuTrailByKey",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/layouts/dashboard-layout.tsx:DashboardLayout",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:useLiveNow",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/layouts/dashboard-layout.tsx:DashboardLayout",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:buildSuperAdminMenus",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/layouts/dashboard-layout.tsx:DashboardLayout",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:normalizeSidebarMenus",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/layouts/dashboard-layout.tsx:DashboardLayout",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:filterVisibleMenus",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/layouts/dashboard-layout.tsx:DashboardLayout",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:findMenuTrail",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/layouts/dashboard-layout.tsx:DashboardLayout",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:findMenuTrailByKey",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/layouts/dashboard-layout.tsx:DashboardLayout",
+      "target": "function:web/src/layouts/dashboard-layout.tsx:buildMenuItem",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/router/index.tsx",
+      "target": "function:web/src/router/index.tsx:filterRouteMenus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/router/index.tsx",
+      "target": "function:web/src/router/index.tsx:getFirstAccessiblePath",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/router/index.tsx",
+      "target": "function:web/src/router/index.tsx:TenantScopeOutlet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/router/index.tsx",
+      "target": "function:web/src/router/index.tsx:AuthGuard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/router/index.tsx",
+      "target": "function:web/src/router/index.tsx:GuestGuard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/router/index.tsx",
+      "target": "function:web/src/router/index.tsx:PermissionGuard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/router/index.tsx",
+      "target": "function:web/src/router/index.tsx:AuditLogGuard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/router/index.tsx",
+      "target": "function:web/src/router/index.tsx:DefaultAuthedRoute",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/router/index.tsx",
+      "target": "function:web/src/router/index.tsx:AppRouter",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/router/index.tsx",
+      "target": "function:web/src/router/index.tsx:AppRouter",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/router/index.tsx:filterRouteMenus",
+      "target": "function:web/src/router/index.tsx:filterRouteMenus",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/router/index.tsx:getFirstAccessiblePath",
+      "target": "function:web/src/router/index.tsx:filterRouteMenus",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/router/index.tsx:PermissionGuard",
+      "target": "function:web/src/router/index.tsx:getFirstAccessiblePath",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/router/index.tsx:AuditLogGuard",
+      "target": "function:web/src/router/index.tsx:getFirstAccessiblePath",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/store/auth.ts",
+      "target": "function:web/src/store/auth.ts:readStoredJson",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/store/auth.ts",
+      "target": "function:web/src/store/auth.ts:readStoredRole",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/store/auth.ts",
+      "target": "function:web/src/store/auth.ts:readStoredMenus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/store/auth.ts",
+      "target": "function:web/src/store/auth.ts:readStoredTenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/store/auth.ts",
+      "target": "function:web/src/store/auth.ts:clearAuthStorage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "function:web/src/store/auth.ts:readStoredMenus",
+      "target": "function:web/src/store/auth.ts:readStoredJson",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/store/auth.ts:readStoredTenant",
+      "target": "function:web/src/store/auth.ts:readStoredJson",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/account-applications/index.tsx",
+      "target": "function:web/src/views/account-applications/index.tsx:AccountApplicationsPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/account-applications/index.tsx",
+      "target": "function:web/src/views/account-applications/index.tsx:AccountApplicationsPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:web/src/views/application-management/index.tsx",
+      "target": "function:web/src/views/application-management/index.tsx:fetchAllKnowledgeDocuments",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/application-management/index.tsx",
+      "target": "function:web/src/views/application-management/index.tsx:buildApplicationPayload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/application-management/index.tsx",
+      "target": "function:web/src/views/application-management/index.tsx:ApplicationManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/application-management/index.tsx",
+      "target": "function:web/src/views/application-management/index.tsx:ApplicationManagementPage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:web/src/views/application-management/index.tsx:ApplicationManagementPage",
+      "target": "function:web/src/views/application-management/index.tsx:fetchAllKnowledgeDocuments",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

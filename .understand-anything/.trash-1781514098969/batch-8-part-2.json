@@ -1,0 +1,862 @@
+{
+  "nodes": [
+    {
+      "id": "file:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "type": "file",
+      "name": "detect-html.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "summary": "静态 HTML 反模式检测引擎，分析结构与标签使用是否符合最佳实践。",
+      "tags": [
+        "engine",
+        "html-analysis",
+        "static-analysis"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs:checkStaticPageTypography",
+      "type": "function",
+      "name": "checkStaticPageTypography",
+      "filePath": ".claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "lineRange": [
+        37,
+        70
+      ],
+      "summary": "提供 checkStaticPageTypography 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs:checkElementBrokenImage",
+      "type": "function",
+      "name": "checkElementBrokenImage",
+      "filePath": ".claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "lineRange": [
+        72,
+        84
+      ],
+      "summary": "提供 checkElementBrokenImage 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs:detectHtml",
+      "type": "function",
+      "name": "detectHtml",
+      "filePath": ".claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "lineRange": [
+        101,
+        206
+      ],
+      "summary": "提供 detectHtml 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs",
+      "type": "file",
+      "name": "screenshot-contrast.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs",
+      "summary": "视觉层面的检测引擎，通过截图分析界面元素的色彩对比度是否达标。",
+      "tags": [
+        "engine",
+        "visual-analysis",
+        "accessibility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs:sanitizeScreenshotClip",
+      "type": "function",
+      "name": "sanitizeScreenshotClip",
+      "filePath": ".claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs",
+      "lineRange": [
+        1,
+        15
+      ],
+      "summary": "提供 sanitizeScreenshotClip 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs:compareScreenshotContrast",
+      "type": "function",
+      "name": "compareScreenshotContrast",
+      "filePath": ".claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs",
+      "lineRange": [
+        17,
+        106
+      ],
+      "summary": "提供 compareScreenshotContrast 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs:captureVisualContrastCandidate",
+      "type": "function",
+      "name": "captureVisualContrastCandidate",
+      "filePath": ".claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs",
+      "lineRange": [
+        108,
+        183
+      ],
+      "summary": "提供 captureVisualContrastCandidate 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/detector/findings.mjs",
+      "type": "file",
+      "name": "findings.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/detector/findings.mjs",
+      "summary": "定义检测结果与问题的标准数据结构，以及报告汇总逻辑。",
+      "tags": [
+        "data-model",
+        "reporting",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/findings.mjs:getAP",
+      "type": "function",
+      "name": "getAP",
+      "filePath": ".claude/skills/impeccable/scripts/detector/findings.mjs",
+      "lineRange": [
+        3,
+        5
+      ],
+      "summary": "提供 getAP 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/findings.mjs:finding",
+      "type": "function",
+      "name": "finding",
+      "filePath": ".claude/skills/impeccable/scripts/detector/findings.mjs",
+      "lineRange": [
+        7,
+        10
+      ],
+      "summary": "提供 finding 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "type": "file",
+      "name": "file-system.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "summary": "提供针对 Node.js 文件系统的操作封装，以支持检测引擎加载目标文件。",
+      "tags": [
+        "utility",
+        "file-io",
+        "system"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/node/file-system.mjs:walkDir",
+      "type": "function",
+      "name": "walkDir",
+      "filePath": ".claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "lineRange": [
+        21,
+        32
+      ],
+      "summary": "提供 walkDir 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/node/file-system.mjs:resolveImport",
+      "type": "function",
+      "name": "resolveImport",
+      "filePath": ".claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "lineRange": [
+        39,
+        53
+      ],
+      "summary": "提供 resolveImport 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/node/file-system.mjs:buildImportGraph",
+      "type": "function",
+      "name": "buildImportGraph",
+      "filePath": ".claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "lineRange": [
+        55,
+        89
+      ],
+      "summary": "提供 buildImportGraph 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/node/file-system.mjs:detectFrameworkConfig",
+      "type": "function",
+      "name": "detectFrameworkConfig",
+      "filePath": ".claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "lineRange": [
+        119,
+        139
+      ],
+      "summary": "提供 detectFrameworkConfig 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/node/file-system.mjs:isPortListening",
+      "type": "function",
+      "name": "isPortListening",
+      "filePath": ".claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "lineRange": [
+        145,
+        186
+      ],
+      "summary": "提供 isPortListening 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "type": "file",
+      "name": "profiler.mjs",
+      "filePath": ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "summary": "检测过程的性能分析器，记录各项检测规则的耗时与执行效率。",
+      "tags": [
+        "utility",
+        "profiling",
+        "metrics"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:profileNow",
+      "type": "function",
+      "name": "profileNow",
+      "filePath": ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "lineRange": [
+        1,
+        5
+      ],
+      "summary": "提供 profileNow 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:createDetectorProfile",
+      "type": "function",
+      "name": "createDetectorProfile",
+      "filePath": ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "lineRange": [
+        7,
+        9
+      ],
+      "summary": "提供 createDetectorProfile 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:recordProfileEvent",
+      "type": "function",
+      "name": "recordProfileEvent",
+      "filePath": ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "lineRange": [
+        11,
+        34
+      ],
+      "summary": "提供 recordProfileEvent 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:extractFindingIds",
+      "type": "function",
+      "name": "extractFindingIds",
+      "filePath": ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "lineRange": [
+        36,
+        39
+      ],
+      "summary": "提供 extractFindingIds 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:profileFindings",
+      "type": "function",
+      "name": "profileFindings",
+      "filePath": ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "lineRange": [
+        41,
+        52
+      ],
+      "summary": "提供 profileFindings 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:profileStep",
+      "type": "function",
+      "name": "profileStep",
+      "filePath": ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "lineRange": [
+        54,
+        66
+      ],
+      "summary": "提供 profileStep 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:profileFindingsAsync",
+      "type": "function",
+      "name": "profileFindingsAsync",
+      "filePath": ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "lineRange": [
+        68,
+        79
+      ],
+      "summary": "提供 profileFindingsAsync 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:profileStepAsync",
+      "type": "function",
+      "name": "profileStepAsync",
+      "filePath": ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "lineRange": [
+        81,
+        93
+      ],
+      "summary": "提供 profileStepAsync 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:percentile",
+      "type": "function",
+      "name": "percentile",
+      "filePath": ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "lineRange": [
+        95,
+        102
+      ],
+      "summary": "提供 percentile 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:summarizeDetectorProfile",
+      "type": "function",
+      "name": "summarizeDetectorProfile",
+      "filePath": ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "lineRange": [
+        104,
+        153
+      ],
+      "summary": "提供 summarizeDetectorProfile 函数的实现。",
+      "tags": [
+        "function",
+        "logic",
+        "utility",
+        "exported"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/detector/engines/regex/detect-text.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/detector/engines/static-html/css-cascade.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/detector/findings.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/detector/registry/antipatterns.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/detector/rules/checks.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/detector/shared/constants.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/detector/shared/page.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs:checkStaticPageTypography",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs:checkStaticPageTypography",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs:checkElementBrokenImage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs:detectHtml",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs:detectHtml",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs:sanitizeScreenshotClip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs:sanitizeScreenshotClip",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs:compareScreenshotContrast",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs:compareScreenshotContrast",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs:captureVisualContrastCandidate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs:captureVisualContrastCandidate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/findings.mjs",
+      "target": "file:.claude/skills/impeccable/scripts/detector/registry/antipatterns.mjs",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/findings.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/findings.mjs:getAP",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/findings.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/findings.mjs:getAP",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/findings.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/findings.mjs:finding",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/findings.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/findings.mjs:finding",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/node/file-system.mjs:walkDir",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/node/file-system.mjs:walkDir",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/node/file-system.mjs:resolveImport",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/node/file-system.mjs:resolveImport",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/node/file-system.mjs:buildImportGraph",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/node/file-system.mjs:buildImportGraph",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/node/file-system.mjs:detectFrameworkConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/node/file-system.mjs:detectFrameworkConfig",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/node/file-system.mjs:isPortListening",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/node/file-system.mjs:isPortListening",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:profileNow",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:profileNow",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:createDetectorProfile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:createDetectorProfile",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:recordProfileEvent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:recordProfileEvent",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:extractFindingIds",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:extractFindingIds",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:profileFindings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:profileFindings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:profileStep",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:profileStep",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:profileFindingsAsync",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:profileFindingsAsync",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:profileStepAsync",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:profileStepAsync",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:percentile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:percentile",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:summarizeDetectorProfile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "target": "function:.claude/skills/impeccable/scripts/detector/profile/profiler.mjs:summarizeDetectorProfile",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

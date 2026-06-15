@@ -1,0 +1,185 @@
+[
+  {
+    "batchIndex": 35,
+    "files": [
+      {
+        "path": "backend/apps/ai_models/migrations/0013_platform_llm_settings.py",
+        "language": "python",
+        "sizeLines": 111,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py",
+        "language": "python",
+        "sizeLines": 18,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/ai_models/migrations/0015_tts_settings.py",
+        "language": "python",
+        "sizeLines": 233,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/ai_models/tests/__init__.py",
+        "language": "python",
+        "sizeLines": 1,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/ai_models/tests/test_llm_provider_api.py",
+        "language": "python",
+        "sizeLines": 14,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/audit/__init__.py",
+        "language": "python",
+        "sizeLines": 0,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/audit/apps.py",
+        "language": "python",
+        "sizeLines": 7,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/audit/migrations/__init__.py",
+        "language": "python",
+        "sizeLines": 0,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/audit/migrations/0001_initial.py",
+        "language": "python",
+        "sizeLines": 37,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/audit/migrations/0002_operationlog_description.py",
+        "language": "python",
+        "sizeLines": 18,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/audit/migrations/0003_operationlog_actor_role_name.py",
+        "language": "python",
+        "sizeLines": 18,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/audit/migrations/0004_operationlog_actor_display_name.py",
+        "language": "python",
+        "sizeLines": 18,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/audit/migrations/0005_detach_superuser_logs_and_fix_review_descriptions.py",
+        "language": "python",
+        "sizeLines": 28,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/audit/tests/__init__.py",
+        "language": "python",
+        "sizeLines": 0,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/__init__.py",
+        "language": "python",
+        "sizeLines": 1,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/AGENTS.md",
+        "language": "markdown",
+        "sizeLines": 104,
+        "fileCategory": "docs"
+      },
+      {
+        "path": "backend/apps/devices/apps.py",
+        "language": "python",
+        "sizeLines": 7,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/management/__init__.py",
+        "language": "python",
+        "sizeLines": 1,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/management/commands/__init__.py",
+        "language": "python",
+        "sizeLines": 1,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/management/commands/seed_operations_periodic_tasks.py",
+        "language": "python",
+        "sizeLines": 25,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/migrations/__init__.py",
+        "language": "python",
+        "sizeLines": 0,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/migrations/0001_initial.py",
+        "language": "python",
+        "sizeLines": 33,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/migrations/0002_device_tenant_alter_device_code_and_more.py",
+        "language": "python",
+        "sizeLines": 29,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/migrations/0003_device_authorization_type_device_device_info_and_more.py",
+        "language": "python",
+        "sizeLines": 184,
+        "fileCategory": "code"
+      },
+      {
+        "path": "backend/apps/devices/migrations/0004_device_status_online_offline_only.py",
+        "language": "python",
+        "sizeLines": 29,
+        "fileCategory": "code"
+      }
+    ],
+    "batchImportData": {
+      "backend/apps/ai_models/migrations/0013_platform_llm_settings.py": [],
+      "backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py": [],
+      "backend/apps/ai_models/migrations/0015_tts_settings.py": [],
+      "backend/apps/ai_models/tests/__init__.py": [],
+      "backend/apps/ai_models/tests/test_llm_provider_api.py": [],
+      "backend/apps/audit/__init__.py": [],
+      "backend/apps/audit/apps.py": [],
+      "backend/apps/audit/migrations/__init__.py": [],
+      "backend/apps/audit/migrations/0001_initial.py": [],
+      "backend/apps/audit/migrations/0002_operationlog_description.py": [],
+      "backend/apps/audit/migrations/0003_operationlog_actor_role_name.py": [],
+      "backend/apps/audit/migrations/0004_operationlog_actor_display_name.py": [],
+      "backend/apps/audit/migrations/0005_detach_superuser_logs_and_fix_review_descriptions.py": [],
+      "backend/apps/audit/tests/__init__.py": [],
+      "backend/apps/devices/__init__.py": [],
+      "backend/apps/devices/AGENTS.md": [],
+      "backend/apps/devices/apps.py": [],
+      "backend/apps/devices/management/__init__.py": [],
+      "backend/apps/devices/management/commands/__init__.py": [],
+      "backend/apps/devices/management/commands/seed_operations_periodic_tasks.py": [],
+      "backend/apps/devices/migrations/__init__.py": [],
+      "backend/apps/devices/migrations/0001_initial.py": [],
+      "backend/apps/devices/migrations/0002_device_tenant_alter_device_code_and_more.py": [],
+      "backend/apps/devices/migrations/0003_device_authorization_type_device_device_info_and_more.py": [],
+      "backend/apps/devices/migrations/0004_device_status_online_offline_only.py": []
+    },
+    "neighborMap": {}
+  }
+]
