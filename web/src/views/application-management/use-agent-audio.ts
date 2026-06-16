@@ -1,0 +1,258 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { message } from 'antd';
+
+import { buildAsrRealtimeWebSocketUrl } from '../../api/modules/asr';
+import { testCompanyTts } from '../../api/modules/tts';
+import { useAuthStore } from '../../store/auth';
+import { useTenantScopeStore } from '../../store/tenant-scope';
+import {
+  AUDIO_WORKLET_PROCESSOR_NAME,
+  AUDIO_WORKLET_PROCESSOR_SOURCE,
+  downsampleBuffer,
+  encodePCM16,
+} from './audio-utils';
+
+type WebAudioWindow = Window & typeof globalThis & {
+  webkitAudioContext?: typeof AudioContext;
+};
+
+type AsrSocketMessage = {
+  type?: string;
+  text?: string;
+  final?: boolean;
+  message?: string;
+};
+
+export const useAgentAudio = () => {
+  const token = useAuthStore((state) => state.token);
+  const tenant = useAuthStore((state) => state.tenant);
+  const tenantScopeId = useTenantScopeStore((state) => state.tenantId);
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [playingKey, setPlayingKey] = useState<string | null>(null);
+  const [paused, setPaused] = useState(false);
+
+  const streamRef = useRef<MediaStream | null>(null);
+  const socketRef = useRef<WebSocket | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const workletNodeRef = useRef<AudioWorkletNode | null>(null);
+  const gainRef = useRef<GainNode | null>(null);
+  const transcriptRef = useRef('');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
+
+  const stopRecording = useCallback(() => {
+    workletNodeRef.current?.port.close();
+    workletNodeRef.current?.disconnect();
+    sourceRef.current?.disconnect();
+    gainRef.current?.disconnect();
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    void audioContextRef.current?.close();
+
+    const socket = socketRef.current;
+    if (socket?.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ type: 'asr.finish' }));
+    } else {
+      socket?.close();
+    }
+
+    workletNodeRef.current = null;
+    sourceRef.current = null;
+    gainRef.current = null;
+    streamRef.current = null;
+    audioContextRef.current = null;
+    socketRef.current = null;
+    setRecording(false);
+    setTranscribing(false);
+  }, []);
+
+  const setupAudioStreaming = useCallback(async (stream: MediaStream, socket: WebSocket) => {
+    const AudioContextClass = window.AudioContext || (window as WebAudioWindow).webkitAudioContext;
+    if (!AudioContextClass) {
+      throw new Error('当前浏览器不支持音频采集');
+    }
+    const audioContext = new AudioContextClass();
+    audioContextRef.current = audioContext;
+    if (!audioContext.audioWorklet || typeof AudioWorkletNode === 'undefined') {
+      throw new Error('当前浏览器不支持 AudioWorklet，无法进行实时音频采集');
+    }
+
+    const source = audioContext.createMediaStreamSource(stream);
+    const silentGain = audioContext.createGain();
+    silentGain.gain.value = 0;
+    const workletUrl = URL.createObjectURL(
+      new Blob([AUDIO_WORKLET_PROCESSOR_SOURCE], { type: 'application/javascript' }),
+    );
+
+    try {
+      await audioContext.audioWorklet.addModule(workletUrl);
+    } finally {
+      URL.revokeObjectURL(workletUrl);
+    }
+
+    const workletNode = new AudioWorkletNode(audioContext, AUDIO_WORKLET_PROCESSOR_NAME, {
+      channelCount: 1,
+      channelCountMode: 'explicit',
+      channelInterpretation: 'speakers',
+      numberOfInputs: 1,
+      numberOfOutputs: 1,
+      outputChannelCount: [1],
+    });
+
+    workletNode.port.onmessage = (event: MessageEvent<Float32Array>) => {
+      if (socket.readyState !== WebSocket.OPEN) {
+        return;
+      }
+      const pcm = encodePCM16(downsampleBuffer(event.data, audioContext.sampleRate));
+      socket.send(pcm);
+    };
+
+    source.connect(workletNode);
+    workletNode.connect(silentGain);
+    silentGain.connect(audioContext.destination);
+
+    sourceRef.current = source;
+    workletNodeRef.current = workletNode;
+    gainRef.current = silentGain;
+  }, []);
+
+  const startRecording = useCallback(async (onTranscript: (text: string) => void) => {
+    if (!token) {
+      message.error('登录状态已失效，请重新登录');
+      return;
+    }
+
+    transcriptRef.current = '';
+    setTranscribing(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      const socket = new WebSocket(buildAsrRealtimeWebSocketUrl(token, tenantScopeId ?? tenant?.id ?? null));
+      socket.binaryType = 'arraybuffer';
+      socketRef.current = socket;
+
+      socket.onopen = () => {
+        void setupAudioStreaming(stream, socket).catch((error: unknown) => {
+          message.error(error instanceof Error ? error.message : '无法打开麦克风');
+          stopRecording();
+        });
+      };
+      socket.onmessage = (event: MessageEvent<string>) => {
+        let payload: AsrSocketMessage;
+        try {
+          payload = JSON.parse(event.data) as AsrSocketMessage;
+        } catch {
+          return;
+        }
+        if (payload.type === 'asr.ready') {
+          setRecording(true);
+          setTranscribing(false);
+          return;
+        }
+        if (payload.type === 'asr.transcript' && payload.text) {
+          const nextText = payload.final
+            ? `${transcriptRef.current}${transcriptRef.current ? '\n' : ''}${payload.text}`
+            : `${transcriptRef.current}${transcriptRef.current ? '\n' : ''}${payload.text}`;
+          if (payload.final) {
+            transcriptRef.current = nextText;
+          }
+          onTranscript(nextText);
+          return;
+        }
+        if (payload.type === 'asr.done') {
+          setRecording(false);
+          setTranscribing(false);
+          return;
+        }
+        if (payload.type === 'asr.error') {
+          message.error(payload.message || '语音识别失败');
+          stopRecording();
+        }
+      };
+      socket.onerror = () => {
+        message.error('ASR 连接异常');
+        stopRecording();
+      };
+      socket.onclose = () => {
+        setRecording(false);
+        setTranscribing(false);
+      };
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '无法打开麦克风');
+      stopRecording();
+    }
+  }, [setupAudioStreaming, stopRecording, tenant?.id, tenantScopeId, token]);
+
+  const revokeObjectUrl = useCallback(() => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+  }, []);
+
+  const stopPlayback = useCallback(() => {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    revokeObjectUrl();
+    setPlayingKey(null);
+    setPaused(false);
+  }, [revokeObjectUrl]);
+
+  const playText = useCallback(async (key: string, text: string) => {
+    if (playingKey === key && audioRef.current) {
+      if (audioRef.current.paused) {
+        await audioRef.current.play();
+        setPaused(false);
+      } else {
+        audioRef.current.pause();
+        setPaused(true);
+      }
+      return;
+    }
+
+    stopPlayback();
+    const content = text.trim();
+    if (!content) {
+      return;
+    }
+
+    try {
+      const audioBlob = await testCompanyTts({ text: content });
+      const objectUrl = URL.createObjectURL(audioBlob);
+      objectUrlRef.current = objectUrl;
+      const audio = new Audio(objectUrl);
+      audioRef.current = audio;
+      audio.onended = stopPlayback;
+      audio.onerror = () => {
+        message.error('语音播放失败');
+        stopPlayback();
+      };
+      setPlayingKey(key);
+      setPaused(false);
+      await audio.play();
+    } catch {
+      stopPlayback();
+      message.error('语音合成失败');
+    }
+  }, [playingKey, stopPlayback]);
+
+  useEffect(() => {
+    return () => {
+      stopRecording();
+      stopPlayback();
+    };
+  }, [stopPlayback, stopRecording]);
+
+  return {
+    recording,
+    transcribing,
+    playingKey,
+    paused,
+    startRecording,
+    stopRecording,
+    playText,
+    stopPlayback,
+  };
+};

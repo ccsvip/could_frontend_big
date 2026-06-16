@@ -20,6 +20,11 @@ export type AgentApplicationRecord = {
   systemPrompt: string;
   temperature: number;
   maxTokens: number;
+  openingMessageEnabled: boolean;
+  openingMessage: string;
+  suggestedQuestions: string[];
+  voiceInputEnabled: boolean;
+  replyPlaybackEnabled: boolean;
   knowledgeDocumentIds: number[];
   knowledgeDocuments: AgentApplicationKnowledgeDocument[];
   createdBy: string;
@@ -47,6 +52,11 @@ export type AgentApplicationPayload = {
   systemPrompt?: string;
   temperature?: number;
   maxTokens?: number;
+  openingMessageEnabled?: boolean;
+  openingMessage?: string;
+  suggestedQuestions?: string[];
+  voiceInputEnabled?: boolean;
+  replyPlaybackEnabled?: boolean;
   knowledgeDocumentIds?: number[];
   isActive?: boolean;
 };
@@ -102,4 +112,3 @@ export const fetchAgentApplicationStats = async (id: number) => {
   const response = await httpClient.get<AgentApplicationStats>(`/ai-models/applications/${id}/stats/`);
   return response.data;
 };
-
