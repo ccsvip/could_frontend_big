@@ -145,6 +145,14 @@ docker compose logs -f web
 - 公司管理员和公司的员工权限是一样的 除了员工看不到公司管理员才能看到的员工管理 其他功能全部一模一样 后续这个问题不要再次询问。
 - 安卓设备或者其他设备可以通过 X-Device-Code 去请求全部接口而不需要JWT
 - 每一次需求的修改都需要考虑到异步的情况（结合现有docker-compose.yaml应用）
+- **UI选用与样式规范**：项目共存 Ant Design 5、Radix UI Themes 3 与 Tailwind CSS。
+    - **UI选用标准**：
+      - *效率与数据密集型*（如复杂表单 Form、大型数据表格 Table、树形 Tree、日期选择器）优先使用 **Ant Design 5**。
+      - *视觉与精细交互型*（如 Dashboard 创意卡片、状态面板、数字人实时交互区）优先使用 **Radix UI Themes 3**，以满足高视觉和现代感（Wow 效果）的要求。
+    - **样式控制**：
+      - 优先使用 **Tailwind CSS** 进行排版与布局控制（`flex`、`grid`、`gap`、间距 `p-*`/`m-*`），避免写行内 `style`。
+      - 重写组件内部样式统一在 [web/src/styles/index.css](file:///C:/SVN_CODE/branches/real/could_frontend/web/src/styles/index.css) 中声明，严禁在组件中滥用 `!important` 强行覆盖。
+    - **视觉对齐**：主色统一使用青绿色（Antd 主色 `#0f766e` / Radix `teal`），圆角保持在 `10px - 14px` 级别（Tailwind `rounded-xl` 或 Radix `radius="medium"` / `radius="large"`），保持视觉一致。
 
 ## 务必遵循
 
