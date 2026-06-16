@@ -31,7 +31,6 @@ import { useAgentAudio } from './use-agent-audio';
 import dayjs from 'dayjs';
 import { Spin, message } from 'antd';
 
-import '@radix-ui/themes/styles.css';
 import {
   Theme,
   Button,
@@ -768,27 +767,30 @@ export const ApplicationManagementPage = () => {
                       open={deleteApplicationId === app.id}
                       onOpenChange={(open) => setDeleteApplicationId(open ? app.id : null)}
                     >
-                      <Button
-                        variant="ghost"
-                        color="red"
-                        size="1"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => setDeleteApplicationId(app.id)}
-                      >
-                        <Trash2 size={16} />
-                      </Button>
+                      <AlertDialog.Trigger>
+                        <Button
+                          variant="ghost"
+                          color="red"
+                          size="1"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </AlertDialog.Trigger>
                       <AlertDialog.Content style={{ maxWidth: 400 }}>
                         <AlertDialog.Title>确认删除智能体</AlertDialog.Title>
                         <AlertDialog.Description size="2">
                           删除后将移除智能体配置、对话设置、关联会话和消息，且不可恢复。绑定的知识库、模型、音色和 ASR/TTS 配置不会被删除。确定删除「{app.name}」吗？
                         </AlertDialog.Description>
                         <Flex gap="3" mt="4" justify="end">
-                          <Button variant="soft" color="gray" onClick={() => setDeleteApplicationId(null)}>
-                            取消
-                          </Button>
-                          <Button variant="solid" color="red" onClick={() => void handleDelete(app.id)}>
-                            确认删除
-                          </Button>
+                          <AlertDialog.Cancel>
+                            <Button variant="soft" color="gray">取消</Button>
+                          </AlertDialog.Cancel>
+                          <AlertDialog.Action>
+                            <Button variant="solid" color="red" onClick={() => void handleDelete(app.id)}>
+                              确认删除
+                            </Button>
+                          </AlertDialog.Action>
                         </Flex>
                       </AlertDialog.Content>
                     </AlertDialog.Root>

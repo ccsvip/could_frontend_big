@@ -4,6 +4,7 @@ import { App as AntdApp, ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import { BrowserRouter } from 'react-router-dom';
 import { AppRouter } from './router';
+import '@radix-ui/themes/styles.css';
 import './styles/index.css';
 
 const APP_TITLE = import.meta.env.VITE_APP_TITLE || '数字人后台管理平台';

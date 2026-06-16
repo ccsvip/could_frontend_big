@@ -24,6 +24,10 @@ body {
   background: transparent;
 }
 
+.rt-BaseDialogOverlay {
+  z-index: 1000;
+}
+
 /* 统一卡片圆角与底色，避免页面各处自定义类名互相覆盖 */
 .ant-card {
   border-radius: 14px;
