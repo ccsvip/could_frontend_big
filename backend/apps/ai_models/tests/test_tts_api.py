@@ -98,7 +98,6 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         self.assertNotIn('new-dashscope-secret', str(update_response.data))
 
     def test_company_user_can_select_default_voice_without_provider_secrets(self):
-        self.grant_permissions('ai_models.tts.view', 'ai_models.tts.update')
         self.client.force_authenticate(user=self.tenant_user)
 
         options_response = self.client.get('/api/v1/ai-models/tts/options/')
@@ -121,7 +120,6 @@ class TTSApiTests(TenantTestMixin, APITestCase):
 
     @patch('apps.ai_models.services.tts.synthesize_tts_pcm', return_value=b'\x01\x02')
     def test_company_test_returns_wav_wrapped_pcm(self, synthesize_tts_pcm):
-        self.grant_permissions('ai_models.tts.view')
         self.provider.default_test_text = '默认测试文本'
         self.provider.save(update_fields=['default_test_text'])
         self.client.force_authenticate(user=self.tenant_user)

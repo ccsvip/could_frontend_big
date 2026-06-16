@@ -106,7 +106,6 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
         return Settings.objects.create(**data)
 
     def test_company_only_sees_effective_authorized_models_without_secrets(self):
-        self.grant_permissions('ai_models.llm.view')
         self.client.force_authenticate(self.tenant_user)
 
         resp = self.client.get('/api/v1/ai-models/llm/options/')
@@ -117,7 +116,6 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(resp.data['providers'][0]['models'][0]['id'], self.model.id)
 
     def test_unauthorized_models_are_invisible(self):
-        self.grant_permissions('ai_models.llm.view')
         unauthorized_model = self.create_model(name='gpt-4.1-mini', display_name='GPT 4.1 Mini')
         self.client.force_authenticate(self.tenant_user)
 
@@ -133,7 +131,6 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
         self.assertNotIn(unauthorized_model.id, model_ids)
 
     def test_provider_disabled_makes_authorized_model_invisible(self):
-        self.grant_permissions('ai_models.llm.view')
         self.provider.is_active = False
         self.provider.save(update_fields=['is_active'])
         self.client.force_authenticate(self.tenant_user)
@@ -144,7 +141,6 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(resp.data['providers'], [])
 
     def test_model_disabled_makes_grant_ineffective(self):
-        self.grant_permissions('ai_models.llm.view')
         self.model.is_active = False
         self.model.save(update_fields=['is_active'])
         self.client.force_authenticate(self.tenant_user)
@@ -155,7 +151,6 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(resp.data['providers'], [])
 
     def test_company_can_set_default_only_to_effective_model(self):
-        self.grant_permissions('ai_models.llm.update')
         unauthorized_model = self.create_model(name='gpt-4.1-mini', display_name='GPT 4.1 Mini')
         self.client.force_authenticate(self.tenant_user)
 
@@ -176,7 +171,6 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(self.settings.default_model_id, self.model.id)
 
     def test_company_cannot_set_default_to_granted_model_when_provider_disabled(self):
-        self.grant_permissions('ai_models.llm.update')
         disabled_provider = self.create_platform_provider(name='Disabled provider', is_active=False)
         disabled_provider_model = self.create_model(
             provider=disabled_provider,
@@ -198,7 +192,6 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(self.settings.default_model_id, self.model.id)
 
     def test_company_cannot_set_default_to_granted_model_when_model_disabled(self):
-        self.grant_permissions('ai_models.llm.update')
         disabled_model = self.create_model(
             name='disabled-model',
             display_name='Disabled Model',
@@ -218,31 +211,7 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
         self.settings.refresh_from_db()
         self.assertEqual(self.settings.default_model_id, self.model.id)
 
-    def test_user_with_view_permission_can_test_but_cannot_set_default(self):
-        self.grant_permissions('ai_models.llm.view')
-        self.configure_test_settings(test_cooldown_seconds=0)
-        self.client.force_authenticate(self.tenant_user)
-
-        with patch(
-            'apps.ai_models.llm_services.run_llm_model_test',
-            return_value={'success': True, 'message': 'ok', 'latencyMs': 12},
-        ):
-            test_resp = self.client.post(
-                f'/api/v1/ai-models/llm/models/{self.model.id}/test/',
-                format='json',
-            )
-        default_resp = self.client.patch(
-            '/api/v1/ai-models/llm/default-model/',
-            {'modelId': self.model.id},
-            format='json',
-        )
-
-        self.assertEqual(test_resp.status_code, status.HTTP_200_OK)
-        self.assertIn('success', test_resp.data)
-        self.assertEqual(default_resp.status_code, status.HTTP_403_FORBIDDEN)
-
     def test_user_with_update_permission_can_set_default(self):
-        self.grant_permissions('ai_models.llm.update')
         self.client.force_authenticate(self.tenant_user)
 
         resp = self.client.patch(
@@ -256,7 +225,6 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(self.settings.default_model_id, self.model.id)
 
     def test_test_cooldown_is_enforced_and_configurable(self):
-        self.grant_permissions('ai_models.llm.view')
         self.configure_test_settings(test_cooldown_seconds=60)
         cooldown_key = f'llm-test:{self.tenant_user.id}:{self.model.id}'
         cache.set(cooldown_key, True, timeout=60)

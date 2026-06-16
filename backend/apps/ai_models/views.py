@@ -14,7 +14,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import JSONParser, MultiPartParser
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -286,14 +286,14 @@ class TTSSettingsTestView(APIView):
 
 
 class CompanyTTSOptionsView(TenantScopedQuerysetMixin, APIView):
-    permission_classes = [CanViewTTS]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         return Response(_build_company_tts_options_payload(self.request_tenant, request))
 
 
 class CompanyTTSDefaultVoiceView(TenantScopedQuerysetMixin, APIView):
-    permission_classes = [CanUpdateTTS]
+    permission_classes = [IsAuthenticated]
 
     def patch(self, request):
         tenant = self.request_tenant
@@ -317,7 +317,7 @@ class CompanyTTSDefaultVoiceView(TenantScopedQuerysetMixin, APIView):
 
 
 class CompanyTTSTestView(TenantScopedQuerysetMixin, APIView):
-    permission_classes = [CanViewTTS]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         tenant = self.request_tenant
@@ -607,14 +607,14 @@ def _build_company_llm_options_payload(tenant, request):
 
 
 class CompanyLLMOptionsView(TenantScopedQuerysetMixin, APIView):
-    permission_classes = [CanViewLLMProviders]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         return Response(_build_company_llm_options_payload(self.request_tenant, request))
 
 
 class CompanyLLMDefaultModelView(TenantScopedQuerysetMixin, APIView):
-    permission_classes = [CanUpdateLLMProviders]
+    permission_classes = [IsAuthenticated]
 
     def patch(self, request):
         tenant = self.request_tenant
@@ -636,7 +636,7 @@ class CompanyLLMDefaultModelView(TenantScopedQuerysetMixin, APIView):
 
 
 class CompanyLLMModelTestView(TenantScopedQuerysetMixin, APIView):
-    permission_classes = [CanViewLLMProviders]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, model_id):
         tenant = self.request_tenant
