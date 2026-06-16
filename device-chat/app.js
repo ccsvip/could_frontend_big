@@ -8,10 +8,13 @@
     ACTIVATE_PATH: '/device-auth/activate/',
     SESSION_PATH: '/device-runtime/config/',
     VOICE_CHAT_PATH: '/device/voice-chat',
+    ASR_REALTIME_PATH: '/ws/asr/test/',
     MAX_RECORD_SECONDS: 60,
     PCM_SAMPLE_RATE: 16000,
     MIN_RECORD_MS: 700,
     REQUEST_TIMEOUT: 30000,
+    ASR_FINISH_TIMEOUT: 5000,
+    ASR_PENDING_CHUNK_LIMIT: 80,
     AUTO_PLAY_AUDIO: true,
   };
 
@@ -24,6 +27,7 @@
   CONFIG.ACTIVATE_PATH = query.get('activatePath') || CONFIG.ACTIVATE_PATH;
   CONFIG.SESSION_PATH = query.get('sessionPath') || CONFIG.SESSION_PATH;
   CONFIG.VOICE_CHAT_PATH = query.get('voiceChatPath') || CONFIG.VOICE_CHAT_PATH;
+  CONFIG.ASR_REALTIME_PATH = query.get('asrRealtimePath') || CONFIG.ASR_REALTIME_PATH;
 
   const els = {
     globalStatus: document.getElementById('globalStatus'),
@@ -62,6 +66,11 @@
     audioSource: null,
     audioProcessor: null,
     audioGain: null,
+    asrSocket: null,
+    asrFinishTimer: 0,
+    asrLiveText: '',
+    asrFinalText: '',
+    asrPendingBuffers: [],
     pcmChunks: [],
     recordingStartedAt: 0,
     recordingTimer: 0,
@@ -227,9 +236,11 @@
     state.pcmChunks = [];
     state.recordingStartedAt = Date.now();
 
-    setupPcmCapture(stream);
     setPhase('recording');
+    updateRealtimeQuestionText();
     showNotice('正在录音，请开始说话...', 'warn');
+    startRealtimeAsr();
+    setupPcmCapture(stream);
     startRecordingClock();
     state.maxRecordTimer = window.setTimeout(stopRecording, CONFIG.MAX_RECORD_SECONDS * 1000);
   }
@@ -251,7 +262,9 @@
       return;
     }
     const duration = Date.now() - state.recordingStartedAt;
+    finishRealtimeAsr();
     if (duration < CONFIG.MIN_RECORD_MS) {
+      closeRealtimeAsr();
       setPhase('ready');
       showError(new Error('录音时间太短，请重新说一遍'));
       return;
@@ -260,6 +273,7 @@
     const format = 'pcm';
     const blob = new Blob(state.pcmChunks, { type: 'application/octet-stream' });
     if (!blob.size) {
+      closeRealtimeAsr();
       setPhase('ready');
       showError(new Error('麦克风音频为空，请重新说一遍'));
       return;
@@ -311,6 +325,174 @@
       elapsed,
       status: 'ok',
     });
+  }
+
+  function startRealtimeAsr() {
+    resetRealtimeTranscript();
+    closeRealtimeAsr();
+
+    if (!window.WebSocket) {
+      handleRealtimeAsrError(new Error('当前浏览器不支持实时识别连接'));
+      return;
+    }
+
+    let socket;
+    try {
+      socket = new WebSocket(buildAsrRealtimeWebSocketUrl(state.deviceCode));
+    } catch (error) {
+      handleRealtimeAsrError(error);
+      return;
+    }
+
+    socket.binaryType = 'arraybuffer';
+    state.asrSocket = socket;
+
+    socket.onopen = () => {
+      flushPendingRealtimeAudio(socket);
+      logDiagnostic('asr.realtime.opened', { deviceCode: state.deviceCode });
+    };
+    socket.onmessage = handleRealtimeAsrMessage;
+    socket.onerror = () => {
+      handleRealtimeAsrError(new Error('实时 ASR 连接异常'));
+    };
+    socket.onclose = () => {
+      if (state.asrSocket === socket) {
+        state.asrSocket = null;
+      }
+      window.clearTimeout(state.asrFinishTimer);
+      state.asrFinishTimer = 0;
+    };
+  }
+
+  function handleRealtimeAsrMessage(event) {
+    let payload;
+    try {
+      payload = JSON.parse(event.data);
+    } catch {
+      return;
+    }
+
+    if (payload.type === 'asr.ready') {
+      logDiagnostic('asr.realtime.ready', { deviceCode: state.deviceCode });
+      return;
+    }
+
+    if (payload.type === 'asr.transcript' && payload.text) {
+      appendRealtimeTranscript(String(payload.text), Boolean(payload.final));
+      return;
+    }
+
+    if (payload.type === 'asr.done') {
+      closeRealtimeAsr();
+      return;
+    }
+
+    if (payload.type === 'asr.error') {
+      handleRealtimeAsrError(new Error(payload.message || '实时 ASR 识别失败'));
+    }
+  }
+
+  function appendRealtimeTranscript(text, isFinal) {
+    const normalizedText = text.trim();
+    if (!normalizedText) {
+      return;
+    }
+    if (isFinal) {
+      state.asrFinalText = state.asrFinalText
+        ? `${state.asrFinalText}\n${normalizedText}`
+        : normalizedText;
+      state.asrLiveText = '';
+    } else {
+      state.asrLiveText = normalizedText;
+    }
+    updateRealtimeQuestionText();
+  }
+
+  function updateRealtimeQuestionText() {
+    const text = getRealtimeTranscript();
+    if (text) {
+      setText(els.questionText, els.questionCount, text);
+      return;
+    }
+    if (state.phase === 'recording') {
+      setText(els.questionText, els.questionCount, '', '正在等待实时识别结果');
+    }
+  }
+
+  function getRealtimeTranscript() {
+    return [state.asrFinalText, state.asrLiveText].filter(Boolean).join('\n');
+  }
+
+  function resetRealtimeTranscript() {
+    state.asrLiveText = '';
+    state.asrFinalText = '';
+    state.asrPendingBuffers = [];
+  }
+
+  function sendRealtimeAudio(buffer) {
+    const socket = state.asrSocket;
+    if (!socket) {
+      return;
+    }
+    if (socket.readyState === WebSocket.CONNECTING) {
+      state.asrPendingBuffers.push(buffer);
+      if (state.asrPendingBuffers.length > CONFIG.ASR_PENDING_CHUNK_LIMIT) {
+        state.asrPendingBuffers.shift();
+      }
+      return;
+    }
+    if (socket.readyState !== WebSocket.OPEN) {
+      return;
+    }
+    socket.send(buffer);
+  }
+
+  function flushPendingRealtimeAudio(socket) {
+    const pendingBuffers = state.asrPendingBuffers;
+    state.asrPendingBuffers = [];
+    if (socket.readyState !== WebSocket.OPEN) {
+      return;
+    }
+    for (const buffer of pendingBuffers) {
+      socket.send(buffer);
+    }
+  }
+
+  function finishRealtimeAsr() {
+    const socket = state.asrSocket;
+    if (!socket) {
+      return;
+    }
+    if (socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ type: 'asr.finish' }));
+      window.clearTimeout(state.asrFinishTimer);
+      state.asrFinishTimer = window.setTimeout(closeRealtimeAsr, CONFIG.ASR_FINISH_TIMEOUT);
+      return;
+    }
+    if (socket.readyState === WebSocket.CONNECTING) {
+      closeRealtimeAsr();
+    }
+  }
+
+  function closeRealtimeAsr() {
+    const socket = state.asrSocket;
+    window.clearTimeout(state.asrFinishTimer);
+    state.asrFinishTimer = 0;
+    state.asrSocket = null;
+    if (socket && (socket.readyState === WebSocket.CONNECTING || socket.readyState === WebSocket.OPEN)) {
+      socket.close(1000, 'client_close');
+    }
+  }
+
+  function handleRealtimeAsrError(error) {
+    const message = error && error.message ? error.message : String(error);
+    logDiagnostic('asr.realtime.error', {
+      deviceCode: state.deviceCode,
+      message,
+    });
+    if (state.phase === 'recording') {
+      showNotice(`实时识别暂不可用，录音结束后仍会提交完整问答：${message}`, 'warn');
+    }
   }
 
   async function apiRequest(path, options) {
@@ -421,6 +603,7 @@
   }
 
   function clearResult() {
+    resetRealtimeTranscript();
     setText(els.questionText, els.questionCount, '', '等待语音识别结果');
     setText(els.answerText, els.answerCount, '', '等待系统回答');
     els.traceIdText.textContent = 'trace -';
@@ -437,6 +620,7 @@
     }
     stopRecordingClock();
     stopStream();
+    closeRealtimeAsr();
     clearResult();
     state.device = null;
     state.sessionId = '';
@@ -524,7 +708,9 @@
       }
       const channelData = event.inputBuffer.getChannelData(0);
       const pcm = encodePCM16(downsampleBuffer(channelData, audioContext.sampleRate));
-      state.pcmChunks.push(pcm.buffer.slice(0));
+      const pcmBuffer = pcm.buffer.slice(0);
+      state.pcmChunks.push(pcmBuffer);
+      sendRealtimeAudio(pcmBuffer);
     };
 
     source.connect(processor);
@@ -607,6 +793,24 @@
   function toApiUrl(path) {
     const normalizedPath = path.startsWith('/') ? path : `/${path}`;
     return `${normalizeApiBase(CONFIG.API_BASE_URL)}${normalizedPath}`;
+  }
+
+  function buildAsrRealtimeWebSocketUrl(deviceCode) {
+    const path = String(CONFIG.ASR_REALTIME_PATH || '/ws/asr/test/').trim();
+    const apiBase = new URL(normalizeApiBase(CONFIG.API_BASE_URL), location.href);
+    const url = /^wss?:\/\//i.test(path) || /^https?:\/\//i.test(path)
+      ? new URL(path)
+      : new URL(path.startsWith('/') ? path : `/${path}`, apiBase.origin);
+
+    if (url.protocol === 'https:') {
+      url.protocol = 'wss:';
+    } else if (url.protocol === 'http:') {
+      url.protocol = 'ws:';
+    }
+    if (!url.searchParams.has('deviceCode')) {
+      url.searchParams.set('deviceCode', deviceCode);
+    }
+    return url.toString();
   }
 
   function normalizeApiBase(value) {
