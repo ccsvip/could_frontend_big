@@ -150,6 +150,7 @@ export const ApplicationManagementPage = () => {
   const [createName, setCreateName] = useState('');
   const [createDescription, setCreateDescription] = useState('');
   const [createSaving, setCreateSaving] = useState(false);
+  const [deleteApplicationId, setDeleteApplicationId] = useState<number | null>(null);
 
   // Tab control state
   const [activeTab, setActiveTab] = useState<'orchestrate' | 'conversation' | 'logs' | 'monitor'>('orchestrate');
@@ -763,12 +764,19 @@ export const ApplicationManagementPage = () => {
                   </div>
                   
                   {canDelete && (
-                    <AlertDialog.Root>
-                      <AlertDialog.Trigger>
-                        <Button variant="ghost" color="red" size="1" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Trash2 size={16} />
-                        </Button>
-                      </AlertDialog.Trigger>
+                    <AlertDialog.Root
+                      open={deleteApplicationId === app.id}
+                      onOpenChange={(open) => setDeleteApplicationId(open ? app.id : null)}
+                    >
+                      <Button
+                        variant="ghost"
+                        color="red"
+                        size="1"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => setDeleteApplicationId(app.id)}
+                      >
+                        <Trash2 size={16} />
+                      </Button>
                       <AlertDialog.Content style={{ maxWidth: 400 }}>
                         <AlertDialog.Title>确认删除智能体</AlertDialog.Title>
                         <AlertDialog.Description size="2">
