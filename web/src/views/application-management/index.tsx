@@ -49,6 +49,7 @@ import {
   Checkbox,
   Dialog,
   AlertDialog,
+  Tooltip,
 } from '@radix-ui/themes';
 import {
   Bot,
@@ -65,6 +66,8 @@ import {
   Sparkles,
   ChevronDown,
   BarChart2,
+  HelpCircle,
+  RotateCcw,
 } from 'lucide-react';
 
 const PAGE_SIZE = 10;
@@ -155,6 +158,42 @@ export const ApplicationManagementPage = () => {
     const parsed = Number(applicationId);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
   }, [applicationId]);
+
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  const isDirty = useMemo(() => {
+    if (!selectedApplication) return false;
+    if (name.trim() !== selectedApplication.name) return true;
+    if (description.trim() !== (selectedApplication.description || '')) return true;
+    if (llmModelId !== selectedApplication.llmModelId) return true;
+    if (systemPrompt !== (selectedApplication.systemPrompt || '')) return true;
+    if (temperature !== selectedApplication.temperature) return true;
+    if (maxTokens !== selectedApplication.maxTokens) return true;
+    if (isActive !== selectedApplication.isActive) return true;
+
+    const prevDocs = selectedApplication.knowledgeDocumentIds || [];
+    if (selectedDocs.length !== prevDocs.length) return true;
+    const currentDocsSet = new Set(selectedDocs);
+    return !prevDocs.every((id) => currentDocsSet.has(id));
+  }, [
+    selectedApplication,
+    name,
+    description,
+    llmModelId,
+    systemPrompt,
+    selectedDocs,
+    temperature,
+    maxTokens,
+    isActive,
+  ]);
+
+  const handleBackClick = () => {
+    if (isDirty) {
+      setShowExitConfirm(true);
+    } else {
+      navigateToApplicationList();
+    }
+  };
 
   const loadApplications = useCallback(async () => {
     setListLoading(true);
@@ -334,7 +373,7 @@ export const ApplicationManagementPage = () => {
     }
   };
 
-  const handleSaveConfig = async () => {
+  const handleSaveConfig = useCallback(async () => {
     if (!selectedApplication || !canUpdate) return;
     if (!name.trim()) {
       message.error('请输入智能体名称');
@@ -370,7 +409,50 @@ export const ApplicationManagementPage = () => {
     } finally {
       setConfigSaving(false);
     }
-  };
+  }, [
+    selectedApplication,
+    canUpdate,
+    name,
+    description,
+    llmModelId,
+    systemPrompt,
+    selectedDocs,
+    temperature,
+    maxTokens,
+    isActive,
+    conversation,
+    loadApplications,
+  ]);
+
+  // Keyboard Shortcuts (Alt+1/2/3 for switching tabs, Ctrl+S for saving)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedApplicationId) return;
+
+      // Switch tabs: Alt + 1/2/3
+      if (e.altKey && e.key === '1') {
+        e.preventDefault();
+        setActiveTab('orchestrate');
+      } else if (e.altKey && e.key === '2') {
+        e.preventDefault();
+        setActiveTab('logs');
+      } else if (e.altKey && e.key === '3') {
+        e.preventDefault();
+        setActiveTab('monitor');
+      }
+
+      // Save config: Ctrl + S (or Cmd + S)
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        if (activeTab === 'orchestrate' && isDirty && canUpdate && !configSaving) {
+          e.preventDefault();
+          void handleSaveConfig();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedApplicationId, activeTab, isDirty, canUpdate, configSaving, handleSaveConfig]);
 
   const handleDelete = async (applicationId: number) => {
     try {
@@ -515,12 +597,15 @@ export const ApplicationManagementPage = () => {
           {canCreate && (
             <Card
               size="2"
-              className="flex flex-col justify-center items-center cursor-pointer border-dashed border-2 hover:border-teal-500 hover:bg-teal-50/5 transition-all duration-300"
+              className="group flex flex-col justify-center items-center cursor-pointer border-dashed border-2 hover:border-teal-500 hover:bg-teal-50/5 transition-all duration-300"
               style={{ minHeight: 280 }}
               onClick={() => setCreateOpen(true)}
             >
               <Flex direction="column" align="center" justify="center" gap="3" style={{ height: '100%' }}>
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500 group-hover:bg-teal-600 transition-colors">
+                <div
+                  className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500
+                    group-hover:bg-teal-600 group-hover:text-white transition-colors"
+                >
                   <Plus size={24} />
                 </div>
                 <Text weight="bold" size="3">创建智能体</Text>
@@ -715,7 +800,12 @@ export const ApplicationManagementPage = () => {
             </Flex>
 
             <Flex direction="column" gap="1">
-              <Text size="2" weight="bold">选用模型</Text>
+              <Flex align="center" gap="1.5">
+                <Text size="2" weight="bold">选用模型</Text>
+                <Tooltip content="选择为该智能体提供推理能力的大语言模型。需要先在服务提供商页面配置好 API 密钥。">
+                  <HelpCircle size={14} className="text-slate-400 cursor-help" />
+                </Tooltip>
+              </Flex>
               <Select.Root
                 disabled={!canUpdate || !(llmOptions?.providers || []).some((p) => (p.models || []).length > 0)}
                 value={llmModelId ? String(llmModelId) : 'none'}
@@ -739,7 +829,12 @@ export const ApplicationManagementPage = () => {
             </Flex>
 
             <Flex direction="column" gap="1">
-              <Text size="2" weight="bold">系统提示词 (System Prompt)</Text>
+              <Flex align="center" gap="1.5">
+                <Text size="2" weight="bold">系统提示词 (System Prompt)</Text>
+                <Tooltip content="设定智能体的角色人设、回复风格和行为约束，引导大模型产生符合预期的输出。">
+                  <HelpCircle size={14} className="text-slate-400 cursor-help" />
+                </Tooltip>
+              </Flex>
               <TextArea
                 disabled={!canUpdate}
                 value={systemPrompt}
@@ -794,7 +889,12 @@ export const ApplicationManagementPage = () => {
 
             <Flex direction="column" gap="2" style={{ paddingBottom: 8 }}>
               <Flex align="center" justify="between">
-                <Text size="2" weight="bold">随机性温度 (Temperature)</Text>
+                <Flex align="center" gap="1.5">
+                  <Text size="2" weight="bold">随机性温度 (Temperature)</Text>
+                  <Tooltip content="值越高回复越具创意和随机性；值越低回复越确定和保守。建议客服场景设为 0.2-0.5，创作场景设为 0.7-1.0。">
+                    <HelpCircle size={14} className="text-slate-400 cursor-help" />
+                  </Tooltip>
+                </Flex>
                 <Badge variant="soft" color="teal">{temperature}</Badge>
               </Flex>
               <Slider
@@ -808,7 +908,12 @@ export const ApplicationManagementPage = () => {
             </Flex>
 
             <Flex direction="column" gap="1">
-              <Text size="2" weight="bold">最大输出 Tokens</Text>
+              <Flex align="center" gap="1.5">
+                <Text size="2" weight="bold">最大输出 Tokens</Text>
+                <Tooltip content="单次模型回复生成的最大 Token 数量。1 个 Token 大约对应 1.5 个汉字或 0.75 个英文单词。">
+                  <HelpCircle size={14} className="text-slate-400 cursor-help" />
+                </Tooltip>
+              </Flex>
               <TextField.Root
                 disabled={!canUpdate}
                 type="number"
@@ -839,11 +944,39 @@ export const ApplicationManagementPage = () => {
                 <Sparkles size={16} className="text-teal-600" />
                 <Heading size="3">调试预览</Heading>
               </Flex>
-              {conversation ? (
-                <Badge color="teal" variant="soft" className="font-mono">会话: #{conversation.id}</Badge>
-              ) : (
-                <Badge color="gray" variant="soft">未开始</Badge>
-              )}
+              <Flex align="center" gap="2">
+                {conversation && (
+                  <Button
+                    variant="ghost"
+                    color="gray"
+                    size="1"
+                    onClick={async () => {
+                      setChatLoading(true);
+                      try {
+                        const nextConversation = await createAgentApplicationConversation(selectedApplication!.id);
+                        setConversation(nextConversation);
+                        setMessages(nextConversation.messages);
+                        setStreamingContent('');
+                        setInputValue('');
+                        message.success('调试会话已重置');
+                      } catch {
+                        message.error('重置会话失败');
+                      } finally {
+                        setChatLoading(false);
+                      }
+                    }}
+                    title="重置当前调试会话"
+                  >
+                    <RotateCcw size={14} />
+                    <Text size="1">新对话</Text>
+                  </Button>
+                )}
+                {conversation ? (
+                  <Badge color="teal" variant="soft" className="font-mono">会话: #{conversation.id}</Badge>
+                ) : (
+                  <Badge color="gray" variant="soft">未开始</Badge>
+                )}
+              </Flex>
             </Flex>
 
             {/* Chat message content */}
@@ -914,8 +1047,10 @@ export const ApplicationManagementPage = () => {
                   <div
                     key={conv.id}
                     onClick={() => void loadSelectedLogConversation(conv.id)}
-                    className={`py-3 px-2 cursor-pointer rounded-xl hover:bg-slate-50 transition-colors ${
-                      selectedLogConversation?.id === conv.id ? 'bg-teal-50/40 border-l-4 border-teal-500' : ''
+                    className={`py-3 px-3 cursor-pointer rounded-xl transition-all duration-200 border ${
+                      selectedLogConversation?.id === conv.id
+                        ? 'bg-teal-50/50 border-teal-200 shadow-sm'
+                        : 'border-transparent hover:bg-slate-50'
                     }`}
                   >
                     <Flex justify="between" align="start" gap="2" mb="1">
@@ -1134,7 +1269,7 @@ export const ApplicationManagementPage = () => {
             variant="ghost"
             color="gray"
             radius="full"
-            onClick={() => navigateToApplicationList()}
+            onClick={handleBackClick}
             style={{ width: 36, height: 36, padding: 0 }}
           >
             <ArrowLeft size={16} />
@@ -1153,16 +1288,24 @@ export const ApplicationManagementPage = () => {
         </Flex>
 
         {activeTab === 'orchestrate' && (
-          <Button
-            color="teal"
-            size="2"
-            loading={configSaving}
-            disabled={!canUpdate}
-            onClick={() => void handleSaveConfig()}
-            style={{ minWidth: 100 }}
-          >
-            <Save size={14} /> 保存配置
-          </Button>
+          <Flex align="center" gap="3">
+            {isDirty && (
+              <Badge color="orange" variant="soft" className="animate-pulse">
+                未保存更改
+              </Badge>
+            )}
+            <Button
+              color={isDirty ? 'teal' : 'gray'}
+              variant={isDirty ? 'solid' : 'soft'}
+              size="2"
+              loading={configSaving}
+              disabled={!canUpdate}
+              onClick={() => void handleSaveConfig()}
+              style={{ minWidth: 100 }}
+            >
+              <Save size={14} /> 保存配置
+            </Button>
+          </Flex>
         )}
       </Flex>
 
@@ -1251,6 +1394,29 @@ export const ApplicationManagementPage = () => {
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
+
+        {/* Exit Confirmation Dialog */}
+        <AlertDialog.Root open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+          <AlertDialog.Content style={{ maxWidth: 400 }}>
+            <AlertDialog.Title>确认放弃修改？</AlertDialog.Title>
+            <AlertDialog.Description size="2">
+              您对智能体配置进行了修改，尚未保存。确定要放弃修改并返回列表吗？
+            </AlertDialog.Description>
+            <Flex gap="3" mt="4" justify="end">
+              <AlertDialog.Cancel>
+                <Button variant="soft" color="gray">取消</Button>
+              </AlertDialog.Cancel>
+              <AlertDialog.Action>
+                <Button variant="solid" color="red" onClick={() => {
+                  setShowExitConfirm(false);
+                  navigateToApplicationList();
+                }}>
+                  放弃修改
+                </Button>
+              </AlertDialog.Action>
+            </Flex>
+          </AlertDialog.Content>
+        </AlertDialog.Root>
       </div>
     </Theme>
   );
