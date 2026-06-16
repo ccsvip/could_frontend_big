@@ -52,6 +52,7 @@ import {
   Dialog,
   AlertDialog,
   Tooltip,
+  Table,
 } from '@radix-ui/themes';
 import {
   Bot,
@@ -691,192 +692,287 @@ export const ApplicationManagementPage = () => {
     ];
   }, [conversation?.id, messages, streamingContent]);
 
-  const renderApplicationList = () => (
-    <Flex direction="column" gap="5">
-      {/* Banner */}
-      <Card size="3" style={{ background: 'linear-gradient(135deg, var(--slate-9) 0%, var(--slate-12) 100%)', color: 'white', border: 'none' }}>
-        <Flex direction="column" gap="2" style={{ position: 'relative', overflow: 'hidden' }}>
-          <Flex align="center" gap="2">
-            <Heading size="6" weight="bold">智能体工作室</Heading>
-            <Badge color="teal" variant="soft">Studio</Badge>
-          </Flex>
-          <Text color="gray" size="2" style={{ maxWidth: 500 }}>
-            自主编排、测试和部署您的专属智能助手。自由组装大语言模型、私有知识库文档，并无缝介入指令系统。
-          </Text>
-          <div style={{ position: 'absolute', right: -20, bottom: -40, opacity: 0.08 }}>
-            <Bot size={160} />
-          </div>
-        </Flex>
-      </Card>
+  const applicationOverview = useMemo(() => {
+    const activeCount = applications.filter((app) => app.isActive).length;
+    const configuredModelCount = applications.filter((app) => app.llmModelId).length;
+    const knowledgeReferenceCount = applications.reduce(
+      (total, app) => total + (app.knowledgeDocumentIds?.length || app.knowledgeDocuments?.length || 0),
+      0,
+    );
 
-      {/* Filter and Create Toolbar */}
-      <Flex gap="3" align="center" justify="between" className="bg-white/80 backdrop-blur p-4 rounded-2xl border border-slate-200/40 shadow-sm">
-        <Flex align="center" gap="2" style={{ flex: 1 }}>
-          <TextField.Root
-            size="2"
-            placeholder="搜索应用名称或描述..."
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            style={{ width: '100%', maxWidth: 360 }}
-          >
-            <TextField.Slot>
-              <Search size={16} />
-            </TextField.Slot>
-          </TextField.Root>
-          <Text size="2" color="gray" style={{ marginLeft: 8 }}>共 {applicationTotal} 个应用</Text>
-        </Flex>
+    return {
+      activeCount,
+      inactiveCount: applications.length - activeCount,
+      configuredModelCount,
+      knowledgeReferenceCount,
+    };
+  }, [applications]);
+
+  const clearApplicationSearch = () => {
+    setSearchValue('');
+    setKeyword('');
+    setApplicationPage(1);
+  };
+
+  const renderApplicationList = () => (
+    <Flex direction="column" gap="4">
+      <Flex direction={{ initial: 'column', md: 'row' }} align={{ initial: 'stretch', md: 'center' }} justify="between" gap="3">
+        <Box style={{ minWidth: 0 }}>
+          <Heading size="6" weight="bold">智能体控制台</Heading>
+          <Text as="p" size="2" color="gray" mt="1">
+            查看智能体的模型接入、知识库引用和运行状态，进入单个智能体后再编排与调试。
+          </Text>
+        </Box>
+        {canCreate && (
+          <Button size="2" color="teal" onClick={() => setCreateOpen(true)} style={{ alignSelf: 'flex-start' }}>
+            <Plus size={16} />
+            创建智能体
+          </Button>
+        )}
       </Flex>
 
-      {/* Applications Grid */}
-      <Spin spinning={listLoading}>
-        <Grid columns={{ initial: '1', md: '2', lg: '3' }} gap="4">
-          {/* Create Agent Card */}
-          {canCreate && (
-            <Card
+      <Grid columns={{ initial: '2', md: '4' }} gap="3">
+        <Card size="2" className="bg-white border border-slate-200/60 shadow-sm">
+          <Flex direction="column" gap="1">
+            <Text size="1" color="gray" weight="medium">应用总数</Text>
+            <Text size="6" weight="bold" className="font-mono leading-none">{applicationTotal}</Text>
+            <Text size="1" color="gray">全部智能体</Text>
+          </Flex>
+        </Card>
+        <Card size="2" className="bg-white border border-slate-200/60 shadow-sm">
+          <Flex direction="column" gap="1">
+            <Text size="1" color="gray" weight="medium">本页启用</Text>
+            <Flex align="baseline" gap="2">
+              <Text size="6" weight="bold" className="font-mono leading-none">{applicationOverview.activeCount}</Text>
+              <Text size="1" color="gray">停用 {applicationOverview.inactiveCount}</Text>
+            </Flex>
+            <Text size="1" color="gray">可对外服务</Text>
+          </Flex>
+        </Card>
+        <Card size="2" className="bg-white border border-slate-200/60 shadow-sm">
+          <Flex direction="column" gap="1">
+            <Text size="1" color="gray" weight="medium">本页模型</Text>
+            <Text size="6" weight="bold" className="font-mono leading-none">{applicationOverview.configuredModelCount}</Text>
+            <Text size="1" color="gray">已绑定模型</Text>
+          </Flex>
+        </Card>
+        <Card size="2" className="bg-white border border-slate-200/60 shadow-sm">
+          <Flex direction="column" gap="1">
+            <Text size="1" color="gray" weight="medium">本页知识库引用</Text>
+            <Text size="6" weight="bold" className="font-mono leading-none">{applicationOverview.knowledgeReferenceCount}</Text>
+            <Text size="1" color="gray">文档关联数</Text>
+          </Flex>
+        </Card>
+      </Grid>
+
+      <Box className="overflow-hidden rounded-lg border border-slate-200/70 bg-white shadow-sm">
+        <Flex
+          direction={{ initial: 'column', lg: 'row' }}
+          gap="3"
+          align={{ initial: 'stretch', lg: 'center' }}
+          justify="between"
+          className="border-b border-slate-100 p-4"
+        >
+          <Flex direction={{ initial: 'column', sm: 'row' }} gap="2" align={{ initial: 'stretch', sm: 'center' }} style={{ flex: 1 }}>
+            <TextField.Root
               size="2"
-              className="group flex flex-col justify-center items-center cursor-pointer border-dashed border-2 hover:border-teal-500 hover:bg-teal-50/5 transition-all duration-300"
-              style={{ minHeight: 280 }}
-              onClick={() => setCreateOpen(true)}
+              placeholder="搜索智能体名称或描述"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              style={{ width: '100%', maxWidth: 380 }}
             >
-              <Flex direction="column" align="center" justify="center" gap="3" style={{ height: '100%' }}>
-                <div
-                  className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500
-                    group-hover:bg-teal-600 group-hover:text-white transition-colors"
-                >
-                  <Plus size={24} />
-                </div>
-                <Text weight="bold" size="3">创建智能体</Text>
-                <Text size="1" color="gray" align="center" style={{ maxWidth: 200 }}>
-                  构建全新大模型智能助手，连接知识库与指令
-                </Text>
-              </Flex>
-            </Card>
-          )}
-
-          {applications.map((app) => (
-            <Card key={app.id} size="2" className="flex flex-col relative overflow-hidden group hover:shadow-md transition-shadow">
-              <Flex direction="column" gap="4" style={{ height: '100%' }}>
-                <Flex align="start" justify="between">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
-                    <Bot size={24} />
-                  </div>
-                  
-                  {canDelete && (
-                    <AlertDialog.Root
-                      open={deleteApplicationId === app.id}
-                      onOpenChange={(open) => setDeleteApplicationId(open ? app.id : null)}
-                    >
-                      <AlertDialog.Trigger>
-                        <Button
-                          variant="ghost"
-                          color="red"
-                          size="1"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                      </AlertDialog.Trigger>
-                      <AlertDialog.Content style={{ maxWidth: 400 }}>
-                        <AlertDialog.Title>确认删除智能体</AlertDialog.Title>
-                        <AlertDialog.Description size="2">
-                          删除后将移除智能体配置、对话设置、关联会话和消息，且不可恢复。绑定的知识库、模型、音色和 ASR/TTS 配置不会被删除。确定删除「{app.name}」吗？
-                        </AlertDialog.Description>
-                        <Flex gap="3" mt="4" justify="end">
-                          <AlertDialog.Cancel>
-                            <Button variant="soft" color="gray">取消</Button>
-                          </AlertDialog.Cancel>
-                          <AlertDialog.Action>
-                            <Button variant="solid" color="red" onClick={() => void handleDelete(app.id)}>
-                              确认删除
-                            </Button>
-                          </AlertDialog.Action>
-                        </Flex>
-                      </AlertDialog.Content>
-                    </AlertDialog.Root>
-                  )}
-                </Flex>
-
-                <Flex direction="column" gap="1">
-                  <Heading size="3" className="truncate text-slate-900">{app.name}</Heading>
-                  <Text size="2" color="gray" className="line-clamp-2 leading-relaxed" style={{ minHeight: 40 }}>
-                    {app.description || '暂无描述'}
-                  </Text>
-                </Flex>
-
-                <Flex direction="column" gap="3" className="mt-auto border-t border-slate-100 pt-3">
-                  <Flex gap="2" wrap="wrap">
-                    <Badge color="gray" variant="soft">
-                      模型: {app.llmModelDisplayName || app.llmModelName || '未配置'}
-                    </Badge>
-                    <Badge color="teal" variant="soft">
-                      {app.knowledgeDocumentIds.length} 个知识库
-                    </Badge>
-                  </Flex>
-
-                  <Text size="1" color="gray" className="font-mono">
-                    更新时间: {dayjs(app.updated_at).format('YYYY-MM-DD HH:mm')}
-                  </Text>
-
-                  <Flex align="center" justify="between" className="pt-1">
-                    <Flex align="center" gap="2">
-                      <Switch
-                        size="1"
-                        checked={app.isActive}
-                        disabled={!canUpdate}
-                        onCheckedChange={async (checked) => {
-                          try {
-                            await updateAgentApplication(app.id, { isActive: checked });
-                            message.success(`智能体已${checked ? '启用' : '停用'}`);
-                            await loadApplications();
-                          } catch {
-                            message.error('状态更新失败');
-                          }
-                        }}
-                      />
-                      <Text size="1" color="gray">{app.isActive ? '已启用' : '已停用'}</Text>
-                    </Flex>
-
-                    <Button
-                      variant="ghost"
-                      size="1"
-                      className="font-semibold text-slate-600 hover:text-teal-600 flex items-center gap-1"
-                      onClick={() => navigate(`${app.id}`)}
-                    >
-                      <span>配置</span>
-                      <ArrowRight size={14} />
-                    </Button>
-                  </Flex>
-                </Flex>
-              </Flex>
-            </Card>
-          ))}
-        </Grid>
-      </Spin>
-
-      {applicationTotal > PAGE_SIZE && (
-        <Flex justify="center" align="center" gap="3" mt="4">
-          <Button
-            variant="outline"
-            color="gray"
-            disabled={applicationPage <= 1}
-            onClick={() => setApplicationPage((page) => page - 1)}
-          >
-            上一页
-          </Button>
-          <Text size="2" color="gray" weight="bold">
-            {applicationPage} / {normalizePageCount(applicationTotal, PAGE_SIZE)}
+              <TextField.Slot>
+                <Search size={16} />
+              </TextField.Slot>
+            </TextField.Root>
+            <Button size="2" variant="soft" color="teal" onClick={handleSearch}>
+              <Search size={14} />
+              搜索
+            </Button>
+            {(keyword || searchValue) && (
+              <Button size="2" variant="ghost" color="gray" onClick={clearApplicationSearch}>
+                清空
+              </Button>
+            )}
+          </Flex>
+          <Text size="2" color="gray">
+            {keyword ? `筛选 "${keyword}"，当前页 ${applications.length} 条` : `当前页 ${applications.length} 条`}
           </Text>
-          <Button
-            variant="outline"
-            color="gray"
-            disabled={applicationPage >= normalizePageCount(applicationTotal, PAGE_SIZE)}
-            onClick={() => setApplicationPage((page) => page + 1)}
-          >
-            下一页
-          </Button>
         </Flex>
-      )}
+
+        <Spin spinning={listLoading}>
+          <Box className="overflow-x-auto">
+            <Table.Root variant="surface" size="2" layout="fixed" className="min-w-[940px]">
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeaderCell style={{ width: '32%' }}>智能体</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{ width: '20%' }}>模型</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{ width: '12%' }}>知识库</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{ width: '14%' }}>运行状态</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{ width: '12%' }}>更新时间</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{ width: '10%', textAlign: 'right' }}>操作</Table.ColumnHeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {applications.length > 0 ? (
+                  applications.map((app) => {
+                    const modelName = app.llmModelDisplayName || app.llmModelName;
+                    const knowledgeCount = app.knowledgeDocumentIds?.length || app.knowledgeDocuments?.length || 0;
+
+                    return (
+                      <Table.Row key={app.id} className="hover:bg-slate-50/70">
+                        <Table.RowHeaderCell>
+                          <Flex align="center" gap="3" style={{ minWidth: 0 }}>
+                            <Avatar size="3" fallback={<Bot size={16} />} color="teal" variant="soft" />
+                            <Box style={{ minWidth: 0 }}>
+                              <Text as="div" size="2" weight="bold" className="truncate text-slate-900">
+                                {app.name}
+                              </Text>
+                              <Text as="div" size="1" color="gray" className="line-clamp-1">
+                                {app.description || '暂无描述'}
+                              </Text>
+                            </Box>
+                          </Flex>
+                        </Table.RowHeaderCell>
+                        <Table.Cell>
+                          <Flex direction="column" gap="1" align="start">
+                            {modelName ? (
+                              <Badge color="teal" variant="soft" className="max-w-full truncate">
+                                {modelName}
+                              </Badge>
+                            ) : (
+                              <Badge color="gray" variant="soft">未配置模型</Badge>
+                            )}
+                            {app.llmProviderName && (
+                              <Text size="1" color="gray" className="truncate max-w-[180px]">
+                                {app.llmProviderName}
+                              </Text>
+                            )}
+                          </Flex>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Badge color={knowledgeCount > 0 ? 'teal' : 'gray'} variant="soft">
+                            {knowledgeCount} 个文档
+                          </Badge>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Flex align="center" gap="2">
+                            <Switch
+                              size="1"
+                              checked={app.isActive}
+                              disabled={!canUpdate}
+                              onCheckedChange={async (checked) => {
+                                try {
+                                  await updateAgentApplication(app.id, { isActive: checked });
+                                  message.success(`智能体已${checked ? '启用' : '停用'}`);
+                                  await loadApplications();
+                                } catch {
+                                  message.error('状态更新失败');
+                                }
+                              }}
+                            />
+                            <Badge color={app.isActive ? 'green' : 'gray'} variant="soft">
+                              {app.isActive ? '已启用' : '已停用'}
+                            </Badge>
+                          </Flex>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Text as="div" size="1" className="font-mono text-slate-700">
+                            {dayjs(app.updated_at).format('YYYY-MM-DD')}
+                          </Text>
+                          <Text as="div" size="1" color="gray" className="font-mono">
+                            {dayjs(app.updated_at).format('HH:mm')}
+                          </Text>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Flex justify="end" align="center" gap="1">
+                            <Button variant="soft" size="1" color="teal" onClick={() => navigate(`${app.id}`)}>
+                              配置
+                              <ArrowRight size={14} />
+                            </Button>
+                            {canDelete && (
+                              <AlertDialog.Root
+                                open={deleteApplicationId === app.id}
+                                onOpenChange={(open) => setDeleteApplicationId(open ? app.id : null)}
+                              >
+                                <AlertDialog.Trigger>
+                                  <Button variant="ghost" color="red" size="1">
+                                    <Trash2 size={14} />
+                                  </Button>
+                                </AlertDialog.Trigger>
+                                <AlertDialog.Content style={{ maxWidth: 400 }}>
+                                  <AlertDialog.Title>确认删除智能体</AlertDialog.Title>
+                                  <AlertDialog.Description size="2">
+                                    删除后将移除智能体配置、对话设置、关联会话和消息，且不可恢复。绑定的知识库、模型、音色和 ASR/TTS 配置不会被删除。确定删除「{app.name}」吗？
+                                  </AlertDialog.Description>
+                                  <Flex gap="3" mt="4" justify="end">
+                                    <AlertDialog.Cancel>
+                                      <Button variant="soft" color="gray">取消</Button>
+                                    </AlertDialog.Cancel>
+                                    <AlertDialog.Action>
+                                      <Button variant="solid" color="red" onClick={() => void handleDelete(app.id)}>
+                                        确认删除
+                                      </Button>
+                                    </AlertDialog.Action>
+                                  </Flex>
+                                </AlertDialog.Content>
+                              </AlertDialog.Root>
+                            )}
+                          </Flex>
+                        </Table.Cell>
+                      </Table.Row>
+                    );
+                  })
+                ) : (
+                  <Table.Row>
+                    <Table.Cell colSpan={6}>
+                      <Flex direction="column" align="center" justify="center" gap="3" py="8" className="text-slate-400">
+                        <Bot size={32} className="text-slate-300" />
+                        <Text size="2" weight="medium" color="gray">
+                          {keyword ? '没有匹配的智能体' : '还没有智能体'}
+                        </Text>
+                        {canCreate && !keyword && (
+                          <Button size="2" color="teal" onClick={() => setCreateOpen(true)}>
+                            <Plus size={14} />
+                            创建智能体
+                          </Button>
+                        )}
+                      </Flex>
+                    </Table.Cell>
+                  </Table.Row>
+                )}
+              </Table.Body>
+            </Table.Root>
+          </Box>
+        </Spin>
+
+        {applicationTotal > PAGE_SIZE && (
+          <Flex direction={{ initial: 'column', sm: 'row' }} justify="between" align={{ initial: 'stretch', sm: 'center' }} gap="3" className="border-t border-slate-100 p-4">
+            <Text size="2" color="gray">
+              第 {applicationPage} / {normalizePageCount(applicationTotal, PAGE_SIZE)} 页，每页 {PAGE_SIZE} 条
+            </Text>
+            <Flex justify="end" align="center" gap="2">
+              <Button
+                variant="outline"
+                color="gray"
+                disabled={applicationPage <= 1}
+                onClick={() => setApplicationPage((page) => page - 1)}
+              >
+                上一页
+              </Button>
+              <Button
+                variant="outline"
+                color="gray"
+                disabled={applicationPage >= normalizePageCount(applicationTotal, PAGE_SIZE)}
+                onClick={() => setApplicationPage((page) => page + 1)}
+              >
+                下一页
+              </Button>
+            </Flex>
+          </Flex>
+        )}
+      </Box>
     </Flex>
   );
 
