@@ -168,3 +168,31 @@ export const sendMessageStream = async (
 
   return controller;
 };
+
+export type ChatConversationRecord = {
+  id: number;
+  title: string;
+  applicationId: number | null;
+  llmModelId: number | null;
+  llmModelName: string;
+  llmModelDisplayName: string;
+  llmProviderName: string | null;
+  summary: string;
+  messageCount: number;
+  lastMessage: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ChatConversationListResponse = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ChatConversationRecord[];
+};
+
+export const fetchConversations = async (params?: { application?: number; page?: number; keyword?: string }) => {
+  const response = await httpClient.get<ChatConversationListResponse>('/ai-models/chat/conversations/', { params });
+  return response.data;
+};
+

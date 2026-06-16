@@ -86,3 +86,20 @@ export const createAgentApplicationConversation = async (id: number) => {
   const response = await httpClient.post<ChatConversationDetail>(`/ai-models/applications/${id}/conversations/`);
   return response.data;
 };
+
+export type AgentApplicationStats = {
+  conversationCount: number;
+  messageCount: number;
+  userMessageCount: number;
+  assistantMessageCount: number;
+  upCount: number;
+  downCount: number;
+  dailyTrends: { date: string; count: number }[];
+  updatedAt: string;
+};
+
+export const fetchAgentApplicationStats = async (id: number) => {
+  const response = await httpClient.get<AgentApplicationStats>(`/ai-models/applications/${id}/stats/`);
+  return response.data;
+};
+

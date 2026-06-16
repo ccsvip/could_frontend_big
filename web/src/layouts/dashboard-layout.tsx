@@ -82,7 +82,6 @@ type SuperAdminTenantModule = {
 
 const SUPER_ADMIN_TENANT_MODULES: ReadonlyArray<SuperAdminTenantModule> = [
   { segment: 'devices', label: '设备管理', icon: 'DesktopOutlined' },
-  { segment: 'applications', label: '应用管理', icon: 'AppstoreOutlined' },
   {
     segment: 'resources',
     label: '资源管理',
@@ -102,6 +101,7 @@ const SUPER_ADMIN_TENANT_MODULES: ReadonlyArray<SuperAdminTenantModule> = [
     label: 'AI大模型',
     icon: 'RobotOutlined',
     children: [
+      { segment: 'applications', label: '智能体', icon: 'AppstoreOutlined' },
       { segment: 'asr', label: 'ASR管理', icon: 'AudioOutlined' },
       { segment: 'llm', label: 'LLM设置', icon: 'CloudOutlined' },
       { segment: 'tts', label: 'TTS管理', icon: 'SoundOutlined' },
@@ -202,7 +202,7 @@ const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
 
 const commandWorkspacePaths = new Set(['/commands/groups', 'commands/groups']);
 const commandInlineWorkspacePaths = new Set(['/commands/control', 'commands/control', '/commands/tasks', 'commands/tasks']);
-const isApplicationMenuPath = (path: string) => path === '/applications' || path.endsWith('/applications');
+const isApplicationMenuPath = (path: string) => path === '/ai-models/applications' || path.endsWith('/ai-models/applications');
 const isSettingsDetailMenuPath = (path: string, pathname: string) =>
   path.startsWith('/settings/') && pathname.startsWith(`${path}/`);
 

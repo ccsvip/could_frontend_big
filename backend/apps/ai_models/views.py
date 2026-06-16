@@ -902,13 +902,19 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
     def perform_create(self, serializer):
         llm_model = serializer.validated_data.get('llm_model')
         if llm_model is None:
-            llm_model = _resolve_tenant_llm_model(self.request_tenant, use_default=True)
+            try:
+                llm_model = _resolve_tenant_llm_model(self.request_tenant, use_default=True)
+            except ValidationError:
+                llm_model = None
         serializer.save(created_by=self.request.user, llm_model=llm_model, **self.tenant_create_kwargs())
 
     def perform_update(self, serializer):
         save_kwargs = {}
         if 'llm_model' in serializer.validated_data and serializer.validated_data['llm_model'] is None:
-            save_kwargs['llm_model'] = _resolve_tenant_llm_model(self.request_tenant, use_default=True)
+            try:
+                save_kwargs['llm_model'] = _resolve_tenant_llm_model(self.request_tenant, use_default=True)
+            except ValidationError:
+                save_kwargs['llm_model'] = None
         serializer.save(**save_kwargs)
 
     @action(detail=True, methods=['post'], url_path='conversations')
@@ -926,6 +932,43 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             tenant=application.tenant,
         )
         return Response(ChatConversationDetailSerializer(conversation).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['get'], url_path='stats')
+    def stats(self, request, pk=None):
+        import datetime
+        from django.utils import timezone
+        
+        application = self.get_object()
+        
+        conversations = ChatConversation.objects.filter(application=application, tenant=application.tenant)
+        messages = ChatMessage.objects.filter(conversation__application=application, conversation__tenant=application.tenant)
+        
+        user_message_count = messages.filter(role=ChatMessage.ROLE_USER).count()
+        assistant_message_count = messages.filter(role=ChatMessage.ROLE_ASSISTANT).count()
+        up_count = messages.filter(role=ChatMessage.ROLE_ASSISTANT, feedback=ChatMessage.FEEDBACK_UP).count()
+        down_count = messages.filter(role=ChatMessage.ROLE_ASSISTANT, feedback=ChatMessage.FEEDBACK_DOWN).count()
+        
+        today = timezone.localdate()
+        daily_trends = []
+        for i in range(6, -1, -1):
+            date = today - datetime.timedelta(days=i)
+            count = conversations.filter(created_at__date=date).count()
+            daily_trends.append({
+                'date': date.strftime('%m-%d'),
+                'count': count
+            })
+            
+        data = {
+            'conversationCount': conversations.count(),
+            'messageCount': messages.count(),
+            'userMessageCount': user_message_count,
+            'assistantMessageCount': assistant_message_count,
+            'upCount': up_count,
+            'downCount': down_count,
+            'dailyTrends': daily_trends,
+            'updatedAt': application.updated_at
+        }
+        return Response(data)
 
 
 @extend_schema_view(
@@ -953,6 +996,9 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
 
     def get_queryset(self):
         qs = super().get_queryset().filter(user=self.request.user)
+        application_id = self.request.query_params.get('application')
+        if application_id:
+            qs = qs.filter(application_id=application_id)
         keyword = self.request.query_params.get('keyword', '').strip()
         if keyword:
             qs = qs.filter(
@@ -1146,6 +1192,10 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         if conversation.system_prompt:
             api_messages.append({'role': ChatMessage.ROLE_SYSTEM, 'content': conversation.system_prompt})
         api_messages.extend({'role': role, 'content': msg} for role, msg in history_messages)
+
+        # Inject knowledge base context if configured
+        from apps.ai_models.services.agent_knowledge import inject_knowledge_context
+        api_messages = inject_knowledge_context(conversation, api_messages, content)
 
         api_url = _build_chat_completions_url(provider.api_base_url)
 

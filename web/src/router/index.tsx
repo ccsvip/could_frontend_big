@@ -151,6 +151,21 @@ const TenantScopeOutlet = () => {
   return <Outlet />;
 };
 
+const ScopedApplicationRedirect = () => {
+  const { tenantId, applicationId } = useParams<{ tenantId: string; applicationId?: string }>();
+  return (
+    <Navigate
+      to={applicationId ? `/tenants/${tenantId}/ai-models/applications/${applicationId}` : `/tenants/${tenantId}/ai-models/applications`}
+      replace
+    />
+  );
+};
+
+const ApplicationRedirect = () => {
+  const { applicationId } = useParams<{ applicationId?: string }>();
+  return <Navigate to={applicationId ? `/ai-models/applications/${applicationId}` : '/ai-models/applications'} replace />;
+};
+
 const AuthSyncFallback = () => (
   <div className="flex min-h-screen items-center justify-center bg-slate-50">
     <div className="flex flex-col items-center gap-3 text-slate-500">
@@ -334,8 +349,10 @@ export const AppRouter = () => {
             { path: 'resources/voice-tones', element: <VoiceToneManagementPage /> },
             { path: 'resources/models', element: <ModelManagementPage /> },
             { path: 'knowledge-base', element: <KnowledgeBasePage /> },
-            { path: 'applications', element: <ApplicationManagementPage /> },
-            { path: 'applications/:applicationId', element: <ApplicationManagementPage /> },
+            { path: 'applications', element: <ScopedApplicationRedirect /> },
+            { path: 'applications/:applicationId', element: <ScopedApplicationRedirect /> },
+            { path: 'ai-models/applications', element: <ApplicationManagementPage /> },
+            { path: 'ai-models/applications/:applicationId', element: <ApplicationManagementPage /> },
             { path: 'commands', element: <CommandWorkspacePage /> },
             { path: 'ai-models', element: <Navigate to="ai-models/llm" replace /> },
             { path: 'ai-models/asr', element: <AsrManagementPage /> },
@@ -417,6 +434,14 @@ export const AppRouter = () => {
         },
         {
           path: 'applications',
+          element: <ApplicationRedirect />,
+        },
+        {
+          path: 'applications/:applicationId',
+          element: <ApplicationRedirect />,
+        },
+        {
+          path: 'ai-models/applications',
           element: (
             <PermissionGuard permission="agent_applications.view">
               <ApplicationManagementPage />
@@ -424,7 +449,7 @@ export const AppRouter = () => {
           ),
         },
         {
-          path: 'applications/:applicationId',
+          path: 'ai-models/applications/:applicationId',
           element: (
             <PermissionGuard permission="agent_applications.view">
               <ApplicationManagementPage />

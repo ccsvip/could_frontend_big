@@ -7,6 +7,7 @@ from rest_framework.test import APITestCase
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.models import (
     ChatConversation,
+    ChatMessage,
     LLMModel,
     LLMProvider,
     TenantLLMModelGrant,
@@ -24,7 +25,7 @@ class AgentApplicationAccessDataTests(TestCase):
         default_tenant = Tenant.objects.filter(code='default').first()
 
         self.assertIsNotNone(default_tenant)
-        self.assertTrue(default_tenant.menus.filter(path='/applications').exists())
+        self.assertTrue(default_tenant.menus.filter(path='/ai-models/applications').exists())
         self.assertTrue(
             {
                 'agent_applications.view',
@@ -180,3 +181,159 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(conversation.system_prompt, 'Diagnose code carefully.')
         self.assertEqual(conversation.temperature, 0.5)
         self.assertEqual(conversation.max_tokens, 1600)
+
+    def test_create_agent_application_without_model_uses_default_model(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.create')
+        provider = self.create_provider()
+        model = self.create_model(provider, default=True)
+
+        response = self.client.post(
+            '/api/v1/ai-models/applications/',
+            {
+                'name': 'Default model agent',
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['llmModelId'], model.id)
+        self.assertEqual(response.data['llmModelName'], 'gpt-4.1')
+
+    def test_create_agent_application_without_model_and_no_default_model_succeeds(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.create')
+
+        response = self.client.post(
+            '/api/v1/ai-models/applications/',
+            {
+                'name': 'No model agent',
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNone(response.data['llmModelId'])
+
+    def test_agent_application_stats_action(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.create', 'ai_models.chat.view')
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Stats Test Agent',
+        )
+
+        # Create debug conversation
+        conversation = ChatConversation.objects.create(
+            title='Test conversation',
+            user=self.user,
+            application=application,
+            tenant=self.tenant,
+        )
+
+        # Create some messages
+        ChatMessage.objects.create(
+            conversation=conversation,
+            role=ChatMessage.ROLE_USER,
+            content='Hello',
+        )
+        ChatMessage.objects.create(
+            conversation=conversation,
+            role=ChatMessage.ROLE_ASSISTANT,
+            content='Hi there!',
+            feedback=ChatMessage.FEEDBACK_UP,
+        )
+
+        response = self.client.get(f'/api/v1/ai-models/applications/{application.id}/stats/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['conversationCount'], 1)
+        self.assertEqual(response.data['messageCount'], 2)
+        self.assertEqual(response.data['userMessageCount'], 1)
+        self.assertEqual(response.data['assistantMessageCount'], 1)
+        self.assertEqual(response.data['upCount'], 1)
+        self.assertEqual(response.data['downCount'], 0)
+        self.assertIn('dailyTrends', response.data)
+
+    def test_list_conversations_filtered_by_application(self):
+        self.grant_permissions('agent_applications.view', 'ai_models.chat.view')
+        AgentApplication = self.agent_application_model()
+        app1 = AgentApplication.objects.create(tenant=self.tenant, created_by=self.user, name='App 1')
+        app2 = AgentApplication.objects.create(tenant=self.tenant, created_by=self.user, name='App 2')
+
+        conv1 = ChatConversation.objects.create(user=self.user, application=app1, tenant=self.tenant)
+        conv2 = ChatConversation.objects.create(user=self.user, application=app2, tenant=self.tenant)
+
+        # Filter by app1
+        response = self.client.get('/api/v1/ai-models/chat/conversations/', {'application': app1.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        ids = [item['id'] for item in response.data['results']]
+        self.assertIn(conv1.id, ids)
+        self.assertNotIn(conv2.id, ids)
+
+    def test_knowledge_base_retrieval_and_injection(self):
+        from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context, inject_knowledge_context
+        self.grant_permissions('agent_applications.view', 'agent_applications.create')
+        provider = self.create_provider()
+        model = self.create_model(provider)
+        
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Knowledge Agent',
+            llm_model=model,
+        )
+
+        # Create approved txt document
+        doc1 = self.create_document(title='Refund policy')
+        # Write some content to the doc file
+        from django.core.files.base import ContentFile
+        doc1.file.save('Refund policy.txt', ContentFile(b'Refunds are processed within 5 business days.'))
+        doc1.file_extension = 'txt'
+        doc1.processing_status = KnowledgeDocument.STATUS_APPROVED
+        doc1.save()
+
+        # Create unapproved txt document
+        doc2 = self.create_document(title='Shipping policy')
+        doc2.file.save('Shipping policy.txt', ContentFile(b'Shipping takes 3 days.'))
+        doc2.file_extension = 'txt'
+        doc2.processing_status = KnowledgeDocument.STATUS_PENDING
+        doc2.save()
+
+        # Create approved pdf document
+        doc3 = self.create_document(title='Pricing guide')
+        doc3.file.save('Pricing guide.pdf', ContentFile(b'Pricing starts at $10.'))
+        doc3.file_extension = 'pdf'
+        doc3.processing_status = KnowledgeDocument.STATUS_APPROVED
+        doc3.save()
+
+        # Bind them
+        application.knowledge_documents.set([doc1, doc2, doc3])
+
+        # Test retrieve_knowledge_context
+        context = retrieve_knowledge_context(application, 'How long for refund?')
+        self.assertIn('Refunds are processed within 5 business days.', context)
+        self.assertNotIn('Shipping takes 3 days.', context)
+        self.assertNotIn('Pricing starts at $10.', context)
+
+        # Test inject_knowledge_context
+        conversation = ChatConversation.objects.create(
+            user=self.user,
+            application=application,
+            tenant=self.tenant,
+        )
+        api_messages = [
+            {'role': 'system', 'content': 'You are a helpful assistant.'},
+            {'role': 'user', 'content': 'How long for refund?'}
+        ]
+        injected = inject_knowledge_context(conversation, api_messages, 'How long for refund?')
+        
+        self.assertEqual(len(injected), 3)
+        self.assertEqual(injected[0]['content'], 'You are a helpful assistant.')
+        self.assertIn('Refunds are processed within 5 business days.', injected[1]['content'])
+        self.assertEqual(injected[2]['content'], 'How long for refund?')
+
+        # Clean up files
+        doc1.file.delete()
+        doc2.file.delete()
+        doc3.file.delete()
+

@@ -356,6 +356,16 @@ class AgentApplication(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        if self.llm_model:
+            self.llm_provider = self.llm_model.provider
+            self.model_name = self.llm_model.name
+        else:
+            self.llm_provider = None
+            self.model_name = ''
+        super().save(*args, **kwargs)
+
+
 
 class ChatConversation(models.Model):
     """聊天会话"""
@@ -415,6 +425,16 @@ class ChatConversation(models.Model):
 
     def __str__(self):
         return f'{self.title} ({self.user.username})'
+
+    def save(self, *args, **kwargs):
+        if self.llm_model:
+            self.llm_provider = self.llm_model.provider
+            self.model_name = self.llm_model.name
+        else:
+            self.llm_provider = None
+            self.model_name = ''
+        super().save(*args, **kwargs)
+
 
 
 class ChatMessage(models.Model):
