@@ -23,8 +23,11 @@ import {
 } from '../../api/modules/chat';
 import { fetchKnowledgeDocuments, type KnowledgeDocumentRecord } from '../../api/modules/knowledge-base';
 import { fetchCompanyLLMOptions, type CompanyLLMOptions } from '../../api/modules/llm-settings';
+import { fetchAsrStatus, type AsrStatusRecord } from '../../api/modules/asr';
+import { fetchCompanyTtsOptions, type CompanyTtsOptions } from '../../api/modules/tts';
 import { ChatMarkdown } from '../../components/chat-markdown';
 import { useAuthStore } from '../../store/auth';
+import { useAgentAudio } from './use-agent-audio';
 import dayjs from 'dayjs';
 import { Spin, message } from 'antd';
 
@@ -68,6 +71,15 @@ import {
   BarChart2,
   HelpCircle,
   RotateCcw,
+  Mic,
+  MicOff,
+  Pause,
+  Play,
+  Square,
+  Volume2,
+  GripVertical,
+  ChevronUp,
+  ChevronDown as ChevronDownIcon,
 } from 'lucide-react';
 
 const PAGE_SIZE = 10;
@@ -123,6 +135,15 @@ export const ApplicationManagementPage = () => {
   const [temperature, setTemperature] = useState(DEFAULT_TEMPERATURE);
   const [maxTokens, setMaxTokens] = useState(DEFAULT_MAX_TOKENS);
   const [isActive, setIsActive] = useState(true);
+  const [openingMessageEnabled, setOpeningMessageEnabled] = useState(true);
+  const [openingMessage, setOpeningMessage] = useState('');
+  const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
+  const [newSuggestedQuestion, setNewSuggestedQuestion] = useState('');
+  const [voiceInputEnabled, setVoiceInputEnabled] = useState(false);
+  const [replyPlaybackEnabled, setReplyPlaybackEnabled] = useState(false);
+  const [asrStatus, setAsrStatus] = useState<AsrStatusRecord | null>(null);
+  const [ttsOptions, setTtsOptions] = useState<CompanyTtsOptions | null>(null);
+  const agentAudio = useAgentAudio();
 
   // Create Popup states
   const [createOpen, setCreateOpen] = useState(false);
@@ -131,7 +152,7 @@ export const ApplicationManagementPage = () => {
   const [createSaving, setCreateSaving] = useState(false);
 
   // Tab control state
-  const [activeTab, setActiveTab] = useState<'orchestrate' | 'logs' | 'monitor'>('orchestrate');
+  const [activeTab, setActiveTab] = useState<'orchestrate' | 'conversation' | 'logs' | 'monitor'>('orchestrate');
 
   // Debug session state (Orchestration Tab)
   const [conversation, setConversation] = useState<ChatConversationDetail | null>(null);
@@ -170,6 +191,14 @@ export const ApplicationManagementPage = () => {
     if (temperature !== selectedApplication.temperature) return true;
     if (maxTokens !== selectedApplication.maxTokens) return true;
     if (isActive !== selectedApplication.isActive) return true;
+    if (openingMessageEnabled !== selectedApplication.openingMessageEnabled) return true;
+    if (openingMessage.trim() !== (selectedApplication.openingMessage || '')) return true;
+    if (voiceInputEnabled !== selectedApplication.voiceInputEnabled) return true;
+    if (replyPlaybackEnabled !== selectedApplication.replyPlaybackEnabled) return true;
+
+    const previousQuestions = selectedApplication.suggestedQuestions || [];
+    if (suggestedQuestions.length !== previousQuestions.length) return true;
+    if (!previousQuestions.every((question, index) => question === suggestedQuestions[index])) return true;
 
     const prevDocs = selectedApplication.knowledgeDocumentIds || [];
     if (selectedDocs.length !== prevDocs.length) return true;
@@ -185,6 +214,11 @@ export const ApplicationManagementPage = () => {
     temperature,
     maxTokens,
     isActive,
+    openingMessageEnabled,
+    openingMessage,
+    suggestedQuestions,
+    voiceInputEnabled,
+    replyPlaybackEnabled,
   ]);
 
   const handleBackClick = () => {
@@ -224,6 +258,19 @@ export const ApplicationManagementPage = () => {
     }
   }, []);
 
+  const loadConversationServiceStatus = useCallback(async () => {
+    try {
+      const [nextAsrStatus, nextTtsOptions] = await Promise.all([
+        fetchAsrStatus(),
+        fetchCompanyTtsOptions(),
+      ]);
+      setAsrStatus(nextAsrStatus);
+      setTtsOptions(nextTtsOptions);
+    } catch {
+      message.warning('语音服务状态加载失败');
+    }
+  }, []);
+
   const loadSelectedApplication = useCallback(async () => {
     if (!selectedApplicationId) {
       setSelectedApplication(null);
@@ -245,6 +292,12 @@ export const ApplicationManagementPage = () => {
       setTemperature(detail.temperature);
       setMaxTokens(detail.maxTokens);
       setIsActive(detail.isActive);
+      setOpeningMessageEnabled(detail.openingMessageEnabled);
+      setOpeningMessage(detail.openingMessage || '');
+      setSuggestedQuestions(detail.suggestedQuestions || []);
+      setNewSuggestedQuestion('');
+      setVoiceInputEnabled(detail.voiceInputEnabled);
+      setReplyPlaybackEnabled(detail.replyPlaybackEnabled);
 
       setConversation(null);
       setMessages([]);
@@ -271,8 +324,17 @@ export const ApplicationManagementPage = () => {
   }, [loadSelectedApplication]);
 
   useEffect(() => {
+    if (selectedApplicationId) {
+      void loadConversationServiceStatus();
+    }
+  }, [loadConversationServiceStatus, selectedApplicationId]);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages, streamingContent]);
+
+  const asrReady = Boolean(asrStatus?.isActive && asrStatus.configured);
+  const ttsReady = Boolean(ttsOptions?.provider.isActive && ttsOptions.defaultVoiceId);
 
   // Reset states when switching applications
   useEffect(() => {
@@ -379,6 +441,11 @@ export const ApplicationManagementPage = () => {
       message.error('请输入智能体名称');
       return;
     }
+    const normalizedSuggestedQuestions = suggestedQuestions.map((question) => question.trim());
+    if (normalizedSuggestedQuestions.some((question) => !question)) {
+      message.error('建议问题不能为空');
+      return;
+    }
     setConfigSaving(true);
     try {
       const payload: AgentApplicationPayload = {
@@ -390,6 +457,11 @@ export const ApplicationManagementPage = () => {
         temperature: temperature,
         maxTokens: maxTokens,
         isActive: isActive,
+        openingMessageEnabled,
+        openingMessage: openingMessage.trim(),
+        suggestedQuestions: normalizedSuggestedQuestions,
+        voiceInputEnabled,
+        replyPlaybackEnabled,
       };
       const updated = await updateAgentApplication(selectedApplication.id, payload);
       setSelectedApplication(updated);
@@ -420,6 +492,11 @@ export const ApplicationManagementPage = () => {
     temperature,
     maxTokens,
     isActive,
+    openingMessageEnabled,
+    openingMessage,
+    suggestedQuestions,
+    voiceInputEnabled,
+    replyPlaybackEnabled,
     conversation,
     loadApplications,
   ]);
@@ -429,21 +506,24 @@ export const ApplicationManagementPage = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!selectedApplicationId) return;
 
-      // Switch tabs: Alt + 1/2/3
+      // Switch tabs: Alt + 1/2/3/4
       if (e.altKey && e.key === '1') {
         e.preventDefault();
         setActiveTab('orchestrate');
       } else if (e.altKey && e.key === '2') {
         e.preventDefault();
-        setActiveTab('logs');
+        setActiveTab('conversation');
       } else if (e.altKey && e.key === '3') {
+        e.preventDefault();
+        setActiveTab('logs');
+      } else if (e.altKey && e.key === '4') {
         e.preventDefault();
         setActiveTab('monitor');
       }
 
       // Save config: Ctrl + S (or Cmd + S)
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        if (activeTab === 'orchestrate' && isDirty && canUpdate && !configSaving) {
+        if ((activeTab === 'orchestrate' || activeTab === 'conversation') && isDirty && canUpdate && !configSaving && !streaming) {
           e.preventDefault();
           void handleSaveConfig();
         }
@@ -452,7 +532,7 @@ export const ApplicationManagementPage = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedApplicationId, activeTab, isDirty, canUpdate, configSaving, handleSaveConfig]);
+  }, [selectedApplicationId, activeTab, isDirty, canUpdate, configSaving, streaming, handleSaveConfig]);
 
   const handleDelete = async (applicationId: number) => {
     try {
@@ -486,10 +566,10 @@ export const ApplicationManagementPage = () => {
     setConversation(nextConversation);
     setMessages(nextConversation.messages);
     setStreamingContent('');
+    return nextConversation;
   };
 
-  const handleSend = async () => {
-    const content = inputValue.trim();
+  const sendChatContent = async (content: string) => {
     if (!content || streaming || !canChat) return;
     const activeConversation = await ensureConversation();
     if (!activeConversation) return;
@@ -513,9 +593,19 @@ export const ApplicationManagementPage = () => {
       settled = true;
       setStreaming(false);
       abortRef.current = null;
-      void refreshConversation(activeConversation.id).catch(() => {
-        message.error('会话刷新失败');
-      });
+      void refreshConversation(activeConversation.id)
+        .then((nextConversation) => {
+          if (!replyPlaybackEnabled || !ttsReady) return;
+          const assistantMessage = [...nextConversation.messages]
+            .reverse()
+            .find((item) => item.role === 'assistant');
+          if (assistantMessage) {
+            void agentAudio.playText(`message-${assistantMessage.id}`, assistantMessage.content);
+          }
+        })
+        .catch(() => {
+          message.error('会话刷新失败');
+        });
     };
 
     const controller = await sendMessageStream(
@@ -532,10 +622,58 @@ export const ApplicationManagementPage = () => {
     abortRef.current = controller;
   };
 
+  const handleSend = async () => {
+    const content = inputValue.trim();
+    await sendChatContent(content);
+  };
+
   const handleStopStreaming = () => {
     abortRef.current?.abort();
     abortRef.current = null;
     setStreaming(false);
+  };
+
+  const addSuggestedQuestion = () => {
+    const text = newSuggestedQuestion.trim();
+    if (!text) {
+      message.warning('请输入建议问题');
+      return;
+    }
+    if (suggestedQuestions.length >= 10) {
+      message.warning('建议问题最多 10 条');
+      return;
+    }
+    setSuggestedQuestions((current) => [...current, text]);
+    setNewSuggestedQuestion('');
+  };
+
+  const updateSuggestedQuestion = (index: number, value: string) => {
+    setSuggestedQuestions((current) => current.map((item, itemIndex) => (itemIndex === index ? value : item)));
+  };
+
+  const removeSuggestedQuestion = (index: number) => {
+    setSuggestedQuestions((current) => current.filter((_, itemIndex) => itemIndex !== index));
+  };
+
+  const moveSuggestedQuestion = (index: number, direction: -1 | 1) => {
+    setSuggestedQuestions((current) => {
+      const nextIndex = index + direction;
+      if (nextIndex < 0 || nextIndex >= current.length) {
+        return current;
+      }
+      const next = [...current];
+      const [item] = next.splice(index, 1);
+      next.splice(nextIndex, 0, item);
+      return next;
+    });
+  };
+
+  const sendSuggestedQuestion = async (question: string) => {
+    if (isDirty) {
+      message.warning('请先保存对话设置，再发送建议问题');
+      return;
+    }
+    await sendChatContent(question.trim());
   };
 
   const displayedMessages = useMemo(() => {
@@ -634,7 +772,7 @@ export const ApplicationManagementPage = () => {
                       <AlertDialog.Content style={{ maxWidth: 400 }}>
                         <AlertDialog.Title>确认删除智能体</AlertDialog.Title>
                         <AlertDialog.Description size="2">
-                          确定要删除智能体 <strong>{app.name}</strong> 吗？此操作无法恢复。
+                          删除后将移除智能体配置、对话设置、关联会话和消息，且不可恢复。绑定的知识库、模型、音色和 ASR/TTS 配置不会被删除。确定删除「{app.name}」吗？
                         </AlertDialog.Description>
                         <Flex gap="3" mt="4" justify="end">
                           <AlertDialog.Cancel>
@@ -762,6 +900,26 @@ export const ApplicationManagementPage = () => {
                 <span className="ml-1 inline-block h-4 w-0.5 bg-teal-500 animate-pulse align-middle" />
               )}
             </div>
+            {!isUser && msg.id !== -1 && (
+              <Flex align="center" gap="2" className="px-1">
+                <Button
+                  size="1"
+                  variant="soft"
+                  color="teal"
+                  disabled={!ttsReady}
+                  onClick={() => void agentAudio.playText(`message-${msg.id}`, msg.content)}
+                >
+                  {agentAudio.playingKey === `message-${msg.id}` && !agentAudio.paused ? <Pause size={12} /> : <Play size={12} />}
+                  <Text size="1">{agentAudio.playingKey === `message-${msg.id}` && !agentAudio.paused ? '暂停' : '播放'}</Text>
+                </Button>
+                {agentAudio.playingKey === `message-${msg.id}` && (
+                  <Button size="1" variant="ghost" color="red" onClick={agentAudio.stopPlayback}>
+                    <Square size={12} />
+                    <Text size="1">停止</Text>
+                  </Button>
+                )}
+              </Flex>
+            )}
           </Flex>
         </Flex>
       </Flex>
@@ -993,13 +1151,52 @@ export const ApplicationManagementPage = () => {
               ) : (
                 <Flex direction="column" align="center" justify="center" gap="3" style={{ height: '100%' }} className="text-slate-400">
                   <MessageSquare size={36} className="text-slate-300" />
-                  <Text size="2">输入消息并发送，开始与大模型进行调试对话</Text>
+                  {openingMessageEnabled && openingMessage ? (
+                    <Box className="rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm max-w-xl text-slate-700">
+                      <Text size="2">{openingMessage}</Text>
+                    </Box>
+                  ) : (
+                    <Text size="2">输入消息并发送，开始与大模型进行调试对话</Text>
+                  )}
+                  {suggestedQuestions.length > 0 && (
+                    <Flex wrap="wrap" justify="center" gap="2">
+                      {suggestedQuestions.map((question, index) => (
+                        <Button
+                          key={`${index}-${question}`}
+                          size="1"
+                          variant="soft"
+                          color="gray"
+                          disabled={streaming || !canChat}
+                          onClick={() => void sendSuggestedQuestion(question)}
+                        >
+                          <HelpCircle size={12} /> {question}
+                        </Button>
+                      ))}
+                    </Flex>
+                  )}
                 </Flex>
               )}
             </Box>
 
             {/* Input area */}
             <Flex gap="2" mt="3" className="pt-2">
+              {voiceInputEnabled && (
+                <Button
+                  size="3"
+                  variant="soft"
+                  color={agentAudio.recording ? 'red' : 'teal'}
+                  disabled={!asrReady || agentAudio.transcribing}
+                  onClick={() => {
+                    if (agentAudio.recording) {
+                      agentAudio.stopRecording();
+                      return;
+                    }
+                    void agentAudio.startRecording((text) => setInputValue(text));
+                  }}
+                >
+                  {agentAudio.recording ? <MicOff size={16} /> : <Mic size={16} />}
+                </Button>
+              )}
               <TextField.Root
                 size="3"
                 value={inputValue}
@@ -1023,6 +1220,227 @@ export const ApplicationManagementPage = () => {
                   <Send size={16} />
                 </Button>
               )}
+            </Flex>
+          </Flex>
+        </Card>
+      </Grid>
+    </Spin>
+  );
+
+  const renderConversationSettingsTab = () => (
+    <Spin spinning={detailLoading}>
+      <Grid columns={{ initial: '1', xl: 'minmax(360px, 560px) minmax(0, 1fr)' }} gap="4">
+        <Flex direction="column" gap="4">
+          <Card size="2" className="bg-white border border-slate-200/50 shadow-sm">
+            <Flex direction="column" gap="3">
+              <Flex align="center" justify="between">
+                <Box>
+                  <Heading size="3">开场白</Heading>
+                  <Text size="1" color="gray">新对话进入时展示，且不写入聊天消息</Text>
+                </Box>
+                <Switch checked={openingMessageEnabled} onCheckedChange={setOpeningMessageEnabled} disabled={!canUpdate} />
+              </Flex>
+              <TextArea
+                value={openingMessage}
+                disabled={!openingMessageEnabled || !canUpdate}
+                onChange={(event) => setOpeningMessage(event.target.value.slice(0, 200))}
+                rows={4}
+                placeholder="输入智能体开场白"
+              />
+              <Flex justify="between">
+                <Text size="1" color="gray">可在预览区播放开场白</Text>
+                <Text size="1" color="gray">{openingMessage.length}/200</Text>
+              </Flex>
+            </Flex>
+          </Card>
+
+          <Card size="2" className="bg-white border border-slate-200/50 shadow-sm">
+            <Flex direction="column" gap="3">
+              <Flex align="center" justify="between">
+                <Box>
+                  <Heading size="3">建议问题</Heading>
+                  <Text size="1" color="gray">最多 10 条，点击后直接发送</Text>
+                </Box>
+                <Badge color={suggestedQuestions.length >= 10 ? 'red' : 'gray'}>{suggestedQuestions.length}/10</Badge>
+              </Flex>
+              {suggestedQuestions.length > 0 ? (
+                <Flex direction="column" gap="2">
+                  {suggestedQuestions.map((question, index) => (
+                    <Flex key={`${index}-${question}`} align="center" gap="2">
+                      <GripVertical size={14} className="text-slate-400 shrink-0" />
+                      <TextField.Root
+                        value={question}
+                        onChange={(event) => updateSuggestedQuestion(index, event.target.value.slice(0, 120))}
+                        disabled={!canUpdate}
+                        style={{ flex: 1 }}
+                      />
+                      <Button
+                        size="1"
+                        variant="soft"
+                        color="gray"
+                        disabled={index === 0 || !canUpdate}
+                        onClick={() => moveSuggestedQuestion(index, -1)}
+                      >
+                        <ChevronUp size={12} />
+                      </Button>
+                      <Button
+                        size="1"
+                        variant="soft"
+                        color="gray"
+                        disabled={index === suggestedQuestions.length - 1 || !canUpdate}
+                        onClick={() => moveSuggestedQuestion(index, 1)}
+                      >
+                        <ChevronDownIcon size={12} />
+                      </Button>
+                      <Button size="1" variant="soft" color="red" disabled={!canUpdate} onClick={() => removeSuggestedQuestion(index)}>
+                        <Trash2 size={12} />
+                      </Button>
+                    </Flex>
+                  ))}
+                </Flex>
+              ) : (
+                <Text size="2" color="gray" className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-3 py-4">
+                  暂无建议问题
+                </Text>
+              )}
+              <Flex gap="2">
+                <TextField.Root
+                  value={newSuggestedQuestion}
+                  onChange={(event) => setNewSuggestedQuestion(event.target.value.slice(0, 120))}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault();
+                      addSuggestedQuestion();
+                    }
+                  }}
+                  placeholder="添加一个建议问题，按 Enter 确认"
+                  disabled={!canUpdate || suggestedQuestions.length >= 10}
+                  style={{ flex: 1 }}
+                />
+                <Button disabled={!canUpdate || suggestedQuestions.length >= 10} onClick={addSuggestedQuestion}>
+                  <Plus size={14} /> 添加
+                </Button>
+              </Flex>
+            </Flex>
+          </Card>
+
+          <Card size="2" className="bg-white border border-slate-200/50 shadow-sm">
+            <Flex direction="column" gap="4">
+              <Flex align="center" justify="between">
+                <Box>
+                  <Heading size="3">语音输入</Heading>
+                  <Text size="1" color={asrReady ? 'gray' : 'red'}>
+                    {asrReady ? 'ASR 服务可用，录音转写后填入输入框' : 'ASR 服务未就绪，请先检查 ASR 设置'}
+                  </Text>
+                </Box>
+                <Switch checked={voiceInputEnabled} onCheckedChange={setVoiceInputEnabled} disabled={!canUpdate || !asrReady} />
+              </Flex>
+              <Flex align="center" justify="between">
+                <Box>
+                  <Heading size="3">回复播报</Heading>
+                  <Text size="1" color={ttsReady ? 'gray' : 'red'}>
+                    {ttsReady ? '使用公司默认 TTS 音色播报开场白和助手回复' : 'TTS 默认音色未配置或服务不可用'}
+                  </Text>
+                </Box>
+                <Switch checked={replyPlaybackEnabled} onCheckedChange={setReplyPlaybackEnabled} disabled={!canUpdate || !ttsReady} />
+              </Flex>
+            </Flex>
+          </Card>
+
+          <Button
+            size="3"
+            color="teal"
+            disabled={!canUpdate || streaming}
+            loading={configSaving}
+            onClick={() => void handleSaveConfig()}
+          >
+            <Save size={16} /> 保存对话设置
+          </Button>
+        </Flex>
+
+        <Card size="2" className="bg-white border border-slate-200/50 shadow-sm">
+          <Flex direction="column" gap="4" style={{ minHeight: 540 }}>
+            <Flex align="center" justify="between">
+              <Heading size="3">调试预览</Heading>
+              <Badge color="blue" variant="soft">实时</Badge>
+            </Flex>
+            <Flex direction="column" align="center" justify="center" gap="3" style={{ flex: 1 }} className="bg-slate-50/40 rounded-xl border border-slate-100/50 p-4">
+              <Avatar size="4" fallback={<Bot size={24} />} color="teal" variant="soft" />
+              <Heading size="4" align="center">开始与 {selectedApplication?.name || '智能体'} 对话</Heading>
+              {openingMessageEnabled && openingMessage ? (
+                <Flex direction="column" align="center" gap="2" style={{ width: '100%' }}>
+                  <Box className="rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm max-w-xl">
+                    <Text size="2">{openingMessage}</Text>
+                  </Box>
+                  <Flex align="center" gap="2">
+                    <Button
+                      size="1"
+                      variant="soft"
+                      color="teal"
+                      disabled={!ttsReady}
+                      onClick={() => void agentAudio.playText('opening-message', openingMessage)}
+                    >
+                      {agentAudio.playingKey === 'opening-message' && !agentAudio.paused ? <Pause size={12} /> : <Volume2 size={12} />}
+                      <Text size="1">{agentAudio.playingKey === 'opening-message' && !agentAudio.paused ? '暂停开场白' : '播放开场白'}</Text>
+                    </Button>
+                    {agentAudio.playingKey === 'opening-message' && (
+                      <Button size="1" variant="ghost" color="red" onClick={agentAudio.stopPlayback}>
+                        <Square size={12} />
+                        <Text size="1">停止</Text>
+                      </Button>
+                    )}
+                  </Flex>
+                </Flex>
+              ) : null}
+              {suggestedQuestions.length > 0 ? (
+                <Flex wrap="wrap" justify="center" gap="2">
+                  {suggestedQuestions.map((question, index) => (
+                    <Button
+                      key={`${index}-${question}`}
+                      size="2"
+                      variant="soft"
+                      color="gray"
+                      disabled={streaming || !canChat}
+                      onClick={() => void sendSuggestedQuestion(question)}
+                    >
+                      <HelpCircle size={14} /> {question}
+                    </Button>
+                  ))}
+                </Flex>
+              ) : (
+                <Text size="2" color="gray">暂无建议问题</Text>
+              )}
+            </Flex>
+            <Flex gap="2">
+              {voiceInputEnabled && (
+                <Button
+                  size="3"
+                  variant="soft"
+                  color={agentAudio.recording ? 'red' : 'teal'}
+                  disabled={!asrReady || agentAudio.transcribing}
+                  onClick={() => {
+                    if (agentAudio.recording) {
+                      agentAudio.stopRecording();
+                      return;
+                    }
+                    void agentAudio.startRecording((text) => setInputValue(text));
+                  }}
+                >
+                  {agentAudio.recording ? <MicOff size={16} /> : <Mic size={16} />}
+                </Button>
+              )}
+              <TextField.Root
+                size="3"
+                value={inputValue}
+                placeholder="发送调试消息..."
+                disabled={!canChat || streaming || !selectedApplication}
+                onChange={(event) => setInputValue(event.target.value)}
+                onKeyDown={(event) => event.key === 'Enter' && void handleSend()}
+                style={{ flex: 1 }}
+              />
+              <Button size="3" color="teal" disabled={!inputValue.trim() || !canChat || streaming} onClick={() => void handleSend()}>
+                <Send size={16} />
+              </Button>
             </Flex>
           </Flex>
         </Card>
@@ -1287,7 +1705,7 @@ export const ApplicationManagementPage = () => {
           </Flex>
         </Flex>
 
-        {activeTab === 'orchestrate' && (
+        {(activeTab === 'orchestrate' || activeTab === 'conversation') && (
           <Flex align="center" gap="3">
             {isDirty && (
               <Badge color="orange" variant="soft" className="animate-pulse">
@@ -1299,7 +1717,7 @@ export const ApplicationManagementPage = () => {
               variant={isDirty ? 'solid' : 'soft'}
               size="2"
               loading={configSaving}
-              disabled={!canUpdate}
+              disabled={!canUpdate || streaming}
               onClick={() => void handleSaveConfig()}
               style={{ minWidth: 100 }}
             >
@@ -1323,6 +1741,14 @@ export const ApplicationManagementPage = () => {
               <Sparkles size={16} style={{ marginRight: 8 }} /> 编排
             </Button>
             <Button
+              variant={activeTab === 'conversation' ? 'soft' : 'ghost'}
+              color={activeTab === 'conversation' ? 'teal' : 'gray'}
+              onClick={() => setActiveTab('conversation')}
+              style={{ justifyContent: 'start', flex: 1, padding: '12px 16px', borderRadius: '12px' }}
+            >
+              <MessageSquare size={16} style={{ marginRight: 8 }} /> 对话设置
+            </Button>
+            <Button
               variant={activeTab === 'logs' ? 'soft' : 'ghost'}
               color={activeTab === 'logs' ? 'teal' : 'gray'}
               onClick={() => setActiveTab('logs')}
@@ -1344,6 +1770,7 @@ export const ApplicationManagementPage = () => {
         {/* Right Tab Panel Content */}
         <Box style={{ flex: 1, minWidth: 0 }}>
           {activeTab === 'orchestrate' && renderOrchestrateTab()}
+          {activeTab === 'conversation' && renderConversationSettingsTab()}
           {activeTab === 'logs' && renderLogsTab()}
           {activeTab === 'monitor' && renderMonitorTab()}
         </Box>
