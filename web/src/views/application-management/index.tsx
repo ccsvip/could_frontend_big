@@ -783,14 +783,12 @@ export const ApplicationManagementPage = () => {
                           删除后将移除智能体配置、对话设置、关联会话和消息，且不可恢复。绑定的知识库、模型、音色和 ASR/TTS 配置不会被删除。确定删除「{app.name}」吗？
                         </AlertDialog.Description>
                         <Flex gap="3" mt="4" justify="end">
-                          <AlertDialog.Cancel>
-                            <Button variant="soft" color="gray">取消</Button>
-                          </AlertDialog.Cancel>
-                          <AlertDialog.Action>
-                            <Button variant="solid" color="red" onClick={() => void handleDelete(app.id)}>
-                              确认删除
-                            </Button>
-                          </AlertDialog.Action>
+                          <Button variant="soft" color="gray" onClick={() => setDeleteApplicationId(null)}>
+                            取消
+                          </Button>
+                          <Button variant="solid" color="red" onClick={() => void handleDelete(app.id)}>
+                            确认删除
+                          </Button>
                         </Flex>
                       </AlertDialog.Content>
                     </AlertDialog.Root>
