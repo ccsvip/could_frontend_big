@@ -1,32 +1,3 @@
-import {
-  AppstoreOutlined,
-  ArrowLeftOutlined,
-  ArrowRightOutlined,
-  BookOutlined,
-  DeleteOutlined,
-  MessageOutlined,
-  PlusOutlined,
-  RobotOutlined,
-  SaveOutlined,
-  SearchOutlined,
-  SendOutlined,
-} from '@ant-design/icons';
-import {
-  Avatar,
-  Button,
-  Empty,
-  Form,
-  Input,
-  InputNumber,
-  Modal,
-  Popconfirm,
-  Select,
-  Slider,
-  Spin,
-  Switch,
-  Typography,
-  message,
-} from 'antd';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -37,9 +8,9 @@ import {
   fetchAgentApplicationStats,
   fetchAgentApplications,
   updateAgentApplication,
-  type AgentApplicationPayload,
   type AgentApplicationRecord,
   type AgentApplicationStats,
+  type AgentApplicationPayload,
 } from '../../api/modules/applications';
 import {
   fetchConversation,
@@ -55,26 +26,50 @@ import { fetchCompanyLLMOptions, type CompanyLLMOptions } from '../../api/module
 import { ChatMarkdown } from '../../components/chat-markdown';
 import { useAuthStore } from '../../store/auth';
 import dayjs from 'dayjs';
+import { Spin, message } from 'antd';
+
+import '@radix-ui/themes/styles.css';
+import {
+  Theme,
+  Button,
+  Card,
+  Flex,
+  Grid,
+  Heading,
+  Text,
+  TextField,
+  TextArea,
+  Select,
+  Slider,
+  Switch,
+  Avatar,
+  Box,
+  Badge,
+  Popover,
+  Checkbox,
+  Dialog,
+  AlertDialog,
+} from '@radix-ui/themes';
+import {
+  Bot,
+  User,
+  Plus,
+  Trash2,
+  Save,
+  Search,
+  Send,
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  MessageSquare,
+  Sparkles,
+  ChevronDown,
+  BarChart2,
+} from 'lucide-react';
 
 const PAGE_SIZE = 10;
 const DEFAULT_TEMPERATURE = 0.7;
 const DEFAULT_MAX_TOKENS = 1000;
-
-type CreateFormValues = {
-  name: string;
-  description?: string;
-};
-
-type ConfigFormValues = {
-  name: string;
-  description?: string;
-  llmModelId?: number | null;
-  systemPrompt?: string;
-  knowledgeDocumentIds?: number[];
-  temperature: number;
-  maxTokens: number;
-  isActive: boolean;
-};
 
 const normalizePageCount = (count: number, pageSize: number) => Math.max(1, Math.ceil(count / pageSize));
 
@@ -91,17 +86,6 @@ const fetchAllKnowledgeDocuments = async () => {
   return documents;
 };
 
-const buildApplicationPayload = (values: ConfigFormValues): AgentApplicationPayload => ({
-  name: values.name.trim(),
-  description: values.description?.trim() || '',
-  llmModelId: values.llmModelId ?? null,
-  systemPrompt: values.systemPrompt || '',
-  knowledgeDocumentIds: values.knowledgeDocumentIds || [],
-  temperature: values.temperature,
-  maxTokens: values.maxTokens,
-  isActive: values.isActive,
-});
-
 export const ApplicationManagementPage = () => {
   const { applicationId } = useParams<{ applicationId?: string }>();
   const navigate = useNavigate();
@@ -111,24 +95,38 @@ export const ApplicationManagementPage = () => {
   const canDelete = hasPermission('agent_applications.delete');
   const canChat = hasPermission('ai_models.chat.create');
 
-  const [createForm] = Form.useForm<CreateFormValues>();
-  const [configForm] = Form.useForm<ConfigFormValues>();
-
+  // List view states
   const [applications, setApplications] = useState<AgentApplicationRecord[]>([]);
   const [applicationTotal, setApplicationTotal] = useState(0);
   const [applicationPage, setApplicationPage] = useState(1);
   const [keyword, setKeyword] = useState('');
   const [searchValue, setSearchValue] = useState('');
   const [listLoading, setListLoading] = useState(false);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
-  const [createSaving, setCreateSaving] = useState(false);
-  const [configSaving, setConfigSaving] = useState(false);
+
+  // Detail / Config form states
   const [selectedApplication, setSelectedApplication] = useState<AgentApplicationRecord | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [configSaving, setConfigSaving] = useState(false);
   const [llmOptions, setLlmOptions] = useState<CompanyLLMOptions | null>(null);
   const [knowledgeDocuments, setKnowledgeDocuments] = useState<KnowledgeDocumentRecord[]>([]);
   const [optionsLoading, setOptionsLoading] = useState(false);
-  
+
+  // Form states (direct React states instead of AntD forms)
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [llmModelId, setLlmModelId] = useState<number | null>(null);
+  const [systemPrompt, setSystemPrompt] = useState('');
+  const [selectedDocs, setSelectedDocs] = useState<number[]>([]);
+  const [temperature, setTemperature] = useState(DEFAULT_TEMPERATURE);
+  const [maxTokens, setMaxTokens] = useState(DEFAULT_MAX_TOKENS);
+  const [isActive, setIsActive] = useState(true);
+
+  // Create Popup states
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createName, setCreateName] = useState('');
+  const [createDescription, setCreateDescription] = useState('');
+  const [createSaving, setCreateSaving] = useState(false);
+
   // Tab control state
   const [activeTab, setActiveTab] = useState<'orchestrate' | 'logs' | 'monitor'>('orchestrate');
 
@@ -157,18 +155,6 @@ export const ApplicationManagementPage = () => {
     const parsed = Number(applicationId);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
   }, [applicationId]);
-
-  const modelOptions = useMemo(
-    () =>
-      (llmOptions?.providers || []).map((provider) => ({
-        label: provider.name,
-        options: provider.models.map((model) => ({
-          label: model.displayName || model.name,
-          value: model.id,
-        })),
-      })),
-    [llmOptions],
-  );
 
   const loadApplications = useCallback(async () => {
     setListLoading(true);
@@ -210,16 +196,17 @@ export const ApplicationManagementPage = () => {
     try {
       const detail = await fetchAgentApplication(selectedApplicationId);
       setSelectedApplication(detail);
-      configForm.setFieldsValue({
-        name: detail.name,
-        description: detail.description,
-        llmModelId: detail.llmModelId,
-        systemPrompt: detail.systemPrompt,
-        knowledgeDocumentIds: detail.knowledgeDocumentIds,
-        temperature: detail.temperature,
-        maxTokens: detail.maxTokens,
-        isActive: detail.isActive,
-      });
+      
+      // Populate local state values
+      setName(detail.name);
+      setDescription(detail.description || '');
+      setLlmModelId(detail.llmModelId);
+      setSystemPrompt(detail.systemPrompt || '');
+      setSelectedDocs(detail.knowledgeDocumentIds || []);
+      setTemperature(detail.temperature);
+      setMaxTokens(detail.maxTokens);
+      setIsActive(detail.isActive);
+
       setConversation(null);
       setMessages([]);
       setStreamingContent('');
@@ -230,7 +217,7 @@ export const ApplicationManagementPage = () => {
     } finally {
       setDetailLoading(false);
     }
-  }, [configForm, navigate, selectedApplicationId]);
+  }, [navigate, selectedApplicationId]);
 
   useEffect(() => {
     void loadApplications();
@@ -248,7 +235,7 @@ export const ApplicationManagementPage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages, streamingContent]);
 
-  // Reset Detail page state when application ID changes
+  // Reset states when switching applications
   useEffect(() => {
     setActiveTab('orchestrate');
     setSelectedLogConversation(null);
@@ -321,23 +308,27 @@ export const ApplicationManagementPage = () => {
   );
 
   const handleCreate = async () => {
-    const values = await createForm.validateFields();
+    if (!createName.trim()) {
+      message.error('请输入智能体名称');
+      return;
+    }
     setCreateSaving(true);
     try {
       const created = await createAgentApplication({
-        name: values.name.trim(),
-        description: values.description?.trim() || '',
+        name: createName.trim(),
+        description: createDescription.trim(),
         temperature: DEFAULT_TEMPERATURE,
         maxTokens: DEFAULT_MAX_TOKENS,
         isActive: true,
       });
-      message.success('应用已创建');
-      createForm.resetFields();
+      message.success('智能体已创建');
+      setCreateName('');
+      setCreateDescription('');
       setCreateOpen(false);
       await loadApplications();
       navigate(`${created.id}`);
     } catch {
-      message.error('应用创建失败');
+      message.error('智能体创建失败');
     } finally {
       setCreateSaving(false);
     }
@@ -345,16 +336,24 @@ export const ApplicationManagementPage = () => {
 
   const handleSaveConfig = async () => {
     if (!selectedApplication || !canUpdate) return;
-    const values = await configForm.validateFields();
+    if (!name.trim()) {
+      message.error('请输入智能体名称');
+      return;
+    }
     setConfigSaving(true);
     try {
-      const payload = buildApplicationPayload(values);
+      const payload: AgentApplicationPayload = {
+        name: name.trim(),
+        description: description.trim(),
+        llmModelId: llmModelId,
+        systemPrompt: systemPrompt,
+        knowledgeDocumentIds: selectedDocs,
+        temperature: temperature,
+        maxTokens: maxTokens,
+        isActive: isActive,
+      };
       const updated = await updateAgentApplication(selectedApplication.id, payload);
       setSelectedApplication(updated);
-      configForm.setFieldsValue({
-        ...payload,
-        knowledgeDocumentIds: updated.knowledgeDocumentIds,
-      });
       if (conversation) {
         const nextConversation = await updateConversationConfig(conversation.id, {
           llmModelId: payload.llmModelId,
@@ -364,22 +363,26 @@ export const ApplicationManagementPage = () => {
         });
         setConversation(nextConversation);
       }
-      message.success('应用配置已保存');
+      message.success('智能体配置已保存');
       await loadApplications();
     } catch {
-      message.error('应用配置保存失败');
+      message.error('智能体配置保存失败');
     } finally {
       setConfigSaving(false);
     }
   };
 
-  const handleDelete = async (application: AgentApplicationRecord) => {
-    await deleteAgentApplication(application.id);
-    message.success('应用已删除');
-    if (selectedApplicationId === application.id) {
-      navigateToApplicationList();
+  const handleDelete = async (applicationId: number) => {
+    try {
+      await deleteAgentApplication(applicationId);
+      message.success('智能体已删除');
+      if (selectedApplicationId === applicationId) {
+        navigateToApplicationList();
+      }
+      await loadApplications();
+    } catch {
+      message.error('智能体删除失败');
     }
-    await loadApplications();
   };
 
   const ensureConversation = async () => {
@@ -469,671 +472,786 @@ export const ApplicationManagementPage = () => {
   }, [conversation?.id, messages, streamingContent]);
 
   const renderApplicationList = () => (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="relative flex-1 overflow-hidden rounded-2xl bg-gradient-to-r from-slate-950 to-slate-900 border border-slate-800 p-6 md:p-8 text-white shadow-card">
-          <div className="relative z-10">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2 flex items-center gap-2">
-              智能体工作室 <span className="inline-flex items-center rounded-full bg-brand-500/10 px-2.5 py-0.5 text-xs font-medium text-brand-400 border border-brand-500/20">Studio</span>
-            </h1>
-            <p className="text-slate-400 text-sm md:text-base max-w-xl">
-              在这里构建、部署和管理您的专属智能体，连接大语言模型与知识库。
-            </p>
+    <Flex direction="column" gap="5">
+      {/* Banner */}
+      <Card size="3" style={{ background: 'linear-gradient(135deg, var(--slate-9) 0%, var(--slate-12) 100%)', color: 'white', border: 'none' }}>
+        <Flex direction="column" gap="2" style={{ position: 'relative', overflow: 'hidden' }}>
+          <Flex align="center" gap="2">
+            <Heading size="6" weight="bold">智能体工作室</Heading>
+            <Badge color="teal" variant="soft">Studio</Badge>
+          </Flex>
+          <Text color="gray" size="2" style={{ maxWidth: 500 }}>
+            自主编排、测试和部署您的专属智能助手。自由组装大语言模型、私有知识库文档，并无缝介入指令系统。
+          </Text>
+          <div style={{ position: 'absolute', right: -20, bottom: -40, opacity: 0.08 }}>
+            <Bot size={160} />
           </div>
-          <div className="absolute -right-8 -bottom-10 opacity-5 pointer-events-none flex items-center justify-center">
-            <RobotOutlined className="text-[180px] text-white" />
-          </div>
-        </div>
-      </div>
+        </Flex>
+      </Card>
 
-      {/* Filter Toolbar */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-white/60 backdrop-blur border border-slate-200/50 p-4 rounded-2xl shadow-sm">
-        <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
-          <Input
-            size="large"
-            allowClear
-            prefix={<SearchOutlined className="text-slate-400" />}
+      {/* Filter and Create Toolbar */}
+      <Flex gap="3" align="center" justify="between" className="bg-white/80 backdrop-blur p-4 rounded-2xl border border-slate-200/40 shadow-sm">
+        <Flex align="center" gap="2" style={{ flex: 1 }}>
+          <TextField.Root
+            size="2"
             placeholder="搜索应用名称或描述..."
             value={searchValue}
-            onChange={(event) => setSearchValue(event.target.value)}
-            onPressEnter={handleSearch}
-            className="max-w-md !rounded-xl border-slate-200/80 hover:border-brand-500 focus:border-brand-500 shadow-soft"
-          />
-          <Typography.Text className="text-slate-400 text-sm pl-2">共 {applicationTotal} 个应用</Typography.Text>
-        </div>
-      </div>
+            onChange={(e) => setSearchValue(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            style={{ width: '100%', maxWidth: 360 }}
+          >
+            <TextField.Slot>
+              <Search size={16} />
+            </TextField.Slot>
+          </TextField.Root>
+          <Text size="2" color="gray" style={{ marginLeft: 8 }}>共 {applicationTotal} 个应用</Text>
+        </Flex>
+      </Flex>
 
       {/* Applications Grid */}
       <Spin spinning={listLoading}>
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {/* Create Agent Card (Fixed First Card) */}
+        <Grid columns={{ initial: '1', md: '2', lg: '3' }} gap="4">
+          {/* Create Agent Card */}
           {canCreate && (
-            <div
+            <Card
+              size="2"
+              className="flex flex-col justify-center items-center cursor-pointer border-dashed border-2 hover:border-teal-500 hover:bg-teal-50/5 transition-all duration-300"
+              style={{ minHeight: 280 }}
               onClick={() => setCreateOpen(true)}
-              className="group flex min-h-[280px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white p-6 cursor-pointer hover:border-brand-500 hover:bg-brand-50/5 transition-all duration-300 shadow-soft"
             >
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-50 border border-slate-100 text-2xl text-slate-400 group-hover:bg-brand-500 group-hover:text-white group-hover:border-brand-500 transition-all duration-300 mb-4 shadow-sm">
-                <PlusOutlined />
-              </div>
-              <span className="text-slate-800 font-bold text-base group-hover:text-brand-600 transition-colors duration-200">
-                创建智能体
-              </span>
-              <span className="text-slate-400 text-xs mt-2 max-w-[180px] text-center leading-relaxed">
-                构建全新大模型智能助手，连接知识库与指令
-              </span>
-            </div>
+              <Flex direction="column" align="center" justify="center" gap="3" style={{ height: '100%' }}>
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500 group-hover:bg-teal-600 transition-colors">
+                  <Plus size={24} />
+                </div>
+                <Text weight="bold" size="3">创建智能体</Text>
+                <Text size="1" color="gray" align="center" style={{ maxWidth: 200 }}>
+                  构建全新大模型智能助手，连接知识库与指令
+                </Text>
+              </Flex>
+            </Card>
           )}
 
-          {applications.map((application) => (
-            <div
-              key={application.id}
-              className="group relative flex min-h-[280px] flex-col rounded-2xl border border-slate-200/60 bg-white p-6 shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1 hover:border-brand-200 overflow-hidden"
-            >
-              <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-brand-400 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              
-              <div className="mb-6 flex items-start justify-between gap-3">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-brand-50 text-2xl text-brand-600 transition-all duration-300 group-hover:bg-brand-500 group-hover:text-white shadow-sm">
-                  <AppstoreOutlined />
-                </div>
-                {canDelete && (
-                  <Popconfirm
-                    title="删除应用"
-                    description="确定要删除该应用吗？删除后不可恢复。"
-                    okText="删除"
-                    cancelText="取消"
-                    onConfirm={() => void handleDelete(application)}
-                  >
-                    <Button
-                      type="text"
-                      danger
-                      icon={<DeleteOutlined />}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:!bg-red-50"
-                    />
-                  </Popconfirm>
-                )}
-              </div>
-
-              <Typography.Title level={4} className="!mb-2.5 !text-slate-900 group-hover:text-brand-600 transition-colors duration-200">
-                {application.name}
-              </Typography.Title>
-
-              <Typography.Paragraph ellipsis={{ rows: 2 }} className="!mb-6 !text-slate-500 text-sm leading-relaxed">
-                {application.description || '暂无描述'}
-              </Typography.Paragraph>
-
-              <div className="mt-auto border-t border-slate-100/80 pt-4 flex flex-col gap-3">
-                <div className="flex flex-wrap gap-2 text-xs">
-                  <span className="rounded-full bg-slate-50 border border-slate-100 px-2.5 py-0.5 font-sans text-slate-600">
-                    模型: {application.llmModelDisplayName || application.llmModelName || '未设置'}
-                  </span>
-                  <span className="rounded-full bg-brand-50 border border-brand-100/50 px-2.5 py-0.5 text-brand-700 font-medium">
-                    {application.knowledgeDocumentIds.length} 个知识库
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-[11px] text-slate-400">
-                  <span>更新时间: {dayjs(application.updated_at).format('YYYY-MM-DD HH:mm')}</span>
-                </div>
-
-                <div className="flex justify-between items-center mt-1">
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      size="small"
-                      checked={application.isActive}
-                      disabled={!canUpdate}
-                      onChange={async (checked) => {
-                        try {
-                          await updateAgentApplication(application.id, { isActive: checked });
-                          message.success(`应用已${checked ? '启用' : '停用'}`);
-                          await loadApplications();
-                        } catch {
-                          message.error('状态修改失败');
-                        }
-                      }}
-                    />
-                    <span className="text-xs text-slate-500">{application.isActive ? '已启用' : '已停用'}</span>
+          {applications.map((app) => (
+            <Card key={app.id} size="2" className="flex flex-col relative overflow-hidden group hover:shadow-md transition-shadow">
+              <Flex direction="column" gap="4" style={{ height: '100%' }}>
+                <Flex align="start" justify="between">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
+                    <Bot size={24} />
                   </div>
+                  
+                  {canDelete && (
+                    <AlertDialog.Root>
+                      <AlertDialog.Trigger>
+                        <Button variant="ghost" color="red" size="1" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Trash2 size={16} />
+                        </Button>
+                      </AlertDialog.Trigger>
+                      <AlertDialog.Content style={{ maxWidth: 400 }}>
+                        <AlertDialog.Title>确认删除智能体</AlertDialog.Title>
+                        <AlertDialog.Description size="2">
+                          确定要删除智能体 <strong>{app.name}</strong> 吗？此操作无法恢复。
+                        </AlertDialog.Description>
+                        <Flex gap="3" mt="4" justify="end">
+                          <AlertDialog.Cancel>
+                            <Button variant="soft" color="gray">取消</Button>
+                          </AlertDialog.Cancel>
+                          <AlertDialog.Action>
+                            <Button variant="solid" color="red" onClick={() => void handleDelete(app.id)}>
+                              确认删除
+                            </Button>
+                          </AlertDialog.Action>
+                        </Flex>
+                      </AlertDialog.Content>
+                    </AlertDialog.Root>
+                  )}
+                </Flex>
 
-                  <Button
-                    type="link"
-                    className="!px-0 !font-semibold !text-slate-500 group-hover:!text-brand-600 flex items-center gap-1 transition-all duration-200"
-                    onClick={() => navigate(`${application.id}`)}
-                  >
-                    <span>进入</span>
-                    <ArrowRightOutlined className="transition-transform duration-200 group-hover:translate-x-1" />
-                  </Button>
-                </div>
-              </div>
-            </div>
+                <Flex direction="column" gap="1">
+                  <Heading size="3" className="truncate text-slate-900">{app.name}</Heading>
+                  <Text size="2" color="gray" className="line-clamp-2 leading-relaxed" style={{ minHeight: 40 }}>
+                    {app.description || '暂无描述'}
+                  </Text>
+                </Flex>
+
+                <Flex direction="column" gap="3" className="mt-auto border-t border-slate-100 pt-3">
+                  <Flex gap="2" wrap="wrap">
+                    <Badge color="gray" variant="soft">
+                      模型: {app.llmModelDisplayName || app.llmModelName || '未配置'}
+                    </Badge>
+                    <Badge color="teal" variant="soft">
+                      {app.knowledgeDocumentIds.length} 个知识库
+                    </Badge>
+                  </Flex>
+
+                  <Text size="1" color="gray" className="font-mono">
+                    更新时间: {dayjs(app.updated_at).format('YYYY-MM-DD HH:mm')}
+                  </Text>
+
+                  <Flex align="center" justify="between" className="pt-1">
+                    <Flex align="center" gap="2">
+                      <Switch
+                        size="1"
+                        checked={app.isActive}
+                        disabled={!canUpdate}
+                        onCheckedChange={async (checked) => {
+                          try {
+                            await updateAgentApplication(app.id, { isActive: checked });
+                            message.success(`智能体已${checked ? '启用' : '停用'}`);
+                            await loadApplications();
+                          } catch {
+                            message.error('状态更新失败');
+                          }
+                        }}
+                      />
+                      <Text size="1" color="gray">{app.isActive ? '已启用' : '已停用'}</Text>
+                    </Flex>
+
+                    <Button
+                      variant="ghost"
+                      size="1"
+                      className="font-semibold text-slate-600 hover:text-teal-600 flex items-center gap-1"
+                      onClick={() => navigate(`${app.id}`)}
+                    >
+                      <span>配置</span>
+                      <ArrowRight size={14} />
+                    </Button>
+                  </Flex>
+                </Flex>
+              </Flex>
+            </Card>
           ))}
-        </div>
+        </Grid>
       </Spin>
 
       {applicationTotal > PAGE_SIZE && (
-        <div className="flex justify-center items-center gap-4 mt-8">
+        <Flex justify="center" align="center" gap="3" mt="4">
           <Button
+            variant="outline"
+            color="gray"
             disabled={applicationPage <= 1}
             onClick={() => setApplicationPage((page) => page - 1)}
-            className="!rounded-lg hover:!border-brand-500 hover:!text-brand-500"
           >
             上一页
           </Button>
-          <Typography.Text className="text-slate-500 font-medium">
+          <Text size="2" color="gray" weight="bold">
             {applicationPage} / {normalizePageCount(applicationTotal, PAGE_SIZE)}
-          </Typography.Text>
+          </Text>
           <Button
+            variant="outline"
+            color="gray"
             disabled={applicationPage >= normalizePageCount(applicationTotal, PAGE_SIZE)}
             onClick={() => setApplicationPage((page) => page + 1)}
-            className="!rounded-lg hover:!border-brand-500 hover:!text-brand-500"
           >
             下一页
           </Button>
-        </div>
+        </Flex>
       )}
-    </div>
+    </Flex>
   );
 
-  const renderChatMessage = (chatMessage: ChatMessage) => {
-    const isUser = chatMessage.role === 'user';
+  const renderChatMessage = (msg: ChatMessage) => {
+    const isUser = msg.role === 'user';
     return (
-      <div key={chatMessage.id} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
-        <div className={`flex max-w-[85%] gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+      <Flex key={msg.id} justify={isUser ? 'end' : 'start'} className="mb-4">
+        <Flex gap="3" style={{ maxWidth: '85%' }} direction={isUser ? 'row-reverse' : 'row'}>
           <Avatar
-            size={36}
-            icon={isUser ? <MessageOutlined /> : <RobotOutlined />}
-            className={isUser ? '!bg-brand-600 shadow-sm border border-brand-500/20' : '!bg-emerald-600 shadow-sm border border-emerald-500/20'}
+            size="2"
+            fallback={isUser ? <User size={16} /> : <Bot size={16} />}
+            color={isUser ? 'indigo' : 'teal'}
+            variant="solid"
           />
-          <div
-            className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-soft ${
-              isUser
-                ? 'bg-gradient-to-br from-brand-500 to-brand-600 text-white rounded-tr-none'
-                : 'bg-white border border-slate-100 text-slate-800 rounded-tl-none'
-            }`}
-          >
-            {isUser ? (
-              <span className="whitespace-pre-wrap break-words">{chatMessage.content}</span>
-            ) : (
-              <ChatMarkdown content={chatMessage.content} className="chat-markdown" />
-            )}
-            {chatMessage.id === -1 && (
-              <span className="ml-1 inline-block h-4 w-0.5 animate-pulse bg-brand-400 align-middle" />
-            )}
-          </div>
-        </div>
-      </div>
+          <Flex direction="column" gap="1">
+            <div
+              className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm ${
+                isUser
+                  ? 'bg-slate-900 text-white rounded-tr-none'
+                  : 'bg-white border border-slate-100 text-slate-800 rounded-tl-none'
+              }`}
+            >
+              {isUser ? (
+                <span className="whitespace-pre-wrap break-words">{msg.content}</span>
+              ) : (
+                <ChatMarkdown content={msg.content} className="chat-markdown" />
+              )}
+              {msg.id === -1 && (
+                <span className="ml-1 inline-block h-4 w-0.5 bg-teal-500 animate-pulse align-middle" />
+              )}
+            </div>
+          </Flex>
+        </Flex>
+      </Flex>
     );
   };
 
   const renderOrchestrateTab = () => (
     <Spin spinning={detailLoading || optionsLoading}>
-      <div className="grid gap-4 xl:grid-cols-[390px_minmax(0,1fr)]">
-        {/* Left panel - Config */}
-        <div className="flex min-h-0 flex-col rounded-2xl border border-slate-200/60 bg-white shadow-card overflow-hidden">
-          <div className="border-b border-slate-100 px-6 py-4 bg-slate-50/50 flex items-center justify-between">
-            <Typography.Text className="text-slate-900 font-bold text-sm">智能体编排</Typography.Text>
-            <span className="text-xs text-slate-400 font-medium">Configuration</span>
-          </div>
-          <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
-            <Form
-              form={configForm}
-              layout="vertical"
-              initialValues={{ temperature: DEFAULT_TEMPERATURE, maxTokens: DEFAULT_MAX_TOKENS, isActive: true }}
-              className="space-y-4"
-            >
-              <Form.Item name="name" label={<span className="text-slate-700 font-semibold text-xs">智能体名称</span>} rules={[{ required: true, message: '请输入智能体名称' }]}>
-                <Input disabled={!canUpdate} maxLength={128} className="!rounded-lg" />
-              </Form.Item>
-              <Form.Item name="description" label={<span className="text-slate-700 font-semibold text-xs">描述说明</span>}>
-                <Input.TextArea disabled={!canUpdate} rows={2} maxLength={255} className="!rounded-lg" />
-              </Form.Item>
-              <Form.Item name="llmModelId" label={<span className="text-slate-700 font-semibold text-xs">选用模型</span>}>
-                <Select
-                  allowClear
-                  disabled={!canUpdate || modelOptions.length === 0}
-                  options={modelOptions}
-                  placeholder={modelOptions.length === 0 ? '暂无可用模型' : '请选择模型'}
-                  className="!rounded-lg"
-                />
-              </Form.Item>
-              <Form.Item name="systemPrompt" label={<span className="text-slate-700 font-semibold text-xs">系统提示词 (System Prompt)</span>}>
-                <Input.TextArea disabled={!canUpdate} rows={6} className="!rounded-lg font-mono text-xs" />
-              </Form.Item>
-              <Form.Item name="knowledgeDocumentIds" label={<span className="text-slate-700 font-semibold text-xs">绑定知识库文档</span>}>
-                <Select
-                  mode="multiple"
-                  allowClear
-                  disabled={!canUpdate}
-                  optionFilterProp="label"
-                  options={knowledgeDocuments.map((document) => {
-                    const isTxtOrMd = ['txt', 'md'].includes(document.fileExtension?.toLowerCase() || '');
-                    return {
-                      label: `${document.title || document.fileName}${isTxtOrMd ? '' : ' (暂不参与检索)'}`,
-                      value: document.id,
-                    };
-                  })}
-                  className="!rounded-lg"
-                />
-              </Form.Item>
-              <Form.Item name="temperature" label={<span className="text-slate-700 font-semibold text-xs">多样性温度 (Temperature)</span>}>
-                <Slider disabled={!canUpdate} min={0} max={2} step={0.1} marks={{ 0: '0', 1: '1', 2: '2' }} />
-              </Form.Item>
-              <Form.Item name="maxTokens" label={<span className="text-slate-700 font-semibold text-xs">最大输出 Tokens</span>} rules={[{ required: true, message: '请输入最大输出 Tokens' }]}>
-                <InputNumber disabled={!canUpdate} min={1} max={320000} className="!w-full !rounded-lg" />
-              </Form.Item>
-              <Form.Item name="isActive" label={<span className="text-slate-700 font-semibold text-xs">启用状态</span>} valuePropName="checked">
-                <Switch disabled={!canUpdate} />
-              </Form.Item>
-            </Form>
-          </div>
-        </div>
+      <Grid columns={{ initial: '1', xl: '390px minmax(0, 1fr)' }} gap="4">
+        {/* Left Side: Config Panel */}
+        <Card size="2" className="flex flex-col bg-white border border-slate-200/50 shadow-sm overflow-hidden" style={{ maxHeight: 'calc(100vh - 250px)', overflowY: 'auto' }}>
+          <Flex direction="column" gap="4">
+            <Heading size="3">编排设置</Heading>
+            
+            <Flex direction="column" gap="1">
+              <Text size="2" weight="bold">智能体名称</Text>
+              <TextField.Root
+                disabled={!canUpdate}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                maxLength={128}
+                placeholder="名称不能为空"
+              />
+            </Flex>
 
-        {/* Right panel - Debug Chat */}
-        <div className="flex min-h-0 flex-col rounded-2xl border border-slate-200/60 bg-white shadow-card overflow-hidden">
-          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/50">
-            <div className="flex items-center gap-2">
-              <RobotOutlined className="text-brand-500" />
-              <Typography.Text className="text-slate-900 font-bold text-sm">调试预览</Typography.Text>
-            </div>
-            {conversation ? (
-              <span className="bg-brand-50 border border-brand-100 text-brand-700 px-2 py-0.5 rounded-full font-mono text-xs">
-                调试会话ID: #{conversation.id}
-              </span>
-            ) : (
-              <span className="bg-slate-100 border border-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-mono text-xs">
-                未开始
-              </span>
-            )}
-          </div>
-          
-          <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/30 px-6 py-5">
-            {chatLoading ? (
-              <div className="flex h-full items-center justify-center">
-                <Spin />
-              </div>
-            ) : displayedMessages.length > 0 ? (
-              <div className="space-y-2">
-                {displayedMessages.map(renderChatMessage)}
-                <div ref={messagesEndRef} />
-              </div>
-            ) : (
-              <div className="flex h-full flex-col items-center justify-center text-slate-400 gap-3">
-                <BookOutlined className="text-4xl text-slate-300" />
-                <span className="text-sm">发送消息开始智能体调试预览</span>
-              </div>
-            )}
-          </div>
-          
-          <div className="border-t border-slate-100 px-6 py-5 bg-white">
-            <div className="flex gap-2">
-              <Input
-                size="large"
+            <Flex direction="column" gap="1">
+              <Text size="2" weight="bold">描述说明</Text>
+              <TextArea
+                disabled={!canUpdate}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                maxLength={255}
+                placeholder="输入描述以帮助团队了解它的用途"
+                rows={2}
+              />
+            </Flex>
+
+            <Flex direction="column" gap="1">
+              <Text size="2" weight="bold">选用模型</Text>
+              <Select.Root
+                disabled={!canUpdate || !(llmOptions?.providers || []).some((p) => (p.models || []).length > 0)}
+                value={llmModelId ? String(llmModelId) : 'none'}
+                onValueChange={(val) => setLlmModelId(val === 'none' ? null : Number(val))}
+              >
+                <Select.Trigger placeholder="请选择模型" style={{ width: '100%' }} />
+                <Select.Content>
+                  <Select.Item value="none">无模型</Select.Item>
+                  {(llmOptions?.providers || []).map((provider) => (
+                    <Select.Group key={provider.id}>
+                      <Select.Label>{provider.name}</Select.Label>
+                      {provider.models.map((model) => (
+                        <Select.Item key={model.id} value={String(model.id)}>
+                          {model.displayName || model.name}
+                        </Select.Item>
+                      ))}
+                    </Select.Group>
+                  ))}
+                </Select.Content>
+              </Select.Root>
+            </Flex>
+
+            <Flex direction="column" gap="1">
+              <Text size="2" weight="bold">系统提示词 (System Prompt)</Text>
+              <TextArea
+                disabled={!canUpdate}
+                value={systemPrompt}
+                onChange={(e) => setSystemPrompt(e.target.value)}
+                placeholder="您是大模型的引导者，在这里输入大模型的系统人设与行为提示..."
+                rows={5}
+                className="font-mono text-xs"
+              />
+            </Flex>
+
+            <Flex direction="column" gap="1">
+              <Text size="2" weight="bold">绑定知识库文档</Text>
+              <Popover.Root>
+                <Popover.Trigger>
+                  <Button variant="outline" color="gray" size="2" style={{ justifyContent: 'between', width: '100%' }}>
+                    <Text size="2">选择关联知识库 ({selectedDocs.length} 个已选)</Text>
+                    <ChevronDown size={14} />
+                  </Button>
+                </Popover.Trigger>
+                <Popover.Content style={{ width: 340 }}>
+                  <Flex direction="column" gap="3">
+                    {knowledgeDocuments.length > 0 ? (
+                      knowledgeDocuments.map((doc) => {
+                        const isChecked = selectedDocs.includes(doc.id);
+                        const isTxtOrMd = ['txt', 'md'].includes(doc.fileExtension?.toLowerCase() || '');
+                        return (
+                          <Text key={doc.id} as="label" size="2" className="flex items-start gap-2 hover:bg-slate-50 p-1.5 rounded cursor-pointer">
+                            <Checkbox
+                              checked={isChecked}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedDocs([...selectedDocs, doc.id]);
+                                } else {
+                                  setSelectedDocs(selectedDocs.filter((id) => id !== doc.id));
+                                }
+                              }}
+                            />
+                            <Flex direction="column">
+                              <Text weight="bold" size="2">{doc.title || doc.fileName}</Text>
+                              {!isTxtOrMd && <Text size="1" color="gray">暂不参与检索 (仅支持 txt/md)</Text>}
+                            </Flex>
+                          </Text>
+                        );
+                      })
+                    ) : (
+                      <Text size="2" color="gray" align="center">暂无可用知识库</Text>
+                    )}
+                  </Flex>
+                </Popover.Content>
+              </Popover.Root>
+            </Flex>
+
+            <Flex direction="column" gap="2" style={{ paddingBottom: 8 }}>
+              <Flex align="center" justify="between">
+                <Text size="2" weight="bold">随机性温度 (Temperature)</Text>
+                <Badge variant="soft" color="teal">{temperature}</Badge>
+              </Flex>
+              <Slider
+                disabled={!canUpdate}
+                value={[temperature]}
+                onValueChange={([val]) => setTemperature(val)}
+                min={0}
+                max={2}
+                step={0.1}
+              />
+            </Flex>
+
+            <Flex direction="column" gap="1">
+              <Text size="2" weight="bold">最大输出 Tokens</Text>
+              <TextField.Root
+                disabled={!canUpdate}
+                type="number"
+                value={maxTokens}
+                onChange={(e) => setMaxTokens(Number(e.target.value))}
+                min={1}
+                max={320000}
+              />
+            </Flex>
+
+            <Flex align="center" gap="3" mt="2">
+              <Text size="2" weight="bold">启用此智能体</Text>
+              <Switch
+                disabled={!canUpdate}
+                checked={isActive}
+                onCheckedChange={setIsActive}
+              />
+            </Flex>
+          </Flex>
+        </Card>
+
+        {/* Right Side: Debug Chat */}
+        <Card size="2" className="flex flex-col bg-white border border-slate-200/50 shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 250px)' }}>
+          <Flex direction="column" style={{ height: '100%' }}>
+            {/* Chat Header */}
+            <Flex align="center" justify="between" className="border-b border-slate-100 pb-3 mb-3">
+              <Flex align="center" gap="2">
+                <Sparkles size={16} className="text-teal-600" />
+                <Heading size="3">调试预览</Heading>
+              </Flex>
+              {conversation ? (
+                <Badge color="teal" variant="soft" className="font-mono">会话: #{conversation.id}</Badge>
+              ) : (
+                <Badge color="gray" variant="soft">未开始</Badge>
+              )}
+            </Flex>
+
+            {/* Chat message content */}
+            <Box style={{ flex: 1, overflowY: 'auto' }} className="bg-slate-50/40 p-4 rounded-xl border border-slate-100/50">
+              {chatLoading ? (
+                <Flex align="center" justify="center" style={{ height: '100%' }}>
+                  <Spin />
+                </Flex>
+              ) : displayedMessages.length > 0 ? (
+                <div>
+                  {displayedMessages.map(renderChatMessage)}
+                  <div ref={messagesEndRef} />
+                </div>
+              ) : (
+                <Flex direction="column" align="center" justify="center" gap="3" style={{ height: '100%' }} className="text-slate-400">
+                  <MessageSquare size={36} className="text-slate-300" />
+                  <Text size="2">输入消息并发送，开始与大模型进行调试对话</Text>
+                </Flex>
+              )}
+            </Box>
+
+            {/* Input area */}
+            <Flex gap="2" mt="3" className="pt-2">
+              <TextField.Root
+                size="3"
                 value={inputValue}
-                placeholder="输入消息，与调试智能体对话..."
+                placeholder="发送调试消息..."
                 disabled={!canChat || streaming || !selectedApplication}
-                onChange={(event) => setInputValue(event.target.value)}
-                onPressEnter={() => void handleSend()}
-                className="!rounded-xl border-slate-200 hover:border-brand-500 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 shadow-inner bg-slate-50/30"
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && void handleSend()}
+                style={{ flex: 1 }}
               />
               {streaming ? (
-                <Button size="large" danger onClick={handleStopStreaming} className="!rounded-xl px-5">
-                  停止
+                <Button size="3" color="red" variant="soft" onClick={handleStopStreaming}>
+                  <Text size="2" weight="bold">停止</Text>
                 </Button>
               ) : (
                 <Button
-                  type="primary"
-                  size="large"
-                  icon={<SendOutlined />}
+                  size="3"
+                  color="teal"
                   disabled={!inputValue.trim() || !canChat || !selectedApplication}
                   onClick={() => void handleSend()}
-                  className={`!rounded-xl px-5 ${inputValue.trim() ? 'bg-gradient-to-r from-brand-500 to-teal-600 hover:from-brand-600 hover:to-teal-700 border-0 text-white' : ''}`}
                 >
-                  发送
+                  <Send size={16} />
                 </Button>
               )}
-            </div>
-          </div>
-        </div>
-      </div>
+            </Flex>
+          </Flex>
+        </Card>
+      </Grid>
     </Spin>
   );
 
   const renderLogsTab = () => (
     <Spin spinning={logConversationsLoading}>
-      <div className="grid gap-4 xl:grid-cols-[380px_minmax(0,1fr)] min-h-[calc(100vh-230px)]">
-        {/* Left Side: Session List */}
-        <div className="flex flex-col bg-white border border-slate-200/60 rounded-2xl shadow-card overflow-hidden">
-          <div className="border-b border-slate-100 px-5 py-4 bg-slate-50/50 flex items-center justify-between">
-            <Typography.Text className="text-slate-900 font-bold text-sm">历史会话记录</Typography.Text>
-            <span className="text-xs text-slate-400 font-medium">{logConversations.length} 个历史会话</span>
-          </div>
-          
-          <div className="flex-1 overflow-y-auto divide-y divide-slate-100 max-h-[calc(100vh-320px)]">
-            {logConversations.length > 0 ? (
-              logConversations.map((conv) => (
-                <div
-                  key={conv.id}
-                  onClick={() => void loadSelectedLogConversation(conv.id)}
-                  className={`px-5 py-4 cursor-pointer transition-colors duration-150 hover:bg-slate-50/80 ${
-                    selectedLogConversation?.id === conv.id ? 'bg-brand-50/30 border-l-4 border-brand-500' : ''
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2 mb-1.5">
-                    <Typography.Text className="font-semibold text-slate-950 truncate max-w-[190px]">
-                      {conv.title}
-                    </Typography.Text>
-                    <Typography.Text className="text-slate-400 text-xs shrink-0 font-mono">
-                      {dayjs(conv.updated_at).format('MM-DD HH:mm')}
-                    </Typography.Text>
-                  </div>
-                  <Typography.Paragraph className="text-slate-500 text-xs !mb-2 truncate">
-                    {conv.summary || conv.lastMessage || '暂无内容'}
-                  </Typography.Paragraph>
-                  <div className="flex items-center justify-between text-[11px] text-slate-400">
-                    <span className="bg-slate-50 border border-slate-100 px-2 py-0.5 rounded font-mono text-slate-500">
-                      {conv.llmModelDisplayName || conv.llmModelName || '未知模型'}
-                    </span>
-                    <span className="flex items-center gap-1 font-medium text-slate-400">
-                      <MessageOutlined className="text-xs" /> {conv.messageCount} 条消息
-                    </span>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="flex h-full items-center justify-center py-20">
-                <Empty description="暂无历史会话" />
-              </div>
-            )}
-          </div>
-        </div>
+      <Grid columns={{ initial: '1', xl: '380px minmax(0, 1fr)' }} gap="4">
+        {/* Conversation List */}
+        <Card size="2" className="flex flex-col bg-white border border-slate-200/50 shadow-sm" style={{ maxHeight: 'calc(100vh - 250px)', overflowY: 'auto' }}>
+          <Flex direction="column" gap="3">
+            <Flex align="center" justify="between" className="border-b border-slate-100 pb-3">
+              <Heading size="3">历史会话</Heading>
+              <Badge color="gray">{logConversations.length} 会话</Badge>
+            </Flex>
 
-        {/* Right Side: Message Details */}
-        <div className="flex flex-col bg-white border border-slate-200/60 rounded-2xl shadow-card overflow-hidden min-h-[400px]">
+            <Flex direction="column" gap="1" className="divide-y divide-slate-100">
+              {logConversations.length > 0 ? (
+                logConversations.map((conv) => (
+                  <div
+                    key={conv.id}
+                    onClick={() => void loadSelectedLogConversation(conv.id)}
+                    className={`py-3 px-2 cursor-pointer rounded-xl hover:bg-slate-50 transition-colors ${
+                      selectedLogConversation?.id === conv.id ? 'bg-teal-50/40 border-l-4 border-teal-500' : ''
+                    }`}
+                  >
+                    <Flex justify="between" align="start" gap="2" mb="1">
+                      <Text size="2" weight="bold" className="truncate max-w-[190px]">
+                        {conv.title}
+                      </Text>
+                      <Text size="1" color="gray" className="shrink-0 font-mono">
+                        {dayjs(conv.updated_at).format('MM-DD HH:mm')}
+                      </Text>
+                    </Flex>
+                    <Text size="1" color="gray" className="line-clamp-1 block mb-2">
+                      {conv.summary || conv.lastMessage || '暂无内容'}
+                    </Text>
+                    <Flex justify="between" align="center" className="text-[10px]">
+                      <Badge color="gray" size="1">
+                        {conv.llmModelDisplayName || conv.llmModelName || '未分配'}
+                      </Badge>
+                      <span className="flex items-center gap-1 text-slate-400">
+                        <MessageSquare size={12} /> {conv.messageCount} 消息
+                      </span>
+                    </Flex>
+                  </div>
+                ))
+              ) : (
+                <Flex direction="column" align="center" justify="center" py="8" className="text-slate-400 py-12">
+                  <MessageSquare size={32} className="text-slate-300 mb-2" />
+                  <Text size="1">暂无调试会话历史</Text>
+                </Flex>
+              )}
+            </Flex>
+          </Flex>
+        </Card>
+
+        {/* Selected Conversation Detail */}
+        <Card size="2" className="flex flex-col bg-white border border-slate-200/50 shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 250px)' }}>
           {selectedLogConversation ? (
-            <Spin spinning={selectedLogConversationLoading} className="flex-1 flex flex-col">
-              <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-slate-50/50">
-                <div className="min-w-0">
-                  <Typography.Text className="text-slate-900 font-bold text-sm block truncate">
-                    {selectedLogConversation.title}
-                  </Typography.Text>
-                  <Typography.Text className="text-slate-400 text-xs">
-                    会话ID: #{selectedLogConversation.id} • 创建时间: {dayjs(selectedLogConversation.created_at).format('YYYY-MM-DD HH:mm:ss')}
-                  </Typography.Text>
-                </div>
-              </div>
+            <Spin spinning={selectedLogConversationLoading} className="flex-1 flex flex-col" style={{ height: '100%' }}>
+              <Flex direction="column" style={{ height: '100%' }}>
+                <Flex direction="column" className="border-b border-slate-100 pb-3 mb-3">
+                  <Heading size="3">{selectedLogConversation.title}</Heading>
+                  <Text size="1" color="gray" className="mt-1">
+                    会话 ID: #{selectedLogConversation.id} • 创建时间: {dayjs(selectedLogConversation.created_at).format('YYYY-MM-DD HH:mm:ss')}
+                  </Text>
+                </Flex>
 
-              <div className="flex-1 overflow-y-auto px-6 py-6 bg-slate-50/20 max-h-[calc(100vh-360px)]">
-                {selectedLogConversation.messages.length > 0 ? (
-                  selectedLogConversation.messages.map((msg) => {
-                    const isUser = msg.role === 'user';
-                    return (
-                      <div key={msg.id} className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-5`}>
-                        <div className={`flex max-w-[85%] gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-                          <Avatar
-                            size={36}
-                            icon={isUser ? <MessageOutlined /> : <RobotOutlined />}
-                            className={isUser ? '!bg-brand-600 shadow-sm border border-brand-500/20' : '!bg-emerald-600 shadow-sm border border-emerald-500/20'}
-                          />
-                          <div className="flex flex-col gap-1">
-                            <div
-                              className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-soft ${
-                                isUser
-                                  ? 'bg-gradient-to-br from-brand-500 to-brand-600 text-white rounded-tr-none'
-                                  : 'bg-white border border-slate-100 text-slate-800 rounded-tl-none'
-                              }`}
-                            >
-                              {isUser ? (
-                                <span className="whitespace-pre-wrap break-words">{msg.content}</span>
-                              ) : (
-                                <ChatMarkdown content={msg.content} className="chat-markdown" />
-                              )}
-                            </div>
-                            <div className={`text-[10px] text-slate-400 flex items-center gap-2 px-1 ${isUser ? 'justify-end' : 'justify-start'}`}>
-                              <span>{dayjs(msg.created_at).format('HH:mm:ss')}</span>
-                              {!isUser && msg.feedback !== 'none' && (
-                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium ${
-                                  msg.feedback === 'up' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
-                                }`}>
-                                  {msg.feedback === 'up' ? '已点赞' : '已点踩'}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="flex h-full items-center justify-center text-slate-400 py-20">
-                    <span>无会话消息记录</span>
-                  </div>
-                )}
-              </div>
+                <Box style={{ flex: 1, overflowY: 'auto' }} className="bg-slate-50/20 p-4 rounded-xl border border-slate-100/30">
+                  {selectedLogConversation.messages.length > 0 ? (
+                    selectedLogConversation.messages.map((msg) => {
+                      const isUser = msg.role === 'user';
+                      return (
+                        <Flex key={msg.id} justify={isUser ? 'end' : 'start'} className="mb-4">
+                          <Flex gap="3" style={{ maxWidth: '85%' }} direction={isUser ? 'row-reverse' : 'row'}>
+                            <Avatar
+                              size="2"
+                              fallback={isUser ? <User size={14} /> : <Bot size={14} />}
+                              color={isUser ? 'indigo' : 'teal'}
+                              variant="solid"
+                            />
+                            <Flex direction="column" gap="1">
+                              <div
+                                className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm ${
+                                  isUser
+                                    ? 'bg-slate-900 text-white rounded-tr-none'
+                                    : 'bg-white border border-slate-100 text-slate-800 rounded-tl-none'
+                                }`}
+                              >
+                                {isUser ? (
+                                  <span className="whitespace-pre-wrap break-words">{msg.content}</span>
+                                ) : (
+                                  <ChatMarkdown content={msg.content} className="chat-markdown" />
+                                )}
+                              </div>
+                              <Flex align="center" gap="2" className="text-[10px] text-slate-400 px-1 mt-0.5">
+                                <span>{dayjs(msg.created_at).format('HH:mm:ss')}</span>
+                                {!isUser && msg.feedback !== 'none' && (
+                                  <Badge color={msg.feedback === 'up' ? 'green' : 'red'} size="1">
+                                    {msg.feedback === 'up' ? '好评' : '差评'}
+                                  </Badge>
+                                )}
+                              </Flex>
+                            </Flex>
+                          </Flex>
+                        </Flex>
+                      );
+                    })
+                  ) : (
+                    <Text size="2" color="gray" align="center">无会话消息记录</Text>
+                  )}
+                </Box>
+              </Flex>
             </Spin>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-3 py-20">
-              <MessageOutlined className="text-4xl text-slate-300" />
-              <span className="text-sm">选择左侧历史会话查看消息详情</span>
-            </div>
+            <Flex direction="column" align="center" justify="center" gap="3" style={{ height: '100%' }} className="text-slate-400">
+              <MessageSquare size={40} className="text-slate-300" />
+              <Text size="2">选择左侧历史会话查看详细聊天明细</Text>
+            </Flex>
           )}
-        </div>
-      </div>
+        </Card>
+      </Grid>
     </Spin>
   );
 
   const renderMonitorTab = () => {
     if (statsLoading) {
       return (
-        <div className="flex h-64 items-center justify-center bg-white border border-slate-200/60 rounded-2xl">
+        <Card size="2" className="flex h-64 items-center justify-center bg-white border border-slate-200/50 shadow-sm">
           <Spin size="large" />
-        </div>
+        </Card>
       );
     }
 
     if (!stats) {
       return (
-        <div className="flex h-64 flex-col items-center justify-center bg-white border border-slate-200/60 rounded-2xl text-slate-400 gap-3">
-          <Empty description="暂无监测数据" />
-        </div>
+        <Card size="2" className="flex h-64 flex-col items-center justify-center bg-white border border-slate-200/50 shadow-sm text-slate-400">
+          <BarChart2 size={36} className="text-slate-300 mb-2" />
+          <Text size="2">暂无监测数据</Text>
+        </Card>
       );
     }
 
     const maxTrendCount = Math.max(1, ...stats.dailyTrends.map((d) => d.count));
 
     return (
-      <div className="space-y-6">
+      <Flex direction="column" gap="5">
         {/* Metric Cards Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="bg-white border border-slate-200/60 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow duration-150">
-            <Typography.Text className="text-slate-400 text-xs font-semibold block mb-1">会话总数</Typography.Text>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-slate-900 font-mono">{stats.conversationCount}</span>
-              <span className="text-slate-400 text-xs">次</span>
-            </div>
-            <div className="mt-3 text-[11px] text-slate-400">
-              在该智能体下开启的调试与交互会话
-            </div>
-          </div>
+        <Grid columns={{ initial: '1', sm: '2', lg: '4' }} gap="4">
+          <Card size="2" className="bg-white border border-slate-200/50 shadow-sm hover:shadow transition-shadow">
+            <Flex direction="column" gap="1">
+              <Text size="1" weight="medium" color="gray">会话总数</Text>
+              <Flex align="baseline" gap="2" mt="1">
+                <Text size="7" weight="bold" className="font-mono">{stats.conversationCount}</Text>
+                <Text size="1" color="gray">次</Text>
+              </Flex>
+              <Text size="1" color="gray" className="mt-2">智能体开启的调试会话总计</Text>
+            </Flex>
+          </Card>
 
-          <div className="bg-white border border-slate-200/60 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow duration-150">
-            <Typography.Text className="text-slate-400 text-xs font-semibold block mb-1">消息总量</Typography.Text>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-slate-900 font-mono">{stats.messageCount}</span>
-              <span className="text-slate-400 text-xs">条</span>
-            </div>
-            <div className="mt-3 text-[11px] text-slate-400 flex items-center justify-between">
-              <span>用户: <b className="text-slate-700 font-mono">{stats.userMessageCount}</b></span>
-              <span>助手: <b className="text-slate-700 font-mono">{stats.assistantMessageCount}</b></span>
-            </div>
-          </div>
+          <Card size="2" className="bg-white border border-slate-200/50 shadow-sm hover:shadow transition-shadow">
+            <Flex direction="column" gap="1">
+              <Text size="1" weight="medium" color="gray">消息总量</Text>
+              <Flex align="baseline" gap="2" mt="1">
+                <Text size="7" weight="bold" className="font-mono">{stats.messageCount}</Text>
+                <Text size="1" color="gray">条</Text>
+              </Flex>
+              <Flex align="center" justify="between" className="mt-2 text-[10px] text-slate-500 font-medium">
+                <span>用户: <span className="font-mono font-bold">{stats.userMessageCount}</span></span>
+                <span>助手: <span className="font-mono font-bold">{stats.assistantMessageCount}</span></span>
+              </Flex>
+            </Flex>
+          </Card>
 
-          <div className="bg-white border border-slate-200/60 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow duration-150">
-            <Typography.Text className="text-slate-400 text-xs font-semibold block mb-1">用户好评度</Typography.Text>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-slate-900 font-mono">
-                {(stats.upCount + stats.downCount) > 0 ? `${Math.round((stats.upCount / (stats.upCount + stats.downCount)) * 100)}%` : '--'}
-              </span>
-              <span className="text-slate-400 text-xs">满意率</span>
-            </div>
-            <div className="mt-3 text-[11px] text-slate-400 flex items-center justify-between">
-              <span className="text-emerald-600 font-medium">点赞: <b className="font-mono">{stats.upCount}</b></span>
-              <span className="text-red-500 font-medium">点踩: <b className="font-mono">{stats.downCount}</b></span>
-            </div>
-          </div>
+          <Card size="2" className="bg-white border border-slate-200/50 shadow-sm hover:shadow transition-shadow">
+            <Flex direction="column" gap="1">
+              <Text size="1" weight="medium" color="gray">好评率</Text>
+              <Flex align="baseline" gap="2" mt="1">
+                <Text size="7" weight="bold" className="font-mono">
+                  {(stats.upCount + stats.downCount) > 0 ? `${Math.round((stats.upCount / (stats.upCount + stats.downCount)) * 100)}%` : '--'}
+                </Text>
+                <Text size="1" color="gray">好评百分比</Text>
+              </Flex>
+              <Flex align="center" justify="between" className="mt-2 text-[10px]">
+                <Text color="teal" weight="bold" size="1">点赞: {stats.upCount}</Text>
+                <Text color="red" weight="bold" size="1">点踩: {stats.downCount}</Text>
+              </Flex>
+            </Flex>
+          </Card>
 
-          <div className="bg-white border border-slate-200/60 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow duration-150">
-            <Typography.Text className="text-slate-400 text-xs font-semibold block mb-1">最近配置修改</Typography.Text>
-            <div className="text-sm font-semibold text-slate-900 mt-2 truncate">
-              {dayjs(stats.updatedAt).format('YYYY-MM-DD')}
-            </div>
-            <div className="mt-2 text-[11px] text-slate-400">
-              {dayjs(stats.updatedAt).format('HH:mm:ss')} (最近保存)
-            </div>
-          </div>
-        </div>
+          <Card size="2" className="bg-white border border-slate-200/50 shadow-sm hover:shadow transition-shadow">
+            <Flex direction="column" gap="1">
+              <Text size="1" weight="medium" color="gray">更新时间</Text>
+              <Text size="4" weight="bold" mt="2" className="truncate">
+                {dayjs(stats.updatedAt).format('YYYY-MM-DD')}
+              </Text>
+              <Text size="1" color="gray" className="mt-2 font-mono">
+                {dayjs(stats.updatedAt).format('HH:mm:ss')} (配置最新保存)
+              </Text>
+            </Flex>
+          </Card>
+        </Grid>
 
         {/* 7-Day Trend Chart */}
-        <div className="bg-white border border-slate-200/60 rounded-2xl p-6 shadow-sm">
-          <Typography.Title level={5} className="!text-slate-900 !font-bold !mb-6">
-            最近 7 天会话数趋势
-          </Typography.Title>
-          
-          <div className="flex items-end justify-between h-48 pt-4 px-4 border-b border-slate-100">
-            {stats.dailyTrends.map((trend) => {
-              const pct = (trend.count / maxTrendCount) * 100;
-              return (
-                <div key={trend.date} className="flex flex-col items-center flex-1 group">
-                  <div className="opacity-0 group-hover:opacity-100 bg-slate-800 text-white text-[10px] font-semibold px-2 py-0.5 rounded shadow-sm mb-1.5 transition-opacity duration-150 pointer-events-none tabular-nums">
-                    {trend.count} 次
+        <Card size="2" className="bg-white border border-slate-200/50 shadow-sm">
+          <Flex direction="column" gap="4">
+            <Heading size="3">最近 7 天会话数趋势</Heading>
+            <div className="flex items-end justify-between h-48 pt-4 px-4 border-b border-slate-100">
+              {stats.dailyTrends.map((trend) => {
+                const pct = (trend.count / maxTrendCount) * 100;
+                return (
+                  <div key={trend.date} className="flex flex-col items-center flex-1 group">
+                    <div className="opacity-0 group-hover:opacity-100 bg-slate-800 text-white text-[10px] font-semibold px-2 py-0.5 rounded shadow-sm mb-1.5 transition-opacity duration-150 pointer-events-none tabular-nums">
+                      {trend.count} 次
+                    </div>
+                    <div
+                      className="w-8 sm:w-12 bg-gradient-to-t from-teal-500 to-teal-700 rounded-t-lg transition-all duration-300 hover:from-teal-600 hover:to-teal-800"
+                      style={{ height: `${Math.max(4, pct)}%` }}
+                    />
+                    <span className="text-[10px] text-slate-400 mt-2 font-medium font-mono">
+                      {trend.date}
+                    </span>
                   </div>
-                  <div
-                    className="w-8 sm:w-12 bg-gradient-to-t from-brand-500 to-teal-500 rounded-t-lg transition-all duration-300 hover:from-brand-600 hover:to-teal-600"
-                    style={{ height: `${Math.max(4, pct)}%` }}
-                  />
-                  <span className="text-[11px] text-slate-400 mt-3 font-medium font-mono">
-                    {trend.date}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderApplicationWorkspace = () => {
-    return (
-      <div className="flex min-h-[calc(100vh-150px)] flex-col gap-4">
-        {/* Workspace Header */}
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between bg-white/60 backdrop-blur border border-slate-200/50 p-4 rounded-2xl shadow-sm">
-          <div className="flex min-w-0 items-center gap-3">
-            <Button
-              icon={<ArrowLeftOutlined />}
-              onClick={() => navigateToApplicationList()}
-              className="!rounded-full hover:!border-brand-500 hover:!text-brand-500 flex items-center justify-center h-9 w-9"
-            />
-            <div className="min-w-0">
-              <Typography.Title level={4} className="!mb-0.5 truncate !text-slate-900 !font-bold">
-                {selectedApplication?.name || '智能体工作室'}
-              </Typography.Title>
-              <div className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse" />
-                <Typography.Text className="text-slate-400 text-xs font-medium">
-                  {selectedApplication?.llmProviderName
-                    ? `${selectedApplication.llmProviderName} / ${selectedApplication.llmModelDisplayName || selectedApplication.llmModelName}`
-                    : '未选择模型'}
-                </Typography.Text>
-              </div>
+                );
+              })}
             </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            {activeTab === 'orchestrate' && (
-              <Button
-                type="primary"
-                icon={<SaveOutlined />}
-                loading={configSaving}
-                disabled={!canUpdate}
-                onClick={() => void handleSaveConfig()}
-                className="!h-10 !rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 border-0 shadow-sm shadow-brand-500/20 px-5"
-              >
-                保存配置
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Tab Sidebars */}
-        <div className="flex flex-col lg:flex-row gap-5 min-h-[calc(100vh-230px)]">
-          <div className="w-full lg:w-56 shrink-0 flex flex-row lg:flex-col gap-1 bg-white border border-slate-200/60 p-2 rounded-2xl shadow-sm h-fit">
-            <button
-              onClick={() => setActiveTab('orchestrate')}
-              className={`flex-1 lg:flex-initial flex items-center gap-2.5 px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
-                activeTab === 'orchestrate'
-                  ? 'bg-brand-50 text-brand-600 shadow-sm border border-brand-100/50'
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-              }`}
-            >
-              <AppstoreOutlined className="text-base" />
-              <span>编排</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('logs')}
-              className={`flex-1 lg:flex-initial flex items-center gap-2.5 px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
-                activeTab === 'logs'
-                  ? 'bg-brand-50 text-brand-600 shadow-sm border border-brand-100/50'
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-              }`}
-            >
-              <BookOutlined className="text-base" />
-              <span>日志与标注</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('monitor')}
-              className={`flex-1 lg:flex-initial flex items-center gap-2.5 px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ${
-                activeTab === 'monitor'
-                  ? 'bg-brand-50 text-brand-600 shadow-sm border border-brand-100/50'
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-              }`}
-            >
-              <RobotOutlined className="text-base" />
-              <span>监测</span>
-            </button>
-          </div>
-
-          <div className="flex-1 min-w-0">
-            {activeTab === 'orchestrate' && renderOrchestrateTab()}
-            {activeTab === 'logs' && renderLogsTab()}
-            {activeTab === 'monitor' && renderMonitorTab()}
-          </div>
-        </div>
-      </div>
+          </Flex>
+        </Card>
+      </Flex>
     );
   };
+
+  const renderApplicationWorkspace = () => (
+    <Flex direction="column" gap="4">
+      {/* Workspace Header */}
+      <Flex gap="3" align="center" justify="between" className="bg-white/80 backdrop-blur p-4 rounded-2xl border border-slate-200/40 shadow-sm">
+        <Flex align="center" gap="3" style={{ minWidth: 0 }}>
+          <Button
+            variant="ghost"
+            color="gray"
+            radius="full"
+            onClick={() => navigateToApplicationList()}
+            style={{ width: 36, height: 36, padding: 0 }}
+          >
+            <ArrowLeft size={16} />
+          </Button>
+          <Flex direction="column" style={{ minWidth: 0 }}>
+            <Heading size="4" className="truncate">{selectedApplication?.name || '智能体'}</Heading>
+            <Flex align="center" gap="2" mt="1">
+              <span className="h-1.5 w-1.5 rounded-full bg-teal-500 animate-pulse" />
+              <Text size="1" color="gray">
+                {selectedApplication?.llmProviderName
+                  ? `${selectedApplication.llmProviderName} / ${selectedApplication.llmModelDisplayName || selectedApplication.llmModelName}`
+                  : '未选择模型'}
+              </Text>
+            </Flex>
+          </Flex>
+        </Flex>
+
+        {activeTab === 'orchestrate' && (
+          <Button
+            color="teal"
+            size="2"
+            loading={configSaving}
+            disabled={!canUpdate}
+            onClick={() => void handleSaveConfig()}
+            style={{ minWidth: 100 }}
+          >
+            <Save size={14} /> 保存配置
+          </Button>
+        )}
+      </Flex>
+
+      {/* Tab Navigation Layout */}
+      <Flex gap="4" direction={{ initial: 'column', lg: 'row' }}>
+        {/* Left tabs menu */}
+        <Card size="1" className="w-full lg:w-56 shrink-0 bg-white border border-slate-200/50 shadow-sm" style={{ height: 'fit-content' }}>
+          <Flex direction={{ initial: 'row', lg: 'column' }} gap="1">
+            <Button
+              variant={activeTab === 'orchestrate' ? 'soft' : 'ghost'}
+              color={activeTab === 'orchestrate' ? 'teal' : 'gray'}
+              onClick={() => setActiveTab('orchestrate')}
+              style={{ justifyContent: 'start', flex: 1, padding: '12px 16px', borderRadius: '12px' }}
+            >
+              <Sparkles size={16} style={{ marginRight: 8 }} /> 编排
+            </Button>
+            <Button
+              variant={activeTab === 'logs' ? 'soft' : 'ghost'}
+              color={activeTab === 'logs' ? 'teal' : 'gray'}
+              onClick={() => setActiveTab('logs')}
+              style={{ justifyContent: 'start', flex: 1, padding: '12px 16px', borderRadius: '12px' }}
+            >
+              <BookOpen size={16} style={{ marginRight: 8 }} /> 日志与标注
+            </Button>
+            <Button
+              variant={activeTab === 'monitor' ? 'soft' : 'ghost'}
+              color={activeTab === 'monitor' ? 'teal' : 'gray'}
+              onClick={() => setActiveTab('monitor')}
+              style={{ justifyContent: 'start', flex: 1, padding: '12px 16px', borderRadius: '12px' }}
+            >
+              <BarChart2 size={16} style={{ marginRight: 8 }} /> 监测
+            </Button>
+          </Flex>
+        </Card>
+
+        {/* Right Tab Panel Content */}
+        <Box style={{ flex: 1, minWidth: 0 }}>
+          {activeTab === 'orchestrate' && renderOrchestrateTab()}
+          {activeTab === 'logs' && renderLogsTab()}
+          {activeTab === 'monitor' && renderMonitorTab()}
+        </Box>
+      </Flex>
+    </Flex>
+  );
 
   return (
-    <div className="relative min-h-full bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] bg-slate-50/50 px-5 py-6 text-slate-900 lg:px-8">
-      {selectedApplicationId ? renderApplicationWorkspace() : renderApplicationList()}
-      <Modal
-        title={<span className="text-slate-900 font-bold">创建智能体</span>}
-        open={createOpen}
-        onCancel={() => setCreateOpen(false)}
-        onOk={() => void handleCreate()}
-        okText="创建"
-        cancelText="取消"
-        confirmLoading={createSaving}
-        destroyOnHidden
-      >
-        <Form form={createForm} layout="vertical" className="mt-4">
-          <Form.Item name="name" label={<span className="text-slate-700 font-medium">智能体名称</span>} rules={[{ required: true, message: '请输入智能体名称' }]}>
-            <Input maxLength={128} className="!rounded-lg" placeholder="给您的智能体起个名字..." />
-          </Form.Item>
-          <Form.Item name="description" label={<span className="text-slate-700 font-medium">应用描述</span>}>
-            <Input.TextArea rows={3} maxLength={255} className="!rounded-lg" placeholder="描述该智能体的用途..." />
-          </Form.Item>
-        </Form>
-      </Modal>
-    </div>
+    <Theme accentColor="teal" grayColor="slate" radius="medium" scaling="100%">
+      <div className="relative min-h-full bg-slate-50/30 px-2 py-2 text-slate-900">
+        {selectedApplicationId ? renderApplicationWorkspace() : renderApplicationList()}
+        
+        {/* Create Dialog */}
+        <Dialog.Root open={createOpen} onOpenChange={setCreateOpen}>
+          <Dialog.Content style={{ maxWidth: 450 }}>
+            <Dialog.Title>创建智能体</Dialog.Title>
+            <Dialog.Description size="2" mb="4">
+              给智能体设定一个名字和简短描述以开始配置。
+            </Dialog.Description>
+
+            <Flex direction="column" gap="3">
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">智能体名称</Text>
+                <TextField.Root
+                  placeholder="给您的智能体起个名字..."
+                  value={createName}
+                  onChange={(e) => setCreateName(e.target.value)}
+                />
+              </label>
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">应用描述</Text>
+                <TextArea
+                  placeholder="简要描述该智能体的职责与范围..."
+                  value={createDescription}
+                  onChange={(e) => setCreateDescription(e.target.value)}
+                  rows={3}
+                />
+              </label>
+            </Flex>
+
+            <Flex gap="3" mt="4" justify="end">
+              <Dialog.Close>
+                <Button variant="soft" color="gray">取消</Button>
+              </Dialog.Close>
+              <Button onClick={() => void handleCreate()} loading={createSaving}>
+                创建智能体
+              </Button>
+            </Flex>
+          </Dialog.Content>
+        </Dialog.Root>
+      </div>
+    </Theme>
   );
 };
