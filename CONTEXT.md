@@ -35,3 +35,11 @@ _Avoid_: tenant admin feature split, employee-only business access
 **Active Company LLM Authorization**:
 A platform LLM model grant that is currently enabled for a company, making that model available to that company.
 _Avoid_: historical model usage, disabled authorization, chat history reference
+
+**Agent Application**:
+A company-scoped LLM-backed application configured with a system prompt, knowledge documents, and runtime chat settings.
+_Avoid_: 智能体, 应用, AI 应用
+
+**Knowledge Document**:
+A company-scoped document uploaded to the knowledge base and optionally bound to an Agent Application as its available reference material.
+_Avoid_: dataset, knowledge collection, vector store
