@@ -40,6 +40,30 @@ _Avoid_: historical model usage, disabled authorization, chat history reference
 A company-scoped LLM-backed application configured with a system prompt, knowledge documents, and runtime chat settings.
 _Avoid_: 智能体, 应用, AI 应用
 
+**Agent Conversation Settings**:
+Runtime conversation behavior configured on an Agent Application, including its opening message, suggested questions, voice input, and reply playback.
+_Avoid_: device settings, user preferences, prompt variables
+
+**Agent Application Conversation**:
+A conversation that belongs to an Agent Application and is removed when that Agent Application is deleted.
+_Avoid_: standalone chat, retained history, shared log
+
+**Agent Opening Message**:
+A greeting configured on an Agent Application and shown when a user starts a new conversation with that application.
+_Avoid_: system prompt, first assistant answer, default reply
+
+**Agent Suggested Question**:
+A curated starter question configured on an Agent Application and shown near the opening message; an Agent Application can have up to ten suggested questions.
+_Avoid_: FAQ, knowledge question, prompt variable
+
+**Agent Reply Playback**:
+Text-to-speech playback of an Agent Application's opening message or assistant replies during conversation preview or runtime conversation.
+_Avoid_: user input playback, suggested question playback, TTS configuration test
+
+**Agent Voice Input**:
+Speech-to-text input for an Agent Application conversation, where recorded user audio is transcribed into editable message text before the user sends it.
+_Avoid_: realtime interruption, direct voice message, device ASR runtime
+
 **Knowledge Document**:
 A company-scoped document uploaded to the knowledge base and optionally bound to an Agent Application as its available reference material.
 _Avoid_: dataset, knowledge collection, vector store
