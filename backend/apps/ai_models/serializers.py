@@ -22,6 +22,7 @@ from .models import (
     LLMTestSettings,
     TTSProvider,
     TTSVoice,
+    default_agent_opening_message,
 )
 
 
@@ -501,6 +502,16 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
     llmProviderName = serializers.SerializerMethodField()
     systemPrompt = serializers.CharField(source='system_prompt', required=False, default='', allow_blank=True)
     maxTokens = serializers.IntegerField(source='max_tokens', required=False)
+    openingMessageEnabled = serializers.BooleanField(source='opening_message_enabled', required=False)
+    openingMessage = serializers.CharField(source='opening_message', required=False, allow_blank=True, default='')
+    suggestedQuestions = serializers.ListField(
+        source='suggested_questions',
+        child=serializers.CharField(max_length=120, allow_blank=True),
+        required=False,
+        allow_empty=True,
+    )
+    voiceInputEnabled = serializers.BooleanField(source='voice_input_enabled', required=False)
+    replyPlaybackEnabled = serializers.BooleanField(source='reply_playback_enabled', required=False)
     knowledgeDocumentIds = serializers.PrimaryKeyRelatedField(
         source='knowledge_documents',
         queryset=KnowledgeDocument.objects.none(),
@@ -524,6 +535,11 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
             'systemPrompt',
             'temperature',
             'maxTokens',
+            'openingMessageEnabled',
+            'openingMessage',
+            'suggestedQuestions',
+            'voiceInputEnabled',
+            'replyPlaybackEnabled',
             'knowledgeDocumentIds',
             'knowledgeDocuments',
             'createdBy',
@@ -583,9 +599,33 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('maxTokens 必须在 1 到 320000 之间')
         return value
 
+    def validate_openingMessage(self, value: str) -> str:
+        value = value.strip()
+        if len(value) > 200:
+            raise serializers.ValidationError('开场白不能超过 200 字')
+        return value
+
+    def validate_suggestedQuestions(self, value: list[str]) -> list[str]:
+        if len(value) > 10:
+            raise serializers.ValidationError('suggestedQuestions 建议问题最多 10 条')
+        normalized = []
+        for item in value:
+            text = str(item).strip()
+            if not text:
+                raise serializers.ValidationError('suggestedQuestions 建议问题不能为空')
+            if len(text) > 120:
+                raise serializers.ValidationError('suggestedQuestions 单条建议问题不能超过 120 字')
+            normalized.append(text)
+        return normalized
+
     def validate(self, attrs):
         attrs = super().validate(attrs)
         return attrs
+
+    def create(self, validated_data):
+        if not validated_data.get('opening_message'):
+            validated_data['opening_message'] = default_agent_opening_message(validated_data.get('name', ''))
+        return super().create(validated_data)
 
 
 class ChatMessageSerializer(serializers.ModelSerializer):

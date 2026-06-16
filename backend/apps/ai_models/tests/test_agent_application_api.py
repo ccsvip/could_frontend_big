@@ -34,6 +34,15 @@ class AgentApplicationAccessDataTests(TestCase):
             }.issubset(set(default_tenant.permission_points.values_list('code', flat=True)))
         )
 
+    def test_seed_adds_delete_permission_to_existing_tenants(self):
+        default_tenant = Tenant.objects.filter(code='default').first()
+
+        self.assertIsNotNone(default_tenant)
+        self.assertIn(
+            'agent_applications.delete',
+            set(default_tenant.permission_points.values_list('code', flat=True)),
+        )
+
 
 class AgentApplicationApiTests(TenantTestMixin, APITestCase):
     def setUp(self):
@@ -213,6 +222,119 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNone(response.data['llmModelId'])
 
+    def test_create_agent_application_defaults_conversation_settings(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.create')
+
+        response = self.client.post(
+            '/api/v1/ai-models/applications/',
+            {'name': '样芋量'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['openingMessageEnabled'])
+        self.assertEqual(
+            response.data['openingMessage'],
+            '你好，我是样芋量，很高兴见到你，有什么我可以帮你的吗？',
+        )
+        self.assertEqual(response.data['suggestedQuestions'], [])
+        self.assertFalse(response.data['voiceInputEnabled'])
+        self.assertFalse(response.data['replyPlaybackEnabled'])
+
+    def test_update_agent_application_accepts_conversation_settings(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.update')
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Conversation agent',
+        )
+
+        response = self.client.patch(
+            f'/api/v1/ai-models/applications/{application.id}/',
+            {
+                'openingMessageEnabled': True,
+                'openingMessage': '你好，我是客服助手。',
+                'suggestedQuestions': ['你能做什么？', '如何使用知识库？'],
+                'voiceInputEnabled': True,
+                'replyPlaybackEnabled': True,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['openingMessage'], '你好，我是客服助手。')
+        self.assertEqual(response.data['suggestedQuestions'], ['你能做什么？', '如何使用知识库？'])
+        self.assertTrue(response.data['voiceInputEnabled'])
+        self.assertTrue(response.data['replyPlaybackEnabled'])
+
+    def test_suggested_questions_limit_is_ten(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.create')
+
+        response = self.client.post(
+            '/api/v1/ai-models/applications/',
+            {
+                'name': 'Too many questions',
+                'suggestedQuestions': [f'问题 {index}' for index in range(11)],
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('suggestedQuestions', response.data['message'])
+
+    def test_suggested_questions_reject_blank_item(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.create')
+
+        response = self.client.post(
+            '/api/v1/ai-models/applications/',
+            {
+                'name': 'Blank question',
+                'suggestedQuestions': ['正常问题', '   '],
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('suggestedQuestions', response.data['message'])
+
+    def test_delete_agent_application_deletes_its_conversations_and_messages(self):
+        self.grant_permissions(
+            'agent_applications.view',
+            'agent_applications.create',
+            'agent_applications.delete',
+        )
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Disposable toolbox',
+        )
+        document = self.create_document(title='Shared document')
+        provider = self.create_provider()
+        model = self.create_model(provider)
+        application.knowledge_documents.set([document])
+        conversation = ChatConversation.objects.create(
+            user=self.user,
+            application=application,
+            tenant=self.tenant,
+            llm_model=model,
+        )
+        message = ChatMessage.objects.create(
+            conversation=conversation,
+            role=ChatMessage.ROLE_ASSISTANT,
+            content='This history belongs to the agent.',
+        )
+
+        response = self.client.delete(f'/api/v1/ai-models/applications/{application.id}/')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(AgentApplication.objects.filter(id=application.id).exists())
+        self.assertFalse(ChatConversation.objects.filter(id=conversation.id).exists())
+        self.assertFalse(ChatMessage.objects.filter(id=message.id).exists())
+        self.assertTrue(KnowledgeDocument.objects.filter(id=document.id).exists())
+        self.assertTrue(LLMModel.objects.filter(id=model.id).exists())
+
     def test_agent_application_stats_action(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.create', 'ai_models.chat.view')
         AgentApplication = self.agent_application_model()
@@ -336,4 +458,3 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         doc1.file.delete()
         doc2.file.delete()
         doc3.file.delete()
-

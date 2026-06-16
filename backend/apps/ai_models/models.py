@@ -293,6 +293,11 @@ class ASRReplacementRule(models.Model):
         return f'{self.source_text} -> {self.replacement_text}'
 
 
+def default_agent_opening_message(name: str) -> str:
+    agent_name = (name or '智能体').strip() or '智能体'
+    return f'你好，我是{agent_name}，很高兴见到你，有什么我可以帮你的吗？'
+
+
 class AgentApplication(models.Model):
     """LLM-backed application configured with prompt and knowledge documents."""
     name = models.CharField('应用名称', max_length=128)
@@ -317,6 +322,11 @@ class AgentApplication(models.Model):
     system_prompt = models.TextField('系统提示词', blank=True, default='')
     temperature = models.FloatField('Temperature', default=0.7)
     max_tokens = models.PositiveIntegerField('最大输出 Tokens', default=1000)
+    opening_message_enabled = models.BooleanField('是否启用开场白', default=True)
+    opening_message = models.TextField('开场白', blank=True, default='')
+    suggested_questions = models.JSONField('建议问题', blank=True, default=list)
+    voice_input_enabled = models.BooleanField('是否启用语音输入', default=False)
+    reply_playback_enabled = models.BooleanField('是否自动播报回复', default=False)
     knowledge_documents = models.ManyToManyField(
         'knowledge_base.KnowledgeDocument',
         blank=True,
@@ -357,6 +367,8 @@ class AgentApplication(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
+        if not self.opening_message:
+            self.opening_message = default_agent_opening_message(self.name)
         if self.llm_model:
             self.llm_provider = self.llm_model.provider
             self.model_name = self.llm_model.name
@@ -399,7 +411,7 @@ class ChatConversation(models.Model):
     max_tokens = models.PositiveIntegerField('最大输出Tokens', default=1000)
     application = models.ForeignKey(
         AgentApplication,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name='conversations',
