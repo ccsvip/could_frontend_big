@@ -73,6 +73,7 @@ import {
   RotateCcw,
   Mic,
   MicOff,
+  Loader2,
   Pause,
   Play,
   Square,
@@ -336,6 +337,8 @@ export const ApplicationManagementPage = () => {
 
   const asrReady = Boolean(asrStatus?.isActive && asrStatus.configured);
   const ttsReady = Boolean(ttsOptions?.provider.isActive && ttsOptions.defaultVoiceId);
+  const isOpeningPlaybackPending = agentAudio.pendingPlaybackKey === 'opening-message';
+  const isOpeningPlaybackPlaying = agentAudio.playingKey === 'opening-message' && !agentAudio.paused;
 
   // Reset states when switching applications
   useEffect(() => {
@@ -978,6 +981,9 @@ export const ApplicationManagementPage = () => {
 
   const renderChatMessage = (msg: ChatMessage) => {
     const isUser = msg.role === 'user';
+    const playbackKey = `message-${msg.id}`;
+    const isPlaybackPending = agentAudio.pendingPlaybackKey === playbackKey;
+    const isPlaybackPlaying = agentAudio.playingKey === playbackKey && !agentAudio.paused;
     return (
       <Flex key={msg.id} justify={isUser ? 'end' : 'start'} className="mb-4">
         <Flex gap="3" style={{ maxWidth: '85%' }} direction={isUser ? 'row-reverse' : 'row'}>
@@ -1010,13 +1016,13 @@ export const ApplicationManagementPage = () => {
                   size="1"
                   variant="soft"
                   color="teal"
-                  disabled={!ttsReady}
-                  onClick={() => void agentAudio.playText(`message-${msg.id}`, msg.content)}
+                  disabled={!ttsReady || isPlaybackPending}
+                  onClick={() => void agentAudio.playText(playbackKey, msg.content)}
                 >
-                  {agentAudio.playingKey === `message-${msg.id}` && !agentAudio.paused ? <Pause size={12} /> : <Play size={12} />}
-                  <Text size="1">{agentAudio.playingKey === `message-${msg.id}` && !agentAudio.paused ? '暂停' : '播放'}</Text>
+                  {isPlaybackPending ? <Loader2 size={12} className="animate-spin" /> : isPlaybackPlaying ? <Pause size={12} /> : <Play size={12} />}
+                  <Text size="1">{isPlaybackPending ? '生成中' : isPlaybackPlaying ? '暂停' : '播放'}</Text>
                 </Button>
-                {agentAudio.playingKey === `message-${msg.id}` && (
+                {agentAudio.playingKey === playbackKey && (
                   <Button size="1" variant="ghost" color="red" onClick={agentAudio.stopPlayback}>
                     <Square size={12} />
                     <Text size="1">停止</Text>
@@ -1481,11 +1487,11 @@ export const ApplicationManagementPage = () => {
                       size="1"
                       variant="soft"
                       color="teal"
-                      disabled={!ttsReady}
+                      disabled={!ttsReady || isOpeningPlaybackPending}
                       onClick={() => void agentAudio.playText('opening-message', openingMessage)}
                     >
-                      {agentAudio.playingKey === 'opening-message' && !agentAudio.paused ? <Pause size={12} /> : <Volume2 size={12} />}
-                      <Text size="1">{agentAudio.playingKey === 'opening-message' && !agentAudio.paused ? '暂停开场白' : '播放开场白'}</Text>
+                      {isOpeningPlaybackPending ? <Loader2 size={12} className="animate-spin" /> : isOpeningPlaybackPlaying ? <Pause size={12} /> : <Volume2 size={12} />}
+                      <Text size="1">{isOpeningPlaybackPending ? '生成中' : isOpeningPlaybackPlaying ? '暂停开场白' : '播放开场白'}</Text>
                     </Button>
                     {agentAudio.playingKey === 'opening-message' && (
                       <Button size="1" variant="ghost" color="red" onClick={agentAudio.stopPlayback}>

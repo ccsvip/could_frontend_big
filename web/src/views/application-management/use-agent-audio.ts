@@ -5,6 +5,7 @@ import { buildAsrRealtimeWebSocketUrl } from '../../api/modules/asr';
 import { testCompanyTts } from '../../api/modules/tts';
 import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
+import { createPlaybackRequestGuard } from './playback-request-guard';
 import {
   AUDIO_WORKLET_PROCESSOR_NAME,
   AUDIO_WORKLET_PROCESSOR_SOURCE,
@@ -30,6 +31,7 @@ export const useAgentAudio = () => {
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [playingKey, setPlayingKey] = useState<string | null>(null);
+  const [pendingPlaybackKey, setPendingPlaybackKey] = useState<string | null>(null);
   const [paused, setPaused] = useState(false);
 
   const streamRef = useRef<MediaStream | null>(null);
@@ -41,6 +43,8 @@ export const useAgentAudio = () => {
   const transcriptRef = useRef('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
+  const playbackRequestGuardRef = useRef(createPlaybackRequestGuard());
+  const playbackKeyRef = useRef<string | null>(null);
 
   const stopRecording = useCallback(() => {
     workletNodeRef.current?.port.close();
@@ -193,15 +197,23 @@ export const useAgentAudio = () => {
   }, []);
 
   const stopPlayback = useCallback(() => {
+    playbackRequestGuardRef.current.cancel();
     audioRef.current?.pause();
     audioRef.current = null;
+    playbackKeyRef.current = null;
     revokeObjectUrl();
     setPlayingKey(null);
+    setPendingPlaybackKey(null);
     setPaused(false);
   }, [revokeObjectUrl]);
 
   const playText = useCallback(async (key: string, text: string) => {
-    if (playingKey === key && audioRef.current) {
+    const content = text.trim();
+    if (!content) {
+      return;
+    }
+
+    if (playbackKeyRef.current === key && audioRef.current) {
       if (audioRef.current.paused) {
         await audioRef.current.play();
         setPaused(false);
@@ -212,31 +224,50 @@ export const useAgentAudio = () => {
       return;
     }
 
-    stopPlayback();
-    const content = text.trim();
-    if (!content) {
+    const playbackRequestGuard = playbackRequestGuardRef.current;
+    if (playbackRequestGuard.isPending(key, content)) {
       return;
     }
 
+    stopPlayback();
+    const playbackRequest = playbackRequestGuard.begin(key, content);
+    setPendingPlaybackKey(key);
+
     try {
       const audioBlob = await testCompanyTts({ text: content });
+      if (!playbackRequestGuard.isCurrent(playbackRequest)) {
+        return;
+      }
+
       const objectUrl = URL.createObjectURL(audioBlob);
       objectUrlRef.current = objectUrl;
       const audio = new Audio(objectUrl);
       audioRef.current = audio;
-      audio.onended = stopPlayback;
+      playbackKeyRef.current = key;
+      audio.onended = () => {
+        if (audioRef.current === audio) {
+          stopPlayback();
+        }
+      };
       audio.onerror = () => {
+        if (audioRef.current !== audio) {
+          return;
+        }
         message.error('语音播放失败');
         stopPlayback();
       };
       setPlayingKey(key);
       setPaused(false);
       await audio.play();
+      playbackRequestGuard.complete(playbackRequest);
+      setPendingPlaybackKey(null);
     } catch {
-      stopPlayback();
-      message.error('语音合成失败');
+      if (playbackRequestGuard.isCurrent(playbackRequest)) {
+        stopPlayback();
+        message.error('语音合成失败');
+      }
     }
-  }, [playingKey, stopPlayback]);
+  }, [stopPlayback]);
 
   useEffect(() => {
     return () => {
@@ -249,6 +280,7 @@ export const useAgentAudio = () => {
     recording,
     transcribing,
     playingKey,
+    pendingPlaybackKey,
     paused,
     startRecording,
     stopRecording,
