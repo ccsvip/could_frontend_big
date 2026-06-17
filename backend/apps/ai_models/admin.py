@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AgentApplication, ChatConversation, ChatMessage, LLMProvider, TTSProvider, TTSVoice
+from .models import AgentAnnotation, AgentApplication, ChatConversation, ChatMessage, LLMProvider, TTSProvider, TTSVoice
 
 
 @admin.register(LLMProvider)
@@ -40,6 +40,14 @@ class AgentApplicationAdmin(admin.ModelAdmin):
     search_fields = ('name', 'description', 'system_prompt')
     raw_id_fields = ('llm_provider', 'created_by', 'tenant')
     filter_horizontal = ('knowledge_documents',)
+
+
+@admin.register(AgentAnnotation)
+class AgentAnnotationAdmin(admin.ModelAdmin):
+    list_display = ('application', 'question', 'is_active', 'hit_count', 'last_hit_at', 'updated_at')
+    list_filter = ('is_active', 'application')
+    search_fields = ('question', 'answer', 'application__name')
+    raw_id_fields = ('application', 'tenant', 'source_message', 'created_by')
 
 
 @admin.register(ChatMessage)

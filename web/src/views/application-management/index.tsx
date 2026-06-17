@@ -2,11 +2,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   createAgentApplication,
+  createAgentAnnotation,
+  createAgentAnnotationFromMessage,
   createAgentApplicationConversation,
+  deleteAgentAnnotation,
   deleteAgentApplication,
+  fetchAgentAnnotations,
   fetchAgentApplication,
   fetchAgentApplicationStats,
   fetchAgentApplications,
+  updateAgentAnnotation,
+  type AgentAnnotationRecord,
   updateAgentApplication,
   type AgentApplicationRecord,
   type AgentApplicationStats,
@@ -63,6 +69,7 @@ import {
   ArrowLeft,
   ArrowRight,
   BookOpen,
+  BookmarkPlus,
   MessageSquare,
   Sparkles,
   ChevronDown,
@@ -82,6 +89,8 @@ import {
   Headphones,
   Languages,
   PenTool,
+  FileQuestion,
+  Zap,
 } from 'lucide-react';
 
 const PAGE_SIZE = 10;
@@ -230,7 +239,7 @@ export const ApplicationManagementPage = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<typeof AGENT_TEMPLATES[number] | null>(null);
 
   // Tab control state
-  const [activeTab, setActiveTab] = useState<'orchestrate' | 'conversation' | 'logs' | 'monitor'>('orchestrate');
+  const [activeTab, setActiveTab] = useState<'orchestrate' | 'conversation' | 'annotations' | 'logs' | 'monitor'>('orchestrate');
 
   // Debug session state (Orchestration Tab)
   const [conversation, setConversation] = useState<ChatConversationDetail | null>(null);
@@ -247,6 +256,18 @@ export const ApplicationManagementPage = () => {
   const [logConversationsLoading, setLogConversationsLoading] = useState(false);
   const [selectedLogConversation, setSelectedLogConversation] = useState<ChatConversationDetail | null>(null);
   const [selectedLogConversationLoading, setSelectedLogConversationLoading] = useState(false);
+
+  // Annotation state
+  const [annotations, setAnnotations] = useState<AgentAnnotationRecord[]>([]);
+  const [annotationsLoading, setAnnotationsLoading] = useState(false);
+  const [annotationKeyword, setAnnotationKeyword] = useState('');
+  const [annotationSearchValue, setAnnotationSearchValue] = useState('');
+  const [annotationDialogOpen, setAnnotationDialogOpen] = useState(false);
+  const [editingAnnotation, setEditingAnnotation] = useState<AgentAnnotationRecord | null>(null);
+  const [annotationQuestion, setAnnotationQuestion] = useState('');
+  const [annotationAnswer, setAnnotationAnswer] = useState('');
+  const [annotationSaving, setAnnotationSaving] = useState(false);
+  const [annotationsEnabled, setAnnotationsEnabled] = useState(true);
 
   // Monitor stats state (Monitor Tab)
   const [stats, setStats] = useState<AgentApplicationStats | null>(null);
@@ -441,6 +462,9 @@ export const ApplicationManagementPage = () => {
     setActiveTab('orchestrate');
     setSelectedLogConversation(null);
     setLogConversations([]);
+    setAnnotations([]);
+    setAnnotationKeyword('');
+    setAnnotationSearchValue('');
     setStats(null);
   }, [selectedApplicationId]);
 
@@ -473,6 +497,113 @@ export const ApplicationManagementPage = () => {
     }
   };
 
+  const loadAnnotations = useCallback(async () => {
+    if (!selectedApplicationId) return;
+    setAnnotationsLoading(true);
+    try {
+      const data = await fetchAgentAnnotations(selectedApplicationId, annotationKeyword);
+      setAnnotations(data);
+      setAnnotationsEnabled(data.some((item) => item.isActive) || data.length === 0);
+    } catch {
+      message.error('标注列表加载失败');
+    } finally {
+      setAnnotationsLoading(false);
+    }
+  }, [annotationKeyword, selectedApplicationId]);
+
+  const openAnnotationDialog = (annotation?: AgentAnnotationRecord) => {
+    setEditingAnnotation(annotation || null);
+    setAnnotationQuestion(annotation?.question || '');
+    setAnnotationAnswer(annotation?.answer || '');
+    setAnnotationDialogOpen(true);
+  };
+
+  const closeAnnotationDialog = () => {
+    setAnnotationDialogOpen(false);
+    setEditingAnnotation(null);
+    setAnnotationQuestion('');
+    setAnnotationAnswer('');
+  };
+
+  const saveAnnotation = async () => {
+    if (!selectedApplicationId) return;
+    const question = annotationQuestion.trim();
+    const answer = annotationAnswer.trim();
+    if (!question || !answer) {
+      message.warning('请填写问题和标准回复');
+      return;
+    }
+    setAnnotationSaving(true);
+    try {
+      if (editingAnnotation) {
+        await updateAgentAnnotation(selectedApplicationId, editingAnnotation.id, { question, answer });
+        message.success('标注已更新');
+      } else {
+        await createAgentAnnotation(selectedApplicationId, { question, answer });
+        message.success('标注已创建');
+      }
+      closeAnnotationDialog();
+      await loadAnnotations();
+    } catch {
+      message.error('标注保存失败');
+    } finally {
+      setAnnotationSaving(false);
+    }
+  };
+
+  const toggleAnnotation = async (annotation: AgentAnnotationRecord, checked: boolean, silent = false) => {
+    if (!selectedApplicationId) return;
+    try {
+      await updateAgentAnnotation(selectedApplicationId, annotation.id, { isActive: checked });
+      setAnnotations((current) => current.map((item) => (item.id === annotation.id ? { ...item, isActive: checked } : item)));
+      if (!silent) {
+        message.success(checked ? '标注已启用' : '标注已停用');
+      }
+    } catch {
+      if (silent) {
+        throw new Error('annotation status update failed');
+      }
+      if (!silent) {
+        message.error('标注状态更新失败');
+      }
+    }
+  };
+
+  const removeAnnotation = async (annotationId: number) => {
+    if (!selectedApplicationId) return;
+    try {
+      await deleteAgentAnnotation(selectedApplicationId, annotationId);
+      setAnnotations((current) => current.filter((item) => item.id !== annotationId));
+      message.success('标注已删除');
+    } catch {
+      message.error('标注删除失败');
+    }
+  };
+
+  const createAnnotationFromAssistantMessage = async (assistantMessage: ChatMessage) => {
+    if (!selectedApplicationId || assistantMessage.role !== 'assistant') return;
+    const assistantIndex = messages.findIndex((item) => item.id === assistantMessage.id);
+    const searchMessages = assistantIndex >= 0 ? messages.slice(0, assistantIndex) : messages;
+    const previousUserMessage = [...searchMessages].reverse().find((item) => item.role === 'user');
+    if (!previousUserMessage) {
+      message.warning('未找到对应的问题');
+      return;
+    }
+    try {
+      await createAgentAnnotationFromMessage(selectedApplicationId, {
+        messageId: assistantMessage.id,
+        question: previousUserMessage.content,
+        answer: assistantMessage.content,
+      });
+      message.success('已添加到标注');
+      if (activeTab === 'annotations') {
+        await loadAnnotations();
+      }
+    } catch {
+      message.error('添加标注失败');
+    }
+  };
+
   // Fetch Monitor Statistics
   const loadStats = useCallback(async () => {
     if (!selectedApplicationId) return;
@@ -489,12 +620,14 @@ export const ApplicationManagementPage = () => {
 
   // Load tab-specific data
   useEffect(() => {
-    if (activeTab === 'logs') {
+    if (activeTab === 'annotations') {
+      void loadAnnotations();
+    } else if (activeTab === 'logs') {
       void loadLogConversations();
     } else if (activeTab === 'monitor') {
       void loadStats();
     }
-  }, [activeTab, loadLogConversations, loadStats]);
+  }, [activeTab, loadAnnotations, loadLogConversations, loadStats]);
 
   const handleSearch = () => {
     setApplicationPage(1);
@@ -1191,7 +1324,7 @@ export const ApplicationManagementPage = () => {
               )}
             </div>
             {!isUser && msg.id !== -1 && (
-              <Flex align="center" gap="2" className="px-1">
+              <Flex align="center" gap="2" wrap="wrap" className="px-1">
                 <Button
                   size="1"
                   variant="soft"
@@ -1208,6 +1341,16 @@ export const ApplicationManagementPage = () => {
                     <Text size="1">停止</Text>
                   </Button>
                 )}
+                <Button
+                  size="1"
+                  variant="ghost"
+                  color="gray"
+                  disabled={!canUpdate}
+                  onClick={() => void createAnnotationFromAssistantMessage(msg)}
+                >
+                  <BookmarkPlus size={12} />
+                  <Text size="1">添加到标注</Text>
+                </Button>
               </Flex>
             )}
           </Flex>
@@ -1728,6 +1871,154 @@ export const ApplicationManagementPage = () => {
     </Spin>
   );
 
+  const renderAnnotationsTab = () => (
+    <Spin spinning={annotationsLoading}>
+      <Flex direction="column" gap="4">
+        <Card size="2" className="bg-blue-50/80 border border-blue-100 shadow-sm">
+          <Flex align="center" justify="between" gap="4">
+            <Flex align="center" gap="4" style={{ minWidth: 0 }}>
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm">
+                <BookOpen size={26} />
+              </div>
+              <Flex direction="column" gap="1" style={{ minWidth: 0 }}>
+                <Heading size="4">命中标注即 100% 精确回复</Heading>
+                <Text size="2" color="gray" className="max-w-2xl leading-6">
+                  为常见问题预设标准答案。用户提问匹配后，智能体将直接返回该答案，跳过模型推理。
+                </Text>
+              </Flex>
+            </Flex>
+            <Switch
+              size="3"
+              checked={annotationsEnabled}
+              onCheckedChange={(checked) => {
+                setAnnotationsEnabled(checked);
+                const changedAnnotations = annotations.filter((annotation) => annotation.isActive !== checked);
+                if (changedAnnotations.length === 0) return;
+                Promise.all(changedAnnotations.map((annotation) => toggleAnnotation(annotation, checked, true)))
+                  .then(() => {
+                    message.success(checked ? '已启用全部标注' : '已停用全部标注');
+                  })
+                  .catch(() => {
+                    message.error('批量更新标注失败');
+                  });
+              }}
+              disabled={!canUpdate || annotations.length === 0}
+            />
+          </Flex>
+        </Card>
+
+        <Flex gap="3" direction={{ initial: 'column', sm: 'row' }}>
+          <TextField.Root
+            size="3"
+            value={annotationSearchValue}
+            placeholder="搜索问题或答案"
+            onChange={(event) => setAnnotationSearchValue(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                setAnnotationKeyword(annotationSearchValue.trim());
+              }
+            }}
+            style={{ flex: 1 }}
+          >
+            <TextField.Slot>
+              <Search size={18} />
+            </TextField.Slot>
+          </TextField.Root>
+          <Button
+            size="3"
+            color="gray"
+            variant="soft"
+            onClick={() => setAnnotationKeyword(annotationSearchValue.trim())}
+          >
+            搜索
+          </Button>
+          <Button
+            size="3"
+            color="teal"
+            disabled={!canUpdate}
+            onClick={() => openAnnotationDialog()}
+            className="shadow-sm"
+          >
+            <Plus size={18} /> 新建
+          </Button>
+        </Flex>
+
+        <Flex direction="column" gap="3">
+          {annotations.length > 0 ? (
+            annotations.map((annotation) => (
+              <Card key={annotation.id} size="2" className="bg-white border border-slate-200/70 shadow-sm">
+                <Flex direction="column" gap="3">
+                  <Flex justify="between" align="start" gap="3">
+                    <Flex align="center" gap="3" style={{ minWidth: 0 }}>
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 text-sm font-semibold">
+                        Q
+                      </span>
+                      <Heading size="3" className="break-words">{annotation.question}</Heading>
+                    </Flex>
+                    <Flex align="center" gap="2" className="shrink-0">
+                      <Switch
+                        checked={annotation.isActive}
+                        disabled={!canUpdate}
+                        onCheckedChange={(checked) => void toggleAnnotation(annotation, checked)}
+                      />
+                      <Button size="1" variant="ghost" color="gray" disabled={!canUpdate} onClick={() => openAnnotationDialog(annotation)}>
+                        编辑
+                      </Button>
+                      <AlertDialog.Root>
+                        <AlertDialog.Trigger>
+                          <Button size="1" variant="ghost" color="red" disabled={!canUpdate}>
+                            删除
+                          </Button>
+                        </AlertDialog.Trigger>
+                        <AlertDialog.Content style={{ maxWidth: 380 }}>
+                          <AlertDialog.Title>删除标注？</AlertDialog.Title>
+                          <AlertDialog.Description size="2">
+                            删除后该问题将不再命中标准回复。
+                          </AlertDialog.Description>
+                          <Flex gap="3" mt="4" justify="end">
+                            <AlertDialog.Cancel>
+                              <Button variant="soft" color="gray">取消</Button>
+                            </AlertDialog.Cancel>
+                            <AlertDialog.Action>
+                              <Button color="red" onClick={() => void removeAnnotation(annotation.id)}>删除</Button>
+                            </AlertDialog.Action>
+                          </Flex>
+                        </AlertDialog.Content>
+                      </AlertDialog.Root>
+                    </Flex>
+                  </Flex>
+
+                  <Flex gap="3" align="start" className="rounded-2xl bg-slate-50 px-4 py-3">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 text-sm font-semibold">
+                      A
+                    </span>
+                    <ChatMarkdown content={annotation.answer} className="chat-markdown text-sm leading-6 text-slate-800" />
+                  </Flex>
+
+                  <Flex align="center" gap="3" className="text-xs text-slate-500">
+                    <span className="flex items-center gap-1">
+                      <Zap size={14} /> 命中 {annotation.hitCount} 次
+                    </span>
+                    <span>·</span>
+                    <span>{annotation.lastHitAt ? dayjs(annotation.lastHitAt).format('M月D日') : dayjs(annotation.updated_at).format('M月D日')}</span>
+                    {!annotation.isActive && <Badge color="gray">已停用</Badge>}
+                  </Flex>
+                </Flex>
+              </Card>
+            ))
+          ) : (
+            <Card size="2" className="bg-white border border-slate-200/70 shadow-sm">
+              <Flex direction="column" align="center" justify="center" gap="3" className="py-14 text-slate-400">
+                <FileQuestion size={38} className="text-slate-300" />
+                <Text size="2">暂无标注</Text>
+              </Flex>
+            </Card>
+          )}
+        </Flex>
+      </Flex>
+    </Spin>
+  );
+
   const renderLogsTab = () => (
     <Spin spinning={logConversationsLoading}>
       <Grid columns={{ initial: '1', xl: '380px minmax(0, 1fr)' }} gap="4">
@@ -2029,12 +2320,25 @@ export const ApplicationManagementPage = () => {
               <MessageSquare size={16} style={{ marginRight: 8 }} /> 对话设置
             </Button>
             <Button
+              variant={activeTab === 'annotations' ? 'soft' : 'ghost'}
+              color={activeTab === 'annotations' ? 'teal' : 'gray'}
+              onClick={() => setActiveTab('annotations')}
+              style={{ justifyContent: 'start', flex: 1, padding: '12px 16px', borderRadius: '12px' }}
+            >
+              <BookOpen size={16} style={{ marginRight: 8 }} /> 标注
+              {annotations.length > 0 && (
+                <Badge color="blue" size="1" style={{ marginLeft: 'auto' }}>
+                  {annotations.length}
+                </Badge>
+              )}
+            </Button>
+            <Button
               variant={activeTab === 'logs' ? 'soft' : 'ghost'}
               color={activeTab === 'logs' ? 'teal' : 'gray'}
               onClick={() => setActiveTab('logs')}
               style={{ justifyContent: 'start', flex: 1, padding: '12px 16px', borderRadius: '12px' }}
             >
-              <BookOpen size={16} style={{ marginRight: 8 }} /> 日志与标注
+              <FileQuestion size={16} style={{ marginRight: 8 }} /> 日志
             </Button>
             <Button
               variant={activeTab === 'monitor' ? 'soft' : 'ghost'}
@@ -2051,6 +2355,7 @@ export const ApplicationManagementPage = () => {
         <Box style={{ flex: 1, minWidth: 0 }}>
           {activeTab === 'orchestrate' && renderOrchestrateTab()}
           {activeTab === 'conversation' && renderConversationSettingsTab()}
+          {activeTab === 'annotations' && renderAnnotationsTab()}
           {activeTab === 'logs' && renderLogsTab()}
           {activeTab === 'monitor' && renderMonitorTab()}
         </Box>
@@ -2063,6 +2368,49 @@ export const ApplicationManagementPage = () => {
       <div className="relative min-h-full bg-slate-50/30 px-2 py-2 text-slate-900">
         {selectedApplicationId ? renderApplicationWorkspace() : renderApplicationList()}
         
+        <Dialog.Root open={annotationDialogOpen} onOpenChange={(open) => {
+          if (open) {
+            setAnnotationDialogOpen(true);
+          } else {
+            closeAnnotationDialog();
+          }
+        }}>
+          <Dialog.Content style={{ maxWidth: 560 }}>
+            <Dialog.Title>{editingAnnotation ? '编辑标注' : '新建标注'}</Dialog.Title>
+            <Dialog.Description size="2" mb="4">
+              配置精确匹配的问题和标准回复，命中后会跳过模型推理直接返回。
+            </Dialog.Description>
+            <Flex direction="column" gap="3">
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">问题</Text>
+                <TextArea
+                  rows={3}
+                  value={annotationQuestion}
+                  onChange={(event) => setAnnotationQuestion(event.target.value)}
+                  placeholder="例如：营业时间"
+                />
+              </label>
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">标准回复</Text>
+                <TextArea
+                  rows={5}
+                  value={annotationAnswer}
+                  onChange={(event) => setAnnotationAnswer(event.target.value)}
+                  placeholder="输入命中后要直接返回的标准答案"
+                />
+              </label>
+            </Flex>
+            <Flex gap="3" mt="4" justify="end">
+              <Dialog.Close>
+                <Button variant="soft" color="gray">取消</Button>
+              </Dialog.Close>
+              <Button color="teal" loading={annotationSaving} onClick={() => void saveAnnotation()}>
+                保存
+              </Button>
+            </Flex>
+          </Dialog.Content>
+        </Dialog.Root>
+
         {/* Create Dialog */}
         <Dialog.Root open={createOpen} onOpenChange={(open) => {
           setCreateOpen(open);

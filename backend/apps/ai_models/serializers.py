@@ -13,6 +13,7 @@ from .llm_services import (
 from .services.tts import get_effective_tts_config, mask_api_key as mask_tts_api_key
 from .models import (
     ASRConfig,
+    AgentAnnotation,
     ASRReplacementRule,
     AgentApplication,
     ChatConversation,
@@ -633,6 +634,76 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
         if not validated_data.get('opening_message'):
             validated_data['opening_message'] = default_agent_opening_message(validated_data.get('name', ''))
         return super().create(validated_data)
+
+
+class AgentAnnotationSerializer(serializers.ModelSerializer):
+    applicationId = serializers.IntegerField(source='application_id', read_only=True)
+    sourceMessageId = serializers.IntegerField(source='source_message_id', read_only=True, allow_null=True)
+    isActive = serializers.BooleanField(source='is_active', required=False)
+    hitCount = serializers.IntegerField(source='hit_count', read_only=True)
+    lastHitAt = serializers.DateTimeField(source='last_hit_at', read_only=True, allow_null=True)
+    createdBy = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AgentAnnotation
+        fields = [
+            'id',
+            'applicationId',
+            'question',
+            'answer',
+            'sourceMessageId',
+            'isActive',
+            'hitCount',
+            'lastHitAt',
+            'createdBy',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = [
+            'id',
+            'applicationId',
+            'sourceMessageId',
+            'hitCount',
+            'lastHitAt',
+            'createdBy',
+            'created_at',
+            'updated_at',
+        ]
+
+    def get_createdBy(self, obj: AgentAnnotation) -> str:
+        if obj.created_by is None:
+            return ''
+        return obj.created_by.get_full_name() or obj.created_by.username
+
+    def validate_question(self, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('问题不能为空')
+        return value
+
+    def validate_answer(self, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('答案不能为空')
+        return value
+
+
+class AgentAnnotationCreateFromMessageSerializer(serializers.Serializer):
+    messageId = serializers.IntegerField()
+    question = serializers.CharField(max_length=500)
+    answer = serializers.CharField()
+
+    def validate_question(self, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('问题不能为空')
+        return value
+
+    def validate_answer(self, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('答案不能为空')
+        return value
 
 
 class ChatMessageSerializer(serializers.ModelSerializer):

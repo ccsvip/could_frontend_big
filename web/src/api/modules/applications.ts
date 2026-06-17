@@ -112,3 +112,75 @@ export const fetchAgentApplicationStats = async (id: number) => {
   const response = await httpClient.get<AgentApplicationStats>(`/ai-models/applications/${id}/stats/`);
   return response.data;
 };
+
+export type AgentAnnotationRecord = {
+  id: number;
+  applicationId: number;
+  question: string;
+  answer: string;
+  sourceMessageId: number | null;
+  isActive: boolean;
+  hitCount: number;
+  lastHitAt: string | null;
+  createdBy: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AgentAnnotationPayload = {
+  question: string;
+  answer: string;
+  isActive?: boolean;
+};
+
+export type AgentAnnotationFromMessagePayload = {
+  messageId: number;
+  question: string;
+  answer: string;
+};
+
+export const fetchAgentAnnotations = async (applicationId: number, keyword?: string) => {
+  const response = await httpClient.get<AgentAnnotationRecord[]>(
+    `/ai-models/applications/${applicationId}/annotations/`,
+    { params: { keyword: keyword || undefined } },
+  );
+  return response.data;
+};
+
+export const createAgentAnnotation = async (
+  applicationId: number,
+  payload: AgentAnnotationPayload,
+) => {
+  const response = await httpClient.post<AgentAnnotationRecord>(
+    `/ai-models/applications/${applicationId}/annotations/`,
+    payload,
+  );
+  return response.data;
+};
+
+export const createAgentAnnotationFromMessage = async (
+  applicationId: number,
+  payload: AgentAnnotationFromMessagePayload,
+) => {
+  const response = await httpClient.post<AgentAnnotationRecord>(
+    `/ai-models/applications/${applicationId}/annotations/from-message/`,
+    payload,
+  );
+  return response.data;
+};
+
+export const updateAgentAnnotation = async (
+  applicationId: number,
+  annotationId: number,
+  payload: Partial<AgentAnnotationPayload>,
+) => {
+  const response = await httpClient.patch<AgentAnnotationRecord>(
+    `/ai-models/applications/${applicationId}/annotations/${annotationId}/`,
+    payload,
+  );
+  return response.data;
+};
+
+export const deleteAgentAnnotation = async (applicationId: number, annotationId: number) => {
+  await httpClient.delete(`/ai-models/applications/${applicationId}/annotations/${annotationId}/`);
+};

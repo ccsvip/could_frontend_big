@@ -6,6 +6,7 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.models import (
+    AgentAnnotation,
     ChatConversation,
     ChatMessage,
     LLMModel,
@@ -190,6 +191,46 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(conversation.system_prompt, 'Diagnose code carefully.')
         self.assertEqual(conversation.temperature, 0.5)
         self.assertEqual(conversation.max_tokens, 1600)
+
+    def test_create_annotation_from_assistant_message(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.update')
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Annotation agent',
+        )
+        conversation = ChatConversation.objects.create(
+            user=self.user,
+            application=application,
+            tenant=self.tenant,
+        )
+        user_message = ChatMessage.objects.create(
+            conversation=conversation,
+            role=ChatMessage.ROLE_USER,
+            content='营业时间',
+        )
+        assistant_message = ChatMessage.objects.create(
+            conversation=conversation,
+            role=ChatMessage.ROLE_ASSISTANT,
+            content='我们的服务时间为周一至周五 09:00 - 18:00。',
+        )
+
+        response = self.client.post(
+            f'/api/v1/ai-models/applications/{application.id}/annotations/from-message/',
+            {
+                'messageId': assistant_message.id,
+                'question': user_message.content,
+                'answer': assistant_message.content,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        annotation = AgentAnnotation.objects.get(application=application)
+        self.assertEqual(annotation.question, '营业时间')
+        self.assertEqual(annotation.answer, '我们的服务时间为周一至周五 09:00 - 18:00。')
+        self.assertEqual(annotation.source_message_id, assistant_message.id)
 
     def test_create_agent_application_without_model_uses_default_model(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.create')

@@ -6,7 +6,8 @@ from asgiref.sync import sync_to_async
 from django.core.cache import cache
 from django.db import transaction
 from django.db import connections
-from django.db.models import Q
+from django.db.models import F, Q
+from django.utils import timezone
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema_view, extend_schema
@@ -50,6 +51,7 @@ from .llm_services import (
 )
 from .models import (
     ASRReplacementRule,
+    AgentAnnotation,
     AgentApplication,
     ChatConversation,
     ChatMessage,
@@ -65,6 +67,8 @@ from .models import (
 from .realtime_asr import resolve_asr_device_connection
 from .serializers import (
     ASRConfigSerializer,
+    AgentAnnotationCreateFromMessageSerializer,
+    AgentAnnotationSerializer,
     ASRReplacementRuleSerializer,
     AgentApplicationSerializer,
     ChatConversationConfigSerializer,
@@ -853,6 +857,9 @@ async def _generate_conversation_summary(
     update=extend_schema(tags=['Agent Applications']),
     partial_update=extend_schema(tags=['Agent Applications']),
     destroy=extend_schema(tags=['Agent Applications']),
+    annotations=extend_schema(tags=['Agent Applications']),
+    create_annotation=extend_schema(tags=['Agent Applications']),
+    update_annotation=extend_schema(tags=['Agent Applications']),
     create_conversation=extend_schema(tags=['Agent Applications']),
 )
 class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
@@ -869,6 +876,9 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         'update': [CanUpdateAgentApplications],
         'partial_update': [CanUpdateAgentApplications],
         'destroy': [CanDeleteAgentApplications],
+        'annotations': [CanViewAgentApplications],
+        'create_annotation': [CanUpdateAgentApplications],
+        'update_annotation': [CanUpdateAgentApplications],
         'create_conversation': [CanViewAgentApplications, CanCreateChat],
     }
 
@@ -883,6 +893,11 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         context = super().get_serializer_context()
         context['tenant'] = self.request_tenant
         return context
+
+    def get_permissions(self):
+        if self.action == 'annotations' and self.request.method == 'POST':
+            return [CanUpdateAgentApplications()]
+        return super().get_permissions()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -933,6 +948,80 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             tenant=application.tenant,
         )
         return Response(ChatConversationDetailSerializer(conversation).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['get', 'post'], url_path='annotations')
+    def annotations(self, request, pk=None):
+        application = self.get_object()
+        if request.method == 'GET':
+            queryset = application.annotations.select_related('created_by').order_by('-updated_at', '-id')
+            keyword = request.query_params.get('keyword', '').strip()
+            if keyword:
+                queryset = queryset.filter(Q(question__icontains=keyword) | Q(answer__icontains=keyword))
+            return Response(AgentAnnotationSerializer(queryset, many=True).data)
+
+        serializer = AgentAnnotationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        annotation, created = AgentAnnotation.objects.update_or_create(
+            application=application,
+            question=serializer.validated_data['question'],
+            defaults={
+                'tenant': application.tenant,
+                'answer': serializer.validated_data['answer'],
+                'is_active': serializer.validated_data.get('is_active', True),
+                'created_by': request.user,
+            },
+        )
+        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        return Response(AgentAnnotationSerializer(annotation).data, status=status_code)
+
+    @action(detail=True, methods=['post'], url_path='annotations/from-message')
+    def create_annotation(self, request, pk=None):
+        application = self.get_object()
+        serializer = AgentAnnotationCreateFromMessageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        message = ChatMessage.objects.select_related('conversation').filter(
+            id=serializer.validated_data['messageId'],
+            role=ChatMessage.ROLE_ASSISTANT,
+            conversation__application=application,
+            conversation__tenant=application.tenant,
+        ).first()
+        if message is None:
+            return Response(
+                {'status': 'error', 'message': '目标助手回复不存在', 'code': 404},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        annotation, created = AgentAnnotation.objects.update_or_create(
+            application=application,
+            question=serializer.validated_data['question'],
+            defaults={
+                'tenant': application.tenant,
+                'answer': serializer.validated_data['answer'],
+                'source_message': message,
+                'is_active': True,
+                'created_by': request.user,
+            },
+        )
+        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        return Response(AgentAnnotationSerializer(annotation).data, status=status_code)
+
+    @action(detail=True, methods=['patch', 'delete'], url_path='annotations/(?P<annotation_id>[^/.]+)')
+    def update_annotation(self, request, pk=None, annotation_id=None):
+        application = self.get_object()
+        annotation = application.annotations.filter(id=annotation_id).first()
+        if annotation is None:
+            return Response(
+                {'status': 'error', 'message': '标注不存在', 'code': 404},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if request.method == 'DELETE':
+            annotation.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        serializer = AgentAnnotationSerializer(annotation, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(AgentAnnotationSerializer(annotation).data)
 
     @action(detail=True, methods=['get'], url_path='stats')
     def stats(self, request, pk=None):
@@ -1131,23 +1220,6 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             conversation.llm_model.name if conversation.llm_model else '',
         )
 
-        model = conversation.llm_model
-        if not is_llm_model_effective_for_tenant(conversation.tenant, model):
-            logger.warning(
-                'chat.send.model_unavailable conversation_id=%s user_id=%s bound_model_id=%s',
-                conversation.id,
-                request.user.id,
-                conversation.llm_model_id,
-            )
-            return Response({
-                'status': 'error',
-                'message': 'LLM 模型不可用，请重新选择可用模型',
-                'code': 400,
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        provider = model.provider
-        model_name = model.name
-
         if regenerate_message_id is not None:
             target_message = conversation.messages.filter(
                 id=regenerate_message_id,
@@ -1184,6 +1256,62 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                 content=content,
             )
             conversation.save(update_fields=['updated_at'])
+
+        normalized_content = content.strip()
+        annotation = None
+        if regenerate_message_id is None and conversation.application_id and normalized_content:
+            annotation = (
+                AgentAnnotation.objects
+                .filter(
+                    application=conversation.application,
+                    tenant=conversation.tenant,
+                    is_active=True,
+                    question=normalized_content,
+                )
+                .first()
+            )
+        if annotation is not None:
+            now = timezone.now()
+            AgentAnnotation.objects.filter(id=annotation.id).update(hit_count=F('hit_count') + 1, last_hit_at=now)
+            ChatMessage.objects.create(
+                conversation=conversation,
+                role=ChatMessage.ROLE_ASSISTANT,
+                content=annotation.answer,
+            )
+            conversation.save(update_fields=['updated_at'])
+
+            async def annotation_event_stream():
+                yield f"data: {json.dumps({'content': annotation.answer})}\n\n"
+                yield "data: [DONE]\n\n"
+
+            logger.info(
+                'chat.send.annotation_hit conversation_id=%s user_id=%s application_id=%s annotation_id=%s',
+                conversation.id,
+                request.user.id,
+                conversation.application_id,
+                annotation.id,
+            )
+            response = StreamingHttpResponse(annotation_event_stream(), content_type='text/event-stream')
+            response['Cache-Control'] = 'no-cache'
+            response['X-Accel-Buffering'] = 'no'
+            return response
+
+        model = conversation.llm_model
+        if not is_llm_model_effective_for_tenant(conversation.tenant, model):
+            logger.warning(
+                'chat.send.model_unavailable conversation_id=%s user_id=%s bound_model_id=%s',
+                conversation.id,
+                request.user.id,
+                conversation.llm_model_id,
+            )
+            return Response({
+                'status': 'error',
+                'message': 'LLM 模型不可用，请重新选择可用模型',
+                'code': 400,
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        provider = model.provider
+        model_name = model.name
 
         # Build messages history
         history_messages = list(

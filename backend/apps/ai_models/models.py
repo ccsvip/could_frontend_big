@@ -378,6 +378,63 @@ class AgentApplication(models.Model):
         super().save(*args, **kwargs)
 
 
+class AgentAnnotation(models.Model):
+    """Exact-match standard reply for an agent application."""
+    application = models.ForeignKey(
+        AgentApplication,
+        on_delete=models.CASCADE,
+        related_name='annotations',
+        verbose_name='所属智能体',
+    )
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='+',
+        verbose_name='所属公司',
+        null=True,
+        blank=True,
+    )
+    question = models.CharField('标准问题', max_length=500)
+    answer = models.TextField('标准回复')
+    source_message = models.ForeignKey(
+        'ChatMessage',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='annotation_sources',
+        verbose_name='来源助手消息',
+    )
+    is_active = models.BooleanField('是否启用', default=True)
+    hit_count = models.PositiveIntegerField('命中次数', default=0)
+    last_hit_at = models.DateTimeField('最近命中时间', null=True, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name='created_agent_annotations',
+        verbose_name='创建人',
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        verbose_name = '智能体标注'
+        verbose_name_plural = '智能体标注'
+        ordering = ['-updated_at', '-id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['application', 'question'],
+                name='unique_agent_annotation_question_per_application',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.application_id}: {self.question[:40]}'
+
+
 
 class ChatConversation(models.Model):
     """聊天会话"""

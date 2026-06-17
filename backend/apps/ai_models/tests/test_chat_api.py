@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import Menu, PermissionPoint, Role, UserRole
-from apps.ai_models.models import ChatConversation, ChatMessage, LLMModel, LLMProvider, TenantLLMModelGrant
+from apps.ai_models.models import AgentAnnotation, AgentApplication, ChatConversation, ChatMessage, LLMModel, LLMProvider, TenantLLMModelGrant
 from apps.ai_models.views import _build_chat_completions_url
 from apps.tenants.test_utils import TenantTestMixin
 
@@ -484,3 +484,45 @@ class ChatApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         assistant_message.refresh_from_db()
         self.assertEqual(assistant_message.feedback, ChatMessage.FEEDBACK_UP)
+
+    def test_send_returns_annotation_without_calling_model(self):
+        self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='标注客服',
+        )
+        conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
+            title='标注命中测试',
+            user=self.user,
+            application=application,
+        )
+        annotation = AgentAnnotation.objects.create(
+            tenant=self.tenant,
+            application=application,
+            question='营业时间',
+            answer='我们的服务时间为周一至周五 09:00 - 18:00。',
+        )
+
+        with patch('apps.ai_models.views.httpx.AsyncClient') as client_mock:
+            response = self.client.post(
+                f'/api/v1/ai-models/chat/conversations/{conversation.id}/send/',
+                {'content': '营业时间'},
+                format='json',
+            )
+            streamed_body = _read_streaming_body(response)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(_sse_content(streamed_body), '我们的服务时间为周一至周五 09:00 - 18:00。')
+        client_mock.assert_not_called()
+        annotation.refresh_from_db()
+        self.assertEqual(annotation.hit_count, 1)
+        messages = list(conversation.messages.order_by('created_at').values_list('role', 'content'))
+        self.assertEqual(
+            messages,
+            [
+                (ChatMessage.ROLE_USER, '营业时间'),
+                (ChatMessage.ROLE_ASSISTANT, '我们的服务时间为周一至周五 09:00 - 18:00。'),
+            ],
+        )
