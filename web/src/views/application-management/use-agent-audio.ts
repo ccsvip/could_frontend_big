@@ -2,9 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { message } from 'antd';
 
 import { buildAsrRealtimeWebSocketUrl } from '../../api/modules/asr';
-import { testCompanyTts } from '../../api/modules/tts';
 import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
+import { playRealtimeTts } from '../tts-realtime-playback';
 import { createPlaybackRequestGuard } from './playback-request-guard';
 import {
   AUDIO_WORKLET_PROCESSOR_NAME,
@@ -45,6 +45,7 @@ export const useAgentAudio = () => {
   const objectUrlRef = useRef<string | null>(null);
   const playbackRequestGuardRef = useRef(createPlaybackRequestGuard());
   const playbackKeyRef = useRef<string | null>(null);
+  const playbackAbortRef = useRef<AbortController | null>(null);
 
   const stopRecording = useCallback(() => {
     workletNodeRef.current?.port.close();
@@ -198,6 +199,8 @@ export const useAgentAudio = () => {
 
   const stopPlayback = useCallback(() => {
     playbackRequestGuardRef.current.cancel();
+    playbackAbortRef.current?.abort();
+    playbackAbortRef.current = null;
     audioRef.current?.pause();
     audioRef.current = null;
     playbackKeyRef.current = null;
@@ -223,6 +226,10 @@ export const useAgentAudio = () => {
       }
       return;
     }
+    if (playbackKeyRef.current === key) {
+      stopPlayback();
+      return;
+    }
 
     const playbackRequestGuard = playbackRequestGuardRef.current;
     if (playbackRequestGuard.isPending(key, content)) {
@@ -232,42 +239,42 @@ export const useAgentAudio = () => {
     stopPlayback();
     const playbackRequest = playbackRequestGuard.begin(key, content);
     setPendingPlaybackKey(key);
+    setPlayingKey(key);
+    setPaused(false);
+    playbackKeyRef.current = key;
+    const abortController = new AbortController();
+    playbackAbortRef.current = abortController;
 
     try {
-      const audioBlob = await testCompanyTts({ text: content });
+      if (!token) {
+        message.error('登录状态已失效，请重新登录');
+        stopPlayback();
+        return;
+      }
+      await playRealtimeTts({
+        text: content,
+        token,
+        tenantId: tenantScopeId ?? tenant?.id ?? null,
+        signal: abortController.signal,
+      });
       if (!playbackRequestGuard.isCurrent(playbackRequest)) {
         return;
       }
 
-      const objectUrl = URL.createObjectURL(audioBlob);
-      objectUrlRef.current = objectUrl;
-      const audio = new Audio(objectUrl);
-      audioRef.current = audio;
-      playbackKeyRef.current = key;
-      audio.onended = () => {
-        if (audioRef.current === audio) {
-          stopPlayback();
-        }
-      };
-      audio.onerror = () => {
-        if (audioRef.current !== audio) {
-          return;
-        }
-        message.error('语音播放失败');
-        stopPlayback();
-      };
-      setPlayingKey(key);
-      setPaused(false);
-      await audio.play();
       playbackRequestGuard.complete(playbackRequest);
       setPendingPlaybackKey(null);
-    } catch {
+      playbackAbortRef.current = null;
+      playbackKeyRef.current = null;
+      setPlayingKey(null);
+    } catch (error) {
       if (playbackRequestGuard.isCurrent(playbackRequest)) {
         stopPlayback();
-        message.error('语音合成失败');
+        if (!(error instanceof DOMException && error.name === 'AbortError')) {
+          message.error('语音合成失败');
+        }
       }
     }
-  }, [stopPlayback]);
+  }, [stopPlayback, tenant?.id, tenantScopeId, token]);
 
   useEffect(() => {
     return () => {

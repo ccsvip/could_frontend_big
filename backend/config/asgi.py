@@ -23,5 +23,10 @@ async def application(scope, receive, send):
 
         await asr_realtime_websocket_application(scope, receive, send)
         return
+    if scope.get('type') == 'websocket' and scope.get('path') == '/ws/tts/test/':
+        from apps.ai_models.realtime_tts import tts_realtime_websocket_application
+
+        await tts_realtime_websocket_application(scope, receive, send)
+        return
 
     await django_application(scope, receive, send)

@@ -1,4 +1,4 @@
-import { httpClient } from '../client';
+import { API_BASE_URL, httpClient } from '../client';
 
 export type TtsVoiceRecord = {
   id: number;
@@ -70,6 +70,13 @@ export type TtsTestPayload = {
   voiceId?: number | null;
 };
 
+export type TtsRealtimeMessage = {
+  type?: string;
+  sampleRate?: number;
+  voice?: string;
+  message?: string;
+};
+
 const blobRequestConfig = {
   responseType: 'blob' as const,
   timeout: 60000,
@@ -114,4 +121,18 @@ export const updateCompanyDefaultTtsVoice = async (voiceId: number) => {
 export const testCompanyTts = async (payload: TtsTestPayload) => {
   const response = await httpClient.post<Blob>('/ai-models/tts/test/', payload, blobRequestConfig);
   return response.data;
+};
+
+export const buildTtsRealtimeWebSocketUrl = (token: string, tenantId?: number | null) => {
+  const baseUrl = API_BASE_URL.startsWith('http')
+    ? new URL(API_BASE_URL)
+    : new URL(API_BASE_URL, window.location.origin);
+  baseUrl.protocol = baseUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+  baseUrl.pathname = '/ws/tts/test/';
+  baseUrl.search = '';
+  baseUrl.searchParams.set('token', token);
+  if (tenantId != null) {
+    baseUrl.searchParams.set('tenantId', String(tenantId));
+  }
+  return baseUrl.toString();
 };

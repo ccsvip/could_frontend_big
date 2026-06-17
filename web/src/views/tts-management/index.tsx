@@ -10,11 +10,12 @@ import {
 } from '@ant-design/icons';
 import {
   fetchCompanyTtsOptions,
-  testCompanyTts,
   updateCompanyDefaultTtsVoice,
   type CompanyTtsOptions,
   type TtsVoiceRecord,
 } from '../../api/modules/tts';
+import { useAuthStore } from '../../store/auth';
+import { playRealtimeTts } from '../tts-realtime-playback';
 
 export const TtsManagementPage = () => {
   const [options, setOptions] = useState<CompanyTtsOptions | null>(null);
@@ -24,6 +25,7 @@ export const TtsManagementPage = () => {
   const [testing, setTesting] = useState(false);
   const [testText, setTestText] = useState('');
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const token = useAuthStore((state) => state.token);
 
   const setAudioBlob = useCallback((blob: Blob) => {
     setAudioUrl((previous) => {
@@ -78,11 +80,15 @@ export const TtsManagementPage = () => {
   };
 
   const handleTest = async () => {
+    if (!token) {
+      message.error('登录状态已失效，请重新登录');
+      return;
+    }
     setTesting(true);
     try {
-      const blob = await testCompanyTts({ text: testText });
+      const { blob } = await playRealtimeTts({ text: testText, token });
       setAudioBlob(blob);
-      message.success('TTS 测试音频已生成');
+      message.success('TTS 测试音频已播放');
     } finally {
       setTesting(false);
     }

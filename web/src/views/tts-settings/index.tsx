@@ -30,13 +30,14 @@ import {
 import {
   fetchTtsProviders,
   fetchTtsSettings,
-  testPlatformTts,
   updateTtsSettings,
   type TtsProviderSummary,
   type TtsSettings,
   type TtsSettingsPayload,
   type TtsVoiceRecord,
 } from '../../api/modules/tts';
+import { useAuthStore } from '../../store/auth';
+import { playRealtimeTts } from '../tts-realtime-playback';
 
 type TtsSettingsFormValues = {
   apiKey?: string;
@@ -67,6 +68,7 @@ export const TtsSettingsPage = () => {
   const [testing, setTesting] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [testText, setTestText] = useState('');
+  const token = useAuthStore((state) => state.token);
 
   const setAudioBlob = useCallback((blob: Blob) => {
     setAudioUrl((previous) => {
@@ -168,12 +170,16 @@ export const TtsSettingsPage = () => {
     if (!activeProviderCode) {
       return;
     }
+    if (!token) {
+      message.error('登录状态已失效，请重新登录');
+      return;
+    }
     const voiceId = form.getFieldValue('defaultVoiceId');
     setTesting(true);
     try {
-      const blob = await testPlatformTts({ text: testText, voiceId }, activeProviderCode);
+      const { blob } = await playRealtimeTts({ text: testText, voiceId, token, providerCode: activeProviderCode });
       setAudioBlob(blob);
-      message.success('TTS 测试音频已生成');
+      message.success('TTS 测试音频已播放');
     } finally {
       setTesting(false);
     }

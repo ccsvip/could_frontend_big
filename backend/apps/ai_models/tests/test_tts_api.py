@@ -1,8 +1,14 @@
+import asyncio
+import base64
+import json
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APITestCase
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.models import TTSProvider, TTSVoice, TenantTTSSettings
@@ -11,6 +17,110 @@ from apps.devices.models import Device
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
+
+
+class OneShotTTSUpstream:
+    def __init__(self):
+        self.messages = []
+        self._events = iter([
+            json.dumps({'type': 'response.audio.delta', 'delta': base64.b64encode(b'\x01\x02').decode('ascii')}),
+            json.dumps({'type': 'session.finished'}),
+        ])
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+    async def send(self, message):
+        self.messages.append(json.loads(message))
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        try:
+            return next(self._events)
+        except StopIteration:
+            raise StopAsyncIteration
+
+
+class TTSRealtimeTests(TenantTestMixin, TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='tts-ws-user', password='test123456')
+        self.setup_tenant(self.user)
+        self.role = Role.objects.create(name='TTS WS Role', code='tts_ws_tester')
+        UserRole.objects.create(user=self.user, role=self.role)
+        self.provider = TTSProvider.objects.get(code='aliyun')
+        self.voice = TTSVoice.objects.get(provider=self.provider, voice_code='Cherry')
+        self.tenant.permission_points.clear()
+
+    def grant_permissions(self, *codes: str):
+        permission_points = []
+        for code in codes:
+            permission_point, _ = PermissionPoint.objects.update_or_create(
+                code=code,
+                defaults={
+                    'name': code,
+                    'module': 'ai_models_tts',
+                    'description': code,
+                    'is_active': True,
+                },
+            )
+            permission_points.append(permission_point)
+        self.role.permission_points.set(permission_points)
+        self.tenant.permission_points.set(permission_points)
+
+    def test_tts_realtime_streams_upstream_audio_delta_to_browser(self):
+        from apps.ai_models.realtime_tts import tts_realtime_websocket_application
+
+        self.grant_permissions('ai_models.tts.view')
+        token = str(RefreshToken.for_user(self.user).access_token)
+        sent_messages = []
+        received = iter([
+            {'type': 'websocket.receive', 'text': json.dumps({'type': 'tts.start', 'text': '你好', 'voiceId': self.voice.id})},
+        ])
+
+        async def receive():
+            try:
+                return next(received)
+            except StopIteration:
+                await asyncio.sleep(0)
+                return {'type': 'websocket.disconnect'}
+
+        async def send(message):
+            sent_messages.append(message)
+
+        config = SimpleNamespace(
+            is_active=True,
+            api_key='test-api-key',
+            base_url='wss://tts.example/realtime',
+            model='qwen3-tts-flash-realtime',
+            sample_rate=24000,
+            default_test_text='默认测试文本',
+        )
+        upstream = OneShotTTSUpstream()
+        scope = {'type': 'websocket', 'query_string': f'token={token}'.encode(), 'headers': []}
+
+        with (
+            patch('apps.ai_models.realtime_tts.get_effective_tts_config', return_value=config),
+            patch('apps.ai_models.realtime_tts.is_tts_configured', return_value=True),
+            patch('apps.ai_models.realtime_tts.build_tts_ws_url', return_value='wss://tts.example/realtime?model=test'),
+            patch('apps.ai_models.realtime_tts.websockets.connect', return_value=upstream),
+        ):
+            asyncio.run(tts_realtime_websocket_application(scope, receive, send))
+
+        self.assertIn({'type': 'websocket.accept'}, sent_messages)
+        self.assertIn(
+            {'type': 'websocket.send', 'text': json.dumps({'type': 'tts.ready', 'sampleRate': 24000, 'voice': 'Cherry'})},
+            sent_messages,
+        )
+        self.assertIn({'type': 'websocket.send', 'bytes': b'\x01\x02'}, sent_messages)
+        self.assertIn({'type': 'websocket.send', 'text': json.dumps({'type': 'tts.done'})}, sent_messages)
+        sent_types = [message.get('type') for message in upstream.messages]
+        self.assertIn('input_text_buffer.append', sent_types)
+        self.assertIn('session.finish', sent_types)
 
 
 class TTSApiTests(TenantTestMixin, APITestCase):
