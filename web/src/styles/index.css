@@ -616,3 +616,13 @@ body {
   background: radial-gradient(circle, rgba(20, 184, 166, 0.10), transparent 70%);
   pointer-events: none;
 }
+
+/* Ensure Antd Spin nested container takes full height in flex layouts */
+.h-full-spin,
+.h-full-spin > .ant-spin-container {
+  height: 100% !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
