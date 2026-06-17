@@ -35,6 +35,7 @@ import { ChatMarkdown } from '../../components/chat-markdown';
 import { useAuthStore } from '../../store/auth';
 import { useAgentAudio } from './use-agent-audio';
 import dayjs from 'dayjs';
+import * as echarts from 'echarts';
 import { 
   Select, 
   Spin, 
@@ -184,6 +185,112 @@ const getTemplateIcon = (iconName: string) => {
     default:
       return <Bot size={24} />;
   }
+};
+
+const TrendChart = ({ dailyTrends }: { dailyTrends: { date: string; count: number }[] }) => {
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!chartRef.current) return;
+    const chartDom = chartRef.current;
+    const myChart = echarts.init(chartDom);
+    
+    const option = {
+      grid: {
+        top: '12%',
+        left: '2%',
+        right: '2%',
+        bottom: '4%',
+        containLabel: true,
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow',
+        },
+        backgroundColor: '#1e293b',
+        borderWidth: 0,
+        borderRadius: 8,
+        padding: [8, 12],
+        textStyle: {
+          color: '#ffffff',
+          fontSize: 12,
+        },
+        formatter: (params: any) => {
+          const item = params[0];
+          return `<div style="font-size: 11px; color: #94a3b8; margin-bottom: 4px;">${item.name}</div>
+            <div style="font-weight: bold; font-size: 14px; color: #38bdf8;">${item.value} <span style="font-size: 11px; font-weight: normal; color: #cbd5e1;">次会话</span></div>`;
+        },
+      },
+      xAxis: {
+        type: 'category',
+        data: dailyTrends.map((d) => d.date),
+        axisLine: {
+          lineStyle: {
+            color: '#e2e8f0',
+          },
+        },
+        axisLabel: {
+          color: '#64748b',
+          fontSize: 11,
+          fontFamily: 'monospace',
+        },
+        axisTick: {
+          show: false,
+        },
+      },
+      yAxis: {
+        type: 'value',
+        splitLine: {
+          lineStyle: {
+            color: '#f1f5f9',
+          },
+        },
+        axisLabel: {
+          color: '#64748b',
+          fontSize: 11,
+          fontFamily: 'monospace',
+        },
+      },
+      series: [
+        {
+          name: '会话数',
+          type: 'bar',
+          data: dailyTrends.map((d) => d.count),
+          barWidth: '30%',
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#0d9488' },
+              { offset: 1, color: '#0f766e' },
+            ]),
+            borderRadius: [4, 4, 0, 0],
+          },
+          emphasis: {
+            itemStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: '#0f766e' },
+                { offset: 1, color: '#115e59' },
+              ]),
+            },
+          },
+        },
+      ],
+    };
+
+    myChart.setOption(option);
+
+    const handleResize = () => {
+      myChart.resize();
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      myChart.dispose();
+    };
+  }, [dailyTrends]);
+
+  return <div ref={chartRef} className="w-full h-full min-h-[240px] flex-1" />;
 };
 
 export const ApplicationManagementPage = () => {
@@ -2106,7 +2213,7 @@ export const ApplicationManagementPage = () => {
       );
     }
 
-    const maxTrendCount = Math.max(1, ...stats.dailyTrends.map((d) => d.count));
+
 
     return (
       <div className="flex flex-col gap-4 h-full min-h-0 overflow-y-auto pr-1 custom-scrollbar">
@@ -2167,27 +2274,11 @@ export const ApplicationManagementPage = () => {
         </div>
 
         {/* 7-Day Trend Chart */}
-        <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm flex-1 min-h-[300px] rounded-2xl" styles={{ body: { height: '100%', display: 'flex', flexDirection: 'column', padding: '20px' } }}>
+        <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm flex-1 min-h-[340px] rounded-2xl" styles={{ body: { height: '100%', display: 'flex', flexDirection: 'column', padding: '20px 24px' } }}>
           <div className="flex flex-col gap-4 h-full flex-1">
             <div className="text-lg font-bold text-slate-800 shrink-0">最近 7 天会话数趋势</div>
-            <div className="flex items-end justify-between flex-1 pt-6 px-4 border-b border-slate-100 pb-2">
-              {stats.dailyTrends.map((trend) => {
-                const pct = (trend.count / maxTrendCount) * 100;
-                return (
-                  <div key={trend.date} className="flex flex-col items-center flex-1 group">
-                    <div className="opacity-0 group-hover:opacity-100 bg-slate-800 text-white text-[10px] font-semibold px-2 py-0.5 rounded shadow-sm mb-1.5 transition-opacity duration-150 pointer-events-none tabular-nums">
-                      {trend.count} 次
-                    </div>
-                    <div
-                      className="w-8 sm:w-12 bg-gradient-to-t from-teal-500 to-teal-700 rounded-t-lg transition-all duration-300 hover:from-teal-600 hover:to-teal-800 cursor-pointer"
-                      style={{ height: `${Math.max(4, pct)}%` }}
-                    />
-                    <span className="text-[10px] text-slate-400 mt-2.5 font-medium font-mono">
-                      {trend.date}
-                    </span>
-                  </div>
-                );
-              })}
+            <div className="flex-1 min-h-0 w-full flex items-center justify-center">
+              <TrendChart dailyTrends={stats.dailyTrends} />
             </div>
           </div>
         </Card>
