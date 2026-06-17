@@ -92,6 +92,7 @@ import {
   PenTool,
   FileQuestion,
   Zap,
+  Copy,
 } from 'lucide-react';
 
 const PAGE_SIZE = 10;
@@ -327,6 +328,7 @@ export const ApplicationManagementPage = () => {
   const [selectedDocs, setSelectedDocs] = useState<number[]>([]);
   const [temperature, setTemperature] = useState(DEFAULT_TEMPERATURE);
   const [maxTokens, setMaxTokens] = useState(DEFAULT_MAX_TOKENS);
+  const [maxTokensUnlimited, setMaxTokensUnlimited] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [openingMessageEnabled, setOpeningMessageEnabled] = useState(true);
   const [openingMessage, setOpeningMessage] = useState('');
@@ -397,6 +399,7 @@ export const ApplicationManagementPage = () => {
     if (systemPrompt !== (selectedApplication.systemPrompt || '')) return true;
     if (temperature !== selectedApplication.temperature) return true;
     if (maxTokens !== selectedApplication.maxTokens) return true;
+    if (maxTokensUnlimited !== selectedApplication.maxTokensUnlimited) return true;
     if (isActive !== selectedApplication.isActive) return true;
     if (openingMessageEnabled !== selectedApplication.openingMessageEnabled) return true;
     if (openingMessage.trim() !== (selectedApplication.openingMessage || '')) return true;
@@ -420,6 +423,7 @@ export const ApplicationManagementPage = () => {
     selectedDocs,
     temperature,
     maxTokens,
+    maxTokensUnlimited,
     isActive,
     openingMessageEnabled,
     openingMessage,
@@ -502,6 +506,7 @@ export const ApplicationManagementPage = () => {
       setSelectedDocs(detail.knowledgeDocumentIds || []);
       setTemperature(detail.temperature);
       setMaxTokens(detail.maxTokens);
+      setMaxTokensUnlimited(detail.maxTokensUnlimited);
       setIsActive(detail.isActive);
       setOpeningMessageEnabled(detail.openingMessageEnabled);
       setOpeningMessage(detail.openingMessage || '');
@@ -802,6 +807,7 @@ export const ApplicationManagementPage = () => {
         knowledgeDocumentIds: selectedDocs,
         temperature: temperature,
         maxTokens: maxTokens,
+        maxTokensUnlimited,
         isActive: isActive,
         openingMessageEnabled,
         openingMessage: openingMessage.trim(),
@@ -817,6 +823,7 @@ export const ApplicationManagementPage = () => {
           systemPrompt: payload.systemPrompt,
           temperature: payload.temperature,
           maxTokens: payload.maxTokens,
+          maxTokensUnlimited: payload.maxTokensUnlimited,
         });
         setConversation(nextConversation);
       }
@@ -836,6 +843,7 @@ export const ApplicationManagementPage = () => {
     selectedDocs,
     temperature,
     maxTokens,
+    maxTokensUnlimited,
     isActive,
     openingMessageEnabled,
     openingMessage,
@@ -1365,7 +1373,7 @@ export const ApplicationManagementPage = () => {
           <Avatar
             size={36}
             icon={isUser ? <User size={16} /> : <Bot size={16} />}
-            className={isUser ? '!bg-indigo-600' : '!bg-teal-600'}
+            className={isUser ? '!bg-indigo-600 shrink-0' : '!bg-teal-600 shrink-0'}
           />
           <div className="flex flex-col gap-1">
             <div
@@ -1408,6 +1416,22 @@ export const ApplicationManagementPage = () => {
                     <span className="text-xs">停止</span>
                   </Button>
                 )}
+                <Button 
+                  type="text" 
+                  size="small"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(msg.content);
+                      message.success('已复制到剪贴板');
+                    } catch {
+                      message.error('复制失败');
+                    }
+                  }}
+                  className="flex items-center gap-1 text-slate-500 hover:text-teal-600 !px-1.5"
+                >
+                  <Copy size={12} />
+                  <span className="text-xs">复制</span>
+                </Button>
                 <Button 
                   type="text" 
                   size="small"
@@ -1567,14 +1591,24 @@ export const ApplicationManagementPage = () => {
             </div>
 
             <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-bold text-slate-700">最大输出 Tokens</span>
-                <Tooltip title="单次模型回复生成的最大 Token 数量。1 个 Token 大约对应 1.5 个汉字或 0.75 个英文单词。">
-                  <HelpCircle size={14} className="text-slate-400 cursor-help" />
-                </Tooltip>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-bold text-slate-700">最大输出 Tokens</span>
+                  <Tooltip title="单次模型回复生成的最大 Token 数量。开启不限制后，请求大模型时不会传递 max_tokens 参数。">
+                    <HelpCircle size={14} className="text-slate-400 cursor-help" />
+                  </Tooltip>
+                </div>
+                <Button
+                  size="small"
+                  type={maxTokensUnlimited ? 'primary' : 'default'}
+                  disabled={!canUpdate}
+                  onClick={() => setMaxTokensUnlimited((checked) => !checked)}
+                >
+                  不限制 Tokens
+                </Button>
               </div>
               <Input 
-                disabled={!canUpdate}
+                disabled={!canUpdate || maxTokensUnlimited}
                 type="number"
                 value={maxTokens}
                 onChange={(e) => setMaxTokens(Number(e.target.value))}
@@ -2150,7 +2184,7 @@ export const ApplicationManagementPage = () => {
                             <Avatar
                               size={32}
                               icon={isUser ? <User size={14} /> : <Bot size={14} />}
-                              className={isUser ? '!bg-indigo-600' : '!bg-teal-600'}
+                              className={isUser ? '!bg-indigo-600 shrink-0' : '!bg-teal-600 shrink-0'}
                             />
                             <div className="flex flex-col gap-1">
                               <div
@@ -2172,6 +2206,25 @@ export const ApplicationManagementPage = () => {
                                   <Tag color={msg.feedback === 'up' ? 'success' : 'error'} className="m-0 scale-90 transform-gpu py-0 px-1">
                                     {msg.feedback === 'up' ? '好评' : '差评'}
                                   </Tag>
+                                )}
+                                {!isUser && (
+                                  <Button 
+                                    type="text" 
+                                    size="small"
+                                    onClick={async () => {
+                                      try {
+                                        await navigator.clipboard.writeText(msg.content);
+                                        message.success('已复制到剪贴板');
+                                      } catch {
+                                        message.error('复制失败');
+                                      }
+                                    }}
+                                    className="flex items-center gap-1 text-slate-400 hover:text-teal-600 !p-0 !h-auto"
+                                    style={{ fontSize: 10 }}
+                                  >
+                                    <Copy size={10} />
+                                    <span>复制</span>
+                                  </Button>
                                 )}
                               </div>
                             </div>

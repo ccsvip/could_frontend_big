@@ -20,6 +20,7 @@ export type AgentApplicationRecord = {
   systemPrompt: string;
   temperature: number;
   maxTokens: number;
+  maxTokensUnlimited: boolean;
   openingMessageEnabled: boolean;
   openingMessage: string;
   suggestedQuestions: string[];
@@ -52,6 +53,7 @@ export type AgentApplicationPayload = {
   systemPrompt?: string;
   temperature?: number;
   maxTokens?: number;
+  maxTokensUnlimited?: boolean;
   openingMessageEnabled?: boolean;
   openingMessage?: string;
   suggestedQuestions?: string[];

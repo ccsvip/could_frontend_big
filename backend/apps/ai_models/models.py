@@ -322,6 +322,7 @@ class AgentApplication(models.Model):
     system_prompt = models.TextField('系统提示词', blank=True, default='')
     temperature = models.FloatField('Temperature', default=0.7)
     max_tokens = models.PositiveIntegerField('最大输出 Tokens', default=1000)
+    max_tokens_unlimited = models.BooleanField('不限制最大输出 Tokens', default=False)
     opening_message_enabled = models.BooleanField('是否启用开场白', default=True)
     opening_message = models.TextField('开场白', blank=True, default='')
     suggested_questions = models.JSONField('建议问题', blank=True, default=list)
@@ -466,6 +467,7 @@ class ChatConversation(models.Model):
     system_prompt = models.TextField('系统提示词', blank=True, default='')
     temperature = models.FloatField('Temperature', default=0.7)
     max_tokens = models.PositiveIntegerField('最大输出Tokens', default=1000)
+    max_tokens_unlimited = models.BooleanField('不限制最大输出Tokens', default=False)
     application = models.ForeignKey(
         AgentApplication,
         on_delete=models.CASCADE,

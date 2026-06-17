@@ -115,6 +115,8 @@ class _DummyHttpxClient:
         self._post_responses = (
             post_response if isinstance(post_response, list) else [post_response] if post_response is not None else []
         )
+        self.post_calls = []
+        self.stream_calls = []
 
     def __enter__(self):
         return self
@@ -129,9 +131,11 @@ class _DummyHttpxClient:
         return False
 
     def stream(self, *args, **kwargs):
+        self.stream_calls.append((args, kwargs))
         return self._stream_response
 
     async def post(self, *args, **kwargs):
+        self.post_calls.append((args, kwargs))
         if not self._post_responses:
             return None
         return self._post_responses.pop(0)
@@ -237,6 +241,36 @@ class ChatApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['llmProviderName'], provider_b.name)
         self.assertEqual(response.data['systemPrompt'], '请用更正式的语气回复')
 
+    def test_update_config_supports_unlimited_max_tokens(self):
+        self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
+        provider = self.create_provider()
+        model = self.create_model(provider)
+        self.grant_model(model)
+        conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
+            title='测试会话',
+            user=self.user,
+            llm_model=model,
+            max_tokens=1000,
+            max_tokens_unlimited=False,
+        )
+
+        response = self.client.patch(
+            f'/api/v1/ai-models/chat/conversations/{conversation.id}/update-config/',
+            {
+                'maxTokens': 500000,
+                'maxTokensUnlimited': True,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        conversation.refresh_from_db()
+        self.assertEqual(conversation.max_tokens, 500000)
+        self.assertTrue(conversation.max_tokens_unlimited)
+        self.assertEqual(response.data['maxTokens'], 500000)
+        self.assertTrue(response.data['maxTokensUnlimited'])
+
     def test_send_accepts_openai_compatible_non_stream_json_response(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
         provider = self.create_provider(
@@ -249,6 +283,7 @@ class ChatApiTests(TenantTestMixin, APITestCase):
             title='兼容模式测试',
             user=self.user,
             llm_model=model,
+            max_tokens_unlimited=True,
         )
         plain_json_response = json.dumps(
             {
@@ -269,13 +304,11 @@ class ChatApiTests(TenantTestMixin, APITestCase):
             'choices': [{'message': {'role': 'assistant', 'content': '兼容模式自动摘要'}}]
         }
 
-        with patch(
-            'apps.ai_models.views.httpx.AsyncClient',
-            return_value=_DummyHttpxClient(
-                _DummyStreamResponse([plain_json_response]),
-                post_response=_DummyJsonResponse(summary_payload),
-            ),
-        ):
+        dummy_client = _DummyHttpxClient(
+            _DummyStreamResponse([plain_json_response]),
+            post_response=_DummyJsonResponse(summary_payload),
+        )
+        with patch('apps.ai_models.views.httpx.AsyncClient', return_value=dummy_client):
             response = self.client.post(
                 f'/api/v1/ai-models/chat/conversations/{conversation.id}/send/',
                 {'content': '你好'},
@@ -285,6 +318,7 @@ class ChatApiTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('这是兼容模式返回的完整回复', _sse_content(streamed_body))
+        self.assertNotIn('max_tokens', dummy_client.stream_calls[0][1]['json'])
 
         messages = list(conversation.messages.order_by('created_at').values_list('role', 'content'))
         self.assertEqual(
@@ -308,6 +342,7 @@ class ChatApiTests(TenantTestMixin, APITestCase):
             title='LongCat 流式测试',
             user=self.user,
             llm_model=model,
+            max_tokens_unlimited=True,
         )
 
         sse_lines = [
@@ -320,13 +355,11 @@ class ChatApiTests(TenantTestMixin, APITestCase):
             'choices': [{'message': {'role': 'assistant', 'content': 'LongCat 流式自动摘要'}}]
         }
 
-        with patch(
-            'apps.ai_models.views.httpx.AsyncClient',
-            return_value=_DummyHttpxClient(
-                _DummyStreamResponse(sse_lines, headers={'content-type': 'text/event-stream'}),
-                post_response=_DummyJsonResponse(summary_payload),
-            ),
-        ):
+        dummy_client = _DummyHttpxClient(
+            _DummyStreamResponse(sse_lines, headers={'content-type': 'text/event-stream'}),
+            post_response=_DummyJsonResponse(summary_payload),
+        )
+        with patch('apps.ai_models.views.httpx.AsyncClient', return_value=dummy_client):
             response = self.client.post(
                 f'/api/v1/ai-models/chat/conversations/{conversation.id}/send/',
                 {'content': '你好'},
@@ -338,6 +371,7 @@ class ChatApiTests(TenantTestMixin, APITestCase):
         # 语义断言：LongCat 的无空格 data:{...} chunk 必须被正确解析、不被丢弃，
         # 拼接出完整回复「你好！」（wire 上中文是 \uXXXX 转义，前端 JSON.parse 后等价）。
         self.assertEqual(_sse_content(streamed_body), '你好！')
+        self.assertNotIn('max_tokens', dummy_client.stream_calls[0][1]['json'])
 
         messages = list(conversation.messages.order_by('created_at').values_list('role', 'content'))
         self.assertEqual(
@@ -361,6 +395,7 @@ class ChatApiTests(TenantTestMixin, APITestCase):
             title='LongCat 非流式测试',
             user=self.user,
             llm_model=model,
+            max_tokens_unlimited=True,
         )
         payload = {
             'choices': [
@@ -376,12 +411,10 @@ class ChatApiTests(TenantTestMixin, APITestCase):
             'choices': [{'message': {'role': 'assistant', 'content': '非流式自动摘要'}}]
         }
 
-        with patch(
-            'apps.ai_models.views.httpx.AsyncClient',
-            return_value=_DummyHttpxClient(
-                post_response=[_DummyJsonResponse(payload), _DummyJsonResponse(summary_payload)],
-            ),
-        ):
+        dummy_client = _DummyHttpxClient(
+            post_response=[_DummyJsonResponse(payload), _DummyJsonResponse(summary_payload)],
+        )
+        with patch('apps.ai_models.views.httpx.AsyncClient', return_value=dummy_client):
             response = self.client.post(
                 f'/api/v1/ai-models/chat/conversations/{conversation.id}/send/',
                 {'content': '你好', 'stream': False},
@@ -391,6 +424,7 @@ class ChatApiTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('这是关闭流式后的完整回答', _sse_content(streamed_body))
+        self.assertNotIn('max_tokens', dummy_client.post_calls[0][1]['json'])
 
         messages = list(conversation.messages.order_by('created_at').values_list('role', 'content'))
         self.assertEqual(

@@ -269,6 +269,20 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
         ])
         self.assertEqual(client.post.call_args.kwargs['json']['max_tokens'], 8)
 
+    def test_chat_creation_supports_unlimited_max_tokens_snapshot(self):
+        self.grant_permissions('ai_models.chat.create')
+        self.client.force_authenticate(self.tenant_user)
+
+        conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
+            user=self.tenant_user,
+            title='Unlimited conversation',
+            llm_model=self.default_model,
+            max_tokens_unlimited=True,
+        )
+
+        self.assertTrue(conversation.max_tokens_unlimited)
+
     def test_chat_creation_snapshots_company_default_model(self):
         self.grant_permissions('ai_models.chat.create')
         self.client.force_authenticate(self.tenant_user)

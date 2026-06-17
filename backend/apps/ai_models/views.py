@@ -100,6 +100,18 @@ from .services.asr import (
 logger = logging.getLogger(__name__)
 
 
+def _build_llm_request_payload(*, model_name: str, messages: list[dict], stream: bool, temperature: float, max_tokens: int, max_tokens_unlimited: bool) -> dict:
+    payload = {
+        'model': model_name,
+        'messages': messages,
+        'stream': stream,
+        'temperature': temperature,
+    }
+    if not max_tokens_unlimited:
+        payload['max_tokens'] = max_tokens
+    return payload
+
+
 class ASRSettingsView(APIView):
     permission_classes = [IsSuperUser]
 
@@ -944,6 +956,7 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             system_prompt=application.system_prompt,
             temperature=application.temperature,
             max_tokens=application.max_tokens,
+            max_tokens_unlimited=application.max_tokens_unlimited,
             application=application,
             tenant=application.tenant,
         )
@@ -1125,6 +1138,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             system_prompt=serializer.validated_data.get('systemPrompt', ''),
             temperature=serializer.validated_data.get('temperature', 0.7),
             max_tokens=serializer.validated_data.get('max_tokens', 1000),
+            max_tokens_unlimited=serializer.validated_data.get('max_tokens_unlimited', False),
             tenant=tenant,
         )
         output_serializer = ChatConversationListSerializer(conversation)
@@ -1154,7 +1168,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         serializer = ChatConversationConfigSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        update_fields = ['system_prompt', 'temperature', 'max_tokens', 'updated_at']
+        update_fields = ['system_prompt', 'temperature', 'max_tokens', 'max_tokens_unlimited', 'updated_at']
         if 'llmModelId' in serializer.validated_data:
             conversation.llm_model = _resolve_tenant_llm_model(
                 conversation.tenant,
@@ -1165,10 +1179,11 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         conversation.system_prompt = serializer.validated_data.get('systemPrompt', '')
         conversation.temperature = serializer.validated_data.get('temperature', 0.7)
         conversation.max_tokens = serializer.validated_data.get('max_tokens', 1000)
+        conversation.max_tokens_unlimited = serializer.validated_data.get('max_tokens_unlimited', False)
         conversation.save(update_fields=update_fields)
 
         logger.info(
-            'chat.conversation.config_updated conversation_id=%s user_id=%s model_id=%s model_name=%s system_prompt_length=%s temperature=%s max_tokens=%s',
+            'chat.conversation.config_updated conversation_id=%s user_id=%s model_id=%s model_name=%s system_prompt_length=%s temperature=%s max_tokens=%s max_tokens_unlimited=%s',
             conversation.id,
             request.user.id,
             conversation.llm_model_id,
@@ -1176,6 +1191,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             len(conversation.system_prompt or ''),
             conversation.temperature,
             conversation.max_tokens,
+            conversation.max_tokens_unlimited,
         )
 
         return Response(ChatConversationDetailSerializer(conversation).data)
@@ -1373,13 +1389,14 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                     if not use_stream:
                         response = await client.post(
                             api_url,
-                            json={
-                                'model': model_name,
-                                'messages': api_messages,
-                                'stream': False,
-                                'temperature': conversation.temperature,
-                                'max_tokens': conversation.max_tokens,
-                            },
+                            json=_build_llm_request_payload(
+                                model_name=model_name,
+                                messages=api_messages,
+                                stream=False,
+                                temperature=conversation.temperature,
+                                max_tokens=conversation.max_tokens,
+                                max_tokens_unlimited=conversation.max_tokens_unlimited,
+                            ),
                             headers={
                                 'Authorization': f'Bearer {provider.api_key}',
                                 'Accept': 'application/json',
@@ -1495,13 +1512,14 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                     async with client.stream(
                         'POST',
                         api_url,
-                        json={
-                            'model': model_name,
-                            'messages': api_messages,
-                            'stream': True,
-                            'temperature': conversation.temperature,
-                            'max_tokens': conversation.max_tokens,
-                        },
+                        json=_build_llm_request_payload(
+                            model_name=model_name,
+                            messages=api_messages,
+                            stream=True,
+                            temperature=conversation.temperature,
+                            max_tokens=conversation.max_tokens,
+                            max_tokens_unlimited=conversation.max_tokens_unlimited,
+                        ),
                         headers={
                             'Authorization': f'Bearer {provider.api_key}',
                             'Accept': 'text/event-stream',

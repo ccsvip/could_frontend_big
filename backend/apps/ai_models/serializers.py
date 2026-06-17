@@ -503,6 +503,7 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
     llmProviderName = serializers.SerializerMethodField()
     systemPrompt = serializers.CharField(source='system_prompt', required=False, default='', allow_blank=True)
     maxTokens = serializers.IntegerField(source='max_tokens', required=False)
+    maxTokensUnlimited = serializers.BooleanField(source='max_tokens_unlimited', required=False)
     openingMessageEnabled = serializers.BooleanField(source='opening_message_enabled', required=False)
     openingMessage = serializers.CharField(source='opening_message', required=False, allow_blank=True, default='')
     suggestedQuestions = serializers.ListField(
@@ -536,6 +537,7 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
             'systemPrompt',
             'temperature',
             'maxTokens',
+            'maxTokensUnlimited',
             'openingMessageEnabled',
             'openingMessage',
             'suggestedQuestions',
@@ -766,6 +768,7 @@ class ChatConversationDetailSerializer(serializers.ModelSerializer):
     systemPrompt = serializers.CharField(source='system_prompt', required=False, default='')
     temperature = serializers.FloatField(required=False)
     maxTokens = serializers.IntegerField(source='max_tokens', required=False)
+    maxTokensUnlimited = serializers.BooleanField(source='max_tokens_unlimited', required=False)
     messages = serializers.SerializerMethodField()
 
     @extend_schema_field(ChatMessageSerializer(many=True))
@@ -792,7 +795,7 @@ class ChatConversationDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'applicationId', 'llmModelId', 'llmModelName',
             'llmModelDisplayName', 'llmProviderName', 'summary', 'systemPrompt',
-            'temperature', 'maxTokens', 'messages',
+            'temperature', 'maxTokens', 'maxTokensUnlimited', 'messages',
             'created_at', 'updated_at',
         ]
 
@@ -802,20 +805,23 @@ class ChatConversationConfigSerializer(serializers.Serializer):
     systemPrompt = serializers.CharField(required=False, default='', allow_blank=True)
     temperature = serializers.FloatField(required=False, default=0.7)
     maxTokens = serializers.IntegerField(required=False, source='max_tokens', default=1000)
+    maxTokensUnlimited = serializers.BooleanField(required=False, source='max_tokens_unlimited', default=False)
 
     def validate(self, attrs):
         system_prompt = attrs.get('systemPrompt', '')
         temperature = attrs.get('temperature', 0.7)
         max_tokens = attrs.get('max_tokens', 1000)
+        max_tokens_unlimited = attrs.get('max_tokens_unlimited', False)
 
         if temperature < 0 or temperature > 2:
             raise serializers.ValidationError({'temperature': 'temperature 必须在 0 到 2 之间'})
-        if max_tokens <= 0 or max_tokens > 320000:
+        if not max_tokens_unlimited and (max_tokens <= 0 or max_tokens > 320000):
             raise serializers.ValidationError({'maxTokens': 'maxTokens 必须在 1 到 320000 之间'})
 
         attrs['systemPrompt'] = system_prompt.strip()
         attrs['temperature'] = temperature
         attrs['max_tokens'] = max_tokens
+        attrs['max_tokens_unlimited'] = max_tokens_unlimited
         return attrs
 
 

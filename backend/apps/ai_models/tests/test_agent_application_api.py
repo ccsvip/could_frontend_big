@@ -180,6 +180,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
             system_prompt='Diagnose code carefully.',
             temperature=0.5,
             max_tokens=1600,
+            max_tokens_unlimited=True,
         )
 
         response = self.client.post(f'/api/v1/ai-models/applications/{application.id}/conversations/')
@@ -191,6 +192,27 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(conversation.system_prompt, 'Diagnose code carefully.')
         self.assertEqual(conversation.temperature, 0.5)
         self.assertEqual(conversation.max_tokens, 1600)
+        self.assertTrue(conversation.max_tokens_unlimited)
+
+    def test_create_agent_application_supports_unlimited_max_tokens(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.create')
+        provider = self.create_provider()
+        model = self.create_model(provider)
+
+        response = self.client.post(
+            '/api/v1/ai-models/applications/',
+            {
+                'name': 'Unlimited agent',
+                'llmModelId': model.id,
+                'maxTokensUnlimited': True,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['maxTokensUnlimited'])
+        application = self.agent_application_model().objects.get(pk=response.data['id'])
+        self.assertTrue(application.max_tokens_unlimited)
 
     def test_create_annotation_from_assistant_message(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.update')

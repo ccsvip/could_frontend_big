@@ -21,6 +21,7 @@ export type ChatConversationDetail = {
   systemPrompt: string;
   temperature: number;
   maxTokens: number;
+  maxTokensUnlimited: boolean;
   messages: ChatMessage[];
   created_at: string;
   updated_at: string;
@@ -31,6 +32,7 @@ export type ChatConversationConfigPayload = {
   systemPrompt?: string;
   temperature?: number;
   maxTokens?: number;
+  maxTokensUnlimited?: boolean;
 };
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
@@ -195,4 +197,3 @@ export const fetchConversations = async (params?: { application?: number; page?:
   const response = await httpClient.get<ChatConversationListResponse>('/ai-models/chat/conversations/', { params });
   return response.data;
 };
-
