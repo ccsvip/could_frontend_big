@@ -995,14 +995,14 @@ export const ApplicationManagementPage = () => {
 
       {/* Metrics Section */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card bordered={false} className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
+        <Card variant="borderless" className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
           <div className="flex flex-col gap-1">
             <span className="text-xs text-slate-500 font-medium">智能体总数</span>
             <span className="text-2xl font-bold font-mono leading-none text-slate-800">{applicationTotal}</span>
             <span className="text-xs text-slate-400 mt-1">所有已注册的智能体</span>
           </div>
         </Card>
-        <Card bordered={false} className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
+        <Card variant="borderless" className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
           <div className="flex flex-col gap-1">
             <span className="text-xs text-slate-500 font-medium">正常运行中</span>
             <div className="flex items-baseline gap-2">
@@ -1012,14 +1012,14 @@ export const ApplicationManagementPage = () => {
             <span className="text-xs text-slate-400 mt-1">可对外提供对话服务</span>
           </div>
         </Card>
-        <Card bordered={false} className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
+        <Card variant="borderless" className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
           <div className="flex flex-col gap-1">
             <span className="text-xs text-slate-500 font-medium">模型绑定率</span>
             <span className="text-2xl font-bold font-mono leading-none text-teal-600">{applicationOverview.configuredModelCount}</span>
             <span className="text-xs text-slate-400 mt-1">已绑定大语言模型</span>
           </div>
         </Card>
-        <Card bordered={false} className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
+        <Card variant="borderless" className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
           <div className="flex flex-col gap-1">
             <span className="text-xs text-slate-500 font-medium">知识库引用数</span>
             <span className="text-2xl font-bold font-mono leading-none text-blue-600">{applicationOverview.knowledgeReferenceCount}</span>
@@ -1042,7 +1042,7 @@ export const ApplicationManagementPage = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {/* Blank Custom Card */}
-            <Card bordered={false} className="flex flex-col justify-between border-2 border-dashed border-slate-200 hover:border-teal-400 hover:bg-teal-50/10 cursor-pointer transition-all duration-300 rounded-2xl group min-h-[220px]" onClick={() => {
+            <Card variant="borderless" className="flex flex-col justify-between border-2 border-dashed border-slate-200 hover:border-teal-400 hover:bg-teal-50/10 cursor-pointer transition-all duration-300 rounded-2xl group min-h-[220px]" onClick={() => {
                 setSelectedTemplate(null);
                 setCreateName('');
                 setCreateDescription('');
@@ -1066,7 +1066,7 @@ export const ApplicationManagementPage = () => {
 
             {/* Predefined templates */}
             {AGENT_TEMPLATES.map((tmpl) => (
-              <Card bordered={false} key={tmpl.key} className="flex flex-col justify-between bg-white border border-slate-200/60 hover:border-teal-300 hover:shadow-md cursor-pointer transition-all duration-300 rounded-2xl relative overflow-hidden group min-h-[220px]" onClick={() => {
+              <Card variant="borderless" key={tmpl.key} className="flex flex-col justify-between bg-white border border-slate-200/60 hover:border-teal-300 hover:shadow-md cursor-pointer transition-all duration-300 rounded-2xl relative overflow-hidden group min-h-[220px]" onClick={() => {
                   setSelectedTemplate(tmpl);
                   setCreateName(tmpl.name);
                   setCreateDescription(tmpl.description);
@@ -1131,7 +1131,7 @@ export const ApplicationManagementPage = () => {
                 const knowledgeCount = app.knowledgeDocumentIds?.length || app.knowledgeDocuments?.length || 0;
 
                 return (
-                  <Card bordered={false} key={app.id} className="flex flex-col justify-between bg-white border border-slate-200/60 hover:border-teal-200 hover:shadow-md transition-all duration-300 rounded-2xl relative overflow-hidden group min-h-[220px]">
+                  <Card variant="borderless" key={app.id} className="flex flex-col justify-between bg-white border border-slate-200/60 hover:border-teal-200 hover:shadow-md transition-all duration-300 rounded-2xl relative overflow-hidden group min-h-[220px]">
                     <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 to-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     
                     <div className="flex flex-col gap-3 p-1">
@@ -1323,7 +1323,7 @@ export const ApplicationManagementPage = () => {
     <Spin spinning={detailLoading || optionsLoading} className="h-full" wrapperClassName="h-full-spin">
       <div className="grid grid-cols-1 xl:grid-cols-[390px_minmax(0,_1fr)] gap-4 h-full min-h-0">
         {/* Left Side: Config Panel */}
-        <Card bordered={false} className="flex flex-col bg-white border border-slate-200/50 shadow-sm overflow-hidden h-full" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%', padding: '20px', overflow: 'hidden' } }}>
+        <Card variant="borderless" className="flex flex-col bg-white border border-slate-200/50 shadow-sm overflow-hidden h-full" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%', padding: '20px', overflow: 'hidden' } }}>
           <div className="text-lg font-bold shrink-0 mb-4">编排设置</div>
           
           <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-4 custom-scrollbar min-h-0">
@@ -1391,7 +1391,7 @@ export const ApplicationManagementPage = () => {
               <Popover
                 placement="bottomLeft"
                 trigger="click"
-                overlayStyle={{ width: 340 }}
+                styles={{ root: { width: 340 } }}
                 content={
                   <div className="flex flex-col gap-2 max-h-[260px] overflow-y-auto pr-1 custom-scrollbar">
                     {knowledgeDocuments.length > 0 ? (
@@ -1484,7 +1484,7 @@ export const ApplicationManagementPage = () => {
         </Card>
 
         {/* Right Side: Debug Chat */}
-        <Card bordered={false} className="flex flex-col bg-white border border-slate-200/50 shadow-sm overflow-hidden h-full" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%', padding: '20px' } }}>
+        <Card variant="borderless" className="flex flex-col bg-white border border-slate-200/50 shadow-sm overflow-hidden h-full" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%', padding: '20px' } }}>
           {/* Chat Header */}
           <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-3 shrink-0">
             <div className="flex items-center gap-2">
@@ -1611,7 +1611,7 @@ export const ApplicationManagementPage = () => {
         <div className="h-full flex flex-col gap-3 min-h-0">
           <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-3 custom-scrollbar min-h-0">
             {/* Opening Message */}
-            <Card bordered={false} className="bg-white border border-slate-200/50 shadow-sm shrink-0" styles={{ body: { padding: '16px' } }}>
+            <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm shrink-0" styles={{ body: { padding: '16px' } }}>
               <div className="flex flex-col gap-3">
                 <div className="flex justify-between items-center">
                   <div>
@@ -1635,7 +1635,7 @@ export const ApplicationManagementPage = () => {
             </Card>
 
             {/* Suggested Questions */}
-            <Card bordered={false} className="bg-white border border-slate-200/50 shadow-sm shrink-0" styles={{ body: { padding: '16px' } }}>
+            <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm shrink-0" styles={{ body: { padding: '16px' } }}>
               <div className="flex flex-col gap-3">
                 <div className="flex justify-between items-center">
                   <div>
@@ -1713,7 +1713,7 @@ export const ApplicationManagementPage = () => {
             </Card>
 
             {/* Voice Settings */}
-            <Card bordered={false} className="bg-white border border-slate-200/50 shadow-sm shrink-0" styles={{ body: { padding: '16px' } }}>
+            <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm shrink-0" styles={{ body: { padding: '16px' } }}>
               <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center">
                   <div className="flex flex-col">
@@ -1743,7 +1743,7 @@ export const ApplicationManagementPage = () => {
         </div>
 
         {/* Right Side: Preview Panel */}
-        <Card bordered={false} className="flex flex-col bg-white border border-slate-200/50 shadow-sm overflow-hidden h-full" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%', padding: '20px' } }}>
+        <Card variant="borderless" className="flex flex-col bg-white border border-slate-200/50 shadow-sm overflow-hidden h-full" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%', padding: '20px' } }}>
           <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-3 shrink-0">
             <div className="text-lg font-bold">调试预览</div>
             <Tag color="blue">实时同步</Tag>
@@ -1847,7 +1847,7 @@ export const ApplicationManagementPage = () => {
     <Spin spinning={annotationsLoading} className="h-full" wrapperClassName="h-full-spin">
       <div className="flex flex-col gap-4 h-full min-h-0">
         {/* Banner Card */}
-        <Card bordered={false} className="bg-blue-50/50 border border-blue-100 shadow-sm shrink-0" styles={{ body: { padding: '16px' } }}>
+        <Card variant="borderless" className="bg-blue-50/50 border border-blue-100 shadow-sm shrink-0" styles={{ body: { padding: '16px' } }}>
           <div className="flex justify-between items-center gap-4">
             <div className="flex items-center gap-4" style={{ minWidth: 0 }}>
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm">
@@ -1905,7 +1905,7 @@ export const ApplicationManagementPage = () => {
         <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-3 min-h-0 custom-scrollbar">
           {annotations.length > 0 ? (
             annotations.map((annotation) => (
-              <Card bordered={false} key={annotation.id} className="bg-white border border-slate-200/70 shadow-sm hover:shadow-md transition-shadow duration-300" styles={{ body: { padding: '16px' } }}>
+              <Card variant="borderless" key={annotation.id} className="bg-white border border-slate-200/70 shadow-sm hover:shadow-md transition-shadow duration-300" styles={{ body: { padding: '16px' } }}>
                 <div className="flex flex-col gap-3.5">
                   <div className="flex justify-between items-start gap-4">
                     <div className="flex items-start gap-2.5" style={{ minWidth: 0 }}>
@@ -1961,7 +1961,7 @@ export const ApplicationManagementPage = () => {
               </Card>
             ))
           ) : (
-            <Card bordered={false} className="bg-white border border-slate-200/70 shadow-sm flex-1 flex flex-col items-center justify-center min-h-[300px]" styles={{ body: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%' } }}>
+            <Card variant="borderless" className="bg-white border border-slate-200/70 shadow-sm flex-1 flex flex-col items-center justify-center min-h-[300px]" styles={{ body: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%' } }}>
               <Empty description="暂无匹配的标注数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
             </Card>
           )}
@@ -1974,7 +1974,7 @@ export const ApplicationManagementPage = () => {
     <Spin spinning={logConversationsLoading} className="h-full" wrapperClassName="h-full-spin">
       <div className="grid grid-cols-1 xl:grid-cols-[380px_minmax(0,_1fr)] gap-4 h-full min-h-0">
         {/* Conversation List */}
-        <Card bordered={false} className="flex flex-col bg-white border border-slate-200/50 shadow-sm h-full" styles={{ body: { padding: '16px', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' } }}>
+        <Card variant="borderless" className="flex flex-col bg-white border border-slate-200/50 shadow-sm h-full" styles={{ body: { padding: '16px', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' } }}>
           <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-3 shrink-0">
             <div className="text-base font-bold text-slate-800">历史会话记录</div>
             <Tag color="default">{logConversations.length} 会话</Tag>
@@ -2022,7 +2022,7 @@ export const ApplicationManagementPage = () => {
         </Card>
 
         {/* Selected Conversation Detail */}
-        <Card bordered={false} className="flex flex-col bg-white border border-slate-200/50 shadow-sm overflow-hidden h-full" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%', padding: '20px' } }}>
+        <Card variant="borderless" className="flex flex-col bg-white border border-slate-200/50 shadow-sm overflow-hidden h-full" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%', padding: '20px' } }}>
           {selectedLogConversation ? (
             <Spin spinning={selectedLogConversationLoading} className="flex-1 flex flex-col h-full min-h-0" wrapperClassName="h-full-spin flex-1">
               <div className="flex flex-col h-full min-h-0">
@@ -2092,7 +2092,7 @@ export const ApplicationManagementPage = () => {
   const renderMonitorTab = () => {
     if (statsLoading) {
       return (
-        <Card bordered={false} className="flex h-full items-center justify-center bg-white border border-slate-200/50 shadow-sm h-full">
+        <Card variant="borderless" className="flex h-full items-center justify-center bg-white border border-slate-200/50 shadow-sm h-full">
           <Spin size="large" />
         </Card>
       );
@@ -2100,7 +2100,7 @@ export const ApplicationManagementPage = () => {
 
     if (!stats) {
       return (
-        <Card bordered={false} className="flex h-full flex-col items-center justify-center bg-white border border-slate-200/50 shadow-sm text-slate-400 h-full" styles={{ body: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%' } }}>
+        <Card variant="borderless" className="flex h-full flex-col items-center justify-center bg-white border border-slate-200/50 shadow-sm text-slate-400 h-full" styles={{ body: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%' } }}>
           <Empty description="暂无监测数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
         </Card>
       );
@@ -2112,7 +2112,7 @@ export const ApplicationManagementPage = () => {
       <div className="flex flex-col gap-4 h-full min-h-0 overflow-y-auto pr-1 custom-scrollbar">
         {/* Metric Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
-          <Card bordered={false} className="bg-white border border-slate-200/50 shadow-sm hover:shadow transition-shadow rounded-2xl">
+          <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm hover:shadow transition-shadow rounded-2xl">
             <div className="flex flex-col gap-1">
               <span className="text-xs text-slate-400 font-medium">调试会话总数</span>
               <div className="flex items-baseline gap-1 mt-1.5">
@@ -2123,7 +2123,7 @@ export const ApplicationManagementPage = () => {
             </div>
           </Card>
 
-          <Card bordered={false} className="bg-white border border-slate-200/50 shadow-sm hover:shadow transition-shadow rounded-2xl">
+          <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm hover:shadow transition-shadow rounded-2xl">
             <div className="flex flex-col gap-1">
               <span className="text-xs text-slate-400 font-medium">交流消息总量</span>
               <div className="flex items-baseline gap-1 mt-1.5">
@@ -2137,7 +2137,7 @@ export const ApplicationManagementPage = () => {
             </div>
           </Card>
 
-          <Card bordered={false} className="bg-white border border-slate-200/50 shadow-sm hover:shadow transition-shadow rounded-2xl">
+          <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm hover:shadow transition-shadow rounded-2xl">
             <div className="flex flex-col gap-1">
               <span className="text-xs text-slate-400 font-medium">用户满意好评率</span>
               <div className="flex items-baseline gap-1 mt-1.5">
@@ -2153,7 +2153,7 @@ export const ApplicationManagementPage = () => {
             </div>
           </Card>
 
-          <Card bordered={false} className="bg-white border border-slate-200/50 shadow-sm hover:shadow transition-shadow rounded-2xl">
+          <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm hover:shadow transition-shadow rounded-2xl">
             <div className="flex flex-col gap-1">
               <span className="text-xs text-slate-400 font-medium">统计最近更新</span>
               <span className="text-base font-bold text-slate-800 mt-2 truncate">
@@ -2167,7 +2167,7 @@ export const ApplicationManagementPage = () => {
         </div>
 
         {/* 7-Day Trend Chart */}
-        <Card bordered={false} className="bg-white border border-slate-200/50 shadow-sm flex-1 min-h-[300px] rounded-2xl" styles={{ body: { height: '100%', display: 'flex', flexDirection: 'column', padding: '20px' } }}>
+        <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm flex-1 min-h-[300px] rounded-2xl" styles={{ body: { height: '100%', display: 'flex', flexDirection: 'column', padding: '20px' } }}>
           <div className="flex flex-col gap-4 h-full flex-1">
             <div className="text-lg font-bold text-slate-800 shrink-0">最近 7 天会话数趋势</div>
             <div className="flex items-end justify-between flex-1 pt-6 px-4 border-b border-slate-100 pb-2">
@@ -2283,7 +2283,7 @@ export const ApplicationManagementPage = () => {
       {/* Tab Navigation Layout */}
       <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-4">
         {/* Left Side Tab Navigation Menu */}
-        <Card bordered={false} className="w-full lg:w-56 shrink-0 bg-white border border-slate-200/50 shadow-sm flex flex-col" styles={{ body: { padding: '16px 12px', height: '100%', display: 'flex', flexDirection: 'column' } }}>
+        <Card variant="borderless" className="w-full lg:w-56 shrink-0 bg-white border border-slate-200/50 shadow-sm flex flex-col" styles={{ body: { padding: '16px 12px', height: '100%', display: 'flex', flexDirection: 'column' } }}>
           <div className="flex flex-row lg:flex-col gap-1.5 flex-1 w-full">
             {renderTabButton('orchestrate', <Sparkles size={16} />, '编排')}
             {renderTabButton('conversation', <MessageSquare size={16} />, '对话设置')}
