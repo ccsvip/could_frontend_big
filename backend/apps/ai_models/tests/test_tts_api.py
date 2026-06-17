@@ -122,6 +122,17 @@ class TTSRealtimeTests(TenantTestMixin, TestCase):
         self.assertIn('input_text_buffer.append', sent_types)
         self.assertIn('session.finish', sent_types)
 
+    def test_tts_realtime_allows_superuser_without_tenant_permission(self):
+        from apps.ai_models.realtime_tts import resolve_tts_realtime_connection
+
+        superuser = User.objects.create_superuser(username='tts-ws-root', password='test123456')
+        token = str(RefreshToken.for_user(superuser).access_token)
+
+        connection = resolve_tts_realtime_connection(token)
+
+        self.assertIsNotNone(connection)
+        self.assertTrue(connection['is_superuser'])
+
 
 class TTSApiTests(TenantTestMixin, APITestCase):
     def setUp(self):
@@ -246,6 +257,28 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         call_kwargs = synthesize_tts_pcm.call_args.kwargs
         self.assertEqual(call_kwargs['text'], '默认测试文本')
         self.assertEqual(call_kwargs['voice'].voice_code, 'Cherry')
+
+    @patch('apps.ai_models.services.tts.synthesize_tts_pcm', return_value=b'\x01\x02')
+    def test_company_test_can_use_selected_voice(self, synthesize_tts_pcm):
+        self.grant_permissions('ai_models.tts.view')
+        other_voice = TTSVoice.objects.create(
+            provider=self.provider,
+            display_name='Test Voice',
+            voice_code='TestVoice',
+            is_active=True,
+            is_visible=True,
+        )
+        self.client.force_authenticate(user=self.tenant_user)
+
+        response = self.client.post(
+            '/api/v1/ai-models/tts/test/',
+            {'text': '测试指定音色', 'voiceId': other_voice.id},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        call_kwargs = synthesize_tts_pcm.call_args.kwargs
+        self.assertEqual(call_kwargs['voice'].id, other_voice.id)
 
     @patch('apps.ai_models.services.tts.synthesize_tts_pcm', return_value=b'\x03\x04')
     def test_device_runtime_uses_device_code_and_returns_raw_pcm(self, synthesize_tts_pcm):

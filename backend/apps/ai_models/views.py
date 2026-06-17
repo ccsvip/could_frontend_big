@@ -230,6 +230,16 @@ def _select_platform_tts_voice(provider, raw_voice_id=None) -> TTSVoice | None:
     return tts_services.get_default_tts_voice(provider)
 
 
+def _select_company_tts_voice(tenant, provider, raw_voice_id=None) -> TTSVoice | None:
+    if raw_voice_id not in (None, ''):
+        try:
+            voice_id = int(raw_voice_id)
+        except (TypeError, ValueError):
+            raise ValidationError({'voiceId': '音色不能为空'})
+        return tts_services.get_available_tts_voices(provider).filter(id=voice_id).first()
+    return tts_services.get_effective_tts_voice_for_tenant(tenant, provider)
+
+
 def _get_platform_tts_provider(provider_code: str | None = None) -> TTSProvider:
     if provider_code is None:
         return tts_services.get_aliyun_tts_provider()
@@ -340,7 +350,7 @@ class CompanyTTSTestView(TenantScopedQuerysetMixin, APIView):
         tenant = self.request_tenant
         provider = tts_services.get_aliyun_tts_provider()
         config = tts_services.get_effective_tts_config(provider)
-        voice = tts_services.get_effective_tts_voice_for_tenant(tenant, provider)
+        voice = _select_company_tts_voice(tenant, provider, request.data.get('voiceId'))
         if voice is None:
             return Response({'voiceId': '请先配置默认音色'}, status=status.HTTP_400_BAD_REQUEST)
         text = tts_services.normalize_tts_text(request.data.get('text'), config)

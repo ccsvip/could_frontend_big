@@ -4,7 +4,7 @@ import { message } from 'antd';
 import { buildAsrRealtimeWebSocketUrl } from '../../api/modules/asr';
 import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
-import { playRealtimeTts } from '../tts-realtime-playback';
+import { playRealtimeTts, sanitizeTtsText } from '../tts-realtime-playback';
 import { createPlaybackRequestGuard } from './playback-request-guard';
 import {
   AUDIO_WORKLET_PROCESSOR_NAME,
@@ -22,6 +22,11 @@ type AsrSocketMessage = {
   text?: string;
   final?: boolean;
   message?: string;
+};
+
+export type TtsFilterRules = {
+  punctuation?: string;
+  emoji?: boolean;
 };
 
 export const useAgentAudio = () => {
@@ -218,7 +223,7 @@ export const useAgentAudio = () => {
     setPaused(false);
   }, [revokeObjectUrl]);
 
-  const playQueuedStreamSegments = useCallback(async (sessionId: number) => {
+  const playQueuedStreamSegments = useCallback(async (sessionId: number, filterRules?: TtsFilterRules) => {
     if (streamPlaybackActiveRef.current) {
       return;
     }
@@ -238,11 +243,13 @@ export const useAgentAudio = () => {
           text: segment,
           token,
           tenantId: tenantScopeId ?? tenant?.id ?? null,
+          filterPunctuation: filterRules?.punctuation,
+          filterEmoji: filterRules?.emoji,
           signal: abortController.signal,
         });
       } catch (error) {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
-          message.error('语音合成失败');
+          message.error(error instanceof Error ? error.message : '语音合成失败');
         }
         break;
       } finally {
@@ -259,12 +266,12 @@ export const useAgentAudio = () => {
     }
   }, [tenant?.id, tenantScopeId, token]);
 
-  const enqueueStreamPlaybackText = useCallback((text: string, force = false) => {
+  const enqueueStreamPlaybackText = useCallback((text: string, force = false, filterRules?: TtsFilterRules) => {
     const content = text.trim();
     if (!token || (!content && !force)) {
       return;
     }
-    streamPlaybackBufferRef.current += text;
+    streamPlaybackBufferRef.current += sanitizeTtsText(text, undefined, Boolean(filterRules?.emoji));
     const readySegments = extractReadyTtsSegments(streamPlaybackBufferRef.current, force);
     streamPlaybackBufferRef.current = readySegments.remainder;
     if (readySegments.segments.length === 0) {
@@ -272,7 +279,7 @@ export const useAgentAudio = () => {
     }
     streamPlaybackQueueRef.current.push(...readySegments.segments);
     const sessionId = streamPlaybackSessionRef.current;
-    void playQueuedStreamSegments(sessionId);
+    void playQueuedStreamSegments(sessionId, filterRules);
   }, [playQueuedStreamSegments, token]);
 
   const startStreamPlayback = useCallback(() => {
@@ -284,15 +291,15 @@ export const useAgentAudio = () => {
     setPendingPlaybackKey('streaming-reply');
   }, [stopPlayback]);
 
-  const appendStreamPlaybackText = useCallback((text: string) => {
-    enqueueStreamPlaybackText(text, false);
+  const appendStreamPlaybackText = useCallback((text: string, filterRules?: TtsFilterRules) => {
+    enqueueStreamPlaybackText(text, false, filterRules);
   }, [enqueueStreamPlaybackText]);
 
-  const finishStreamPlayback = useCallback(() => {
-    enqueueStreamPlaybackText('', true);
+  const finishStreamPlayback = useCallback((filterRules?: TtsFilterRules) => {
+    enqueueStreamPlaybackText('', true, filterRules);
   }, [enqueueStreamPlaybackText]);
 
-  const playText = useCallback(async (key: string, text: string) => {
+  const playText = useCallback(async (key: string, text: string, filterRules?: TtsFilterRules) => {
     const content = text.trim();
     if (!content) {
       return;
@@ -337,6 +344,8 @@ export const useAgentAudio = () => {
         text: content,
         token,
         tenantId: tenantScopeId ?? tenant?.id ?? null,
+        filterPunctuation: filterRules?.punctuation,
+        filterEmoji: filterRules?.emoji,
         signal: abortController.signal,
       });
       if (!playbackRequestGuard.isCurrent(playbackRequest)) {
@@ -352,7 +361,7 @@ export const useAgentAudio = () => {
       if (playbackRequestGuard.isCurrent(playbackRequest)) {
         stopPlayback();
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
-          message.error('语音合成失败');
+          message.error(error instanceof Error ? error.message : '语音合成失败');
         }
       }
     }

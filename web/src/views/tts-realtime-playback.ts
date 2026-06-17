@@ -4,6 +4,8 @@ type PlayRealtimeTtsOptions = TtsTestPayload & {
   token: string;
   tenantId?: number | null;
   providerCode?: string;
+  filterPunctuation?: string;
+  filterEmoji?: boolean;
   signal?: AbortSignal;
 };
 
@@ -17,6 +19,11 @@ type WebAudioWindow = Window & typeof globalThis & {
 };
 
 export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<PlayRealtimeTtsResult> => {
+  const text = sanitizeTtsText(options.text || '', options.filterPunctuation, Boolean(options.filterEmoji));
+  if (!text) {
+    throw new Error('TTS 测试文本不能为空');
+  }
+
   const AudioContextClass = window.AudioContext || (window as WebAudioWindow).webkitAudioContext;
   if (!AudioContextClass) {
     throw new Error('当前浏览器不支持音频播放');
@@ -60,6 +67,10 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
       completionTimer = window.setTimeout(() => {
         settled = true;
         closeAudio();
+        if (chunks.length === 0) {
+          reject(new Error('TTS 未返回有效音频'));
+          return;
+        }
         resolve({ blob: pcmToWav(chunks, sampleRate), sampleRate });
       }, playbackTailMs + 50);
     };
@@ -94,7 +105,7 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
       }
       socket.send(JSON.stringify({
         type: 'tts.start',
-        text: options.text || '',
+        text,
         voiceId: options.voiceId ?? null,
         providerCode: options.providerCode,
       }));
@@ -153,6 +164,59 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
     };
   });
 };
+
+export const sanitizeTtsText = (value: string, filterPunctuation?: string, filterEmoji = false) => {
+  let nextValue = stripMarkdownForTts(value);
+  if (filterPunctuation) {
+    const escaped = filterPunctuation.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
+    nextValue = nextValue.replace(new RegExp(`[${escaped}]`, 'g'), '');
+  }
+  if (filterEmoji) {
+    nextValue = nextValue.replace(EMOJI_PATTERN, '');
+  }
+  return nextValue
+    .replace(/[*_`>#~|[\]{}]/g, ' ')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\s*\n\s*/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
+const EMOJI_PATTERN = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu;
+
+const stripMarkdownForTts = (value: string) => value
+  .replace(/\r\n/g, '\n')
+  .replace(/```[\s\S]*?```/g, ' ')
+  .replace(/`([^`]+)`/g, '$1')
+  .split('\n')
+  .map((line) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      return '';
+    }
+    if (/^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(trimmed)) {
+      return '';
+    }
+    if (trimmed.includes('|')) {
+      return trimmed
+        .replace(/^\|/, '')
+        .replace(/\|$/, '')
+        .split('|')
+        .map((cell) => cell.trim())
+        .filter(Boolean)
+        .join('，');
+    }
+    return trimmed
+      .replace(/^#{1,6}\s+/, '')
+      .replace(/^[-*+]\s+/, '')
+      .replace(/^\d+[.)]\s+/, '')
+      .replace(/^>\s?/, '');
+  })
+  .join('\n')
+  .replace(/!\[[^\]]*]\([^)]*\)/g, ' ')
+  .replace(/\[([^\]]+)]\([^)]*\)/g, '$1')
+  .replace(/(\*\*|__)(.*?)\1/g, '$2')
+  .replace(/(\*|_)(.*?)\1/g, '$2');
 
 const schedulePcmChunk = (
   audioContext: AudioContext,

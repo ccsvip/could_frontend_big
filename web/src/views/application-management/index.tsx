@@ -98,6 +98,7 @@ import {
 const PAGE_SIZE = 10;
 const DEFAULT_TEMPERATURE = 0.7;
 const DEFAULT_MAX_TOKENS = 1000;
+const DEFAULT_TTS_FILTER_PUNCTUATION = '。！？!?；;、';
 
 
 
@@ -336,6 +337,8 @@ export const ApplicationManagementPage = () => {
   const [newSuggestedQuestion, setNewSuggestedQuestion] = useState('');
   const [voiceInputEnabled, setVoiceInputEnabled] = useState(false);
   const [replyPlaybackEnabled, setReplyPlaybackEnabled] = useState(false);
+  const [ttsFilterPunctuation, setTtsFilterPunctuation] = useState(DEFAULT_TTS_FILTER_PUNCTUATION);
+  const [ttsFilterEmoji, setTtsFilterEmoji] = useState(true);
   const [asrStatus, setAsrStatus] = useState<AsrStatusRecord | null>(null);
   const [ttsOptions, setTtsOptions] = useState<CompanyTtsOptions | null>(null);
   const agentAudio = useAgentAudio();
@@ -391,6 +394,63 @@ export const ApplicationManagementPage = () => {
 
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
+  const applyApplicationState = useCallback((detail: AgentApplicationRecord) => {
+    setSelectedApplication(detail);
+    setName(detail.name);
+    setDescription(detail.description || '');
+    setLlmModelId(detail.llmModelId);
+    setSystemPrompt(detail.systemPrompt || '');
+    setSelectedDocs(detail.knowledgeDocumentIds || []);
+    setTemperature(detail.temperature);
+    setMaxTokens(detail.maxTokens);
+    setMaxTokensUnlimited(detail.maxTokensUnlimited);
+    setIsActive(detail.isActive);
+    setOpeningMessageEnabled(detail.openingMessageEnabled);
+    setOpeningMessage(detail.openingMessage || '');
+    setSuggestedQuestions(detail.suggestedQuestions || []);
+    setNewSuggestedQuestion('');
+    setVoiceInputEnabled(detail.voiceInputEnabled);
+    setReplyPlaybackEnabled(detail.replyPlaybackEnabled);
+    setTtsFilterPunctuation(detail.ttsFilterPunctuation || DEFAULT_TTS_FILTER_PUNCTUATION);
+    setTtsFilterEmoji(detail.ttsFilterEmoji);
+  }, []);
+
+  const getApplicationSaveMismatch = (detail: AgentApplicationRecord, payload: AgentApplicationPayload) => {
+    const stringValue = (value?: string) => value || '';
+    const normalizedPunctuation = Array.from(new Set(stringValue(payload.ttsFilterPunctuation).trim())).join('');
+    const hasTtsFilterPunctuation = Object.prototype.hasOwnProperty.call(detail, 'ttsFilterPunctuation');
+    const hasTtsFilterEmoji = Object.prototype.hasOwnProperty.call(detail, 'ttsFilterEmoji');
+    const payloadDocs = payload.knowledgeDocumentIds || [];
+    const detailDocs = detail.knowledgeDocumentIds || [];
+    const payloadQuestions = payload.suggestedQuestions || [];
+    const detailQuestions = detail.suggestedQuestions || [];
+    const hasSameDocs = payloadDocs.length === detailDocs.length && payloadDocs.every((id) => detailDocs.includes(id));
+    const hasSameQuestions = (
+      payloadQuestions.length === detailQuestions.length &&
+      payloadQuestions.every((question, index) => question === detailQuestions[index])
+    );
+
+    if (detail.name !== payload.name) return '名称';
+    if (stringValue(detail.description) !== stringValue(payload.description)) return '描述说明';
+    if (payload.llmModelId != null && detail.llmModelId !== payload.llmModelId) return '选用模型';
+    if (stringValue(detail.systemPrompt) !== stringValue(payload.systemPrompt)) return '系统提示词';
+    if (detail.temperature !== payload.temperature) return '随机性温度';
+    if (detail.maxTokens !== payload.maxTokens) return '最大输出 Tokens';
+    if (detail.maxTokensUnlimited !== payload.maxTokensUnlimited) return '不限制 Tokens';
+    if (detail.isActive !== payload.isActive) return '启用状态';
+    if (detail.openingMessageEnabled !== payload.openingMessageEnabled) return '开场白开关';
+    if (stringValue(detail.openingMessage) !== stringValue(payload.openingMessage)) return '开场白';
+    if (detail.voiceInputEnabled !== payload.voiceInputEnabled) return '语音输入';
+    if (detail.replyPlaybackEnabled !== payload.replyPlaybackEnabled) return '回复播报';
+    if (!hasTtsFilterPunctuation) return 'TTS 过滤规则字段';
+    if (detail.ttsFilterPunctuation !== normalizedPunctuation) return 'TTS 过滤规则';
+    if (!hasTtsFilterEmoji) return '过滤表情字段';
+    if (detail.ttsFilterEmoji !== payload.ttsFilterEmoji) return '过滤表情';
+    if (!hasSameQuestions) return '建议问题';
+    if (!hasSameDocs) return '绑定知识库文档';
+    return null;
+  };
+
   const isDirty = useMemo(() => {
     if (!selectedApplication) return false;
     if (name.trim() !== selectedApplication.name) return true;
@@ -405,6 +465,8 @@ export const ApplicationManagementPage = () => {
     if (openingMessage.trim() !== (selectedApplication.openingMessage || '')) return true;
     if (voiceInputEnabled !== selectedApplication.voiceInputEnabled) return true;
     if (replyPlaybackEnabled !== selectedApplication.replyPlaybackEnabled) return true;
+    if (ttsFilterPunctuation !== selectedApplication.ttsFilterPunctuation) return true;
+    if (ttsFilterEmoji !== selectedApplication.ttsFilterEmoji) return true;
 
     const previousQuestions = selectedApplication.suggestedQuestions || [];
     if (suggestedQuestions.length !== previousQuestions.length) return true;
@@ -430,6 +492,8 @@ export const ApplicationManagementPage = () => {
     suggestedQuestions,
     voiceInputEnabled,
     replyPlaybackEnabled,
+    ttsFilterPunctuation,
+    ttsFilterEmoji,
   ]);
 
   const handleBackClick = () => {
@@ -496,24 +560,7 @@ export const ApplicationManagementPage = () => {
     setDetailLoading(true);
     try {
       const detail = await fetchAgentApplication(selectedApplicationId);
-      setSelectedApplication(detail);
-      
-      // Populate local state values
-      setName(detail.name);
-      setDescription(detail.description || '');
-      setLlmModelId(detail.llmModelId);
-      setSystemPrompt(detail.systemPrompt || '');
-      setSelectedDocs(detail.knowledgeDocumentIds || []);
-      setTemperature(detail.temperature);
-      setMaxTokens(detail.maxTokens);
-      setMaxTokensUnlimited(detail.maxTokensUnlimited);
-      setIsActive(detail.isActive);
-      setOpeningMessageEnabled(detail.openingMessageEnabled);
-      setOpeningMessage(detail.openingMessage || '');
-      setSuggestedQuestions(detail.suggestedQuestions || []);
-      setNewSuggestedQuestion('');
-      setVoiceInputEnabled(detail.voiceInputEnabled);
-      setReplyPlaybackEnabled(detail.replyPlaybackEnabled);
+      applyApplicationState(detail);
 
       setConversation(null);
       setMessages([]);
@@ -525,7 +572,7 @@ export const ApplicationManagementPage = () => {
     } finally {
       setDetailLoading(false);
     }
-  }, [navigate, selectedApplicationId]);
+  }, [applyApplicationState, navigate, selectedApplicationId]);
 
   useEffect(() => {
     void loadApplications();
@@ -814,9 +861,17 @@ export const ApplicationManagementPage = () => {
         suggestedQuestions: normalizedSuggestedQuestions,
         voiceInputEnabled,
         replyPlaybackEnabled,
+        ttsFilterPunctuation,
+        ttsFilterEmoji,
       };
-      const updated = await updateAgentApplication(selectedApplication.id, payload);
-      setSelectedApplication(updated);
+      await updateAgentApplication(selectedApplication.id, payload);
+      const updated = await fetchAgentApplication(selectedApplication.id);
+      applyApplicationState(updated);
+      const mismatch = getApplicationSaveMismatch(updated, payload);
+      if (mismatch) {
+        message.error(`${mismatch}保存未生效，请确认后端已更新并执行数据库迁移`);
+        return;
+      }
       if (conversation) {
         const nextConversation = await updateConversationConfig(conversation.id, {
           llmModelId: payload.llmModelId,
@@ -850,8 +905,11 @@ export const ApplicationManagementPage = () => {
     suggestedQuestions,
     voiceInputEnabled,
     replyPlaybackEnabled,
+    ttsFilterPunctuation,
+    ttsFilterEmoji,
     conversation,
     loadApplications,
+    applyApplicationState,
   ]);
 
   // Keyboard Shortcuts (Alt+1/2/3 for switching tabs, Ctrl+S for saving)
@@ -950,7 +1008,10 @@ export const ApplicationManagementPage = () => {
       setStreaming(false);
       abortRef.current = null;
       if (replyPlaybackEnabled && ttsReady) {
-        agentAudio.finishStreamPlayback();
+        agentAudio.finishStreamPlayback({
+          punctuation: ttsFilterPunctuation,
+          emoji: ttsFilterEmoji,
+        });
       }
       void refreshConversation(activeConversation.id)
         .then(() => undefined)
@@ -967,7 +1028,10 @@ export const ApplicationManagementPage = () => {
       (text) => {
         setStreamingContent((current) => current + text);
         if (replyPlaybackEnabled && ttsReady) {
-          agentAudio.appendStreamPlaybackText(text);
+          agentAudio.appendStreamPlaybackText(text, {
+            punctuation: ttsFilterPunctuation,
+            emoji: ttsFilterEmoji,
+          });
         }
       },
       () => undefined,
@@ -1402,7 +1466,10 @@ export const ApplicationManagementPage = () => {
                   type="text" 
                   size="small"
                   disabled={!ttsReady || isPlaybackPending} 
-                  onClick={() => void agentAudio.playText(playbackKey, msg.content)}
+                  onClick={() => void agentAudio.playText(playbackKey, msg.content, {
+                    punctuation: ttsFilterPunctuation,
+                    emoji: ttsFilterEmoji,
+                  })}
                   className="flex items-center gap-1 text-slate-500 hover:text-teal-600 !px-1.5"
                 >
                   {isPlaybackPending ? <Loader2 size={12} className="animate-spin" /> : isPlaybackPlaying ? <Pause size={12} /> : <Play size={12} />}
@@ -1878,6 +1945,24 @@ export const ApplicationManagementPage = () => {
                   </div>
                   <Switch checked={replyPlaybackEnabled} disabled={!canUpdate || !ttsReady} onChange={setReplyPlaybackEnabled} />
                 </div>
+                <div className="grid gap-3 border-t border-slate-100 pt-4 md:grid-cols-[minmax(0,1fr)_140px]">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-sm font-bold text-slate-700">过滤规则</span>
+                    <Input
+                      value={ttsFilterPunctuation}
+                      disabled={!canUpdate}
+                      maxLength={64}
+                      onChange={(event) => setTtsFilterPunctuation(event.target.value)}
+                      placeholder={DEFAULT_TTS_FILTER_PUNCTUATION}
+                      className="font-mono"
+                    />
+                    <span className="text-xs text-slate-400">播报前过滤这些字符，默认包含中文/英文句末标点与顿号</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 md:self-end">
+                    <span className="text-sm font-medium text-slate-700">过滤表情</span>
+                    <Switch checked={ttsFilterEmoji} disabled={!canUpdate} onChange={setTtsFilterEmoji} />
+                  </div>
+                </div>
               </div>
             </Card>
           </div>
@@ -1912,7 +1997,10 @@ export const ApplicationManagementPage = () => {
                     type="primary" 
                     size="small"
                     disabled={!ttsReady || isOpeningPlaybackPending} 
-                    onClick={() => void agentAudio.playText('opening-message', openingMessage)}
+                    onClick={() => void agentAudio.playText('opening-message', openingMessage, {
+                      punctuation: ttsFilterPunctuation,
+                      emoji: ttsFilterEmoji,
+                    })}
                     className="flex items-center gap-1 rounded-full px-3"
                   >
                     {isOpeningPlaybackPending ? <Loader2 size={12} className="animate-spin" /> : isOpeningPlaybackPlaying ? <Pause size={12} /> : <Volume2 size={12} />}

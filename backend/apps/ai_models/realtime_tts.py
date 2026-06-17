@@ -83,13 +83,13 @@ def resolve_tts_realtime_connection(token: str, *, query_params: dict[str, list[
 
     if not user or not user.is_authenticated:
         return None
-    if not user.is_superuser and 'ai_models.tts.view' not in get_active_permission_codes_for_user(user):
-        return None
 
     connection = {'user_id': user.id, 'is_superuser': user.is_superuser}
     if user.is_superuser:
         tenant = _extract_superuser_tenant(query_params)
     else:
+        if 'ai_models.tts.view' not in get_active_permission_codes_for_user(user):
+            return None
         tenant = get_user_tenant(user)
     if tenant is not None:
         connection['tenant_id'] = tenant.id
@@ -172,11 +172,20 @@ async def _stream_tts_audio(*, text: str, voice: TTSVoice, config, send) -> None
                     await send({'type': 'websocket.send', 'bytes': base64.b64decode(delta)})
                 continue
             if event_type in {'error', 'session.error'}:
-                message = event.get('message') or event.get('error') or 'TTS upstream error'
-                raise RuntimeError(str(message)[:200])
+                raise RuntimeError(_extract_upstream_error_message(event))
             if event_type == 'session.finished':
                 await send({'type': 'websocket.send', 'text': json.dumps({'type': 'tts.done'})})
                 return
+
+
+def _extract_upstream_error_message(event: dict[str, Any]) -> str:
+    error = event.get('error')
+    if isinstance(error, dict):
+        message = error.get('message') or error.get('code') or error.get('type')
+        if message:
+            return str(message)[:200]
+    message = event.get('message') or error or 'TTS upstream error'
+    return str(message)[:200]
 
 
 def _extract_superuser_tenant(query_params: dict[str, list[str]] | None) -> Tenant | None:

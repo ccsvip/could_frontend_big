@@ -177,9 +177,16 @@ export const TtsSettingsPage = () => {
     const voiceId = form.getFieldValue('defaultVoiceId');
     setTesting(true);
     try {
-      const { blob } = await playRealtimeTts({ text: testText, voiceId, token, providerCode: activeProviderCode });
+      const playbackText = testText.trim() || form.getFieldValue('defaultTestText') || settings?.defaultTestText || '';
+      const { blob } = await playRealtimeTts({ text: playbackText, voiceId, token, providerCode: activeProviderCode });
+      if (blob.size <= 44) {
+        message.error('TTS 未返回有效音频');
+        return;
+      }
       setAudioBlob(blob);
       message.success('TTS 测试音频已播放');
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : 'TTS 测试失败');
     } finally {
       setTesting(false);
     }

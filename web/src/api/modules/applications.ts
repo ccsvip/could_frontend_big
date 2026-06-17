@@ -26,6 +26,8 @@ export type AgentApplicationRecord = {
   suggestedQuestions: string[];
   voiceInputEnabled: boolean;
   replyPlaybackEnabled: boolean;
+  ttsFilterPunctuation: string;
+  ttsFilterEmoji: boolean;
   knowledgeDocumentIds: number[];
   knowledgeDocuments: AgentApplicationKnowledgeDocument[];
   createdBy: string;
@@ -59,6 +61,8 @@ export type AgentApplicationPayload = {
   suggestedQuestions?: string[];
   voiceInputEnabled?: boolean;
   replyPlaybackEnabled?: boolean;
+  ttsFilterPunctuation?: string;
+  ttsFilterEmoji?: boolean;
   knowledgeDocumentIds?: number[];
   isActive?: boolean;
 };

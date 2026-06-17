@@ -331,6 +331,8 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['suggestedQuestions'], [])
         self.assertFalse(response.data['voiceInputEnabled'])
         self.assertFalse(response.data['replyPlaybackEnabled'])
+        self.assertEqual(response.data['ttsFilterPunctuation'], '。！？!?；;、')
+        self.assertTrue(response.data['ttsFilterEmoji'])
 
     def test_update_agent_application_accepts_conversation_settings(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.update')
@@ -349,6 +351,8 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
                 'suggestedQuestions': ['你能做什么？', '如何使用知识库？'],
                 'voiceInputEnabled': True,
                 'replyPlaybackEnabled': True,
+                'ttsFilterPunctuation': '。！？!?；;、',
+                'ttsFilterEmoji': False,
             },
             format='json',
         )
@@ -358,6 +362,11 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['suggestedQuestions'], ['你能做什么？', '如何使用知识库？'])
         self.assertTrue(response.data['voiceInputEnabled'])
         self.assertTrue(response.data['replyPlaybackEnabled'])
+        self.assertEqual(response.data['ttsFilterPunctuation'], '。！？!?；;、')
+        self.assertFalse(response.data['ttsFilterEmoji'])
+        application.refresh_from_db()
+        self.assertEqual(application.tts_filter_punctuation, '。！？!?；;、')
+        self.assertFalse(application.tts_filter_emoji)
 
     def test_update_agent_application_rejects_duplicate_name_in_same_tenant(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.update')

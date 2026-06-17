@@ -183,12 +183,21 @@ async def _synthesize_tts_pcm_async(*, text: str, voice: TTSVoice, config: Effec
                     audio_parts.append(base64.b64decode(delta))
                 continue
             if event_type in {'error', 'session.error'}:
-                message = event.get('message') or event.get('error') or 'TTS upstream error'
-                raise RuntimeError(str(message)[:200])
+                raise RuntimeError(_extract_upstream_error_message(event))
             if event_type == 'session.finished':
                 break
 
     return b''.join(audio_parts)
+
+
+def _extract_upstream_error_message(event: dict) -> str:
+    error = event.get('error')
+    if isinstance(error, dict):
+        message = error.get('message') or error.get('code') or error.get('type')
+        if message:
+            return str(message)[:200]
+    message = event.get('message') or error or 'TTS upstream error'
+    return str(message)[:200]
 
 
 def _session_update_event(config: EffectiveTTSConfig, voice: TTSVoice) -> dict:

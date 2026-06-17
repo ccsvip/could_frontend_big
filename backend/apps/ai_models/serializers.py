@@ -514,6 +514,8 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
     )
     voiceInputEnabled = serializers.BooleanField(source='voice_input_enabled', required=False)
     replyPlaybackEnabled = serializers.BooleanField(source='reply_playback_enabled', required=False)
+    ttsFilterPunctuation = serializers.CharField(source='tts_filter_punctuation', required=False, allow_blank=True)
+    ttsFilterEmoji = serializers.BooleanField(source='tts_filter_emoji', required=False)
     knowledgeDocumentIds = serializers.PrimaryKeyRelatedField(
         source='knowledge_documents',
         queryset=KnowledgeDocument.objects.none(),
@@ -543,6 +545,8 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
             'suggestedQuestions',
             'voiceInputEnabled',
             'replyPlaybackEnabled',
+            'ttsFilterPunctuation',
+            'ttsFilterEmoji',
             'knowledgeDocumentIds',
             'knowledgeDocuments',
             'createdBy',
@@ -627,6 +631,12 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError('suggestedQuestions 单条建议问题不能超过 120 字')
             normalized.append(text)
         return normalized
+
+    def validate_ttsFilterPunctuation(self, value: str) -> str:
+        value = ''.join(dict.fromkeys(str(value).strip()))
+        if len(value) > 64:
+            raise serializers.ValidationError('TTS 过滤标点不能超过 64 个字符')
+        return value
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
