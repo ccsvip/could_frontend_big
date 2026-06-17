@@ -587,6 +587,13 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
         value = value.strip()
         if not value:
             raise serializers.ValidationError('应用名称不能为空')
+        tenant = self.context.get('tenant')
+        if tenant is not None:
+            queryset = AgentApplication.objects.filter(tenant=tenant, name=value)
+            if self.instance is not None:
+                queryset = queryset.exclude(pk=self.instance.pk)
+            if queryset.exists():
+                raise serializers.ValidationError('同名智能体已存在，请更换名称')
         return value
 
     def validate_temperature(self, value: float) -> float:

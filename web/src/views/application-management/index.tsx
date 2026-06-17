@@ -535,7 +535,6 @@ export const ApplicationManagementPage = () => {
       await loadApplications();
       navigate(`${created.id}`);
     } catch {
-      message.error('智能体创建失败');
     } finally {
       setCreateSaving(false);
     }
@@ -583,7 +582,6 @@ export const ApplicationManagementPage = () => {
       message.success('智能体配置已保存');
       await loadApplications();
     } catch {
-      message.error('智能体配置保存失败');
     } finally {
       setConfigSaving(false);
     }

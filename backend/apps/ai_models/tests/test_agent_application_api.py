@@ -222,6 +222,34 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNone(response.data['llmModelId'])
 
+    def test_create_agent_application_rejects_duplicate_name_in_same_tenant(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.create')
+        AgentApplication = self.agent_application_model()
+        AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='智能客服助理',
+        )
+
+        response = self.client.post(
+            '/api/v1/ai-models/applications/',
+            {
+                'name': '智能客服助理',
+                'description': 'Duplicate template name',
+                'temperature': 0.7,
+                'maxTokens': 1000,
+                'systemPrompt': '',
+                'openingMessageEnabled': True,
+                'openingMessage': '',
+                'suggestedQuestions': [],
+                'isActive': True,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('同名智能体已存在，请更换名称', response.data['message'])
+
     def test_create_agent_application_defaults_conversation_settings(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.create')
 
@@ -267,6 +295,29 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['suggestedQuestions'], ['你能做什么？', '如何使用知识库？'])
         self.assertTrue(response.data['voiceInputEnabled'])
         self.assertTrue(response.data['replyPlaybackEnabled'])
+
+    def test_update_agent_application_rejects_duplicate_name_in_same_tenant(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.update')
+        AgentApplication = self.agent_application_model()
+        first = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Existing agent',
+        )
+        second = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Editable agent',
+        )
+
+        response = self.client.patch(
+            f'/api/v1/ai-models/applications/{second.id}/',
+            {'name': first.name},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('同名智能体已存在，请更换名称', response.data['message'])
 
     def test_suggested_questions_limit_is_ten(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.create')
