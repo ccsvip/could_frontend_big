@@ -1,0 +1,58 @@
+# oh-my-codex top-level settings (must be before any [table])
+model_reasoning_effort = "medium"
+developer_instructions = "You have oh-my-codex installed. AGENTS.md is the orchestration brain and main control surface. Follow AGENTS.md for skill/keyword routing, $name workflow invocation, and role-specialized subagents; when spawning native subagents, set `agent_type` to an installed role and never omit it for OMX work. Use outcome-first, concise progress updates: state the target result, constraints, validation evidence, and stop condition before adding process detail. Native subagents live in .codex/agents and may handle independent parallel subtasks within one Codex session or team pane. Skills load from .codex/skills, not native-agent TOMLs. Treat installed prompts as narrower execution surfaces under AGENTS.md authority."
+model = "gpt-5.5"
+# oh-my-codex seeded behavioral defaults (uninstall removes unchanged defaults)
+model_context_window = 250000
+model_auto_compact_token_limit = 200000
+# End oh-my-codex seeded behavioral defaults
+
+[features]
+multi_agent = true
+child_agents_md = true
+hooks = true
+goals = true
+
+[shell_environment_policy.set]
+USE_OMX_EXPLORE_CMD = "0"
+
+[agents]
+max_threads = 6
+max_depth = 2
+
+# ============================================================
+# oh-my-codex (OMX) Configuration
+# Managed by omx setup - manual edits preserved on next setup
+# ============================================================
+
+# OMX-owned Codex hook trust state
+# Trusts only setup-managed native hook wrappers.
+[hooks.state."C:\\SVN_CODE\\branches\\real\\could_frontend\\.codex\\hooks.json:post_compact:0:0"]
+trusted_hash = "sha256:1ceb30bcfe13cb80f437e0fda1589dcb6a26aa4dc373edf839129d952d9f494c"
+
+[hooks.state."C:\\SVN_CODE\\branches\\real\\could_frontend\\.codex\\hooks.json:post_tool_use:0:0"]
+trusted_hash = "sha256:c540f5be547a0e3116390d25d6ee456e8673db0c62b061a0aa37bff115ffe2e6"
+
+[hooks.state."C:\\SVN_CODE\\branches\\real\\could_frontend\\.codex\\hooks.json:pre_compact:0:0"]
+trusted_hash = "sha256:abc341ab417233ea46e4efbabca80cc9236566231af288010dc367e8bf89e036"
+
+[hooks.state."C:\\SVN_CODE\\branches\\real\\could_frontend\\.codex\\hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:49199b830154c597a2a3cccfc73b428a2c389e42ca031a1185486d442b0faab6"
+
+[hooks.state."C:\\SVN_CODE\\branches\\real\\could_frontend\\.codex\\hooks.json:session_start:0:0"]
+trusted_hash = "sha256:c53107b19ce6dccf297e04baadf15efd53cd585d2895df21f8b32437057877b9"
+
+[hooks.state."C:\\SVN_CODE\\branches\\real\\could_frontend\\.codex\\hooks.json:stop:0:0"]
+trusted_hash = "sha256:1adcd89153a27583cda59bb999f97bab58e9e2dad6e838e6f897c0884c009590"
+
+[hooks.state."C:\\SVN_CODE\\branches\\real\\could_frontend\\.codex\\hooks.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:f52fe6f5c7f2d3e60f23777d14eedda323348786bbb1de6b629f345c87b63d01"
+# End OMX-owned Codex hook trust state
+
+# OMX TUI StatusLine (Codex CLI v0.101.0+)
+[tui]
+# omx:managed-status-line
+status_line = ["model-with-reasoning", "git-branch", "context-remaining", "total-input-tokens", "total-output-tokens", "five-hour-limit", "weekly-limit"]
+
+# ============================================================
+# End oh-my-codex
