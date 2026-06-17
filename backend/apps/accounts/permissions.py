@@ -281,6 +281,21 @@ class CanViewLLMProviders(HasPermissionCode):
     required_permission = 'ai_models.llm.view'
 
 
+class CanViewCompanyLLMOptions(permissions.BasePermission):
+    message = '当前账号缺少所需权限'
+
+    def has_permission(self, request, view):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+
+        permission_codes = get_active_permission_codes_for_user(user)
+        return bool(
+            {'ai_models.llm.view', 'agent_applications.view', 'ai_models.chat.view'}
+            & set(permission_codes)
+        )
+
+
 class CanViewASR(HasPermissionCode):
     required_permission = 'ai_models.asr.view'
 

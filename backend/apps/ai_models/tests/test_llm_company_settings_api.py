@@ -116,6 +116,15 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
         self.assertNotIn('apiBaseUrl', str(resp.data))
         self.assertEqual(resp.data['providers'][0]['models'][0]['id'], self.model.id)
 
+    def test_company_with_agent_application_view_can_see_models_without_llm_permission(self):
+        self.grant_permissions('agent_applications.view')
+        self.client.force_authenticate(self.tenant_user)
+
+        resp = self.client.get('/api/v1/ai-models/llm/options/')
+
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.data['providers'][0]['models'][0]['id'], self.model.id)
+
     def test_unauthorized_models_are_invisible(self):
         self.grant_permissions('ai_models.llm.view')
         unauthorized_model = self.create_model(name='gpt-4.1-mini', display_name='GPT 4.1 Mini')

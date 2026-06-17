@@ -28,6 +28,7 @@ from apps.accounts.permissions import (
     CanUpdateAgentApplications,
     CanViewAgentApplications,
     CanUpdateLLMProviders,
+    CanViewCompanyLLMOptions,
     CanViewChat,
     CanViewLLMProviders,
     CanViewTTS,
@@ -607,7 +608,7 @@ def _build_company_llm_options_payload(tenant, request):
 
 
 class CompanyLLMOptionsView(TenantScopedQuerysetMixin, APIView):
-    permission_classes = [CanViewLLMProviders]
+    permission_classes = [CanViewCompanyLLMOptions]
 
     def get(self, request):
         return Response(_build_company_llm_options_payload(self.request_tenant, request))

@@ -29,7 +29,7 @@ import { ChatMarkdown } from '../../components/chat-markdown';
 import { useAuthStore } from '../../store/auth';
 import { useAgentAudio } from './use-agent-audio';
 import dayjs from 'dayjs';
-import { Spin, message } from 'antd';
+import { Select as AntdSelect, Spin, message } from 'antd';
 
 import {
   Theme,
@@ -41,7 +41,6 @@ import {
   Text,
   TextField,
   TextArea,
-  Select,
   Slider,
   Switch,
   Avatar,
@@ -324,12 +323,16 @@ export const ApplicationManagementPage = () => {
   const loadOptions = useCallback(async () => {
     setOptionsLoading(true);
     try {
-      const [nextOptions, nextDocuments] = await Promise.all([
+      const [llmResult, documentsResult] = await Promise.allSettled([
         fetchCompanyLLMOptions(),
         fetchAllKnowledgeDocuments(),
       ]);
-      setLlmOptions(nextOptions);
-      setKnowledgeDocuments(nextDocuments);
+      if (llmResult.status === 'fulfilled') {
+        setLlmOptions(llmResult.value);
+      }
+      if (documentsResult.status === 'fulfilled') {
+        setKnowledgeDocuments(documentsResult.value);
+      }
     } catch {
       message.error('应用配置选项加载失败');
     } finally {
@@ -414,6 +417,22 @@ export const ApplicationManagementPage = () => {
 
   const asrReady = Boolean(asrStatus?.isActive && asrStatus.configured);
   const ttsReady = Boolean(ttsOptions?.provider.isActive && ttsOptions.defaultVoiceId);
+  const llmModelOptions = useMemo(
+    () => [
+      { label: '无模型', value: 'none' },
+      ...((llmOptions?.providers || [])
+        .filter((provider) => (provider.models || []).length > 0)
+        .map((provider) => ({
+          label: provider.name,
+          options: provider.models.map((model) => ({
+            label: model.displayName || model.name,
+            value: String(model.id),
+          })),
+        }))),
+    ],
+    [llmOptions],
+  );
+  const hasAvailableLlmModels = llmModelOptions.length > 1;
   const isOpeningPlaybackPending = agentAudio.pendingPlaybackKey === 'opening-message';
   const isOpeningPlaybackPlaying = agentAudio.playingKey === 'opening-message' && !agentAudio.paused;
 
@@ -504,7 +523,7 @@ export const ApplicationManagementPage = () => {
         systemPrompt: selectedTemplate ? selectedTemplate.systemPrompt : '',
         openingMessageEnabled: selectedTemplate ? selectedTemplate.openingMessageEnabled : true,
         openingMessage: selectedTemplate ? selectedTemplate.openingMessage : '',
-        suggestedQuestions: selectedTemplate ? selectedTemplate.suggestedQuestions : [],
+        suggestedQuestions: selectedTemplate ? [...selectedTemplate.suggestedQuestions] : [],
         isActive: true,
       };
       const created = await createAgentApplication(payload);
@@ -1237,26 +1256,16 @@ export const ApplicationManagementPage = () => {
                   <HelpCircle size={14} className="text-slate-400 cursor-help" />
                 </Tooltip>
               </Flex>
-              <Select.Root
-                disabled={!canUpdate || !(llmOptions?.providers || []).some((p) => (p.models || []).length > 0)}
+              <AntdSelect
+                disabled={!canUpdate || !hasAvailableLlmModels}
+                loading={optionsLoading}
+                options={llmModelOptions}
+                optionFilterProp="label"
+                placeholder="请选择模型"
+                showSearch
                 value={llmModelId ? String(llmModelId) : 'none'}
-                onValueChange={(val) => setLlmModelId(val === 'none' ? null : Number(val))}
-              >
-                <Select.Trigger placeholder="请选择模型" style={{ width: '100%' }} />
-                <Select.Content>
-                  <Select.Item value="none">无模型</Select.Item>
-                  {(llmOptions?.providers || []).map((provider) => (
-                    <Select.Group key={provider.id}>
-                      <Select.Label>{provider.name}</Select.Label>
-                      {provider.models.map((model) => (
-                        <Select.Item key={model.id} value={String(model.id)}>
-                          {model.displayName || model.name}
-                        </Select.Item>
-                      ))}
-                    </Select.Group>
-                  ))}
-                </Select.Content>
-              </Select.Root>
+                onChange={(val) => setLlmModelId(val === 'none' ? null : Number(val))}
+              />
             </Flex>
 
             <Flex direction="column" gap="1">

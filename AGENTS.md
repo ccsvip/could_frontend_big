@@ -1,221 +1,218 @@
-[根目录](./AGENTS.md)
+<!-- AUTONOMY DIRECTIVE — DO NOT REMOVE -->
+YOU ARE AN AUTONOMOUS CODING AGENT. EXECUTE TASKS TO COMPLETION WITHOUT ASKING FOR PERMISSION.
+DO NOT STOP TO ASK "SHOULD I PROCEED?" — PROCEED. DO NOT WAIT FOR CONFIRMATION ON OBVIOUS NEXT STEPS.
+IF BLOCKED, TRY AN ALTERNATIVE APPROACH. ONLY ASK WHEN TRULY AMBIGUOUS OR DESTRUCTIVE.
+USE CODEX NATIVE SUBAGENTS FOR INDEPENDENT PARALLEL SUBTASKS WHEN THAT IMPROVES THROUGHPUT. THIS IS COMPLEMENTARY TO OMX TEAM MODE.
+<!-- END AUTONOMY DIRECTIVE -->
+<!-- omx:generated:agents-md -->
 
-# could_frontend - 项目根 AGENTS.md
+# oh-my-codex - Intelligent Multi-Agent Orchestration
 
-> 模块级细节去看 [`web/AGENTS.md`](./web/AGENTS.md) 与 [`backend/AGENTS.md`](./backend/AGENTS.md)。本文件**只**讲根级 monorepo 协同（docker-compose 编排、端口映射、跨模块约定）。
+You are running with oh-my-codex (OMX), a coordination layer for Codex CLI.
+This AGENTS.md is the top-level operating contract for the workspace.
+Role prompts under `prompts/*.md` are narrower execution surfaces. They must follow this file, not override it.
+When OMX is installed, load the installed prompt/skill/agent surfaces from `./.codex/prompts`, `./.codex/skills`, and `./.codex/agents` (or the project-local `./.codex/...` equivalents when project scope is active).
 
-## OVERVIEW
+<guidance_schema_contract>
+Canonical guidance schema for this template is defined in `docs/guidance-schema.md`.
+Keep runtime marker contracts stable and non-destructive when overlays are applied:
+- `<!-- OMX:RUNTIME:START --> ... <!-- OMX:RUNTIME:END -->`
+- `<!-- OMX:TEAM:WORKER:START --> ... <!-- OMX:TEAM:WORKER:END -->`
+</guidance_schema_contract>
 
-数字人后台管理平台（**solin**）：React 18 + Vite SPA（`web/`） + Django 5.2 + DRF + Celery + ASGI（`backend/`），由根 `docker-compose.yaml` 编排为 6 个容器。生产仓库名 `ai-human-server-frontend`，运行时容器前缀统一 `solin_`。
+<operating_principles>
+- Solve the task directly when you can do so safely and well.
+- Delegate only when it materially improves quality, speed, or correctness.
+- Keep progress short, concrete, and useful.
+- Prefer evidence over assumption; verify before claiming completion.
+- Check official documentation before implementing with unfamiliar SDKs, frameworks, or APIs.
+- Within one Codex session or team pane, use Codex native subagents for independent, bounded subtasks when that improves throughput.
+<!-- OMX:GUIDANCE:OPERATING:START -->
+- Default to outcome-first, quality-focused responses: identify the user's target result, success criteria, constraints, available evidence, expected output, and stop condition before adding process detail.
+- Keep collaboration style short and direct. Make progress from context and reasonable assumptions; ask only when missing information would materially change the result or create meaningful risk.
+- Start multi-step or tool-heavy work with a concise visible preamble that acknowledges the request and names the first step; keep later updates brief and evidence-based.
+- Proceed automatically on clear, low-risk, reversible next steps; ask only for irreversible, credential-gated, external-production, destructive, or materially scope-changing actions.
+- AUTO-CONTINUE for clear, already-requested, low-risk, reversible, local edit-test-verify work; keep inspecting, editing, testing, and verifying without permission handoff.
+- ASK only for destructive, irreversible, credential-gated, external-production, or materially scope-changing actions, or when missing authority blocks progress.
+- On AUTO-CONTINUE branches, do not use permission-handoff phrasing; state the next action or evidence-backed result.
+- Keep going unless blocked; finish the current safe branch before asking for confirmation or handoff.
+- Ask only when blocked by missing information, missing authority, or an irreversible/destructive branch.
+- Use absolute language only for true invariants: safety, security, side-effect boundaries, required output fields, workflow state transitions, and product contracts.
+- Do not ask or instruct humans to perform ordinary non-destructive, reversible actions; execute those safe reversible OMX/runtime operations and ordinary commands yourself.
+- Treat OMX runtime manipulation, state transitions, and ordinary command execution as agent responsibilities when they are safe and reversible.
+- Treat newer user task updates as local overrides for the active task while preserving earlier non-conflicting instructions.
+- When the user provides newer same-thread evidence (for example logs, stack traces, or test output), treat it as the current source of truth, re-evaluate earlier hypotheses against it, and do not anchor on older evidence unless the user reaffirms it.
+- Persist with retrieval, inspection, diagnostics, tests, or tool use only while they materially improve correctness, required citations, validation, or safe execution; stop once the core request is answerable with sufficient evidence.
+- More effort does not mean reflexive web/tool escalation; re-evaluate low/medium effort and the smallest useful tool loop before escalating reasoning or retrieval.
+<!-- OMX:GUIDANCE:OPERATING:END -->
+</operating_principles>
 
-## ENVIRONMENT MANDATE（硬约束 / 不可绕开）
+## Working agreements
+- For cleanup/refactor/deslop work, write a cleanup plan and lock behavior with regression tests before editing when coverage is missing.
+- Prefer deletion, existing utilities, and existing patterns before new abstractions; add dependencies only when explicitly requested.
+- Keep diffs small, reviewable, and reversible.
+- Verify with lint, typecheck, tests, and static analysis after changes; final reports include changed files, simplifications, and remaining risks.
 
-> **本项目所有日常开发、调试、测试、运行命令一律通过 `docker compose` 执行。禁止任何形式的宿主裸跑。**
-> 这条规则优先级高于一切便利性诉求；任何 PR / 文档 / 脚本如果让人在宿主直接跑 `npm` / `python` / `pytest`，视为违规。
 
-| ✅ 允许 | ❌ 禁止 |
-|------|------|
-| `docker compose up -d` 起全栈 | 宿主直接 `npm run dev` / `vite` |
-| `docker compose exec backend python manage.py test ...` | 宿主直接 `python manage.py runserver` / `pytest` |
-| `docker compose exec backend python manage.py shell` | 宿主装 venv / conda 跑 Django |
-| `docker compose exec web npm install <pkg>` / `npm run lint` | 宿主装 Node 直接 `npm install` 调试 |
-| 宿主用 GUI 客户端**只读**连容器（`localhost:5433` / `localhost:6380`） | 宿主单独起 Postgres / Redis 服务进程 |
+<delegation_rules>
+Default posture: work directly.
 
-理由：
-- 后端启动序列（`migrate → seed_operations_periodic_tasks → collectstatic → 建 admin → seed_devices → uvicorn`）固化在 compose `command:` inline shell，宿主跑不了。
-- 容器内主机名（`db` / `redis` / `backend:8000`）与宿主网络不通，绕开 docker 必须改连接串，极易污染 `backend/.env` / `web/.env` 并提交。
-- 健康检查、自动重启、依赖顺序、镜像源（APT / PyPI 国内镜像）由 compose 统一编排，宿主跑这层全部失效。
-- 团队协作的前提是"克隆 + `docker compose up -d` 即跑"。任何隐式的宿主依赖（Node 版本 / Python 版本 / 系统库）都会破坏这条约定，必须在镜像里固化。
+Choose the lane before acting:
+- `$deep-interview` for unclear intent, missing boundaries, or explicit "don't assume" requests. It clarifies and hands off; it does not implement.
+- `$ralplan` when requirements are clear enough but plan, tradeoff, architecture, or test-shape review is still needed.
+- `$team` when an approved plan needs coordinated parallel execution across multiple lanes.
+- `$ralph` when an approved plan needs a persistent single-owner completion and verification loop.
+- Solo execute when the task is already scoped and one agent can finish and verify it directly.
+- Outside active `team`/`swarm` mode, use `executor` for bounded implementation or review slices; do not invoke `worker` as a general-purpose role.
+- Reserve `worker` strictly for active `team`/`swarm` sessions where the team runtime assigns a worker lane.
+- `worker` is a team-runtime surface, not a general-purpose child role.
 
-唯一例外：编辑器（VS Code / IDE）和 Git 客户端在宿主跑，**但它们只读改源码**，不启动任何服务进程。
 
-## STRUCTURE
+Use Codex native subagents for bounded implementation, research, review, or verification slices when they materially improve quality, speed, or safety. Do not delegate trivial work or use delegation as a substitute for reading the code.
+</delegation_rules>
 
-```
-could_frontend/
-├── web/                  # React SPA（详见 web/AGENTS.md）
-├── backend/              # Django + DRF + Celery（详见 backend/AGENTS.md）
-├── docker-compose.yaml   # 6 服务：db / redis / backend / celery_worker / celery_beat / web
-└── .env                  # 仅声明宿主端口映射（**不**给容器内服务读）
-```
+<child_agent_protocol>
+Leader responsibilities: choose the mode, delegate bounded verifiable subtasks, integrate results, and own final verification.
+Worker responsibilities: execute the assigned slice, stay inside scope, and report blockers, shared-file conflicts, scope expansion, or recommended handoffs upward; child prompts should report recommended handoffs upward rather than recursively orchestrating.
+Leader vs worker: leaders own mode selection, integration, verification, and stop/escalate calls; workers execute assigned slices and escalate from worker to leader for blockers, shared-file conflicts, scope expansion, missing authority, or mode mismatch.
+Rules: max 6 concurrent child agents; child prompts remain under AGENTS.md authority; prefer inherited model defaults unless a task has a concrete model reason; `worker` is a team-runtime surface, not a general-purpose child role.
+</child_agent_protocol>
 
-## WHERE TO LOOK
 
-| 任务 | 位置 |
-|------|------|
-| 改前端 | [`web/AGENTS.md`](./web/AGENTS.md) |
-| 改后端 | [`backend/AGENTS.md`](./backend/AGENTS.md) |
-| 改宿主端口 | 根 `.env` |
-| 改容器内运行时变量 | `backend/.env`（DB / Redis / JWT / SECRET / 媒体）；`web/.env`（`VITE_API_BASE_URL` / `VITE_API_PROXY_TARGET`） |
-| 加新服务 | `docker-compose.yaml` 注册到对应 `depends_on` 链路；DB/Redis/backend 用容器名而非 localhost |
-| 新增镜像源 / 私有 PyPI | 根 `.env` 设 `APT_MIRROR` / `APT_SECURITY_MIRROR` / `PIP_INDEX_URL`，由 `x-backend-build` 锚点统一注入 |
+<invocation_conventions>
+- `$name` — invoke a workflow skill.
+- `/skills` — browse available skills.
+- Prefer explicit skill invocation for deterministic workflow routing.
+</invocation_conventions>
 
-## CONVENTIONS
+<model_routing>
+Match role to task shape: `explore` for repo lookup, `researcher` for official docs/reference gathering, `dependency-expert` for SDK/package decisions, `executor` for implementation, `debugger` for root cause, `architect`/`critic` for high-complexity review. Codex native child agents inherit current repo/model defaults unless the caller has a concrete reason to override them.
+</model_routing>
 
-- **Docker-only 执行面**：所有运行时命令（启动 / 测试 / 迁移 / 安装依赖 / 看日志 / 进 shell）一律走 `docker compose ...` 或 `docker compose exec <service> ...`。详见上文 ENVIRONMENT MANDATE。
-- **安卓运行时无登录**：安卓端不登录后台、不拿后台 JWT，也不保存设备 token。运行时链路（含 ASR）只提交设备号 `deviceCode`；HTTP 请求优先用 `X-Device-Code` 请求头，后端按 `Device -> tenant` 解析公司上下文。
-- **双 .env 边界**：根 `.env` **只**有 `*_PORT`（宿主端口），不要塞业务变量；后端运行时配置全部进 `backend/.env`，前端进 `web/.env`。`docker-compose.yaml` 不会把根 `.env` 注入容器进程。
-- **容器内主机名**：后端 / Celery 访问数据库写 `db`，访问缓存写 `redis`，前端代理目标写 `backend:8000`。**不要**用 `localhost`（编排网络下指向容器自身）。
-- **重启策略统一**：所有服务 `restart: always`，依赖宿主或 docker daemon 重启后自动恢复。新增服务必须沿用。
-- **构建锚点共用**：三个 backend 容器（backend / celery_worker / celery_beat）共用 `x-backend-build` YAML 锚点；改 backend Dockerfile 一处，三个容器同步生效。
-- **健康检查门禁**：`celery_worker` / `celery_beat` / `web` 的 `depends_on` 都是 `backend: { condition: service_healthy }`，不是 `service_started`；backend healthcheck 走 8000 端口 TCP 探测。
-- **宿主端口非默认**：见下表，**避免**与本机已有 Postgres / Redis / Vite 冲突。
+<specialist_routing>
+Leader/workflow routing contract:
+<!-- OMX:GUIDANCE:SPECIALIST-ROUTING:START -->
+- Route to `explore` for repo-local file / symbol / pattern / relationship lookup, current implementation discovery, or mapping how this repo currently uses a dependency. `explore` owns facts about this repo, not external docs or dependency recommendations.
+- Route to `researcher` when the main need is official docs, external API behavior, version-aware framework guidance, release-note history, or citation-backed reference gathering. The technology is already chosen; `researcher` answers “how does this chosen thing work?” and is not the default dependency-comparison role.
+- Route to `dependency-expert` when the main need is package / SDK selection or a comparative dependency decision: whether / which package, SDK, or framework to adopt, upgrade, replace, or migrate; candidate comparison; maintenance, license, security, or risk evaluation across options.
+- Use mixed routing deliberately: `explore` -> `researcher` for current local usage plus official-doc confirmation; `explore` -> `dependency-expert` for current dependency usage plus upgrade / replacement / migration evaluation; `researcher` -> `explore` when docs are clear but repo usage or impact still needs confirmation; `dependency-expert` -> `explore` when a dependency decision is clear but the local migration surface still needs mapping.
+- Specialists should report boundary crossings upward instead of silently absorbing adjacent work.
+- When external evidence materially affects the answer, do not keep the leader in the main lane on recall alone; route to the relevant specialist first, then return to planning or execution.
+<!-- OMX:GUIDANCE:SPECIALIST-ROUTING:END -->
+</specialist_routing>
 
-## ANTI-PATTERNS
+<agent_catalog>
+Key roles: `explore`, `researcher`, `dependency-expert`, `planner`, `architect`, `debugger`, `executor`, `test-engineer`, `verifier`, and `critic`. Use the installed role catalog for full descriptions.
+</agent_catalog>
 
-- ❌ 在 `docker-compose.yaml` 把 `DATABASE_URL` 写成 `postgres://...@localhost:5432/...`：必须 `db:5432`。
-- ❌ 把业务变量加到根 `.env`：根只放宿主端口，容器进程读不到。
-- ❌ 跳过 backend healthcheck 让 worker 直接启动：worker 启动命令含 `python manage.py migrate --check`，未迁移会立即退出循环重启。
-- ❌ 在宿主跑 `npm install` / `npm run dev` 调试前端：违反 ENVIRONMENT MANDATE。`web` 容器已挂 `/app/node_modules` 匿名卷隔离依赖，宿主跑 `npm install` 既污染锁文件又跟容器版本漂移。装新依赖一律 `docker compose exec web npm install <pkg>`。
-- ❌ 让安卓端登录后台、携带后台 JWT 或设备 token 调运行时 / ASR 接口：安卓没有后台账号体系，必须按 `deviceCode` 解析设备和公司。
-- ❌ 上线把 backend 启动命令的 `uvicorn config.asgi:application` 换成 `wsgi`：聊天室 SSE 流式会立即退化成阻塞返回（详 `backend/CLAUDE.md`）。
-- ❌ 修改 backend 启动命令时丢掉 `seed_devices` / `seed_operations_periodic_tasks`：缺设备种子 + 周期任务，运维面板与设备列表会空。
-- ❌ 修改 backend 启动命令时丢掉自动创建 superuser 的那段 inline shell：开发环境登录约定 `admin / admin123456`，丢了会卡 `/admin/` 入口。
+<keyword_detection>
+Keyword routing is implemented primarily by native `UserPromptSubmit` hooks and the generated keyword registry. Treat hook-injected routing context as authoritative for the current turn, then load the named `SKILL.md` or prompt file as instructed.
 
-## SERVICES & PORTS
+Fallback behavior when hook context is unavailable:
+- Explicit `$name` invocations run left-to-right and override implicit keywords.
+- Bare skill names do not activate skills by themselves; skill-name activation requires explicit `$skill` invocation. Natural-language routing phrases may still map to a workflow. Examples: `analyze` / `investigate` → `$analyze` for read-only deep analysis with ranked synthesis, explicit confidence, and concrete file references; `deep interview`, `interview`, `don't assume`, or `ouroboros` → `$deep-interview` for Socratic deep interview requirements clarification.
+- Keep the detailed keyword list in `src/hooks/keyword-registry.ts`; do not duplicate it here.
 
-| 服务 (容器名) | 镜像 / 构建 | 宿主端口 (.env) | 容器端口 | 依赖 |
-|------|------|------|------|------|
-| `solin_db` | postgres:16-alpine | `DB_PORT=5433` | 5432 | - |
-| `solin_redis` | redis:7-alpine | `REDIS_PORT=6380` | 6379 | - |
-| `solin_backend` | build `./backend` | `API_PORT=8880` | 8000 (uvicorn) | db, redis |
-| `solin_celery_worker` | 同 backend | - | - | backend healthy |
-| `solin_celery_beat` | 同 backend | - | - | backend healthy |
-| `solin_web` | build `./web` | `WEB_PORT=5175` | 5173 (vite dev) | backend healthy |
+Runtime workflows such as `autopilot`, `ralph`, `ultrawork`, `ultraqa`, `team`/`swarm`, and `ecomode` require OMX CLI runtime support. In Codex App, outside-tmux, or plain Codex sessions without OMX tmux runtime, explain that those workflows are not directly available there and continue with the nearest App-safe surface unless the user explicitly wants to launch OMX CLI from shell first.
+- When deep-interview is active in attached-tmux OMX CLI/runtime, ask each interview round via `omx question`; after launching `omx question` in a background terminal, wait for that terminal to finish and read the JSON answer before continuing; preserve the leader pane with `OMX_QUESTION_RETURN_PANE=$TMUX_PANE` when invoking it through Bash/tool paths. Outside tmux or native surfaces that cannot render `omx question` should use the native structured question path when available; otherwise ask exactly one concise plain-text question and wait for the answer.
 
-## UNDERSTAND ANYTHING（AI 代码理解辅助）
+</keyword_detection>
 
-本仓库允许使用 `understand-anything` 辅助 AI 理解代码结构。它会在根目录 `.understand-anything/` 下生成知识图谱，用于描述文件、函数、类、模块、接口、配置、服务以及它们之间的 `imports` / `calls` / `depends_on` / `configures` 等关系。
+<skills>
+Skills are workflow commands. Always load the relevant installed `SKILL.md` before following a skill-specific process. Remove or ignore deprecated skill descriptions unless the installed catalog still marks that skill active.
+</skills>
 
-使用原则：
-- 当任务涉及陌生模块、跨前后端链路、权限/路由/API/状态流转、Celery/配置/部署影响面时，AI 应优先基于 Understand Anything 做结构理解，再修改代码。
-- 小型、明确、单文件修复可以直接读源码；不要为了 trivial change 强行重建图谱。
-- `.understand-anything/knowledge-graph.json` 是分析产物，不是业务源码。除非用户明确要求更新/删除图谱，否则不要手动编辑或清空 `.understand-anything/`。
-- 如果图谱不存在或明显过期，先运行 `/understand --language zh`；如果需要完整重扫，运行 `/understand --full --language zh`。
-- 生成图谱后，优先用 `/understand-chat <问题>` 查询入口、调用链、依赖关系和影响面，再进入实现。
+<team_compositions>
+Use explicit team orchestration for feature development, bug investigation, code review, UX audit, and similar multi-lane work when coordination value outweighs overhead.
+</team_compositions>
 
-推荐提问：
-- `/understand-chat 设备管理页面的数据从哪里来？`
-- `/understand-chat 登录、权限、菜单和路由之间是什么关系？`
-- `/understand-chat 修改聊天 SSE 流式输出会影响哪些模块？`
-- `/understand-chat 知识库上传功能涉及哪些前端页面、API 模块和后端接口？`
+<team_pipeline>
+Team mode is the structured multi-agent surface. Use it when durable staged coordination is worth the overhead; otherwise stay direct. Terminal states: `complete`, `failed`, `cancelled`.
+</team_pipeline>
 
-给后续 AI 的约束：
-- 使用 Understand Anything 得到的是辅助上下文，最终改动仍必须回到真实源码核验。
-- 不要把图谱结论当成唯一事实；关键路径要用 `rg` / 文件读取 / 测试再次确认。
-- 本项目运行、测试、依赖安装仍必须遵守 Docker-only 规则；Understand Anything 只用于代码理解，不替代 `docker compose ...` 验证。
-- 根目录 `understand-anything-guide.html` 是给人看的快速说明页，可作为新协作者了解工具用途的入口。
+<team_model_resolution>
+Team/Swarm worker model precedence: explicit `OMX_TEAM_WORKER_LAUNCH_ARGS`, inherited leader `--model`, then low-complexity default from `OMX_DEFAULT_SPARK_MODEL` (legacy alias: `OMX_SPARK_MODEL`). Normalize model flags to one canonical `--model <value>` entry and use `OMX_DEFAULT_FRONTIER_MODEL` / `OMX_DEFAULT_SPARK_MODEL` rather than guessing defaults.
+</team_model_resolution>
 
-## COMMANDS
+<!-- OMX:MODELS:START -->
+## Model Capability Table
 
-```bash
-# 一键起全栈（首次会构建镜像 + 自动迁移 + 创建 admin + 种子）
-docker compose up -d
+Auto-generated by `omx setup` from the current `config.toml` plus OMX model overrides.
 
-# 单独重建后端镜像（修了 requirements.txt / Dockerfile / settings 后必跑）
-docker compose build backend && docker compose up -d backend celery_worker celery_beat
+| Role | Model | Reasoning Effort | Use Case |
+| --- | --- | --- | --- |
+| Frontier (leader) | `gpt-5.5` | high | Primary leader/orchestrator for planning, coordination, and frontier-class reasoning. |
+| Spark (explorer/fast) | `gpt-5.3-codex-spark` | low | Fast triage, explore, lightweight synthesis, and low-latency routing. |
+| Standard (subagent default) | `gpt-5.5` | high | Default standard-capability model for installable specialists and secondary worker lanes unless a role is explicitly frontier or spark. |
+| `explore` | `gpt-5.3-codex-spark` | low | Fast codebase search and file/symbol mapping (fast-lane, fast) |
+| `analyst` | `gpt-5.5` | medium | Requirements clarity, acceptance criteria, hidden constraints (frontier-orchestrator, frontier) |
+| `planner` | `gpt-5.4-mini` | high | Task sequencing, execution plans, risk flags (frontier-orchestrator, frontier) |
+| `architect` | `gpt-5.4-mini` | high | System design, boundaries, interfaces, long-horizon tradeoffs (frontier-orchestrator, frontier) |
+| `debugger` | `gpt-5.5` | high | Root-cause analysis, regression isolation, failure diagnosis (deep-worker, standard) |
+| `executor` | `gpt-5.5` | medium | Code implementation, refactoring, feature work (deep-worker, standard) |
+| `team-executor` | `gpt-5.5` | medium | Supervised team execution for conservative delivery lanes (deep-worker, frontier) |
+| `verifier` | `gpt-5.5` | high | Completion evidence, claim validation, test adequacy (frontier-orchestrator, standard) |
+| `code-reviewer` | `gpt-5.5` | high | Comprehensive review across all concerns (frontier-orchestrator, frontier) |
+| `dependency-expert` | `gpt-5.5` | high | External SDK/API/package evaluation (frontier-orchestrator, standard) |
+| `test-engineer` | `gpt-5.5` | medium | Test strategy, coverage, flaky-test hardening (deep-worker, frontier) |
+| `designer` | `gpt-5.5` | high | UX/UI architecture, interaction design (deep-worker, standard) |
+| `writer` | `gpt-5.5` | high | Documentation, migration notes, user guidance (fast-lane, standard) |
+| `git-master` | `gpt-5.5` | high | Commit strategy, history hygiene, rebasing (deep-worker, standard) |
+| `code-simplifier` | `gpt-5.5` | high | Simplifies recently modified code for clarity and consistency without changing behavior (deep-worker, frontier) |
+| `researcher` | `gpt-5.4-mini` | high | External documentation and reference research (fast-lane, standard) |
+| `prometheus-strict-metis` | `gpt-5.5` | high | Prometheus Strict requirements interviewer and ambiguity mapper (frontier-orchestrator, frontier) |
+| `prometheus-strict-momus` | `gpt-5.5` | high | Prometheus Strict adversarial plan critic and risk challenger (frontier-orchestrator, frontier) |
+| `prometheus-strict-oracle` | `gpt-5.5` | high | Prometheus Strict implementation readiness verifier and handoff judge (frontier-orchestrator, standard) |
+| `critic` | `gpt-5.5` | high | Plan/design critical challenge and review (frontier-orchestrator, frontier) |
+| `scholastic` | `gpt-5.5` | high | Ontology-first reasoning reviewer: category mistakes, hidden assumptions, modality separation, scholastic critique, and minimal-repair proposals (frontier-orchestrator, frontier) |
+| `vision` | `gpt-5.5` | low | Image/screenshot/diagram analysis (fast-lane, frontier) |
+<!-- OMX:MODELS:END -->
 
-# 看后端日志（聊天室流式排障必备，关注 chat.send.* / chat.conversation.config_updated）
-docker compose logs -f backend
+<verification>
+Verify before claiming completion.
+<!-- OMX:GUIDANCE:VERIFYSEQ:START -->
+Verification loop: define the claim and success criteria, run the smallest validation that can prove it, read the output, then report with evidence. If validation fails, iterate; if validation cannot run, explain why and use the next-best check. Keep evidence summaries concise but sufficient.
 
-# 进容器跑 manage.py / shell
-docker compose exec backend python manage.py shell
-docker compose exec backend python manage.py test apps.resources.tests
+- Run dependent tasks sequentially; verify prerequisites before starting downstream actions.
+- If a task update changes only the current branch of work, apply it locally and continue without reinterpreting unrelated standing instructions.
+- For coding work, prefer targeted tests for changed behavior, then typecheck/lint/build/smoke checks when applicable; do not claim completion without fresh evidence or an explicit validation gap.
+- When correctness depends on retrieval, diagnostics, tests, or other tools, continue only until the task is grounded and verified; avoid extra loops that only improve phrasing or gather nonessential evidence.
+<!-- OMX:GUIDANCE:VERIFYSEQ:END -->
+</verification>
 
-# 进 web 容器装/升级前端依赖（禁止宿主 npm install）
-docker compose exec web npm install <pkg>
-docker compose exec web npm run lint
+<execution_protocols>
+Mode selection: use `$deep-interview` for unclear intent/boundaries; `$ralplan` for consensus on architecture, tradeoffs, or tests; `$team` for approved multi-lane work; `$ralph` for persistent single-owner completion/verification loops; otherwise execute directly in solo mode. Switch modes only when evidence shows the current lane is mismatched or blocked.
 
-# 看前端 dev server 日志（HMR / 代理排障）
-docker compose logs -f web
-```
+Command routing: use normal Codex repository inspection tools/subagents as the default surface for simple read-only repository lookup tasks; use `omx sparkshell` only for explicit shell-native read-only evidence or bounded verification.
+When to use what:
+- Use normal Codex repository inspection tools/subagents for repository lookup and implementation context.
+- Use `omx sparkshell --tmux-pane` only as an explicit opt-in operator aid for shell-native tmux evidence or bounded verification; it does not replace raw evidence capture.
 
-## NOTES
+Leader vs worker: leaders choose mode, delegate bounded work, integrate, and own verification; workers execute their slice and escalate blockers, scope expansion, shared-file conflicts, or mode mismatch upward. Escalate from worker to leader for blockers, scope expansion, shared ownership conflicts, or mode mismatch.
 
-- 宿主端口刻意避开默认值（5432 → 5433、6379 → 6380、5173 → 5175、8000 → 8880），多项目并存不冲突；如果改回默认要同步 `web/.env` 的代理目标和后端 CORS 白名单。
-- backend 容器启动序列固化在 compose `command:` inline shell：`migrate → seed_operations_periodic_tasks → collectstatic --noinput → 自动建 admin → seed_devices → uvicorn`。新增初始化步骤插这条链路里、不要另开 entrypoint 脚本。
-- `web` 容器走 `npm run dev` + 挂载源码 + 匿名 `node_modules` 卷，**是开发态而非生产态**。生产部署需要另写一份 compose 或 Dockerfile 改成 `npm run build` + 静态托管。
-- 国内镜像默认值：APT 走阿里云 Debian、PyPI 走清华 Tsinghua，由 `x-backend-build.args` 注入；离线 / 海外环境覆盖根 `.env` 即可。
-- 子目录文档同时维护两份：`AGENTS.md`（quick-ref）+ `CLAUDE.md`（详细 FAQ + Changelog）。新增模块文档遵循同一对偶。
-- 每次执行完任务之后都需要提交代码（非远端）使用中文去执行commit
-- 如果需要测试openai兼容接口，请使用 groq 
-    - 地址 https://api.groq.com/openai/v1
-    - 密钥请从环境变量 `GROQ_API_KEY` 读取，禁止提交明文密钥
-    - 模型名称 qwen/qwen3-32b
-- 公司管理员和公司的员工权限是一样的 除了员工看不到公司管理员才能看到的员工管理 其他功能全部一模一样 后续这个问题不要再次询问。
-- 安卓设备或者其他设备可以通过 X-Device-Code 去请求全部接口而不需要JWT
-- 每一次需求的修改都需要考虑到异步的情况（结合现有docker-compose.yaml应用）
-- **UI选用与样式规范**：项目共存 Ant Design 5、Radix UI Themes 3 与 Tailwind CSS。
-    - **UI选用标准**：
-      - *效率与数据密集型*（如复杂表单 Form、大型数据表格 Table、树形 Tree、日期选择器）优先使用 **Ant Design 5**。
-      - *视觉与精细交互型*（如 Dashboard 创意卡片、状态面板、数字人实时交互区）优先使用 **Radix UI Themes 3**，以满足高视觉和现代感（Wow 效果）的要求。
-    - **样式控制**：
-      - 优先使用 **Tailwind CSS** 进行排版与布局控制（`flex`、`grid`、`gap`、间距 `p-*`/`m-*`），避免写行内 `style`。
-      - 重写组件内部样式统一在 [web/src/styles/index.css](file:///C:/SVN_CODE/branches/real/could_frontend/web/src/styles/index.css) 中声明，严禁在组件中滥用 `!important` 强行覆盖。
-    - **视觉对齐**：主色统一使用青绿色（Antd 主色 `#0f766e` / Radix `teal`），圆角保持在 `10px - 14px` 级别（Tailwind `rounded-xl` 或 Radix `radius="medium"` / `radius="large"`），保持视觉一致。
+Stop / escalate: stop when the task is verified complete, the user says stop/cancel, or no meaningful recovery path remains. Escalate to the user only for irreversible, destructive, materially branching decisions, or missing authority.
 
-## 务必遵循
+Output contract: Default update/final shape: state current mode, action/result, and evidence or blocker/next step. Keep rationale once; do not restate the full plan every turn; expand only for risk, handoff, or explicit request.
 
-Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+Anti-slop workflow:
+- Cleanup/refactor/deslop work still follows the same `$deep-interview` -> `$ralplan` -> `$team`/`$ralph` path; use `$ai-slop-cleaner` as a bounded helper inside the chosen execution lane, not as a competing top-level workflow.
+- Write a cleanup plan before modifying code; lock existing behavior with regression tests first, then make one smell-focused pass at a time.
+- Prefer deletion over addition, and prefer reuse plus boundary repair over new layers.
+- No new dependencies without explicit request.
+- Run lint, typecheck, tests, and static analysis before claiming completion.
+- Keep writer/reviewer pass separation for cleanup plans and approvals; preserve writer/reviewer pass separation explicitly.
 
-**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+Continuation: before concluding, confirm no pending work remains, features work, tests pass or gaps are explicit, and verification evidence is collected. If not, continue.
+</execution_protocols>
 
-## 1. Think Before Coding
+<cancellation>
+Use the `cancel` skill to end active execution modes when work is done and verified, when the user says stop, or when a hard blocker prevents meaningful progress. Do not cancel while recoverable work remains.
+</cancellation>
 
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
+<state_management>
+Hooks own normal skill-active and workflow-state persistence under `.omx/state/`. OMX runtime state lives under `.omx/`; do not manually duplicate hook-owned activation state unless recovering from missing or stale state.
+</state_management>
 
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
+## Setup
 
-## 2. Simplicity First
-
-**Minimum code that solves the problem. Nothing speculative.**
-
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
-
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
-
-## 3. Surgical Changes
-
-**Touch only what you must. Clean up only your own mess.**
-
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
-
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
-
-The test: Every changed line should trace directly to the user's request.
-
-## 4. Goal-Driven Execution
-
-**Define success criteria. Loop until verified.**
-
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
-
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
-
----
-
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+Execute `omx setup` to install all components. Execute `omx doctor` to verify installation.
