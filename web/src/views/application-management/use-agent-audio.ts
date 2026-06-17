@@ -46,6 +46,10 @@ export const useAgentAudio = () => {
   const playbackRequestGuardRef = useRef(createPlaybackRequestGuard());
   const playbackKeyRef = useRef<string | null>(null);
   const playbackAbortRef = useRef<AbortController | null>(null);
+  const streamPlaybackQueueRef = useRef<string[]>([]);
+  const streamPlaybackBufferRef = useRef('');
+  const streamPlaybackActiveRef = useRef(false);
+  const streamPlaybackSessionRef = useRef(0);
 
   const stopRecording = useCallback(() => {
     workletNodeRef.current?.port.close();
@@ -201,6 +205,10 @@ export const useAgentAudio = () => {
     playbackRequestGuardRef.current.cancel();
     playbackAbortRef.current?.abort();
     playbackAbortRef.current = null;
+    streamPlaybackSessionRef.current += 1;
+    streamPlaybackQueueRef.current = [];
+    streamPlaybackBufferRef.current = '';
+    streamPlaybackActiveRef.current = false;
     audioRef.current?.pause();
     audioRef.current = null;
     playbackKeyRef.current = null;
@@ -209,6 +217,80 @@ export const useAgentAudio = () => {
     setPendingPlaybackKey(null);
     setPaused(false);
   }, [revokeObjectUrl]);
+
+  const playQueuedStreamSegments = useCallback(async (sessionId: number) => {
+    if (streamPlaybackActiveRef.current) {
+      return;
+    }
+    streamPlaybackActiveRef.current = true;
+    setPlayingKey('streaming-reply');
+    setPaused(false);
+
+    while (streamPlaybackSessionRef.current === sessionId && streamPlaybackQueueRef.current.length > 0) {
+      const segment = streamPlaybackQueueRef.current.shift();
+      if (!segment || !token) {
+        continue;
+      }
+      const abortController = new AbortController();
+      playbackAbortRef.current = abortController;
+      try {
+        await playRealtimeTts({
+          text: segment,
+          token,
+          tenantId: tenantScopeId ?? tenant?.id ?? null,
+          signal: abortController.signal,
+        });
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === 'AbortError')) {
+          message.error('语音合成失败');
+        }
+        break;
+      } finally {
+        if (playbackAbortRef.current === abortController) {
+          playbackAbortRef.current = null;
+        }
+      }
+    }
+
+    if (streamPlaybackSessionRef.current === sessionId) {
+      streamPlaybackActiveRef.current = false;
+      setPlayingKey(null);
+      setPendingPlaybackKey(null);
+    }
+  }, [tenant?.id, tenantScopeId, token]);
+
+  const enqueueStreamPlaybackText = useCallback((text: string, force = false) => {
+    const content = text.trim();
+    if (!token || (!content && !force)) {
+      return;
+    }
+    streamPlaybackBufferRef.current += text;
+    const readySegments = extractReadyTtsSegments(streamPlaybackBufferRef.current, force);
+    streamPlaybackBufferRef.current = readySegments.remainder;
+    if (readySegments.segments.length === 0) {
+      return;
+    }
+    streamPlaybackQueueRef.current.push(...readySegments.segments);
+    const sessionId = streamPlaybackSessionRef.current;
+    void playQueuedStreamSegments(sessionId);
+  }, [playQueuedStreamSegments, token]);
+
+  const startStreamPlayback = useCallback(() => {
+    stopPlayback();
+    streamPlaybackSessionRef.current += 1;
+    streamPlaybackQueueRef.current = [];
+    streamPlaybackBufferRef.current = '';
+    streamPlaybackActiveRef.current = false;
+    setPendingPlaybackKey('streaming-reply');
+  }, [stopPlayback]);
+
+  const appendStreamPlaybackText = useCallback((text: string) => {
+    enqueueStreamPlaybackText(text, false);
+  }, [enqueueStreamPlaybackText]);
+
+  const finishStreamPlayback = useCallback(() => {
+    enqueueStreamPlaybackText('', true);
+  }, [enqueueStreamPlaybackText]);
 
   const playText = useCallback(async (key: string, text: string) => {
     const content = text.trim();
@@ -293,5 +375,34 @@ export const useAgentAudio = () => {
     stopRecording,
     playText,
     stopPlayback,
+    startStreamPlayback,
+    appendStreamPlaybackText,
+    finishStreamPlayback,
   };
+};
+
+const TTS_SEGMENT_PATTERN = /[。！？!?；;\n]/g;
+
+const extractReadyTtsSegments = (text: string, force: boolean): { segments: string[]; remainder: string } => {
+  const segments: string[] = [];
+  let lastIndex = 0;
+  for (const match of text.matchAll(TTS_SEGMENT_PATTERN)) {
+    const endIndex = match.index + match[0].length;
+    const segment = text.slice(lastIndex, endIndex).trim();
+    if (segment) {
+      segments.push(segment);
+    }
+    lastIndex = endIndex;
+  }
+
+  let remainder = text.slice(lastIndex);
+  if (force && remainder.trim()) {
+    segments.push(remainder.trim());
+    remainder = '';
+  } else if (remainder.length >= 80) {
+    segments.push(remainder.trim());
+    remainder = '';
+  }
+
+  return { segments, remainder };
 };

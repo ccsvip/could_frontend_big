@@ -46,17 +46,22 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
 
   return new Promise((resolve, reject) => {
     let settled = false;
+    let completing = false;
+    let completionTimer: number | null = null;
     const socket = new WebSocket(buildTtsRealtimeWebSocketUrl(options.token, options.tenantId));
     socket.binaryType = 'arraybuffer';
 
     const finish = () => {
-      if (settled) {
+      if (settled || completing) {
         return;
       }
-      settled = true;
+      completing = true;
       const playbackTailMs = Math.max(0, (nextStartTime - audioContext.currentTime) * 1000);
-      window.setTimeout(() => closeAudio(), playbackTailMs + 300);
-      resolve({ blob: pcmToWav(chunks, sampleRate), sampleRate });
+      completionTimer = window.setTimeout(() => {
+        settled = true;
+        closeAudio();
+        resolve({ blob: pcmToWav(chunks, sampleRate), sampleRate });
+      }, playbackTailMs + 50);
     };
 
     const fail = (error: Error) => {
@@ -64,6 +69,10 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
         return;
       }
       settled = true;
+      if (completionTimer !== null) {
+        window.clearTimeout(completionTimer);
+        completionTimer = null;
+      }
       closeAudio();
       reject(error);
     };
@@ -136,9 +145,9 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
 
     socket.onclose = () => {
       options.signal?.removeEventListener('abort', abort);
-      if (!settled && chunks.length > 0) {
+      if (!settled && !completing && chunks.length > 0) {
         finish();
-      } else if (!settled) {
+      } else if (!settled && !completing) {
         fail(new Error('TTS WebSocket 已关闭'));
       }
     };

@@ -939,6 +939,9 @@ export const ApplicationManagementPage = () => {
     setMessages((current) => [...current, localUserMessage]);
     setStreaming(true);
     setStreamingContent('');
+    if (replyPlaybackEnabled && ttsReady) {
+      agentAudio.startStreamPlayback();
+    }
 
     let settled = false;
     const finish = () => {
@@ -946,16 +949,11 @@ export const ApplicationManagementPage = () => {
       settled = true;
       setStreaming(false);
       abortRef.current = null;
+      if (replyPlaybackEnabled && ttsReady) {
+        agentAudio.finishStreamPlayback();
+      }
       void refreshConversation(activeConversation.id)
-        .then((nextConversation) => {
-          if (!replyPlaybackEnabled || !ttsReady) return;
-          const assistantMessage = [...nextConversation.messages]
-            .reverse()
-            .find((item) => item.role === 'assistant');
-          if (assistantMessage) {
-            void agentAudio.playText(`message-${assistantMessage.id}`, assistantMessage.content);
-          }
-        })
+        .then(() => undefined)
         .catch(() => {
           message.error('会话刷新失败');
         });
@@ -966,7 +964,12 @@ export const ApplicationManagementPage = () => {
       content,
       true,
       null,
-      (text) => setStreamingContent((current) => current + text),
+      (text) => {
+        setStreamingContent((current) => current + text);
+        if (replyPlaybackEnabled && ttsReady) {
+          agentAudio.appendStreamPlaybackText(text);
+        }
+      },
       () => undefined,
       () => undefined,
       (error) => message.error(error),
@@ -984,6 +987,7 @@ export const ApplicationManagementPage = () => {
     abortRef.current?.abort();
     abortRef.current = null;
     setStreaming(false);
+    agentAudio.stopPlayback();
   };
 
   const addSuggestedQuestion = () => {
