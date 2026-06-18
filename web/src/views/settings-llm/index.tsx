@@ -186,7 +186,7 @@ export const LlmSettingsAdminPage = () => {
   const openCreateModel = (providerId?: number) => {
     setEditingModel(null);
     modelForm.resetFields();
-    modelForm.setFieldsValue({ providerId, sortOrder: 0 });
+    modelForm.setFieldsValue({ providerId, enableWebSearch: false, sortOrder: 0 });
     setModelModalOpen(true);
   };
 
@@ -196,6 +196,7 @@ export const LlmSettingsAdminPage = () => {
       providerId: record.providerId,
       name: record.name,
       displayName: record.displayName,
+      enableWebSearch: record.enableWebSearch,
       sortOrder: record.sortOrder,
     });
     setModelModalOpen(true);
@@ -290,6 +291,16 @@ export const LlmSettingsAdminPage = () => {
       render: (value: boolean) => (
         <Tag color={value ? 'success' : 'default'} className="px-2 py-0.5 rounded-md font-medium border-0">
           {value ? '启用' : '停用'}
+        </Tag>
+      ),
+    },
+    {
+      title: '联网搜索',
+      dataIndex: 'enableWebSearch',
+      width: 112,
+      render: (value: boolean) => (
+        <Tag color={value ? 'blue' : 'default'} className="px-2 py-0.5 rounded-md font-medium border-0">
+          {value ? '支持' : '不支持'}
         </Tag>
       ),
     },
@@ -734,6 +745,12 @@ export const LlmSettingsAdminPage = () => {
           <Form.Item name="displayName" label="展示名称">
             <Input maxLength={128} className="rounded-lg" placeholder="如 OpenAI GPT-4o" />
           </Form.Item>
+          <div className="bg-slate-50 border border-slate-200/60 rounded-xl p-4 flex items-center justify-between">
+            <span className="text-xs text-slate-500 font-medium">请求时开启 enable_search</span>
+            <Form.Item name="enableWebSearch" valuePropName="checked" noStyle>
+              <Switch checkedChildren="支持" unCheckedChildren="不支持" className="shadow-sm" />
+            </Form.Item>
+          </div>
           <Form.Item name="sortOrder" label="排序">
             <InputNumber min={0} className="!w-full rounded-lg" />
           </Form.Item>

@@ -9,7 +9,7 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import Menu, PermissionPoint, Role, UserRole
 from apps.ai_models.models import AgentAnnotation, AgentApplication, ChatConversation, ChatMessage, LLMModel, LLMProvider, TenantLLMModelGrant
-from apps.ai_models.views import _build_chat_completions_url
+from apps.ai_models.views import _build_chat_completions_url, _build_llm_request_payload
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
@@ -202,6 +202,28 @@ class ChatApiTests(TenantTestMixin, APITestCase):
             _build_chat_completions_url('https://api.longcat.chat/openai/v1/chat/completions'),
             'https://api.longcat.chat/openai/v1/chat/completions',
         )
+
+    def test_build_llm_request_payload_adds_search_param_only_when_enabled(self):
+        base_payload = _build_llm_request_payload(
+            model_name='qwen-plus',
+            messages=[{'role': 'user', 'content': '你好'}],
+            stream=False,
+            temperature=0.7,
+            max_tokens=1000,
+            max_tokens_unlimited=False,
+        )
+        search_payload = _build_llm_request_payload(
+            model_name='qwen-plus',
+            messages=[{'role': 'user', 'content': '你好'}],
+            stream=False,
+            temperature=0.7,
+            max_tokens=1000,
+            max_tokens_unlimited=False,
+            enable_web_search=True,
+        )
+
+        self.assertNotIn('enable_search', base_payload)
+        self.assertTrue(search_payload['enable_search'])
 
     def test_update_config_updates_selected_provider_and_model(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')

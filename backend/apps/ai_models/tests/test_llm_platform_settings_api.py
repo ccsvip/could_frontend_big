@@ -135,6 +135,7 @@ class LLMPlatformSettingsApiTests(TenantTestMixin, APITestCase):
                 'displayName': 'GPT 4.1',
                 'name': 'gpt-4.1',
                 'contextWindow': 128000,
+                'enableWebSearch': True,
                 'isActive': True,
             },
             format='json',
@@ -144,7 +145,10 @@ class LLMPlatformSettingsApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(resp.data['providerId'], provider.id)
         self.assertEqual(resp.data['displayName'], 'GPT 4.1')
         self.assertEqual(resp.data['name'], 'gpt-4.1')
+        self.assertTrue(resp.data['enableWebSearch'])
         self.assertTrue(resp.data['isActive'])
+        model = self.llm_model_model().objects.get(id=resp.data['id'])
+        self.assertTrue(model.enable_web_search)
 
     def test_used_model_real_name_cannot_be_changed(self):
         provider = self.create_platform_provider()

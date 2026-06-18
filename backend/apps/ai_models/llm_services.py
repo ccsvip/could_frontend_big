@@ -108,6 +108,12 @@ def _build_chat_completions_url(raw_url: str) -> str:
     return f'{api_url}/chat/completions'
 
 
+def _with_model_search_param(model: LLMModel, payload: dict) -> dict:
+    if model.enable_web_search:
+        payload['enable_search'] = True
+    return payload
+
+
 def run_llm_chat_completion(
     *,
     model: LLMModel,
@@ -123,13 +129,13 @@ def run_llm_chat_completion(
         with httpx.Client(timeout=timeout) as client:
             response = client.post(
                 api_url,
-                json={
+                json=_with_model_search_param(model, {
                     'model': model.name,
                     'messages': messages,
                     'stream': False,
                     'temperature': temperature,
                     'max_tokens': max_tokens,
-                },
+                }),
                 headers={
                     'Authorization': f'Bearer {provider.api_key}',
                     'Accept': 'application/json',
@@ -227,6 +233,7 @@ def run_llm_model_test(*, model: LLMModel, settings: LLMTestSettings | None = No
         'temperature': 0,
         'max_tokens': settings.test_max_tokens,
     }
+    _with_model_search_param(model, payload)
     headers = {
         'Authorization': f'Bearer {provider.api_key}',
         'Accept': 'application/json',
