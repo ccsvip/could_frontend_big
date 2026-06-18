@@ -68,7 +68,12 @@ const menuIconMap = {
   ExportOutlined: <ExportOutlined />,
 } as const;
 
-const hiddenMenuPaths = new Set(['/commands/task-lists', 'commands/task-lists']);
+const hiddenMenuPaths = new Set([
+  '/commands/task-lists',
+  'commands/task-lists',
+  '/resources/voice-tones',
+  'resources/voice-tones',
+]);
 const commandRootPaths = new Set(['/commands', 'commands']);
 
 // 平台超管「按公司浏览」时，每家公司可下钻的业务模块。segment 对应 /tenants/:tenantId/<segment> 子路由，
@@ -90,7 +95,6 @@ const SUPER_ADMIN_TENANT_MODULES: ReadonlyArray<SuperAdminTenantModule> = [
       { segment: 'images', label: '背景图片管理', icon: 'PictureOutlined' },
       { segment: 'videos', label: '视频管理', icon: 'VideoCameraOutlined' },
       { segment: 'scrolling-texts', label: '滚动文本', icon: 'NotificationOutlined' },
-      { segment: 'voice-tones', label: '音色管理', icon: 'CustomerServiceOutlined' },
       { segment: 'models', label: '模型管理', icon: 'RobotOutlined' },
     ],
   },

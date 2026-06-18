@@ -32,9 +32,6 @@ const ScrollingTextManagementPage = lazy(() =>
 const KnowledgeBasePage = lazy(() =>
   import('../views/knowledge-base').then((module) => ({ default: module.KnowledgeBasePage })),
 );
-const VoiceToneManagementPage = lazy(() =>
-  import('../views/voice-tone-management').then((module) => ({ default: module.VoiceToneManagementPage })),
-);
 const AsrManagementPage = lazy(() =>
   import('../views/asr-management').then((module) => ({ default: module.AsrManagementPage })),
 );
@@ -90,7 +87,12 @@ type RouteMenu = {
   children?: RouteMenu[];
 };
 
-const hiddenRouteMenuPaths = new Set(['/commands/task-lists', 'commands/task-lists']);
+const hiddenRouteMenuPaths = new Set([
+  '/commands/task-lists',
+  'commands/task-lists',
+  '/resources/voice-tones',
+  'resources/voice-tones',
+]);
 
 const filterRouteMenus = (menus: RouteMenu[]): RouteMenu[] => {
   return menus
@@ -346,7 +348,6 @@ export const AppRouter = () => {
             { path: 'resources/images', element: <ResourceManagementPage key="scoped-resource-image" resourceType="image" /> },
             { path: 'resources/videos', element: <ResourceManagementPage key="scoped-resource-video" resourceType="video" /> },
             { path: 'resources/scrolling-texts', element: <ScrollingTextManagementPage /> },
-            { path: 'resources/voice-tones', element: <VoiceToneManagementPage /> },
             { path: 'resources/models', element: <ModelManagementPage /> },
             { path: 'knowledge-base', element: <KnowledgeBasePage /> },
             { path: 'applications', element: <ScopedApplicationRedirect /> },
@@ -533,14 +534,6 @@ export const AppRouter = () => {
           element: (
             <PermissionGuard permission="resources.scrolling_texts.view">
               <ScrollingTextManagementPage />
-            </PermissionGuard>
-          ),
-        },
-        {
-          path: 'resources/voice-tones',
-          element: (
-            <PermissionGuard permission="resources.voice_tones.view">
-              <VoiceToneManagementPage />
             </PermissionGuard>
           ),
         },

@@ -41,7 +41,7 @@ const aiModuleBlock = sliceBetween(
 );
 
 expectIncludes(resourceModuleBlock, 'children:', 'super admin tenant sidebar resources');
-for (const segment of ['images', 'videos', 'scrolling-texts', 'voice-tones', 'models']) {
+for (const segment of ['images', 'videos', 'scrolling-texts', 'models']) {
   expectIncludes(resourceModuleBlock, `segment: '${segment}'`, 'super admin tenant sidebar resources');
 }
 
@@ -66,7 +66,6 @@ const scopedRoutePaths = [
   'resources/images',
   'resources/videos',
   'resources/scrolling-texts',
-  'resources/voice-tones',
   'resources/models',
   'ai-models/asr',
   'ai-models/llm',

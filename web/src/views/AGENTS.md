@@ -22,7 +22,7 @@ views/
 ├── resource-management/         # 图片/视频资源（双路由复用 + key 隔离）
 ├── scrolling-text-management/   # 滚动字幕
 ├── tts-management/              # TTS 供应商
-└── voice-tone-management/       # 音色（voiceCode）
+└── ...
 ```
 
 ## CONVENTIONS
