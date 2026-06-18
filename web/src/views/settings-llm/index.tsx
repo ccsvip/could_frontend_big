@@ -102,6 +102,7 @@ export const LlmSettingsAdminPage = () => {
   }, [models]);
 
   const activeGrantIds = useMemo(() => effectiveGrantModelIds(authorization), [authorization]);
+  const activeTenants = useMemo(() => tenants.filter((tenant) => tenant.isActive), [tenants]);
 
   const loadPlatformData = useCallback(async () => {
     setLoading(true);
@@ -112,12 +113,14 @@ export const LlmSettingsAdminPage = () => {
         fetchTenants({ page_size: 1000, include_hidden: true }),
         fetchPlatformLLMTestSettings(),
       ]);
+      const nextActiveTenants = tenantData.results.filter((tenant) => tenant.isActive);
+      const selectedTenantStillActive = nextActiveTenants.some((tenant) => tenant.id === selectedTenantId);
       setProviders(providerData.results);
       setModels(modelData.results);
       setTenants(tenantData.results);
       testSettingsForm.setFieldsValue(testSettings);
-      if (!selectedTenantId && tenantData.results.length > 0) {
-        setSelectedTenantId(tenantData.results[0].id);
+      if (!selectedTenantStillActive) {
+        setSelectedTenantId(nextActiveTenants[0]?.id ?? null);
       }
     } finally {
       setLoading(false);
@@ -483,7 +486,7 @@ export const LlmSettingsAdminPage = () => {
             placeholder="请选择公司"
             value={selectedTenantId ?? undefined}
             optionFilterProp="label"
-            options={tenants.map((tenant) => ({ label: tenant.name, value: tenant.id }))}
+            options={activeTenants.map((tenant) => ({ label: tenant.name, value: tenant.id }))}
             onChange={setSelectedTenantId}
             size="large"
           />

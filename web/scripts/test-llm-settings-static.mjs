@@ -25,6 +25,10 @@ assert(adminPageSource.includes('apiKeyConfigured'), 'admin provider table must 
 assert(!/dataIndex:\s*['"]apiKey['"]/.test(adminPageSource), 'admin table must not display raw apiKey');
 assert(!adminPageSource.includes('启用此厂商配置'), 'platform provider modal must not expose enable status');
 assert(!adminPageSource.includes('启用此模型配置'), 'platform model modal must not expose enable status');
+assert(adminPageSource.includes('const activeTenants = useMemo'), 'tenant authorization selector must derive active tenants');
+assert(adminPageSource.includes('tenantData.results.filter((tenant) => tenant.isActive)'), 'tenant authorization selector must ignore inactive tenants');
+assert(adminPageSource.includes('options={activeTenants.map'), 'tenant authorization selector must only render active tenants');
+assert(!adminPageSource.includes('options={tenants.map'), 'tenant authorization selector must not render inactive tenants');
 
 if (existsSync(companyPagePath)) {
   const companyPageSource = read('src/views/llm-settings/index.tsx');
