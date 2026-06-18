@@ -70,6 +70,7 @@ export type PlatformLLMModelRecord = {
   providerName: string;
   name: string;
   displayName: string;
+  enableWebSearch: boolean;
   isActive: boolean;
   sortOrder: number;
   created_at: string;
@@ -87,6 +88,7 @@ export type PlatformLLMModelPayload = {
   providerId?: number;
   name: string;
   displayName?: string;
+  enableWebSearch?: boolean;
   isActive?: boolean;
   sortOrder?: number;
 };

@@ -100,7 +100,16 @@ from .services.asr import (
 logger = logging.getLogger(__name__)
 
 
-def _build_llm_request_payload(*, model_name: str, messages: list[dict], stream: bool, temperature: float, max_tokens: int, max_tokens_unlimited: bool) -> dict:
+def _build_llm_request_payload(
+    *,
+    model_name: str,
+    messages: list[dict],
+    stream: bool,
+    temperature: float,
+    max_tokens: int,
+    max_tokens_unlimited: bool,
+    enable_web_search: bool = False,
+) -> dict:
     payload = {
         'model': model_name,
         'messages': messages,
@@ -109,6 +118,8 @@ def _build_llm_request_payload(*, model_name: str, messages: list[dict], stream:
     }
     if not max_tokens_unlimited:
         payload['max_tokens'] = max_tokens
+    if enable_web_search:
+        payload['enable_search'] = True
     return payload
 
 
@@ -784,6 +795,7 @@ async def _generate_conversation_title(
     api_url: str,
     provider: LLMProvider,
     model_name: str,
+    enable_web_search: bool,
     user_message: str,
     assistant_message: str,
 ) -> str | None:
@@ -794,19 +806,21 @@ async def _generate_conversation_title(
     )
     response = await client.post(
         api_url,
-        json={
-            'model': model_name,
-            'messages': [
+        json=_build_llm_request_payload(
+            model_name=model_name,
+            messages=[
                 {'role': ChatMessage.ROLE_SYSTEM, 'content': title_prompt},
                 {
                     'role': ChatMessage.ROLE_USER,
                     'content': f'用户问题：{user_message}\n助手回答：{assistant_message}',
                 },
             ],
-            'stream': False,
-            'max_tokens': 32,
-            'temperature': 0.2,
-        },
+            stream=False,
+            max_tokens=32,
+            max_tokens_unlimited=False,
+            temperature=0.2,
+            enable_web_search=enable_web_search,
+        ),
         headers={
             'Authorization': f'Bearer {provider.api_key}',
             'Accept': 'application/json',
@@ -832,6 +846,7 @@ async def _generate_conversation_summary(
     api_url: str,
     provider: LLMProvider,
     model_name: str,
+    enable_web_search: bool,
     user_message: str,
     assistant_message: str,
 ) -> str | None:
@@ -842,16 +857,18 @@ async def _generate_conversation_summary(
     )
     response = await client.post(
         api_url,
-        json={
-            'model': model_name,
-            'messages': [
+        json=_build_llm_request_payload(
+            model_name=model_name,
+            messages=[
                 {'role': ChatMessage.ROLE_SYSTEM, 'content': summary_prompt},
                 {'role': ChatMessage.ROLE_USER, 'content': f'用户问题：{user_message}\n助手回答：{assistant_message}'},
             ],
-            'stream': False,
-            'max_tokens': 48,
-            'temperature': 0.2,
-        },
+            stream=False,
+            max_tokens=48,
+            max_tokens_unlimited=False,
+            temperature=0.2,
+            enable_web_search=enable_web_search,
+        ),
         headers={
             'Authorization': f'Bearer {provider.api_key}',
             'Accept': 'application/json',
@@ -1338,6 +1355,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
 
         provider = model.provider
         model_name = model.name
+        enable_web_search = model.enable_web_search
 
         # Build messages history
         history_messages = list(
@@ -1406,6 +1424,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                                 temperature=conversation.temperature,
                                 max_tokens=conversation.max_tokens,
                                 max_tokens_unlimited=conversation.max_tokens_unlimited,
+                                enable_web_search=enable_web_search,
                             ),
                             headers={
                                 'Authorization': f'Bearer {provider.api_key}',
@@ -1481,6 +1500,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                                     api_url=api_url,
                                     provider=provider,
                                     model_name=model_name,
+                                    enable_web_search=enable_web_search,
                                     user_message=content,
                                     assistant_message=full_content,
                                 )
@@ -1501,6 +1521,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                                     api_url=api_url,
                                     provider=provider,
                                     model_name=model_name,
+                                    enable_web_search=enable_web_search,
                                     user_message=content,
                                     assistant_message=full_content,
                                 )
@@ -1529,6 +1550,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                             temperature=conversation.temperature,
                             max_tokens=conversation.max_tokens,
                             max_tokens_unlimited=conversation.max_tokens_unlimited,
+                            enable_web_search=enable_web_search,
                         ),
                         headers={
                             'Authorization': f'Bearer {provider.api_key}',
@@ -1640,6 +1662,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                                     api_url=api_url,
                                     provider=provider,
                                     model_name=model_name,
+                                    enable_web_search=enable_web_search,
                                     user_message=content,
                                     assistant_message=full_content,
                                 )
@@ -1660,6 +1683,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                                     api_url=api_url,
                                     provider=provider,
                                     model_name=model_name,
+                                    enable_web_search=enable_web_search,
                                     user_message=content,
                                     assistant_message=full_content,
                                 )

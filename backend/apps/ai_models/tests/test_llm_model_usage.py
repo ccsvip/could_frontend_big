@@ -228,6 +228,24 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
         self.assertNotIn('https://api.openai.com', str(result))
 
     @patch('apps.ai_models.llm_services.httpx.Client')
+    def test_run_llm_model_test_adds_search_param_only_when_enabled(self, mock_client_class):
+        settings = LLMTestSettings(
+            test_prompt='请回复连接成功',
+            test_timeout_seconds=7,
+            test_max_tokens=12,
+        )
+        response = MagicMock(status_code=200)
+        client = mock_client_class.return_value.__enter__.return_value
+        client.post.return_value = response
+        self.default_model.enable_web_search = True
+        self.default_model.save(update_fields=['enable_web_search'])
+
+        result = run_llm_model_test(model=self.default_model, settings=settings)
+
+        self.assertTrue(result['success'])
+        self.assertTrue(client.post.call_args.kwargs['json']['enable_search'])
+
+    @patch('apps.ai_models.llm_services.httpx.Client')
     def test_run_llm_model_test_returns_safe_failure_summary(self, mock_client_class):
         settings = LLMTestSettings(
             test_prompt='请回复连接成功',

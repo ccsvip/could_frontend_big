@@ -46,6 +46,7 @@ class LLMModel(models.Model):
     )
     name = models.CharField('真实模型名称', max_length=128)
     display_name = models.CharField('展示名称', max_length=128, blank=True, default='')
+    enable_web_search = models.BooleanField('是否支持联网搜索', default=False)
     is_active = models.BooleanField('是否启用', default=True)
     sort_order = models.PositiveIntegerField('排序', default=0)
     created_at = models.DateTimeField('创建时间', auto_now_add=True)

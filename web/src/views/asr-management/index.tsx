@@ -36,6 +36,7 @@ import {
 } from '../../api/modules/asr';
 import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
+import { requestMicrophoneStream } from '../media-devices';
 
 type TestPhase = 'idle' | 'connecting' | 'listening' | 'finishing' | 'done' | 'error';
 
@@ -400,7 +401,7 @@ export const AsrManagementPage = () => {
     resetTest();
     setPhase('connecting');
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await requestMicrophoneStream();
       streamRef.current = stream;
 
       const socket = new WebSocket(buildAsrRealtimeWebSocketUrl(token, tenantScopeId));

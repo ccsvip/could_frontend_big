@@ -4,6 +4,7 @@ import { message } from 'antd';
 import { buildAsrRealtimeWebSocketUrl } from '../../api/modules/asr';
 import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
+import { requestMicrophoneStream } from '../media-devices';
 import { playRealtimeTts, sanitizeTtsText } from '../tts-realtime-playback';
 import { createPlaybackRequestGuard } from './playback-request-guard';
 import {
@@ -140,7 +141,7 @@ export const useAgentAudio = () => {
     transcriptRef.current = '';
     setTranscribing(true);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await requestMicrophoneStream();
       streamRef.current = stream;
 
       const socket = new WebSocket(buildAsrRealtimeWebSocketUrl(token, tenantScopeId ?? tenant?.id ?? null));

@@ -112,6 +112,7 @@ class PlatformLLMModelSerializer(serializers.ModelSerializer):
     providerId = serializers.IntegerField(source='provider_id', read_only=True)
     providerName = serializers.CharField(source='provider.name', read_only=True)
     displayName = serializers.CharField(source='display_name')
+    enableWebSearch = serializers.BooleanField(source='enable_web_search')
     isActive = serializers.BooleanField(source='is_active')
     sortOrder = serializers.IntegerField(source='sort_order')
 
@@ -119,7 +120,7 @@ class PlatformLLMModelSerializer(serializers.ModelSerializer):
         model = LLMModel
         fields = [
             'id', 'providerId', 'providerName', 'name', 'displayName',
-            'isActive', 'sortOrder', 'created_at', 'updated_at',
+            'enableWebSearch', 'isActive', 'sortOrder', 'created_at', 'updated_at',
         ]
         read_only_fields = fields
 
@@ -131,12 +132,13 @@ class PlatformLLMModelWriteSerializer(serializers.ModelSerializer):
         required=False,
     )
     displayName = serializers.CharField(source='display_name', required=False, allow_blank=True, default='')
+    enableWebSearch = serializers.BooleanField(source='enable_web_search', required=False, default=False)
     isActive = serializers.BooleanField(source='is_active', required=False, default=True)
     sortOrder = serializers.IntegerField(source='sort_order', required=False, default=0)
 
     class Meta:
         model = LLMModel
-        fields = ['providerId', 'name', 'displayName', 'isActive', 'sortOrder']
+        fields = ['providerId', 'name', 'displayName', 'enableWebSearch', 'isActive', 'sortOrder']
 
     def validate_name(self, value: str) -> str:
         value = value.strip()
