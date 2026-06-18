@@ -1,4 +1,5 @@
-import { API_BASE_URL, httpClient } from '../client';
+import { httpClient } from '../client';
+import { buildRealtimeWebSocketUrl } from '../realtime';
 
 export type AsrSettingsRecord = {
   workspaceId: string;
@@ -95,16 +96,4 @@ export const deleteAsrReplacementRule = async (id: number) => {
   await httpClient.delete(`/ai-models/asr/replacement-rules/${id}/`);
 };
 
-export const buildAsrRealtimeWebSocketUrl = (token: string, tenantId?: number | null) => {
-  const baseUrl = API_BASE_URL.startsWith('http')
-    ? new URL(API_BASE_URL)
-    : new URL(API_BASE_URL, window.location.origin);
-  baseUrl.protocol = baseUrl.protocol === 'https:' ? 'wss:' : 'ws:';
-  baseUrl.pathname = '/ws/asr/test/';
-  baseUrl.search = '';
-  baseUrl.searchParams.set('token', token);
-  if (tenantId != null) {
-    baseUrl.searchParams.set('tenantId', String(tenantId));
-  }
-  return baseUrl.toString();
-};
+export const buildAsrRealtimeWebSocketUrl = () => buildRealtimeWebSocketUrl();

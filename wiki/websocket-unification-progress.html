@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>实时通信统一改造进度</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #172033;
+        --muted: #64748b;
+        --line: #dbe4ef;
+        --panel: #ffffff;
+        --bg: #f6f8fb;
+        --ok: #0f766e;
+        --warn: #b45309;
+        --todo: #475569;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", ui-sans-serif, system-ui,
+          -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.55;
+      }
+
+      main {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 32px 0 48px;
+      }
+
+      header {
+        padding: 24px 0 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        line-height: 1.2;
+      }
+
+      h1 {
+        font-size: 32px;
+      }
+
+      h2 {
+        font-size: 20px;
+        margin-bottom: 14px;
+      }
+
+      h3 {
+        font-size: 16px;
+      }
+
+      p {
+        margin: 8px 0 0;
+      }
+
+      code {
+        padding: 2px 5px;
+        border-radius: 6px;
+        background: #eef3f8;
+        font-size: 0.92em;
+      }
+
+      ul {
+        margin: 10px 0 0;
+        padding-left: 20px;
+      }
+
+      li + li {
+        margin-top: 6px;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 18px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+      }
+
+      .section {
+        margin-top: 18px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        padding: 3px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .badge.ok {
+        background: #d9f5ef;
+        color: var(--ok);
+      }
+
+      .badge.warn {
+        background: #fff2d7;
+        color: var(--warn);
+      }
+
+      .badge.todo {
+        background: #e8eef5;
+        color: var(--todo);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: 8px;
+        background: var(--panel);
+      }
+
+      th,
+      td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: #334155;
+        font-size: 13px;
+        background: #eef3f8;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      @media (max-width: 860px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        h1 {
+          font-size: 26px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="muted">更新时间：2026-06-18</p>
+        <h1>实时通信统一改造进度</h1>
+        <p>
+          目标架构：应用侧第一方实时通信统一维护一个 <code>/ws/realtime/</code> 入口，具体业务行为通过明确的命令消息类型选择。
+        </p>
+      </header>
+
+      <section class="grid" aria-label="迁移摘要">
+        <article class="panel">
+          <span class="badge ok">后端已接入</span>
+          <h3>统一入口</h3>
+          <p><code>/ws/realtime/</code> 已通过异步网关分发器开放。</p>
+        </article>
+        <article class="panel">
+          <span class="badge ok">前端已迁移</span>
+          <h3>管理端实时能力</h3>
+          <p>设备事件、语音识别、语音合成、设备模拟器和公开静态测试页已连接 <code>/ws/realtime/</code>。</p>
+        </article>
+        <article class="panel">
+          <span class="badge ok">旧入口已退役</span>
+          <h3>第一方入口收敛</h3>
+          <p>设备、语音识别、语音合成的功能专用实时通信地址已从后端路由中移除。</p>
+        </article>
+      </section>
+
+      <section class="panel section">
+        <h2>命令覆盖情况</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>命令</th>
+              <th>状态</th>
+              <th>说明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>ping</code></td>
+              <td><span class="badge ok">已实现</span></td>
+              <td>返回带相同关联编号的 <code>pong</code>。</td>
+            </tr>
+            <tr>
+              <td><code>devices.events.subscribe</code> / <code>devices.events.unsubscribe</code></td>
+              <td><span class="badge ok">已实现</span></td>
+              <td>复用现有按公司隔离的设备事件订阅者注册表，并支持显式取消订阅。</td>
+            </tr>
+            <tr>
+              <td><code>device.status.start</code></td>
+              <td><span class="badge ok">已实现</span></td>
+              <td>将运行时设备标记为在线，并发布同一套设备状态事件。</td>
+            </tr>
+            <tr>
+              <td><code>device.status.ping</code></td>
+              <td><span class="badge ok">已实现</span></td>
+              <td>校验设备状态会话已经启动。</td>
+            </tr>
+            <tr>
+              <td><code>asr.session.*</code></td>
+              <td><span class="badge ok">已接入</span></td>
+              <td>后端已支持启动语音识别会话、转发二进制音频、返回识别文本、正常结束和取消会话；前端语音识别测试、应用录音入口和静态替换词测试页已迁移。</td>
+            </tr>
+            <tr>
+              <td><code>tts.session.*</code></td>
+              <td><span class="badge ok">已接入</span></td>
+              <td>后端已支持启动语音合成会话、返回音频流、取消会话，并为事件补充关联编号；前端实时播放入口已迁移。</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="grid section" aria-label="维护详情">
+        <article class="panel">
+          <h2>验证证据</h2>
+          <ul>
+            <li>后端目标回归已通过：<code>config.tests.test_realtime_websocket</code>、<code>apps.devices.tests.test_device_authorization_api</code>、<code>apps.ai_models.tests.test_asr_realtime</code>、<code>apps.ai_models.tests.test_tts_api</code> 共 58 个测试通过。</li>
+            <li>旧设备实时通信回归已迁移为统一命令协议回归，覆盖在线 / 离线和按公司过滤设备事件。</li>
+            <li>后端统一语音识别 / 语音合成命令测试已通过，覆盖音频上游桥接、二进制帧和完成事件。</li>
+            <li>新增统一实时连接辅助模块，并迁移设备页、语音识别测试、应用录音和语音合成实时播放后，前端生产构建已通过；构建仅保留既有大体积代码分块提示。</li>
+            <li>设备语音问答演示页、静态语音识别替换词测试页和安卓设备运行时模拟器已改为统一实时通信入口，并通过静态检查。</li>
+            <li>兼容的语音识别 / 语音合成地址构造函数已改为返回统一实时通信入口，避免新调用方继续扩散旧专用地址。</li>
+            <li>最新设备接口说明页已改为只展示统一实时通信命令，旧设备在线和设备事件地址标记为已退役。</li>
+            <li>旧设备、语音识别、语音合成功能专用实时通信路由和独立异步网关处理器已移除，相关回归测试已迁移到 <code>/ws/realtime/</code>。</li>
+            <li>统一协议控制命令已通过 <code>config.tests.test_realtime_websocket</code> 13 个测试覆盖，包括设备事件取消订阅、语音识别取消和语音合成取消。</li>
+            <li>运行时冒烟验证：后端重启后，容器内连接 <code>ws://127.0.0.1:8000/ws/realtime/</code> 对 <code>ping</code> 命令返回 <code>pong</code>。</li>
+            <li>带公司账号登录态浏览器冒烟验证已覆盖设备管理、语音识别管理和语音合成管理页面：页面均渲染目标内容，没有回到登录页，没有框架错误遮罩；后端日志只看到统一实时通信入口被接受。</li>
+            <li>设备管理页在开发模式刷新时出现过统一入口连接被快速关闭的控制台提示；后端日志确认请求仍为 <code>/ws/realtime/</code>，这是开发模式挂载清理过程中的连接关闭现象，不是旧入口回退。</li>
+            <li>语音合成管理页在冒烟中发现并修复了音色卡片的嵌套交互结构；重启前端开发服务后，浏览器断言确认嵌套按钮数量为 0，旧卡片按钮角色数量为 0。</li>
+            <li>新增中文左右结构接口文档 <code>wiki/server-client-interaction-api.html</code>，集中说明 HTTP 接口、统一 <code>/ws/realtime/</code> 命令协议、设备运行时、ASR 和 TTS 流式交互。</li>
+          </ul>
+        </article>
+        <article class="panel">
+          <h2>剩余阶段</h2>
+          <ul>
+            <li>引入短时实时通信票据认证，替换当前命令载荷中的令牌传递方式。</li>
+            <li>将真实移动端设备在线状态客户端迁移到 <code>device.status.start</code>。</li>
+            <li>为真实移动端和生产代理补齐统一入口的运行时冒烟脚本。</li>
+          </ul>
+        </article>
+        <article class="panel">
+          <h2>已知风险</h2>
+          <ul>
+            <li>当前设备事件分发仍在进程内完成；多工作进程扩容前应迁移到共享发布 / 订阅通道。</li>
+            <li>令牌仍会出现在命令载荷中；目标仍是短时票据认证。</li>
+            <li>语音识别 / 语音合成二进制帧在共享连接前，需要明确的多路复用规则。</li>
+            <li>本地修改异步网关路由后必须重启服务；否则运行进程可能仍把新的实时通信路径交给普通网页请求处理器。</li>
+            <li>语音合成管理页仍有一个非本次改造核心的表单字段浏览器提示：某个表单字段缺少 <code>id</code> 或 <code>name</code>。</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,13 +1,9 @@
 from __future__ import annotations
 
-import asyncio
 import base64
-import json
 from typing import Any
-from urllib.parse import parse_qs
 
 import websockets
-from asgiref.sync import sync_to_async
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.accounts.services.permissions import get_active_permission_codes_for_user
@@ -27,77 +23,6 @@ FINAL_EVENT_TYPES = {
     'conversation.item.input_audio_transcription.completed',
     'conversation.item.input_audio_transcription.finished',
 }
-_BROWSER_DISCONNECTED = 'browser_disconnected'
-
-
-async def asr_realtime_websocket_application(scope, receive, send):
-    params = parse_qs(scope.get('query_string', b'').decode('utf-8'))
-    token = (params.get('token') or [''])[0].strip()
-
-    connection = await sync_to_async(resolve_asr_realtime_connection, thread_sensitive=True)(
-        token,
-        headers=scope.get('headers') or [],
-        query_params=params,
-    )
-    if connection is None:
-        await send({'type': 'websocket.close', 'code': 4401})
-        return
-
-    await send({'type': 'websocket.accept'})
-
-    config = await sync_to_async(get_effective_asr_config, thread_sensitive=True)()
-    if not config.is_active or not is_asr_configured(config):
-        await send({
-            'type': 'websocket.send',
-            'text': json.dumps({'type': 'asr.error', 'message': 'ASR 服务未就绪'}),
-        })
-        await send({'type': 'websocket.close', 'code': 4400})
-        return
-
-    replacement_pairs = await sync_to_async(load_asr_replacement_pairs, thread_sensitive=True)(
-        connection.get('tenant_id'),
-    )
-
-    should_close_browser = True
-    try:
-        async with websockets.connect(
-            build_asr_ws_url(config),
-            additional_headers=[
-                ('Authorization', f'Bearer {config.api_key}'),
-                ('OpenAI-Beta', 'realtime=v1'),
-                ('X-DashScope-WorkSpace', config.workspace_id),
-            ],
-            user_agent_header='solin-admin/1.0',
-            open_timeout=10,
-            ping_interval=20,
-            ping_timeout=20,
-            max_size=2 * 1024 * 1024,
-        ) as upstream:
-            await upstream.send(json.dumps(_session_update_event()))
-            await send({'type': 'websocket.send', 'text': json.dumps({'type': 'asr.ready'})})
-
-            browser_task = asyncio.create_task(_browser_to_upstream(receive, upstream))
-            upstream_task = asyncio.create_task(_upstream_to_browser(upstream, send, replacement_pairs))
-            done, pending = await asyncio.wait(
-                {browser_task, upstream_task},
-                return_when=asyncio.FIRST_COMPLETED,
-            )
-            for task in pending:
-                task.cancel()
-            if browser_task in done and browser_task.result() == _BROWSER_DISCONNECTED:
-                should_close_browser = False
-            for task in done:
-                if task is not browser_task:
-                    task.result()
-    except Exception as exc:
-        if should_close_browser:
-            await send({
-                'type': 'websocket.send',
-                'text': json.dumps({'type': 'asr.error', 'message': str(exc)[:200]}),
-            })
-    finally:
-        if should_close_browser:
-            await send({'type': 'websocket.close', 'code': 1000})
 
 
 def resolve_asr_realtime_connection(
@@ -225,54 +150,6 @@ def extract_transcript_payload(
         'text': apply_asr_replacement_rules(text, pairs),
         'final': event_type in FINAL_EVENT_TYPES,
     }
-
-
-async def _browser_to_upstream(receive, upstream) -> str | None:
-    while True:
-        event = await receive()
-        event_type = event.get('type')
-        if event_type == 'websocket.disconnect':
-            try:
-                await upstream.send(json.dumps(_session_finish_event()))
-            except Exception:
-                pass
-            return _BROWSER_DISCONNECTED
-
-        if event_type != 'websocket.receive':
-            continue
-
-        if 'bytes' in event and event['bytes']:
-            await upstream.send(json.dumps(_audio_append_event(event['bytes'])))
-            continue
-
-        text = event.get('text') or ''
-        if text == 'ping':
-            continue
-        try:
-            payload = json.loads(text)
-        except json.JSONDecodeError:
-            continue
-        if payload.get('type') in {'asr.finish', 'session.finish'}:
-            await upstream.send(json.dumps(_session_finish_event()))
-
-
-async def _upstream_to_browser(upstream, send, replacement_pairs: list[tuple[str, str]]) -> None:
-    async for raw_message in upstream:
-        try:
-            event = json.loads(raw_message)
-        except (TypeError, json.JSONDecodeError):
-            continue
-        if not isinstance(event, dict):
-            continue
-
-        transcript_payload = extract_transcript_payload(event, replacement_pairs=replacement_pairs)
-        if transcript_payload is not None:
-            await send({'type': 'websocket.send', 'text': json.dumps(transcript_payload)})
-            continue
-
-        if event.get('type') == 'session.finished':
-            await send({'type': 'websocket.send', 'text': json.dumps({'type': 'asr.done'})})
-            return
 
 
 def _session_update_event() -> dict[str, Any]:

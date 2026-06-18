@@ -25,7 +25,6 @@ import {
   SwapOutlined,
 } from '@ant-design/icons';
 import {
-  buildAsrRealtimeWebSocketUrl,
   createAsrReplacementRule,
   deleteAsrReplacementRule,
   fetchAsrReplacementRules,
@@ -34,6 +33,13 @@ import {
   type AsrReplacementRulePayload,
   type AsrReplacementRuleRecord,
 } from '../../api/modules/asr';
+import {
+  buildAsrSessionFinishCommand,
+  buildAsrSessionStartCommand,
+  buildRealtimeWebSocketUrl,
+  createRealtimeCommandId,
+  encodeRealtimeCommand,
+} from '../../api/realtime';
 import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
 import { requestMicrophoneStream } from '../media-devices';
@@ -404,11 +410,16 @@ export const AsrManagementPage = () => {
       const stream = await requestMicrophoneStream();
       streamRef.current = stream;
 
-      const socket = new WebSocket(buildAsrRealtimeWebSocketUrl(token, tenantScopeId));
+      const socket = new WebSocket(buildRealtimeWebSocketUrl());
       socket.binaryType = 'arraybuffer';
       socketRef.current = socket;
 
       socket.onopen = () => {
+        const sessionId = createRealtimeCommandId('asr-session');
+        socket.send(encodeRealtimeCommand(buildAsrSessionStartCommand(sessionId, {
+          token,
+          tenantId: tenantScopeId,
+        })));
         void setupAudioStreaming(stream, socket).catch((error: unknown) => {
           setErrorText(error instanceof Error ? error.message : '无法打开麦克风');
           setPhase('error');
@@ -446,7 +457,7 @@ export const AsrManagementPage = () => {
     stopAudio();
     const socket = socketRef.current;
     if (socket?.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ type: 'asr.finish' }));
+      socket.send(encodeRealtimeCommand(buildAsrSessionFinishCommand(createRealtimeCommandId('asr-finish'))));
     } else {
       setPhase(finalText || liveText ? 'done' : 'idle');
     }

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import timedelta
 from unittest.mock import patch
 
@@ -634,7 +635,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(device.status, Device.STATUS_OFFLINE)
         self.assertIsNotNone(device.last_heartbeat)
 
-    def test_device_status_websocket_marks_online_until_disconnect(self):
+    def test_unified_device_status_command_marks_online_until_disconnect(self):
         device = Device.objects.create(
             tenant=self.tenant,
             application=self.application,
@@ -646,20 +647,31 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         )
 
         async def run_websocket():
-            from apps.devices.websocket import device_status_websocket_application
+            from config.asgi import application
 
             communicator = ApplicationCommunicator(
-                device_status_websocket_application,
+                application,
                 {
                     'type': 'websocket',
-                    'path': '/ws/device-runtime/status/',
-                    'query_string': b'deviceCode=ANDROID-WS-001',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
                     'headers': [],
                 },
             )
             await communicator.send_input({'type': 'websocket.connect'})
             response = await communicator.receive_output(timeout=1)
             self.assertEqual(response['type'], 'websocket.accept')
+
+            await communicator.send_input({
+                'type': 'websocket.receive',
+                'text': json.dumps({
+                    'type': 'device.status.start',
+                    'id': 'device-status-1',
+                    'payload': {'deviceCode': 'ANDROID-WS-001'},
+                }),
+            })
+            message = await communicator.receive_output(timeout=1)
+            self.assertEqual(json.loads(message['text'])['type'], 'device.status.started')
 
             online_status = await sync_to_async(
                 lambda: Device.objects.get(id=device.id).status,
@@ -674,24 +686,36 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         device.refresh_from_db()
         self.assertEqual(device.status, Device.STATUS_OFFLINE)
 
-    def test_device_events_websocket_sends_same_tenant_events(self):
+    def test_unified_device_events_command_sends_same_tenant_events(self):
         token = str(AccessToken.for_user(self.user))
 
         async def run_websocket():
-            from apps.devices.realtime import device_events_websocket_application, publish_device_event
+            from apps.devices.realtime import publish_device_event
+            from config.asgi import application
 
             communicator = ApplicationCommunicator(
-                device_events_websocket_application,
+                application,
                 {
                     'type': 'websocket',
-                    'path': '/ws/devices/events/',
-                    'query_string': f'token={token}'.encode(),
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
                     'headers': [],
                 },
             )
             await communicator.send_input({'type': 'websocket.connect'})
             response = await communicator.receive_output(timeout=1)
             self.assertEqual(response['type'], 'websocket.accept')
+
+            await communicator.send_input({
+                'type': 'websocket.receive',
+                'text': json.dumps({
+                    'type': 'devices.events.subscribe',
+                    'id': 'devices-sub-1',
+                    'payload': {'token': token},
+                }),
+            })
+            subscribed = await communicator.receive_output(timeout=1)
+            self.assertEqual(json.loads(subscribed['text'])['type'], 'devices.events.subscribed')
 
             await publish_device_event(
                 {
@@ -703,32 +727,46 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             )
             message = await communicator.receive_output(timeout=1)
             self.assertEqual(message['type'], 'websocket.send')
-            self.assertIn('ANDROID-WS-EVENT-001', message['text'])
+            payload = json.loads(message['text'])
+            self.assertEqual(payload['type'], 'devices.event')
+            self.assertEqual(payload['payload']['deviceCode'], 'ANDROID-WS-EVENT-001')
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)
 
         async_to_sync(run_websocket)()
 
-    def test_device_events_websocket_filters_other_tenant_events(self):
+    def test_unified_device_events_command_filters_other_tenant_events(self):
         other_tenant = Tenant.objects.create(name='Other Company', code='other-company')
         token = str(AccessToken.for_user(self.user))
 
         async def run_websocket():
-            from apps.devices.realtime import device_events_websocket_application, publish_device_event
+            from apps.devices.realtime import publish_device_event
+            from config.asgi import application
 
             communicator = ApplicationCommunicator(
-                device_events_websocket_application,
+                application,
                 {
                     'type': 'websocket',
-                    'path': '/ws/devices/events/',
-                    'query_string': f'token={token}'.encode(),
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
                     'headers': [],
                 },
             )
             await communicator.send_input({'type': 'websocket.connect'})
             response = await communicator.receive_output(timeout=1)
             self.assertEqual(response['type'], 'websocket.accept')
+
+            await communicator.send_input({
+                'type': 'websocket.receive',
+                'text': json.dumps({
+                    'type': 'devices.events.subscribe',
+                    'id': 'devices-sub-filter',
+                    'payload': {'token': token},
+                }),
+            })
+            subscribed = await communicator.receive_output(timeout=1)
+            self.assertEqual(json.loads(subscribed['text'])['type'], 'devices.events.subscribed')
 
             await publish_device_event(
                 {
@@ -748,15 +786,16 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             )
             message = await communicator.receive_output(timeout=1)
             self.assertEqual(message['type'], 'websocket.send')
-            self.assertIn('ANDROID-SAME-001', message['text'])
-            self.assertNotIn('ANDROID-OTHER-001', message['text'])
+            payload = json.loads(message['text'])
+            self.assertEqual(payload['payload']['deviceCode'], 'ANDROID-SAME-001')
+            self.assertNotEqual(payload['payload']['deviceCode'], 'ANDROID-OTHER-001')
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)
 
         async_to_sync(run_websocket)()
 
-    def test_device_events_websocket_allows_superuser_scoped_tenant(self):
+    def test_unified_device_events_command_allows_superuser_scoped_tenant(self):
         superuser = User.objects.create_superuser(
             username='platform-realtime',
             password='test123456',
@@ -766,20 +805,32 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         token = str(AccessToken.for_user(superuser))
 
         async def run_websocket():
-            from apps.devices.realtime import device_events_websocket_application, publish_device_event
+            from apps.devices.realtime import publish_device_event
+            from config.asgi import application
 
             communicator = ApplicationCommunicator(
-                device_events_websocket_application,
+                application,
                 {
                     'type': 'websocket',
-                    'path': '/ws/devices/events/',
-                    'query_string': f'token={token}&tenantId={self.tenant.id}'.encode(),
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
                     'headers': [],
                 },
             )
             await communicator.send_input({'type': 'websocket.connect'})
             response = await communicator.receive_output(timeout=1)
             self.assertEqual(response['type'], 'websocket.accept')
+
+            await communicator.send_input({
+                'type': 'websocket.receive',
+                'text': json.dumps({
+                    'type': 'devices.events.subscribe',
+                    'id': 'devices-sub-superuser',
+                    'payload': {'token': token, 'tenantId': self.tenant.id},
+                }),
+            })
+            subscribed = await communicator.receive_output(timeout=1)
+            self.assertEqual(json.loads(subscribed['text'])['type'], 'devices.events.subscribed')
 
             await publish_device_event(
                 {
@@ -800,8 +851,9 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             )
             message = await communicator.receive_output(timeout=1)
             self.assertEqual(message['type'], 'websocket.send')
-            self.assertIn('ANDROID-SCOPED-001', message['text'])
-            self.assertNotIn('ANDROID-OTHER-001', message['text'])
+            payload = json.loads(message['text'])
+            self.assertEqual(payload['payload']['deviceCode'], 'ANDROID-SCOPED-001')
+            self.assertNotEqual(payload['payload']['deviceCode'], 'ANDROID-OTHER-001')
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)

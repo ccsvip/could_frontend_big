@@ -16,7 +16,7 @@ device-chat/index.html?deviceCode=DEVICE_001&apiBaseUrl=http://localhost:8880/ap
 
 - 从 URL `deviceCode` 自动连接设备，或手动输入设备码连接。
 - 使用 `navigator.mediaDevices.getUserMedia` 与 Web Audio 录音，上传 16k PCM。
-- 录音过程中通过设备码连接实时 ASR WebSocket，边说边展示识别文本。
+- 录音过程中连接统一实时通信入口，并通过设备码启动实时语音识别会话，边说边展示识别文本。
 - 录音结束后用 `multipart/form-data` 上传音频，并携带 `X-Device-Code`。
 - 展示 ASR 问题文本、LLM 回答文本、`traceId`、`sessionId`。
 - 支持 `audioUrl` 和 `audioBase64` 两种语音回复，自动播放失败时可手动播放。
@@ -51,13 +51,13 @@ GET /api/v1/device-runtime/config/?deviceCode=DEVICE_001
 X-Device-Code: DEVICE_001
 ```
 
-录音开始后，页面会先打开实时 ASR WebSocket：
+录音开始后，页面会先打开统一实时通信入口：
 
 ```http
-GET /ws/asr/test/?deviceCode=DEVICE_001
+GET /ws/realtime/
 ```
 
-浏览器原生 WebSocket 不能自定义 `X-Device-Code` 请求头，所以实时识别用 `deviceCode` 查询参数完成设备身份解析。连接建立后页面持续发送 16k PCM 二进制分片，并根据 `asr.transcript` 事件实时刷新“我说的问题”。
+连接建立后，页面发送 `asr.session.start` 命令，并在命令载荷里携带 `deviceCode` 完成设备身份解析。收到 `asr.ready` 后页面持续发送 16k PCM 二进制分片，并根据 `asr.transcript` 事件实时刷新“我说的问题”；停止录音时发送 `asr.session.finish`。
 
 语音问答默认使用 PRD 约定接口：
 

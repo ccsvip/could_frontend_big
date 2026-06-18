@@ -726,7 +726,18 @@
 
     function wsUrl() {
       const host = normalizeBackendAddress(els.backendAddress.value);
-      return `ws://${host}/ws/asr/test/?deviceCode=${encodeURIComponent(currentDeviceCode())}`;
+      return `ws://${host}/ws/realtime/`;
+    }
+
+    function sendAsrStartCommand(socket) {
+      const commandId = `asr-${makeId()}`;
+      socket.send(JSON.stringify({
+        type: 'asr.session.start',
+        id: commandId,
+        payload: {
+          deviceCode: currentDeviceCode(),
+        },
+      }));
     }
 
     async function apiFetch(path, options = {}) {
@@ -902,8 +913,8 @@
         state.socket = socket;
 
         socket.onopen = () => {
-          setupAudioStreaming(stream, socket);
-          log('WebSocket 已连接，等待 ASR ready');
+          sendAsrStartCommand(socket);
+          log('WebSocket 已连接，已发送 ASR 会话启动命令');
         };
 
         socket.onmessage = (event) => {
@@ -940,7 +951,7 @@
       setPhase('finishing');
       stopAudio();
       if (state.socket && state.socket.readyState === WebSocket.OPEN) {
-        state.socket.send(JSON.stringify({ type: 'asr.finish' }));
+        state.socket.send(JSON.stringify({ type: 'asr.session.finish', id: `asr-finish-${makeId()}` }));
         state.finishTimer = setTimeout(() => {
           log('ASR 未返回结束事件，已主动断开');
           closeSocket();
@@ -961,6 +972,9 @@
       }
 
       if (payload.type === 'asr.ready') {
+        if (state.stream && state.socket) {
+          setupAudioStreaming(state.stream, state.socket);
+        }
         setBadge(els.socketBadge, 'WebSocket 已连接', 'ready');
         setPhase('listening');
         log('ASR 已就绪，开始发送麦克风音频');

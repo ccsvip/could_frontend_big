@@ -8,7 +8,7 @@
     ACTIVATE_PATH: '/device-auth/activate/',
     SESSION_PATH: '/device-runtime/config/',
     VOICE_CHAT_PATH: '/device/voice-chat',
-    ASR_REALTIME_PATH: '/ws/asr/test/',
+    ASR_REALTIME_PATH: '/ws/realtime/',
     MAX_RECORD_SECONDS: 60,
     PCM_SAMPLE_RATE: 16000,
     MIN_RECORD_MS: 700,
@@ -67,6 +67,7 @@
     audioProcessor: null,
     audioGain: null,
     asrSocket: null,
+    asrReady: false,
     asrFinishTimer: 0,
     asrLiveText: '',
     asrFinalText: '',
@@ -338,7 +339,7 @@
 
     let socket;
     try {
-      socket = new WebSocket(buildAsrRealtimeWebSocketUrl(state.deviceCode));
+      socket = new WebSocket(buildAsrRealtimeWebSocketUrl());
     } catch (error) {
       handleRealtimeAsrError(error);
       return;
@@ -348,7 +349,11 @@
     state.asrSocket = socket;
 
     socket.onopen = () => {
-      flushPendingRealtimeAudio(socket);
+      socket.send(JSON.stringify({
+        type: 'asr.session.start',
+        id: createRealtimeCommandId('asr-session'),
+        payload: { deviceCode: state.deviceCode },
+      }));
       logDiagnostic('asr.realtime.opened', { deviceCode: state.deviceCode });
     };
     socket.onmessage = handleRealtimeAsrMessage;
@@ -373,6 +378,8 @@
     }
 
     if (payload.type === 'asr.ready') {
+      state.asrReady = true;
+      flushPendingRealtimeAudio();
       logDiagnostic('asr.realtime.ready', { deviceCode: state.deviceCode });
       return;
     }
@@ -427,6 +434,7 @@
     state.asrLiveText = '';
     state.asrFinalText = '';
     state.asrPendingBuffers = [];
+    state.asrReady = false;
   }
 
   function sendRealtimeAudio(buffer) {
@@ -434,7 +442,7 @@
     if (!socket) {
       return;
     }
-    if (socket.readyState === WebSocket.CONNECTING) {
+    if (socket.readyState === WebSocket.CONNECTING || !state.asrReady) {
       state.asrPendingBuffers.push(buffer);
       if (state.asrPendingBuffers.length > CONFIG.ASR_PENDING_CHUNK_LIMIT) {
         state.asrPendingBuffers.shift();
@@ -447,10 +455,11 @@
     socket.send(buffer);
   }
 
-  function flushPendingRealtimeAudio(socket) {
+  function flushPendingRealtimeAudio() {
+    const socket = state.asrSocket;
     const pendingBuffers = state.asrPendingBuffers;
     state.asrPendingBuffers = [];
-    if (socket.readyState !== WebSocket.OPEN) {
+    if (!socket || socket.readyState !== WebSocket.OPEN || !state.asrReady) {
       return;
     }
     for (const buffer of pendingBuffers) {
@@ -464,7 +473,7 @@
       return;
     }
     if (socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ type: 'asr.finish' }));
+      socket.send(JSON.stringify({ type: 'asr.session.finish', id: createRealtimeCommandId('asr-finish') }));
       window.clearTimeout(state.asrFinishTimer);
       state.asrFinishTimer = window.setTimeout(closeRealtimeAsr, CONFIG.ASR_FINISH_TIMEOUT);
       return;
@@ -479,6 +488,7 @@
     window.clearTimeout(state.asrFinishTimer);
     state.asrFinishTimer = 0;
     state.asrSocket = null;
+    state.asrReady = false;
     if (socket && (socket.readyState === WebSocket.CONNECTING || socket.readyState === WebSocket.OPEN)) {
       socket.close(1000, 'client_close');
     }
@@ -795,8 +805,8 @@
     return `${normalizeApiBase(CONFIG.API_BASE_URL)}${normalizedPath}`;
   }
 
-  function buildAsrRealtimeWebSocketUrl(deviceCode) {
-    const path = String(CONFIG.ASR_REALTIME_PATH || '/ws/asr/test/').trim();
+  function buildAsrRealtimeWebSocketUrl() {
+    const path = String(CONFIG.ASR_REALTIME_PATH || '/ws/realtime/').trim();
     const apiBase = new URL(normalizeApiBase(CONFIG.API_BASE_URL), location.href);
     const url = /^wss?:\/\//i.test(path) || /^https?:\/\//i.test(path)
       ? new URL(path)
@@ -807,10 +817,11 @@
     } else if (url.protocol === 'http:') {
       url.protocol = 'ws:';
     }
-    if (!url.searchParams.has('deviceCode')) {
-      url.searchParams.set('deviceCode', deviceCode);
-    }
     return url.toString();
+  }
+
+  function createRealtimeCommandId(prefix) {
+    return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   }
 
   function normalizeApiBase(value) {

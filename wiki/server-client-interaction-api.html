@@ -1,0 +1,1443 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>服务端与客户端交互接口文档</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #f5f7fb;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --text: #18212f;
+      --muted: #637083;
+      --line: #d9e1ea;
+      --line-strong: #b9c5d4;
+      --teal: #0f766e;
+      --teal-soft: #dff5f1;
+      --indigo: #4f46e5;
+      --indigo-soft: #e8eafe;
+      --amber: #a16207;
+      --amber-soft: #fef3c7;
+      --rose: #be123c;
+      --rose-soft: #ffe4e6;
+      --code-bg: #121826;
+      --code-text: #dbeafe;
+      --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      line-height: 1.62;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      align-self: start;
+      height: 100vh;
+      overflow: auto;
+      border-right: 1px solid var(--line);
+      background: #eef3f8;
+      padding: 28px 18px;
+    }
+
+    .brand {
+      padding: 0 10px 18px;
+      border-bottom: 1px solid var(--line-strong);
+      margin-bottom: 18px;
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    .brand span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .nav-group {
+      margin: 18px 0;
+    }
+
+    .nav-title {
+      padding: 0 10px 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .nav-link {
+      display: block;
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: #263244;
+      font-size: 14px;
+    }
+
+    .nav-link:hover {
+      background: var(--surface);
+      color: var(--teal);
+    }
+
+    .content {
+      width: min(100%, 1240px);
+      padding: 34px 34px 64px;
+    }
+
+    .hero {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 26px;
+      box-shadow: var(--shadow);
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--teal);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.24;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 22px;
+      line-height: 1.3;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 10px;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    h4 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .intro {
+      margin-top: 12px;
+      max-width: 900px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .metric {
+      min-height: 94px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: var(--surface-soft);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 8px;
+      color: var(--text);
+      font-size: 18px;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .section {
+      margin-top: 20px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 22px;
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.04);
+      scroll-margin-top: 20px;
+    }
+
+    .section-lead {
+      margin-bottom: 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .callout {
+      margin: 14px 0 0;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--surface-soft);
+      color: #334155;
+      font-size: 14px;
+    }
+
+    .callout.warn {
+      border-color: #f3d38b;
+      background: var(--amber-soft);
+      color: #74470b;
+    }
+
+    .callout.danger {
+      border-color: #fecdd3;
+      background: var(--rose-soft);
+      color: #8f1231;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      border-radius: 999px;
+      padding: 3px 10px;
+      background: var(--teal-soft);
+      color: var(--teal);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .tag.alt {
+      background: var(--indigo-soft);
+      color: var(--indigo);
+    }
+
+    .tag.warn {
+      background: var(--amber-soft);
+      color: var(--amber);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .pane {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-soft);
+      overflow: hidden;
+    }
+
+    .pane-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 44px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      background: #ffffff;
+    }
+
+    .pane-title {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .method {
+      display: inline-flex;
+      align-items: center;
+      min-width: 54px;
+      justify-content: center;
+      border-radius: 6px;
+      padding: 2px 8px;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .method.get { background: var(--teal); }
+    .method.post { background: var(--indigo); }
+    .method.patch { background: var(--amber); }
+    .method.ws { background: #334155; }
+
+    .endpoint-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .endpoint {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 13px;
+      background: var(--surface-soft);
+    }
+
+    .endpoint p {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .endpoint code,
+    .inline-code {
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 12px;
+    }
+
+    .endpoint code {
+      display: block;
+      margin-top: 8px;
+      color: #0f172a;
+      overflow-wrap: anywhere;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      margin-top: 12px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      background: var(--surface);
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--surface-soft);
+      color: #334155;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    pre {
+      margin: 0;
+      padding: 14px;
+      overflow: auto;
+      max-height: 520px;
+      background: var(--code-bg);
+      color: var(--code-text);
+      font: 12.5px/1.56 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 42px minmax(0, 1fr);
+      gap: 12px;
+      align-items: stretch;
+      margin-top: 12px;
+    }
+
+    .actor {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-soft);
+      padding: 14px;
+    }
+
+    .actor strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .actor ol {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .footer {
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .content {
+        padding: 24px 18px 44px;
+      }
+
+      .meta-grid,
+      .endpoint-grid,
+      .split,
+      .flow {
+        grid-template-columns: 1fr;
+      }
+
+      .arrow {
+        min-height: 24px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      h1 {
+        font-size: 24px;
+      }
+
+      .hero,
+      .section {
+        padding: 18px;
+      }
+
+      .pane-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" aria-label="接口文档目录">
+      <div class="brand">
+        <strong>服务端与客户端交互接口文档</strong>
+        <span>更新时间：2026-06-18</span>
+      </div>
+
+      <nav>
+        <div class="nav-group">
+          <div class="nav-title">总览</div>
+          <a class="nav-link" href="#overview">交互边界</a>
+          <a class="nav-link" href="#conventions">认证与通用约定</a>
+          <a class="nav-link" href="#flow">端到端时序</a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-title">HTTP 接口</div>
+          <a class="nav-link" href="#auth">认证接口</a>
+          <a class="nav-link" href="#admin">后台管理端接口</a>
+          <a class="nav-link" href="#device">安卓设备端接口</a>
+          <a class="nav-link" href="#ai">AI 与语音接口</a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-title">实时通信</div>
+          <a class="nav-link" href="#realtime">统一 WebSocket 协议</a>
+          <a class="nav-link" href="#realtime-commands">命令清单</a>
+          <a class="nav-link" href="#media">ASR / TTS 流式交互</a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-title">排错</div>
+          <a class="nav-link" href="#errors">错误与调试</a>
+          <a class="nav-link" href="#maintenance">维护规则</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <header class="hero">
+        <p class="eyebrow">接口参考 · 后台 Web / 安卓设备端 / 实时语音</p>
+        <h1>服务端与客户端交互接口文档</h1>
+        <p class="intro">
+          本文档面向前端、安卓端和后端维护人员，集中说明 HTTP API、统一 WebSocket 命令协议、设备在线状态、ASR 流式识别和 TTS 流式播放的对接方式。
+          示例只展示协议结构，所有 token、密码、密钥均使用占位符。
+        </p>
+
+        <div class="meta-grid" aria-label="基础端点">
+          <div class="metric">
+            <span>HTTP 基地址</span>
+            <strong>/api/v1</strong>
+          </div>
+          <div class="metric">
+            <span>统一 WebSocket</span>
+            <strong>/ws/realtime/</strong>
+          </div>
+          <div class="metric">
+            <span>后台客户端</span>
+            <strong>Bearer JWT</strong>
+          </div>
+          <div class="metric">
+            <span>设备运行时</span>
+            <strong>deviceCode</strong>
+          </div>
+        </div>
+      </header>
+
+      <section class="section" id="overview">
+        <h2>交互边界</h2>
+        <p class="section-lead">
+          当前系统有三类一方客户端：后台 Web 管理端、安卓设备端、AI 语音测试或应用端。HTTP 负责配置、资源、管理和兼容调用；实时事件、在线状态、ASR 音频流、TTS 音频流统一走一个 WebSocket 入口。
+        </p>
+
+        <div class="endpoint-grid">
+          <article class="endpoint">
+            <h3>后台 Web 管理端</h3>
+            <p>登录后携带 Bearer JWT，管理租户、设备、资源、知识库、AI 模型和命令配置。超管在公司视图下访问业务接口时可追加 tenant 参数。</p>
+            <code>Authorization: Bearer &lt;access_token&gt;</code>
+          </article>
+          <article class="endpoint">
+            <h3>安卓设备端</h3>
+            <p>设备端不登录后台，不持有后台 JWT。设备身份使用 deviceCode，激活和配置走 HTTP，在线状态走统一 WebSocket 的 device.status 命令。</p>
+            <code>{ "deviceCode": "ANDROID-BOARD-001" }</code>
+          </article>
+          <article class="endpoint">
+            <h3>AI 语音端</h3>
+            <p>ASR 和 TTS 的后台配置走 HTTP；实时音频交互走统一 WebSocket，并通过 asr.session.* / tts.session.* 命令创建或结束会话。</p>
+            <code>{ "type": "asr.session.start", "id": "asr-1" }</code>
+          </article>
+          <article class="endpoint">
+            <h3>服务端</h3>
+            <p>服务端负责权限校验、租户隔离、设备生命周期、资源聚合、语音上游连接和统一错误返回。新实时能力应优先扩展命令协议。</p>
+            <code>/api/v1 + /ws/realtime/</code>
+          </article>
+        </div>
+
+        <div class="callout warn">
+          在线 / 离线状态以 WebSocket 连接生命周期为准。POST /device-runtime/heartbeat/ 只保留兼容字段更新，不再决定设备 online / offline。
+        </div>
+      </section>
+
+      <section class="section" id="conventions">
+        <h2>认证与通用约定</h2>
+        <div class="split">
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">客户端请求约定</span>
+              <span class="method post">HTTP</span>
+            </div>
+            <pre>{
+  "baseUrl": "/api/v1",
+  "headers": {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer &lt;access_token&gt;"
+  },
+  "tenantScope": {
+    "when": "超管按公司浏览业务数据时",
+    "query": "?tenant=&lt;tenant_id&gt;",
+    "allowedPrefixes": [
+      "/devices",
+      "/device-groups",
+      "/device-applications",
+      "/resources",
+      "/knowledge-base",
+      "/commands",
+      "/ai-models"
+    ]
+  }
+}</pre>
+          </div>
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">服务端响应约定</span>
+              <span class="method get">JSON</span>
+            </div>
+            <pre>{
+  "successEnvelope": {
+    "status": "success",
+    "message": "操作成功",
+    "data": {}
+  },
+  "paginatedEnvelope": {
+    "count": 0,
+    "next": null,
+    "previous": null,
+    "results": []
+  },
+  "errorEnvelope": {
+    "status": "error",
+    "message": "请求失败",
+    "code": 400
+  }
+}</pre>
+          </div>
+        </div>
+
+        <div class="callout">
+          前端请求拦截器会自动读取 localStorage 中的 token 并写入 Authorization。401 响应会清理登录状态并跳转登录页。
+        </div>
+      </section>
+
+      <section class="section" id="flow">
+        <h2>端到端时序</h2>
+        <p class="section-lead">下面是最常见的设备运行链路：后台先配置并授权，设备再激活、拉配置、建立实时连接，后台通过同一个 WebSocket 订阅设备变化。</p>
+        <div class="flow">
+          <div class="actor">
+            <strong>客户端</strong>
+            <ol>
+              <li>后台登录，获取 access token。</li>
+              <li>后台创建应用、资源、命令组并授权设备。</li>
+              <li>安卓端用 deviceCode 激活或上报设备。</li>
+              <li>安卓端拉取运行配置。</li>
+              <li>安卓端连接 /ws/realtime/ 并发送 device.status.start。</li>
+              <li>后台端连接 /ws/realtime/ 并发送 devices.events.subscribe。</li>
+            </ol>
+          </div>
+          <div class="arrow">→</div>
+          <div class="actor">
+            <strong>服务端</strong>
+            <ol>
+              <li>签发 JWT 并按角色返回用户上下文。</li>
+              <li>保存租户、资源、设备、应用关系。</li>
+              <li>登记设备档案，未知设备进入待授权列表。</li>
+              <li>按 deviceCode 聚合应用和资源包。</li>
+              <li>连接建立时置 online，断开时置 offline。</li>
+              <li>把设备绑定、撤销、上线、离线事件推送给订阅端。</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="auth">
+        <h2>认证接口</h2>
+        <p class="section-lead">认证接口挂载在 /api/v1/auth/ 下，后台 Web 管理端使用。示例中的用户名、密码和 token 均为占位符。</p>
+
+        <div class="split">
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">登录请求</span>
+              <span class="method post">POST</span>
+            </div>
+            <pre>{
+  "url": "/api/v1/auth/login/",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "username": "&lt;后台用户名&gt;",
+    "password": "&lt;后台密码&gt;"
+  }
+}</pre>
+          </div>
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">登录响应</span>
+              <span class="method get">200</span>
+            </div>
+            <pre>{
+  "access": "&lt;access_token&gt;",
+  "refresh": "&lt;refresh_token&gt;",
+  "user": {
+    "id": 1,
+    "username": "&lt;username&gt;",
+    "role": {
+      "code": "admin",
+      "name": "管理员"
+    },
+    "tenant": null,
+    "must_change_password": false
+  }
+}</pre>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>方法</th>
+                <th>路径</th>
+                <th>客户端用途</th>
+                <th>服务端返回</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>POST</td>
+                <td>/auth/login/</td>
+                <td>后台账号登录。</td>
+                <td>access、refresh、用户角色、租户上下文。</td>
+              </tr>
+              <tr>
+                <td>POST</td>
+                <td>/auth/refresh/</td>
+                <td>使用 refresh token 换取新的 access token。</td>
+                <td>新的 access token。</td>
+              </tr>
+              <tr>
+                <td>GET</td>
+                <td>/auth/me/</td>
+                <td>读取当前登录用户信息。</td>
+                <td>用户、角色、租户、权限相关信息。</td>
+              </tr>
+              <tr>
+                <td>POST</td>
+                <td>/auth/change-password/</td>
+                <td>修改当前账号密码。</td>
+                <td>修改结果。</td>
+              </tr>
+              <tr>
+                <td>GET / POST</td>
+                <td>/auth/account-applications/</td>
+                <td>读取或创建账号应用授权关系。</td>
+                <td>账号应用数据。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="admin">
+        <h2>后台管理端接口</h2>
+        <p class="section-lead">后台管理端接口默认要求 Bearer JWT。公司账号按所属租户隔离，超管可通过 tenant 查询参数查看指定公司的业务数据。</p>
+
+        <div class="endpoint-grid">
+          <article class="endpoint">
+            <h3>租户与员工</h3>
+            <code>GET /api/v1/tenants/</code>
+            <code>GET /api/v1/employees/</code>
+            <code>GET /api/v1/roles/</code>
+            <code>GET /api/v1/menus/catalog/</code>
+            <p>平台公司、员工、角色和菜单目录管理。</p>
+          </article>
+          <article class="endpoint">
+            <h3>设备与授权</h3>
+            <code>GET /api/v1/devices/</code>
+            <code>GET /api/v1/devices/stats/</code>
+            <code>GET /api/v1/device-groups/</code>
+            <code>GET /api/v1/device-applications/</code>
+            <p>设备列表、统计、分组、应用和授权请求管理。</p>
+          </article>
+          <article class="endpoint">
+            <h3>资源与命令</h3>
+            <code>GET /api/v1/resources/images/</code>
+            <code>GET /api/v1/resources/videos/</code>
+            <code>GET /api/v1/commands/groups/</code>
+            <code>GET /api/v1/commands/control/</code>
+            <p>图片、视频、滚动文字、音色、模型资源和指令配置。</p>
+          </article>
+          <article class="endpoint">
+            <h3>知识库与 AI</h3>
+            <code>GET /api/v1/knowledge-base/</code>
+            <code>GET /api/v1/ai-models/llm/options/</code>
+            <code>GET /api/v1/ai-models/tts/options/</code>
+            <code>GET /api/v1/ai-models/asr/status/</code>
+            <p>知识文档、LLM、TTS、ASR 配置和测试能力。</p>
+          </article>
+        </div>
+
+        <div class="split" style="margin-top: 14px;">
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">设备列表请求</span>
+              <span class="method get">GET</span>
+            </div>
+            <pre>{
+  "url": "/api/v1/devices/?status=all&enabledStatus=all",
+  "headers": {
+    "Authorization": "Bearer &lt;access_token&gt;"
+  },
+  "queryForSuperAdminTenantView": {
+    "tenant": 2
+  }
+}</pre>
+          </div>
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">设备列表响应</span>
+              <span class="method get">200</span>
+            </div>
+            <pre>{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": "ANDROID-BOARD-001",
+      "deviceCode": "ANDROID-BOARD-001",
+      "name": "展厅数字人终端",
+      "tenantId": 2,
+      "tenantName": "演示公司",
+      "status": "offline",
+      "groupId": 4,
+      "applicationId": 3,
+      "authorizationType": "permanent",
+      "isEnabled": true,
+      "lastHeartbeat": "2026-06-18 10:20:00"
+    }
+  ]
+}</pre>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>接口组</th>
+                <th>典型路径</th>
+                <th>客户端动作</th>
+                <th>服务端职责</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>设备授权请求</td>
+                <td>/device-authorization-requests/{deviceCode}/bind/</td>
+                <td>超管绑定待授权设备到租户、应用和分组。</td>
+                <td>写入授权关系，发布 device.authorization 事件。</td>
+              </tr>
+              <tr>
+                <td>设备改名</td>
+                <td>/device-authorization-requests/{deviceCode}/name/</td>
+                <td>授权中心修改设备显示名称。</td>
+                <td>保存后台名称，不采信安卓端传入的设备名称。</td>
+              </tr>
+              <tr>
+                <td>撤销授权</td>
+                <td>/device-authorization-requests/{deviceCode}/revoke/</td>
+                <td>超管撤销设备授权。</td>
+                <td>禁用设备、置离线、发布撤销事件。</td>
+              </tr>
+              <tr>
+                <td>MinIO 设置</td>
+                <td>/settings/minio/</td>
+                <td>维护对象存储配置。</td>
+                <td>保存存储端点、桶、配额等配置。</td>
+              </tr>
+              <tr>
+                <td>命令导出</td>
+                <td>/commands/export/enabled-groups/</td>
+                <td>设备端或集成端拉取已启用命令组。</td>
+                <td>返回可执行命令配置。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="device">
+        <h2>安卓设备端接口</h2>
+        <p class="section-lead">安卓设备端以 deviceCode 作为运行时身份。激活、配置和兼容心跳是 HTTP；在线状态、实时语音应走 /ws/realtime/。</p>
+
+        <div class="split">
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">设备激活 / 上报请求</span>
+              <span class="method post">POST</span>
+            </div>
+            <pre>{
+  "url": "/api/v1/device-auth/activate/",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "deviceCode": "ANDROID-BOARD-001",
+    "softwareVersion": "1.0.0",
+    "systemVersion": "Android 14",
+    "mainboardInfo": "rk3588",
+    "deviceInfo": {
+      "screen": "1080x1920",
+      "network": "wifi"
+    }
+  }
+}</pre>
+          </div>
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">设备激活响应</span>
+              <span class="method get">200</span>
+            </div>
+            <pre>{
+  "device": {
+    "id": "ANDROID-BOARD-001",
+    "deviceCode": "ANDROID-BOARD-001",
+    "name": "待修改",
+    "status": "offline",
+    "applicationId": null,
+    "applicationName": "",
+    "authorizationType": "permanent",
+    "isEnabled": true
+  },
+  "application": null,
+  "bindingStatus": "pending"
+}</pre>
+          </div>
+        </div>
+
+        <div class="split" style="margin-top: 14px;">
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">运行配置请求</span>
+              <span class="method get">GET</span>
+            </div>
+            <pre>{
+  "url": "/api/v1/device-runtime/config/?deviceCode=ANDROID-BOARD-001",
+  "auth": "不需要后台 JWT"
+}</pre>
+          </div>
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">运行配置响应</span>
+              <span class="method get">200</span>
+            </div>
+            <pre>{
+  "device": {
+    "deviceCode": "ANDROID-BOARD-001",
+    "name": "展厅数字人终端",
+    "status": "offline",
+    "isEnabled": true
+  },
+  "application": {
+    "id": 3,
+    "name": "演示安卓数字人应用",
+    "code": "demo-android-human"
+  },
+  "resources": {
+    "images": [],
+    "videos": [],
+    "scrollingTexts": [],
+    "voiceTones": [],
+    "models": [],
+    "commandGroups": []
+  }
+}</pre>
+          </div>
+        </div>
+
+        <div class="split" style="margin-top: 14px;">
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">兼容心跳请求</span>
+              <span class="method post">POST</span>
+            </div>
+            <pre>{
+  "url": "/api/v1/device-runtime/heartbeat/",
+  "body": {
+    "deviceCode": "ANDROID-BOARD-001",
+    "softwareVersion": "1.0.1",
+    "systemVersion": "Android 14",
+    "deviceInfo": {}
+  }
+}</pre>
+          </div>
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">兼容心跳响应</span>
+              <span class="method get">200</span>
+            </div>
+            <pre>{
+  "status": "success",
+  "message": "心跳成功",
+  "sideEffect": "仅更新 lastHeartbeat / 版本字段，不改变 status"
+}</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="ai">
+        <h2>AI 与语音接口</h2>
+        <p class="section-lead">后台配置和测试接口仍然是 HTTP；真正的 ASR / TTS 流式媒体交互统一走 WebSocket 命令协议。</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>能力</th>
+                <th>HTTP 路径</th>
+                <th>客户端用途</th>
+                <th>备注</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>LLM 选项</td>
+                <td>/ai-models/llm/options/</td>
+                <td>公司端读取可用模型。</td>
+                <td>受租户授权影响。</td>
+              </tr>
+              <tr>
+                <td>默认 LLM</td>
+                <td>/ai-models/llm/default-model/</td>
+                <td>读取或保存公司默认模型。</td>
+                <td>后台 Web 使用。</td>
+              </tr>
+              <tr>
+                <td>TTS 选项</td>
+                <td>/ai-models/tts/options/</td>
+                <td>读取可用供应商和音色。</td>
+                <td>运行时 WebSocket 可传 voiceId / providerCode。</td>
+              </tr>
+              <tr>
+                <td>TTS 运行时</td>
+                <td>/ai-models/tts/runtime/</td>
+                <td>HTTP 形式的 TTS 调用。</td>
+                <td>流式播放优先使用 tts.session.start。</td>
+              </tr>
+              <tr>
+                <td>ASR 状态</td>
+                <td>/ai-models/asr/status/</td>
+                <td>后台测试前读取 ASR 是否可用。</td>
+                <td>返回配置状态。</td>
+              </tr>
+              <tr>
+                <td>ASR 设备状态</td>
+                <td>/ai-models/asr/device-status/</td>
+                <td>设备端按 deviceCode 验证 ASR 租户上下文。</td>
+                <td>运行时再连接 /ws/realtime/。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="realtime">
+        <h2>统一 WebSocket 协议</h2>
+        <p class="section-lead">第一方实时通信只维护一个入口：/ws/realtime/。不同能力通过 JSON 命令的 type 字段区分，二进制帧只在 ASR 会话启动后用于上传音频。</p>
+
+        <div class="split">
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">客户端命令包</span>
+              <span class="method ws">WS</span>
+            </div>
+            <pre>{
+  "type": "命令名称",
+  "id": "客户端生成的相关 ID",
+  "payload": {
+    "token": "&lt;access_token 或实时票据&gt;",
+    "tenantId": 2,
+    "deviceCode": "ANDROID-BOARD-001"
+  }
+}</pre>
+          </div>
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">服务端事件包</span>
+              <span class="method ws">WS</span>
+            </div>
+            <pre>{
+  "type": "结果或事件名称",
+  "id": "回传请求中的相关 ID",
+  "payload": {},
+  "error": {
+    "code": "invalid_command",
+    "message": "Realtime command type is required"
+  }
+}</pre>
+          </div>
+        </div>
+
+        <div class="callout danger">
+          新实时能力不要再新增功能专用 WebSocket URL。只有存在明确传输层原因时，例如不兼容的第三方协议、独立二进制流隔离、特殊安全边界，才考虑新增入口并记录原因。
+        </div>
+      </section>
+
+      <section class="section" id="realtime-commands">
+        <h2>命令清单</h2>
+        <p class="section-lead">以下命令来自当前 /ws/realtime/ 服务端实现。客户端必须带稳定 type 和 id，服务端用 id 做响应关联。</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>命令 type</th>
+                <th>payload</th>
+                <th>服务端成功事件</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>ping</td>
+                <td>{}</td>
+                <td>pong</td>
+                <td>连接保活或探测。</td>
+              </tr>
+              <tr>
+                <td>devices.events.subscribe</td>
+                <td>{ token, tenantId? }</td>
+                <td>devices.events.subscribed</td>
+                <td>后台设备页订阅设备事件。超管公司视图传 tenantId。</td>
+              </tr>
+              <tr>
+                <td>devices.events.unsubscribe</td>
+                <td>{}</td>
+                <td>devices.events.unsubscribed</td>
+                <td>取消设备事件订阅。</td>
+              </tr>
+              <tr>
+                <td>device.status.start</td>
+                <td>{ deviceCode }</td>
+                <td>device.status.started</td>
+                <td>设备运行时上线，服务端发布 device.status 事件。</td>
+              </tr>
+              <tr>
+                <td>device.status.ping</td>
+                <td>{}</td>
+                <td>device.status.pong</td>
+                <td>设备在线连接保活并更新 lastHeartbeat。</td>
+              </tr>
+              <tr>
+                <td>asr.session.start</td>
+                <td>{ token, tenantId?, deviceCode? }</td>
+                <td>asr.ready</td>
+                <td>启动 ASR 会话，之后客户端发送二进制音频帧。</td>
+              </tr>
+              <tr>
+                <td>asr.session.finish</td>
+                <td>{}</td>
+                <td>asr.done</td>
+                <td>通知 ASR 上游结束输入，等待最终转写。</td>
+              </tr>
+              <tr>
+                <td>asr.session.cancel</td>
+                <td>{}</td>
+                <td>asr.cancelled</td>
+                <td>取消 ASR 会话。</td>
+              </tr>
+              <tr>
+                <td>tts.session.start</td>
+                <td>{ token, tenantId?, text, voiceId?, providerCode? }</td>
+                <td>tts.ready、二进制音频帧、tts.done</td>
+                <td>启动 TTS 合成并向客户端流式下发音频。</td>
+              </tr>
+              <tr>
+                <td>tts.session.cancel</td>
+                <td>{}</td>
+                <td>tts.cancelled</td>
+                <td>取消 TTS 合成会话。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="split" style="margin-top: 14px;">
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">设备上线命令</span>
+              <span class="method ws">WS</span>
+            </div>
+            <pre>{
+  "type": "device.status.start",
+  "id": "device-status-ANDROID-BOARD-001",
+  "payload": {
+    "deviceCode": "ANDROID-BOARD-001"
+  }
+}</pre>
+          </div>
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">设备上线响应和推送</span>
+              <span class="method ws">WS</span>
+            </div>
+            <pre>{
+  "ack": {
+    "type": "device.status.started",
+    "id": "device-status-ANDROID-BOARD-001",
+    "payload": {
+      "deviceCode": "ANDROID-BOARD-001",
+      "status": "online"
+    }
+  },
+  "eventToSubscribers": {
+    "type": "devices.event",
+    "id": "devices-subscribe-1",
+    "payload": {
+      "type": "device.status",
+      "tenantId": 2,
+      "applicationId": 3,
+      "deviceCode": "ANDROID-BOARD-001",
+      "status": "online",
+      "isEnabled": true
+    }
+  }
+}</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="media">
+        <h2>ASR / TTS 流式交互</h2>
+        <p class="section-lead">ASR 是客户端上传音频、服务端返回转写文本；TTS 是客户端发送文本、服务端返回音频二进制帧。两者都使用 /ws/realtime/。</p>
+
+        <div class="split">
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">ASR 客户端流程</span>
+              <span class="method ws">WS</span>
+            </div>
+            <pre>{
+  "connect": "ws://&lt;host&gt;/ws/realtime/",
+  "start": {
+    "type": "asr.session.start",
+    "id": "asr-1",
+    "payload": {
+      "token": "&lt;access_token 或实时票据&gt;",
+      "tenantId": 2,
+      "deviceCode": "ANDROID-BOARD-001"
+    }
+  },
+  "afterReady": [
+    "发送音频二进制帧",
+    "结束时发送 asr.session.finish",
+    "取消时发送 asr.session.cancel"
+  ]
+}</pre>
+          </div>
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">ASR 服务端事件</span>
+              <span class="method ws">WS</span>
+            </div>
+            <pre>{
+  "ready": {
+    "type": "asr.ready",
+    "id": "asr-1"
+  },
+  "transcript": {
+    "type": "asr.transcript",
+    "id": "asr-1",
+    "payload": {
+      "text": "识别出的文本",
+      "isFinal": false
+    }
+  },
+  "done": {
+    "type": "asr.done",
+    "id": "asr-1"
+  },
+  "error": {
+    "type": "asr.error",
+    "id": "asr-1",
+    "message": "ASR session is not authorized"
+  }
+}</pre>
+          </div>
+        </div>
+
+        <div class="split" style="margin-top: 14px;">
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">TTS 客户端流程</span>
+              <span class="method ws">WS</span>
+            </div>
+            <pre>{
+  "connect": "ws://&lt;host&gt;/ws/realtime/",
+  "start": {
+    "type": "tts.session.start",
+    "id": "tts-1",
+    "payload": {
+      "token": "&lt;access_token 或实时票据&gt;",
+      "tenantId": 2,
+      "text": "欢迎使用数字人终端",
+      "voiceId": 12,
+      "providerCode": "dashscope"
+    }
+  },
+  "cancel": {
+    "type": "tts.session.cancel",
+    "id": "tts-cancel-1"
+  }
+}</pre>
+          </div>
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">TTS 服务端事件</span>
+              <span class="method ws">WS</span>
+            </div>
+            <pre>{
+  "ready": {
+    "type": "tts.ready",
+    "id": "tts-1",
+    "sampleRate": 24000,
+    "voice": "voice-code"
+  },
+  "binaryFrames": "服务端连续发送音频二进制帧",
+  "done": {
+    "type": "tts.done",
+    "id": "tts-1"
+  },
+  "error": {
+    "type": "tts.error",
+    "id": "tts-1",
+    "message": "TTS 服务未配置或未启用"
+  }
+}</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="errors">
+        <h2>错误与调试</h2>
+        <p class="section-lead">HTTP 错误由 DRF 和业务视图返回；WebSocket 命令错误统一使用 error 事件，ASR / TTS 媒体错误使用对应领域事件。</p>
+
+        <div class="split">
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">WebSocket 通用错误</span>
+              <span class="method ws">WS</span>
+            </div>
+            <pre>{
+  "type": "error",
+  "id": "client-command-id",
+  "error": {
+    "code": "unknown_command",
+    "message": "Unsupported realtime command: demo.command"
+  }
+}</pre>
+          </div>
+          <div class="pane">
+            <div class="pane-head">
+              <span class="pane-title">常见错误码</span>
+              <span class="method get">REF</span>
+            </div>
+            <pre>{
+  "invalid_json": "命令不是合法 JSON",
+  "invalid_command": "缺少 type 或 type 为空",
+  "unknown_command": "服务端不支持该命令",
+  "unauthorized": "token 或租户上下文无效",
+  "invalid_device": "缺少 deviceCode",
+  "device_not_found": "设备不存在、不可用或过期",
+  "media_session_not_started": "未启动 ASR 会话却发送二进制帧"
+}</pre>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>现象</th>
+                <th>优先检查</th>
+                <th>处理建议</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>后台设备页没有实时刷新</td>
+                <td>是否连接 /ws/realtime/，是否发送 devices.events.subscribe。</td>
+                <td>确认 token 有效；超管公司视图确认 tenantId 已传。</td>
+              </tr>
+              <tr>
+                <td>设备一直 offline</td>
+                <td>安卓端是否发送 device.status.start，设备是否已启用。</td>
+                <td>不要依赖 HTTP heartbeat；检查 WebSocket 是否被代理转发。</td>
+              </tr>
+              <tr>
+                <td>ASR 没有转写</td>
+                <td>asr.session.start 是否收到 asr.ready，之后是否发送二进制音频帧。</td>
+                <td>先调用 ASR 状态接口确认服务配置，再检查 token、tenantId、deviceCode。</td>
+              </tr>
+              <tr>
+                <td>TTS 没有声音</td>
+                <td>tts.session.start 是否收到 tts.ready，浏览器是否播放二进制帧。</td>
+                <td>检查 voiceId、providerCode、TTS 配置和浏览器音频解码逻辑。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="maintenance">
+        <h2>维护规则</h2>
+        <p class="section-lead">这部分是给后续开发看的约束，避免接口越写越散。</p>
+
+        <div class="endpoint-grid">
+          <article class="endpoint">
+            <h3>实时能力先扩展命令</h3>
+            <p>新增一方实时能力时，优先在 /ws/realtime/ 下新增 type 命令和明确 payload。不要用 URL 路径暗示业务行为。</p>
+          </article>
+          <article class="endpoint">
+            <h3>请求必须可关联</h3>
+            <p>WebSocket 命令必须带 id，服务端响应和错误要回传同一个 id，方便客户端并发处理。</p>
+          </article>
+          <article class="endpoint">
+            <h3>租户上下文要显式</h3>
+            <p>后台 JWT、tenantId、deviceCode 的使用边界要清晰。设备端不应持有后台账号密码或长期后台 JWT。</p>
+          </article>
+          <article class="endpoint">
+            <h3>文档跟着协议走</h3>
+            <p>新增或修改 HTTP 路径、WebSocket 命令、错误码时，同步更新本文档和 websocket-unification-progress.html。</p>
+          </article>
+        </div>
+
+        <div class="callout">
+          参考来源：backend/config/urls.py、backend/config/realtime.py、web/src/api/client.ts、backend/apps/devices/urls.py、backend/apps/ai_models/urls.py、backend/apps/resources/urls.py。
+        </div>
+      </section>
+
+      <p class="footer">本文档为静态 HTML，可直接用浏览器打开：wiki/server-client-interaction-api.html。</p>
+    </main>
+  </div>
+</body>
+</html>

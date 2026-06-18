@@ -1,9 +1,10 @@
-import asyncio
 import base64
 import json
 from types import SimpleNamespace
 from unittest.mock import patch
 
+from asgiref.sync import async_to_sync
+from asgiref.testing import ApplicationCommunicator
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework import status
@@ -73,24 +74,8 @@ class TTSRealtimeTests(TenantTestMixin, TestCase):
         self.tenant.permission_points.set(permission_points)
 
     def test_tts_realtime_streams_upstream_audio_delta_to_browser(self):
-        from apps.ai_models.realtime_tts import tts_realtime_websocket_application
-
         self.grant_permissions('ai_models.tts.view')
         token = str(RefreshToken.for_user(self.user).access_token)
-        sent_messages = []
-        received = iter([
-            {'type': 'websocket.receive', 'text': json.dumps({'type': 'tts.start', 'text': '你好', 'voiceId': self.voice.id})},
-        ])
-
-        async def receive():
-            try:
-                return next(received)
-            except StopIteration:
-                await asyncio.sleep(0)
-                return {'type': 'websocket.disconnect'}
-
-        async def send(message):
-            sent_messages.append(message)
 
         config = SimpleNamespace(
             is_active=True,
@@ -101,23 +86,57 @@ class TTSRealtimeTests(TenantTestMixin, TestCase):
             default_test_text='默认测试文本',
         )
         upstream = OneShotTTSUpstream()
-        scope = {'type': 'websocket', 'query_string': f'token={token}'.encode(), 'headers': []}
 
-        with (
-            patch('apps.ai_models.realtime_tts.get_effective_tts_config', return_value=config),
-            patch('apps.ai_models.realtime_tts.is_tts_configured', return_value=True),
-            patch('apps.ai_models.realtime_tts.build_tts_ws_url', return_value='wss://tts.example/realtime?model=test'),
-            patch('apps.ai_models.realtime_tts.websockets.connect', return_value=upstream),
-        ):
-            asyncio.run(tts_realtime_websocket_application(scope, receive, send))
+        async def run_websocket():
+            from config.asgi import application
 
-        self.assertIn({'type': 'websocket.accept'}, sent_messages)
-        self.assertIn(
-            {'type': 'websocket.send', 'text': json.dumps({'type': 'tts.ready', 'sampleRate': 24000, 'voice': 'Cherry'})},
-            sent_messages,
-        )
-        self.assertIn({'type': 'websocket.send', 'bytes': b'\x01\x02'}, sent_messages)
-        self.assertIn({'type': 'websocket.send', 'text': json.dumps({'type': 'tts.done'})}, sent_messages)
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            response = await communicator.receive_output(timeout=1)
+            self.assertEqual(response, {'type': 'websocket.accept'})
+
+            with (
+                patch(
+                    'apps.ai_models.realtime_tts.resolve_tts_realtime_connection',
+                    return_value={'user_id': self.user.id, 'tenant_id': self.tenant.id, 'is_superuser': False},
+                ),
+                patch('apps.ai_models.realtime_tts.get_effective_tts_config', return_value=config),
+                patch('apps.ai_models.realtime_tts.is_tts_configured', return_value=True),
+                patch('apps.ai_models.realtime_tts.build_tts_ws_url', return_value='wss://tts.example/realtime?model=test'),
+                patch('apps.ai_models.realtime_tts.websockets.connect', return_value=upstream),
+            ):
+                await communicator.send_input({
+                    'type': 'websocket.receive',
+                    'text': json.dumps({
+                        'type': 'tts.session.start',
+                        'id': 'tts-suite-1',
+                        'payload': {'token': token, 'text': '你好', 'voiceId': self.voice.id},
+                    }),
+                })
+
+                ready = await communicator.receive_output(timeout=1)
+                self.assertEqual(
+                    json.loads(ready['text']),
+                    {'type': 'tts.ready', 'sampleRate': 24000, 'voice': 'Cherry', 'id': 'tts-suite-1'},
+                )
+                audio = await communicator.receive_output(timeout=1)
+                self.assertEqual(audio, {'type': 'websocket.send', 'bytes': b'\x01\x02'})
+                done = await communicator.receive_output(timeout=1)
+                self.assertEqual(json.loads(done['text']), {'type': 'tts.done', 'id': 'tts-suite-1'})
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
         sent_types = [message.get('type') for message in upstream.messages]
         self.assertIn('input_text_buffer.append', sent_types)
         self.assertIn('session.finish', sent_types)

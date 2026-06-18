@@ -4,10 +4,8 @@ import asyncio
 import base64
 import json
 from typing import Any
-from urllib.parse import parse_qs
 
 import websockets
-from asgiref.sync import sync_to_async
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.accounts.services.permissions import get_active_permission_codes_for_user
@@ -29,45 +27,6 @@ from .services.tts import (
     _text_append_event,
     _text_commit_event,
 )
-
-
-async def tts_realtime_websocket_application(scope, receive, send):
-    params = parse_qs(scope.get('query_string', b'').decode('utf-8'))
-    token = (params.get('token') or [''])[0].strip()
-    connection = await sync_to_async(resolve_tts_realtime_connection, thread_sensitive=True)(
-        token,
-        query_params=params,
-    )
-    if connection is None:
-        await send({'type': 'websocket.close', 'code': 4401})
-        return
-
-    await send({'type': 'websocket.accept'})
-
-    start_payload = await _receive_start_payload(receive)
-    if start_payload is None:
-        await send({'type': 'websocket.close', 'code': 1000})
-        return
-
-    try:
-        provider = await sync_to_async(resolve_tts_provider, thread_sensitive=True)(start_payload.get('providerCode'))
-        config = await sync_to_async(get_effective_tts_config, thread_sensitive=True)(provider)
-        if not is_tts_configured(config):
-            raise RuntimeError('TTS 服务未配置或未启用')
-
-        voice = await sync_to_async(resolve_tts_voice, thread_sensitive=True)(connection, start_payload.get('voiceId'), provider)
-        if voice is None:
-            raise RuntimeError('TTS 音色未配置')
-
-        text = normalize_tts_text(str(start_payload.get('text') or ''), config)
-        await _stream_tts_audio(text=text, voice=voice, config=config, send=send)
-    except Exception as exc:
-        await send({
-            'type': 'websocket.send',
-            'text': json.dumps({'type': 'tts.error', 'message': str(exc)[:200]}),
-        })
-    finally:
-        await send({'type': 'websocket.close', 'code': 1000})
 
 
 def resolve_tts_realtime_connection(token: str, *, query_params: dict[str, list[str]] | None = None) -> dict[str, Any] | None:
@@ -114,23 +73,6 @@ def resolve_tts_provider(raw_provider_code) -> TTSProvider:
     if not provider_code:
         return get_aliyun_tts_provider()
     return TTSProvider.objects.filter(code=provider_code).first() or get_aliyun_tts_provider()
-
-
-async def _receive_start_payload(receive) -> dict[str, Any] | None:
-    while True:
-        event = await receive()
-        event_type = event.get('type')
-        if event_type == 'websocket.disconnect':
-            return None
-        if event_type != 'websocket.receive':
-            continue
-        text = event.get('text') or ''
-        try:
-            payload = json.loads(text)
-        except json.JSONDecodeError:
-            continue
-        if payload.get('type') == 'tts.start':
-            return payload
 
 
 async def _stream_tts_audio(*, text: str, voice: TTSVoice, config, send) -> None:

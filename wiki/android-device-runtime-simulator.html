@@ -558,6 +558,7 @@
       statusSocket: null,
       busy: false,
       authorized: false,
+      statusCommandId: '',
       pollIntervalMs: 3000,
       wsPingIntervalMs: 30000,
     };
@@ -602,11 +603,10 @@
     }
 
     function websocketUrl() {
-      const code = encodeURIComponent(els.deviceCode.value.trim());
-      if (!code) throw new Error('设备码不能为空');
+      if (!els.deviceCode.value.trim()) throw new Error('设备码不能为空');
       const base = new URL(els.apiBase.value.replace(/\/+$/, ''), window.location.href);
       const protocol = base.protocol === 'https:' ? 'wss:' : 'ws:';
-      return `${protocol}//${base.host}/ws/device-runtime/status/?deviceCode=${code}`;
+      return `${protocol}//${base.host}/ws/realtime/`;
     }
 
     function readDeviceInfo() {
@@ -807,6 +807,12 @@
       log('正在建立 WebSocket 在线连接', { url });
 
       socket.addEventListener('open', () => {
+        state.statusCommandId = createRealtimeCommandId('device-status');
+        socket.send(JSON.stringify({
+          type: 'device.status.start',
+          id: state.statusCommandId,
+          payload: { deviceCode: els.deviceCode.value.trim() },
+        }));
         setStep('run');
         els.heartbeatState.textContent = nowText();
         setStatus({
@@ -818,7 +824,10 @@
         log('WebSocket 已连接，后端应显示设备在线');
         state.heartbeatTimer = window.setInterval(() => {
           if (socket.readyState === WebSocket.OPEN) {
-            socket.send('ping');
+            socket.send(JSON.stringify({
+              type: 'device.status.ping',
+              id: createRealtimeCommandId('device-ping'),
+            }));
           }
         }, state.wsPingIntervalMs);
       });
@@ -832,6 +841,7 @@
         if (state.statusSocket === socket) {
           state.statusSocket = null;
         }
+        state.statusCommandId = '';
         stopHeartbeatPing();
         setStatus({
           runtime: '离线',
@@ -845,7 +855,7 @@
       socket.addEventListener('error', () => {
         setStatus({
           runtime: '在线通道异常',
-          phone: 'WebSocket 连接异常，请确认 backend 已重启并支持 /ws/device-runtime/status/',
+          phone: 'WebSocket 连接异常，请确认 backend 已重启并支持 /ws/realtime/',
           badge: 'WebSocket error',
           badgeKind: 'err',
         });
@@ -865,6 +875,7 @@
       if (state.statusSocket) {
         const socket = state.statusSocket;
         state.statusSocket = null;
+        state.statusCommandId = '';
         if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
           socket.close(1000, 'simulator stopped');
         }
@@ -885,6 +896,10 @@
       setStatus({ runtime: '未启动', binding: 'unknown', phone: '等待请求配置接口' });
       showResponse({});
       log('已生成新设备码');
+    }
+
+    function createRealtimeCommandId(prefix) {
+      return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     }
 
     function syncQr() {

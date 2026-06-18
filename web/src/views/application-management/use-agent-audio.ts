@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { message } from 'antd';
 
-import { buildAsrRealtimeWebSocketUrl } from '../../api/modules/asr';
+import {
+  buildAsrSessionFinishCommand,
+  buildAsrSessionStartCommand,
+  buildRealtimeWebSocketUrl,
+  createRealtimeCommandId,
+  encodeRealtimeCommand,
+} from '../../api/realtime';
 import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
 import { requestMicrophoneStream } from '../media-devices';
@@ -67,7 +73,7 @@ export const useAgentAudio = () => {
 
     const socket = socketRef.current;
     if (socket?.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ type: 'asr.finish' }));
+      socket.send(encodeRealtimeCommand(buildAsrSessionFinishCommand(createRealtimeCommandId('asr-finish'))));
     } else {
       socket?.close();
     }
@@ -144,11 +150,17 @@ export const useAgentAudio = () => {
       const stream = await requestMicrophoneStream();
       streamRef.current = stream;
 
-      const socket = new WebSocket(buildAsrRealtimeWebSocketUrl(token, tenantScopeId ?? tenant?.id ?? null));
+      const tenantId = tenantScopeId ?? tenant?.id ?? null;
+      const socket = new WebSocket(buildRealtimeWebSocketUrl());
       socket.binaryType = 'arraybuffer';
       socketRef.current = socket;
 
       socket.onopen = () => {
+        const sessionId = createRealtimeCommandId('asr-session');
+        socket.send(encodeRealtimeCommand(buildAsrSessionStartCommand(sessionId, {
+          token,
+          tenantId,
+        })));
         void setupAudioStreaming(stream, socket).catch((error: unknown) => {
           message.error(error instanceof Error ? error.message : '无法打开麦克风');
           stopRecording();

@@ -8,25 +8,10 @@ django_application = get_asgi_application()
 
 
 async def application(scope, receive, send):
-    if scope.get('type') == 'websocket' and scope.get('path') == '/ws/device-runtime/status/':
-        from apps.devices.websocket import device_status_websocket_application
+    if scope.get('type') == 'websocket' and scope.get('path') == '/ws/realtime/':
+        from config.realtime import realtime_websocket_application
 
-        await device_status_websocket_application(scope, receive, send)
-        return
-    if scope.get('type') == 'websocket' and scope.get('path') == '/ws/devices/events/':
-        from apps.devices.realtime import device_events_websocket_application
-
-        await device_events_websocket_application(scope, receive, send)
-        return
-    if scope.get('type') == 'websocket' and scope.get('path') == '/ws/asr/test/':
-        from apps.ai_models.realtime_asr import asr_realtime_websocket_application
-
-        await asr_realtime_websocket_application(scope, receive, send)
-        return
-    if scope.get('type') == 'websocket' and scope.get('path') == '/ws/tts/test/':
-        from apps.ai_models.realtime_tts import tts_realtime_websocket_application
-
-        await tts_realtime_websocket_application(scope, receive, send)
+        await realtime_websocket_application(scope, receive, send)
         return
 
     await django_application(scope, receive, send)

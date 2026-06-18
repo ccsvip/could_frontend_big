@@ -1,4 +1,11 @@
-import { buildTtsRealtimeWebSocketUrl, type TtsRealtimeMessage, type TtsTestPayload } from '../api/modules/tts';
+import { type TtsRealtimeMessage, type TtsTestPayload } from '../api/modules/tts';
+import {
+  buildRealtimeWebSocketUrl,
+  buildTtsSessionCancelCommand,
+  buildTtsSessionStartCommand,
+  createRealtimeCommandId,
+  encodeRealtimeCommand,
+} from '../api/realtime';
 
 type PlayRealtimeTtsOptions = TtsTestPayload & {
   token: string;
@@ -55,7 +62,7 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
     let settled = false;
     let completing = false;
     let completionTimer: number | null = null;
-    const socket = new WebSocket(buildTtsRealtimeWebSocketUrl(options.token, options.tenantId));
+    const socket = new WebSocket(buildRealtimeWebSocketUrl());
     socket.binaryType = 'arraybuffer';
 
     const finish = () => {
@@ -89,6 +96,9 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
     };
 
     const abort = () => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(encodeRealtimeCommand(buildTtsSessionCancelCommand(createRealtimeCommandId('tts-cancel'))));
+      }
       socket.close();
       fail(new DOMException('TTS playback was cancelled', 'AbortError'));
     };
@@ -103,12 +113,13 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
       if (audioContext.state === 'suspended') {
         void audioContext.resume();
       }
-      socket.send(JSON.stringify({
-        type: 'tts.start',
+      socket.send(encodeRealtimeCommand(buildTtsSessionStartCommand(createRealtimeCommandId('tts-session'), {
+        token: options.token,
+        tenantId: options.tenantId,
         text,
         voiceId: options.voiceId ?? null,
         providerCode: options.providerCode,
-      }));
+      })));
     };
 
     socket.onmessage = (event: MessageEvent<string | ArrayBuffer>) => {
@@ -142,6 +153,11 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
       if (payload.type === 'tts.done') {
         socket.close();
         finish();
+        return;
+      }
+      if (payload.type === 'tts.cancelled') {
+        socket.close();
+        fail(new DOMException('TTS playback was cancelled', 'AbortError'));
         return;
       }
       if (payload.type === 'tts.error') {

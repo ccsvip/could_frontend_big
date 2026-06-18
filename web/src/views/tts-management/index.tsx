@@ -104,10 +104,9 @@ export const TtsManagementPage = () => {
   const renderVoice = (voice: TtsVoiceRecord) => {
     const checked = selectedVoiceId === voice.id;
     return (
-      <button
+      <div
         key={voice.id}
-        type="button"
-        onClick={() => setSelectedVoiceId(voice.id)}
+        aria-current={checked ? 'true' : undefined}
         className={`flex min-h-[112px] w-full items-center gap-4 rounded-xl border bg-white p-4 text-left transition duration-200 hover:border-brand-300 hover:shadow-card-hover ${
           checked ? 'border-brand-500 ring-2 ring-brand-100' : 'border-slate-200 shadow-card'
         }`}
@@ -130,8 +129,14 @@ export const TtsManagementPage = () => {
             {voice.gender === 'female' ? '女声' : voice.gender === 'male' ? '男声' : voice.gender || '-'}
           </div>
         </div>
-        <Radio checked={checked} className="text-brand-600" />
-      </button>
+        <Radio
+          checked={checked}
+          aria-label={`选择 ${voice.displayName}`}
+          className="text-brand-600"
+          value={voice.id}
+          onChange={() => setSelectedVoiceId(voice.id)}
+        />
+      </div>
     );
   };
 
