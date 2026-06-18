@@ -45,8 +45,8 @@ devices/
 - **安卓无账号体系**：安卓端不提交用户账号、公司 ID、后台 JWT 或设备 token。
 - **设备绑定由后台决定**：新 `deviceCode` 首次上报可创建待绑定设备；后台再绑定公司、应用、分组、授权类型和到期时间。
 - **配置按绑定应用返回**：`deviceCode -> Device -> tenant/application -> resources`。未绑定应用时配置接口返回错误，不返回资源包。
-- **在线状态靠 WebSocket**：安卓端通过 `/ws/device-runtime/status/?deviceCode=<设备码>` 建立连接；连接成功置 `status=online`，连接断开置 `status=offline`。`POST /device-runtime/heartbeat/` 仅兼容旧端更新 `last_heartbeat` / 版本信息，不再决定在线 / 离线。
-- **后台设备页实时同步**：管理端通过 `/ws/devices/events/?token=<JWT>[&tenantId=<公司ID>]` 订阅设备事件。公司账号只接收本公司事件；超管公司视图必须传 `tenantId` 收窄范围。设备绑定 / 再授权 / 撤销和运行时上下线都要发布事件，前端收到后刷新当前筛选列表。
+- **在线状态靠 WebSocket**：安卓端只维护统一 `/ws/realtime/` 并发送 `device.status.start` / `device.status.ping`；旧设备状态专用 WebSocket 入口已退役，不要新增或恢复使用。连接成功置 `status=online`，连接断开置 `status=offline`。`POST /device-runtime/heartbeat/` 仅兼容旧端更新 `last_heartbeat` / 版本信息，不再决定在线 / 离线。
+- **后台设备页实时同步**：管理端只维护统一 `/ws/realtime/` 并发送 `devices.events.subscribe` 订阅设备事件；旧设备事件专用 WebSocket 入口已退役，不要新增或恢复使用。公司账号只接收本公司事件；超管公司视图必须传 `tenantId` 收窄范围。设备绑定 / 再授权 / 撤销和运行时上下线都要发布事件，前端收到后刷新当前筛选列表。
 - **后台可编辑范围**：后台主要编辑设备名称、位置、应用、分组、启停、授权类型、到期时间；设备名称不由安卓上报，首次登记默认“待修改”；安卓上报的软件版本、系统版本、主板信息不要手工改写。
 - **tenant 范围**：所有带 `tenant` 的模型必须用 `TenantManager`，并经 `TenantScopedQuerysetMixin` 收窄后台查询。
 
@@ -82,8 +82,9 @@ POST /api/v1/device-auth/activate/
 ```http
 GET /api/v1/device-runtime/config/?deviceCode=ANDROID-BOARD-001
 POST /api/v1/device-runtime/heartbeat/
-WS /ws/device-runtime/status/?deviceCode=ANDROID-BOARD-001
-WS /ws/devices/events/?token=<JWT>&tenantId=<公司ID>
+WS /ws/realtime/
+{"type":"device.status.start","id":"device-status-1","payload":{"deviceCode":"ANDROID-BOARD-001"}}
+{"type":"devices.events.subscribe","id":"devices-sub-1","payload":{"token":"<JWT>","tenantId":<公司ID>}}
 ```
 
 心跳请求示例：

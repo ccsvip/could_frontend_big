@@ -1,7 +1,10 @@
 import asyncio
+import json
 from types import SimpleNamespace
 from unittest.mock import patch
 
+from asgiref.sync import async_to_sync
+from asgiref.testing import ApplicationCommunicator
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.test import TestCase
@@ -18,11 +21,13 @@ class HangingUpstream:
     def __init__(self):
         self.messages = []
         self._event = asyncio.Event()
+        self.exited = False
 
     async def __aenter__(self):
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
+        self.exited = True
         return False
 
     async def send(self, message):
@@ -215,39 +220,50 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
             },
         )
 
-    def test_asr_realtime_returns_without_closing_after_browser_disconnect(self):
-        from apps.ai_models.realtime_asr import asr_realtime_websocket_application
+    def test_unified_asr_session_cleanup_on_browser_disconnect(self):
+        async def run_websocket():
+            from config.asgi import application
 
-        sent_messages = []
-        state = {'disconnected': False}
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            response = await communicator.receive_output(timeout=1)
+            self.assertEqual(response['type'], 'websocket.accept')
 
-        async def receive():
-            state['disconnected'] = True
-            return {'type': 'websocket.disconnect'}
+            config = SimpleNamespace(is_active=True, api_key='test-api-key', workspace_id='test-workspace')
+            upstream = HangingUpstream()
+            with (
+                patch(
+                    'apps.ai_models.realtime_asr.resolve_asr_realtime_connection',
+                    return_value={'user_id': self.user.id, 'tenant_id': self.tenant.id},
+                ),
+                patch('apps.ai_models.realtime_asr.get_effective_asr_config', return_value=config),
+                patch('apps.ai_models.realtime_asr.is_asr_configured', return_value=True),
+                patch('apps.ai_models.realtime_asr.build_asr_ws_url', return_value='ws://asr.example/realtime'),
+                patch('apps.ai_models.realtime_asr.load_asr_replacement_pairs', return_value=[]),
+                patch('apps.ai_models.realtime_asr.websockets.connect', return_value=upstream),
+            ):
+                await communicator.send_input({
+                    'type': 'websocket.receive',
+                    'text': json.dumps({
+                        'type': 'asr.session.start',
+                        'id': 'asr-cleanup-1',
+                        'payload': {'token': 'test-token', 'tenantId': self.tenant.id},
+                    }),
+                })
+                ready = await communicator.receive_output(timeout=1)
+                self.assertEqual(json.loads(ready['text']), {'type': 'asr.ready', 'id': 'asr-cleanup-1'})
 
-        async def send(message):
-            if state['disconnected'] and message.get('type') == 'websocket.close':
-                raise RuntimeError(
-                    "Unexpected ASGI message 'websocket.close', after sending "
-                    "'websocket.close' or response already completed."
-                )
-            sent_messages.append(message)
+                await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+                await communicator.wait(timeout=1)
 
-        config = SimpleNamespace(is_active=True, api_key='test-api-key', workspace_id='test-workspace')
-        upstream = HangingUpstream()
-        scope = {'type': 'websocket', 'query_string': b'token=test-token', 'headers': []}
+            self.assertTrue(upstream.exited)
 
-        with (
-            patch(
-                'apps.ai_models.realtime_asr.resolve_asr_realtime_connection',
-                return_value={'user_id': self.user.id, 'tenant_id': self.tenant.id},
-            ),
-            patch('apps.ai_models.realtime_asr.get_effective_asr_config', return_value=config),
-            patch('apps.ai_models.realtime_asr.is_asr_configured', return_value=True),
-            patch('apps.ai_models.realtime_asr.build_asr_ws_url', return_value='ws://asr.example/realtime'),
-            patch('apps.ai_models.realtime_asr.load_asr_replacement_pairs', return_value=[]),
-            patch('apps.ai_models.realtime_asr.websockets.connect', return_value=upstream),
-        ):
-            asyncio.run(asr_realtime_websocket_application(scope, receive, send))
-
-        self.assertNotIn('websocket.close', [message.get('type') for message in sent_messages])
+        async_to_sync(run_websocket)()

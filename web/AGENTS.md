@@ -49,7 +49,7 @@ web/
   * 重写组件内部样式统一在 `src/styles/index.css` 中声明，严禁在组件中滥用 `!important` 强行覆盖。
   * 主色统一使用青绿色（Antd 主色 `#0f766e` / Radix `teal`），圆角保持在 `10px - 14px` 级别（Tailwind `rounded-xl` 或 Radix `radius="medium"` / `radius="large"`）以确保视觉一致。
 - **请求**：通过 `httpClient` 自动注入 Bearer，401 时自动清 token + 跳 `/login`。
-- **设备实时同步**：设备管理页用 `/ws/devices/events/?token=<JWT>[&tenantId=<公司ID>]` 订阅后台事件；相对 API 地址经 Vite `/ws` proxy 转发，绝不要用 HTTP heartbeat 或手动刷新代替在线 / 离线实时状态。
+- **设备实时同步**：设备管理页只维护统一 `/ws/realtime/`，发送 `devices.events.subscribe` 命令订阅后台事件；旧 `/ws/devices/events/` 已退役，不要新增或恢复使用。相对 API 地址经 Vite `/ws` proxy 转发，绝不要用 HTTP heartbeat 或手动刷新代替在线 / 离线实时状态。
 - **登录态持久化**：`localStorage`（`token` / `refreshToken` / `username` / `role` / `permissions` / `menus`）；启动时由 `router/index.tsx` 调 `/auth/me/` 校准。
 
 ## ANTI-PATTERNS

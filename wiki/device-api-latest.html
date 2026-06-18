@@ -143,7 +143,7 @@
 
     <section>
       <h2>关键规则</h2>
-      <p class="warning">在线 / 离线状态不能再由 HTTP heartbeat 判定。只有安卓端连接 `/ws/device-runtime/status/` 成功才置为 online，连接断开才置为 offline。</p>
+      <p class="warning">在线 / 离线状态不能再由 HTTP heartbeat 判定。安卓端应优先连接统一实时通信入口 `/ws/realtime/` 并发送 `device.status.start`；连接成功后才置为 online，连接断开才置为 offline。</p>
       <pre>{
   "rules": [
     "安卓端只传 deviceCode，不传 authCode、tenantId、后台 JWT、设备 token 或设备名称",
@@ -151,7 +151,7 @@
     "未知 deviceCode 首次上报时设备名称默认为“待修改”，由超管在设备授权中心双击名称后保存修改",
     "GET /device-runtime/config/ 只在设备已绑定可用应用后返回资源包",
     "POST /device-runtime/heartbeat/ 只兼容旧端更新 lastHeartbeat / softwareVersion / systemVersion",
-    "后台设备管理页通过 /ws/devices/events/ 接收设备绑定、撤销、上线、离线事件后自动刷新"
+    "后台设备管理页通过 /ws/realtime/ 发送 devices.events.subscribe 接收设备绑定、撤销、上线、离线事件后自动刷新"
   ]
 }</pre>
     </section>
@@ -355,17 +355,33 @@
 
     <section>
       <h2><span class="pill">WS</span>安卓端运行时在线状态</h2>
-      <p class="note">连接地址：/ws/device-runtime/status/?deviceCode=&lt;设备码&gt;。这是唯一决定 online/offline 的接口。</p>
+      <p class="note">连接地址：/ws/realtime/。连接后发送 <code>device.status.start</code>，这是当前决定 online/offline 的统一实时通信命令；旧设备状态专用 WebSocket 已退役，不要作为新入口使用。</p>
       <pre>{
-  "url": "ws://localhost:8880/ws/device-runtime/status/?deviceCode=ANDROID-DEMO-10001",
+  "url": "ws://localhost:8880/ws/realtime/",
+  "start_command": {
+    "type": "device.status.start",
+    "id": "device-status-ANDROID-DEMO-10001",
+    "payload": {
+      "deviceCode": "ANDROID-DEMO-10001"
+    }
+  },
   "lifecycle": [
     "连接成功：后端校验设备存在、启用、未过期，然后写入 status=online 和 lastHeartbeat",
-    "客户端可每 30 秒发送文本 ping，后端返回文本 pong 并更新 lastHeartbeat",
+    "客户端可每 30 秒发送 device.status.ping，后端返回 device.status.pong 并更新 lastHeartbeat",
     "连接断开：后端写入 status=offline",
     "每次上线 / 离线都会发布后台设备事件，管理端设备列表无需刷新页面"
   ],
-  "client_message": "ping",
-  "server_message": "pong"
+  "ping_command": {
+    "type": "device.status.ping",
+    "id": "device-ping-1"
+  },
+  "pong_event": {
+    "type": "device.status.pong",
+    "id": "device-ping-1",
+    "payload": {
+      "deviceCode": "ANDROID-DEMO-10001"
+    }
+  }
 }</pre>
     </section>
 
@@ -401,10 +417,24 @@
 
     <section>
       <h2><span class="pill">WS</span>后台设备事件订阅</h2>
-      <p class="note">连接地址：/ws/devices/events/?token=&lt;JWT&gt;[&amp;tenantId=&lt;公司ID&gt;]。公司账号只会收到本公司事件；超管在公司视图必须传 tenantId。</p>
+      <p class="note">连接地址：/ws/realtime/。连接后发送 <code>devices.events.subscribe</code>；公司账号只会收到本公司事件，超管在公司视图必须传 tenantId。旧设备事件专用 WebSocket 已退役，不要作为新入口使用。</p>
       <pre>{
-  "company_admin_url": "ws://localhost:8880/ws/devices/events/?token=***masked***",
-  "super_admin_scoped_url": "ws://localhost:8880/ws/devices/events/?token=***masked***&tenantId=2",
+  "url": "ws://localhost:8880/ws/realtime/",
+  "company_admin_command": {
+    "type": "devices.events.subscribe",
+    "id": "devices-subscribe-1",
+    "payload": {
+      "token": "***masked***"
+    }
+  },
+  "super_admin_scoped_command": {
+    "type": "devices.events.subscribe",
+    "id": "devices-subscribe-tenant-2",
+    "payload": {
+      "token": "***masked***",
+      "tenantId": 2
+    }
+  },
   "events": [
     "device.status：设备运行时 WebSocket 上线 / 离线",
     "device.authorization：超管绑定、再次授权、撤销授权"

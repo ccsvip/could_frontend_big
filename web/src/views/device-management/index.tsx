@@ -34,7 +34,13 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { API_BASE_URL } from '../../api/client';
+import {
+  buildDeviceEventsUnsubscribeCommand,
+  buildRealtimeWebSocketUrl,
+  createRealtimeCommandId,
+  encodeRealtimeCommand,
+  parseRealtimeMessage,
+} from '../../api/realtime';
 import {
   createDeviceApplication,
   createDeviceGroup,
@@ -90,22 +96,11 @@ const authorizationMap: Record<DeviceAuthorizationType, { color: string; text: s
 const toSelectOptions = <T extends { id: number; name: string }>(items: T[]) =>
   items.map((item) => ({ label: item.name, value: item.id }));
 
+const isDeviceRealtimePayload = (payload: unknown): payload is { type: string } =>
+  !!payload && typeof payload === 'object' && typeof (payload as { type?: unknown }).type === 'string';
+
 const emptyGroupOption = [{ label: '未分组', value: null as number | null }];
 const emptyApplicationOption = [{ label: '待绑定应用', value: null as number | null }];
-
-const buildDeviceEventsWebSocketUrl = (token: string, tenantId: number | null) => {
-  const baseUrl = API_BASE_URL.startsWith('http')
-    ? new URL(API_BASE_URL)
-    : new URL(API_BASE_URL, window.location.origin);
-  baseUrl.protocol = baseUrl.protocol === 'https:' ? 'wss:' : 'ws:';
-  baseUrl.pathname = '/ws/devices/events/';
-  baseUrl.search = '';
-  baseUrl.searchParams.set('token', token);
-  if (tenantId != null) {
-    baseUrl.searchParams.set('tenantId', String(tenantId));
-  }
-  return baseUrl.toString();
-};
 
 export const DeviceManagementPage = () => {
   const [devices, setDevices] = useState<DeviceRecord[]>([]);
@@ -235,6 +230,7 @@ export const DeviceManagementPage = () => {
     let closed = false;
     let socket: WebSocket | null = null;
     let reconnectTimer: number | null = null;
+    let subscriptionId: string | null = null;
 
     const scheduleReload = () => {
       if (realtimeRefreshTimerRef.current != null) {
@@ -247,18 +243,42 @@ export const DeviceManagementPage = () => {
     };
 
     const connect = () => {
-      socket = new WebSocket(buildDeviceEventsWebSocketUrl(token, realtimeTenantId));
+      const nextSubscriptionId = createRealtimeCommandId('devices-sub');
+      subscriptionId = nextSubscriptionId;
+      socket = new WebSocket(buildRealtimeWebSocketUrl());
       socket.onopen = () => {
-        setRealtimeConnected(true);
+        socket?.send(
+          encodeRealtimeCommand({
+            type: 'devices.events.subscribe',
+            id: nextSubscriptionId,
+            payload: {
+              token,
+              ...(realtimeTenantId != null ? { tenantId: realtimeTenantId } : {}),
+            },
+          }),
+        );
       };
       socket.onmessage = (event) => {
-        try {
-          const payload = JSON.parse(event.data) as { type?: string };
-          if (payload.type?.startsWith('device.')) {
+        const messageEnvelope = parseRealtimeMessage(event.data);
+        if (!messageEnvelope?.type) {
+          return;
+        }
+        if (messageEnvelope.type === 'devices.events.subscribed' && messageEnvelope.id === subscriptionId) {
+          setRealtimeConnected(true);
+          return;
+        }
+        if (messageEnvelope.type === 'devices.event') {
+          if (
+            isDeviceRealtimePayload(messageEnvelope.payload) &&
+            messageEnvelope.payload.type.startsWith('device.')
+          ) {
             scheduleReload();
           }
-        } catch {
-          // Ignore malformed realtime payloads; the next valid event will refresh the table.
+          return;
+        }
+        if (messageEnvelope.type === 'error' && messageEnvelope.id === subscriptionId) {
+          setRealtimeConnected(false);
+          socket?.close();
         }
       };
       socket.onclose = () => {
@@ -273,6 +293,7 @@ export const DeviceManagementPage = () => {
       };
     };
 
+    setRealtimeConnected(false);
     connect();
 
     return () => {
@@ -284,6 +305,9 @@ export const DeviceManagementPage = () => {
       if (realtimeRefreshTimerRef.current != null) {
         window.clearTimeout(realtimeRefreshTimerRef.current);
         realtimeRefreshTimerRef.current = null;
+      }
+      if (socket?.readyState === WebSocket.OPEN && subscriptionId) {
+        socket.send(encodeRealtimeCommand(buildDeviceEventsUnsubscribeCommand(createRealtimeCommandId('devices-unsub'))));
       }
       socket?.close();
     };
