@@ -1,18 +1,13 @@
 import {
   CheckCircleOutlined,
-  CheckOutlined,
-  CloseOutlined,
   FileSearchOutlined,
   LinkOutlined,
 } from '@ant-design/icons';
 import {
-  Button,
   Form,
-  Input,
   Modal,
   Space,
   Tabs,
-  Typography,
   message,
 } from 'antd';
 import dayjs from 'dayjs';
@@ -36,6 +31,7 @@ import {
 import { fetchTenants, type TenantRecord } from '../../api/modules/tenants';
 import { fetchAgentApplications, type AgentApplicationRecord } from '../../api/modules/applications';
 import { AuthorizationTableCard } from './components/AuthorizationTableCard';
+import { EditableDeviceNameCell } from './components/EditableDeviceNameCell';
 import { DeviceAuthorizationModal } from './components/DeviceAuthorizationModal';
 import { DeviceAuthorizationToolbar } from './components/DeviceAuthorizationToolbar';
 import { useDeviceAuthorizationColumns } from './columns';
@@ -314,34 +310,19 @@ export const DeviceAuthorizationCenterPage = () => {
     }
   };
 
-  const renderEditableDeviceName = (record: DeviceAuthorizationRequestRecord) => {
-    if (editingDeviceCode !== record.deviceCode) {
-      return (
-        <Typography.Text className="cursor-text" onDoubleClick={() => openNameEdit(record)}>
-          {record.name || '-'}
-        </Typography.Text>
-      );
-    }
-    return (
-      <Space.Compact className="w-full">
-        <Input
-          autoFocus
-          size="small"
-          value={editingDeviceName}
-          onChange={(event) => setEditingDeviceName(event.target.value)}
-          onPressEnter={() => void handleNameSave(record)}
-        />
-        <Button
-          size="small"
-          type="primary"
-          icon={<CheckOutlined />}
-          loading={nameSaving}
-          onClick={() => void handleNameSave(record)}
-        />
-        <Button size="small" icon={<CloseOutlined />} disabled={nameSaving} onClick={cancelNameEdit} />
-      </Space.Compact>
-    );
-  };
+  const renderEditableDeviceName = (record: DeviceAuthorizationRequestRecord) => (
+    <EditableDeviceNameCell
+      record={record}
+      editingDeviceCode={editingDeviceCode}
+      editingDeviceName={editingDeviceName}
+      saving={nameSaving}
+      onOpenEdit={openNameEdit}
+      onNameChange={setEditingDeviceName}
+      onSave={(target) => void handleNameSave(target)}
+      onCancel={cancelNameEdit}
+    />
+  );
+
 
   const { requestColumns, authorizationColumns, logColumns } = useDeviceAuthorizationColumns({
     renderEditableDeviceName,
