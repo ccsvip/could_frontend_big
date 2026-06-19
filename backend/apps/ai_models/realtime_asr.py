@@ -7,7 +7,7 @@ import websockets
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.accounts.services.permissions import get_active_permission_codes_for_user
-from apps.devices.models import Device
+from apps.devices.services.runtime import get_runtime_device_or_none
 from apps.tenants.models import Tenant
 from apps.tenants.services import get_user_tenant
 
@@ -61,20 +61,8 @@ def resolve_asr_device_connection(device_code: str) -> dict[str, Any] | None:
     if not device_code:
         return None
 
-    devices = list(
-        Device.objects.select_related('tenant', 'application', 'agent_application')
-        .filter(code=device_code)
-        .order_by('id')[:2]
-    )
-    if len(devices) != 1:
-        return None
-
-    device = devices[0]
-    if device.tenant_id is None:
-        return None
-    if device.tenant is not None and not device.tenant.is_active:
-        return None
-    if not device.is_enabled or device.is_expired:
+    device = get_runtime_device_or_none(device_code, require_tenant=True)
+    if device is None:
         return None
 
     return {

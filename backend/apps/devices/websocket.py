@@ -3,16 +3,12 @@ from __future__ import annotations
 from django.utils import timezone
 
 from .models import Device, DeviceAuthLog
+from .services.runtime import get_runtime_device_or_none
 
 
 def mark_device_online_for_websocket(device_code: str) -> Device | None:
-    device = (
-        Device.objects.select_related('tenant', 'application', 'agent_application')
-        .filter(code=device_code)
-        .order_by('id')
-        .first()
-    )
-    if device is None or not device.is_enabled or device.is_expired:
+    device = get_runtime_device_or_none(device_code, require_tenant=False)
+    if device is None:
         return None
     now = timezone.now()
     device.status = Device.STATUS_ONLINE

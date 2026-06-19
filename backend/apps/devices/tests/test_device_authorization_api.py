@@ -16,6 +16,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.models import AgentApplication, LLMModel, LLMProvider, TenantLLMModelGrant, TenantLLMSettings, TTSProvider, TTSVoice
 from apps.devices.models import Device, DeviceApplication, DeviceAuthorizationCode, DeviceGroup
+from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device
 from apps.resources.models import ScrollingText, ScrollingTextItem
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
@@ -68,6 +69,42 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         }
         defaults.update(overrides)
         return DeviceAuthorizationCode.objects.create(**defaults)
+
+    def test_runtime_device_lookup_reports_duplicate_device_code(self):
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Runtime Android A',
+            code='ANDROID-DUPLICATE-001',
+        )
+        other_tenant = Tenant.objects.create(name='Other Company', code='other-company')
+        Device.objects.create(
+            tenant=other_tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Runtime Android B',
+            code='ANDROID-DUPLICATE-001',
+        )
+
+        with self.assertRaises(RuntimeDeviceError) as context:
+            get_runtime_device('ANDROID-DUPLICATE-001')
+
+        self.assertEqual(context.exception.status_code, status.HTTP_409_CONFLICT)
+        self.assertEqual(context.exception.message, '设备码存在重复绑定，请联系后台处理')
+
+    def test_runtime_device_lookup_rejects_unbound_company(self):
+        Device.objects.create(
+            name='Pending Android',
+            code='ANDROID-PENDING-001',
+            is_enabled=True,
+        )
+
+        with self.assertRaises(RuntimeDeviceError) as context:
+            get_runtime_device('ANDROID-PENDING-001', require_tenant=True)
+
+        self.assertEqual(context.exception.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(context.exception.message, '设备未绑定公司')
 
     def test_device_status_choices_match_android_runtime_states(self):
         self.assertEqual(

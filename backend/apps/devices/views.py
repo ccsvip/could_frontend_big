@@ -25,6 +25,7 @@ from apps.tenants.services import get_request_tenant
 
 from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceGroup
 from .realtime import publish_device_event_sync
+from .services.runtime import RuntimeDeviceError, get_runtime_device
 from .serializers import (
     DeviceApplicationSerializer,
     DeviceActivationLogSerializer,
@@ -471,26 +472,10 @@ class DeviceRuntimeView(APIView):
         ).strip()
 
     def validate_device(self, request):
-        device_code = self.get_device_code(request)
-        if not device_code:
-            return None, Response({'message': '设备码不能为空'}, status=status.HTTP_400_BAD_REQUEST)
-        devices = list(
-            Device.objects.select_related('tenant', 'application', 'agent_application')
-            .filter(code=device_code)
-            .order_by('id')[:2]
-        )
-        if not devices:
-            return None, Response({'message': '设备未登记'}, status=status.HTTP_404_NOT_FOUND)
-        if len(devices) > 1:
-            return None, Response({'message': '设备码存在重复绑定，请联系后台处理'}, status=status.HTTP_409_CONFLICT)
-        device = devices[0]
-        if device.tenant is not None and not device.tenant.is_active:
-            return None, Response({'message': '公司已停用'}, status=status.HTTP_403_FORBIDDEN)
-        if not device.is_enabled:
-            return None, Response({'message': '设备已停用'}, status=status.HTTP_403_FORBIDDEN)
-        if device.is_expired:
-            return None, Response({'message': '设备授权已过期'}, status=status.HTTP_403_FORBIDDEN)
-        return device, None
+        try:
+            return get_runtime_device(self.get_device_code(request)), None
+        except RuntimeDeviceError as exc:
+            return None, Response({'message': exc.message}, status=exc.status_code)
 
 
 class DeviceRuntimeConfigView(DeviceRuntimeView):
