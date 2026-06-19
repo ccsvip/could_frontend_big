@@ -7,12 +7,10 @@ import {
 } from '@ant-design/icons';
 import {
   Button,
-  Card,
   Form,
   Input,
   Modal,
   Space,
-  Table,
   Tabs,
   Tag,
   Typography,
@@ -39,9 +37,10 @@ import {
 } from '../../api/modules/devices';
 import { fetchTenants, type TenantRecord } from '../../api/modules/tenants';
 import { fetchAgentApplications, type AgentApplicationRecord } from '../../api/modules/applications';
+import { AuthorizationTableCard } from './components/AuthorizationTableCard';
 import { DeviceAuthorizationModal } from './components/DeviceAuthorizationModal';
 import { DeviceAuthorizationToolbar } from './components/DeviceAuthorizationToolbar';
-import { PAGE_SIZE, bindingStatusMap, logActionMap, runtimeStatusMap } from './constants';
+import { bindingStatusMap, logActionMap, runtimeStatusMap } from './constants';
 import type { BindForm, BindMode } from './types';
 import { buildBindPayload, getInfoText } from './utils';
 
@@ -571,23 +570,17 @@ export const DeviceAuthorizationCenterPage = () => {
               </Space>
             ),
             children: (
-              <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
-                <Table
-                  columns={requestColumns}
-                  dataSource={requests}
-                  rowKey="deviceCode"
-                  loading={requestLoading}
-                  scroll={{ x: 1480 }}
-                  pagination={{
-                    current: requestPage,
-                    pageSize: PAGE_SIZE,
-                    total: requestTotal,
-                    showSizeChanger: false,
-                    onChange: (nextPage) => setRequestPage(nextPage),
-                  }}
-                  locale={{ emptyText: '暂无设备请求' }}
-                />
-              </Card>
+              <AuthorizationTableCard
+                columns={requestColumns}
+                dataSource={requests}
+                rowKey="deviceCode"
+                loading={requestLoading}
+                scrollX={1480}
+                currentPage={requestPage}
+                total={requestTotal}
+                emptyText="暂无设备请求"
+                onPageChange={setRequestPage}
+              />
             ),
           },
           {
@@ -599,23 +592,17 @@ export const DeviceAuthorizationCenterPage = () => {
               </Space>
             ),
             children: (
-              <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
-                <Table
-                  columns={authorizationColumns}
-                  dataSource={authorizations}
-                  rowKey="deviceCode"
-                  loading={authorizationLoading}
-                  scroll={{ x: 1380 }}
-                  pagination={{
-                    current: authorizationPage,
-                    pageSize: PAGE_SIZE,
-                    total: authorizationTotal,
-                    showSizeChanger: false,
-                    onChange: (nextPage) => setAuthorizationPage(nextPage),
-                  }}
-                  locale={{ emptyText: '暂无授权设备' }}
-                />
-              </Card>
+              <AuthorizationTableCard
+                columns={authorizationColumns}
+                dataSource={authorizations}
+                rowKey="deviceCode"
+                loading={authorizationLoading}
+                scrollX={1380}
+                currentPage={authorizationPage}
+                total={authorizationTotal}
+                emptyText="暂无授权设备"
+                onPageChange={setAuthorizationPage}
+              />
             ),
           },
           {
@@ -627,23 +614,17 @@ export const DeviceAuthorizationCenterPage = () => {
               </Space>
             ),
             children: (
-              <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
-                <Table
-                  columns={logColumns}
-                  dataSource={logs}
-                  rowKey="id"
-                  loading={logLoading}
-                  scroll={{ x: 1390 }}
-                  pagination={{
-                    current: logPage,
-                    pageSize: PAGE_SIZE,
-                    total: logTotal,
-                    showSizeChanger: false,
-                    onChange: (nextPage) => setLogPage(nextPage),
-                  }}
-                  locale={{ emptyText: '暂无授权日志' }}
-                />
-              </Card>
+              <AuthorizationTableCard
+                columns={logColumns}
+                dataSource={logs}
+                rowKey="id"
+                loading={logLoading}
+                scrollX={1390}
+                currentPage={logPage}
+                total={logTotal}
+                emptyText="暂无授权日志"
+                onPageChange={setLogPage}
+              />
             ),
           },
         ]}
