@@ -39,6 +39,7 @@ def record_device_authorization_action(
     return DeviceAuthLog.objects.create(
         tenant=device.tenant,
         application=device.application,
+        agent_application=device.agent_application,
         device=device,
         code=device.code,
         action=action,

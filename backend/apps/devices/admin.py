@@ -48,7 +48,7 @@ class DeviceAdmin(admin.ModelAdmin):
 
 @admin.register(DeviceAuthLog)
 class DeviceAuthLogAdmin(admin.ModelAdmin):
-    list_display = ('created_at', 'action', 'code', 'result', 'message', 'tenant', 'application', 'device')
-    list_filter = ('action', 'result', 'tenant', 'application', 'created_at')
+    list_display = ('created_at', 'action', 'code', 'result', 'message', 'tenant', 'application', 'agent_application', 'device')
+    list_filter = ('action', 'result', 'tenant', 'application', 'agent_application', 'created_at')
     search_fields = ('code', 'message', 'device__name', 'device__code')
     readonly_fields = ('created_at',)

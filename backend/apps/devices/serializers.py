@@ -338,12 +338,23 @@ class DeviceActivationLogSerializer(serializers.ModelSerializer):
     tenantName = serializers.CharField(source='tenant.name', read_only=True, default='')
     applicationId = serializers.IntegerField(source='application_id', read_only=True)
     applicationName = serializers.CharField(source='application.name', read_only=True, default='')
-    agentApplicationId = serializers.IntegerField(source='device.agent_application_id', read_only=True, allow_null=True)
-    agentApplicationName = serializers.CharField(source='device.agent_application.name', read_only=True, default='')
+    agentApplicationId = serializers.SerializerMethodField()
+    agentApplicationName = serializers.SerializerMethodField()
     deviceName = serializers.CharField(source='device.name', read_only=True, default='')
     ipAddress = serializers.IPAddressField(source='ip_address', read_only=True, allow_null=True)
     deviceInfo = serializers.JSONField(source='device_info', read_only=True)
     createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+
+    def get_agentApplicationId(self, obj: DeviceAuthLog):
+        if obj.agent_application_id is not None:
+            return obj.agent_application_id
+        return getattr(obj.device, 'agent_application_id', None)
+
+    def get_agentApplicationName(self, obj: DeviceAuthLog):
+        if obj.agent_application_id is not None:
+            return obj.agent_application.name if obj.agent_application else ''
+        agent_application = getattr(obj.device, 'agent_application', None)
+        return agent_application.name if agent_application else ''
 
     class Meta:
         model = DeviceAuthLog

@@ -254,6 +254,14 @@ class DeviceAuthLog(models.Model):
 
     tenant = models.ForeignKey('tenants.Tenant', on_delete=models.CASCADE, related_name='+', null=True, blank=True)
     application = models.ForeignKey(DeviceApplication, on_delete=models.SET_NULL, related_name='+', null=True, blank=True)
+    agent_application = models.ForeignKey(
+        'ai_models.AgentApplication',
+        on_delete=models.SET_NULL,
+        related_name='+',
+        null=True,
+        blank=True,
+        verbose_name='绑定智能体快照',
+    )
     device = models.ForeignKey(Device, on_delete=models.SET_NULL, related_name='auth_logs', null=True, blank=True)
     auth_code = models.ForeignKey(DeviceAuthorizationCode, on_delete=models.SET_NULL, related_name='auth_logs', null=True, blank=True)
     code = models.CharField('设备码', max_length=128, blank=True, default='')

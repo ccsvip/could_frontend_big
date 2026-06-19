@@ -56,7 +56,7 @@ def device_authorization_requests_queryset(params: Mapping | None = None) -> Que
 
 
 def device_authorization_logs_queryset(params: Mapping | None = None) -> QuerySet[DeviceAuthLog]:
-    queryset = DeviceAuthLog.objects.select_related('tenant', 'application', 'device__agent_application').filter(
+    queryset = DeviceAuthLog.objects.select_related('tenant', 'application', 'agent_application', 'device__agent_application').filter(
         action__in=AUTHORIZATION_LOG_ACTIONS,
     ).order_by('-created_at', '-id')
     tenant_id = _param(params, 'tenantId')

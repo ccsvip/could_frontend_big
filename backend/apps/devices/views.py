@@ -376,6 +376,7 @@ class DeviceActivationView(APIView):
         DeviceAuthLog.objects.create(
             tenant=getattr(device, 'tenant', None),
             application=getattr(device, 'application', None),
+            agent_application=getattr(device, 'agent_application', None),
             device=device,
             code=device_code,
             action=DeviceAuthLog.ACTION_ACTIVATE,
@@ -420,6 +421,7 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
         DeviceAuthLog.objects.create(
             tenant=device.tenant,
             application=application,
+            agent_application=agent_application,
             device=device,
             code=device.code,
             action=DeviceAuthLog.ACTION_CONFIG,
@@ -553,6 +555,7 @@ class DeviceRuntimeHeartbeatView(DeviceRuntimeView):
         DeviceAuthLog.objects.create(
             tenant=device.tenant,
             application=device.application,
+            agent_application=device.agent_application,
             device=device,
             code=device.code,
             action=DeviceAuthLog.ACTION_HEARTBEAT,

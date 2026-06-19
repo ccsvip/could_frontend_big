@@ -17,6 +17,7 @@ def mark_device_online_for_websocket(device_code: str) -> Device | None:
     DeviceAuthLog.objects.create(
         tenant=device.tenant,
         application=device.application,
+        agent_application=device.agent_application,
         device=device,
         code=device.code,
         action=DeviceAuthLog.ACTION_HEARTBEAT,

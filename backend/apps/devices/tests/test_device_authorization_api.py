@@ -19,6 +19,7 @@ from apps.devices.models import Device, DeviceApplication, DeviceAuthLog, Device
 from apps.devices.services.authorization import record_device_authorization_action
 from apps.devices.services.queries import device_authorization_requests_queryset
 from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device
+from apps.devices.serializers import DeviceActivationLogSerializer
 from apps.resources.models import ScrollingText, ScrollingTextItem
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
@@ -130,6 +131,33 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(log.device_info['agentApplicationId'], self.agent_application.id)
         self.assertEqual(log.device_info['authorizationType'], Device.AUTHORIZATION_TRIAL)
         self.assertTrue(log.device_info['isEnabled'])
+
+    def test_authorization_log_serializer_uses_agent_application_snapshot(self):
+        original_agent = self.agent_application
+        next_agent = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Updated Agent',
+            system_prompt='你是更新后的数字人。',
+        )
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=original_agent,
+            name='Snapshot Android',
+            code='ANDROID-AUTH-SNAPSHOT-001',
+        )
+        log = record_device_authorization_action(
+            device,
+            DeviceAuthLog.ACTION_AUTHORIZE,
+            '设备已再次授权',
+        )
+        device.agent_application = next_agent
+        device.save(update_fields=['agent_application', 'updated_at'])
+
+        data = DeviceActivationLogSerializer(log).data
+
+        self.assertEqual(data['agentApplicationId'], original_agent.id)
+        self.assertEqual(data['agentApplicationName'], original_agent.name)
 
     def test_runtime_device_lookup_reports_duplicate_device_code(self):
         Device.objects.create(
