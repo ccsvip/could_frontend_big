@@ -4,8 +4,6 @@ import {
   CloseOutlined,
   FileSearchOutlined,
   LinkOutlined,
-  ReloadOutlined,
-  SearchOutlined,
 } from '@ant-design/icons';
 import {
   Button,
@@ -24,7 +22,7 @@ import {
   message,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import dayjs, { type Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   bindDeviceAuthorizationRequest,
@@ -40,60 +38,14 @@ import {
   type DeviceActivationLogRecord,
   type DeviceApplicationRecord,
   type DeviceAuthorizationRequestRecord,
-  type DeviceAuthorizationType,
   type DeviceGroupRecord,
 } from '../../api/modules/devices';
 import { fetchTenants, type TenantRecord } from '../../api/modules/tenants';
 import { fetchAgentApplications, type AgentApplicationRecord } from '../../api/modules/applications';
-
-const PAGE_SIZE = 10;
-
-type BindForm = {
-  tenantId: number;
-  applicationId?: number | null;
-  agentApplicationId?: number | null;
-  groupId?: number | null;
-  authorizationType: DeviceAuthorizationType;
-  expiresAt?: Dayjs | null;
-  isEnabled: boolean;
-};
-
-type BindMode = 'bind' | 'authorize';
-
-const buildBindPayload = (values: BindForm) => ({
-  tenantId: values.tenantId,
-  applicationId: values.applicationId ?? null,
-  agentApplicationId: values.agentApplicationId ?? null,
-  groupId: values.groupId ?? null,
-  authorizationType: values.authorizationType,
-  expiresAt: values.authorizationType === 'trial' ? values.expiresAt?.toISOString() : null,
-  isEnabled: values.isEnabled,
-});
-
-const getInfoText = (info: Record<string, unknown>, key: string) => {
-  const value = info[key];
-  return typeof value === 'string' || typeof value === 'number' ? String(value) : '';
-};
-
-const bindingStatusMap: Record<DeviceAuthorizationRequestRecord['bindingStatus'], { color: string; text: string }> = {
-  pending: { color: 'warning', text: '待绑定公司' },
-  bound: { color: 'success', text: '已绑定公司' },
-  ignored: { color: 'default', text: '已忽略' },
-};
-
-const runtimeStatusMap: Record<DeviceAuthorizationRequestRecord['runtimeStatus'], { color: string; text: string }> = {
-  waiting_application: { color: 'default', text: '待绑定智能体' },
-  waiting_agent: { color: 'default', text: '待绑定智能体' },
-  ready: { color: 'processing', text: '可拉取配置' },
-};
-
-const logActionMap: Record<DeviceActivationLogRecord['action'], { color: string; text: string }> = {
-  activate: { color: 'processing', text: '请求授权' },
-  bind: { color: 'success', text: '绑定' },
-  ignore: { color: 'default', text: '忽略' },
-  authorize: { color: 'geekblue', text: '再次授权' },
-  revoke: { color: 'error', text: '撤销授权' },
-};
+import { DeviceAuthorizationToolbar } from './components/DeviceAuthorizationToolbar';
+import { PAGE_SIZE, bindingStatusMap, logActionMap, runtimeStatusMap } from './constants';
+import type { BindForm, BindMode } from './types';
+import { buildBindPayload, getInfoText } from './utils';
 
 export const DeviceAuthorizationCenterPage = () => {
   const [requests, setRequests] = useState<DeviceAuthorizationRequestRecord[]>([]);
@@ -591,59 +543,24 @@ export const DeviceAuthorizationCenterPage = () => {
 
   return (
     <Space direction="vertical" size={16} className="w-full">
-      <div className="page-hero">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="min-w-0">
-            <div className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-700">
-              <span className="inline-block h-1 w-1 rounded-full bg-teal-600" />
-              Device Authorization
-            </div>
-            <Typography.Title level={4} className="!mb-1 !font-semibold !text-slate-900">
-              设备授权中心
-            </Typography.Title>
-            <Typography.Text className="!text-[13px] !text-slate-500">
-              处理安卓上报的设备请求，将设备归属到公司，并追踪授权请求日志。
-            </Typography.Text>
-          </div>
-          <div className="grid gap-2 md:grid-cols-[180px_180px_minmax(200px,1fr)_auto]">
-            <Select
-              value={bindingStatus}
-              onChange={(value) => {
-                setBindingStatus(value);
-                setRequestPage(1);
-              }}
-              options={[
-                { label: '待绑定', value: 'pending' },
-                { label: '已绑定', value: 'bound' },
-                { label: '已忽略', value: 'ignored' },
-                { label: '全部请求', value: 'all' },
-              ]}
-            />
-            <Select
-              allowClear
-              placeholder="按公司筛选"
-              value={tenantFilter}
-              onChange={(value) => {
-                setTenantFilter(value);
-                setRequestPage(1);
-                setAuthorizationPage(1);
-                setLogPage(1);
-              }}
-              options={tenantOptions}
-            />
-            <Input
-              value={keyword}
-              prefix={<SearchOutlined />}
-              placeholder="搜索设备码或设备名称"
-              onChange={(event) => setKeyword(event.target.value)}
-              onPressEnter={handleSearch}
-            />
-            <Button icon={<ReloadOutlined />} onClick={handleSearch}>
-              刷新
-            </Button>
-          </div>
-        </div>
-      </div>
+      <DeviceAuthorizationToolbar
+        bindingStatus={bindingStatus}
+        tenantFilter={tenantFilter}
+        keyword={keyword}
+        tenants={tenants}
+        onBindingStatusChange={(value) => {
+          setBindingStatus(value);
+          setRequestPage(1);
+        }}
+        onTenantFilterChange={(value) => {
+          setTenantFilter(value);
+          setRequestPage(1);
+          setAuthorizationPage(1);
+          setLogPage(1);
+        }}
+        onKeywordChange={setKeyword}
+        onSearch={handleSearch}
+      />
 
       <Tabs
         items={[
