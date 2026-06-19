@@ -58,6 +58,18 @@ type BindForm = {
   isEnabled: boolean;
 };
 
+type BindMode = 'bind' | 'authorize';
+
+const buildBindPayload = (values: BindForm) => ({
+  tenantId: values.tenantId,
+  applicationId: values.applicationId ?? null,
+  agentApplicationId: values.agentApplicationId ?? null,
+  groupId: values.groupId ?? null,
+  authorizationType: values.authorizationType,
+  expiresAt: values.authorizationType === 'trial' ? values.expiresAt?.toISOString() : null,
+  isEnabled: values.isEnabled,
+});
+
 const getInfoText = (info: Record<string, unknown>, key: string) => {
   const value = info[key];
   return typeof value === 'string' || typeof value === 'number' ? String(value) : '';
@@ -104,7 +116,7 @@ export const DeviceAuthorizationCenterPage = () => {
   const [keyword, setKeyword] = useState('');
   const [tenantFilter, setTenantFilter] = useState<number | undefined>(undefined);
   const [bindingRequest, setBindingRequest] = useState<DeviceAuthorizationRequestRecord | null>(null);
-  const [bindMode, setBindMode] = useState<'bind' | 'authorize'>('bind');
+  const [bindMode, setBindMode] = useState<BindMode>('bind');
   const [bindSaving, setBindSaving] = useState(false);
   const [editingDeviceCode, setEditingDeviceCode] = useState<string | null>(null);
   const [editingDeviceName, setEditingDeviceName] = useState('');
@@ -261,47 +273,14 @@ export const DeviceAuthorizationCenterPage = () => {
     void loadTenantOwnedOptions(tenantId);
   };
 
-  const handleBindSave = async () => {
+  const saveAuthorizationChange = async (mode: BindMode) => {
     if (!bindingRequest) return;
     const values = await bindForm.validateFields();
     setBindSaving(true);
     try {
-      await bindDeviceAuthorizationRequest(bindingRequest.deviceCode, {
-        tenantId: values.tenantId,
-        applicationId: values.applicationId ?? null,
-        agentApplicationId: values.agentApplicationId ?? null,
-        groupId: values.groupId ?? null,
-        authorizationType: values.authorizationType,
-        expiresAt: values.authorizationType === 'trial' ? values.expiresAt?.toISOString() : null,
-        isEnabled: values.isEnabled,
-      });
-      message.success('设备已绑定到公司');
-      setBindingRequest(null);
-      void loadRequests(requestPage);
-      void loadAuthorizations(authorizationPage);
-      void loadLogs(logPage);
-    } catch {
-      // Global interceptor displays request errors.
-    } finally {
-      setBindSaving(false);
-    }
-  };
-
-  const handleAuthorizeSave = async () => {
-    if (!bindingRequest) return;
-    const values = await bindForm.validateFields();
-    setBindSaving(true);
-    try {
-      await authorizeDevice(bindingRequest.deviceCode, {
-        tenantId: values.tenantId,
-        applicationId: values.applicationId ?? null,
-        agentApplicationId: values.agentApplicationId ?? null,
-        groupId: values.groupId ?? null,
-        authorizationType: values.authorizationType,
-        expiresAt: values.authorizationType === 'trial' ? values.expiresAt?.toISOString() : null,
-        isEnabled: values.isEnabled,
-      });
-      message.success('设备已再次授权');
+      const saveRequest = mode === 'bind' ? bindDeviceAuthorizationRequest : authorizeDevice;
+      await saveRequest(bindingRequest.deviceCode, buildBindPayload(values));
+      message.success(mode === 'bind' ? '设备已绑定到公司' : '设备已再次授权');
       setBindingRequest(null);
       void loadRequests(requestPage);
       void loadAuthorizations(authorizationPage);
@@ -314,7 +293,7 @@ export const DeviceAuthorizationCenterPage = () => {
   };
 
   const handleModalSave = () => {
-    void (bindMode === 'bind' ? handleBindSave() : handleAuthorizeSave());
+    void saveAuthorizationChange(bindMode);
   };
 
   const handleIgnore = (record: DeviceAuthorizationRequestRecord) => {
