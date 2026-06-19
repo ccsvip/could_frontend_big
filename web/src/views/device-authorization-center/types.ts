@@ -12,3 +12,8 @@ export type BindForm = {
 };
 
 export type BindMode = 'bind' | 'authorize';
+
+export type SelectOption<T extends string | number | null = number> = {
+  label: string;
+  value: T;
+};

@@ -8,13 +8,10 @@ import {
 import {
   Button,
   Card,
-  DatePicker,
   Form,
   Input,
   Modal,
-  Select,
   Space,
-  Switch,
   Table,
   Tabs,
   Tag,
@@ -42,6 +39,7 @@ import {
 } from '../../api/modules/devices';
 import { fetchTenants, type TenantRecord } from '../../api/modules/tenants';
 import { fetchAgentApplications, type AgentApplicationRecord } from '../../api/modules/applications';
+import { DeviceAuthorizationModal } from './components/DeviceAuthorizationModal';
 import { DeviceAuthorizationToolbar } from './components/DeviceAuthorizationToolbar';
 import { PAGE_SIZE, bindingStatusMap, logActionMap, runtimeStatusMap } from './constants';
 import type { BindForm, BindMode } from './types';
@@ -651,63 +649,19 @@ export const DeviceAuthorizationCenterPage = () => {
         ]}
       />
 
-      <Modal
-        title={
-          bindingRequest
-            ? `${bindMode === 'bind' ? '绑定设备' : '再次授权'} ${bindingRequest.deviceCode}`
-            : bindMode === 'bind'
-              ? '绑定设备'
-              : '再次授权'
-        }
-        open={Boolean(bindingRequest)}
+      <DeviceAuthorizationModal
+        request={bindingRequest}
+        mode={bindMode}
+        form={bindForm}
+        tenantOptions={tenantOptions}
+        applicationOptions={applicationOptions}
+        agentApplicationOptions={agentApplicationOptions}
+        groupOptions={groupOptions}
+        saving={bindSaving}
         onCancel={() => setBindingRequest(null)}
-        onOk={handleModalSave}
-        okText={bindMode === 'bind' ? '保存绑定' : '保存授权'}
-        cancelText="取消"
-        confirmLoading={bindSaving}
-        destroyOnHidden
-      >
-        <Form<BindForm> form={bindForm} layout="vertical">
-          <Form.Item label="所属公司" name="tenantId" rules={[{ required: true, message: '请选择公司' }]}>
-            <Select options={tenantOptions} onChange={handleTenantChange} />
-          </Form.Item>
-          <Form.Item label="绑定智能体" name="agentApplicationId" rules={[{ required: true, message: '请选择智能体' }]}>
-            <Select options={agentApplicationOptions} optionFilterProp="label" showSearch />
-          </Form.Item>
-          <Form.Item label="资源应用" name="applicationId">
-            <Select options={applicationOptions} optionFilterProp="label" showSearch />
-          </Form.Item>
-          <Form.Item label="设备分组" name="groupId">
-            <Select options={groupOptions} optionFilterProp="label" showSearch />
-          </Form.Item>
-          <Form.Item label="授权类型" name="authorizationType" rules={[{ required: true, message: '请选择授权类型' }]}>
-            <Select
-              options={[
-                { label: '永久', value: 'permanent' },
-                { label: '试用', value: 'trial' },
-              ]}
-            />
-          </Form.Item>
-          <Form.Item dependencies={['authorizationType']} noStyle>
-            {({ getFieldValue }) =>
-              getFieldValue('authorizationType') === 'trial' ? (
-                <Form.Item label="到期时间" name="expiresAt" rules={[{ required: true, message: '请选择到期时间' }]}>
-                  <DatePicker
-                    className="w-full"
-                    format="YYYY-MM-DD HH:mm:ss"
-                    placeholder="请选择到期时间"
-                    showNow={false}
-                    showTime={{ defaultValue: dayjs('23:59:59', 'HH:mm:ss') }}
-                  />
-                </Form.Item>
-              ) : null
-            }
-          </Form.Item>
-          <Form.Item label="启用设备" name="isEnabled" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-        </Form>
-      </Modal>
+        onSave={handleModalSave}
+        onTenantChange={handleTenantChange}
+      />
     </Space>
   );
 };
