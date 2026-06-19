@@ -24,7 +24,14 @@ from apps.tenants.mixins import TenantScopedQuerysetMixin
 from apps.tenants.services import get_request_tenant
 
 from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceGroup
-from .realtime import publish_device_event_sync
+from .services.authorization import (
+    bind_device_authorization,
+    ignore_device_authorization_request,
+    publish_device_authorization_event,
+    record_device_authorization_action,
+    rename_authorization_device,
+    revoke_device_authorization,
+)
 from .services.runtime import RuntimeDeviceError, get_runtime_device
 from .serializers import (
     DeviceApplicationSerializer,
@@ -273,7 +280,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
         device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'agent_application', 'group'), code=code)
         serializer = DeviceBindSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        device = serializer.save(device=device)
+        device = bind_device_authorization(device, serializer)
         self._log_platform_action(device, DeviceAuthLog.ACTION_BIND, '设备已绑定到公司', request)
         self._publish_authorization_event(device, DeviceAuthLog.ACTION_BIND)
         return Response(DeviceAuthorizationRequestSerializer(device, context={'request': request}).data)
@@ -281,8 +288,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
     @action(detail=True, methods=['post'], url_path='ignore')
     def ignore(self, request, code=None):
         device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'agent_application', 'group'), code=code)
-        device.authorization_ignored_at = timezone.now()
-        device.save(update_fields=['authorization_ignored_at', 'updated_at'])
+        device = ignore_device_authorization_request(device)
         self._log_platform_action(device, DeviceAuthLog.ACTION_IGNORE, '设备授权请求已忽略', request)
         return Response(DeviceAuthorizationRequestSerializer(device, context={'request': request}).data)
 
@@ -292,8 +298,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
         next_name = str(request.data.get('name') or '').strip()
         if not next_name:
             return Response({'name': '设备名称不能为空'}, status=status.HTTP_400_BAD_REQUEST)
-        device.name = next_name
-        device.save(update_fields=['name', 'updated_at'])
+        device = rename_authorization_device(device, next_name)
         return Response(DeviceAuthorizationRequestSerializer(device, context={'request': request}).data)
 
     @action(detail=True, methods=['post'], url_path='authorize')
@@ -301,7 +306,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
         device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'agent_application', 'group'), code=code)
         serializer = DeviceBindSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        device = serializer.save(device=device)
+        device = bind_device_authorization(device, serializer)
         self._log_platform_action(device, DeviceAuthLog.ACTION_AUTHORIZE, '设备已再次授权', request)
         self._publish_authorization_event(device, DeviceAuthLog.ACTION_AUTHORIZE)
         return Response(DeviceAuthorizationRequestSerializer(device, context={'request': request}).data)
@@ -309,50 +314,18 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
     @action(detail=True, methods=['post'], url_path='revoke')
     def revoke(self, request, code=None):
         device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'agent_application', 'group'), code=code)
-        device.is_enabled = False
-        device.status = Device.STATUS_OFFLINE
-        device.save(update_fields=['is_enabled', 'status', 'updated_at'])
+        device = revoke_device_authorization(device)
         self._log_platform_action(device, DeviceAuthLog.ACTION_REVOKE, '设备授权已撤销', request)
         self._publish_authorization_event(device, DeviceAuthLog.ACTION_REVOKE)
         return Response(DeviceAuthorizationRequestSerializer(device, context={'request': request}).data)
 
     @staticmethod
     def _log_platform_action(device, action, message, request):
-        DeviceAuthLog.objects.create(
-            tenant=device.tenant,
-            application=device.application,
-            device=device,
-            code=device.code,
-            action=action,
-            result=True,
-            message=message,
-            ip_address=_client_ip(request),
-            device_info={
-                'tenantId': device.tenant_id,
-                'applicationId': device.application_id,
-                'agentApplicationId': device.agent_application_id,
-                'groupId': device.group_id,
-                'authorizationType': device.authorization_type,
-                'expiresAt': device.expires_at.isoformat() if device.expires_at else None,
-                'isEnabled': device.is_enabled,
-            },
-        )
+        record_device_authorization_action(device, action, message, ip_address=_client_ip(request))
 
     @staticmethod
     def _publish_authorization_event(device, action):
-        publish_device_event_sync(
-            {
-                'type': 'device.authorization',
-                'action': action,
-                'tenantId': device.tenant_id,
-                'applicationId': device.application_id,
-                'agentApplicationId': device.agent_application_id,
-                'groupId': device.group_id,
-                'deviceCode': device.code,
-                'status': device.status,
-                'isEnabled': device.is_enabled,
-            }
-        )
+        publish_device_authorization_event(device, action)
 
 
 class DeviceActivationView(APIView):

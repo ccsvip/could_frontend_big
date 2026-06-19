@@ -15,7 +15,8 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.models import AgentApplication, LLMModel, LLMProvider, TenantLLMModelGrant, TenantLLMSettings, TTSProvider, TTSVoice
-from apps.devices.models import Device, DeviceApplication, DeviceAuthorizationCode, DeviceGroup
+from apps.devices.models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceGroup
+from apps.devices.services.authorization import record_device_authorization_action
 from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device
 from apps.resources.models import ScrollingText, ScrollingTextItem
 from apps.tenants.models import Tenant
@@ -69,6 +70,34 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         }
         defaults.update(overrides)
         return DeviceAuthorizationCode.objects.create(**defaults)
+
+    def test_authorization_service_records_device_snapshot_in_log(self):
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Runtime Android',
+            code='ANDROID-AUTH-SERVICE-001',
+            authorization_type=Device.AUTHORIZATION_TRIAL,
+            expires_at=timezone.now() + timedelta(days=1),
+            is_enabled=True,
+        )
+
+        log = record_device_authorization_action(
+            device,
+            DeviceAuthLog.ACTION_AUTHORIZE,
+            '设备已再次授权',
+            ip_address='127.0.0.1',
+        )
+
+        self.assertEqual(log.tenant_id, self.tenant.id)
+        self.assertEqual(log.application_id, self.application.id)
+        self.assertEqual(log.device_id, device.id)
+        self.assertEqual(log.device_info['tenantId'], self.tenant.id)
+        self.assertEqual(log.device_info['applicationId'], self.application.id)
+        self.assertEqual(log.device_info['agentApplicationId'], self.agent_application.id)
+        self.assertEqual(log.device_info['authorizationType'], Device.AUTHORIZATION_TRIAL)
+        self.assertTrue(log.device_info['isEnabled'])
 
     def test_runtime_device_lookup_reports_duplicate_device_code(self):
         Device.objects.create(
