@@ -32,6 +32,7 @@ class DeviceAdmin(admin.ModelAdmin):
         'code',
         'name',
         'application',
+        'agent_application',
         'group',
         'status',
         'authorization_type',
@@ -40,9 +41,9 @@ class DeviceAdmin(admin.ModelAdmin):
         'system_version',
         'last_heartbeat',
     )
-    list_filter = ('tenant', 'status', 'authorization_type', 'application', 'group', 'is_enabled')
+    list_filter = ('tenant', 'status', 'authorization_type', 'application', 'agent_application', 'group', 'is_enabled')
     search_fields = ('code', 'name', 'software_version', 'system_version', 'mainboard_info')
-    autocomplete_fields = ('application', 'group')
+    autocomplete_fields = ('application', 'agent_application', 'group')
 
 
 @admin.register(DeviceAuthLog)

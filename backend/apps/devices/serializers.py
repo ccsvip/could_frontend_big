@@ -3,6 +3,7 @@ from __future__ import annotations
 from django.utils import timezone
 from rest_framework import serializers
 
+from apps.ai_models.models import AgentApplication
 from apps.resources.models import CommandGroup, ModelAsset, Resource, ScrollingText, VoiceTone
 from apps.tenants.models import Tenant
 
@@ -108,6 +109,13 @@ class DeviceSerializer(serializers.ModelSerializer):
         allow_null=True,
     )
     applicationName = serializers.CharField(source='application.name', read_only=True, default='')
+    agentApplicationId = TenantOwnedPrimaryKeyField(
+        source='agent_application',
+        queryset=AgentApplication.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    agentApplicationName = serializers.CharField(source='agent_application.name', read_only=True, default='')
     authorizationType = serializers.ChoiceField(
         source='authorization_type',
         choices=Device.AUTHORIZATION_CHOICES,
@@ -138,6 +146,8 @@ class DeviceSerializer(serializers.ModelSerializer):
             'groupName',
             'applicationId',
             'applicationName',
+            'agentApplicationId',
+            'agentApplicationName',
             'authorizationType',
             'authorizationTypeLabel',
             'expiresAt',
@@ -180,14 +190,19 @@ class DeviceSerializer(serializers.ModelSerializer):
         if self.instance is None and not attrs.get('code'):
             raise serializers.ValidationError({'deviceCode': '设备码不能为空'})
         application = attrs.get('application')
+        agent_application = attrs.get('agent_application')
         group = attrs.get('group')
         instance_tenant = getattr(self.instance, 'tenant', None)
         if application is not None and instance_tenant is not None and application.tenant_id != instance_tenant.id:
-            raise serializers.ValidationError({'applicationId': '应用不属于当前设备公司'})
+            raise serializers.ValidationError({'applicationId': '资源应用不属于当前设备公司'})
+        if agent_application is not None and instance_tenant is not None and agent_application.tenant_id != instance_tenant.id:
+            raise serializers.ValidationError({'agentApplicationId': '智能体不属于当前设备公司'})
         if group is not None and instance_tenant is not None and group.tenant_id != instance_tenant.id:
             raise serializers.ValidationError({'groupId': '分组不属于当前设备公司'})
         if application is not None and group is not None and application.tenant_id != group.tenant_id:
-            raise serializers.ValidationError({'groupId': '分组与应用不属于同一公司'})
+            raise serializers.ValidationError({'groupId': '分组与资源应用不属于同一公司'})
+        if agent_application is not None and group is not None and agent_application.tenant_id != group.tenant_id:
+            raise serializers.ValidationError({'groupId': '分组与智能体不属于同一公司'})
         return attrs
 
     def create(self, validated_data):
@@ -197,12 +212,15 @@ class DeviceSerializer(serializers.ModelSerializer):
 
     def update(self, instance: Device, validated_data):
         allowed = {}
-        for key in ('name', 'location', 'application', 'group'):
+        for key in ('name', 'location', 'application', 'agent_application', 'group'):
             if key in validated_data:
                 allowed[key] = validated_data[key]
         application = allowed.get('application')
         if application is not None and instance.tenant_id is None:
             allowed['tenant'] = application.tenant
+        agent_application = allowed.get('agent_application')
+        if agent_application is not None and instance.tenant_id is None and 'tenant' not in allowed:
+            allowed['tenant'] = agent_application.tenant
         group = allowed.get('group')
         if group is not None and instance.tenant_id is None and 'tenant' not in allowed:
             allowed['tenant'] = group.tenant
@@ -296,7 +314,7 @@ class DeviceAuthorizationRequestSerializer(DeviceSerializer):
         return 'bound' if obj.tenant_id else 'pending'
 
     def get_runtimeStatus(self, obj: Device) -> str:
-        return 'ready' if obj.tenant_id and obj.application_id else 'waiting_application'
+        return 'ready' if obj.tenant_id and obj.agent_application_id else 'waiting_agent'
 
     def get_latestActivationAt(self, obj: Device):
         log = self._latest_activation_log(obj)
@@ -320,6 +338,8 @@ class DeviceActivationLogSerializer(serializers.ModelSerializer):
     tenantName = serializers.CharField(source='tenant.name', read_only=True, default='')
     applicationId = serializers.IntegerField(source='application_id', read_only=True)
     applicationName = serializers.CharField(source='application.name', read_only=True, default='')
+    agentApplicationId = serializers.IntegerField(source='device.agent_application_id', read_only=True, allow_null=True)
+    agentApplicationName = serializers.CharField(source='device.agent_application.name', read_only=True, default='')
     deviceName = serializers.CharField(source='device.name', read_only=True, default='')
     ipAddress = serializers.IPAddressField(source='ip_address', read_only=True, allow_null=True)
     deviceInfo = serializers.JSONField(source='device_info', read_only=True)
@@ -337,6 +357,8 @@ class DeviceActivationLogSerializer(serializers.ModelSerializer):
             'tenantName',
             'applicationId',
             'applicationName',
+            'agentApplicationId',
+            'agentApplicationName',
             'deviceName',
             'ipAddress',
             'deviceInfo',
@@ -347,6 +369,7 @@ class DeviceActivationLogSerializer(serializers.ModelSerializer):
 class DeviceBindSerializer(serializers.Serializer):
     tenantId = serializers.IntegerField()
     applicationId = serializers.IntegerField(required=False, allow_null=True)
+    agentApplicationId = serializers.IntegerField(required=False, allow_null=True)
     groupId = serializers.IntegerField(required=False, allow_null=True)
     authorizationType = serializers.ChoiceField(
         choices=Device.AUTHORIZATION_CHOICES,
@@ -369,7 +392,15 @@ class DeviceBindSerializer(serializers.Serializer):
             try:
                 application = DeviceApplication.objects.get(id=application_id, tenant=tenant)
             except DeviceApplication.DoesNotExist as exc:
-                raise serializers.ValidationError({'applicationId': '应用不属于所选公司'}) from exc
+                raise serializers.ValidationError({'applicationId': '资源应用不属于所选公司'}) from exc
+
+        agent_application = None
+        agent_application_id = attrs.get('agentApplicationId')
+        if agent_application_id is not None:
+            try:
+                agent_application = AgentApplication.objects.get(id=agent_application_id, tenant=tenant)
+            except AgentApplication.DoesNotExist as exc:
+                raise serializers.ValidationError({'agentApplicationId': '智能体不属于所选公司'}) from exc
 
         group = None
         group_id = attrs.get('groupId')
@@ -384,12 +415,14 @@ class DeviceBindSerializer(serializers.Serializer):
 
         attrs['tenant'] = tenant
         attrs['application'] = application
+        attrs['agent_application'] = agent_application
         attrs['group'] = group
         return attrs
 
     def save(self, device: Device) -> Device:
         device.tenant = self.validated_data['tenant']
         device.application = self.validated_data.get('application')
+        device.agent_application = self.validated_data.get('agent_application')
         device.group = self.validated_data.get('group')
         device.authorization_ignored_at = None
         device.authorization_type = self.validated_data.get('authorizationType', Device.AUTHORIZATION_PERMANENT)
@@ -402,6 +435,7 @@ class DeviceBindSerializer(serializers.Serializer):
         device.save(update_fields=[
             'tenant',
             'application',
+            'agent_application',
             'group',
             'authorization_ignored_at',
             'authorization_type',

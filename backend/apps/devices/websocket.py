@@ -7,7 +7,7 @@ from .models import Device, DeviceAuthLog
 
 def mark_device_online_for_websocket(device_code: str) -> Device | None:
     device = (
-        Device.objects.select_related('tenant', 'application')
+        Device.objects.select_related('tenant', 'application', 'agent_application')
         .filter(code=device_code)
         .order_by('id')
         .first()
@@ -35,7 +35,7 @@ def touch_device_for_websocket(device_id: int) -> None:
 
 
 def mark_device_offline_for_websocket(device_id: int) -> dict | None:
-    device = Device.objects.select_related('tenant', 'application').filter(id=device_id).first()
+    device = Device.objects.select_related('tenant', 'application', 'agent_application').filter(id=device_id).first()
     if device is None:
         return None
     device.status = Device.STATUS_OFFLINE
@@ -48,6 +48,7 @@ def _device_status_event(device: Device, status: str) -> dict:
         'type': 'device.status',
         'tenantId': device.tenant_id,
         'applicationId': device.application_id,
+        'agentApplicationId': device.agent_application_id,
         'deviceCode': device.code,
         'status': status,
         'isEnabled': device.is_enabled,

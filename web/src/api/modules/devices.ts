@@ -16,6 +16,8 @@ export type DeviceRecord = {
   groupName: string;
   applicationId: number | null;
   applicationName: string;
+  agentApplicationId: number | null;
+  agentApplicationName: string;
   authorizationType: DeviceAuthorizationType;
   authorizationTypeLabel: string;
   expiresAt: string | null;
@@ -59,6 +61,7 @@ export type DeviceUpdatePayload = {
   name: string;
   location?: string;
   applicationId?: number | null;
+  agentApplicationId?: number | null;
   groupId?: number | null;
 };
 
@@ -111,7 +114,7 @@ export type PaginatedResponse<T> = {
 
 export type DeviceAuthorizationRequestRecord = DeviceRecord & {
   bindingStatus: 'pending' | 'bound' | 'ignored';
-  runtimeStatus: 'waiting_application' | 'ready';
+  runtimeStatus: 'waiting_application' | 'waiting_agent' | 'ready';
   latestActivationAt: string | null;
   latestActivationMessage: string;
   latestActivationIp: string | null;
@@ -128,6 +131,8 @@ export type DeviceActivationLogRecord = {
   tenantName: string;
   applicationId: number | null;
   applicationName: string;
+  agentApplicationId: number | null;
+  agentApplicationName: string;
   deviceName: string;
   ipAddress: string | null;
   deviceInfo: Record<string, unknown>;
@@ -144,6 +149,7 @@ export type DeviceAuthorizationRequestQuery = {
 export type DeviceBindPayload = {
   tenantId: number;
   applicationId?: number | null;
+  agentApplicationId?: number | null;
   groupId?: number | null;
   authorizationType?: DeviceAuthorizationType;
   expiresAt?: string | null;

@@ -1,0 +1,1180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <title>安卓设备接口模拟器</title>
+  <style>
+    :root {
+      --bg: #eef3f1;
+      --ink: #1f2933;
+      --muted: #667085;
+      --line: #d4dfdc;
+      --panel: #ffffff;
+      --panel-strong: #eef7f4;
+      --brand: #126e82;
+      --brand-dark: #0c5362;
+      --accent: #c54b2c;
+      --success: #16794d;
+      --warning: #a06000;
+      --danger: #b42318;
+      --code-bg: #101828;
+      --shadow: 0 18px 50px rgba(24, 38, 41, 0.12);
+      font-family: "Aptos", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        linear-gradient(135deg, rgba(18, 110, 130, 0.1), transparent 34%),
+        linear-gradient(315deg, rgba(197, 75, 44, 0.1), transparent 36%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.78), transparent 42%),
+        var(--bg);
+    }
+
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: 0.58; }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      border-right: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 10px 0 34px rgba(24, 38, 41, 0.08);
+      padding: 22px 18px;
+    }
+
+    .brand-block { margin-bottom: 18px; }
+    .eyebrow {
+      margin: 0 0 6px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 25px; line-height: 1.15; }
+    h2 { font-size: 22px; }
+    h3 { font-size: 17px; }
+
+    .hint {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .nav-title {
+      margin: 20px 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .toc {
+      display: grid;
+      gap: 7px;
+      margin-bottom: 18px;
+    }
+
+    .toc a {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      min-height: 36px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 14px;
+      border: 1px solid transparent;
+    }
+
+    .toc a:hover {
+      border-color: var(--line);
+      background: var(--panel-strong);
+    }
+
+    .toc .index {
+      display: inline-grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: rgba(18, 110, 130, 0.12);
+      color: var(--brand-dark);
+      font-size: 12px;
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+
+    .global-box {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel-strong);
+    }
+
+    .field { display: grid; gap: 6px; }
+    .field span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .field input, .field textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink);
+      padding: 10px 11px;
+      outline: none;
+    }
+    .field textarea {
+      min-height: 92px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+    .field input:focus, .field textarea:focus {
+      border-color: rgba(18, 110, 130, 0.55);
+      box-shadow: 0 0 0 3px rgba(18, 110, 130, 0.12);
+    }
+
+    .main {
+      min-width: 0;
+      padding: 26px 28px 42px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: #fff;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--muted);
+    }
+    .status-pill[data-tone="ok"] .dot { background: var(--success); }
+    .status-pill[data-tone="warn"] .dot { background: var(--warning); }
+    .status-pill[data-tone="error"] .dot { background: var(--danger); }
+
+    .notice {
+      margin-bottom: 16px;
+      padding: 14px 16px;
+      border: 1px solid rgba(18, 110, 130, 0.22);
+      border-radius: 10px;
+      background: rgba(18, 110, 130, 0.08);
+      color: var(--brand-dark);
+      line-height: 1.65;
+    }
+
+    .card {
+      margin-bottom: 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-strong);
+    }
+
+    .card-body {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+    }
+
+    .method-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: rgba(18, 110, 130, 0.1);
+      color: var(--brand-dark);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .badge.post { background: rgba(197, 75, 44, 0.12); color: #9d351d; }
+    .badge.ws { background: rgba(102, 112, 133, 0.14); color: #344054; }
+
+    .url-text {
+      padding: 5px 8px;
+      border-radius: 6px;
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-family: "Cascadia Code", "Consolas", monospace;
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .button {
+      min-height: 38px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 0 14px;
+      font-weight: 800;
+      color: #fff;
+      background: var(--brand);
+    }
+    .button:hover { background: var(--brand-dark); }
+    .button.secondary {
+      color: var(--brand-dark);
+      background: #fff;
+      border-color: rgba(18, 110, 130, 0.35);
+    }
+    .button.secondary:hover { background: var(--panel-strong); }
+    .button.warn { background: var(--accent); }
+    .button.warn:hover { background: #9d351d; }
+
+    pre {
+      margin: 0;
+      max-height: 360px;
+      overflow: auto;
+      border-radius: 10px;
+      background: var(--code-bg);
+      color: #e6edf3;
+      padding: 13px;
+      font-size: 12px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .doc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .doc-box {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      background: #fff;
+    }
+    .doc-box h4 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: var(--brand-dark);
+    }
+    .doc-box p, .doc-box li {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .doc-box ul { margin: 0; padding-left: 18px; }
+
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .resource-item {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      background: #fff;
+      min-width: 0;
+    }
+    .resource-item strong {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 14px;
+    }
+    .resource-item small {
+      display: block;
+      color: var(--muted);
+      line-height: 1.55;
+      word-break: break-all;
+    }
+    .resource-item img, .resource-item video {
+      display: block;
+      width: 100%;
+      max-height: 170px;
+      object-fit: contain;
+      margin-top: 10px;
+      border-radius: 8px;
+      background: #f2f4f7;
+      border: 1px solid var(--line);
+    }
+
+    .split-output {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+    }
+
+    .log-list {
+      display: grid;
+      gap: 10px;
+    }
+    .log-entry {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .log-entry summary {
+      cursor: pointer;
+      padding: 10px 12px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+    .log-entry[data-tone="error"] summary { color: var(--danger); }
+    .log-entry pre { border-radius: 0; max-height: 260px; }
+
+    .audio-player {
+      width: 100%;
+      min-height: 42px;
+    }
+
+    .muted { color: var(--muted); }
+    .danger { color: var(--danger); }
+    .ok { color: var(--success); }
+
+    @media (max-width: 980px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar {
+        position: relative;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .toc { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+      .main { padding: 20px 16px 34px; }
+      .grid-2, .doc-grid, .split-output { grid-template-columns: 1fr; }
+      .topbar, .card-head { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-block">
+        <p class="eyebrow">Android API Simulator</p>
+        <h1>安卓设备接口模拟器</h1>
+        <p class="hint">模拟安卓设备请求：只带 <strong>X-Device-Code</strong>，不带后台 JWT，不使用登录态。</p>
+      </div>
+
+      <div class="global-box" aria-label="全局配置">
+        <label class="field">
+          <span>API Base URL</span>
+          <input id="apiBaseUrl" spellcheck="false" />
+        </label>
+        <label class="field">
+          <span>WebSocket URL</span>
+          <input id="wsUrl" spellcheck="false" />
+        </label>
+        <label class="field">
+          <span>X-Device-Code</span>
+          <input id="deviceCode" placeholder="DEVICE_001" spellcheck="false" />
+        </label>
+        <button class="button" id="saveConfigBtn" type="button">保存配置</button>
+      </div>
+
+      <p class="nav-title">目录</p>
+      <nav class="toc" aria-label="接口目录">
+        <a href="#overview"><span class="index">0</span><span>对接说明</span></a>
+        <a href="#activate"><span class="index">1</span><span>设备激活</span></a>
+        <a href="#runtime-config"><span class="index">2</span><span>运行时配置</span></a>
+        <a href="#images"><span class="index">3</span><span>获取图片</span></a>
+        <a href="#models"><span class="index">4</span><span>获取模型</span></a>
+        <a href="#videos"><span class="index">5</span><span>获取视频</span></a>
+        <a href="#asr"><span class="index">6</span><span>ASR 接口</span></a>
+        <a href="#llm"><span class="index">7</span><span>LLM 问答</span></a>
+        <a href="#voice-chat"><span class="index">8</span><span>语音问答</span></a>
+        <a href="#tts"><span class="index">9</span><span>TTS 合成</span></a>
+        <a href="#heartbeat"><span class="index">10</span><span>设备心跳</span></a>
+        <a href="#logs"><span class="index">L</span><span>请求日志</span></a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Backend contract for Android</p>
+          <h2>设备端接口调试与对接说明</h2>
+          <p class="hint">页面用于后端给安卓同学对接口：每个模块都包含接口用途、请求示例、可执行测试和响应展示。</p>
+        </div>
+        <div class="status-pill" id="statusPill" data-tone="warn"><span class="dot"></span><span id="statusText">未请求</span></div>
+      </header>
+
+      <section class="notice" id="overview">
+        <strong>重要约定：</strong>安卓设备请求不携带 Authorization/JWT；后端通过 <code>X-Device-Code</code> 找设备，再解析公司、资源应用和绑定智能体上下文。图片、模型、视频来自资源应用；ASR、LLM、TTS/语音问答按设备所属公司和绑定智能体配置执行。本页会把运行时配置拆开展示给安卓对接。
+      </section>
+
+      <section class="card" id="activate">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Step 1</p>
+            <h3>设备激活 / 上报</h3>
+            <div class="method-row"><span class="badge post">POST</span><span class="url-text">/device-auth/activate/</span></div>
+          </div>
+          <button class="button" id="activateBtn" type="button">发送激活请求</button>
+        </div>
+        <div class="card-body">
+          <div class="doc-grid">
+            <div class="doc-box">
+              <h4>安卓用途</h4>
+              <p>设备启动后上报设备信息。后端会根据设备码返回绑定状态；未登记设备会进入待授权流程。</p>
+            </div>
+            <div class="doc-box">
+              <h4>固定 Header</h4>
+              <pre>X-Device-Code: DEVICE_001
+Content-Type: application/json</pre>
+            </div>
+          </div>
+          <label class="field">
+            <span>激活 Body JSON</span>
+            <textarea id="activateBody"></textarea>
+          </label>
+          <pre id="activateOutput">等待请求</pre>
+        </div>
+      </section>
+
+      <section class="card" id="runtime-config">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Step 2</p>
+            <h3>获取运行时配置</h3>
+            <div class="method-row"><span class="badge">GET</span><span class="url-text">/device-runtime/config/?deviceCode=DEVICE_001</span></div>
+          </div>
+          <button class="button" id="configBtn" type="button">获取配置</button>
+        </div>
+        <div class="card-body">
+          <div class="doc-box">
+            <h4>安卓用途</h4>
+            <p>启动或切换设备状态后拉取应用与资源配置。图片、模型、视频、音色、滚动文本都在 resources 下。</p>
+          </div>
+          <div class="split-output">
+            <pre id="configSummary">等待请求</pre>
+            <pre id="configOutput">等待请求</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="images">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Resources</p>
+            <h3>获取图片</h3>
+            <div class="method-row"><span class="badge">GET</span><span class="url-text">/device-runtime/config/ → resources.images</span></div>
+          </div>
+          <button class="button secondary" id="renderImagesBtn" type="button">从配置渲染图片</button>
+        </div>
+        <div class="card-body">
+          <div class="resource-grid" id="imagesGrid"></div>
+        </div>
+      </section>
+
+      <section class="card" id="models">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Resources</p>
+            <h3>获取模型</h3>
+            <div class="method-row"><span class="badge">GET</span><span class="url-text">/device-runtime/config/ → resources.models</span></div>
+          </div>
+          <button class="button secondary" id="renderModelsBtn" type="button">从配置渲染模型</button>
+        </div>
+        <div class="card-body">
+          <div class="resource-grid" id="modelsGrid"></div>
+        </div>
+      </section>
+
+      <section class="card" id="videos">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Resources</p>
+            <h3>获取视频</h3>
+            <div class="method-row"><span class="badge">GET</span><span class="url-text">/device-runtime/config/ → resources.videos</span></div>
+          </div>
+          <button class="button secondary" id="renderVideosBtn" type="button">从配置渲染视频</button>
+        </div>
+        <div class="card-body">
+          <div class="resource-grid" id="videosGrid"></div>
+        </div>
+      </section>
+
+      <section class="card" id="asr">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">ASR</p>
+            <h3>ASR 状态与实时协议</h3>
+            <div class="method-row"><span class="badge">GET</span><span class="url-text">/ai-models/asr/device-status/</span><span class="badge ws">WS</span><span class="url-text">/ws/realtime/</span></div>
+          </div>
+          <div class="action-row">
+            <button class="button" id="asrStatusBtn" type="button">检查 ASR 状态</button>
+            <button class="button secondary" id="asrWsBtn" type="button">测试 WS Start</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="doc-grid">
+            <div class="doc-box">
+              <h4>实时 ASR Start 命令</h4>
+              <pre>{
+  "type": "asr.session.start",
+  "id": "asr-session-xxx",
+  "payload": {
+    "deviceCode": "DEVICE_001"
+  }
+}</pre>
+            </div>
+            <div class="doc-box">
+              <h4>安卓音频要求</h4>
+              <ul>
+                <li>连接统一入口 /ws/realtime/</li>
+                <li>收到 asr.ready 后发送 16k PCM 二进制分片</li>
+                <li>监听 asr.transcript / asr.done / asr.error</li>
+              </ul>
+            </div>
+          </div>
+          <pre id="asrOutput">等待请求</pre>
+        </div>
+      </section>
+
+      <section class="card" id="llm">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">LLM</p>
+            <h3>LLM 文本问答</h3>
+            <div class="method-row"><span class="badge post">POST</span><span class="url-text">/device/voice-chat</span></div>
+          </div>
+          <button class="button" id="llmBtn" type="button">发送文本问题</button>
+        </div>
+        <div class="card-body">
+          <div class="doc-box">
+            <h4>说明</h4>
+            <p>管理后台的 LLM 能力可独立配置和测试；安卓设备运行时这里使用 <code>/device/voice-chat</code> 作为设备问答入口。传 <code>text</code> 时后端会按设备绑定智能体执行 LLM，并尝试合成 TTS，适合安卓调试完整问答链路。</p>
+          </div>
+          <label class="field">
+            <span>问题文本</span>
+            <textarea id="llmText">你好，请介绍一下你自己。</textarea>
+          </label>
+          <audio class="audio-player" id="llmAudio" controls preload="none"></audio>
+          <pre id="llmOutput">等待请求</pre>
+        </div>
+      </section>
+
+      <section class="card" id="voice-chat">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">ASR + LLM + TTS</p>
+            <h3>语音问答完整链路</h3>
+            <div class="method-row"><span class="badge post">POST</span><span class="url-text">/device/voice-chat multipart/form-data</span></div>
+          </div>
+          <button class="button" id="voiceBtn" type="button">上传音频并问答</button>
+        </div>
+        <div class="card-body">
+          <div class="grid-2">
+            <label class="field">
+              <span>选择 16k PCM 音频文件</span>
+              <input id="voiceFile" type="file" accept="audio/*,.pcm" />
+            </label>
+            <label class="field">
+              <span>sampleRate</span>
+              <input id="sampleRate" value="16000" inputmode="numeric" />
+            </label>
+          </div>
+          <audio class="audio-player" id="voiceAudio" controls preload="none"></audio>
+          <pre id="voiceOutput">等待请求</pre>
+        </div>
+      </section>
+
+      <section class="card" id="tts">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">TTS</p>
+            <h3>TTS 单独合成</h3>
+            <div class="method-row"><span class="badge post">POST</span><span class="url-text">/ai-models/tts/runtime/</span></div>
+          </div>
+          <button class="button" id="ttsBtn" type="button">合成语音</button>
+        </div>
+        <div class="card-body">
+          <div class="doc-box">
+            <h4>安卓注意</h4>
+            <p>该接口返回 raw PCM，响应头包含采样率、声道和音色。浏览器会尝试封装 WAV 播放；安卓端可直接按响应头播放 PCM。</p>
+          </div>
+          <label class="field">
+            <span>TTS 文本</span>
+            <textarea id="ttsText">你好，我是数字人设备。</textarea>
+          </label>
+          <audio class="audio-player" id="ttsAudio" controls preload="none"></audio>
+          <pre id="ttsOutput">等待请求</pre>
+        </div>
+      </section>
+
+      <section class="card" id="heartbeat">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Heartbeat</p>
+            <h3>设备心跳</h3>
+            <div class="method-row"><span class="badge post">POST</span><span class="url-text">/device-runtime/heartbeat/</span></div>
+          </div>
+          <button class="button" id="heartbeatBtn" type="button">发送心跳</button>
+        </div>
+        <div class="card-body">
+          <pre id="heartbeatOutput">等待请求</pre>
+        </div>
+      </section>
+
+      <section class="card" id="logs">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Logs</p>
+            <h3>请求日志</h3>
+          </div>
+          <button class="button warn" id="clearLogsBtn" type="button">清空日志</button>
+        </div>
+        <div class="card-body">
+          <div class="log-list" id="logList"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const DEFAULT_API_BASE = location.protocol === 'file:' ? 'http://localhost:8880/api/v1' : location.origin + '/api/v1';
+      const query = new URLSearchParams(location.search);
+      const state = {
+        apiBaseUrl: query.get('apiBaseUrl') || localStorage.getItem('androidApiSimulator.apiBaseUrl') || DEFAULT_API_BASE,
+        wsUrl: query.get('wsUrl') || localStorage.getItem('androidApiSimulator.wsUrl') || defaultWsUrl(DEFAULT_API_BASE),
+        deviceCode: query.get('deviceCode') || localStorage.getItem('androidApiSimulator.deviceCode') || 'DEVICE_001',
+        runtimeConfig: null,
+      };
+
+      const els = {
+        apiBaseUrl: document.getElementById('apiBaseUrl'),
+        wsUrl: document.getElementById('wsUrl'),
+        deviceCode: document.getElementById('deviceCode'),
+        saveConfigBtn: document.getElementById('saveConfigBtn'),
+        statusPill: document.getElementById('statusPill'),
+        statusText: document.getElementById('statusText'),
+        activateBody: document.getElementById('activateBody'),
+        activateOutput: document.getElementById('activateOutput'),
+        configSummary: document.getElementById('configSummary'),
+        configOutput: document.getElementById('configOutput'),
+        imagesGrid: document.getElementById('imagesGrid'),
+        modelsGrid: document.getElementById('modelsGrid'),
+        videosGrid: document.getElementById('videosGrid'),
+        asrOutput: document.getElementById('asrOutput'),
+        llmText: document.getElementById('llmText'),
+        llmOutput: document.getElementById('llmOutput'),
+        llmAudio: document.getElementById('llmAudio'),
+        voiceFile: document.getElementById('voiceFile'),
+        sampleRate: document.getElementById('sampleRate'),
+        voiceOutput: document.getElementById('voiceOutput'),
+        voiceAudio: document.getElementById('voiceAudio'),
+        ttsText: document.getElementById('ttsText'),
+        ttsOutput: document.getElementById('ttsOutput'),
+        ttsAudio: document.getElementById('ttsAudio'),
+        heartbeatOutput: document.getElementById('heartbeatOutput'),
+        logList: document.getElementById('logList'),
+      };
+
+      init();
+
+      function init() {
+        els.apiBaseUrl.value = state.apiBaseUrl;
+        els.wsUrl.value = state.wsUrl;
+        els.deviceCode.value = state.deviceCode;
+        els.activateBody.value = pretty(buildActivationPayload());
+        bindEvents();
+        renderEmptyResources();
+      }
+
+      function bindEvents() {
+        document.getElementById('saveConfigBtn').addEventListener('click', saveConfig);
+        document.getElementById('activateBtn').addEventListener('click', activateDevice);
+        document.getElementById('configBtn').addEventListener('click', fetchRuntimeConfig);
+        document.getElementById('renderImagesBtn').addEventListener('click', () => renderResources('images'));
+        document.getElementById('renderModelsBtn').addEventListener('click', () => renderResources('models'));
+        document.getElementById('renderVideosBtn').addEventListener('click', () => renderResources('videos'));
+        document.getElementById('asrStatusBtn').addEventListener('click', fetchAsrStatus);
+        document.getElementById('asrWsBtn').addEventListener('click', testAsrWebSocket);
+        document.getElementById('llmBtn').addEventListener('click', sendLlmText);
+        document.getElementById('voiceBtn').addEventListener('click', sendVoiceChat);
+        document.getElementById('ttsBtn').addEventListener('click', sendTts);
+        document.getElementById('heartbeatBtn').addEventListener('click', sendHeartbeat);
+        document.getElementById('clearLogsBtn').addEventListener('click', () => { els.logList.innerHTML = ''; });
+        els.deviceCode.addEventListener('input', () => { els.activateBody.value = pretty(buildActivationPayload()); });
+      }
+
+      function saveConfig() {
+        state.apiBaseUrl = normalizeApiBase(els.apiBaseUrl.value);
+        state.wsUrl = els.wsUrl.value.trim() || defaultWsUrl(state.apiBaseUrl);
+        state.deviceCode = els.deviceCode.value.trim();
+        els.apiBaseUrl.value = state.apiBaseUrl;
+        els.wsUrl.value = state.wsUrl;
+        localStorage.setItem('androidApiSimulator.apiBaseUrl', state.apiBaseUrl);
+        localStorage.setItem('androidApiSimulator.wsUrl', state.wsUrl);
+        localStorage.setItem('androidApiSimulator.deviceCode', state.deviceCode);
+        els.activateBody.value = pretty(buildActivationPayload());
+        setStatus('配置已保存', 'ok');
+      }
+
+      async function activateDevice() {
+        saveConfig();
+        let body;
+        try { body = JSON.parse(els.activateBody.value || '{}'); }
+        catch (error) { return showLocalError(els.activateOutput, '激活 Body 不是合法 JSON'); }
+        const result = await apiRequest('/device-auth/activate/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }, '设备激活');
+        writeOutput(els.activateOutput, result);
+      }
+
+      async function fetchRuntimeConfig() {
+        saveConfig();
+        const path = '/device-runtime/config/?deviceCode=' + encodeURIComponent(state.deviceCode);
+        const result = await apiRequest(path, { method: 'GET' }, '获取运行时配置');
+        writeOutput(els.configOutput, result);
+        if (result.ok) {
+          state.runtimeConfig = unwrap(result.body);
+          els.configSummary.textContent = pretty(buildConfigSummary(state.runtimeConfig));
+          renderResources('images');
+          renderResources('models');
+          renderResources('videos');
+        }
+      }
+
+      async function fetchAsrStatus() {
+        saveConfig();
+        const result = await apiRequest('/ai-models/asr/device-status/', { method: 'GET' }, 'ASR 状态检查');
+        writeOutput(els.asrOutput, result);
+      }
+
+      function testAsrWebSocket() {
+        saveConfig();
+        if (!window.WebSocket) {
+          showLocalError(els.asrOutput, '当前浏览器不支持 WebSocket');
+          return;
+        }
+        const command = {
+          type: 'asr.session.start',
+          id: 'asr-session-' + Date.now(),
+          payload: { deviceCode: state.deviceCode },
+        };
+        const output = { wsUrl: state.wsUrl, sent: command, events: [] };
+        els.asrOutput.textContent = pretty(output);
+        const socket = new WebSocket(state.wsUrl);
+        const startedAt = Date.now();
+        const timeout = window.setTimeout(() => {
+          output.events.push({ type: 'client.timeout', message: '5 秒内未收到服务端响应，关闭连接' });
+          els.asrOutput.textContent = pretty(output);
+          try { socket.close(1000, 'client_timeout'); } catch (_) {}
+        }, 5000);
+
+        socket.onopen = () => {
+          output.events.push({ type: 'client.open' });
+          socket.send(JSON.stringify(command));
+          els.asrOutput.textContent = pretty(output);
+        };
+        socket.onmessage = (event) => {
+          output.events.push({ type: 'server.message', data: parseMaybeJson(event.data) });
+          els.asrOutput.textContent = pretty(output);
+          if (String(event.data).includes('asr.ready') || String(event.data).includes('asr.error')) {
+            window.clearTimeout(timeout);
+            socket.close(1000, 'client_test_done');
+          }
+        };
+        socket.onerror = () => {
+          output.events.push({ type: 'client.error', message: 'WebSocket 连接异常' });
+          els.asrOutput.textContent = pretty(output);
+        };
+        socket.onclose = (event) => {
+          window.clearTimeout(timeout);
+          output.events.push({ type: 'client.close', code: event.code, reason: event.reason, elapsedMs: Date.now() - startedAt });
+          els.asrOutput.textContent = pretty(output);
+          addLog('ASR WebSocket 测试', { url: state.wsUrl, command, output }, output.events.some(e => e.type === 'client.error') ? 'error' : 'ok');
+        };
+      }
+
+      async function sendLlmText() {
+        saveConfig();
+        const result = await apiRequest('/device/voice-chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deviceCode: state.deviceCode, text: els.llmText.value.trim() }),
+        }, 'LLM 文本问答');
+        writeOutput(els.llmOutput, result);
+        if (result.ok) attachBase64Audio(els.llmAudio, unwrap(result.body));
+      }
+
+      async function sendVoiceChat() {
+        saveConfig();
+        const file = els.voiceFile.files && els.voiceFile.files[0];
+        if (!file) {
+          showLocalError(els.voiceOutput, '请选择 16k PCM 音频文件');
+          return;
+        }
+        const form = new FormData();
+        form.append('audio', file, file.name || 'voice.pcm');
+        form.append('deviceCode', state.deviceCode);
+        form.append('format', 'pcm');
+        form.append('sampleRate', els.sampleRate.value.trim() || '16000');
+        const result = await apiRequest('/device/voice-chat', { method: 'POST', body: form }, '语音问答完整链路');
+        writeOutput(els.voiceOutput, result);
+        if (result.ok) attachBase64Audio(els.voiceAudio, unwrap(result.body));
+      }
+
+      async function sendTts() {
+        saveConfig();
+        const result = await apiRequest('/ai-models/tts/runtime/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: els.ttsText.value.trim() }),
+          responseMode: 'blob',
+        }, 'TTS 单独合成');
+        writeOutput(els.ttsOutput, result);
+        if (result.ok && result.blob) {
+          const contentType = result.headers['content-type'] || 'audio/pcm';
+          const sampleRate = parseInt(result.headers['x-audio-sample-rate'] || '16000', 10);
+          const blob = contentType.includes('pcm')
+            ? new Blob([wavHeader(await result.blob.arrayBuffer(), sampleRate)], { type: 'audio/wav' })
+            : result.blob;
+          setAudioBlob(els.ttsAudio, blob);
+        }
+      }
+
+      async function sendHeartbeat() {
+        saveConfig();
+        const result = await apiRequest('/device-runtime/heartbeat/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            deviceCode: state.deviceCode,
+            softwareVersion: 'android-api-simulator-html',
+            systemVersion: navigator.userAgent,
+            deviceInfo: { source: 'android-api-simulator', pageUrl: location.href },
+          }),
+        }, '设备心跳');
+        writeOutput(els.heartbeatOutput, result);
+      }
+
+      async function apiRequest(path, options, title) {
+        const url = buildUrl(path);
+        const headers = Object.assign({ 'X-Device-Code': state.deviceCode }, options.headers || {});
+        const requestInfo = {
+          method: options.method || 'GET',
+          url,
+          headers,
+          body: describeBody(options.body),
+          credentials: 'omit',
+        };
+        try {
+          setStatus('请求中：' + title, 'warn');
+          const response = await fetch(url, {
+            method: requestInfo.method,
+            headers,
+            body: options.body,
+            credentials: 'omit',
+          });
+          const responseHeaders = headersToObject(response.headers);
+          let body;
+          let blob = null;
+          const contentType = responseHeaders['content-type'] || '';
+          if (options.responseMode === 'blob') {
+            blob = await response.blob();
+            body = { blobSize: blob.size, contentType: blob.type || contentType, note: '二进制响应，详见 responseHeaders' };
+          } else if (contentType.includes('application/json')) {
+            body = await response.json();
+          } else {
+            body = await response.text();
+          }
+          const result = { ok: response.ok, status: response.status, statusText: response.statusText, request: requestInfo, headers: responseHeaders, body, blob };
+          addLog(title, result, response.ok ? 'ok' : 'error');
+          setStatus(response.ok ? '请求成功：' + title : '请求失败：' + title, response.ok ? 'ok' : 'error');
+          return result;
+        } catch (error) {
+          const result = { ok: false, request: requestInfo, error: error.message || String(error) };
+          addLog(title, result, 'error');
+          setStatus('请求异常：' + title, 'error');
+          return result;
+        }
+      }
+
+      function buildActivationPayload() {
+        const code = (els.deviceCode && els.deviceCode.value.trim()) || state.deviceCode;
+        return {
+          deviceCode: code,
+          softwareVersion: 'android-api-simulator-html',
+          systemVersion: navigator.userAgent,
+          mainboardInfo: 'browser-simulator',
+          deviceInfo: {
+            source: 'android-api-simulator',
+            pageUrl: location.href,
+            language: navigator.language || '',
+            screen: window.screen ? window.screen.width + 'x' + window.screen.height : '',
+          },
+        };
+      }
+
+      function buildConfigSummary(config) {
+        const resources = config.resources || {};
+        return {
+          device: pick(config.device || config, ['id', 'code', 'name', 'status', 'bindingStatus', 'tenantId', 'applicationId']),
+          application: config.application || null,
+          counts: {
+            images: (resources.images || []).length,
+            models: (resources.models || []).length,
+            videos: (resources.videos || []).length,
+            voiceTones: (resources.voiceTones || []).length,
+            scrollingTexts: (resources.scrollingTexts || []).length,
+            commandGroups: (resources.commandGroups || []).length,
+          },
+        };
+      }
+
+      function renderResources(type) {
+        const grid = type === 'images' ? els.imagesGrid : type === 'models' ? els.modelsGrid : els.videosGrid;
+        const resources = state.runtimeConfig && state.runtimeConfig.resources ? state.runtimeConfig.resources : {};
+        const items = resources[type] || [];
+        if (!items.length) {
+          grid.innerHTML = '<p class="muted">暂无数据。请先点击“获取运行时配置”。</p>';
+          return;
+        }
+        grid.innerHTML = items.map(item => resourceHtml(type, item)).join('');
+      }
+
+      function renderEmptyResources() {
+        els.imagesGrid.innerHTML = '<p class="muted">暂无数据。请先获取运行时配置。</p>';
+        els.modelsGrid.innerHTML = '<p class="muted">暂无数据。请先获取运行时配置。</p>';
+        els.videosGrid.innerHTML = '<p class="muted">暂无数据。请先获取运行时配置。</p>';
+      }
+
+      function resourceHtml(type, item) {
+        const name = escapeHtml(item.name || item.title || '未命名');
+        const url = escapeHtml(item.url || item.thumbnailUrl || '');
+        const meta = escapeHtml(JSON.stringify(item, null, 2));
+        let media = '';
+        if (type === 'images' && item.url) media = '<img src="' + escapeAttr(item.url) + '" alt="' + name + '" loading="lazy" />';
+        if (type === 'models' && item.thumbnailUrl) media = '<img src="' + escapeAttr(item.thumbnailUrl) + '" alt="' + name + '" loading="lazy" />';
+        if (type === 'videos' && item.url) media = '<video src="' + escapeAttr(item.url) + '" controls preload="metadata"></video>';
+        return '<article class="resource-item"><strong>' + name + '</strong><small>' + url + '</small>' + media + '<details><summary>原始数据</summary><pre>' + meta + '</pre></details></article>';
+      }
+
+      function attachBase64Audio(audioEl, data) {
+        if (!data || !data.audioBase64) return;
+        const contentType = data.audioContentType || 'audio/wav';
+        const blob = base64ToBlob(data.audioBase64, contentType);
+        setAudioBlob(audioEl, blob);
+      }
+
+      function setAudioBlob(audioEl, blob) {
+        if (audioEl.dataset.objectUrl) URL.revokeObjectURL(audioEl.dataset.objectUrl);
+        const url = URL.createObjectURL(blob);
+        audioEl.dataset.objectUrl = url;
+        audioEl.src = url;
+      }
+
+      function wavHeader(arrayBuffer, sampleRate) {
+        const pcm = new Uint8Array(arrayBuffer);
+        const header = new ArrayBuffer(44 + pcm.byteLength);
+        const view = new DataView(header);
+        writeAscii(view, 0, 'RIFF');
+        view.setUint32(4, 36 + pcm.byteLength, true);
+        writeAscii(view, 8, 'WAVE');
+        writeAscii(view, 12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, 1, true);
+        view.setUint32(24, sampleRate || 16000, true);
+        view.setUint32(28, (sampleRate || 16000) * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);
+        writeAscii(view, 36, 'data');
+        view.setUint32(40, pcm.byteLength, true);
+        new Uint8Array(header, 44).set(pcm);
+        return header;
+      }
+
+      function writeAscii(view, offset, text) {
+        for (let i = 0; i < text.length; i += 1) view.setUint8(offset + i, text.charCodeAt(i));
+      }
+
+      function base64ToBlob(base64, contentType) {
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+        return new Blob([bytes], { type: contentType });
+      }
+
+      function buildUrl(path) {
+        if (/^https?:\/\//i.test(path)) return path;
+        return state.apiBaseUrl.replace(/\/+$/, '') + '/' + String(path || '').replace(/^\/+/, '');
+      }
+
+      function normalizeApiBase(value) {
+        return (value || DEFAULT_API_BASE).trim().replace(/\/+$/, '');
+      }
+
+      function defaultWsUrl(apiBase) {
+        try {
+          const url = new URL(apiBase);
+          url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+          url.pathname = '/ws/realtime/';
+          url.search = '';
+          url.hash = '';
+          return url.toString();
+        } catch (_) {
+          return 'ws://localhost:8880/ws/realtime/';
+        }
+      }
+
+      function headersToObject(headers) {
+        const obj = {};
+        headers.forEach((value, key) => { obj[key.toLowerCase()] = value; });
+        return obj;
+      }
+
+      function describeBody(body) {
+        if (!body) return null;
+        if (body instanceof FormData) {
+          const data = {};
+          body.forEach((value, key) => { data[key] = value instanceof File ? { fileName: value.name, size: value.size, type: value.type } : value; });
+          return data;
+        }
+        try { return JSON.parse(body); } catch (_) { return String(body).slice(0, 500); }
+      }
+
+      function unwrap(payload) {
+        if (payload && typeof payload === 'object' && payload.data && typeof payload.data === 'object') return payload.data;
+        return payload;
+      }
+
+      function writeOutput(el, result) {
+        el.textContent = pretty(result);
+      }
+
+      function showLocalError(el, message) {
+        const result = { ok: false, error: message };
+        el.textContent = pretty(result);
+        setStatus(message, 'error');
+      }
+
+      function addLog(title, data, tone) {
+        const details = document.createElement('details');
+        details.className = 'log-entry';
+        details.dataset.tone = tone || 'ok';
+        details.open = true;
+        const summary = document.createElement('summary');
+        summary.textContent = new Date().toLocaleTimeString() + ' · ' + title;
+        const pre = document.createElement('pre');
+        pre.textContent = pretty(data);
+        details.appendChild(summary);
+        details.appendChild(pre);
+        els.logList.prepend(details);
+      }
+
+      function setStatus(text, tone) {
+        els.statusText.textContent = text;
+        els.statusPill.dataset.tone = tone || 'warn';
+      }
+
+      function pretty(value) {
+        return JSON.stringify(value, null, 2);
+      }
+
+      function parseMaybeJson(value) {
+        try { return JSON.parse(value); } catch (_) { return value; }
+      }
+
+      function pick(obj, keys) {
+        const out = {};
+        keys.forEach(key => { if (obj && Object.prototype.hasOwnProperty.call(obj, key)) out[key] = obj[key]; });
+        return out;
+      }
+
+      function escapeHtml(value) {
+        return String(value == null ? '' : value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function escapeAttr(value) {
+        return escapeHtml(value).replace(/`/g, '&#096;');
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -14,7 +14,7 @@ from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import LLMModel, LLMProvider, TenantLLMModelGrant, TenantLLMSettings, TTSProvider, TTSVoice
+from apps.ai_models.models import AgentApplication, LLMModel, LLMProvider, TenantLLMModelGrant, TenantLLMSettings, TTSProvider, TTSVoice
 from apps.devices.models import Device, DeviceApplication, DeviceAuthorizationCode, DeviceGroup
 from apps.resources.models import ScrollingText, ScrollingTextItem
 from apps.tenants.models import Tenant
@@ -35,6 +35,11 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             tenant=self.tenant,
             name='Lobby App',
             code='lobby-app',
+        )
+        self.agent_application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Lobby Agent',
+            system_prompt='你是大厅数字人。',
         )
 
     def grant_permissions(self, *codes: str):
@@ -152,6 +157,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         Device.objects.create(
             tenant=self.tenant,
             application=application,
+            agent_application=self.agent_application,
             name='Lobby Text Device',
             code='ANDROID-TEXT-001',
             authorization_type=Device.AUTHORIZATION_PERMANENT,
@@ -179,6 +185,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         Device.objects.create(
             tenant=self.tenant,
             application=self.application,
+            agent_application=self.agent_application,
             name='Voice Device',
             code='ANDROID-VOICE-001',
             authorization_type=Device.AUTHORIZATION_PERMANENT,
@@ -192,7 +199,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('默认 LLM 模型', response.data['message'])
+        self.assertIn('绑定智能体配置可用 LLM 模型', response.data['message'])
 
     def test_device_voice_chat_accepts_pcm_audio_for_bound_device(self):
         provider = LLMProvider.objects.create(
@@ -203,6 +210,8 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             is_active=True,
         )
         model = LLMModel.objects.create(provider=provider, name='qwen/qwen3-32b', is_active=True)
+        self.agent_application.llm_model = model
+        self.agent_application.save(update_fields=['llm_model', 'llm_provider', 'model_name', 'updated_at'])
         TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
         TenantLLMSettings.objects.create(tenant=self.tenant, default_model=model)
         tts_provider, _ = TTSProvider.objects.update_or_create(
@@ -227,6 +236,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         Device.objects.create(
             tenant=self.tenant,
             application=self.application,
+            agent_application=self.agent_application,
             name='Voice Device',
             code='ANDROID-VOICE-002',
             authorization_type=Device.AUTHORIZATION_PERMANENT,
@@ -258,6 +268,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         Device.objects.create(
             tenant=self.tenant,
             application=self.application,
+            agent_application=self.agent_application,
             name='Old Name',
             code='ANDROID-BOARD-001',
             authorization_type=Device.AUTHORIZATION_PERMANENT,
@@ -332,6 +343,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         Device.objects.create(
             tenant=self.tenant,
             application=self.application,
+            agent_application=self.agent_application,
             group=group,
             name='Lobby Android',
             code='ANDROID-BOARD-001',
@@ -341,6 +353,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         Device.objects.create(
             tenant=self.tenant,
             application=self.application,
+            agent_application=self.agent_application,
             name='Meeting Room',
             code='ANDROID-BOARD-002',
             authorization_type=Device.AUTHORIZATION_PERMANENT,
@@ -359,6 +372,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         Device.objects.create(
             tenant=self.tenant,
             application=self.application,
+            agent_application=self.agent_application,
             name='Normal Android',
             code='ANDROID-NORMAL-001',
             authorization_type=Device.AUTHORIZATION_PERMANENT,
@@ -368,6 +382,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         Device.objects.create(
             tenant=self.tenant,
             application=self.application,
+            agent_application=self.agent_application,
             name='Disabled Android',
             code='ANDROID-DISABLED-001',
             authorization_type=Device.AUTHORIZATION_PERMANENT,
@@ -390,9 +405,15 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             name='Meeting App',
             code='meeting-app',
         )
+        next_agent_application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Meeting Agent',
+            system_prompt='你是会议室数字人。',
+        )
         device = Device.objects.create(
             tenant=self.tenant,
             application=self.application,
+            agent_application=self.agent_application,
             name='Old Name',
             code='ANDROID-BOARD-001',
             software_version='1.0.0',
@@ -407,6 +428,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
                 'location': 'New Location',
                 'groupId': group.id,
                 'applicationId': next_application.id,
+                'agentApplicationId': next_agent_application.id,
                 'deviceCode': 'SHOULD-NOT-CHANGE',
                 'softwareVersion': '9.9.9',
                 'authorizationType': Device.AUTHORIZATION_TRIAL,
@@ -422,6 +444,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(device.location, 'New Location')
         self.assertEqual(device.group_id, group.id)
         self.assertEqual(device.application_id, next_application.id)
+        self.assertEqual(device.agent_application_id, next_agent_application.id)
         self.assertEqual(device.code, 'ANDROID-BOARD-001')
         self.assertEqual(device.software_version, '1.0.0')
         self.assertEqual(device.authorization_type, Device.AUTHORIZATION_PERMANENT)
@@ -486,6 +509,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             {
                 'tenantId': self.tenant.id,
                 'applicationId': self.application.id,
+                'agentApplicationId': self.agent_application.id,
                 'groupId': group.id,
                 'authorizationType': Device.AUTHORIZATION_TRIAL,
                 'expiresAt': expires_at.isoformat(),
@@ -501,6 +525,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         device = Device.objects.get(code='ANDROID-BIND-001')
         self.assertEqual(device.tenant_id, self.tenant.id)
         self.assertEqual(device.application_id, self.application.id)
+        self.assertEqual(device.agent_application_id, self.agent_application.id)
         self.assertEqual(device.group_id, group.id)
         self.assertEqual(device.authorization_type, Device.AUTHORIZATION_TRIAL)
         self.assertIsNotNone(device.expires_at)
@@ -572,6 +597,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         device = Device.objects.create(
             tenant=self.tenant,
             application=self.application,
+            agent_application=self.agent_application,
             name='Authorized Android',
             code='ANDROID-AUTHZ-001',
             status=Device.STATUS_ONLINE,
@@ -595,6 +621,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             {
                 'tenantId': self.tenant.id,
                 'applicationId': self.application.id,
+                'agentApplicationId': self.agent_application.id,
                 'authorizationType': Device.AUTHORIZATION_TRIAL,
                 'expiresAt': expires_at.isoformat(),
                 'isEnabled': True,
@@ -639,6 +666,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         device = Device.objects.create(
             tenant=self.tenant,
             application=self.application,
+            agent_application=self.agent_application,
             name='WebSocket Android',
             code='ANDROID-WS-001',
             status=Device.STATUS_OFFLINE,

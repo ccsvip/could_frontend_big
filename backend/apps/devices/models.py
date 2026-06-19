@@ -112,7 +112,15 @@ class Device(models.Model):
         DeviceApplication,
         on_delete=models.SET_NULL,
         related_name='devices',
-        verbose_name='绑定应用',
+        verbose_name='绑定资源应用',
+        null=True,
+        blank=True,
+    )
+    agent_application = models.ForeignKey(
+        'ai_models.AgentApplication',
+        on_delete=models.SET_NULL,
+        related_name='bound_devices',
+        verbose_name='绑定智能体',
         null=True,
         blank=True,
     )

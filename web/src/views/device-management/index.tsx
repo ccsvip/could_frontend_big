@@ -65,6 +65,7 @@ import { fetchImageResources, fetchVideoResources } from '../../api/modules/reso
 import { fetchScrollingTexts } from '../../api/modules/scrolling-texts';
 import { fetchModelAssets } from '../../api/modules/models';
 import { fetchVoiceTones } from '../../api/modules/voice-tones';
+import { fetchAgentApplications, type AgentApplicationRecord } from '../../api/modules/applications';
 import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
 
@@ -72,6 +73,7 @@ type DeviceEditForm = {
   name: string;
   location?: string;
   applicationId?: number | null;
+  agentApplicationId?: number | null;
   groupId?: number | null;
 };
 
@@ -100,13 +102,15 @@ const isDeviceRealtimePayload = (payload: unknown): payload is { type: string } 
   !!payload && typeof payload === 'object' && typeof (payload as { type?: unknown }).type === 'string';
 
 const emptyGroupOption = [{ label: '未分组', value: null as number | null }];
-const emptyApplicationOption = [{ label: '待绑定应用', value: null as number | null }];
+const emptyApplicationOption = [{ label: '待绑定资源应用', value: null as number | null }];
+const emptyAgentApplicationOption = [{ label: '待绑定智能体', value: null as number | null }];
 
 export const DeviceManagementPage = () => {
   const [devices, setDevices] = useState<DeviceRecord[]>([]);
   const [stats, setStats] = useState({ total: 0, online: 0, offline: 0, trial: 0, permanent: 0 });
   const [groups, setGroups] = useState<DeviceGroupRecord[]>([]);
   const [applications, setApplications] = useState<DeviceApplicationRecord[]>([]);
+  const [agentApplications, setAgentApplications] = useState<AgentApplicationRecord[]>([]);
   const [resourceOptions, setResourceOptions] = useState<ResourceOption[]>([]);
   const [scrollingTextOptions, setScrollingTextOptions] = useState<ResourceOption[]>([]);
   const [voiceToneOptions, setVoiceToneOptions] = useState<ResourceOption[]>([]);
@@ -149,11 +153,12 @@ export const DeviceManagementPage = () => {
 
   const groupOptions = useMemo(() => toSelectOptions(groups), [groups]);
   const applicationOptions = useMemo(() => toSelectOptions(applications), [applications]);
+  const agentApplicationOptions = useMemo(() => toSelectOptions(agentApplications), [agentApplications]);
   const selectedApplication = useMemo(
     () => applications.find((item) => item.id === selectedApplicationId) ?? applications[0] ?? null,
     [applications, selectedApplicationId],
   );
-  const unboundDeviceCount = useMemo(() => devices.filter((item) => !item.applicationId).length, [devices]);
+  const unboundDeviceCount = useMemo(() => devices.filter((item) => !item.agentApplicationId).length, [devices]);
 
   const loadResourceOptions = async () => {
     try {
@@ -185,16 +190,18 @@ export const DeviceManagementPage = () => {
   const loadData = async (query: DeviceListQuery = filters) => {
     setLoading(true);
     try {
-      const [deviceResponse, statsResponse, groupResponse, applicationResponse] = await Promise.all([
+      const [deviceResponse, statsResponse, groupResponse, applicationResponse, agentApplicationResponse] = await Promise.all([
         fetchDevices({ ...query, keyword }),
         fetchDeviceStats(),
         fetchDeviceGroups(),
         fetchDeviceApplications(),
+        fetchAgentApplications({ page: 1 }),
       ]);
       setDevices(deviceResponse.results);
       setStats(statsResponse);
       setGroups(groupResponse.results);
       setApplications(applicationResponse.results);
+      setAgentApplications(agentApplicationResponse.results);
       setSelectedApplicationId((current) => current ?? applicationResponse.results[0]?.id ?? null);
     } catch {
       // Global interceptor displays request errors.
@@ -323,6 +330,7 @@ export const DeviceManagementPage = () => {
       name: record.name,
       location: record.location,
       applicationId: record.applicationId ?? null,
+      agentApplicationId: record.agentApplicationId ?? null,
       groupId: record.groupId ?? null,
     });
   };
@@ -449,11 +457,18 @@ export const DeviceManagementPage = () => {
       render: (value: boolean) => <Tag color={value ? 'success' : 'error'}>{value ? '正常' : '停用'}</Tag>,
     },
     {
-      title: '绑定应用',
+      title: '绑定智能体',
+      dataIndex: 'agentApplicationName',
+      key: 'agentApplicationName',
+      width: '10%',
+      render: (value: string) => (value ? <Tag color="purple">{value}</Tag> : <Tag color="warning">待绑定智能体</Tag>),
+    },
+    {
+      title: '资源应用',
       dataIndex: 'applicationName',
       key: 'applicationName',
       width: '10%',
-      render: (value: string) => (value ? <Tag color="cyan">{value}</Tag> : <Tag color="warning">待绑定</Tag>),
+      render: (value: string) => (value ? <Tag color="cyan">{value}</Tag> : <Tag color="default">未绑定资源</Tag>),
     },
     {
       title: '分组',
@@ -489,7 +504,7 @@ export const DeviceManagementPage = () => {
       width: '8%',
       render: (_, record) =>
         canUpdateDevice ? (
-          <Tooltip title="绑定应用与分组">
+          <Tooltip title="绑定智能体、资源应用与分组">
             <Button size="small" icon={<LinkOutlined />} onClick={() => openDeviceEdit(record)}>
               绑定
             </Button>
@@ -641,7 +656,7 @@ export const DeviceManagementPage = () => {
                   <Select
                     value={filters.applicationId}
                     onChange={(value) => setFilters((current) => ({ ...current, applicationId: value }))}
-                    options={[{ label: '全部应用', value: 'all' }, ...applicationOptions]}
+                    options={[{ label: '全部资源应用', value: 'all' }, ...applicationOptions]}
                   />
                   <Select
                     value={filters.groupId}
@@ -804,8 +819,11 @@ export const DeviceManagementPage = () => {
           <Form.Item label="部署位置" name="location">
             <Input />
           </Form.Item>
-          <Form.Item label="绑定应用" name="applicationId">
-            <Select options={[...emptyApplicationOption, ...applicationOptions]} />
+          <Form.Item label="绑定智能体" name="agentApplicationId">
+            <Select options={[...emptyAgentApplicationOption, ...agentApplicationOptions]} optionFilterProp="label" showSearch />
+          </Form.Item>
+          <Form.Item label="资源应用" name="applicationId">
+            <Select options={[...emptyApplicationOption, ...applicationOptions]} optionFilterProp="label" showSearch />
           </Form.Item>
           <Form.Item label="分组" name="groupId">
             <Select options={[...emptyGroupOption, ...groupOptions]} />

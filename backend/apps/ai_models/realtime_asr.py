@@ -62,7 +62,7 @@ def resolve_asr_device_connection(device_code: str) -> dict[str, Any] | None:
         return None
 
     devices = list(
-        Device.objects.select_related('tenant', 'application')
+        Device.objects.select_related('tenant', 'application', 'agent_application')
         .filter(code=device_code)
         .order_by('id')[:2]
     )
@@ -82,6 +82,7 @@ def resolve_asr_device_connection(device_code: str) -> dict[str, Any] | None:
         'device_code': device.code,
         'tenant_id': device.tenant_id,
         'application_id': device.application_id,
+        'agent_application_id': device.agent_application_id,
     }
 
 

@@ -91,7 +91,7 @@ class CompanyDeviceWritePermission(BasePermission):
     destroy=extend_schema(tags=['Devices']),
 )
 class DeviceViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin, viewsets.ModelViewSet):
-    queryset = Device.objects.select_related('application', 'group').all()
+    queryset = Device.objects.select_related('application', 'agent_application', 'group').all()
     lookup_field = 'code'
 
     def get_serializer_class(self):
@@ -191,7 +191,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
     serializer_class = DeviceAuthorizationRequestSerializer
     lookup_field = 'code'
     lookup_value_regex = '[^/]+'
-    queryset = Device.objects.select_related('tenant', 'application', 'group').all()
+    queryset = Device.objects.select_related('tenant', 'application', 'agent_application', 'group').all()
 
     def get_queryset(self):
         activation_logs = DeviceAuthLog.objects.filter(
@@ -231,7 +231,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=['get'], url_path='logs')
     def logs(self, request):
-        queryset = DeviceAuthLog.objects.select_related('tenant', 'application', 'device').filter(
+        queryset = DeviceAuthLog.objects.select_related('tenant', 'application', 'device__agent_application').filter(
             action__in=AUTHORIZATION_LOG_ACTIONS,
         ).order_by('-created_at', '-id')
         tenant_id = request.query_params.get('tenantId', '').strip()
@@ -250,7 +250,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=['get'], url_path='authorizations')
     def authorizations(self, request):
         queryset = (
-            Device.objects.select_related('tenant', 'application', 'group')
+            Device.objects.select_related('tenant', 'application', 'agent_application', 'group')
             .filter(tenant__isnull=False)
             .order_by('-updated_at', '-id')
         )
@@ -269,7 +269,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=['post'], url_path='bind')
     def bind(self, request, code=None):
-        device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'group'), code=code)
+        device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'agent_application', 'group'), code=code)
         serializer = DeviceBindSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         device = serializer.save(device=device)
@@ -279,7 +279,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=['post'], url_path='ignore')
     def ignore(self, request, code=None):
-        device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'group'), code=code)
+        device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'agent_application', 'group'), code=code)
         device.authorization_ignored_at = timezone.now()
         device.save(update_fields=['authorization_ignored_at', 'updated_at'])
         self._log_platform_action(device, DeviceAuthLog.ACTION_IGNORE, '设备授权请求已忽略', request)
@@ -287,7 +287,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=['patch'], url_path='name')
     def rename(self, request, code=None):
-        device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'group'), code=code)
+        device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'agent_application', 'group'), code=code)
         next_name = str(request.data.get('name') or '').strip()
         if not next_name:
             return Response({'name': '设备名称不能为空'}, status=status.HTTP_400_BAD_REQUEST)
@@ -297,7 +297,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=['post'], url_path='authorize')
     def authorize(self, request, code=None):
-        device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'group'), code=code)
+        device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'agent_application', 'group'), code=code)
         serializer = DeviceBindSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         device = serializer.save(device=device)
@@ -307,7 +307,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=['post'], url_path='revoke')
     def revoke(self, request, code=None):
-        device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'group'), code=code)
+        device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'agent_application', 'group'), code=code)
         device.is_enabled = False
         device.status = Device.STATUS_OFFLINE
         device.save(update_fields=['is_enabled', 'status', 'updated_at'])
@@ -329,6 +329,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
             device_info={
                 'tenantId': device.tenant_id,
                 'applicationId': device.application_id,
+                'agentApplicationId': device.agent_application_id,
                 'groupId': device.group_id,
                 'authorizationType': device.authorization_type,
                 'expiresAt': device.expires_at.isoformat() if device.expires_at else None,
@@ -344,6 +345,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
                 'action': action,
                 'tenantId': device.tenant_id,
                 'applicationId': device.application_id,
+                'agentApplicationId': device.agent_application_id,
                 'groupId': device.group_id,
                 'deviceCode': device.code,
                 'status': device.status,
@@ -398,13 +400,14 @@ class DeviceActivationView(APIView):
                 is_enabled=True,
                 **defaults,
             )
-            message = '设备上报成功，待后台绑定应用'
+            message = '设备上报成功，待后台绑定智能体'
         self._log_activation(device, device_code, True, message, request)
         return Response(
             {
                 'device': DeviceSerializer(device, context={'request': request}).data,
                 'application': self._application_payload(device.application),
-                'bindingStatus': 'bound' if device.application_id and device.tenant_id else 'pending',
+                'agentApplication': self._agent_application_payload(device.agent_application),
+                'bindingStatus': 'bound' if device.agent_application_id and device.tenant_id else 'pending',
             },
             status=status.HTTP_200_OK,
         )
@@ -417,6 +420,17 @@ class DeviceActivationView(APIView):
             'id': application.id,
             'name': application.name,
             'code': application.code,
+        }
+
+    @staticmethod
+    def _agent_application_payload(agent_application):
+        if agent_application is None:
+            return None
+        return {
+            'id': agent_application.id,
+            'name': agent_application.name,
+            'llmModelId': agent_application.llm_model_id,
+            'llmModelName': agent_application.model_name,
         }
 
     @staticmethod
@@ -461,7 +475,7 @@ class DeviceRuntimeView(APIView):
         if not device_code:
             return None, Response({'message': '设备码不能为空'}, status=status.HTTP_400_BAD_REQUEST)
         devices = list(
-            Device.objects.select_related('tenant', 'application')
+            Device.objects.select_related('tenant', 'application', 'agent_application')
             .filter(code=device_code)
             .order_by('id')[:2]
         )
@@ -486,8 +500,9 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
         if error is not None:
             return error
         application = device.application
-        if application is None or not application.is_active:
-            return Response({'message': '设备未绑定可用应用'}, status=status.HTTP_403_FORBIDDEN)
+        agent_application = device.agent_application
+        if agent_application is None or not agent_application.is_active:
+            return Response({'message': '设备未绑定可用智能体'}, status=status.HTTP_403_FORBIDDEN)
         DeviceAuthLog.objects.create(
             tenant=device.tenant,
             application=application,
@@ -501,22 +516,37 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
         return Response(
             {
                 'device': DeviceSerializer(device, context={'request': request}).data,
-                'application': {
-                    'id': application.id,
-                    'name': application.name,
-                    'code': application.code,
-                },
+                'application': (
+                    {
+                        'id': application.id,
+                        'name': application.name,
+                        'code': application.code,
+                    }
+                    if application is not None
+                    else None
+                ),
+                'agentApplication': DeviceActivationView._agent_application_payload(agent_application),
                 'resources': self._resources_payload(application, request),
             },
             status=status.HTTP_200_OK,
         )
 
     @staticmethod
-    def _resources_payload(application: DeviceApplication, request):
+    def _resources_payload(application: DeviceApplication | None, request):
         def file_url(file_field):
             if not file_field:
                 return ''
             return request.build_absolute_uri(file_field.url)
+
+        if application is None or not application.is_active:
+            return {
+                'images': [],
+                'videos': [],
+                'scrollingTexts': [],
+                'voiceTones': [],
+                'models': [],
+                'commandGroups': [],
+            }
 
         resources = application.resources.all()
         return {
@@ -628,8 +658,8 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         device, error = self.validate_device(request)
         if error is not None:
             return error
-        if device.application is None or not device.application.is_active:
-            return Response({'message': '设备未绑定可用应用'}, status=status.HTTP_403_FORBIDDEN)
+        if device.agent_application is None or not device.agent_application.is_active:
+            return Response({'message': '设备未绑定可用智能体'}, status=status.HTTP_403_FORBIDDEN)
 
         question_text = self._request_question_text(request)
         if not question_text:
@@ -694,25 +724,31 @@ class DeviceVoiceChatView(DeviceRuntimeView):
 
     @staticmethod
     def _generate_answer(device: Device, question_text: str) -> str:
-        settings = llm_services.get_tenant_llm_settings(device.tenant)
-        model = settings.default_model if settings is not None else None
+        agent_application = device.agent_application
+        model = agent_application.llm_model if agent_application is not None else None
+        if model is None:
+            settings = llm_services.get_tenant_llm_settings(device.tenant)
+            model = settings.default_model if settings is not None else None
         if not llm_services.is_llm_model_effective_for_tenant(device.tenant, model):
-            raise RuntimeError('请先设置公司默认 LLM 模型')
+            raise RuntimeError('请先为设备绑定智能体配置可用 LLM 模型')
 
         system_prompt = (
-            '你是数字人设备的中文语音问答助手。'
-            '回答要自然、简洁，适合直接转成语音播报。'
+            agent_application.system_prompt.strip()
+            if agent_application is not None and agent_application.system_prompt.strip()
+            else '你是数字人设备的中文语音问答助手。回答要自然、简洁，适合直接转成语音播报。'
         )
+        if agent_application is not None:
+            system_prompt += f' 当前设备智能体：{agent_application.name}。'
         if device.application is not None:
-            system_prompt += f' 当前设备应用：{device.application.name}。'
+            system_prompt += f' 当前设备资源应用：{device.application.name}。'
         return llm_services.run_llm_chat_completion(
             model=model,
             messages=[
                 {'role': 'system', 'content': system_prompt},
                 {'role': 'user', 'content': question_text},
             ],
-            temperature=0.7,
-            max_tokens=1000,
+            temperature=agent_application.temperature if agent_application is not None else 0.7,
+            max_tokens=None if agent_application is not None and agent_application.max_tokens_unlimited else (agent_application.max_tokens if agent_application is not None else 1000),
         )
 
     @staticmethod

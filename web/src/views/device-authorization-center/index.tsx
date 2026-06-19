@@ -44,12 +44,14 @@ import {
   type DeviceGroupRecord,
 } from '../../api/modules/devices';
 import { fetchTenants, type TenantRecord } from '../../api/modules/tenants';
+import { fetchAgentApplications, type AgentApplicationRecord } from '../../api/modules/applications';
 
 const PAGE_SIZE = 10;
 
 type BindForm = {
   tenantId: number;
   applicationId?: number | null;
+  agentApplicationId?: number | null;
   groupId?: number | null;
   authorizationType: DeviceAuthorizationType;
   expiresAt?: Dayjs | null;
@@ -68,8 +70,9 @@ const bindingStatusMap: Record<DeviceAuthorizationRequestRecord['bindingStatus']
 };
 
 const runtimeStatusMap: Record<DeviceAuthorizationRequestRecord['runtimeStatus'], { color: string; text: string }> = {
-  waiting_application: { color: 'default', text: '待绑定应用' },
-  ready: { color: 'processing', text: '可拉取资源' },
+  waiting_application: { color: 'default', text: '待绑定智能体' },
+  waiting_agent: { color: 'default', text: '待绑定智能体' },
+  ready: { color: 'processing', text: '可拉取配置' },
 };
 
 const logActionMap: Record<DeviceActivationLogRecord['action'], { color: string; text: string }> = {
@@ -86,6 +89,7 @@ export const DeviceAuthorizationCenterPage = () => {
   const [logs, setLogs] = useState<DeviceActivationLogRecord[]>([]);
   const [tenants, setTenants] = useState<TenantRecord[]>([]);
   const [applications, setApplications] = useState<DeviceApplicationRecord[]>([]);
+  const [agentApplications, setAgentApplications] = useState<AgentApplicationRecord[]>([]);
   const [groups, setGroups] = useState<DeviceGroupRecord[]>([]);
   const [requestTotal, setRequestTotal] = useState(0);
   const [authorizationTotal, setAuthorizationTotal] = useState(0);
@@ -110,8 +114,18 @@ export const DeviceAuthorizationCenterPage = () => {
 
   const tenantOptions = useMemo(() => tenants.map((item) => ({ label: item.name, value: item.id })), [tenants]);
   const applicationOptions = useMemo(
-    () => [{ label: '暂不绑定应用', value: null as number | null }, ...applications.map((item) => ({ label: item.name, value: item.id }))],
+    () => [
+      { label: '暂不绑定资源应用', value: null as number | null },
+      ...applications.map((item) => ({ label: item.name, value: item.id })),
+    ],
     [applications],
+  );
+  const agentApplicationOptions = useMemo(
+    () => [
+      { label: '请选择智能体', value: null as number | null },
+      ...agentApplications.map((item) => ({ label: item.name, value: item.id })),
+    ],
+    [agentApplications],
   );
   const groupOptions = useMemo(
     () => [{ label: '暂不分组', value: null as number | null }, ...groups.map((item) => ({ label: item.name, value: item.id }))],
@@ -172,14 +186,17 @@ export const DeviceAuthorizationCenterPage = () => {
 
   const loadTenantOwnedOptions = async (tenantId: number) => {
     try {
-      const [applicationResponse, groupResponse] = await Promise.all([
+      const [applicationResponse, agentApplicationResponse, groupResponse] = await Promise.all([
         fetchDeviceApplications({ tenant: tenantId }),
+        fetchAgentApplications({ page: 1, tenant: tenantId }),
         fetchDeviceGroups({ tenant: tenantId }),
       ]);
       setApplications(applicationResponse.results);
+      setAgentApplications(agentApplicationResponse.results.filter((item) => item.isActive));
       setGroups(groupResponse.results);
     } catch {
       setApplications([]);
+      setAgentApplications([]);
       setGroups([]);
     }
   };
@@ -228,6 +245,7 @@ export const DeviceAuthorizationCenterPage = () => {
     bindForm.setFieldsValue({
       tenantId,
       applicationId: record.applicationId ?? null,
+      agentApplicationId: record.agentApplicationId ?? null,
       groupId: record.groupId ?? null,
       authorizationType: record.authorizationType,
       expiresAt: record.expiresAt ? dayjs(record.expiresAt) : null,
@@ -239,7 +257,7 @@ export const DeviceAuthorizationCenterPage = () => {
   };
 
   const handleTenantChange = (tenantId: number) => {
-    bindForm.setFieldsValue({ applicationId: null, groupId: null });
+    bindForm.setFieldsValue({ applicationId: null, agentApplicationId: null, groupId: null });
     void loadTenantOwnedOptions(tenantId);
   };
 
@@ -251,6 +269,7 @@ export const DeviceAuthorizationCenterPage = () => {
       await bindDeviceAuthorizationRequest(bindingRequest.deviceCode, {
         tenantId: values.tenantId,
         applicationId: values.applicationId ?? null,
+        agentApplicationId: values.agentApplicationId ?? null,
         groupId: values.groupId ?? null,
         authorizationType: values.authorizationType,
         expiresAt: values.authorizationType === 'trial' ? values.expiresAt?.toISOString() : null,
@@ -276,6 +295,7 @@ export const DeviceAuthorizationCenterPage = () => {
       await authorizeDevice(bindingRequest.deviceCode, {
         tenantId: values.tenantId,
         applicationId: values.applicationId ?? null,
+        agentApplicationId: values.agentApplicationId ?? null,
         groupId: values.groupId ?? null,
         authorizationType: values.authorizationType,
         expiresAt: values.authorizationType === 'trial' ? values.expiresAt?.toISOString() : null,
@@ -434,7 +454,14 @@ export const DeviceAuthorizationCenterPage = () => {
       },
     },
     {
-      title: '应用',
+      title: '智能体',
+      dataIndex: 'agentApplicationName',
+      key: 'agentApplicationName',
+      width: 160,
+      render: (value: string) => value || '-',
+    },
+    {
+      title: '资源应用',
       dataIndex: 'applicationName',
       key: 'applicationName',
       width: 160,
@@ -491,7 +518,8 @@ export const DeviceAuthorizationCenterPage = () => {
     },
     { title: '设备名称', dataIndex: 'name', key: 'name', width: 220, render: (_, record) => renderEditableDeviceName(record) },
     { title: '所属公司', dataIndex: 'tenantName', key: 'tenantName', width: 160 },
-    { title: '应用', dataIndex: 'applicationName', key: 'applicationName', width: 160, render: (value) => value || '-' },
+    { title: '智能体', dataIndex: 'agentApplicationName', key: 'agentApplicationName', width: 160, render: (value) => value || '-' },
+    { title: '资源应用', dataIndex: 'applicationName', key: 'applicationName', width: 160, render: (value) => value || '-' },
     {
       title: '授权',
       key: 'authorization',
@@ -564,7 +592,8 @@ export const DeviceAuthorizationCenterPage = () => {
     },
     { title: '消息', dataIndex: 'message', key: 'message', width: 220, ellipsis: true },
     { title: '所属公司', dataIndex: 'tenantName', key: 'tenantName', width: 150, render: (value) => value || '-' },
-    { title: '应用', dataIndex: 'applicationName', key: 'applicationName', width: 150, render: (value) => value || '-' },
+    { title: '智能体', dataIndex: 'agentApplicationName', key: 'agentApplicationName', width: 150, render: (value) => value || '-' },
+    { title: '资源应用', dataIndex: 'applicationName', key: 'applicationName', width: 150, render: (value) => value || '-' },
     {
       title: '版本 / 系统',
       key: 'version',
@@ -746,7 +775,10 @@ export const DeviceAuthorizationCenterPage = () => {
           <Form.Item label="所属公司" name="tenantId" rules={[{ required: true, message: '请选择公司' }]}>
             <Select options={tenantOptions} onChange={handleTenantChange} />
           </Form.Item>
-          <Form.Item label="绑定应用" name="applicationId">
+          <Form.Item label="绑定智能体" name="agentApplicationId" rules={[{ required: true, message: '请选择智能体' }]}>
+            <Select options={agentApplicationOptions} optionFilterProp="label" showSearch />
+          </Form.Item>
+          <Form.Item label="资源应用" name="applicationId">
             <Select options={applicationOptions} optionFilterProp="label" showSearch />
           </Form.Item>
           <Form.Item label="设备分组" name="groupId">

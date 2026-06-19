@@ -166,7 +166,7 @@ class ASRDeviceStatusView(APIView):
         if connection is None:
             return Response({'message': '设备未绑定公司或不可用'}, status=status.HTTP_403_FORBIDDEN)
 
-        device = Device.objects.select_related('tenant', 'application').get(id=connection['device_id'])
+        device = Device.objects.select_related('tenant', 'application', 'agent_application').get(id=connection['device_id'])
         return Response({
             **serialize_asr_status(),
             'deviceCode': device.code,
@@ -175,6 +175,8 @@ class ASRDeviceStatusView(APIView):
             'tenantName': device.tenant.name if device.tenant else '',
             'applicationId': device.application_id,
             'applicationName': device.application.name if device.application else '',
+            'agentApplicationId': device.agent_application_id,
+            'agentApplicationName': device.agent_application.name if device.agent_application else '',
         })
 
 

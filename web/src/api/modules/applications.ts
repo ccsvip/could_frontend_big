@@ -46,6 +46,7 @@ export type AgentApplicationListResponse = {
 export type AgentApplicationListQuery = {
   page?: number;
   keyword?: string;
+  tenant?: number;
 };
 
 export type AgentApplicationPayload = {
@@ -70,6 +71,7 @@ export type AgentApplicationPayload = {
 const buildListParams = (query?: AgentApplicationListQuery) => ({
   page: query?.page,
   keyword: query?.keyword || undefined,
+  tenant: query?.tenant,
 });
 
 export const fetchAgentApplications = async (query?: AgentApplicationListQuery) => {

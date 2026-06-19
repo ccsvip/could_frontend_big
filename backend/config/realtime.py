@@ -249,6 +249,7 @@ async def _handle_device_status_start(send, connection: RealtimeConnection, mess
             'type': 'device.status',
             'tenantId': device.tenant_id,
             'applicationId': device.application_id,
+            'agentApplicationId': device.agent_application_id,
             'deviceCode': device.code,
             'status': 'online',
             'isEnabled': device.is_enabled,
