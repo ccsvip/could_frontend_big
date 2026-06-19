@@ -17,6 +17,7 @@ from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.models import AgentApplication, LLMModel, LLMProvider, TenantLLMModelGrant, TenantLLMSettings, TTSProvider, TTSVoice
 from apps.devices.models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceGroup
 from apps.devices.services.authorization import record_device_authorization_action
+from apps.devices.services.queries import device_authorization_requests_queryset
 from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device
 from apps.resources.models import ScrollingText, ScrollingTextItem
 from apps.tenants.models import Tenant
@@ -70,6 +71,37 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         }
         defaults.update(overrides)
         return DeviceAuthorizationCode.objects.create(**defaults)
+
+    def test_authorization_request_query_filters_pending_bound_and_ignored_devices(self):
+        pending = Device.objects.create(name='Pending Device', code='ANDROID-QUERY-PENDING')
+        bound = Device.objects.create(tenant=self.tenant, name='Bound Device', code='ANDROID-QUERY-BOUND')
+        ignored = Device.objects.create(
+            name='Ignored Device',
+            code='ANDROID-QUERY-IGNORED',
+            authorization_ignored_at=timezone.now(),
+        )
+        for device in (pending, bound, ignored):
+            DeviceAuthLog.objects.create(
+                device=device,
+                code=device.code,
+                action=DeviceAuthLog.ACTION_ACTIVATE,
+                result=True,
+                message='设备上报成功',
+                device_info={},
+            )
+
+        self.assertEqual(
+            list(device_authorization_requests_queryset({'bindingStatus': 'pending'}).values_list('code', flat=True)),
+            ['ANDROID-QUERY-PENDING'],
+        )
+        self.assertEqual(
+            list(device_authorization_requests_queryset({'bindingStatus': 'bound'}).values_list('code', flat=True)),
+            ['ANDROID-QUERY-BOUND'],
+        )
+        self.assertEqual(
+            list(device_authorization_requests_queryset({'bindingStatus': 'ignored'}).values_list('code', flat=True)),
+            ['ANDROID-QUERY-IGNORED'],
+        )
 
     def test_authorization_service_records_device_snapshot_in_log(self):
         device = Device.objects.create(

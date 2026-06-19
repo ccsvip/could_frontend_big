@@ -5,7 +5,7 @@ import uuid
 
 from django.core.cache import cache
 from django.db import transaction
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -32,6 +32,11 @@ from .services.authorization import (
     rename_authorization_device,
     revoke_device_authorization,
 )
+from .services.queries import (
+    device_authorization_logs_queryset,
+    device_authorization_requests_queryset,
+    device_authorizations_queryset,
+)
 from .services.runtime import RuntimeDeviceError, get_runtime_device
 from .serializers import (
     DeviceApplicationSerializer,
@@ -45,13 +50,6 @@ from .serializers import (
     DeviceStatsSerializer,
 )
 
-AUTHORIZATION_LOG_ACTIONS = {
-    DeviceAuthLog.ACTION_ACTIVATE,
-    DeviceAuthLog.ACTION_BIND,
-    DeviceAuthLog.ACTION_IGNORE,
-    DeviceAuthLog.ACTION_AUTHORIZE,
-    DeviceAuthLog.ACTION_REVOKE,
-}
 DEFAULT_DEVICE_NAME = '待修改'
 
 def _client_ip(request) -> str | None:
@@ -202,31 +200,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
     queryset = Device.objects.select_related('tenant', 'application', 'agent_application', 'group').all()
 
     def get_queryset(self):
-        activation_logs = DeviceAuthLog.objects.filter(
-            action=DeviceAuthLog.ACTION_ACTIVATE,
-        ).order_by('-created_at', '-id')
-        queryset = (
-            super()
-            .get_queryset()
-            .filter(auth_logs__action=DeviceAuthLog.ACTION_ACTIVATE)
-            .prefetch_related(Prefetch('auth_logs', queryset=activation_logs, to_attr='activation_logs_for_request'))
-            .distinct()
-            .order_by('-updated_at', '-id')
-        )
-        binding_status = self.request.query_params.get('bindingStatus', '').strip()
-        if binding_status == 'pending':
-            queryset = queryset.filter(tenant__isnull=True, authorization_ignored_at__isnull=True)
-        if binding_status == 'bound':
-            queryset = queryset.filter(tenant__isnull=False)
-        if binding_status == 'ignored':
-            queryset = queryset.filter(tenant__isnull=True, authorization_ignored_at__isnull=False)
-        keyword = self.request.query_params.get('keyword', '').strip()
-        if keyword:
-            queryset = queryset.filter(Q(code__icontains=keyword) | Q(name__icontains=keyword))
-        tenant_id = self.request.query_params.get('tenantId', '').strip()
-        if tenant_id.isdigit():
-            queryset = queryset.filter(tenant_id=int(tenant_id))
-        return queryset
+        return device_authorization_requests_queryset(self.request.query_params)
 
     def list(self, request):
         queryset = self.filter_queryset(self.get_queryset())
@@ -239,15 +213,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=['get'], url_path='logs')
     def logs(self, request):
-        queryset = DeviceAuthLog.objects.select_related('tenant', 'application', 'device__agent_application').filter(
-            action__in=AUTHORIZATION_LOG_ACTIONS,
-        ).order_by('-created_at', '-id')
-        tenant_id = request.query_params.get('tenantId', '').strip()
-        if tenant_id.isdigit():
-            queryset = queryset.filter(tenant_id=int(tenant_id))
-        keyword = request.query_params.get('keyword', '').strip()
-        if keyword:
-            queryset = queryset.filter(Q(code__icontains=keyword) | Q(device__name__icontains=keyword))
+        queryset = device_authorization_logs_queryset(request.query_params)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = DeviceActivationLogSerializer(page, many=True)
@@ -257,17 +223,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=['get'], url_path='authorizations')
     def authorizations(self, request):
-        queryset = (
-            Device.objects.select_related('tenant', 'application', 'agent_application', 'group')
-            .filter(tenant__isnull=False)
-            .order_by('-updated_at', '-id')
-        )
-        tenant_id = request.query_params.get('tenantId', '').strip()
-        if tenant_id.isdigit():
-            queryset = queryset.filter(tenant_id=int(tenant_id))
-        keyword = request.query_params.get('keyword', '').strip()
-        if keyword:
-            queryset = queryset.filter(Q(code__icontains=keyword) | Q(name__icontains=keyword))
+        queryset = device_authorizations_queryset(request.query_params)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = DeviceAuthorizationRequestSerializer(page, many=True)
