@@ -1,13 +1,7 @@
 import {
-  CheckCircleOutlined,
-  FileSearchOutlined,
-  LinkOutlined,
-} from '@ant-design/icons';
-import {
   Form,
   Modal,
   Space,
-  Tabs,
   message,
 } from 'antd';
 import dayjs from 'dayjs';
@@ -30,9 +24,9 @@ import {
 } from '../../api/modules/devices';
 import { fetchTenants, type TenantRecord } from '../../api/modules/tenants';
 import { fetchAgentApplications, type AgentApplicationRecord } from '../../api/modules/applications';
-import { AuthorizationTableCard } from './components/AuthorizationTableCard';
 import { EditableDeviceNameCell } from './components/EditableDeviceNameCell';
 import { DeviceAuthorizationModal } from './components/DeviceAuthorizationModal';
+import { DeviceAuthorizationTabs } from './components/DeviceAuthorizationTabs';
 import { DeviceAuthorizationToolbar } from './components/DeviceAuthorizationToolbar';
 import { useDeviceAuthorizationColumns } from './columns';
 import type { BindForm, BindMode } from './types';
@@ -352,75 +346,25 @@ export const DeviceAuthorizationCenterPage = () => {
         onSearch={handleSearch}
       />
 
-      <Tabs
-        items={[
-          {
-            key: 'requests',
-            label: (
-              <Space size={6}>
-                <CheckCircleOutlined />
-                设备请求
-              </Space>
-            ),
-            children: (
-              <AuthorizationTableCard
-                columns={requestColumns}
-                dataSource={requests}
-                rowKey="deviceCode"
-                loading={requestLoading}
-                scrollX={1480}
-                currentPage={requestPage}
-                total={requestTotal}
-                emptyText="暂无设备请求"
-                onPageChange={setRequestPage}
-              />
-            ),
-          },
-          {
-            key: 'authorizations',
-            label: (
-              <Space size={6}>
-                <LinkOutlined />
-                授权管理
-              </Space>
-            ),
-            children: (
-              <AuthorizationTableCard
-                columns={authorizationColumns}
-                dataSource={authorizations}
-                rowKey="deviceCode"
-                loading={authorizationLoading}
-                scrollX={1380}
-                currentPage={authorizationPage}
-                total={authorizationTotal}
-                emptyText="暂无授权设备"
-                onPageChange={setAuthorizationPage}
-              />
-            ),
-          },
-          {
-            key: 'logs',
-            label: (
-              <Space size={6}>
-                <FileSearchOutlined />
-                授权日志
-              </Space>
-            ),
-            children: (
-              <AuthorizationTableCard
-                columns={logColumns}
-                dataSource={logs}
-                rowKey="id"
-                loading={logLoading}
-                scrollX={1390}
-                currentPage={logPage}
-                total={logTotal}
-                emptyText="暂无授权日志"
-                onPageChange={setLogPage}
-              />
-            ),
-          },
-        ]}
+      <DeviceAuthorizationTabs
+        requestColumns={requestColumns}
+        authorizationColumns={authorizationColumns}
+        logColumns={logColumns}
+        requests={requests}
+        authorizations={authorizations}
+        logs={logs}
+        requestLoading={requestLoading}
+        authorizationLoading={authorizationLoading}
+        logLoading={logLoading}
+        requestPage={requestPage}
+        authorizationPage={authorizationPage}
+        logPage={logPage}
+        requestTotal={requestTotal}
+        authorizationTotal={authorizationTotal}
+        logTotal={logTotal}
+        onRequestPageChange={setRequestPage}
+        onAuthorizationPageChange={setAuthorizationPage}
+        onLogPageChange={setLogPage}
       />
 
       <DeviceAuthorizationModal
