@@ -30,7 +30,13 @@ import { DeviceAuthorizationTabs } from './components/DeviceAuthorizationTabs';
 import { DeviceAuthorizationToolbar } from './components/DeviceAuthorizationToolbar';
 import { useDeviceAuthorizationColumns } from './columns';
 import type { BindForm, BindMode } from './types';
-import { buildBindPayload } from './utils';
+import {
+  buildAgentApplicationOptions,
+  buildApplicationOptions,
+  buildBindPayload,
+  buildGroupOptions,
+  buildTenantOptions,
+} from './utils';
 
 export const DeviceAuthorizationCenterPage = () => {
   const [requests, setRequests] = useState<DeviceAuthorizationRequestRecord[]>([]);
@@ -61,25 +67,10 @@ export const DeviceAuthorizationCenterPage = () => {
   const [bindForm] = Form.useForm<BindForm>();
   const hasLoadedRef = useRef(false);
 
-  const tenantOptions = useMemo(() => tenants.map((item) => ({ label: item.name, value: item.id })), [tenants]);
-  const applicationOptions = useMemo(
-    () => [
-      { label: '暂不绑定资源应用', value: null as number | null },
-      ...applications.map((item) => ({ label: item.name, value: item.id })),
-    ],
-    [applications],
-  );
-  const agentApplicationOptions = useMemo(
-    () => [
-      { label: '请选择智能体', value: null as number | null },
-      ...agentApplications.map((item) => ({ label: item.name, value: item.id })),
-    ],
-    [agentApplications],
-  );
-  const groupOptions = useMemo(
-    () => [{ label: '暂不分组', value: null as number | null }, ...groups.map((item) => ({ label: item.name, value: item.id }))],
-    [groups],
-  );
+  const tenantOptions = useMemo(() => buildTenantOptions(tenants), [tenants]);
+  const applicationOptions = useMemo(() => buildApplicationOptions(applications), [applications]);
+  const agentApplicationOptions = useMemo(() => buildAgentApplicationOptions(agentApplications), [agentApplications]);
+  const groupOptions = useMemo(() => buildGroupOptions(groups), [groups]);
 
   const loadRequests = async (page = requestPage) => {
     setRequestLoading(true);
