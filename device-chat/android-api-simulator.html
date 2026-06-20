@@ -593,6 +593,7 @@
       <p class="nav-title">目录</p>
       <nav class="toc" aria-label="接口目录">
         <a href="#overview"><span class="index">0</span><span>对接说明</span></a>
+        <a href="#chain-check"><span class="index">C</span><span>一键链路检测</span></a>
         <a href="#activate"><span class="index">1</span><span>设备激活</span></a>
         <a href="#runtime-config"><span class="index">2</span><span>运行时配置</span></a>
         <a href="#images"><span class="index">3</span><span>获取图片</span></a>
@@ -620,6 +621,24 @@
       <section class="notice" id="overview">
         <div>
           <strong>重要约定：</strong>安卓设备请求不携带 Authorization/JWT；后端通过 <code>X-Device-Code</code> 找设备，再解析公司、资源应用和绑定智能体上下文。图片、模型、视频来自资源应用；ASR、LLM、TTS/语音问答按设备所属公司和绑定智能体配置执行。本页会把运行时配置拆开展示给安卓对接。
+        </div>
+      </section>
+
+      <section class="card" id="chain-check">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Quick check</p>
+            <h3>一键设备链路检测</h3>
+            <div class="method-row"><span class="badge post">POST</span><span class="url-text">activate</span><span class="badge">GET</span><span class="url-text">config / ASR status</span><span class="badge ws">WS</span><span class="url-text">realtime</span></div>
+          </div>
+          <button class="button" id="chainCheckBtn" type="button">一键检测</button>
+        </div>
+        <div class="card-body">
+          <div class="doc-box">
+            <h4>检测内容</h4>
+            <p>自动执行激活、运行时配置、ASR 状态、统一 WebSocket start、心跳检查。voice-chat 需要真实 PCM 文件，仍在下方手动测试。</p>
+          </div>
+          <pre id="chainCheckOutput">等待检测</pre>
         </div>
       </section>
 
@@ -874,6 +893,7 @@ Content-Type: application/json</pre>
         statusText: document.getElementById('statusText'),
         activateBody: document.getElementById('activateBody'),
         activateOutput: document.getElementById('activateOutput'),
+        chainCheckOutput: document.getElementById('chainCheckOutput'),
         configSummary: document.getElementById('configSummary'),
         configOutput: document.getElementById('configOutput'),
         imagesGrid: document.getElementById('imagesGrid'),
@@ -907,6 +927,7 @@ Content-Type: application/json</pre>
 
       function bindEvents() {
         document.getElementById('saveConfigBtn').addEventListener('click', saveConfig);
+        document.getElementById('chainCheckBtn').addEventListener('click', runChainCheck);
         document.getElementById('activateBtn').addEventListener('click', activateDevice);
         document.getElementById('configBtn').addEventListener('click', fetchRuntimeConfig);
         document.getElementById('renderImagesBtn').addEventListener('click', () => renderResources('images'));
@@ -935,6 +956,95 @@ Content-Type: application/json</pre>
         setStatus('配置已保存', 'ok');
       }
 
+      async function runChainCheck() {
+        saveConfig();
+        const button = document.getElementById('chainCheckBtn');
+        const report = {
+          startedAt: new Date().toISOString(),
+          deviceCode: state.deviceCode,
+          apiBaseUrl: state.apiBaseUrl,
+          wsUrl: state.wsUrl,
+          summary: { state: 'running', passed: 0, failed: 0, total: 0 },
+          steps: [],
+          notes: ['voice-chat 文件上传依赖真实 16k PCM，需在“语音问答”模块手动测试。'],
+        };
+        const render = () => { els.chainCheckOutput.textContent = pretty(report); };
+        button.disabled = true;
+        render();
+        try {
+          await runChainStep(report, 'activate', '设备激活 / 上报', activateDevice, render);
+          await runChainStep(report, 'runtimeConfig', '运行时配置与就绪度', fetchRuntimeConfig, render);
+          await runChainStep(report, 'asrStatus', 'ASR 状态检查', fetchAsrStatus, render);
+          await runChainStep(report, 'asrWebSocket', '统一 WebSocket ASR Start', async () => testAsrWebSocket({ quietStatus: true }), render);
+          await runChainStep(report, 'heartbeat', '设备心跳', sendHeartbeat, render);
+          report.finishedAt = new Date().toISOString();
+          updateChainSummary(report);
+          setStatus(report.summary.failed ? '链路检测完成：存在失败项' : '链路检测完成：基础链路通过', report.summary.failed ? 'error' : 'ok');
+          addLog('一键设备链路检测', report, report.summary.failed ? 'error' : 'ok');
+        } finally {
+          button.disabled = false;
+          render();
+        }
+      }
+
+      async function runChainStep(report, key, title, action, render) {
+        const step = { key, title, status: 'running', ok: false, startedAt: new Date().toISOString() };
+        report.steps.push(step);
+        updateChainSummary(report);
+        render();
+        const startedAt = Date.now();
+        try {
+          const result = await action();
+          step.ok = Boolean(result && result.ok !== false);
+          step.status = step.ok ? 'pass' : 'fail';
+          step.elapsedMs = Date.now() - startedAt;
+          step.result = summarizeChainResult(result);
+        } catch (error) {
+          step.ok = false;
+          step.status = 'fail';
+          step.elapsedMs = Date.now() - startedAt;
+          step.result = { error: error.message || String(error), hint: '检查输入参数、后端服务、浏览器网络/CORS 或右侧模块原始响应。' };
+        }
+        updateChainSummary(report);
+        render();
+        return step;
+      }
+
+      function updateChainSummary(report) {
+        const done = report.steps.filter(step => step.status !== 'running');
+        const failed = done.filter(step => !step.ok).length;
+        report.summary = {
+          state: report.steps.some(step => step.status === 'running') ? 'running' : failed ? 'failed' : 'passed',
+          passed: done.filter(step => step.ok).length,
+          failed,
+          total: report.steps.length,
+        };
+      }
+
+      function summarizeChainResult(result) {
+        if (!result) return { ok: false, message: '无结果' };
+        if (result.request) {
+          const body = unwrap(result.body);
+          const summary = {
+            ok: result.ok,
+            status: result.status,
+            statusText: result.statusText,
+            method: result.request.method,
+            url: result.request.url,
+          };
+          const message = body && typeof body === 'object' ? body.message || body.detail || body.error : body;
+          if (message) summary.message = message;
+          if (body && typeof body === 'object') {
+            summary.traceId = body.traceId || body.trace_id || result.headers['x-trace-id'] || result.headers['x-request-id'] || '';
+            if (body.device || body.agentApplication || body.application || body.resources) {
+              summary.configSummary = buildConfigSummary(body);
+            }
+          }
+          return summary;
+        }
+        return result;
+      }
+
       async function activateDevice() {
         saveConfig();
         let body;
@@ -946,6 +1056,7 @@ Content-Type: application/json</pre>
           body: JSON.stringify(body),
         }, '设备激活');
         writeOutput(els.activateOutput, result);
+        return result;
       }
 
       async function fetchRuntimeConfig() {
@@ -959,63 +1070,95 @@ Content-Type: application/json</pre>
           renderResources('images');
           renderResources('models');
           renderResources('videos');
-          return;
+          return result;
         }
         state.runtimeConfig = null;
         els.configSummary.textContent = pretty(buildRuntimeErrorSummary(result));
         renderEmptyResources();
+        return result;
       }
 
       async function fetchAsrStatus() {
         saveConfig();
         const result = await apiRequest('/ai-models/asr/device-status/', { method: 'GET' }, 'ASR 状态检查');
         writeOutput(els.asrOutput, result);
+        return result;
       }
 
-      function testAsrWebSocket() {
+      async function testAsrWebSocket(options) {
         saveConfig();
-        if (!window.WebSocket) {
-          showLocalError(els.asrOutput, '当前浏览器不支持 WebSocket');
-          return;
-        }
+        const output = await runAsrWebSocketProbe(5000, (snapshot) => {
+          els.asrOutput.textContent = pretty(snapshot);
+        });
+        els.asrOutput.textContent = pretty(output);
+        if (!options || !options.quietStatus) setStatus(output.ok ? 'ASR WebSocket 可用' : 'ASR WebSocket 异常', output.ok ? 'ok' : 'error');
+        addLog('ASR WebSocket 测试', output, output.ok ? 'ok' : 'error');
+        return output;
+      }
+
+      function runAsrWebSocketProbe(timeoutMs, onUpdate) {
         const command = {
           type: 'asr.session.start',
           id: 'asr-session-' + Date.now(),
           payload: { deviceCode: state.deviceCode },
         };
-        const output = { wsUrl: state.wsUrl, sent: command, events: [] };
-        els.asrOutput.textContent = pretty(output);
-        const socket = new WebSocket(state.wsUrl);
-        const startedAt = Date.now();
-        const timeout = window.setTimeout(() => {
-          output.events.push({ type: 'client.timeout', message: '5 秒内未收到服务端响应，关闭连接' });
-          els.asrOutput.textContent = pretty(output);
-          try { socket.close(1000, 'client_timeout'); } catch (_) {}
-        }, 5000);
-
-        socket.onopen = () => {
-          output.events.push({ type: 'client.open' });
-          socket.send(JSON.stringify(command));
-          els.asrOutput.textContent = pretty(output);
-        };
-        socket.onmessage = (event) => {
-          output.events.push({ type: 'server.message', data: parseMaybeJson(event.data) });
-          els.asrOutput.textContent = pretty(output);
-          if (String(event.data).includes('asr.ready') || String(event.data).includes('asr.error')) {
+        const output = { ok: false, wsUrl: state.wsUrl, sent: command, events: [] };
+        const update = () => { if (onUpdate) onUpdate(output); };
+        if (!window.WebSocket) {
+          output.events.push({ type: 'client.unsupported', message: '当前浏览器不支持 WebSocket' });
+          update();
+          return Promise.resolve(output);
+        }
+        return new Promise((resolve) => {
+          let socket;
+          let ready = false;
+          let settled = false;
+          const startedAt = Date.now();
+          const finish = () => {
+            if (settled) return;
+            settled = true;
             window.clearTimeout(timeout);
-            socket.close(1000, 'client_test_done');
+            output.ok = ready;
+            output.elapsedMs = Date.now() - startedAt;
+            update();
+            resolve(output);
+          };
+          const timeout = window.setTimeout(() => {
+            output.events.push({ type: 'client.timeout', message: Math.round(timeoutMs / 1000) + ' 秒内未收到 asr.ready，关闭连接' });
+            update();
+            try { if (socket) socket.close(1000, 'client_timeout'); } catch (_) { finish(); }
+          }, timeoutMs || 5000);
+          try {
+            socket = new WebSocket(state.wsUrl);
+          } catch (error) {
+            output.events.push({ type: 'client.open_failed', message: error.message || String(error) });
+            finish();
+            return;
           }
-        };
-        socket.onerror = () => {
-          output.events.push({ type: 'client.error', message: 'WebSocket 连接异常' });
-          els.asrOutput.textContent = pretty(output);
-        };
-        socket.onclose = (event) => {
-          window.clearTimeout(timeout);
-          output.events.push({ type: 'client.close', code: event.code, reason: event.reason, elapsedMs: Date.now() - startedAt });
-          els.asrOutput.textContent = pretty(output);
-          addLog('ASR WebSocket 测试', { url: state.wsUrl, command, output }, output.events.some(e => e.type === 'client.error') ? 'error' : 'ok');
-        };
+          socket.onopen = () => {
+            output.events.push({ type: 'client.open' });
+            socket.send(JSON.stringify(command));
+            update();
+          };
+          socket.onmessage = (event) => {
+            const data = parseMaybeJson(event.data);
+            output.events.push({ type: 'server.message', data });
+            const eventType = typeof data === 'object' && data ? data.type : String(event.data);
+            if (String(eventType).includes('asr.ready')) ready = true;
+            if (String(eventType).includes('asr.ready') || String(eventType).includes('asr.error')) {
+              try { socket.close(1000, 'client_test_done'); } catch (_) { finish(); }
+            }
+            update();
+          };
+          socket.onerror = () => {
+            output.events.push({ type: 'client.error', message: 'WebSocket 连接异常' });
+            update();
+          };
+          socket.onclose = (event) => {
+            output.events.push({ type: 'client.close', code: event.code, reason: event.reason, elapsedMs: Date.now() - startedAt });
+            finish();
+          };
+        });
       }
 
       async function sendLlmText() {
@@ -1078,6 +1221,7 @@ Content-Type: application/json</pre>
           }),
         }, '设备心跳');
         writeOutput(els.heartbeatOutput, result);
+        return result;
       }
 
       async function apiRequest(path, options, title) {
