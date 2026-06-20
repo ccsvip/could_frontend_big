@@ -99,6 +99,7 @@ import {
 } from 'lucide-react';
 
 const PAGE_SIZE = 10;
+const LOG_CONVERSATION_PAGE_SIZE = 100;
 const DEFAULT_TEMPERATURE = 0.7;
 const DEFAULT_MAX_TOKENS = 1000;
 const DEFAULT_TTS_FILTER_PUNCTUATION = '。！？!?；;、';
@@ -372,6 +373,7 @@ export const ApplicationManagementPage = () => {
   // History & Log state (Logs Tab)
   const [logConversations, setLogConversations] = useState<ChatConversationRecord[]>([]);
   const [logConversationsLoading, setLogConversationsLoading] = useState(false);
+  const [logConversationTotal, setLogConversationTotal] = useState(0);
   const [selectedLogConversation, setSelectedLogConversation] = useState<ChatConversationDetail | null>(null);
   const [selectedLogConversationLoading, setSelectedLogConversationLoading] = useState(false);
 
@@ -627,6 +629,7 @@ export const ApplicationManagementPage = () => {
     setActiveTab('orchestrate');
     setSelectedLogConversation(null);
     setLogConversations([]);
+    setLogConversationTotal(0);
     setAnnotations([]);
     setAnnotationKeyword('');
     setAnnotationSearchValue('');
@@ -638,8 +641,12 @@ export const ApplicationManagementPage = () => {
     if (!selectedApplicationId) return;
     setLogConversationsLoading(true);
     try {
-      const data = await fetchConversations({ application: selectedApplicationId });
+      const data = await fetchConversations({
+        application: selectedApplicationId,
+        pageSize: LOG_CONVERSATION_PAGE_SIZE,
+      });
       setLogConversations(data.results);
+      setLogConversationTotal(data.count);
       if (data.results.length > 0 && !selectedLogConversation) {
         void loadSelectedLogConversation(data.results[0].id);
       }
@@ -2209,16 +2216,16 @@ export const ApplicationManagementPage = () => {
   );
 
   const renderLogsTab = () => (
-    <Spin spinning={logConversationsLoading} className="h-full" wrapperClassName="h-full-spin">
-      <div className="grid grid-cols-1 xl:grid-cols-[380px_minmax(0,_1fr)] gap-4 h-full min-h-0">
+    <Spin spinning={logConversationsLoading} className="h-full min-h-0" wrapperClassName="h-full-spin min-h-0">
+      <div className="grid grid-cols-1 grid-rows-[minmax(0,_1fr)_minmax(0,_1fr)] xl:grid-cols-[380px_minmax(0,_1fr)] xl:grid-rows-1 gap-4 h-full min-h-0 overflow-hidden">
         {/* Conversation List */}
-        <Card variant="borderless" className="flex flex-col bg-white border border-slate-200/50 shadow-sm h-full" styles={{ body: { padding: '16px', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' } }}>
+        <Card variant="borderless" className="flex flex-col bg-white border border-slate-200/50 shadow-sm h-full min-h-0 overflow-hidden" styles={{ body: { padding: '16px', height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' } }}>
           <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-3 shrink-0">
             <div className="text-base font-bold text-slate-800">历史会话记录</div>
-            <Tag color="default">{logConversations.length} 会话</Tag>
+            <Tag color="default">{logConversationTotal || logConversations.length} 会话</Tag>
           </div>
 
-          <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-1.5 custom-scrollbar min-h-0">
+          <div className="flex-1 overflow-y-auto overscroll-contain pr-1 flex flex-col gap-1.5 custom-scrollbar min-h-0">
             {logConversations.length > 0 ? (
               logConversations.map((conv) => (
                 <div
@@ -2260,9 +2267,9 @@ export const ApplicationManagementPage = () => {
         </Card>
 
         {/* Selected Conversation Detail */}
-        <Card variant="borderless" className="flex flex-col bg-white border border-slate-200/50 shadow-sm overflow-hidden h-full" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%', padding: '20px' } }}>
+        <Card variant="borderless" className="flex flex-col bg-white border border-slate-200/50 shadow-sm overflow-hidden h-full min-h-0" styles={{ body: { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, padding: '20px' } }}>
           {selectedLogConversation ? (
-            <Spin spinning={selectedLogConversationLoading} className="flex-1 flex flex-col h-full min-h-0" wrapperClassName="h-full-spin flex-1">
+            <Spin spinning={selectedLogConversationLoading} className="flex-1 flex flex-col h-full min-h-0" wrapperClassName="h-full-spin flex-1 min-h-0">
               <div className="flex flex-col h-full min-h-0">
                 <div className="flex flex-col border-b border-slate-100 pb-3 mb-3 shrink-0">
                   <div className="text-lg font-bold text-slate-800">{selectedLogConversation.title}</div>
@@ -2535,7 +2542,7 @@ export const ApplicationManagementPage = () => {
         </Card>
 
         {/* Right Side Content Pane */}
-        <div className="flex-1 min-w-0 h-full flex flex-col">
+        <div className="flex-1 min-w-0 min-h-0 h-full flex flex-col">
           {activeTab === 'orchestrate' && renderOrchestrateTab()}
           {activeTab === 'conversation' && renderConversationSettingsTab()}
           {activeTab === 'annotations' && renderAnnotationsTab()}

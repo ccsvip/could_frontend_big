@@ -193,7 +193,23 @@ export type ChatConversationListResponse = {
   results: ChatConversationRecord[];
 };
 
-export const fetchConversations = async (params?: { application?: number; page?: number; keyword?: string }) => {
-  const response = await httpClient.get<ChatConversationListResponse>('/ai-models/chat/conversations/', { params });
+export type ChatConversationListQuery = {
+  application?: number;
+  page?: number;
+  pageSize?: number;
+  keyword?: string;
+};
+
+const buildConversationListParams = (query?: ChatConversationListQuery) => ({
+  application: query?.application,
+  page: query?.page,
+  page_size: query?.pageSize,
+  keyword: query?.keyword || undefined,
+});
+
+export const fetchConversations = async (params?: ChatConversationListQuery) => {
+  const response = await httpClient.get<ChatConversationListResponse>('/ai-models/chat/conversations/', {
+    params: buildConversationListParams(params),
+  });
   return response.data;
 };
