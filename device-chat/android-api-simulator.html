@@ -664,7 +664,7 @@ Content-Type: application/json</pre>
         <div class="card-body">
           <div class="doc-box">
             <h4>安卓用途</h4>
-            <p>启动或切换设备状态后拉取应用与资源配置。图片、模型、视频、音色、滚动文本都在 resources 下。</p>
+            <p>启动或切换设备状态后拉取应用与资源配置。语音问答就绪度以“绑定公司 + 可用智能体应用”为准；资源应用只影响图片、模型、视频、音色、滚动文本等 resources 展示。</p>
           </div>
           <div class="split-output">
             <pre id="configSummary">等待请求</pre>
@@ -959,7 +959,11 @@ Content-Type: application/json</pre>
           renderResources('images');
           renderResources('models');
           renderResources('videos');
+          return;
         }
+        state.runtimeConfig = null;
+        els.configSummary.textContent = pretty(buildRuntimeErrorSummary(result));
+        renderEmptyResources();
       }
 
       async function fetchAsrStatus() {
@@ -1136,18 +1140,115 @@ Content-Type: application/json</pre>
 
       function buildConfigSummary(config) {
         const resources = config.resources || {};
+        const device = config.device || config;
+        const application = config.application || null;
+        const agentApplication = config.agentApplication || null;
+        const counts = resourceCounts(resources);
+        const readiness = buildRuntimeReadiness(device, application, agentApplication, counts);
         return {
-          device: pick(config.device || config, ['id', 'code', 'name', 'status', 'bindingStatus', 'tenantId', 'applicationId']),
-          application: config.application || null,
-          counts: {
-            images: (resources.images || []).length,
-            models: (resources.models || []).length,
-            videos: (resources.videos || []).length,
-            voiceTones: (resources.voiceTones || []).length,
-            scrollingTexts: (resources.scrollingTexts || []).length,
-            commandGroups: (resources.commandGroups || []).length,
-          },
+          readiness,
+          device: pick(device, [
+            'id',
+            'deviceCode',
+            'code',
+            'name',
+            'status',
+            'tenantId',
+            'tenantName',
+            'isEnabled',
+            'authorizationType',
+            'authorizationTypeLabel',
+            'expiresAt',
+            'lastHeartbeat',
+          ]),
+          agentApplication: agentApplication ? pick(agentApplication, ['id', 'name', 'llmModelId', 'llmModelName']) : null,
+          resourceApplication: application ? pick(application, ['id', 'name', 'code']) : null,
+          resources: counts,
+          androidHints: readiness.ready
+            ? ['运行配置已具备 voice-chat 前置条件：后续可继续测 ASR WebSocket、/device/voice-chat 与 TTS 播放。']
+            : readiness.blockers.map(item => item.fix),
         };
+      }
+
+      function buildRuntimeErrorSummary(result) {
+        const body = unwrap(result.body);
+        const message = body && typeof body === 'object' ? body.message || body.detail || body.error : body;
+        return {
+          readiness: {
+            state: 'blocked',
+            ready: false,
+            title: '运行时配置未获取成功',
+            blockers: [
+              {
+                key: 'runtimeConfig',
+                label: 'GET /device-runtime/config/ 返回失败',
+                status: result.status || 'network-error',
+                fix: runtimeConfigFailureHint(result.status, message),
+              },
+            ],
+            warnings: [],
+            passed: [],
+          },
+          http: pick(result, ['ok', 'status', 'statusText', 'error']),
+          message: message || '无响应消息',
+          androidHints: [runtimeConfigFailureHint(result.status, message)],
+        };
+      }
+
+      function buildRuntimeReadiness(device, application, agentApplication, counts) {
+        const checks = [
+          readinessCheck('deviceCode', '设备码可识别', hasValue(device.deviceCode || device.code), '确认 URL、输入框与 X-Device-Code 使用同一个 deviceCode。'),
+          readinessCheck('tenant', '设备已绑定公司', hasValue(device.tenantId || device.tenantName), '到后台设备授权中心为该设备绑定公司/租户。'),
+          readinessCheck('enabled', '设备未停用', device.isEnabled !== false, '到后台设备管理启用该设备。'),
+          readinessCheck('agentApplication', '已绑定可用智能体', hasValue(agentApplication && agentApplication.id) || hasValue(device.agentApplicationId), '到后台设备管理/授权中心绑定“智能体应用”，不是只绑定资源应用。'),
+          readinessCheck('llmModel', '智能体具备 LLM 模型', hasValue(agentApplication && (agentApplication.llmModelId || agentApplication.llmModelName)), '检查智能体应用是否已选择可用 LLM 模型。'),
+        ];
+        const optionalChecks = [
+          readinessCheck('resourceApplication', '已绑定资源应用', hasValue(application && application.id) || hasValue(device.applicationId), '未绑定资源应用时图片/模型/视频等资源为空，但 voice-chat 仍以智能体绑定为准。'),
+          readinessCheck('resourceFiles', '资源包非空', totalResources(counts) > 0, '如需安卓展示图片/模型/视频，请在资源应用中绑定对应资源。'),
+        ];
+        const blockers = checks.filter(item => !item.ok);
+        const warnings = optionalChecks.filter(item => !item.ok);
+        return {
+          state: blockers.length ? 'blocked' : warnings.length ? 'ready_with_warnings' : 'ready',
+          ready: blockers.length === 0,
+          title: blockers.length ? '未就绪：voice-chat 前置条件缺失' : warnings.length ? '可语音问答：资源展示项有缺口' : '已就绪：可继续测试语音问答链路',
+          blockers,
+          warnings,
+          passed: checks.concat(optionalChecks).filter(item => item.ok),
+        };
+      }
+
+      function readinessCheck(key, label, ok, fix) {
+        return { key, label, ok: Boolean(ok), status: ok ? 'pass' : 'fail', fix };
+      }
+
+      function resourceCounts(resources) {
+        return {
+          images: (resources.images || []).length,
+          models: (resources.models || []).length,
+          videos: (resources.videos || []).length,
+          voiceTones: (resources.voiceTones || []).length,
+          scrollingTexts: (resources.scrollingTexts || []).length,
+          commandGroups: (resources.commandGroups || []).length,
+        };
+      }
+
+      function totalResources(counts) {
+        return Object.keys(counts).reduce((sum, key) => sum + (counts[key] || 0), 0);
+      }
+
+      function hasValue(value) {
+        return value !== undefined && value !== null && value !== '';
+      }
+
+      function runtimeConfigFailureHint(statusCode, message) {
+        const text = String(message || '');
+        if (statusCode === 403 && text.includes('智能体')) return '设备存在，但未绑定可用智能体；请在后台绑定“智能体应用”后重试。';
+        if (statusCode === 403) return '设备未满足授权/启用条件；请检查是否绑定公司、启用设备并授权。';
+        if (statusCode === 404) return '后端未找到该设备码；请先执行设备激活，或确认设备码是否一致。';
+        if (!statusCode) return '浏览器未连到后端；检查 apiBaseUrl、后端服务、CORS 与网络。';
+        return '根据右侧原始响应排查后端错误；重点看 message/detail、设备码、绑定公司、智能体应用。';
       }
 
       function renderResources(type) {
