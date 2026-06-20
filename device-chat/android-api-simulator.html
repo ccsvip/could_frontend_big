@@ -1029,8 +1029,10 @@ Content-Type: application/json</pre>
             ok: result.ok,
             status: result.status,
             statusText: result.statusText,
+            elapsedMs: result.elapsedMs,
             method: result.request.method,
             url: result.request.url,
+            diagnostics: result.diagnostics,
           };
           const message = body && typeof body === 'object' ? body.message || body.detail || body.error : body;
           if (message) summary.message = message;
@@ -1106,6 +1108,7 @@ Content-Type: application/json</pre>
         const update = () => { if (onUpdate) onUpdate(output); };
         if (!window.WebSocket) {
           output.events.push({ type: 'client.unsupported', message: '当前浏览器不支持 WebSocket' });
+          output.diagnostics = buildAsrWebSocketDiagnostics(output);
           update();
           return Promise.resolve(output);
         }
@@ -1120,6 +1123,7 @@ Content-Type: application/json</pre>
             window.clearTimeout(timeout);
             output.ok = ready;
             output.elapsedMs = Date.now() - startedAt;
+            output.diagnostics = buildAsrWebSocketDiagnostics(output);
             update();
             resolve(output);
           };
@@ -1170,14 +1174,14 @@ Content-Type: application/json</pre>
         }, 'LLM 文本问答');
         writeOutput(els.llmOutput, result);
         if (result.ok) attachBase64Audio(els.llmAudio, unwrap(result.body));
+        return result;
       }
 
       async function sendVoiceChat() {
         saveConfig();
         const file = els.voiceFile.files && els.voiceFile.files[0];
         if (!file) {
-          showLocalError(els.voiceOutput, '请选择 16k PCM 音频文件');
-          return;
+          return showLocalError(els.voiceOutput, '请选择 16k PCM 音频文件');
         }
         const form = new FormData();
         form.append('audio', file, file.name || 'voice.pcm');
@@ -1187,6 +1191,7 @@ Content-Type: application/json</pre>
         const result = await apiRequest('/device/voice-chat', { method: 'POST', body: form }, '语音问答完整链路');
         writeOutput(els.voiceOutput, result);
         if (result.ok) attachBase64Audio(els.voiceAudio, unwrap(result.body));
+        return result;
       }
 
       async function sendTts() {
@@ -1206,6 +1211,7 @@ Content-Type: application/json</pre>
             : result.blob;
           setAudioBlob(els.ttsAudio, blob);
         }
+        return result;
       }
 
       async function sendHeartbeat() {
@@ -1227,6 +1233,7 @@ Content-Type: application/json</pre>
       async function apiRequest(path, options, title) {
         const url = buildUrl(path);
         const headers = Object.assign({ 'X-Device-Code': state.deviceCode }, options.headers || {});
+        const startedAt = Date.now();
         const requestInfo = {
           method: options.method || 'GET',
           url,
@@ -1254,12 +1261,14 @@ Content-Type: application/json</pre>
           } else {
             body = await response.text();
           }
-          const result = { ok: response.ok, status: response.status, statusText: response.statusText, request: requestInfo, headers: responseHeaders, body, blob };
+          const result = { ok: response.ok, status: response.status, statusText: response.statusText, elapsedMs: Date.now() - startedAt, request: requestInfo, headers: responseHeaders, body, blob };
+          result.diagnostics = buildRequestDiagnostics(result, title);
           addLog(title, result, response.ok ? 'ok' : 'error');
           setStatus(response.ok ? '请求成功：' + title : '请求失败：' + title, response.ok ? 'ok' : 'error');
           return result;
         } catch (error) {
-          const result = { ok: false, request: requestInfo, error: error.message || String(error) };
+          const result = { ok: false, elapsedMs: Date.now() - startedAt, request: requestInfo, error: error.message || String(error) };
+          result.diagnostics = buildRequestDiagnostics(result, title);
           addLog(title, result, 'error');
           setStatus('请求异常：' + title, 'error');
           return result;
@@ -1395,6 +1404,123 @@ Content-Type: application/json</pre>
         return '根据右侧原始响应排查后端错误；重点看 message/detail、设备码、绑定公司、智能体应用。';
       }
 
+      function buildRequestDiagnostics(result, title) {
+        const endpoint = endpointKind(result.request && result.request.url);
+        const body = unwrap(result.body);
+        const message = extractResponseMessage(body, result.error);
+        const hints = [];
+        if (!result.ok) {
+          hints.push(genericFailureHint(result.status, message));
+        }
+        endpointHints(endpoint, result, body, message).forEach(hint => hints.push(hint));
+        return {
+          title,
+          endpoint,
+          ok: Boolean(result.ok),
+          http: pick(result, ['status', 'statusText', 'elapsedMs', 'error']),
+          message: message || (result.ok ? '请求成功' : '无响应消息'),
+          traceId: extractTraceId(result) || '',
+          hints: unique(hints).filter(Boolean),
+        };
+      }
+
+      function buildAsrWebSocketDiagnostics(output) {
+        const events = output.events || [];
+        const serverError = events.find(event => event.type === 'server.message' && JSON.stringify(event.data).includes('asr.error'));
+        const unsupported = events.some(event => event.type === 'client.unsupported');
+        const timeout = events.some(event => event.type === 'client.timeout');
+        const opened = events.some(event => event.type === 'client.open');
+        const hints = [];
+        if (unsupported) hints.push('当前浏览器不支持 WebSocket，需换现代浏览器或 Android 原生 WS 客户端验证。');
+        if (!opened && !unsupported) hints.push('WebSocket 未成功打开；检查 wsUrl、后端 ASGI/WebSocket 服务、代理转发和 ws/wss 协议。');
+        if (timeout) hints.push('连接已打开但未收到 asr.ready；检查统一实时入口是否加载 ASR command handler，以及设备码是否可解析到公司。');
+        if (serverError) hints.push('服务端返回 asr.error；展开 events 查看错误 payload，并对照 ASR 状态检查结果。');
+        if (output.ok) hints.push('已收到 asr.ready；Android 可继续发送 16k PCM 二进制分片并监听 asr.transcript/asr.done。');
+        return {
+          title: 'ASR WebSocket 探针',
+          endpoint: 'asr-websocket',
+          ok: Boolean(output.ok),
+          http: pick(output, ['elapsedMs']),
+          message: output.ok ? '已收到 asr.ready' : '未收到 asr.ready',
+          traceId: extractTraceId(output) || '',
+          hints: unique(hints).filter(Boolean),
+        };
+      }
+
+      function endpointKind(url) {
+        const path = urlPath(url);
+        if (path.includes('/device/voice-chat')) return 'voice-chat';
+        if (path.includes('/ai-models/tts/runtime/')) return 'tts-runtime';
+        if (path.includes('/ai-models/asr/device-status/')) return 'asr-status';
+        if (path.includes('/device-runtime/config/')) return 'runtime-config';
+        if (path.includes('/device-runtime/heartbeat/')) return 'heartbeat';
+        if (path.includes('/device-auth/activate/')) return 'activation';
+        return 'generic';
+      }
+
+      function endpointHints(endpoint, result, body, message) {
+        const hints = [];
+        if (endpoint === 'voice-chat') {
+          if (!result.ok && result.status === 400) hints.push('voice-chat 支持两种入参：文本问答传 JSON { deviceCode, text }；语音问答传 FormData audio + deviceCode + format=pcm + sampleRate=16000。');
+          if (!result.ok && result.status === 403) hints.push('403 通常表示设备未绑定公司、设备不可用，或未绑定可用智能体应用；先看“运行时配置”摘要里的 blocker。');
+          if (!result.ok && result.status === 415) hints.push('语音文件只支持 16k PCM；Android 侧需确认采样率、单声道、16-bit PCM 裸流。');
+          if (!result.ok && result.status >= 500) hints.push('500 需要后端日志；重点看 ASR/LLM/TTS provider 凭据、模型授权和默认音色配置。');
+          if (result.ok && body && body.ttsError) hints.push('LLM 已回答，但 TTS 合成失败：' + body.ttsError + '。可先用“TTS 单独合成”定位默认音色或供应商配置。');
+          if (result.ok && body && !body.audioBase64) hints.push('响应没有 audioBase64；Android 可以先展示 answerText，同时检查 TTS 配置。');
+        }
+        if (endpoint === 'tts-runtime') {
+          if (!result.ok && result.status === 400) hints.push('TTS runtime 的 400 多为 text 为空/过长、默认音色缺失或供应商合成失败；查看 message/voiceId 字段。');
+          if (!result.ok && result.status === 403) hints.push('TTS runtime 通过 X-Device-Code 定位公司；请确认设备已绑定公司且未停用。');
+          if (result.ok) hints.push('后端返回 audio/pcm；本页为浏览器播放临时封装 WAV，Android 侧应按 X-Audio-Sample-Rate、X-Audio-Channels、X-Audio-Source-Format 播放 PCM。');
+        }
+        if (endpoint === 'asr-status') {
+          if (!result.ok && result.status === 400) hints.push('ASR 状态检查必须携带 X-Device-Code；确认顶部设备码已保存。');
+          if (!result.ok && result.status === 403) hints.push('ASR 状态 403 表示设备未绑定公司或不可用；先完成设备授权中心绑定。');
+          if (result.ok && body && body.configured === false) hints.push('设备已识别，但 ASR 服务未配置；需要平台/环境配置 MULTIMODAL_WORKSPACE_ID、MULTIMODAL_API_KEY、ASR_BASE_URL、ASR_MODEL。');
+        }
+        if (endpoint === 'runtime-config' && !result.ok) hints.push(runtimeConfigFailureHint(result.status, message));
+        if (endpoint === 'heartbeat' && !result.ok) hints.push('心跳失败时设备在线状态不会刷新；先确认设备码、公司绑定和服务地址。');
+        if (endpoint === 'activation' && result.ok && body && body.bindingStatus !== 'bound') hints.push('设备已上报但仍待绑定；请在后台设备请求/授权中心绑定公司和智能体应用。');
+        return hints;
+      }
+
+      function genericFailureHint(statusCode, message) {
+        const text = String(message || '');
+        if (!statusCode) return '浏览器没有收到 HTTP 响应；检查 apiBaseUrl、后端进程、CORS、HTTPS/HTTP 混用和网络。';
+        if (statusCode === 400) return '请求参数不满足后端契约；检查 Body、Content-Type、X-Device-Code 和响应 message。';
+        if (statusCode === 401 || statusCode === 403) return '设备端接口不需要 JWT；403/401 优先检查 X-Device-Code 对应设备是否已绑定公司、启用并授权。';
+        if (statusCode === 404) return '接口地址或设备码不存在；确认 API Base 是否包含 /api/v1，且设备已激活。';
+        if (statusCode === 415) return '媒体类型不受支持；语音文件应使用 16k PCM，JSON 请求应带 Content-Type: application/json。';
+        if (statusCode >= 500) return '后端内部错误；结合 trace/request id 查服务日志，重点关注供应商凭据、模型授权、音色配置和异常栈。';
+        if (text.includes('设备未绑定可用智能体')) return '设备需要绑定“智能体应用”，不是只绑定资源应用。';
+        return '根据响应 message/detail 排查；必要时带上请求日志、设备码和 trace/request id 给后端定位。';
+      }
+
+      function extractResponseMessage(body, fallback) {
+        if (!body || typeof body !== 'object') return body || fallback || '';
+        if (body.message || body.detail || body.error) return body.message || body.detail || body.error;
+        const firstKey = Object.keys(body)[0];
+        if (!firstKey) return fallback || '';
+        const value = body[firstKey];
+        if (Array.isArray(value)) return firstKey + ': ' + value.join('；');
+        if (typeof value === 'string') return firstKey + ': ' + value;
+        return fallback || '';
+      }
+
+      function extractTraceId(result) {
+        const headers = result.headers || {};
+        const body = unwrap(result.body);
+        return headers['x-trace-id'] || headers['x-request-id'] || headers['x-correlation-id'] || (body && typeof body === 'object' && (body.traceId || body.trace_id || body.requestId || body.request_id)) || '';
+      }
+
+      function urlPath(url) {
+        try { return new URL(url).pathname; } catch (_) { return String(url || ''); }
+      }
+
+      function unique(items) {
+        return Array.from(new Set(items));
+      }
+
       function renderResources(type) {
         const grid = type === 'images' ? els.imagesGrid : type === 'models' ? els.modelsGrid : els.videosGrid;
         const resources = state.runtimeConfig && state.runtimeConfig.resources ? state.runtimeConfig.resources : {};
@@ -1513,13 +1639,34 @@ Content-Type: application/json</pre>
       }
 
       function writeOutput(el, result) {
-        el.textContent = pretty(result);
+        el.textContent = pretty(buildReadableOutput(result));
+      }
+
+      function buildReadableOutput(result) {
+        if (!result || typeof result !== 'object') return result;
+        const isKnownResult = Object.prototype.hasOwnProperty.call(result, 'request')
+          || Object.prototype.hasOwnProperty.call(result, 'status')
+          || Object.prototype.hasOwnProperty.call(result, 'headers')
+          || Object.prototype.hasOwnProperty.call(result, 'body')
+          || Object.prototype.hasOwnProperty.call(result, 'error')
+          || Object.prototype.hasOwnProperty.call(result, 'diagnostics')
+          || Object.prototype.hasOwnProperty.call(result, 'events');
+        if (!isKnownResult) return result;
+        const output = {
+          diagnostics: result.diagnostics || buildRequestDiagnostics(result, '请求诊断'),
+          request: result.request,
+          response: pick(result, ['ok', 'status', 'statusText', 'elapsedMs', 'headers', 'body', 'error']),
+        };
+        if (result.events) output.websocket = pick(result, ['ok', 'wsUrl', 'sent', 'events', 'elapsedMs']);
+        if (result.blob) output.response.blob = { size: result.blob.size, type: result.blob.type };
+        return output;
       }
 
       function showLocalError(el, message) {
-        const result = { ok: false, error: message };
-        el.textContent = pretty(result);
+        const result = { ok: false, error: message, diagnostics: { ok: false, endpoint: 'local', message, hints: ['先修正本地输入后再发送请求。'] } };
+        el.textContent = pretty(buildReadableOutput(result));
         setStatus(message, 'error');
+        return result;
       }
 
       function addLog(title, data, tone) {
@@ -1528,12 +1675,26 @@ Content-Type: application/json</pre>
         details.dataset.tone = tone || 'ok';
         details.open = true;
         const summary = document.createElement('summary');
-        summary.textContent = new Date().toLocaleTimeString() + ' · ' + title;
+        summary.textContent = formatLogSummary(title, data);
         const pre = document.createElement('pre');
-        pre.textContent = pretty(data);
+        pre.textContent = pretty(buildReadableOutput(data));
         details.appendChild(summary);
         details.appendChild(pre);
         els.logList.prepend(details);
+      }
+
+      function formatLogSummary(title, data) {
+        const parts = [new Date().toLocaleTimeString(), title];
+        if (data && typeof data === 'object') {
+          if (data.summary && data.summary.total !== undefined) parts.push(data.summary.state + ' ' + data.summary.passed + '/' + data.summary.total + ' 通过');
+          const diagnostics = data.diagnostics || {};
+          if (data.status || data.status === 0) parts.push(String(data.status));
+          if (data.elapsedMs || data.elapsedMs === 0) parts.push(data.elapsedMs + 'ms');
+          if (diagnostics.message) parts.push(String(diagnostics.message).slice(0, 48));
+          if (diagnostics.traceId) parts.push('trace=' + diagnostics.traceId);
+          if (data.ok === false && diagnostics.hints && diagnostics.hints[0]) parts.push('hint=' + diagnostics.hints[0].slice(0, 48));
+        }
+        return parts.join(' · ');
       }
 
       function setStatus(text, tone) {
