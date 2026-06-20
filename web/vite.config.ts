@@ -13,23 +13,38 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks(id) {
             const normalizedId = id.replace(/\\/g, '/');
-            if (normalizedId.indexOf('/node_modules/') === -1) {
+            const nodeModulesIndex = normalizedId.indexOf('/node_modules/');
+            if (nodeModulesIndex === -1) {
               return undefined;
             }
 
-            if (normalizedId.indexOf('/antd/') >= 0) {
-              return 'antd';
+            const packagePath = normalizedId.slice(nodeModulesIndex + '/node_modules/'.length);
+            const packageName = packagePath.indexOf('@') === 0
+              ? packagePath.split('/').slice(0, 2).join('/')
+              : packagePath.split('/')[0];
+
+            if (packageName === 'echarts') {
+              return 'echarts';
             }
-            if (normalizedId.indexOf('/@ant-design/icons/') >= 0) {
-              return 'antd-icons';
+            if (packageName === 'zrender') {
+              return 'zrender';
+            }
+            if (['react', 'react-dom', 'react-router', 'react-router-dom', '@remix-run/router', 'scheduler'].indexOf(packageName) >= 0) {
+              return 'react-vendor';
             }
             if (
-              normalizedId.indexOf('/axios/') >= 0 ||
-              normalizedId.indexOf('/dayjs/') >= 0 ||
-              normalizedId.indexOf('/zustand/') >= 0
+              packageName === 'antd' ||
+              packageName.indexOf('@ant-design/cssinjs') === 0 ||
+              packageName === '@ant-design/colors' ||
+              packageName === '@ant-design/icons' ||
+              packageName === '@ant-design/icons-svg'
             ) {
-              return 'vendor';
+              return 'antd';
             }
+            if (packageName.indexOf('rc-') === 0 || packageName.indexOf('@rc-component/') === 0) {
+              return 'antd-rc';
+            }
+
             return 'vendor';
           },
         },

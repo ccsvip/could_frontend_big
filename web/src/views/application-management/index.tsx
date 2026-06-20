@@ -35,7 +35,10 @@ import { ChatMarkdown } from '../../components/chat-markdown';
 import { useAuthStore } from '../../store/auth';
 import { useAgentAudio } from './use-agent-audio';
 import dayjs from 'dayjs';
-import * as echarts from 'echarts';
+import * as echarts from 'echarts/core';
+import { BarChart } from 'echarts/charts';
+import { GridComponent, TooltipComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
 import { 
   Select, 
   Spin, 
@@ -99,6 +102,8 @@ const PAGE_SIZE = 10;
 const DEFAULT_TEMPERATURE = 0.7;
 const DEFAULT_MAX_TOKENS = 1000;
 const DEFAULT_TTS_FILTER_PUNCTUATION = '。！？!?；;、';
+
+echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer]);
 
 
 
