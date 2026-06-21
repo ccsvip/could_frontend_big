@@ -85,6 +85,64 @@ type ResourceOption = {
   value: number;
 };
 
+type DeviceRuntimeDiagnostic = {
+  level: 'ready' | 'warning' | 'blocked' | 'offline';
+  label: string;
+  color: string;
+  hint: string;
+  detail: string;
+};
+
+const resolveDeviceRuntimeDiagnostic = (device: DeviceRecord): DeviceRuntimeDiagnostic => {
+  if (!device.isEnabled) {
+    return {
+      level: 'blocked',
+      label: '授权停用',
+      color: 'error',
+      hint: '在授权中心重新启用或重新授权该设备。',
+      detail: '安卓端会被运行时接口拒绝，无法继续拉取配置或发起语音链路。',
+    };
+  }
+
+  if (!device.agentApplicationId) {
+    return {
+      level: 'blocked',
+      label: '缺智能体',
+      color: 'error',
+      hint: '点击“绑定”为设备选择可用智能体。',
+      detail: '运行时配置、语音问答和 ASR/TTS 链路都依赖绑定的智能体应用。',
+    };
+  }
+
+  if (device.status === 'offline') {
+    return {
+      level: 'offline',
+      label: '离线待心跳',
+      color: 'default',
+      hint: '检查安卓端设备码、网络和心跳接口响应。',
+      detail: '后台暂未收到最近心跳，可能是设备未启动、设备码不一致或网络不可达。',
+    };
+  }
+
+  if (!device.applicationId) {
+    return {
+      level: 'warning',
+      label: '无资源包',
+      color: 'warning',
+      hint: '按需绑定资源应用，否则设备可运行但展示资源为空。',
+      detail: '配置接口仍会返回智能体信息，但图片、视频、模型、音色等资源列表为空。',
+    };
+  }
+
+  return {
+    level: 'ready',
+    label: '运行就绪',
+    color: 'success',
+    hint: '可继续做配置拉取、ASR/TTS 与语音问答联调。',
+    detail: '授权、智能体绑定、资源应用和在线心跳都已具备。',
+  };
+};
+
 const statusMap: Record<DeviceRecord['status'], { color: string; text: string }> = {
   online: { color: 'success', text: '在线' },
   offline: { color: 'default', text: '离线' },
@@ -159,6 +217,18 @@ export const DeviceManagementPage = () => {
     [applications, selectedApplicationId],
   );
   const unboundDeviceCount = useMemo(() => devices.filter((item) => !item.agentApplicationId).length, [devices]);
+  const runtimeDiagnosticCounts = useMemo(
+    () =>
+      devices.reduce<Record<DeviceRuntimeDiagnostic['level'], number>>(
+        (counts, device) => {
+          const diagnostic = resolveDeviceRuntimeDiagnostic(device);
+          counts[diagnostic.level] += 1;
+          return counts;
+        },
+        { ready: 0, warning: 0, blocked: 0, offline: 0 },
+      ),
+    [devices],
+  );
 
   const loadResourceOptions = async () => {
     try {
@@ -464,6 +534,26 @@ export const DeviceManagementPage = () => {
       render: (value: string) => (value ? <Tag color="purple">{value}</Tag> : <Tag color="warning">待绑定智能体</Tag>),
     },
     {
+      title: '运行诊断',
+      key: 'runtimeDiagnostic',
+      width: '11%',
+      render: (_, record) => {
+        const diagnostic = resolveDeviceRuntimeDiagnostic(record);
+        return (
+          <Tooltip
+            title={
+              <div>
+                <div>{diagnostic.detail}</div>
+                <div className="mt-1">下一步：{diagnostic.hint}</div>
+              </div>
+            }
+          >
+            <Tag color={diagnostic.color}>{diagnostic.label}</Tag>
+          </Tooltip>
+        );
+      },
+    },
+    {
       title: '资源应用',
       dataIndex: 'applicationName',
       key: 'applicationName',
@@ -614,6 +704,26 @@ export const DeviceManagementPage = () => {
           </Card>
         </Col>
       </Row>
+
+      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <Typography.Text className="!font-medium !text-slate-700">运行链路诊断</Typography.Text>
+            <div className="mt-1 text-xs text-slate-500">
+              先看授权与智能体绑定，再看在线心跳与资源包；异常联调时让安卓端带回 requestId / traceId。
+            </div>
+          </div>
+          <Space size={[8, 8]} wrap>
+            <Tag color={realtimeConnected ? 'success' : 'default'}>
+              {realtimeConnected ? '实时通道正常' : '实时通道未连接'}
+            </Tag>
+            <Tag color="success">就绪 {runtimeDiagnosticCounts.ready}</Tag>
+            <Tag color="error">阻塞 {runtimeDiagnosticCounts.blocked}</Tag>
+            <Tag color="default">离线 {runtimeDiagnosticCounts.offline}</Tag>
+            <Tag color="warning">无资源包 {runtimeDiagnosticCounts.warning}</Tag>
+          </Space>
+        </div>
+      </Card>
 
       <Tabs
         items={[
