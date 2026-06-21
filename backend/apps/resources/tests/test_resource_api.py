@@ -59,7 +59,7 @@ class ResourceApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['cloudUrl'], 'https://cdn.example.com/videos/demo.mp4')
         self.assertFalse(response.data['hasFile'])
 
-    def test_create_video_resource_allows_empty_cloud_url_and_empty_file(self):
+    def test_create_video_resource_rejects_empty_cloud_url_and_empty_file(self):
         self.grant_permissions('resources.videos.view', 'resources.videos.create')
 
         response = self.client.post(
@@ -72,9 +72,8 @@ class ResourceApiTests(TenantTestMixin, APITestCase):
             format='multipart',
         )
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['cloudUrl'], '')
-        self.assertFalse(response.data['hasFile'])
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('请上传视频或填写云端 URL', response.data['message'])
 
     def test_video_resource_list_accepts_page_size_query_param(self):
         self.grant_permissions('resources.videos.view')
