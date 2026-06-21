@@ -170,6 +170,7 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
                 'device_code': 'ANDROID-ASR-001',
                 'tenant_id': self.tenant.id,
                 'application_id': application.id,
+                'agent_application_id': None,
             },
         )
 
@@ -217,6 +218,7 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
                 'device_code': 'ANDROID-ASR-BROWSER',
                 'tenant_id': self.tenant.id,
                 'application_id': application.id,
+                'agent_application_id': None,
             },
         )
 
@@ -259,7 +261,11 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
                     }),
                 })
                 ready = await communicator.receive_output(timeout=1)
-                self.assertEqual(json.loads(ready['text']), {'type': 'asr.ready', 'id': 'asr-cleanup-1'})
+                ready_payload = json.loads(ready['text'])
+                self.assertEqual(ready_payload['type'], 'asr.ready')
+                self.assertEqual(ready_payload['id'], 'asr-cleanup-1')
+                self.assertTrue(ready_payload['requestId'])
+                self.assertEqual(ready_payload['traceId'], ready_payload['requestId'])
 
                 await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
                 await communicator.wait(timeout=1)
