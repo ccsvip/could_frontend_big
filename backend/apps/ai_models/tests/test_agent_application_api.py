@@ -102,7 +102,6 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
             tenant=tenant or self.tenant,
             title=title,
             file=f'knowledge-base/{title}.txt',
-            processing_status=KnowledgeDocument.STATUS_APPROVED,
         )
 
     def test_list_agent_applications_requires_view_permission(self):
@@ -528,27 +527,24 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
             llm_model=model,
         )
 
-        # Create approved txt document
+        # Create txt document
         doc1 = self.create_document(title='Refund policy')
         # Write some content to the doc file
         from django.core.files.base import ContentFile
         doc1.file.save('Refund policy.txt', ContentFile(b'Refunds are processed within 5 business days.'))
         doc1.file_extension = 'txt'
-        doc1.processing_status = KnowledgeDocument.STATUS_APPROVED
         doc1.save()
 
-        # Create unapproved txt document
+        # Create another txt document
         doc2 = self.create_document(title='Shipping policy')
         doc2.file.save('Shipping policy.txt', ContentFile(b'Shipping takes 3 days.'))
         doc2.file_extension = 'txt'
-        doc2.processing_status = KnowledgeDocument.STATUS_PENDING
         doc2.save()
 
-        # Create approved pdf document
+        # Create pdf document
         doc3 = self.create_document(title='Pricing guide')
         doc3.file.save('Pricing guide.pdf', ContentFile(b'Pricing starts at $10.'))
         doc3.file_extension = 'pdf'
-        doc3.processing_status = KnowledgeDocument.STATUS_APPROVED
         doc3.save()
 
         # Bind them
@@ -557,7 +553,6 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         # Test retrieve_knowledge_context
         context = retrieve_knowledge_context(application, 'How long for refund?')
         self.assertIn('Refunds are processed within 5 business days.', context)
-        self.assertNotIn('Shipping takes 3 days.', context)
         self.assertNotIn('Pricing starts at $10.', context)
 
         # Test inject_knowledge_context

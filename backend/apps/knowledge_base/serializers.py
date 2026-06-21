@@ -4,7 +4,7 @@ from pathlib import Path
 
 from rest_framework import serializers
 
-from .models import KnowledgeDocument
+from .models import KnowledgeBase, KnowledgeDocument
 
 ALLOWED_DOCUMENT_EXTENSIONS = {
     '.doc',
@@ -20,14 +20,62 @@ ALLOWED_DOCUMENT_EXTENSIONS = {
 ALLOWED_DOCUMENT_TYPES_MESSAGE = '仅支持 doc/docx/ppt/pptx/md/txt/pdf/xls/xlsx 等文档格式'
 
 
+class KnowledgeBaseSerializer(serializers.ModelSerializer):
+    documentCount = serializers.SerializerMethodField()
+    createdBy = serializers.SerializerMethodField()
+    isActive = serializers.BooleanField(source='is_active', required=False)
+
+    class Meta:
+        model = KnowledgeBase
+        fields = (
+            'id',
+            'name',
+            'description',
+            'documentCount',
+            'createdBy',
+            'isActive',
+            'created_at',
+            'updated_at',
+        )
+        read_only_fields = ('id', 'documentCount', 'createdBy', 'created_at', 'updated_at')
+
+    def get_createdBy(self, obj: KnowledgeBase) -> str:
+        if obj.created_by is None:
+            return ''
+        return obj.created_by.get_full_name() or obj.created_by.username
+
+    def get_documentCount(self, obj: KnowledgeBase) -> int:
+        value = getattr(obj, 'document_count', None)
+        if value is not None:
+            return int(value)
+        return obj.documents.count()
+
+    def validate_name(self, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('知识库名称不能为空')
+        tenant = self.context.get('tenant')
+        if tenant is not None:
+            queryset = KnowledgeBase.objects.filter(tenant=tenant, name=value)
+            if self.instance is not None:
+                queryset = queryset.exclude(pk=self.instance.pk)
+            if queryset.exists():
+                raise serializers.ValidationError('同名知识库已存在')
+        return value
+
+
 class KnowledgeDocumentSerializer(serializers.ModelSerializer):
     file = serializers.FileField(write_only=True, required=True)
+    knowledgeBaseId = serializers.PrimaryKeyRelatedField(
+        source='knowledge_base',
+        queryset=KnowledgeBase.objects.none(),
+        required=False,
+        allow_null=True,
+    )
+    knowledgeBaseName = serializers.CharField(source='knowledge_base.name', read_only=True, default='')
     fileName = serializers.CharField(source='file_name', read_only=True)
     fileExtension = serializers.CharField(source='file_extension', read_only=True)
     fileSize = serializers.IntegerField(source='file_size', read_only=True, allow_null=True)
-    processingStatus = serializers.CharField(source='processing_status', read_only=True)
-    processingStatusLabel = serializers.CharField(source='get_processing_status_display', read_only=True)
-    processingResult = serializers.CharField(source='processing_result', read_only=True)
     uploadedBy = serializers.SerializerMethodField()
     downloadCount = serializers.IntegerField(source='download_count', read_only=True)
 
@@ -37,13 +85,12 @@ class KnowledgeDocumentSerializer(serializers.ModelSerializer):
             'id',
             'title',
             'description',
+            'knowledgeBaseId',
+            'knowledgeBaseName',
             'file',
             'fileName',
             'fileExtension',
             'fileSize',
-            'processingStatus',
-            'processingStatusLabel',
-            'processingResult',
             'uploadedBy',
             'downloadCount',
             'created_at',
@@ -54,9 +101,6 @@ class KnowledgeDocumentSerializer(serializers.ModelSerializer):
             'fileName',
             'fileExtension',
             'fileSize',
-            'processingStatus',
-            'processingStatusLabel',
-            'processingResult',
             'uploadedBy',
             'downloadCount',
             'created_at',
@@ -66,6 +110,13 @@ class KnowledgeDocumentSerializer(serializers.ModelSerializer):
             'title': {'required': False, 'allow_blank': True},
             'description': {'required': False, 'allow_blank': True},
         }
+
+    def get_fields(self):
+        fields = super().get_fields()
+        tenant = self.context.get('tenant')
+        if tenant is not None:
+            fields['knowledgeBaseId'].queryset = KnowledgeBase.objects.for_tenant(tenant).filter(is_active=True)
+        return fields
 
     def get_uploadedBy(self, obj: KnowledgeDocument) -> str:
         if obj.uploaded_by is None:
@@ -92,10 +143,6 @@ class KnowledgeDocumentSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class KnowledgeDocumentReviewSerializer(serializers.Serializer):
-    processingStatus = serializers.ChoiceField(
-        source='processing_status',
-        choices=(KnowledgeDocument.STATUS_APPROVED, KnowledgeDocument.STATUS_REJECTED),
-    )
-    processingResult = serializers.CharField(source='processing_result', required=False, allow_blank=True)
-
+class KnowledgeRecallTestSerializer(serializers.Serializer):
+    query = serializers.CharField(max_length=500)
+    topN = serializers.IntegerField(required=False, min_value=1, max_value=20, default=5)

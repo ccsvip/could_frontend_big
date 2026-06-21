@@ -98,13 +98,13 @@ const SUPER_ADMIN_TENANT_MODULES: ReadonlyArray<SuperAdminTenantModule> = [
       { segment: 'models', label: '模型管理', icon: 'RobotOutlined' },
     ],
   },
-  { segment: 'knowledge-base', label: '知识库', icon: 'FileTextOutlined' },
   { segment: 'commands', label: '指令管理', icon: 'ThunderboltOutlined' },
   {
     segment: 'ai-models',
     label: 'AI大模型',
     icon: 'RobotOutlined',
     children: [
+      { segment: 'knowledge-base', label: '知识库', icon: 'FileTextOutlined' },
       { segment: 'applications', label: '智能体', icon: 'AppstoreOutlined' },
       { segment: 'asr', label: 'ASR管理', icon: 'AudioOutlined' },
       { segment: 'llm', label: 'LLM设置', icon: 'CloudOutlined' },
@@ -193,6 +193,12 @@ const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
         label: 'LLM设置',
         icon: 'RobotOutlined',
         path: '/settings/llm',
+      },
+      {
+        key: 'settings-knowledge-base',
+        label: '知识库',
+        icon: 'FileTextOutlined',
+        path: '/settings/knowledge-base',
       },
     ],
   },

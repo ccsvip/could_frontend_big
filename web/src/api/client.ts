@@ -13,6 +13,7 @@ const TENANT_SCOPED_PREFIXES = [
   '/device-applications',
   '/resources',
   '/knowledge-base',
+  '/knowledge-bases',
   '/commands',
   '/ai-models',
 ];

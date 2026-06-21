@@ -8,6 +8,7 @@ from .models import (
     EmbeddingModel,
     LLMProvider,
     RerankModel,
+    TenantKnowledgeModelSettings,
     TTSProvider,
     TTSVoice,
 )
@@ -32,6 +33,13 @@ class RerankModelAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'model', 'is_active', 'updated_at')
     list_filter = ('is_active',)
     search_fields = ('name', 'code', 'model')
+
+
+@admin.register(TenantKnowledgeModelSettings)
+class TenantKnowledgeModelSettingsAdmin(admin.ModelAdmin):
+    list_display = ('tenant', 'embedding_model', 'rerank_model', 'is_active', 'updated_at')
+    list_filter = ('is_active',)
+    raw_id_fields = ('tenant', 'embedding_model', 'rerank_model')
 
 
 @admin.register(TTSProvider)
@@ -63,7 +71,7 @@ class AgentApplicationAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'llm_provider')
     search_fields = ('name', 'description', 'system_prompt')
     raw_id_fields = ('llm_provider', 'created_by', 'tenant')
-    filter_horizontal = ('knowledge_documents',)
+    filter_horizontal = ('knowledge_documents', 'knowledge_bases')
 
 
 @admin.register(AgentAnnotation)

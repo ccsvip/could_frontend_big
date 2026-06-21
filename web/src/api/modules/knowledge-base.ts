@@ -1,23 +1,43 @@
 import axios, { type AxiosProgressEvent } from 'axios';
 import { message } from 'antd';
-import { API_BASE_URL, handleUnauthorizedResponse, httpClient, type ApiResponse } from '../client';
-
-export type KnowledgeDocumentStatus = 'pending' | 'approved' | 'rejected';
+import { API_BASE_URL, handleUnauthorizedResponse, httpClient } from '../client';
 
 export type KnowledgeDocumentRecord = {
   id: number;
   title: string;
   description: string;
+  knowledgeBaseId: number | null;
+  knowledgeBaseName: string;
   fileName: string;
   fileExtension: string;
   fileSize: number | null;
-  processingStatus: KnowledgeDocumentStatus;
-  processingStatusLabel: string;
-  processingResult: string;
   uploadedBy: string;
   downloadCount: number;
   created_at: string;
   updated_at: string;
+};
+
+export type KnowledgeBaseRecord = {
+  id: number;
+  name: string;
+  description: string;
+  documentCount: number;
+  createdBy: string;
+  isActive: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type KnowledgeBaseListResponse = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: KnowledgeBaseRecord[];
+};
+
+export type KnowledgeBaseListQuery = {
+  page?: number;
+  keyword?: string;
 };
 
 export type KnowledgeDocumentListResponse = {
@@ -30,11 +50,12 @@ export type KnowledgeDocumentListResponse = {
 export type KnowledgeDocumentListQuery = {
   page?: number;
   keyword?: string;
-  processingStatus?: KnowledgeDocumentStatus | 'all';
+  knowledgeBaseId?: number;
 };
 
 export type KnowledgeDocumentUploadPayload = {
   file: File;
+  knowledgeBaseId?: number;
   title?: string;
   description?: string;
 };
@@ -44,9 +65,56 @@ export type KnowledgeDocumentUploadOptions = {
   timeoutMs?: number;
 };
 
-export type KnowledgeDocumentReviewPayload = {
-  processingStatus: Extract<KnowledgeDocumentStatus, 'approved' | 'rejected'>;
-  processingResult?: string;
+export type KnowledgeRecallChunk = {
+  documentId: number | null;
+  documentTitle: string;
+  chunkIndex: number | null;
+  content: string;
+  score: number;
+};
+
+export type KnowledgeRecallResult = {
+  mode: 'empty' | 'keyword' | 'vector';
+  embeddingModelAlias: string;
+  rerankModelAlias: string;
+  chunks: KnowledgeRecallChunk[];
+};
+
+export type KnowledgeModelSettings = {
+  embedding: {
+    id: number;
+    type: 'embedding';
+    alias: string;
+    model: string;
+    baseUrl: string;
+    apiKeyMasked: string;
+    apiKeyConfigured: boolean;
+    isActive: boolean;
+    dimensions: number;
+    updated_at: string;
+  };
+  rerank: {
+    id: number;
+    type: 'rerank';
+    alias: string;
+    model: string;
+    baseUrl: string;
+    apiKeyMasked: string;
+    apiKeyConfigured: boolean;
+    isActive: boolean;
+    updated_at: string;
+  };
+};
+
+export type TenantKnowledgeAuthorization = {
+  tenant: { id: number; name: string; isActive: boolean };
+  models: {
+    embedding: { id: number; alias: string; isActive: boolean; grantIsActive: boolean };
+    rerank: { id: number; alias: string; isActive: boolean; grantIsActive: boolean };
+  };
+  embeddingModelId: number | null;
+  rerankModelId: number | null;
+  isActive: boolean;
 };
 
 const DOWNLOAD_TIMEOUT_MS = 120000;
@@ -61,10 +129,7 @@ const downloadClient = axios.create({
 const buildListParams = (query?: KnowledgeDocumentListQuery) => ({
   page: query?.page,
   keyword: query?.keyword || undefined,
-  processing_status:
-    query?.processingStatus && query.processingStatus !== 'all'
-      ? query.processingStatus
-      : undefined,
+  knowledge_base: query?.knowledgeBaseId,
 });
 
 const buildUploadFormData = (payload: KnowledgeDocumentUploadPayload) => {
@@ -75,6 +140,9 @@ const buildUploadFormData = (payload: KnowledgeDocumentUploadPayload) => {
   }
   if (payload.description) {
     formData.append('description', payload.description);
+  }
+  if (payload.knowledgeBaseId) {
+    formData.append('knowledgeBaseId', String(payload.knowledgeBaseId));
   }
   return formData;
 };
@@ -162,6 +230,37 @@ export const fetchKnowledgeDocuments = async (query?: KnowledgeDocumentListQuery
   return response.data;
 };
 
+export const fetchKnowledgeBases = async (query?: KnowledgeBaseListQuery) => {
+  const response = await httpClient.get<KnowledgeBaseListResponse>('/knowledge-bases/', {
+    params: {
+      page: query?.page,
+      keyword: query?.keyword || undefined,
+    },
+  });
+  return response.data;
+};
+
+export const createKnowledgeBase = async (payload: { name: string; description?: string }) => {
+  const response = await httpClient.post<KnowledgeBaseRecord>('/knowledge-bases/', payload);
+  return response.data;
+};
+
+export const updateKnowledgeBase = async (id: number, payload: Partial<{ name: string; description: string; isActive: boolean }>) => {
+  const response = await httpClient.patch<KnowledgeBaseRecord>(`/knowledge-bases/${id}/`, payload);
+  return response.data;
+};
+
+export const deleteKnowledgeBase = async (id: number) => {
+  await httpClient.delete(`/knowledge-bases/${id}/`);
+};
+
+export const fetchKnowledgeBaseDocuments = async (knowledgeBaseId: number, query?: KnowledgeDocumentListQuery) => {
+  const response = await httpClient.get<KnowledgeDocumentRecord[]>(`/knowledge-bases/${knowledgeBaseId}/documents/`, {
+    params: buildListParams(query),
+  });
+  return response.data;
+};
+
 export const uploadKnowledgeDocument = async (
   payload: KnowledgeDocumentUploadPayload,
   options?: KnowledgeDocumentUploadOptions,
@@ -184,6 +283,34 @@ export const uploadKnowledgeDocument = async (
   return response.data;
 };
 
+export const uploadKnowledgeBaseDocument = async (
+  knowledgeBaseId: number,
+  payload: KnowledgeDocumentUploadPayload,
+  options?: KnowledgeDocumentUploadOptions,
+) => {
+  const response = await httpClient.post<KnowledgeDocumentRecord>(
+    `/knowledge-bases/${knowledgeBaseId}/documents/`,
+    buildUploadFormData({ ...payload, knowledgeBaseId }),
+    {
+      timeout: options?.timeoutMs ?? DOWNLOAD_TIMEOUT_MS,
+      onUploadProgress: (progressEvent: AxiosProgressEvent) => {
+        if (!options?.onUploadProgress) {
+          return;
+        }
+        const total = progressEvent.total || payload.file.size;
+        const percent = total > 0 ? Math.round((progressEvent.loaded / total) * 100) : 0;
+        options.onUploadProgress(Math.max(0, Math.min(100, percent)));
+      },
+    },
+  );
+  return response.data;
+};
+
+export const recallTestKnowledgeBase = async (knowledgeBaseId: number, payload: { query: string; topN?: number }) => {
+  const response = await httpClient.post<KnowledgeRecallResult>(`/knowledge-bases/${knowledgeBaseId}/recall-test/`, payload);
+  return response.data;
+};
+
 export const downloadKnowledgeDocument = async (document: KnowledgeDocumentRecord) => {
   await authorizedDownloadRequest(
     {
@@ -198,11 +325,6 @@ export const deleteKnowledgeDocument = async (id: number) => {
   await httpClient.delete(`/knowledge-base/${id}/`);
 };
 
-export const reviewKnowledgeDocument = async (id: number, payload: KnowledgeDocumentReviewPayload) => {
-  const response = await httpClient.post<ApiResponse<KnowledgeDocumentRecord>>(`/knowledge-base/${id}/review/`, payload);
-  return response.data;
-};
-
 export const bulkDownloadKnowledgeDocuments = async (ids: number[]) => {
   await authorizedDownloadRequest(
     {
@@ -214,3 +336,33 @@ export const bulkDownloadKnowledgeDocuments = async (ids: number[]) => {
   );
 };
 
+export const fetchKnowledgeModelSettings = async () => {
+  const response = await httpClient.get<KnowledgeModelSettings>('/settings/knowledge-base/models/');
+  return response.data;
+};
+
+export const updateKnowledgeModelSettings = async (
+  payload: Partial<{
+    embedding: Partial<{ alias: string; model: string; baseUrl: string; apiKey: string; isActive: boolean; dimensions: number }>;
+    rerank: Partial<{ alias: string; model: string; baseUrl: string; apiKey: string; isActive: boolean }>;
+  }>,
+) => {
+  const response = await httpClient.patch<KnowledgeModelSettings>('/settings/knowledge-base/models/', payload);
+  return response.data;
+};
+
+export const fetchTenantKnowledgeAuthorization = async (tenantId: number) => {
+  const response = await httpClient.get<TenantKnowledgeAuthorization>(`/settings/knowledge-base/tenants/${tenantId}/authorization/`);
+  return response.data;
+};
+
+export const updateTenantKnowledgeAuthorization = async (
+  tenantId: number,
+  payload: { embeddingModelId: number | null; rerankModelId: number | null; isActive: boolean },
+) => {
+  const response = await httpClient.put<TenantKnowledgeAuthorization>(
+    `/settings/knowledge-base/tenants/${tenantId}/authorization/`,
+    payload,
+  );
+  return response.data;
+};

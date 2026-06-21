@@ -3,7 +3,16 @@ from django.utils.html import format_html
 
 from config.business_cache import clear_business_cache_namespace
 
-from .models import KnowledgeDocument, KnowledgeDocumentChunk
+from .models import KnowledgeBase, KnowledgeDocument, KnowledgeDocumentChunk
+
+
+@admin.register(KnowledgeBase)
+class KnowledgeBaseAdmin(admin.ModelAdmin):
+    list_display = ('name', 'tenant', 'is_active', 'created_by', 'updated_at')
+    list_filter = ('is_active', 'updated_at')
+    search_fields = ('name', 'description')
+    raw_id_fields = ('tenant', 'created_by')
+    readonly_fields = ('created_at', 'updated_at')
 
 
 @admin.register(KnowledgeDocument)
@@ -12,13 +21,13 @@ class KnowledgeDocumentAdmin(admin.ModelAdmin):
         'title',
         'file_name',
         'file_extension',
-        'processing_status',
+        'knowledge_base',
         'uploaded_by',
         'download_count',
         'updated_at',
     )
-    search_fields = ('title', 'file_name', 'description', 'processing_result')
-    list_filter = ('processing_status', 'file_extension', 'updated_at')
+    search_fields = ('title', 'file_name', 'description')
+    list_filter = ('file_extension', 'knowledge_base', 'updated_at')
     readonly_fields = (
         'created_at',
         'updated_at',
@@ -31,9 +40,8 @@ class KnowledgeDocumentAdmin(admin.ModelAdmin):
     )
     list_per_page = 20
     fieldsets = (
-        ('基础信息', {'fields': ('title', 'description', 'uploaded_by', 'download_count')}),
+        ('基础信息', {'fields': ('title', 'description', 'knowledge_base', 'uploaded_by', 'download_count')}),
         ('文件信息', {'fields': ('file', 'file_link', 'file_name', 'file_extension', 'file_size')}),
-        ('处理信息', {'fields': ('processing_status', 'processing_result')}),
         ('时间信息', {'fields': ('created_at', 'updated_at')}),
     )
 

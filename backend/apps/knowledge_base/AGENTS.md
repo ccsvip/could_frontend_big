@@ -4,7 +4,7 @@
 
 ## OVERVIEW
 
-知识库文档上传、列表、下载、批量 ZIP 下载。状态维护首版只允许 Django admin；业务 API 不写处理状态。
+知识库文档上传、列表、下载、批量 ZIP 下载。文档上传即进入知识库，不存在审核/处理状态流程。
 
 ## STRUCTURE
 
@@ -14,7 +14,7 @@ knowledge_base/
 ├── serializers.py     # 上传/列表/详情 payload
 ├── views.py           # list/retrieve/create/destroy/download/bulk-download
 ├── services.py        # 飞书通知（复用 resources.services.feishu）
-├── admin.py           # processing_status / result 的唯一写入口
+├── admin.py           # 知识库与文档后台维护
 ├── urls.py            # /knowledge-base/*
 └── tests/             # API / access_data / helpers
 ```
@@ -31,7 +31,7 @@ knowledge_base/
 
 ## CONVENTIONS
 
-- **状态 admin-only**：`processing_status` / `processing_result` 只在 Django admin 写；前台 API 只展示。
+- **无审核状态**：知识库文档上传即保存并参与检索，不再维护 `processing_status` / `processing_result`。
 - **二进制响应例外**：`download` 和 `bulk_download` 成功时返回原生文件响应；错误仍走 DRF validation/envelope。
 - **下载计数原子递增**：用 `F('download_count') + 1`，不要读改写。
 - **删除要清文件**：`perform_destroy()` 先删 DB，再删除 storage 文件，避免孤儿文件。
@@ -40,7 +40,7 @@ knowledge_base/
 
 ## ANTI-PATTERNS
 
-- ❌ 给业务 API 加 `processing_status` 写接口：违反首版硬边界。
+- ❌ 恢复文档审核/处理状态：当前产品契约是上传即进入知识库。
 - ❌ 把下载成功响应包装成 `{status,message,data}`：前端下载 helper 需要真实 Blob/ZIP。
 - ❌ 批量下载不去重 id：会重复写 zip entry / 重复计数。
 - ❌ 覆盖 `perform_destroy()` 但忘记删除 `file_field`：会留下媒体孤儿文件。

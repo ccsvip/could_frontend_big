@@ -68,6 +68,9 @@ const TtsSettingsPage = lazy(() =>
 const LlmSettingsAdminPage = lazy(() =>
   import('../views/settings-llm').then((module) => ({ default: module.LlmSettingsAdminPage })),
 );
+const KnowledgeBaseSettingsPage = lazy(() =>
+  import('../views/knowledge-base-settings').then((module) => ({ default: module.KnowledgeBaseSettingsPage })),
+);
 const CommandWorkspacePage = lazy(() =>
   import('../views/command-management/workspace').then((module) => ({ default: module.CommandWorkspacePage })),
 );
@@ -349,9 +352,10 @@ export const AppRouter = () => {
             { path: 'resources/videos', element: <ResourceManagementPage key="scoped-resource-video" resourceType="video" /> },
             { path: 'resources/scrolling-texts', element: <ScrollingTextManagementPage /> },
             { path: 'resources/models', element: <ModelManagementPage /> },
-            { path: 'knowledge-base', element: <KnowledgeBasePage /> },
+            { path: 'knowledge-base', element: <Navigate to="ai-models/knowledge-base" replace /> },
             { path: 'applications', element: <ScopedApplicationRedirect /> },
             { path: 'applications/:applicationId', element: <ScopedApplicationRedirect /> },
+            { path: 'ai-models/knowledge-base', element: <KnowledgeBasePage /> },
             { path: 'ai-models/applications', element: <ApplicationManagementPage /> },
             { path: 'ai-models/applications/:applicationId', element: <ApplicationManagementPage /> },
             { path: 'commands', element: <CommandWorkspacePage /> },
@@ -410,6 +414,14 @@ export const AppRouter = () => {
           ),
         },
         {
+          path: 'settings/knowledge-base',
+          element: (
+            <PermissionGuard permission="tenant.management.view">
+              <KnowledgeBaseSettingsPage />
+            </PermissionGuard>
+          ),
+        },
+        {
           path: 'logs',
           element: (
             <AuditLogGuard>
@@ -427,6 +439,10 @@ export const AppRouter = () => {
         },
         {
           path: 'knowledge-base',
+          element: <Navigate to="/ai-models/knowledge-base" replace />,
+        },
+        {
+          path: 'ai-models/knowledge-base',
           element: (
             <PermissionGuard permission="knowledge_base.view">
               <KnowledgeBasePage />

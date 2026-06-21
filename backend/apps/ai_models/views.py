@@ -56,9 +56,12 @@ from .models import (
     AgentApplication,
     ChatConversation,
     ChatMessage,
+    EmbeddingModel,
     LLMModel,
     LLMProvider,
     LLMTestSettings,
+    RerankModel,
+    TenantKnowledgeModelSettings,
     TenantLLMModelGrant,
     TenantLLMSettings,
     TenantTTSSettings,
@@ -80,6 +83,8 @@ from .serializers import (
     ChatMessageFeedbackSerializer,
     ChatSendSerializer,
     LLMTestSettingsSerializer,
+    KnowledgeModelSettingsSerializer,
+    KnowledgeModelSettingsWriteSerializer,
     PlatformLLMModelSerializer,
     PlatformLLMModelWriteSerializer,
     PlatformLLMProviderSerializer,
@@ -88,7 +93,9 @@ from .serializers import (
     PlatformTTSSettingsSerializer,
     PlatformTTSSettingsWriteSerializer,
     CompanyTTSVoiceSerializer,
+    TenantKnowledgeModelSettingsSerializer,
     TenantLLMAuthorizationSerializer,
+    mask_knowledge_api_key,
 )
 from .services import tts as tts_services
 from .services.asr import (
@@ -605,6 +612,127 @@ class TenantLLMAuthorizationView(APIView):
         return Response(self._response_payload(tenant))
 
 
+def _get_embedding_model() -> EmbeddingModel:
+    return EmbeddingModel.load_aliyun()
+
+
+def _get_rerank_model() -> RerankModel:
+    return RerankModel.load_aliyun()
+
+
+def _knowledge_model_payload(model, model_type: str) -> dict:
+    payload = {
+        'id': model.id,
+        'type': model_type,
+        'alias': model.name,
+        'model': model.model,
+        'baseUrl': model.base_url,
+        'apiKeyMasked': mask_knowledge_api_key(model.api_key),
+        'apiKeyConfigured': bool(model.api_key),
+        'isActive': model.is_active,
+        'updated_at': model.updated_at,
+    }
+    if model_type == 'embedding':
+        payload['dimensions'] = model.dimensions
+    return payload
+
+
+def _knowledge_settings_payload() -> dict:
+    embedding = _get_embedding_model()
+    rerank = _get_rerank_model()
+    return {
+        'embedding': _knowledge_model_payload(embedding, 'embedding'),
+        'rerank': _knowledge_model_payload(rerank, 'rerank'),
+    }
+
+
+class PlatformKnowledgeModelSettingsView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def get(self, request):
+        return Response(KnowledgeModelSettingsSerializer(_knowledge_settings_payload()).data)
+
+    def patch(self, request):
+        serializer = KnowledgeModelSettingsWriteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        payload = serializer.validated_data
+
+        if 'embedding' in payload:
+            embedding = _get_embedding_model()
+            for field, value in payload['embedding'].items():
+                if field == 'api_key' and value == '':
+                    continue
+                setattr(embedding, field, value)
+            embedding.save()
+
+        if 'rerank' in payload:
+            rerank = _get_rerank_model()
+            for field, value in payload['rerank'].items():
+                if field == 'api_key' and value == '':
+                    continue
+                setattr(rerank, field, value)
+            rerank.save()
+
+        return Response(KnowledgeModelSettingsSerializer(_knowledge_settings_payload()).data)
+
+
+class TenantKnowledgeModelAuthorizationView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def _get_tenant(self, tenant_id):
+        tenant = Tenant.objects.filter(id=tenant_id, is_active=True).first()
+        if tenant is None:
+            raise ValidationError({'tenantId': '公司不存在或已停用'})
+        return tenant
+
+    def _response_payload(self, tenant):
+        settings, _ = TenantKnowledgeModelSettings.objects.get_or_create(tenant=tenant)
+        embedding = _get_embedding_model()
+        rerank = _get_rerank_model()
+        return {
+            'tenant': {
+                'id': tenant.id,
+                'name': tenant.name,
+                'isActive': tenant.is_active,
+            },
+            'models': {
+                'embedding': {
+                    'id': embedding.id,
+                    'alias': embedding.name,
+                    'isActive': embedding.is_active,
+                    'grantIsActive': settings.is_active and settings.embedding_model_id == embedding.id,
+                },
+                'rerank': {
+                    'id': rerank.id,
+                    'alias': rerank.name,
+                    'isActive': rerank.is_active,
+                    'grantIsActive': settings.is_active and settings.rerank_model_id == rerank.id,
+                },
+            },
+            'embeddingModelId': settings.embedding_model_id,
+            'rerankModelId': settings.rerank_model_id,
+            'isActive': settings.is_active,
+        }
+
+    def get(self, request, tenant_id):
+        tenant = self._get_tenant(tenant_id)
+        return Response(self._response_payload(tenant))
+
+    def put(self, request, tenant_id):
+        serializer = TenantKnowledgeModelSettingsSerializer(data=request.data, context={'tenant_id': tenant_id})
+        serializer.is_valid(raise_exception=True)
+        tenant = serializer.validated_data['tenant']
+        TenantKnowledgeModelSettings.objects.update_or_create(
+            tenant=tenant,
+            defaults={
+                'embedding_model_id': serializer.validated_data.get('embeddingModelId'),
+                'rerank_model_id': serializer.validated_data.get('rerankModelId'),
+                'is_active': serializer.validated_data.get('isActive', True),
+            },
+        )
+        return Response(self._response_payload(tenant))
+
+
 def _build_company_llm_options_payload(tenant, request):
     settings = get_tenant_llm_settings(tenant)
     test_settings = LLMTestSettings.load()
@@ -910,7 +1038,7 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
     queryset = (
         AgentApplication.objects
         .select_related('llm_model__provider', 'created_by')
-        .prefetch_related('knowledge_documents')
+        .prefetch_related('knowledge_documents', 'knowledge_bases')
     )
     serializer_class = AgentApplicationSerializer
     permission_map = {

@@ -26,9 +26,9 @@ def get_knowledge_document_model():
     app_config = django_apps.get_app_config('knowledge_base')
     for model in app_config.get_models():
         field_names = {field.name for field in model._meta.get_fields()}
-        if {'processing_status', 'download_count'}.issubset(field_names):
+        if {'download_count', 'file_name', 'file_extension'}.issubset(field_names):
             return model
-    raise AssertionError('未找到知识库文档模型，请确保模型包含 processing_status 与 download_count 字段')
+    raise AssertionError('未找到知识库文档模型，请确保模型包含 download_count 与文件元数据字段')
 
 
 def get_document_file_field_name(model) -> str:
@@ -87,10 +87,6 @@ def create_document_instance(
             payload.setdefault('description', '')
         if 'uploaded_by' in field_names:
             payload['uploaded_by'] = user
-        if 'processing_status' in field_names:
-            payload['processing_status'] = resolve_status_value(model)
-        if 'processing_result' in field_names:
-            payload.setdefault('processing_result', '')
         if 'download_count' in field_names:
             payload['download_count'] = 0
 
@@ -121,18 +117,6 @@ def create_document_instance(
         except Exception:
             pass
         cleanup_source_file(source_path)
-
-
-def resolve_status_value(model) -> str:
-    field = model._meta.get_field('processing_status')
-    choices = list(getattr(field, 'choices', []))
-    if not choices:
-        return 'pending'
-
-    values = [choice[0] for choice in choices]
-    if 'pending' in values:
-        return 'pending'
-    return values[0]
 
 
 def get_response_bytes(response) -> bytes:

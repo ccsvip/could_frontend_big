@@ -31,23 +31,6 @@ def notify_knowledge_document_event(action: str, user: Any, document: KnowledgeD
     )
 
 
-def notify_knowledge_document_reviewed(user: Any, document: KnowledgeDocument) -> bool:
-    """发送知识库审核结果卡片通知。"""
-    return notify_business_event_card(
-        title='知识库文档审核通知',
-        action='review',
-        user=user,
-        target_label='文档标题',
-        target_name=_document_display_name(document),
-        extra_lines=[
-            f'**文档ID**\n{document.pk}',
-            f'**审核结果**\n{document.get_processing_status_display()}',
-            f'**文件名**\n{document.file_name or "未记录"}',
-        ],
-        company_name=_document_company_name(document),
-    )
-
-
 def notify_knowledge_document_deleted(user: Any, *, document_id: int | None, title: str, file_name: str, company_name: str = '') -> bool:
     """发送知识库文档删除卡片通知，避免删除后模型主键被清空。"""
     return notify_business_event_card(

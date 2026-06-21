@@ -27,7 +27,7 @@ import {
   type ChatMessage,
   type ChatConversationRecord,
 } from '../../api/modules/chat';
-import { fetchKnowledgeDocuments, type KnowledgeDocumentRecord } from '../../api/modules/knowledge-base';
+import { fetchKnowledgeBases, type KnowledgeBaseRecord } from '../../api/modules/knowledge-base';
 import { fetchCompanyLLMOptions, type CompanyLLMOptions } from '../../api/modules/llm-settings';
 import { fetchAsrStatus, type AsrStatusRecord } from '../../api/modules/asr';
 import { fetchCompanyTtsOptions, type CompanyTtsOptions } from '../../api/modules/tts';
@@ -108,17 +108,17 @@ echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer]);
 
 
 
-const fetchAllKnowledgeDocuments = async () => {
-  const firstPage = await fetchKnowledgeDocuments({ page: 1 });
-  const documents = [...firstPage.results];
+const fetchAllKnowledgeBases = async () => {
+  const firstPage = await fetchKnowledgeBases({ page: 1 });
+  const bases = [...firstPage.results];
   let page = 2;
-  while (firstPage.next && documents.length < firstPage.count) {
-    const nextPage = await fetchKnowledgeDocuments({ page });
-    documents.push(...nextPage.results);
+  while (firstPage.next && bases.length < firstPage.count) {
+    const nextPage = await fetchKnowledgeBases({ page });
+    bases.push(...nextPage.results);
     if (!nextPage.next) break;
     page += 1;
   }
-  return documents;
+  return bases;
 };
 
 const AGENT_TEMPLATES = [
@@ -324,7 +324,7 @@ export const ApplicationManagementPage = () => {
   const [detailLoading, setDetailLoading] = useState(false);
   const [configSaving, setConfigSaving] = useState(false);
   const [llmOptions, setLlmOptions] = useState<CompanyLLMOptions | null>(null);
-  const [knowledgeDocuments, setKnowledgeDocuments] = useState<KnowledgeDocumentRecord[]>([]);
+  const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBaseRecord[]>([]);
   const [optionsLoading, setOptionsLoading] = useState(false);
 
   // Form states (direct React states instead of AntD forms)
@@ -407,7 +407,7 @@ export const ApplicationManagementPage = () => {
     setDescription(detail.description || '');
     setLlmModelId(detail.llmModelId);
     setSystemPrompt(detail.systemPrompt || '');
-    setSelectedDocs(detail.knowledgeDocumentIds || []);
+    setSelectedDocs(detail.knowledgeBaseIds || []);
     setTemperature(detail.temperature);
     setMaxTokens(detail.maxTokens);
     setMaxTokensUnlimited(detail.maxTokensUnlimited);
@@ -427,8 +427,8 @@ export const ApplicationManagementPage = () => {
     const normalizedPunctuation = Array.from(new Set(stringValue(payload.ttsFilterPunctuation).trim())).join('');
     const hasTtsFilterPunctuation = Object.prototype.hasOwnProperty.call(detail, 'ttsFilterPunctuation');
     const hasTtsFilterEmoji = Object.prototype.hasOwnProperty.call(detail, 'ttsFilterEmoji');
-    const payloadDocs = payload.knowledgeDocumentIds || [];
-    const detailDocs = detail.knowledgeDocumentIds || [];
+    const payloadDocs = payload.knowledgeBaseIds || [];
+    const detailDocs = detail.knowledgeBaseIds || [];
     const payloadQuestions = payload.suggestedQuestions || [];
     const detailQuestions = detail.suggestedQuestions || [];
     const hasSameDocs = payloadDocs.length === detailDocs.length && payloadDocs.every((id) => detailDocs.includes(id));
@@ -454,7 +454,7 @@ export const ApplicationManagementPage = () => {
     if (!hasTtsFilterEmoji) return '过滤表情字段';
     if (detail.ttsFilterEmoji !== payload.ttsFilterEmoji) return '过滤表情';
     if (!hasSameQuestions) return '建议问题';
-    if (!hasSameDocs) return '绑定知识库文档';
+    if (!hasSameDocs) return '绑定知识库';
     return null;
   };
 
@@ -479,7 +479,7 @@ export const ApplicationManagementPage = () => {
     if (suggestedQuestions.length !== previousQuestions.length) return true;
     if (!previousQuestions.every((question, index) => question === suggestedQuestions[index])) return true;
 
-    const prevDocs = selectedApplication.knowledgeDocumentIds || [];
+    const prevDocs = selectedApplication.knowledgeBaseIds || [];
     if (selectedDocs.length !== prevDocs.length) return true;
     const currentDocsSet = new Set(selectedDocs);
     return !prevDocs.every((id) => currentDocsSet.has(id));
@@ -529,13 +529,13 @@ export const ApplicationManagementPage = () => {
     try {
       const [llmResult, documentsResult] = await Promise.allSettled([
         fetchCompanyLLMOptions(),
-        fetchAllKnowledgeDocuments(),
+        fetchAllKnowledgeBases(),
       ]);
       if (llmResult.status === 'fulfilled') {
         setLlmOptions(llmResult.value);
       }
       if (documentsResult.status === 'fulfilled') {
-        setKnowledgeDocuments(documentsResult.value);
+        setKnowledgeBases(documentsResult.value);
       }
     } catch {
       message.error('应用配置选项加载失败');
@@ -863,7 +863,7 @@ export const ApplicationManagementPage = () => {
         description: description.trim(),
         llmModelId: llmModelId,
         systemPrompt: systemPrompt,
-        knowledgeDocumentIds: selectedDocs,
+        knowledgeBaseIds: selectedDocs,
         temperature: temperature,
         maxTokens: maxTokens,
         maxTokensUnlimited,
@@ -1128,7 +1128,7 @@ export const ApplicationManagementPage = () => {
     const activeCount = applications.filter((app) => app.isActive).length;
     const configuredModelCount = applications.filter((app) => app.llmModelId).length;
     const knowledgeReferenceCount = applications.reduce(
-      (total, app) => total + (app.knowledgeDocumentIds?.length || app.knowledgeDocuments?.length || 0),
+      (total, app) => total + (app.knowledgeBaseIds?.length || app.knowledgeBases?.length || 0),
       0,
     );
 
@@ -1218,7 +1218,7 @@ export const ApplicationManagementPage = () => {
           <div className="flex flex-col gap-1">
             <span className="text-xs text-slate-500 font-medium">知识库引用数</span>
             <span className="text-2xl font-bold font-mono leading-none text-blue-600">{applicationOverview.knowledgeReferenceCount}</span>
-            <span className="text-xs text-slate-400 mt-1">文档关联引用次数</span>
+            <span className="text-xs text-slate-400 mt-1">知识库关联引用次数</span>
           </div>
         </Card>
       </div>
@@ -1323,7 +1323,7 @@ export const ApplicationManagementPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {applications.map((app) => {
                 const modelName = app.llmModelDisplayName || app.llmModelName;
-                const knowledgeCount = app.knowledgeDocumentIds?.length || app.knowledgeDocuments?.length || 0;
+                const knowledgeCount = app.knowledgeBaseIds?.length || app.knowledgeBases?.length || 0;
 
                 return (
                   <Card variant="borderless" key={app.id} className="flex flex-col justify-between bg-white border border-slate-200/60 hover:border-teal-200 hover:shadow-md transition-all duration-300 rounded-2xl relative overflow-hidden group min-h-[220px]">
@@ -1375,7 +1375,7 @@ export const ApplicationManagementPage = () => {
                         )}
                         <Tag color={knowledgeCount > 0 ? 'blue' : 'default'} className="m-0 flex items-center gap-1">
                           <BookOpen size={10} className="shrink-0" />
-                          {knowledgeCount} 文档
+                          {knowledgeCount} 库
                         </Tag>
                       </div>
                     </div>
@@ -1601,24 +1601,23 @@ export const ApplicationManagementPage = () => {
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-sm font-bold text-slate-700">绑定知识库文档</span>
+              <span className="text-sm font-bold text-slate-700">绑定知识库</span>
               <Popover
                 placement="bottomLeft"
                 trigger="click"
                 styles={{ root: { width: 340 } }}
                 content={
                   <div className="flex flex-col gap-2 max-h-[260px] overflow-y-auto pr-1 custom-scrollbar">
-                    {knowledgeDocuments.length > 0 ? (
-                      knowledgeDocuments.map((doc) => {
-                        const isChecked = selectedDocs.includes(doc.id);
-                        const isTxtOrMd = ['txt', 'md'].includes(doc.fileExtension?.toLowerCase() || '');
+                    {knowledgeBases.length > 0 ? (
+                      knowledgeBases.map((base) => {
+                        const isChecked = selectedDocs.includes(base.id);
                         return (
-                          <div className="text-sm flex items-start gap-2 hover:bg-slate-50 p-2 rounded-lg cursor-pointer" key={doc.id}
+                          <div className="text-sm flex items-start gap-2 hover:bg-slate-50 p-2 rounded-lg cursor-pointer" key={base.id}
                             onClick={() => {
                               if (isChecked) {
-                                setSelectedDocs(selectedDocs.filter((id) => id !== doc.id));
+                                setSelectedDocs(selectedDocs.filter((id) => id !== base.id));
                               } else {
-                                setSelectedDocs([...selectedDocs, doc.id]);
+                                setSelectedDocs([...selectedDocs, base.id]);
                               }
                             }}
                           >
@@ -1627,15 +1626,15 @@ export const ApplicationManagementPage = () => {
                               onClick={(e) => e.stopPropagation()}
                               onChange={(e) => {
                                 if (e.target.checked) {
-                                  setSelectedDocs([...selectedDocs, doc.id]);
+                                  setSelectedDocs([...selectedDocs, base.id]);
                                 } else {
-                                  setSelectedDocs(selectedDocs.filter((id) => id !== doc.id));
+                                  setSelectedDocs(selectedDocs.filter((id) => id !== base.id));
                                 }
                               }}
                             />
                             <div className="flex flex-col">
-                              <span className="text-sm font-semibold text-slate-800">{doc.title || doc.fileName}</span>
-                              {!isTxtOrMd && <span className="text-xs text-slate-400">暂不参与检索 (仅支持 txt/md)</span>}
+                              <span className="text-sm font-semibold text-slate-800">{base.name}</span>
+                              <span className="text-xs text-slate-400">{base.documentCount} 个文档</span>
                             </div>
                           </div>
                         );
@@ -1647,7 +1646,7 @@ export const ApplicationManagementPage = () => {
                 }
               >
                 <Button type="default" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span className="text-sm text-slate-505">选择关联知识库 ({selectedDocs.length} 个已选)</span>
+                  <span className="text-sm text-slate-500">选择关联知识库 ({selectedDocs.length} 个已选)</span>
                   <ChevronDown size={14} className="text-slate-400" />
                 </Button>
               </Popover>

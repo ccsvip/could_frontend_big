@@ -6,12 +6,13 @@ import zipfile
 from pathlib import Path
 from urllib.parse import quote
 
-from django.db.models import F, Q
+from django.db.models import Count, F, Q
 from django.http import FileResponse
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, extend_schema_view
-from rest_framework import mixins, serializers, viewsets
+from rest_framework import mixins, serializers, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 
 from apps.accounts.permissions import (
@@ -19,18 +20,20 @@ from apps.accounts.permissions import (
     CanDownloadKnowledgeBase,
     CanUploadKnowledgeBase,
     CanViewKnowledgeBase,
-    IsSuperUser,
 )
 from config.business_cache import CachedBusinessResponseMixin, clear_business_cache_namespace
 from apps.tenants.mixins import TenantScopedQuerysetMixin
 
-from .models import KnowledgeDocument
-from .serializers import KnowledgeDocumentReviewSerializer, KnowledgeDocumentSerializer
+from .models import KnowledgeBase, KnowledgeDocument
+from .serializers import (
+    KnowledgeBaseSerializer,
+    KnowledgeDocumentSerializer,
+    KnowledgeRecallTestSerializer,
+)
 from .services import (
     notify_knowledge_bulk_download,
     notify_knowledge_document_deleted,
     notify_knowledge_document_event,
-    notify_knowledge_document_reviewed,
 )
 
 MAX_BULK_DOWNLOAD_COUNT = 20
@@ -73,11 +76,132 @@ def build_content_disposition(filename: str) -> str:
 
 
 @extend_schema_view(
+    list=extend_schema(tags=['KnowledgeBase']),
+    retrieve=extend_schema(tags=['KnowledgeBase']),
+    create=extend_schema(tags=['KnowledgeBase']),
+    update=extend_schema(tags=['KnowledgeBase']),
+    partial_update=extend_schema(tags=['KnowledgeBase']),
+    destroy=extend_schema(tags=['KnowledgeBase']),
+    documents=extend_schema(tags=['KnowledgeBase']),
+    recall_test=extend_schema(tags=['KnowledgeBase']),
+)
+class KnowledgeBaseViewSet(
+    CachedBusinessResponseMixin,
+    TenantScopedQuerysetMixin,
+    PermissionMappedViewSet,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+):
+    serializer_class = KnowledgeBaseSerializer
+    queryset = KnowledgeBase.objects.select_related('created_by').order_by('-updated_at', '-id')
+    business_cache_namespace = 'knowledge_base'
+    permission_map = {
+        'list': [CanViewKnowledgeBase],
+        'retrieve': [CanViewKnowledgeBase],
+        'create': [CanUploadKnowledgeBase],
+        'update': [CanUploadKnowledgeBase],
+        'partial_update': [CanUploadKnowledgeBase],
+        'destroy': [CanUploadKnowledgeBase],
+        'documents': [CanViewKnowledgeBase],
+        'recall_test': [CanViewKnowledgeBase],
+    }
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def get_permissions(self):
+        if self.action == 'documents' and self.request.method == 'POST':
+            return [CanUploadKnowledgeBase()]
+        return super().get_permissions()
+
+    def get_queryset(self):
+        queryset = super().get_queryset().annotate(
+            document_count=Count('documents', distinct=True),
+        )
+        keyword = self.request.query_params.get('keyword', '').strip()
+        if keyword:
+            queryset = queryset.filter(Q(name__icontains=keyword) | Q(description__icontains=keyword))
+        return queryset
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['tenant'] = self.request_tenant
+        return context
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user, **self.tenant_create_kwargs())
+        self.clear_cached_business_responses()
+
+    def perform_update(self, serializer):
+        serializer.save()
+        self.clear_cached_business_responses()
+
+    def perform_destroy(self, instance: KnowledgeBase):
+        documents = list(instance.documents.all())
+        super().perform_destroy(instance)
+        for document in documents:
+            if document.file:
+                document.file.delete(save=False)
+            document.delete()
+        self.clear_cached_business_responses()
+
+    @action(detail=True, methods=['get', 'post'], url_path='documents')
+    def documents(self, request, pk=None):
+        knowledge_base = self.get_object()
+        if request.method == 'GET':
+            queryset = knowledge_base.documents.select_related('uploaded_by', 'knowledge_base').order_by('-updated_at', '-id')
+            keyword = request.query_params.get('keyword', '').strip()
+            if keyword:
+                queryset = queryset.filter(Q(title__icontains=keyword) | Q(file_name__icontains=keyword))
+            serializer = KnowledgeDocumentSerializer(
+                queryset,
+                many=True,
+                context={**self.get_serializer_context(), 'request': request},
+            )
+            return Response(serializer.data)
+
+        serializer = KnowledgeDocumentSerializer(
+            data=request.data,
+            context={**self.get_serializer_context(), 'request': request},
+        )
+        serializer.is_valid(raise_exception=True)
+        document = serializer.save(
+            uploaded_by=request.user,
+            knowledge_base=knowledge_base,
+            **self.tenant_create_kwargs(),
+        )
+        self.clear_cached_business_responses()
+        notify_knowledge_document_event('create', getattr(self.request, 'user', None), document)
+        return Response(
+            KnowledgeDocumentSerializer(
+                document,
+                context={**self.get_serializer_context(), 'request': request},
+            ).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=True, methods=['post'], url_path='recall-test')
+    def recall_test(self, request, pk=None):
+        knowledge_base = self.get_object()
+        serializer = KnowledgeRecallTestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        from apps.ai_models.services.agent_knowledge import retrieve_knowledge_chunks
+
+        result = retrieve_knowledge_chunks(
+            query=serializer.validated_data['query'],
+            knowledge_base=knowledge_base,
+            tenant=knowledge_base.tenant,
+            top_n=serializer.validated_data['topN'],
+        )
+        return Response(result)
+
+
+@extend_schema_view(
     list=extend_schema(
         tags=['KnowledgeBase'],
         parameters=[
             OpenApiParameter(name='keyword', description='按标题/文件名模糊搜索', required=False, type=str),
-            OpenApiParameter(name='processing_status', description='按处理状态过滤', required=False, type=str),
         ],
     ),
     retrieve=extend_schema(tags=['KnowledgeBase']),
@@ -94,7 +218,7 @@ class KnowledgeDocumentViewSet(
     mixins.DestroyModelMixin,
 ):
     serializer_class = KnowledgeDocumentSerializer
-    queryset = KnowledgeDocument.objects.select_related('uploaded_by').order_by('-updated_at', '-id')
+    queryset = KnowledgeDocument.objects.select_related('uploaded_by', 'knowledge_base').order_by('-updated_at', '-id')
     business_cache_namespace = 'knowledge_base'
     permission_map = {
         'list': [CanViewKnowledgeBase],
@@ -103,8 +227,13 @@ class KnowledgeDocumentViewSet(
         'destroy': [CanUploadKnowledgeBase],
         'download': [CanDownloadKnowledgeBase],
         'bulk_download': [CanBulkDownloadKnowledgeBase],
-        'review': [IsSuperUser],
     }
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['tenant'] = self.request_tenant
+        return context
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -112,9 +241,9 @@ class KnowledgeDocumentViewSet(
         if keyword:
             queryset = queryset.filter(Q(title__icontains=keyword) | Q(file_name__icontains=keyword))
 
-        processing_status = self.request.query_params.get('processing_status', '').strip()
-        if processing_status:
-            queryset = queryset.filter(processing_status=processing_status)
+        raw_knowledge_base_id = self.request.query_params.get('knowledge_base')
+        if raw_knowledge_base_id:
+            queryset = queryset.filter(knowledge_base_id=raw_knowledge_base_id)
         return self.apply_tenant_scope(queryset)
 
     def perform_create(self, serializer):
@@ -227,26 +356,3 @@ class KnowledgeDocumentViewSet(
         response['Content-Disposition'] = build_content_disposition(zip_name)
         response._resource_closers.append(lambda path=temp_file_path: os.path.exists(path) and os.remove(path))
         return response
-
-    @extend_schema(
-        tags=['KnowledgeBase'],
-        request=KnowledgeDocumentReviewSerializer,
-        responses={200: KnowledgeDocumentSerializer},
-    )
-    @action(detail=True, methods=['post'], url_path='review')
-    def review(self, request, pk=None):
-        document = self.get_object()
-        serializer = KnowledgeDocumentReviewSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        document.processing_status = serializer.validated_data['processing_status']
-        document.processing_result = serializer.validated_data.get('processing_result', '')
-        document.save(update_fields=['processing_status', 'processing_result', 'updated_at'])
-        clear_business_cache_namespace(self.business_cache_namespace)
-        notify_knowledge_document_reviewed(request.user, document)
-        return Response(
-            {
-                'status': 'success',
-                'message': '审核操作成功',
-                'data': KnowledgeDocumentSerializer(document, context={'request': request}).data,
-            }
-        )

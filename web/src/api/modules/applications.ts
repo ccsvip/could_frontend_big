@@ -5,7 +5,14 @@ export type AgentApplicationKnowledgeDocument = {
   id: number;
   title: string;
   fileName: string;
-  processingStatus: string;
+  updated_at: string;
+};
+
+export type AgentApplicationKnowledgeBase = {
+  id: number;
+  name: string;
+  description: string;
+  documentCount: number;
   updated_at: string;
 };
 
@@ -30,6 +37,8 @@ export type AgentApplicationRecord = {
   ttsFilterEmoji: boolean;
   knowledgeDocumentIds: number[];
   knowledgeDocuments: AgentApplicationKnowledgeDocument[];
+  knowledgeBaseIds: number[];
+  knowledgeBases: AgentApplicationKnowledgeBase[];
   createdBy: string;
   isActive: boolean;
   created_at: string;
@@ -65,6 +74,7 @@ export type AgentApplicationPayload = {
   ttsFilterPunctuation?: string;
   ttsFilterEmoji?: boolean;
   knowledgeDocumentIds?: number[];
+  knowledgeBaseIds?: number[];
   isActive?: boolean;
 };
 

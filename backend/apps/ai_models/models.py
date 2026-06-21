@@ -241,6 +241,42 @@ class RerankModel(models.Model):
         return provider
 
 
+class TenantKnowledgeModelSettings(models.Model):
+    tenant = models.OneToOneField(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='knowledge_model_settings',
+        verbose_name='所属公司',
+    )
+    embedding_model = models.ForeignKey(
+        EmbeddingModel,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='tenant_embedding_settings',
+        verbose_name='嵌入模型',
+    )
+    rerank_model = models.ForeignKey(
+        RerankModel,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='tenant_rerank_settings',
+        verbose_name='重排序模型',
+    )
+    is_active = models.BooleanField('是否启用', default=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        verbose_name = '公司知识库模型设置'
+        verbose_name_plural = '公司知识库模型设置'
+
+    def __str__(self):
+        return f'{self.tenant_id}:embedding={self.embedding_model_id or "unset"};rerank={self.rerank_model_id or "unset"}'
+
+
 class ASRConfig(models.Model):
     workspace_id = models.CharField('Workspace ID', max_length=128, blank=True, default='')
     api_key = models.CharField('API Key', max_length=512, blank=True, default='')
@@ -449,6 +485,12 @@ class AgentApplication(models.Model):
         blank=True,
         related_name='agent_applications',
         verbose_name='绑定知识库文档',
+    )
+    knowledge_bases = models.ManyToManyField(
+        'knowledge_base.KnowledgeBase',
+        blank=True,
+        related_name='agent_applications',
+        verbose_name='绑定知识库',
     )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

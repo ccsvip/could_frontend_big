@@ -5,7 +5,7 @@ from django.core.files.base import ContentFile
 from django.test import TestCase, override_settings
 from unittest.mock import patch
 
-from apps.ai_models.models import AgentApplication, EmbeddingModel, RerankModel
+from apps.ai_models.models import AgentApplication, EmbeddingModel, RerankModel, TenantKnowledgeModelSettings
 from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context
 from apps.knowledge_base.models import KnowledgeDocument, KnowledgeDocumentChunk
 from apps.tenants.test_utils import TenantTestMixin
@@ -112,7 +112,6 @@ class AgentKnowledgeRetrievalTests(TenantTestMixin, TestCase):
             tenant=self.tenant,
             title=title,
             file=ContentFile(body.encode('utf-8'), name=f'{title}.md'),
-            processing_status=KnowledgeDocument.STATUS_APPROVED,
         )
 
     def test_retrieve_knowledge_context_uses_embedding_and_rerank_models(self):
@@ -125,7 +124,7 @@ class AgentKnowledgeRetrievalTests(TenantTestMixin, TestCase):
             body='营业时间\n门店工作日 09:00 到 18:00 提供服务。',
         )
         self.application.knowledge_documents.add(refund_document, opening_hours_document)
-        EmbeddingModel.objects.create(
+        embedding_model = EmbeddingModel.objects.create(
             code='aliyun',
             name='阿里云通用文本向量',
             api_key='dashscope-secret',
@@ -133,12 +132,18 @@ class AgentKnowledgeRetrievalTests(TenantTestMixin, TestCase):
             model='text-embedding-v4',
             is_active=True,
         )
-        RerankModel.objects.create(
+        rerank_model = RerankModel.objects.create(
             code='aliyun',
             name='阿里云文本重排序',
             api_key='dashscope-secret',
             base_url='https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank',
             model='qwen3-vl-rerank',
+            is_active=True,
+        )
+        TenantKnowledgeModelSettings.objects.create(
+            tenant=self.tenant,
+            embedding_model=embedding_model,
+            rerank_model=rerank_model,
             is_active=True,
         )
         dummy_client = _DummyDashScopeClient()
@@ -165,12 +170,17 @@ class AgentKnowledgeRetrievalTests(TenantTestMixin, TestCase):
             body='退款政策\n客户购买后七天内可以申请退款，到账时间通常为三个工作日。',
         )
         self.application.knowledge_documents.add(refund_document)
-        EmbeddingModel.objects.create(
+        embedding_model = EmbeddingModel.objects.create(
             code='aliyun',
             name='阿里云通用文本向量',
             api_key='dashscope-secret',
             base_url='https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings',
             model='text-embedding-v4',
+            is_active=True,
+        )
+        TenantKnowledgeModelSettings.objects.create(
+            tenant=self.tenant,
+            embedding_model=embedding_model,
             is_active=True,
         )
         stale_chunk = KnowledgeDocumentChunk.objects.create(
@@ -217,4 +227,3 @@ class ModelConfigDefaultsTests(TestCase):
         self.assertEqual(rerank_model.api_key, 'env-rerank-key')
         self.assertEqual(rerank_model.base_url, 'https://example.com/text-rerank')
         self.assertEqual(rerank_model.model, 'qwen3-vl-rerank')
-

@@ -8,24 +8,58 @@ from django.db import models
 from apps.tenants.managers import TenantManager
 
 
-class KnowledgeDocument(models.Model):
-    STATUS_PENDING = 'pending'
-    STATUS_APPROVED = 'approved'
-    STATUS_REJECTED = 'rejected'
-    STATUS_CHOICES = [
-        (STATUS_PENDING, '待审核'),
-        (STATUS_APPROVED, '已通过'),
-        (STATUS_REJECTED, '已拒绝'),
-    ]
+class KnowledgeBase(models.Model):
+    name = models.CharField('知识库名称', max_length=128)
+    description = models.CharField('知识库说明', max_length=255, blank=True, default='')
+    is_active = models.BooleanField('是否启用', default=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name='created_knowledge_bases',
+        verbose_name='创建人',
+        blank=True,
+        null=True,
+    )
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='+',
+        verbose_name='所属公司',
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
 
+    objects = TenantManager()
+
+    class Meta:
+        ordering = ['-updated_at', '-id']
+        verbose_name = '知识库'
+        verbose_name_plural = '知识库'
+        constraints = [
+            models.UniqueConstraint(fields=['tenant', 'name'], name='uniq_knowledge_base_tenant_name'),
+        ]
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class KnowledgeDocument(models.Model):
     title = models.CharField('文档标题', max_length=255)
     file = models.FileField('文档文件', upload_to='knowledge-base/%Y/%m/%d')
     file_name = models.CharField('原始文件名', max_length=255, blank=True, default='')
     file_extension = models.CharField('文件扩展名', max_length=32, blank=True, default='')
     file_size = models.BigIntegerField('文件大小(字节)', blank=True, null=True)
     description = models.CharField('文档说明', max_length=255, blank=True, default='')
-    processing_status = models.CharField('处理状态', max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
-    processing_result = models.TextField('处理结果', blank=True, default='')
+    knowledge_base = models.ForeignKey(
+        KnowledgeBase,
+        on_delete=models.SET_NULL,
+        related_name='documents',
+        verbose_name='所属知识库',
+        blank=True,
+        null=True,
+    )
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -121,4 +155,3 @@ class KnowledgeDocumentChunk(models.Model):
         if self.document_id and self.tenant_id is None:
             self.tenant = self.document.tenant
         super().save(*args, **kwargs)
-

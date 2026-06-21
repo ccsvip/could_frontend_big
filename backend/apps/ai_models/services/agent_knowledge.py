@@ -7,17 +7,19 @@ from typing import Iterable
 
 import httpx
 
-from apps.knowledge_base.models import KnowledgeDocument, KnowledgeDocumentChunk
-from apps.ai_models.models import EmbeddingModel, RerankModel
+from apps.knowledge_base.models import KnowledgeBase, KnowledgeDocument, KnowledgeDocumentChunk
+from apps.ai_models.models import EmbeddingModel, RerankModel, TenantKnowledgeModelSettings
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class RetrievedChunk:
+    document_id: int | None
     doc_title: str
     content: str
     score: float
+    chunk_index: int | None = None
 
 
 def chunk_text(text: str, max_chunk_len: int = 500, overlap: int = 50) -> list[str]:
@@ -146,6 +148,36 @@ def _active_rerank_model() -> RerankModel | None:
     return None
 
 
+def _embedding_model_for_tenant(tenant) -> EmbeddingModel | None:
+    if tenant is None:
+        return _active_embedding_model()
+    settings = (
+        TenantKnowledgeModelSettings.objects
+        .select_related('embedding_model')
+        .filter(tenant=tenant, is_active=True)
+        .first()
+    )
+    model = settings.embedding_model if settings else None
+    if model and model.is_active and model.api_key and model.base_url and model.model:
+        return model
+    return None
+
+
+def _rerank_model_for_tenant(tenant) -> RerankModel | None:
+    if tenant is None:
+        return _active_rerank_model()
+    settings = (
+        TenantKnowledgeModelSettings.objects
+        .select_related('rerank_model')
+        .filter(tenant=tenant, is_active=True)
+        .first()
+    )
+    model = settings.rerank_model if settings else None
+    if model and model.is_active and model.api_key and model.base_url and model.model:
+        return model
+    return None
+
+
 def _parse_embedding_response(payload: dict, expected_count: int) -> list[list[float]]:
     """Supports DashScope OpenAI-compatible and legacy embedding response shapes."""
     if isinstance(payload.get('data'), list):
@@ -266,7 +298,7 @@ def _rerank_chunks(
         if not isinstance(index, int) or index < 0 or index >= len(chunks):
             continue
         score = row.get('relevance_score', row.get('score', chunks[index].score))
-        reranked.append(RetrievedChunk(chunks[index].doc_title, chunks[index].content, float(score)))
+        reranked.append(RetrievedChunk(chunks[index].document_id, chunks[index].doc_title, chunks[index].content, float(score), chunks[index].chunk_index))
 
     return reranked or chunks[:top_n]
 
@@ -296,38 +328,156 @@ def _format_context(chunks: list[RetrievedChunk], max_chars: int) -> str:
 
 
 def _bound_approved_text_documents(application) -> list[KnowledgeDocument]:
-    if application.tenant_id:
-        docs = application.knowledge_documents.filter(tenant=application.tenant)
-    else:
-        docs = application.knowledge_documents.filter(tenant__isnull=True)
+    tenant_filter = {'tenant': application.tenant} if application.tenant_id else {'tenant__isnull': True}
+    document_query = application.knowledge_documents.filter(**tenant_filter)
+    if hasattr(application, 'knowledge_bases'):
+        base_docs = KnowledgeDocument.objects.filter(knowledge_base__in=application.knowledge_bases.all(), **tenant_filter)
+        document_query = document_query | base_docs
+    return list(document_query.filter(
+        file_extension__in=['txt', 'md'],
+    ).distinct())
+
+
+def _approved_text_documents_for_knowledge_base(knowledge_base: KnowledgeBase) -> list[KnowledgeDocument]:
     return list(
-        docs.filter(
-            processing_status=KnowledgeDocument.STATUS_APPROVED,
+        knowledge_base.documents.filter(
+            tenant=knowledge_base.tenant,
             file_extension__in=['txt', 'md'],
         ).distinct()
     )
 
 
-def _retrieve_keyword_knowledge_context(application, query: str, top_n: int, max_chars: int) -> str:
-    docs = _bound_approved_text_documents(application)
+def _retrieve_keyword_chunks(docs: list[KnowledgeDocument], query: str, top_n: int) -> list[RetrievedChunk]:
     keywords = extract_keywords(query)
     if not keywords:
-        return ''
+        return []
 
     all_scored_chunks: list[RetrievedChunk] = []
     for doc in docs:
         try:
             content = _read_document_text(doc)
-            for chunk in chunk_text(content):
+            for chunk_index, chunk in enumerate(chunk_text(content)):
                 score = score_chunk(chunk, keywords, query)
                 if score > 0:
-                    all_scored_chunks.append(RetrievedChunk(doc.title, chunk, score))
+                    all_scored_chunks.append(RetrievedChunk(doc.id, doc.title, chunk, score, chunk_index))
         except Exception as e:
             logger.warning('Failed to read knowledge document id=%s error=%s', doc.id, e)
             continue
 
     all_scored_chunks.sort(key=lambda item: item.score, reverse=True)
-    return _format_context(all_scored_chunks[:top_n], max_chars)
+    return all_scored_chunks[:top_n]
+
+
+def _retrieve_keyword_knowledge_context(application, query: str, top_n: int, max_chars: int) -> str:
+    return _format_context(_retrieve_keyword_chunks(_bound_approved_text_documents(application), query, top_n), max_chars)
+
+
+def _serialize_recall_result(*, chunks: list[RetrievedChunk], mode: str, embedding_model: EmbeddingModel | None, rerank_model: RerankModel | None) -> dict:
+    return {
+        'mode': mode,
+        'embeddingModelAlias': embedding_model.name if embedding_model else '',
+        'rerankModelAlias': rerank_model.name if rerank_model else '',
+        'chunks': [
+            {
+                'documentId': chunk.document_id,
+                'documentTitle': chunk.doc_title,
+                'chunkIndex': chunk.chunk_index,
+                'content': chunk.content,
+                'score': chunk.score,
+            }
+            for chunk in chunks
+        ],
+    }
+
+
+def retrieve_knowledge_chunks(
+    *,
+    query: str,
+    application=None,
+    knowledge_base: KnowledgeBase | None = None,
+    tenant=None,
+    top_n: int = 5,
+) -> dict:
+    if not query:
+        return _serialize_recall_result(chunks=[], mode='empty', embedding_model=None, rerank_model=None)
+
+    if knowledge_base is not None:
+        docs = _approved_text_documents_for_knowledge_base(knowledge_base)
+        tenant = knowledge_base.tenant
+    elif application is not None:
+        docs = _bound_approved_text_documents(application)
+        tenant = application.tenant
+    else:
+        docs = []
+
+    if not docs:
+        return _serialize_recall_result(chunks=[], mode='empty', embedding_model=None, rerank_model=None)
+
+    embedding_model = _embedding_model_for_tenant(tenant)
+    if not embedding_model:
+        return _serialize_recall_result(
+            chunks=_retrieve_keyword_chunks(docs, query, top_n),
+            mode='keyword',
+            embedding_model=None,
+            rerank_model=None,
+        )
+
+    try:
+        with httpx.Client(timeout=30.0) as client:
+            for doc in docs:
+                _ensure_document_chunks(client, doc, embedding_model)
+
+            query_embedding = _embed_texts(client, embedding_model, [query])[0]
+            stored_chunks = list(
+                KnowledgeDocumentChunk.objects.filter(
+                    document__in=docs,
+                    embedding_model=embedding_model.model,
+                ).select_related('document')
+            )
+            scored_chunks = [
+                RetrievedChunk(
+                    document_id=chunk.document_id,
+                    doc_title=chunk.document.title,
+                    content=chunk.content,
+                    score=_cosine_similarity(query_embedding, chunk.embedding or []),
+                    chunk_index=chunk.chunk_index,
+                )
+                for chunk in stored_chunks
+            ]
+            scored_chunks = [chunk for chunk in scored_chunks if chunk.score > 0]
+            scored_chunks.sort(key=lambda item: item.score, reverse=True)
+            candidates = scored_chunks[: max(top_n * 4, top_n)]
+            if not candidates:
+                return _serialize_recall_result(
+                    chunks=_retrieve_keyword_chunks(docs, query, top_n),
+                    mode='keyword',
+                    embedding_model=embedding_model,
+                    rerank_model=None,
+                )
+
+            rerank_model = _rerank_model_for_tenant(tenant)
+            if rerank_model:
+                try:
+                    candidates = _rerank_chunks(client, rerank_model, query, candidates, top_n)
+                except Exception as e:
+                    logger.warning('Failed to rerank knowledge chunks error=%s', e)
+            else:
+                candidates = candidates[:top_n]
+
+        return _serialize_recall_result(
+            chunks=candidates[:top_n],
+            mode='vector',
+            embedding_model=embedding_model,
+            rerank_model=rerank_model,
+        )
+    except Exception as e:
+        logger.exception('Error during vector knowledge base retrieval, fallback to keyword retrieval: %s', e)
+        return _serialize_recall_result(
+            chunks=_retrieve_keyword_chunks(docs, query, top_n),
+            mode='keyword',
+            embedding_model=embedding_model,
+            rerank_model=None,
+        )
 
 
 def retrieve_knowledge_context(application, query: str, top_n: int = 5, max_chars: int = 3000) -> str:
@@ -345,7 +495,7 @@ def retrieve_knowledge_context(application, query: str, top_n: int = 5, max_char
         if not docs:
             return ''
 
-        embedding_model = _active_embedding_model()
+        embedding_model = _embedding_model_for_tenant(application.tenant)
         if not embedding_model:
             return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars)
 
@@ -372,11 +522,13 @@ def retrieve_knowledge_context(application, query: str, top_n: int = 5, max_char
                 return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars)
 
             scored_chunks = [
-                RetrievedChunk(
-                    doc_title=chunk.document.title,
-                    content=chunk.content,
-                    score=_cosine_similarity(query_embedding, chunk.embedding or []),
-                )
+                    RetrievedChunk(
+                        document_id=chunk.document_id,
+                        doc_title=chunk.document.title,
+                        content=chunk.content,
+                        score=_cosine_similarity(query_embedding, chunk.embedding or []),
+                        chunk_index=chunk.chunk_index,
+                    )
                 for chunk in stored_chunks
             ]
             scored_chunks = [chunk for chunk in scored_chunks if chunk.score > 0]
@@ -385,7 +537,7 @@ def retrieve_knowledge_context(application, query: str, top_n: int = 5, max_char
             if not candidates:
                 return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars)
 
-            rerank_model = _active_rerank_model()
+            rerank_model = _rerank_model_for_tenant(application.tenant)
             if rerank_model:
                 try:
                     candidates = _rerank_chunks(client, rerank_model, query, candidates, top_n)

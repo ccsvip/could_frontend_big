@@ -1,7 +1,7 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from apps.knowledge_base.models import KnowledgeDocument
+from apps.knowledge_base.models import KnowledgeBase, KnowledgeDocument
 from apps.tenants.models import Tenant
 
 from .llm_services import (
@@ -18,13 +18,24 @@ from .models import (
     AgentApplication,
     ChatConversation,
     ChatMessage,
+    EmbeddingModel,
     LLMModel,
     LLMProvider,
     LLMTestSettings,
+    RerankModel,
+    TenantKnowledgeModelSettings,
     TTSProvider,
     TTSVoice,
     default_agent_opening_message,
 )
+
+
+def mask_knowledge_api_key(value: str) -> str:
+    if not value:
+        return ''
+    if len(value) <= 8:
+        return '*' * len(value)
+    return f'{value[:4]}****{value[-4:]}'
 
 
 class PlatformLLMProviderSerializer(serializers.ModelSerializer):
@@ -231,6 +242,81 @@ class TenantLLMAuthorizationSerializer(serializers.Serializer):
             if not default_model.is_active or not default_model.provider.is_active:
                 raise serializers.ValidationError({'defaultModelId': '默认模型或供应商未启用'})
 
+        attrs['tenant'] = tenant
+        return attrs
+
+
+class KnowledgeModelSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    type = serializers.CharField(read_only=True)
+    alias = serializers.CharField()
+    model = serializers.CharField()
+    baseUrl = serializers.CharField()
+    apiKeyMasked = serializers.CharField(read_only=True)
+    apiKeyConfigured = serializers.BooleanField(read_only=True)
+    isActive = serializers.BooleanField()
+    dimensions = serializers.IntegerField(required=False)
+    updated_at = serializers.DateTimeField(read_only=True)
+
+
+class KnowledgeModelSettingsSerializer(serializers.Serializer):
+    embedding = KnowledgeModelSerializer()
+    rerank = KnowledgeModelSerializer()
+
+
+class KnowledgeModelSettingsWriteSerializer(serializers.Serializer):
+    embedding = serializers.DictField(required=False)
+    rerank = serializers.DictField(required=False)
+
+    def _validate_model_payload(self, payload: dict, *, model_type: str) -> dict:
+        allowed_fields = {'alias', 'model', 'baseUrl', 'apiKey', 'isActive', 'dimensions'}
+        unknown = set(payload) - allowed_fields
+        if unknown:
+            raise serializers.ValidationError(f'{model_type} 包含不支持的字段：{min(unknown)}')
+        result = {}
+        for source, target in (('alias', 'name'), ('model', 'model'), ('baseUrl', 'base_url'), ('apiKey', 'api_key'), ('isActive', 'is_active')):
+            if source in payload:
+                value = payload[source]
+                if source in {'alias', 'model', 'baseUrl'}:
+                    value = str(value).strip()
+                    if not value:
+                        raise serializers.ValidationError(f'{model_type}.{source} 不能为空')
+                result[target] = value
+        if model_type == 'embedding' and 'dimensions' in payload:
+            try:
+                dimensions = int(payload['dimensions'])
+            except (TypeError, ValueError):
+                raise serializers.ValidationError('embedding.dimensions 必须是整数')
+            if dimensions < 0:
+                raise serializers.ValidationError('embedding.dimensions 不能小于 0')
+            result['dimensions'] = dimensions
+        return result
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        normalized = {}
+        for model_type in ('embedding', 'rerank'):
+            if model_type in attrs:
+                normalized[model_type] = self._validate_model_payload(attrs[model_type], model_type=model_type)
+        return normalized
+
+
+class TenantKnowledgeModelSettingsSerializer(serializers.Serializer):
+    embeddingModelId = serializers.IntegerField(required=False, allow_null=True)
+    rerankModelId = serializers.IntegerField(required=False, allow_null=True)
+    isActive = serializers.BooleanField(required=False, default=True)
+
+    def validate(self, attrs):
+        tenant_id = self.context.get('tenant_id')
+        tenant = Tenant.objects.filter(id=tenant_id, is_active=True).first()
+        if tenant is None:
+            raise serializers.ValidationError({'tenantId': '公司不存在或已停用'})
+        embedding_model_id = attrs.get('embeddingModelId')
+        if embedding_model_id is not None and not EmbeddingModel.objects.filter(id=embedding_model_id, is_active=True).exists():
+            raise serializers.ValidationError({'embeddingModelId': '嵌入模型不存在或未启用'})
+        rerank_model_id = attrs.get('rerankModelId')
+        if rerank_model_id is not None and not RerankModel.objects.filter(id=rerank_model_id, is_active=True).exists():
+            raise serializers.ValidationError({'rerankModelId': '重排序模型不存在或未启用'})
         attrs['tenant'] = tenant
         return attrs
 
@@ -486,11 +572,22 @@ class CompanyTTSVoiceSerializer(TTSVoiceSerializer):
 
 class AgentKnowledgeDocumentSerializer(serializers.ModelSerializer):
     fileName = serializers.CharField(source='file_name', read_only=True)
-    processingStatus = serializers.CharField(source='processing_status', read_only=True)
 
     class Meta:
         model = KnowledgeDocument
-        fields = ['id', 'title', 'fileName', 'processingStatus', 'updated_at']
+        fields = ['id', 'title', 'fileName', 'updated_at']
+
+
+class AgentKnowledgeBaseSerializer(serializers.ModelSerializer):
+    documentCount = serializers.SerializerMethodField()
+
+    class Meta:
+        model = KnowledgeBase
+        fields = ['id', 'name', 'description', 'documentCount', 'updated_at']
+
+    @extend_schema_field(serializers.IntegerField())
+    def get_documentCount(self, obj: KnowledgeBase) -> int:
+        return obj.documents.count()
 
 
 class AgentApplicationSerializer(serializers.ModelSerializer):
@@ -525,6 +622,13 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
         required=False,
     )
     knowledgeDocuments = AgentKnowledgeDocumentSerializer(source='knowledge_documents', many=True, read_only=True)
+    knowledgeBaseIds = serializers.PrimaryKeyRelatedField(
+        source='knowledge_bases',
+        queryset=KnowledgeBase.objects.none(),
+        many=True,
+        required=False,
+    )
+    knowledgeBases = AgentKnowledgeBaseSerializer(source='knowledge_bases', many=True, read_only=True)
     createdBy = serializers.SerializerMethodField()
     isActive = serializers.BooleanField(source='is_active', required=False)
 
@@ -551,6 +655,8 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
             'ttsFilterEmoji',
             'knowledgeDocumentIds',
             'knowledgeDocuments',
+            'knowledgeBaseIds',
+            'knowledgeBases',
             'createdBy',
             'isActive',
             'created_at',
@@ -562,6 +668,7 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
             'llmModelDisplayName',
             'llmProviderName',
             'knowledgeDocuments',
+            'knowledgeBases',
             'createdBy',
             'created_at',
             'updated_at',
@@ -573,6 +680,7 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
         if tenant is not None:
             fields['llmModelId'].queryset = get_effective_llm_models_for_tenant(tenant)
             fields['knowledgeDocumentIds'].child_relation.queryset = KnowledgeDocument.objects.for_tenant(tenant)
+            fields['knowledgeBaseIds'].child_relation.queryset = KnowledgeBase.objects.for_tenant(tenant).filter(is_active=True)
         return fields
 
     @extend_schema_field(serializers.CharField())

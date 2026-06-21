@@ -7,16 +7,13 @@ import tempfile
 import zipfile
 from unittest.mock import patch
 
-from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import RequestFactory
 from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.knowledge_base.admin import KnowledgeDocumentAdmin
 from apps.knowledge_base.models import KnowledgeDocument
 from apps.tenants.test_utils import TenantTestMixin
 
@@ -102,8 +99,9 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['title'], '培训资料')
         self.assertEqual(response.data['fileName'], '培训资料.pdf')
         self.assertEqual(response.data['fileExtension'], 'pdf')
-        self.assertEqual(response.data['processingStatus'], KnowledgeDocument.STATUS_PENDING)
-        self.assertEqual(response.data['processingStatusLabel'], '待审核')
+        self.assertNotIn('processingStatus', response.data)
+        self.assertNotIn('processingStatusLabel', response.data)
+        self.assertNotIn('processingResult', response.data)
         self.assertEqual(response.data['uploadedBy'], '知识库用户')
         self.assertEqual(response.data['downloadCount'], 0)
 
@@ -241,74 +239,13 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data['message'], '所选文档总大小不能超过 200MB')
 
-    def test_status_update_api_is_not_available(self):
+    def test_processing_status_is_not_part_of_document_api(self):
         self.grant_permissions('knowledge_base.view')
         document = self.create_document(name='只读文档.pdf', content=b'read-only')
 
-        response = self.client.patch(
-            f'/api/v1/knowledge-base/{document.id}/',
-            {'processingStatus': KnowledgeDocument.STATUS_APPROVED},
-            format='json',
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def test_admin_status_update_clears_cached_document_list(self):
-        self.grant_permissions('knowledge_base.view')
-        document = self.create_document(name='admin-cache.pdf', content=b'cache')
-
-        first_response = self.client.get('/api/v1/knowledge-base/')
-        self.assertEqual(first_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(first_response.data['results'][0]['processingStatus'], KnowledgeDocument.STATUS_PENDING)
-
-        document.processing_status = KnowledgeDocument.STATUS_APPROVED
-        document.processing_result = 'admin approved'
-        request = RequestFactory().post(f'/admin/knowledge_base/knowledgedocument/{document.pk}/change/')
-        request.user = User.objects.create_superuser(username='admin-cache-reviewer', password='test123456')
-        model_admin = KnowledgeDocumentAdmin(KnowledgeDocument, admin.site)
-        model_admin.save_model(request, document, form=None, change=True)
-
-        second_response = self.client.get('/api/v1/knowledge-base/')
-        self.assertEqual(second_response.status_code, status.HTTP_200_OK)
-        self.assertEqual(second_response.data['results'][0]['processingStatus'], KnowledgeDocument.STATUS_APPROVED)
-        self.assertEqual(second_response.data['results'][0]['processingResult'], 'admin approved')
-
-    def test_superuser_can_review_document_and_send_feishu_notification(self):
-        document = self.create_document(name='review-api.pdf', content=b'review')
-        reviewer = User.objects.create_superuser(username='knowledge-reviewer', password='test123456')
-        self.client.force_authenticate(user=reviewer)
-
-        with patch('apps.resources.services.feishu.send_feishu_card', return_value=True) as send_card:
-            response = self.client.post(
-                f'/api/v1/knowledge-base/{document.id}/review/',
-                {
-                    'processingStatus': KnowledgeDocument.STATUS_APPROVED,
-                    'processingResult': 'front-end approved',
-                },
-                format='json',
-            )
+        response = self.client.get(f'/api/v1/knowledge-base/{document.id}/')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['data']['processingStatus'], KnowledgeDocument.STATUS_APPROVED)
-        self.assertEqual(response.data['data']['processingResult'], 'front-end approved')
-        document.refresh_from_db()
-        self.assertEqual(document.processing_status, KnowledgeDocument.STATUS_APPROVED)
-        self.assertEqual(document.processing_result, 'front-end approved')
-        send_card.assert_called_once()
-
-    def test_non_superuser_cannot_review_document(self):
-        document = self.create_document(name='review-forbidden.pdf', content=b'forbidden')
-        self.grant_permissions('knowledge_base.view', 'knowledge_base.upload')
-
-        response = self.client.post(
-            f'/api/v1/knowledge-base/{document.id}/review/',
-            {
-                'processingStatus': KnowledgeDocument.STATUS_APPROVED,
-                'processingResult': 'should not save',
-            },
-            format='json',
-        )
-
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        document.refresh_from_db()
-        self.assertEqual(document.processing_status, KnowledgeDocument.STATUS_PENDING)
+        self.assertNotIn('processingStatus', response.data)
+        self.assertNotIn('processingStatusLabel', response.data)
+        self.assertNotIn('processingResult', response.data)
