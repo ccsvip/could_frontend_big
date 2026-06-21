@@ -1,6 +1,16 @@
 from django.contrib import admin
 
-from .models import AgentAnnotation, AgentApplication, ChatConversation, ChatMessage, LLMProvider, TTSProvider, TTSVoice
+from .models import (
+    AgentAnnotation,
+    AgentApplication,
+    ChatConversation,
+    ChatMessage,
+    EmbeddingModel,
+    LLMProvider,
+    RerankModel,
+    TTSProvider,
+    TTSVoice,
+)
 
 
 @admin.register(LLMProvider)
@@ -8,6 +18,20 @@ class LLMProviderAdmin(admin.ModelAdmin):
     list_display = ('name', 'provider_type', 'api_base_url', 'is_active', 'created_at')
     list_filter = ('provider_type', 'is_active')
     search_fields = ('name',)
+
+
+@admin.register(EmbeddingModel)
+class EmbeddingModelAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'model', 'dimensions', 'is_active', 'updated_at')
+    list_filter = ('is_active',)
+    search_fields = ('name', 'code', 'model')
+
+
+@admin.register(RerankModel)
+class RerankModelAdmin(admin.ModelAdmin):
+    list_display = ('name', 'code', 'model', 'is_active', 'updated_at')
+    list_filter = ('is_active',)
+    search_fields = ('name', 'code', 'model')
 
 
 @admin.register(TTSProvider)

@@ -3,7 +3,7 @@ from django.utils.html import format_html
 
 from config.business_cache import clear_business_cache_namespace
 
-from .models import KnowledgeDocument
+from .models import KnowledgeDocument, KnowledgeDocumentChunk
 
 
 @admin.register(KnowledgeDocument)
@@ -51,3 +51,11 @@ class KnowledgeDocumentAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         clear_business_cache_namespace('knowledge_base')
 
+
+@admin.register(KnowledgeDocumentChunk)
+class KnowledgeDocumentChunkAdmin(admin.ModelAdmin):
+    list_display = ('document', 'chunk_index', 'embedding_model', 'updated_at')
+    list_filter = ('embedding_model', 'updated_at')
+    search_fields = ('document__title', 'content')
+    readonly_fields = ('tenant', 'document', 'chunk_index', 'content_hash', 'embedding_model', 'created_at', 'updated_at')
+    list_per_page = 30

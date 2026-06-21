@@ -309,6 +309,29 @@ ALIYUN_TTS_DEFAULT_TEST_TEXT = os.getenv(
     'ALIYUN_TTS_DEFAULT_TEST_TEXT',
     '对吧~我就特别喜欢这种超市，尤其是过年的时候去逛超市就会觉得超级超级开心！想买好多好多的东西呢！',
 ).strip()
+ALIYUN_EMBEDDING_API_KEY = (
+    os.getenv('ALIYUN_EMBEDDING_API_KEY')
+    or os.getenv('DASHSCOPE_API_KEY')
+    or os.getenv('MULTIMODAL_API_KEY')
+    or ''
+).strip()
+ALIYUN_EMBEDDING_BASE_URL = (
+    os.getenv('ALIYUN_EMBEDDING_BASE_URL')
+    or 'https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings'
+).strip()
+ALIYUN_EMBEDDING_MODEL = os.getenv('ALIYUN_EMBEDDING_MODEL', 'text-embedding-v4').strip()
+ALIYUN_EMBEDDING_DIMENSIONS = int(os.getenv('ALIYUN_EMBEDDING_DIMENSIONS', '0'))
+ALIYUN_RERANK_API_KEY = (
+    os.getenv('ALIYUN_RERANK_API_KEY')
+    or os.getenv('DASHSCOPE_API_KEY')
+    or os.getenv('MULTIMODAL_API_KEY')
+    or ''
+).strip()
+ALIYUN_RERANK_BASE_URL = (
+    os.getenv('ALIYUN_RERANK_BASE_URL')
+    or 'https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank'
+).strip()
+ALIYUN_RERANK_MODEL = os.getenv('ALIYUN_RERANK_MODEL', 'qwen3-vl-rerank').strip()
 ALIYUN_MM_APP_ID = os.getenv('ALIYUN_MM_APP_ID', '').strip()
 ALIYUN_MM_DOMAIN_CODE = os.getenv('ALIYUN_MM_DOMAIN_CODE', '').strip()
 ALIYUN_MM_ACCESS_KEY_ID = os.getenv('ALIYUN_MM_ACCESS_KEY_ID', '').strip()

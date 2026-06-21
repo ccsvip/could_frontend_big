@@ -128,6 +128,119 @@ class LLMTestSettings(models.Model):
         return instance
 
 
+class EmbeddingModel(models.Model):
+    code = models.CharField('模型编码', max_length=32, unique=True, default='aliyun')
+    name = models.CharField('模型名称', max_length=128, default='阿里云文本嵌入')
+    api_key = models.CharField('API Key', max_length=512, blank=True, default='')
+    base_url = models.CharField(
+        '接口地址',
+        max_length=512,
+        blank=True,
+        default='https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings',
+    )
+    model = models.CharField('DashScope 模型', max_length=128, blank=True, default='text-embedding-v4')
+    dimensions = models.PositiveIntegerField('向量维度（0 表示模型默认）', default=0)
+    is_active = models.BooleanField('是否启用', default=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = '嵌入模型'
+        verbose_name_plural = '嵌入模型'
+        ordering = ['id']
+
+    def __str__(self):
+        return f'{self.name} ({self.model or "unset"})'
+
+    @classmethod
+    def load_aliyun(cls) -> 'EmbeddingModel':
+        defaults = {
+            'name': '阿里云文本嵌入',
+            'api_key': getattr(
+                settings,
+                'ALIYUN_EMBEDDING_API_KEY',
+                getattr(settings, 'DASHSCOPE_API_KEY', getattr(settings, 'MULTIMODAL_API_KEY', '')),
+            ),
+            'base_url': getattr(
+                settings,
+                'ALIYUN_EMBEDDING_BASE_URL',
+                'https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings',
+            ),
+            'model': getattr(settings, 'ALIYUN_EMBEDDING_MODEL', 'text-embedding-v4'),
+            'dimensions': getattr(settings, 'ALIYUN_EMBEDDING_DIMENSIONS', 0),
+            'is_active': True,
+        }
+        provider, created = cls.objects.get_or_create(
+            code='aliyun',
+            defaults=defaults,
+        )
+        if not created:
+            update_fields = []
+            for field in ('api_key', 'base_url', 'model'):
+                if not getattr(provider, field) and defaults[field]:
+                    setattr(provider, field, defaults[field])
+                    update_fields.append(field)
+            if not provider.dimensions and defaults['dimensions']:
+                provider.dimensions = defaults['dimensions']
+                update_fields.append('dimensions')
+            if update_fields:
+                provider.save(update_fields=[*update_fields, 'updated_at'])
+        return provider
+
+
+class RerankModel(models.Model):
+    code = models.CharField('模型编码', max_length=32, unique=True, default='aliyun')
+    name = models.CharField('模型名称', max_length=128, default='阿里云文本重排序')
+    api_key = models.CharField('API Key', max_length=512, blank=True, default='')
+    base_url = models.CharField(
+        '接口地址',
+        max_length=512,
+        blank=True,
+        default='https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank',
+    )
+    model = models.CharField('DashScope 模型', max_length=128, blank=True, default='qwen3-vl-rerank')
+    is_active = models.BooleanField('是否启用', default=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = '重排序模型'
+        verbose_name_plural = '重排序模型'
+        ordering = ['id']
+
+    def __str__(self):
+        return f'{self.name} ({self.model or "unset"})'
+
+    @classmethod
+    def load_aliyun(cls) -> 'RerankModel':
+        defaults = {
+            'name': '阿里云文本重排序',
+            'api_key': getattr(
+                settings,
+                'ALIYUN_RERANK_API_KEY',
+                getattr(settings, 'DASHSCOPE_API_KEY', getattr(settings, 'MULTIMODAL_API_KEY', '')),
+            ),
+            'base_url': getattr(
+                settings,
+                'ALIYUN_RERANK_BASE_URL',
+                'https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank',
+            ),
+            'model': getattr(settings, 'ALIYUN_RERANK_MODEL', 'qwen3-vl-rerank'),
+            'is_active': True,
+        }
+        provider, created = cls.objects.get_or_create(
+            code='aliyun',
+            defaults=defaults,
+        )
+        if not created:
+            update_fields = []
+            for field in ('api_key', 'base_url', 'model'):
+                if not getattr(provider, field) and defaults[field]:
+                    setattr(provider, field, defaults[field])
+                    update_fields.append(field)
+            if update_fields:
+                provider.save(update_fields=[*update_fields, 'updated_at'])
+        return provider
+
+
 class ASRConfig(models.Model):
     workspace_id = models.CharField('Workspace ID', max_length=128, blank=True, default='')
     api_key = models.CharField('API Key', max_length=512, blank=True, default='')

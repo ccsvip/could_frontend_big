@@ -73,3 +73,52 @@ class KnowledgeDocument(models.Model):
             self.file_size = None
         super().save(*args, **kwargs)
 
+
+class KnowledgeDocumentChunk(models.Model):
+    document = models.ForeignKey(
+        KnowledgeDocument,
+        on_delete=models.CASCADE,
+        related_name='chunks',
+        verbose_name='所属知识库文档',
+    )
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='+',
+        verbose_name='所属公司',
+        null=True,
+        blank=True,
+    )
+    chunk_index = models.PositiveIntegerField('分块序号')
+    content = models.TextField('分块内容')
+    content_hash = models.CharField('内容哈希', max_length=64)
+    embedding = models.JSONField('向量', blank=True, default=list)
+    embedding_model = models.CharField('嵌入模型', max_length=128)
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        ordering = ['document_id', 'chunk_index']
+        verbose_name = '知识库文档分块'
+        verbose_name_plural = '知识库文档分块'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['document', 'embedding_model', 'chunk_index'],
+                name='uniq_knowledge_chunk_document_model_index',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['tenant', 'document']),
+            models.Index(fields=['document', 'embedding_model']),
+        ]
+
+    def __str__(self) -> str:
+        return f'{self.document_id}:{self.chunk_index}'
+
+    def save(self, *args, **kwargs):
+        if self.document_id and self.tenant_id is None:
+            self.tenant = self.document.tenant
+        super().save(*args, **kwargs)
+
