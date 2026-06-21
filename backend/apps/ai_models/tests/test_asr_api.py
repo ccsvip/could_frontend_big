@@ -153,9 +153,15 @@ class ASRApiTests(TenantTestMixin, APITestCase):
         response = self.client.get(
             '/api/v1/ai-models/asr/device-status/',
             HTTP_X_DEVICE_CODE='ANDROID-ASR-HEADER',
+            HTTP_X_REQUEST_ID='req-asr-status-1',
+            HTTP_X_TRACE_ID='trace-asr-status-1',
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['X-Request-ID'], 'req-asr-status-1')
+        self.assertEqual(response['X-Trace-ID'], 'trace-asr-status-1')
+        self.assertEqual(response.data['requestId'], 'req-asr-status-1')
+        self.assertEqual(response.data['traceId'], 'trace-asr-status-1')
         self.assertEqual(response.data['deviceCode'], device.code)
         self.assertEqual(response.data['tenantId'], self.tenant.id)
         self.assertEqual(response.data['tenantName'], self.tenant.name)

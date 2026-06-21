@@ -111,6 +111,14 @@ class HangingUnifiedTTSUpstream:
         raise StopAsyncIteration
 
 
+class FailingUnifiedASRUpstream:
+    async def __aenter__(self):
+        raise RuntimeError('upstream unavailable')
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+
 class RealtimeWebSocketTests(SimpleTestCase):
     def test_unified_realtime_websocket_responds_to_ping_command(self):
         async def run_websocket():
@@ -220,13 +228,23 @@ class RealtimeWebSocketTests(SimpleTestCase):
                     'text': json.dumps({
                         'type': 'asr.session.start',
                         'id': 'asr-session-1',
-                        'payload': {'token': 'test-token', 'tenantId': 2},
+                        'payload': {
+                            'token': 'test-token',
+                            'tenantId': 2,
+                            'requestId': 'req-asr-ready-1',
+                            'traceId': 'trace-asr-ready-1',
+                        },
                     }),
                 })
                 ready = await communicator.receive_output(timeout=1)
                 self.assertEqual(
                     json.loads(ready['text']),
-                    {'type': 'asr.ready', 'id': 'asr-session-1'},
+                    {
+                        'type': 'asr.ready',
+                        'id': 'asr-session-1',
+                        'requestId': 'req-asr-ready-1',
+                        'traceId': 'trace-asr-ready-1',
+                    },
                 )
 
                 await communicator.send_input({'type': 'websocket.receive', 'bytes': b'\x01\x02'})
@@ -252,6 +270,86 @@ class RealtimeWebSocketTests(SimpleTestCase):
             await communicator.wait(timeout=1)
 
         async_to_sync(run_websocket)()
+
+    def test_unified_realtime_asr_error_paths_echo_trace_context(self):
+        async def run_start(command_id):
+            from config.realtime import RealtimeConnection, _handle_asr_session_start
+
+            sent = []
+
+            async def send(event):
+                sent.append(event)
+
+            await _handle_asr_session_start(
+                send,
+                RealtimeConnection(),
+                {
+                    'type': 'asr.session.start',
+                    'id': command_id,
+                    'payload': {
+                        'token': 'test-token',
+                        'tenantId': 2,
+                        'requestId': 'req-asr-error-1',
+                        'traceId': 'trace-asr-error-1',
+                    },
+                },
+            )
+            self.assertEqual(sent[-1]['type'], 'websocket.send')
+            return json.loads(sent[-1]['text'])
+
+        async def run_cases():
+            with patch('apps.ai_models.realtime_asr.resolve_asr_realtime_connection', return_value=None):
+                unauthorized = await run_start('asr-unauthorized')
+            self.assertEqual(
+                unauthorized,
+                {
+                    'type': 'asr.error',
+                    'id': 'asr-unauthorized',
+                    'requestId': 'req-asr-error-1',
+                    'traceId': 'trace-asr-error-1',
+                    'message': 'ASR session is not authorized',
+                },
+            )
+
+            inactive_config = SimpleNamespace(is_active=False)
+            with (
+                patch('apps.ai_models.realtime_asr.resolve_asr_realtime_connection', return_value={'tenant_id': 2}),
+                patch('apps.ai_models.realtime_asr.get_effective_asr_config', return_value=inactive_config),
+            ):
+                config_error = await run_start('asr-config-error')
+            self.assertEqual(
+                config_error,
+                {
+                    'type': 'asr.error',
+                    'id': 'asr-config-error',
+                    'requestId': 'req-asr-error-1',
+                    'traceId': 'trace-asr-error-1',
+                    'message': 'ASR 服务未就绪',
+                },
+            )
+
+            active_config = SimpleNamespace(is_active=True, api_key='test-api-key', workspace_id='test-workspace')
+            with (
+                patch('apps.ai_models.realtime_asr.resolve_asr_realtime_connection', return_value={'tenant_id': 2}),
+                patch('apps.ai_models.realtime_asr.get_effective_asr_config', return_value=active_config),
+                patch('apps.ai_models.realtime_asr.is_asr_configured', return_value=True),
+                patch('apps.ai_models.realtime_asr.load_asr_replacement_pairs', return_value=[]),
+                patch('apps.ai_models.realtime_asr.build_asr_ws_url', return_value='ws://asr.example/realtime'),
+                patch('apps.ai_models.realtime_asr.websockets.connect', return_value=FailingUnifiedASRUpstream()),
+            ):
+                upstream_error = await run_start('asr-upstream-error')
+            self.assertEqual(
+                upstream_error,
+                {
+                    'type': 'asr.error',
+                    'id': 'asr-upstream-error',
+                    'requestId': 'req-asr-error-1',
+                    'traceId': 'trace-asr-error-1',
+                    'message': 'upstream unavailable',
+                },
+            )
+
+        async_to_sync(run_cases)()
 
     def test_unified_realtime_websocket_runs_tts_session_command_and_binary_audio(self):
         async def run_websocket():
@@ -363,11 +461,24 @@ class RealtimeWebSocketTests(SimpleTestCase):
                     'text': json.dumps({
                         'type': 'asr.session.start',
                         'id': 'asr-cancel-session',
-                        'payload': {'token': 'test-token', 'tenantId': 2},
+                        'payload': {
+                            'token': 'test-token',
+                            'tenantId': 2,
+                            'requestId': 'req-asr-cancel-1',
+                            'traceId': 'trace-asr-cancel-1',
+                        },
                     }),
                 })
                 ready = await communicator.receive_output(timeout=1)
-                self.assertEqual(json.loads(ready['text']), {'type': 'asr.ready', 'id': 'asr-cancel-session'})
+                self.assertEqual(
+                    json.loads(ready['text']),
+                    {
+                        'type': 'asr.ready',
+                        'id': 'asr-cancel-session',
+                        'requestId': 'req-asr-cancel-1',
+                        'traceId': 'trace-asr-cancel-1',
+                    },
+                )
 
                 await communicator.send_input({
                     'type': 'websocket.receive',

@@ -39,6 +39,7 @@ from apps.devices.models import Device
 from apps.resources.views import PermissionMappedModelViewSet
 from apps.tenants.mixins import TenantScopedQuerysetMixin
 from apps.tenants.models import Tenant
+from config.request_id import get_request_id, get_trace_id
 
 from . import llm_services
 from .llm_services import (
@@ -169,6 +170,8 @@ class ASRDeviceStatusView(APIView):
         device = Device.objects.select_related('tenant', 'application', 'agent_application').get(id=connection['device_id'])
         return Response({
             **serialize_asr_status(),
+            'requestId': get_request_id(request),
+            'traceId': get_trace_id(request),
             'deviceCode': device.code,
             'deviceId': device.id,
             'tenantId': device.tenant_id,

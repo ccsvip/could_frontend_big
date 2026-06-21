@@ -22,6 +22,7 @@ from apps.ai_models.services import asr as asr_services
 from apps.ai_models.services import tts as tts_services
 from apps.tenants.mixins import TenantScopedQuerysetMixin
 from apps.tenants.services import get_request_tenant
+from config.request_id import get_request_id, get_trace_id
 
 from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceGroup
 from .services.authorization import (
@@ -334,6 +335,8 @@ class DeviceActivationView(APIView):
         self._log_activation(device, device_code, True, message, request)
         return Response(
             {
+                'requestId': get_request_id(request),
+                'traceId': get_trace_id(request),
                 'device': DeviceSerializer(device, context={'request': request}).data,
                 'application': self._application_payload(device.application),
                 'agentApplication': self._agent_application_payload(device.agent_application),
@@ -431,6 +434,8 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
         )
         return Response(
             {
+                'requestId': get_request_id(request),
+                'traceId': get_trace_id(request),
                 'device': DeviceSerializer(device, context={'request': request}).data,
                 'application': (
                     {
@@ -564,7 +569,15 @@ class DeviceRuntimeHeartbeatView(DeviceRuntimeView):
             ip_address=_client_ip(request),
             device_info=request.data.get('deviceInfo') or request.data.get('device_info') or {},
         )
-        return Response({'status': 'success', 'message': '心跳成功'}, status=status.HTTP_200_OK)
+        return Response(
+            {
+                'status': 'success',
+                'message': '心跳成功',
+                'requestId': get_request_id(request),
+                'traceId': get_trace_id(request),
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class DeviceVoiceChatView(DeviceRuntimeView):
@@ -606,7 +619,8 @@ class DeviceVoiceChatView(DeviceRuntimeView):
 
         payload = {
             'sessionId': str(request.data.get('sessionId') or uuid.uuid4()),
-            'traceId': str(uuid.uuid4()),
+            'requestId': get_request_id(request),
+            'traceId': get_trace_id(request),
             'deviceCode': device.code,
             'questionText': question_text,
             'answerText': answer_text,

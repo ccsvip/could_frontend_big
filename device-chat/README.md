@@ -17,7 +17,7 @@ device-chat/index.html?deviceCode=DEVICE_001&apiBaseUrl=http://localhost:8880/ap
 - 从 URL `deviceCode` 自动连接设备，或手动输入设备码连接。
 - 使用 `navigator.mediaDevices.getUserMedia` 与 Web Audio 录音，上传 16k PCM。
 - 录音过程中连接统一实时通信入口，并通过设备码启动实时语音识别会话，边说边展示识别文本。
-- 录音结束后用 `multipart/form-data` 上传音频，并携带 `X-Device-Code`。
+- 录音结束后用 `multipart/form-data` 上传音频，并携带 `X-Device-Code`、`X-Request-ID`、`X-Trace-ID`。
 - 展示 ASR 问题文本、LLM 回答文本、`traceId`、`sessionId`。
 - 支持 `audioUrl` 和 `audioBase64` 两种语音回复，自动播放失败时可手动播放。
 - 支持请求超时、网络/CORS、设备码无效、ASR/LLM/TTS 失败等提示。
@@ -29,6 +29,8 @@ device-chat/index.html?deviceCode=DEVICE_001&apiBaseUrl=http://localhost:8880/ap
 ```http
 POST /api/v1/device-auth/activate/
 X-Device-Code: DEVICE_001
+X-Request-ID: req-...
+X-Trace-ID: trace-...
 Content-Type: application/json
 
 {
@@ -49,6 +51,8 @@ Content-Type: application/json
 ```http
 GET /api/v1/device-runtime/config/?deviceCode=DEVICE_001
 X-Device-Code: DEVICE_001
+X-Request-ID: req-...
+X-Trace-ID: trace-...
 ```
 
 录音开始后，页面会先打开统一实时通信入口：
@@ -57,13 +61,15 @@ X-Device-Code: DEVICE_001
 GET /ws/realtime/
 ```
 
-连接建立后，页面发送 `asr.session.start` 命令，并在命令载荷里携带 `deviceCode` 完成设备身份解析。收到 `asr.ready` 后页面持续发送 16k PCM 二进制分片，并根据 `asr.transcript` 事件实时刷新“我说的问题”；停止录音时发送 `asr.session.finish`。
+连接建立后，页面发送 `asr.session.start` 命令，并在命令载荷里携带 `deviceCode`、`requestId`、`traceId` 完成设备身份解析与链路排查。收到 `asr.ready` 后页面持续发送 16k PCM 二进制分片，并根据 `asr.transcript` 事件实时刷新“我说的问题”；停止录音时发送 `asr.session.finish`。
 
 语音问答默认使用 PRD 约定接口：
 
 ```http
 POST /api/v1/device/voice-chat
 X-Device-Code: DEVICE_001
+X-Request-ID: req-...
+X-Trace-ID: trace-...
 Content-Type: multipart/form-data
 
 audio=<16k pcm file>
@@ -110,11 +116,12 @@ device-chat/index.html?deviceCode=DEVICE_001&activatePath=/device-auth/activate/
 http://localhost:8880/api/v1
 ```
 
-页面请求不携带 cookie，使用 `credentials: "omit"`，自定义请求头只有 `X-Device-Code`。后端 CORS 需要允许页面来源，并允许 `x-device-code` 请求头。当前仓库 `backend/config/settings/base.py` 已包含：
+页面请求不携带 cookie，使用 `credentials: "omit"`，自定义请求头包括 `X-Device-Code`、`X-Request-ID`、`X-Trace-ID`。后端 CORS 需要允许页面来源，允许这些请求头，并暴露响应里的 trace 头。当前仓库 `backend/config/settings/base.py` 已包含：
 
 ```py
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_HEADERS = (*default_headers, 'x-device-code')
+CORS_ALLOW_HEADERS = (*default_headers, 'x-device-code', 'x-request-id', 'x-trace-id')
+CORS_EXPOSE_HEADERS = ('x-request-id', 'x-trace-id', ...)
 ```
 
 生产或演示部署推荐同源代理，避免浏览器跨域限制：
@@ -150,7 +157,7 @@ https://example.com/device-chat/index.html?deviceCode=DEVICE_001
 确认后台已登记并启用该设备码，设备已绑定公司和可用应用。
 
 **请求跨域失败**
-优先同源代理部署；开发环境确认 `apiBaseUrl` 是浏览器可访问地址，并且后端允许页面 Origin 与 `x-device-code`。
+优先同源代理部署；开发环境确认 `apiBaseUrl` 是浏览器可访问地址，并且后端允许页面 Origin 与 `x-device-code`、`x-request-id`、`x-trace-id`。
 
 **只有文本没有语音**
 后端可以返回 `audioUrl` 或 `audioBase64`。如果 TTS 失败但 LLM 成功，页面会保留文本回答并提示语音合成失败。

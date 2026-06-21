@@ -18,6 +18,7 @@ from apps.devices.websocket import (
     mark_device_online_for_websocket,
     touch_device_for_websocket,
 )
+from config.request_id import clean_trace_value, make_request_id
 
 
 class RealtimeConnection:
@@ -273,6 +274,8 @@ async def _handle_asr_session_start(send, connection: RealtimeConnection, messag
     payload = message.get('payload') if isinstance(message.get('payload'), dict) else {}
     token = str(payload.get('token') or '').strip()
     query_params = _payload_query_params(payload, 'tenantId', 'tenant', 'deviceCode', 'device_code')
+    request_id = _request_id_from_payload(payload)
+    trace_id = _trace_id_from_payload(payload, request_id)
 
     resolved_connection = await sync_to_async(realtime_asr.resolve_asr_realtime_connection, thread_sensitive=True)(
         token,
@@ -280,12 +283,12 @@ async def _handle_asr_session_start(send, connection: RealtimeConnection, messag
         query_params=query_params,
     )
     if resolved_connection is None:
-        await _send_json(send, {'type': 'asr.error', 'id': command_id, 'message': 'ASR session is not authorized'})
+        await _send_json(send, _trace_payload('asr.error', command_id, request_id, trace_id, message='ASR session is not authorized'))
         return
 
     config = await sync_to_async(realtime_asr.get_effective_asr_config, thread_sensitive=True)()
     if not config.is_active or not realtime_asr.is_asr_configured(config):
-        await _send_json(send, {'type': 'asr.error', 'id': command_id, 'message': 'ASR 服务未就绪'})
+        await _send_json(send, _trace_payload('asr.error', command_id, request_id, trace_id, message='ASR 服务未就绪'))
         return
 
     replacement_pairs = await sync_to_async(realtime_asr.load_asr_replacement_pairs, thread_sensitive=True)(
@@ -310,7 +313,7 @@ async def _handle_asr_session_start(send, connection: RealtimeConnection, messag
         upstream = await upstream_context.__aenter__()
         await upstream.send(json.dumps(realtime_asr._session_update_event()))
     except Exception as exc:
-        await _send_json(send, {'type': 'asr.error', 'id': command_id, 'message': str(exc)[:200]})
+        await _send_json(send, _trace_payload('asr.error', command_id, request_id, trace_id, message=str(exc)[:200]))
         return
 
     connection.asr_session_id = command_id
@@ -319,7 +322,7 @@ async def _handle_asr_session_start(send, connection: RealtimeConnection, messag
     connection.asr_upstream_task = asyncio.create_task(
         _asr_upstream_to_client(upstream, send, command_id, replacement_pairs),
     )
-    await _send_json(send, {'type': 'asr.ready', 'id': command_id})
+    await _send_json(send, _trace_payload('asr.ready', command_id, request_id, trace_id))
 
 
 async def _handle_asr_session_finish(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:
@@ -462,6 +465,34 @@ def _payload_query_params(payload: dict[str, Any], *names: str) -> dict[str, lis
         if value is not None and str(value).strip():
             params[name] = [str(value).strip()]
     return params
+
+
+def _request_id_from_payload(payload: dict[str, Any]) -> str:
+    return clean_trace_value(
+        payload.get('requestId')
+        or payload.get('request_id')
+        or payload.get('xRequestId')
+        or payload.get('x-request-id')
+    ) or make_request_id()
+
+
+def _trace_id_from_payload(payload: dict[str, Any], fallback_request_id: str) -> str:
+    return clean_trace_value(
+        payload.get('traceId')
+        or payload.get('trace_id')
+        or payload.get('xTraceId')
+        or payload.get('x-trace-id')
+    ) or fallback_request_id
+
+
+def _trace_payload(event_type: str, command_id, request_id: str, trace_id: str, **extra) -> dict[str, Any]:
+    return {
+        'type': event_type,
+        'id': command_id,
+        'requestId': request_id,
+        'traceId': trace_id,
+        **extra,
+    }
 
 
 async def _handle_device_status_ping(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:

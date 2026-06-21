@@ -57,6 +57,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'config.request_id.RequestIdMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -205,7 +206,8 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 
 # 生产环境 CORS 配置 - 允许所有来源（如需限制请修改）
 CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'True') == 'True'
-CORS_ALLOW_HEADERS = (*default_headers, 'x-device-code')
+CORS_ALLOW_HEADERS = (*default_headers, 'x-device-code', 'x-request-id', 'x-trace-id')
+CORS_EXPOSE_HEADERS = ('x-request-id', 'x-trace-id', 'x-audio-source-format', 'x-audio-sample-rate', 'x-audio-channels', 'x-tts-voice')
 
 # 如果不使用 CORS_ALLOW_ALL_ORIGINS，可以配置具体的允许来源
 # CORS_ALLOWED_ORIGINS = [

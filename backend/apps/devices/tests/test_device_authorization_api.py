@@ -299,9 +299,15 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             '/api/v1/device-runtime/config/',
             {'deviceCode': 'ANDROID-TEXT-001'},
             format='json',
+            HTTP_X_REQUEST_ID='req-runtime-config-1',
+            HTTP_X_TRACE_ID='trace-runtime-config-1',
         )
 
         self.assertEqual(config_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(config_response['X-Request-ID'], 'req-runtime-config-1')
+        self.assertEqual(config_response['X-Trace-ID'], 'trace-runtime-config-1')
+        self.assertEqual(config_response.data['requestId'], 'req-runtime-config-1')
+        self.assertEqual(config_response.data['traceId'], 'trace-runtime-config-1')
         scrolling_texts = config_response.data['resources']['scrollingTexts']
         self.assertEqual(len(scrolling_texts), 1)
         self.assertEqual(scrolling_texts[0]['title'], '大厅公告')

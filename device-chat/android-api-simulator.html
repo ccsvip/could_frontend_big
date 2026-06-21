@@ -1099,12 +1099,13 @@ Content-Type: application/json</pre>
       }
 
       function runAsrWebSocketProbe(timeoutMs, onUpdate) {
+        const requestIds = newTraceContext();
         const command = {
           type: 'asr.session.start',
           id: 'asr-session-' + Date.now(),
-          payload: { deviceCode: state.deviceCode },
+          payload: { deviceCode: state.deviceCode, requestId: requestIds.requestId, traceId: requestIds.traceId },
         };
-        const output = { ok: false, wsUrl: state.wsUrl, sent: command, events: [] };
+        const output = { ok: false, wsUrl: state.wsUrl, trace: requestIds, sent: command, events: [] };
         const update = () => { if (onUpdate) onUpdate(output); };
         if (!window.WebSocket) {
           output.events.push({ type: 'client.unsupported', message: '当前浏览器不支持 WebSocket' });
@@ -1232,12 +1233,14 @@ Content-Type: application/json</pre>
 
       async function apiRequest(path, options, title) {
         const url = buildUrl(path);
-        const headers = Object.assign({ 'X-Device-Code': state.deviceCode }, options.headers || {});
+        const requestIds = newTraceContext();
+        const headers = Object.assign({ 'X-Device-Code': state.deviceCode, 'X-Request-ID': requestIds.requestId, 'X-Trace-ID': requestIds.traceId }, options.headers || {});
         const startedAt = Date.now();
         const requestInfo = {
           method: options.method || 'GET',
           url,
           headers,
+          trace: requestIds,
           body: describeBody(options.body),
           credentials: 'omit',
         };
@@ -1510,7 +1513,30 @@ Content-Type: application/json</pre>
       function extractTraceId(result) {
         const headers = result.headers || {};
         const body = unwrap(result.body);
-        return headers['x-trace-id'] || headers['x-request-id'] || headers['x-correlation-id'] || (body && typeof body === 'object' && (body.traceId || body.trace_id || body.requestId || body.request_id)) || '';
+        const eventTrace = extractEventTraceId(result.events || []);
+        return headers['x-trace-id'] || headers['x-request-id'] || headers['x-correlation-id'] || (body && typeof body === 'object' && (body.traceId || body.trace_id || body.requestId || body.request_id)) || eventTrace || (result.trace && (result.trace.traceId || result.trace.requestId)) || '';
+      }
+
+      function extractEventTraceId(events) {
+        for (const event of events) {
+          const data = event && event.data;
+          if (data && typeof data === 'object') {
+            const traceId = data.traceId || data.trace_id || data.requestId || data.request_id;
+            if (traceId) return traceId;
+          }
+        }
+        return '';
+      }
+
+      function newTraceContext() {
+        const requestId = createClientId('req');
+        return { requestId, traceId: createClientId('trace') };
+      }
+
+      function createClientId(prefix) {
+        const cryptoObj = window.crypto || window.msCrypto;
+        if (cryptoObj && cryptoObj.randomUUID) return prefix + '-' + cryptoObj.randomUUID();
+        return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
       }
 
       function urlPath(url) {
@@ -1657,7 +1683,7 @@ Content-Type: application/json</pre>
           request: result.request,
           response: pick(result, ['ok', 'status', 'statusText', 'elapsedMs', 'headers', 'body', 'error']),
         };
-        if (result.events) output.websocket = pick(result, ['ok', 'wsUrl', 'sent', 'events', 'elapsedMs']);
+        if (result.events) output.websocket = pick(result, ['ok', 'wsUrl', 'trace', 'sent', 'events', 'elapsedMs']);
         if (result.blob) output.response.blob = { size: result.blob.size, type: result.blob.type };
         return output;
       }
