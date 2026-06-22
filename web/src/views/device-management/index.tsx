@@ -44,6 +44,7 @@ import {
 import {
   createDeviceApplication,
   createDeviceGroup,
+  deleteDevice,
   deleteDeviceGroup,
   fetchDeviceApplications,
   fetchDeviceGroups,
@@ -64,17 +65,13 @@ import { fetchCommandGroups } from '../../api/modules/commands';
 import { fetchImageResources, fetchVideoResources } from '../../api/modules/resources';
 import { fetchScrollingTexts } from '../../api/modules/scrolling-texts';
 import { fetchModelAssets } from '../../api/modules/models';
-import { fetchVoiceTones } from '../../api/modules/voice-tones';
+import { fetchCompanyTtsOptions } from '../../api/modules/tts';
 import { fetchAgentApplications, type AgentApplicationRecord } from '../../api/modules/applications';
 import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
 
 type DeviceEditForm = {
-  name: string;
-  location?: string;
   applicationId?: number | null;
-  agentApplicationId?: number | null;
-  groupId?: number | null;
 };
 
 type ApplicationForm = DeviceApplicationPayload;
@@ -109,8 +106,8 @@ const resolveDeviceRuntimeDiagnostic = (device: DeviceRecord): DeviceRuntimeDiag
       level: 'blocked',
       label: '缺智能体',
       color: 'error',
-      hint: '点击“绑定”为设备选择可用智能体。',
-      detail: '运行时配置、语音问答和 ASR/TTS 链路都依赖绑定的智能体应用。',
+      hint: '进入资源应用配置，为设备绑定的应用选择可用智能体。',
+      detail: '运行时配置、语音问答和 ASR/TTS 链路都依赖资源应用绑定的智能体。',
     };
   }
 
@@ -139,7 +136,7 @@ const resolveDeviceRuntimeDiagnostic = (device: DeviceRecord): DeviceRuntimeDiag
     label: '运行就绪',
     color: 'success',
     hint: '可继续做配置拉取、ASR/TTS 与语音问答联调。',
-    detail: '授权、智能体绑定、资源应用和在线心跳都已具备。',
+    detail: '授权、资源应用、应用智能体和在线心跳都已具备。',
   };
 };
 
@@ -159,7 +156,6 @@ const toSelectOptions = <T extends { id: number; name: string }>(items: T[]) =>
 const isDeviceRealtimePayload = (payload: unknown): payload is { type: string } =>
   !!payload && typeof payload === 'object' && typeof (payload as { type?: unknown }).type === 'string';
 
-const emptyGroupOption = [{ label: '未分组', value: null as number | null }];
 const emptyApplicationOption = [{ label: '待绑定资源应用', value: null as number | null }];
 const emptyAgentApplicationOption = [{ label: '待绑定智能体', value: null as number | null }];
 
@@ -234,30 +230,38 @@ export const DeviceManagementPage = () => {
   );
 
   const loadResourceOptions = async () => {
-    try {
-      const [images, videos, scrollingTexts, voiceTones, models, commandGroups] = await Promise.all([
+    const [imagesResult, videosResult, scrollingTextsResult, voiceTonesResult, modelsResult, commandGroupsResult] =
+      await Promise.allSettled([
         fetchImageResources({ pageSize: 100 }),
         fetchVideoResources({ pageSize: 100 }),
         fetchScrollingTexts({ pageSize: 100, status: 'active' }),
-        fetchVoiceTones({ pageSize: 100 }),
+        fetchCompanyTtsOptions(),
         fetchModelAssets({ pageSize: 100 }),
         fetchCommandGroups({ pageSize: 100 }),
       ]);
-      setResourceOptions([
-        ...images.results.map((item) => ({ label: `图片 · ${item.name}`, value: item.id })),
-        ...videos.results.map((item) => ({ label: `视频 · ${item.name}`, value: item.id })),
-      ]);
-      setScrollingTextOptions(scrollingTexts.results.map((item) => ({ label: item.title, value: item.id })));
-      setVoiceToneOptions(toSelectOptions(voiceTones.results));
-      setModelOptions(toSelectOptions(models.results));
-      setCommandGroupOptions(toSelectOptions(commandGroups.results));
-    } catch {
-      setResourceOptions([]);
-      setScrollingTextOptions([]);
-      setVoiceToneOptions([]);
-      setModelOptions([]);
-      setCommandGroupOptions([]);
-    }
+
+    const imageOptions =
+      imagesResult.status === 'fulfilled'
+        ? imagesResult.value.results.map((item) => ({ label: `图片 · ${item.name}`, value: item.id }))
+        : [];
+    const videoOptions =
+      videosResult.status === 'fulfilled'
+        ? videosResult.value.results.map((item) => ({ label: `视频 · ${item.name}`, value: item.id }))
+        : [];
+
+    setResourceOptions([...imageOptions, ...videoOptions]);
+    setScrollingTextOptions(
+      scrollingTextsResult.status === 'fulfilled'
+        ? scrollingTextsResult.value.results.map((item) => ({ label: item.title, value: item.id }))
+        : [],
+    );
+    setVoiceToneOptions(
+      voiceTonesResult.status === 'fulfilled'
+        ? voiceTonesResult.value.voices.map((item) => ({ label: `${item.displayName} (${item.voiceCode})`, value: item.id }))
+        : [],
+    );
+    setModelOptions(modelsResult.status === 'fulfilled' ? toSelectOptions(modelsResult.value.results) : []);
+    setCommandGroupOptions(commandGroupsResult.status === 'fulfilled' ? toSelectOptions(commandGroupsResult.value.results) : []);
   };
 
   const loadData = async (query: DeviceListQuery = filters, page = devicePage) => {
@@ -412,11 +416,7 @@ export const DeviceManagementPage = () => {
   const openDeviceEdit = (record: DeviceRecord) => {
     setEditingDevice(record);
     deviceForm.setFieldsValue({
-      name: record.name,
-      location: record.location,
       applicationId: record.applicationId ?? null,
-      agentApplicationId: record.agentApplicationId ?? null,
-      groupId: record.groupId ?? null,
     });
   };
 
@@ -429,11 +429,18 @@ export const DeviceManagementPage = () => {
     message.success('设备绑定已更新');
   };
 
+  const handleDeviceDelete = async (record: DeviceRecord) => {
+    await deleteDevice(record.deviceCode);
+    message.success('设备已删除');
+    void loadData(filters, devicePage);
+  };
+
   const openApplicationCreate = () => {
     setEditingApplication(null);
     applicationForm.resetFields();
     applicationForm.setFieldsValue({
       isActive: true,
+      agentApplicationId: null,
       resourceIds: [],
       scrollingTextIds: [],
       voiceToneIds: [],
@@ -451,6 +458,7 @@ export const DeviceManagementPage = () => {
       code: record.code,
       description: record.description,
       isActive: record.isActive,
+      agentApplicationId: record.agentApplicationId ?? null,
       resourceIds: record.resourceIds,
       scrollingTextIds: record.scrollingTextIds,
       voiceToneIds: record.voiceToneIds,
@@ -606,15 +614,32 @@ export const DeviceManagementPage = () => {
       title: '操作',
       key: 'action',
       fixed: 'right',
-      width: '8%',
-      render: (_, record) =>
-        canUpdateDevice ? (
-          <Tooltip title="绑定智能体、资源应用与分组">
-            <Button size="small" icon={<LinkOutlined />} onClick={() => openDeviceEdit(record)}>
-              绑定
-            </Button>
-          </Tooltip>
-        ) : null,
+      width: '12%',
+      render: (_, record) => (
+        <Space size={6}>
+          {canUpdateDevice ? (
+            <Tooltip title="绑定资源应用">
+              <Button size="small" icon={<LinkOutlined />} onClick={() => openDeviceEdit(record)}>
+                绑定
+              </Button>
+            </Tooltip>
+          ) : null}
+          {canDeleteDevice ? (
+            <Popconfirm
+              title="删除设备"
+              description={`确认删除「${record.name || record.deviceCode}」？同设备码再次上报后会重新进入待绑定。`}
+              okText="删除"
+              cancelText="取消"
+              okButtonProps={{ danger: true }}
+              onConfirm={() => void handleDeviceDelete(record)}
+            >
+              <Button size="small" danger icon={<DeleteOutlined />}>
+                删除
+              </Button>
+            </Popconfirm>
+          ) : null}
+        </Space>
+      ),
     },
   ];
 
@@ -854,7 +879,10 @@ export const DeviceManagementPage = () => {
                             <Typography.Paragraph className="!mb-0 !min-h-[40px] !text-[13px] !text-slate-500">
                               {item.description || '未填写说明'}
                             </Typography.Paragraph>
-                            <Space size={[4, 4]} wrap>
+                          <Space size={[4, 4]} wrap>
+                              <Tag color={item.agentApplicationId ? 'purple' : 'warning'}>
+                                {item.agentApplicationName || '待绑定智能体'}
+                              </Tag>
                               <Tag>媒体 {item.resourceIds.length}</Tag>
                               <Tag>滚动文本 {item.scrollingTextIds.length}</Tag>
                               <Tag>音色 {item.voiceToneIds.length}</Tag>
@@ -891,6 +919,7 @@ export const DeviceManagementPage = () => {
                     <Row gutter={[10, 10]}>
                       {[
                         ['媒体素材', selectedApplication.resourceIds.length, '图片 / 视频资源'],
+                        ['智能体', selectedApplication.agentApplicationName || '未绑定', '应用运行时使用的智能体'],
                         ['滚动文本', selectedApplication.scrollingTextIds.length, '多语言滚动字幕'],
                         ['音色', selectedApplication.voiceToneIds.length, 'TTS 音色与展示资产'],
                         ['模型', selectedApplication.modelAssetIds.length, '数字人模型资产'],
@@ -899,7 +928,7 @@ export const DeviceManagementPage = () => {
                         <Col xs={12} md={8} xl={4} key={label}>
                           <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
                             <Typography.Text type="secondary">{label}</Typography.Text>
-                            <div className="mt-1 text-2xl font-semibold tabular-nums">{count}</div>
+                            <div className="mt-1 truncate text-2xl font-semibold tabular-nums">{count}</div>
                             <div className="mt-1 text-xs text-slate-500">{desc}</div>
                           </div>
                         </Col>
@@ -944,20 +973,8 @@ export const DeviceManagementPage = () => {
         destroyOnHidden
       >
         <Form<DeviceEditForm> form={deviceForm} layout="vertical">
-          <Form.Item label="设备名称" name="name" rules={[{ required: true, message: '请输入设备名称' }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item label="部署位置" name="location">
-            <Input />
-          </Form.Item>
-          <Form.Item label="绑定智能体" name="agentApplicationId">
-            <Select options={[...emptyAgentApplicationOption, ...agentApplicationOptions]} optionFilterProp="label" showSearch />
-          </Form.Item>
           <Form.Item label="资源应用" name="applicationId">
             <Select options={[...emptyApplicationOption, ...applicationOptions]} optionFilterProp="label" showSearch />
-          </Form.Item>
-          <Form.Item label="分组" name="groupId">
-            <Select options={[...emptyGroupOption, ...groupOptions]} />
           </Form.Item>
         </Form>
       </Modal>
@@ -991,6 +1008,9 @@ export const DeviceManagementPage = () => {
           <Form.Item label="启用应用" name="isActive" valuePropName="checked">
             <Switch />
           </Form.Item>
+          <Form.Item label="绑定智能体" name="agentApplicationId">
+            <Select options={[...emptyAgentApplicationOption, ...agentApplicationOptions]} optionFilterProp="label" showSearch />
+          </Form.Item>
           <Divider className="!my-4" />
           <Form.Item label="图片 / 视频素材" name="resourceIds">
             <Select mode="multiple" options={resourceOptions} optionFilterProp="label" />
@@ -999,7 +1019,7 @@ export const DeviceManagementPage = () => {
             <Select mode="multiple" options={scrollingTextOptions} optionFilterProp="label" />
           </Form.Item>
           <Form.Item label="音色" name="voiceToneIds">
-            <Select mode="multiple" options={voiceToneOptions} optionFilterProp="label" />
+            <Select mode="multiple" options={voiceToneOptions} optionFilterProp="label" showSearch />
           </Form.Item>
           <Form.Item label="模型" name="modelAssetIds">
             <Select mode="multiple" options={modelOptions} optionFilterProp="label" />
