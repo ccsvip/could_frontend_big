@@ -288,18 +288,19 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             {
                 'name': 'Lobby Text App',
                 'code': 'lobby-text-app',
+                'agentApplicationId': self.agent_application.id,
                 'scrollingTextIds': [scrolling_text.id],
             },
             format='json',
         )
 
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(create_response.data.get('agentApplicationId'), self.agent_application.id)
         self.assertEqual(create_response.data.get('scrollingTextIds'), [scrolling_text.id])
         application = DeviceApplication.objects.get(code='lobby-text-app', tenant=self.tenant)
         Device.objects.create(
             tenant=self.tenant,
             application=application,
-            agent_application=self.agent_application,
             name='Lobby Text Device',
             code='ANDROID-TEXT-001',
             authorization_type=Device.AUTHORIZATION_PERMANENT,
@@ -324,10 +325,51 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(config_response['X-Trace-ID'], 'trace-runtime-config-1')
         self.assertEqual(config_response.data['requestId'], 'req-runtime-config-1')
         self.assertEqual(config_response.data['traceId'], 'trace-runtime-config-1')
+        self.assertEqual(config_response.data['agentApplication']['id'], self.agent_application.id)
         scrolling_texts = config_response.data['resources']['scrollingTexts']
         self.assertEqual(len(scrolling_texts), 1)
         self.assertEqual(scrolling_texts[0]['title'], '大厅公告')
         self.assertEqual(scrolling_texts[0]['items'][0]['zh'], '欢迎光临')
+
+    def test_application_can_bind_tts_voices_and_runtime_config_returns_them(self):
+        tts_provider = TTSProvider.objects.get(code='aliyun')
+        voice = TTSVoice.objects.get(provider=tts_provider, voice_code='Cherry')
+
+        create_response = self.client.post(
+            '/api/v1/device-applications/',
+            {
+                'name': 'Lobby Voice App',
+                'code': 'lobby-voice-app',
+                'agentApplicationId': self.agent_application.id,
+                'voiceToneIds': [voice.id],
+            },
+            format='json',
+        )
+
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(create_response.data.get('voiceToneIds'), [voice.id])
+        application = DeviceApplication.objects.get(code='lobby-voice-app', tenant=self.tenant)
+        Device.objects.create(
+            tenant=self.tenant,
+            application=application,
+            name='Lobby Voice Device',
+            code='ANDROID-VOICE-CONFIG-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        config_response = self.client.get(
+            '/api/v1/device-runtime/config/',
+            {'deviceCode': 'ANDROID-VOICE-CONFIG-001'},
+            format='json',
+        )
+
+        self.assertEqual(config_response.status_code, status.HTTP_200_OK)
+        voice_tones = config_response.data['resources']['voiceTones']
+        self.assertEqual(len(voice_tones), 1)
+        self.assertEqual(voice_tones[0]['id'], voice.id)
+        self.assertEqual(voice_tones[0]['name'], 'Cherry')
+        self.assertEqual(voice_tones[0]['voiceCode'], 'Cherry')
 
     def test_device_voice_chat_path_exists_without_trailing_slash(self):
         Device.objects.create(
@@ -445,6 +487,26 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(device.mainboard_info, 'rk3588')
         self.assertEqual(device.authorization_type, Device.AUTHORIZATION_PERMANENT)
 
+    def test_activate_company_bound_device_without_agent_reports_bound(self):
+        Device.objects.create(
+            tenant=self.tenant,
+            name='Company Bound Device',
+            code='ANDROID-COMPANY-BOUND-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        response = self.client.post(
+            '/api/v1/device-auth/activate/',
+            {'deviceCode': 'ANDROID-COMPANY-BOUND-001'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['bindingStatus'], 'bound')
+        self.assertIsNone(response.data['device']['applicationId'])
+        self.assertIsNone(response.data['device']['agentApplicationId'])
+
     def test_activate_unknown_device_creates_pending_device(self):
         response = self.client.post(
             '/api/v1/device-auth/activate/',
@@ -546,7 +608,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(disabled_response.status_code, status.HTTP_200_OK)
         self.assertEqual([item['deviceCode'] for item in disabled_response.data['results']], ['ANDROID-DISABLED-001'])
 
-    def test_device_patch_only_updates_name_and_group(self):
+    def test_device_patch_updates_application_but_ignores_agent_binding(self):
         group = DeviceGroup.objects.create(tenant=self.tenant, name='Lobby')
         next_application = DeviceApplication.objects.create(
             tenant=self.tenant,
@@ -592,7 +654,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(device.location, 'New Location')
         self.assertEqual(device.group_id, group.id)
         self.assertEqual(device.application_id, next_application.id)
-        self.assertEqual(device.agent_application_id, next_agent_application.id)
+        self.assertEqual(device.agent_application_id, self.agent_application.id)
         self.assertEqual(device.code, 'ANDROID-BOARD-001')
         self.assertEqual(device.software_version, '1.0.0')
         self.assertEqual(device.authorization_type, Device.AUTHORIZATION_PERMANENT)
@@ -637,13 +699,12 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(row['bindingStatus'], 'pending')
         self.assertEqual(row['latestActivationDeviceInfo']['softwareVersion'], '1.0.9')
 
-    def test_superuser_binds_activation_request_to_company(self):
+    def test_superuser_binds_activation_request_to_company_without_company_owned_resources(self):
         self.client.post(
             '/api/v1/device-auth/activate/',
             {'deviceCode': 'ANDROID-BIND-001', 'deviceName': 'Bind Android'},
             format='json',
         )
-        group = DeviceGroup.objects.create(tenant=self.tenant, name='Front Desk')
         expires_at = timezone.now() + timedelta(days=30)
         superuser = User.objects.create_superuser(
             username='platform-binder',
@@ -651,6 +712,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             email='platform-binder@example.com',
         )
         self.client.force_authenticate(user=superuser)
+        group = DeviceGroup.objects.create(tenant=self.tenant, name='Front Desk')
 
         response = self.client.post(
             '/api/v1/device-authorization-requests/ANDROID-BIND-001/bind/',
@@ -672,9 +734,9 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['bindingStatus'], 'bound')
         device = Device.objects.get(code='ANDROID-BIND-001')
         self.assertEqual(device.tenant_id, self.tenant.id)
-        self.assertEqual(device.application_id, self.application.id)
-        self.assertEqual(device.agent_application_id, self.agent_application.id)
-        self.assertEqual(device.group_id, group.id)
+        self.assertIsNone(device.application_id)
+        self.assertIsNone(device.agent_application_id)
+        self.assertIsNone(device.group_id)
         self.assertEqual(device.authorization_type, Device.AUTHORIZATION_TRIAL)
         self.assertIsNotNone(device.expires_at)
 
