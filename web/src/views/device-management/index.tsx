@@ -165,6 +165,8 @@ const emptyAgentApplicationOption = [{ label: '待绑定智能体', value: null 
 
 export const DeviceManagementPage = () => {
   const [devices, setDevices] = useState<DeviceRecord[]>([]);
+  const [deviceTotal, setDeviceTotal] = useState(0);
+  const [devicePage, setDevicePage] = useState(1);
   const [stats, setStats] = useState({ total: 0, online: 0, offline: 0, trial: 0, permanent: 0 });
   const [groups, setGroups] = useState<DeviceGroupRecord[]>([]);
   const [applications, setApplications] = useState<DeviceApplicationRecord[]>([]);
@@ -194,8 +196,9 @@ export const DeviceManagementPage = () => {
   const [groupForm] = Form.useForm<GroupForm>();
   const hasLoadedRef = useRef(false);
   const filtersRef = useRef(filters);
+  const devicePageRef = useRef(devicePage);
   const realtimeRefreshTimerRef = useRef<number | null>(null);
-  const loadDataRef = useRef<((query?: DeviceListQuery) => Promise<void>) | null>(null);
+  const loadDataRef = useRef<((query?: DeviceListQuery, page?: number) => Promise<void>) | null>(null);
   const { pathname } = useLocation();
   const token = useAuthStore((state) => state.token);
   const hasPermission = useAuthStore((state) => state.hasPermission);
@@ -257,17 +260,19 @@ export const DeviceManagementPage = () => {
     }
   };
 
-  const loadData = async (query: DeviceListQuery = filters) => {
+  const loadData = async (query: DeviceListQuery = filters, page = devicePage) => {
     setLoading(true);
     try {
       const [deviceResponse, statsResponse, groupResponse, applicationResponse, agentApplicationResponse] = await Promise.all([
-        fetchDevices({ ...query, keyword }),
+        fetchDevices({ ...query, keyword, page }),
         fetchDeviceStats(),
         fetchDeviceGroups(),
         fetchDeviceApplications(),
         fetchAgentApplications({ page: 1 }),
       ]);
       setDevices(deviceResponse.results);
+      setDeviceTotal(deviceResponse.count);
+      setDevicePage(page);
       setStats(statsResponse);
       setGroups(groupResponse.results);
       setApplications(applicationResponse.results);
@@ -285,6 +290,10 @@ export const DeviceManagementPage = () => {
   useEffect(() => {
     filtersRef.current = filters;
   }, [filters]);
+
+  useEffect(() => {
+    devicePageRef.current = devicePage;
+  }, [devicePage]);
 
   useEffect(() => {
     if (!canUseDeviceWorkspace) {
@@ -315,7 +324,7 @@ export const DeviceManagementPage = () => {
       }
       realtimeRefreshTimerRef.current = window.setTimeout(() => {
         realtimeRefreshTimerRef.current = null;
-        void loadDataRef.current?.(filtersRef.current);
+        void loadDataRef.current?.(filtersRef.current, devicePageRef.current);
       }, 250);
     };
 
@@ -391,7 +400,13 @@ export const DeviceManagementPage = () => {
   }, [canUseDeviceWorkspace, isTenantScopedRoute, realtimeTenantId, token]);
 
   const handleSearch = () => {
-    void loadData(filters);
+    void loadData(filters, 1);
+  };
+
+  const handleFilterChange = <K extends keyof DeviceListQuery>(key: K, value: DeviceListQuery[K]) => {
+    const nextFilters = { ...filters, [key]: value };
+    setFilters(nextFilters);
+    void loadData(nextFilters, 1);
   };
 
   const openDeviceEdit = (record: DeviceRecord) => {
@@ -747,7 +762,7 @@ export const DeviceManagementPage = () => {
                   />
                   <Select
                     value={filters.status}
-                    onChange={(value) => setFilters((current) => ({ ...current, status: value }))}
+                    onChange={(value) => handleFilterChange('status', value)}
                     options={[
                       { label: '全部状态', value: 'all' },
                       { label: '在线', value: 'online' },
@@ -756,7 +771,7 @@ export const DeviceManagementPage = () => {
                   />
                   <Select
                     value={filters.enabledStatus}
-                    onChange={(value) => setFilters((current) => ({ ...current, enabledStatus: value }))}
+                    onChange={(value) => handleFilterChange('enabledStatus', value)}
                     options={[
                       { label: '全部授权', value: 'all' },
                       { label: '正常', value: 'enabled' },
@@ -765,12 +780,12 @@ export const DeviceManagementPage = () => {
                   />
                   <Select
                     value={filters.applicationId}
-                    onChange={(value) => setFilters((current) => ({ ...current, applicationId: value }))}
+                    onChange={(value) => handleFilterChange('applicationId', value)}
                     options={[{ label: '全部资源应用', value: 'all' }, ...applicationOptions]}
                   />
                   <Select
                     value={filters.groupId}
-                    onChange={(value) => setFilters((current) => ({ ...current, groupId: value }))}
+                    onChange={(value) => handleFilterChange('groupId', value)}
                     options={[{ label: '全部分组', value: 'all' }, ...groupOptions]}
                   />
                   <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>
@@ -783,7 +798,13 @@ export const DeviceManagementPage = () => {
                   rowKey="deviceCode"
                   loading={loading}
                   tableLayout="fixed"
-                  pagination={{ pageSize: 10, showSizeChanger: false }}
+                  pagination={{
+                    current: devicePage,
+                    pageSize: 10,
+                    total: deviceTotal,
+                    showSizeChanger: false,
+                    onChange: (page) => void loadData(filters, page),
+                  }}
                 />
               </Space>
             ),

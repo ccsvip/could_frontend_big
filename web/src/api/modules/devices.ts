@@ -35,6 +35,7 @@ export type DeviceRecord = {
 };
 
 export type DeviceListQuery = {
+  page?: number;
   keyword?: string;
   status?: DeviceStatus | 'all';
   enabledStatus?: DeviceEnabledStatus | 'all';
@@ -165,6 +166,7 @@ const normalizeList = <T>(value: PaginatedResponse<T> | T[]): PaginatedResponse<
 };
 
 const buildDeviceParams = (query?: DeviceListQuery) => ({
+  page: query?.page,
   keyword: query?.keyword || undefined,
   status: query?.status && query.status !== 'all' ? query.status : undefined,
   enabledStatus: query?.enabledStatus && query.enabledStatus !== 'all' ? query.enabledStatus : undefined,
