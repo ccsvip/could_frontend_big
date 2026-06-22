@@ -60,10 +60,9 @@ export type DeviceStatsResponse = {
 };
 
 export type DeviceUpdatePayload = {
-  name: string;
+  name?: string;
   location?: string;
   applicationId?: number | null;
-  agentApplicationId?: number | null;
   groupId?: number | null;
 };
 
@@ -86,6 +85,8 @@ export type DeviceApplicationRecord = {
   code: string;
   description: string;
   isActive: boolean;
+  agentApplicationId: number | null;
+  agentApplicationName: string;
   resourceIds: number[];
   scrollingTextIds: number[];
   voiceToneIds: number[];
@@ -100,6 +101,7 @@ export type DeviceApplicationPayload = {
   code: string;
   description?: string;
   isActive: boolean;
+  agentApplicationId?: number | null;
   resourceIds?: number[];
   scrollingTextIds?: number[];
   voiceToneIds?: number[];
@@ -150,9 +152,6 @@ export type DeviceAuthorizationRequestQuery = {
 
 export type DeviceBindPayload = {
   tenantId: number;
-  applicationId?: number | null;
-  agentApplicationId?: number | null;
-  groupId?: number | null;
   authorizationType?: DeviceAuthorizationType;
   expiresAt?: string | null;
   isEnabled?: boolean;
@@ -189,6 +188,10 @@ export const fetchDeviceStats = async () => {
 export const updateDevice = async (deviceCode: string, payload: DeviceUpdatePayload) => {
   const response = await httpClient.patch<DeviceRecord>(`/devices/${encodeURIComponent(deviceCode)}/`, payload);
   return response.data;
+};
+
+export const deleteDevice = async (deviceCode: string) => {
+  await httpClient.delete(`/devices/${encodeURIComponent(deviceCode)}/`);
 };
 
 export const fetchDeviceAuthorizationRequests = async (query?: DeviceAuthorizationRequestQuery) => {

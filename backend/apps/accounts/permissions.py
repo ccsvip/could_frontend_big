@@ -304,6 +304,17 @@ class CanViewTTS(HasPermissionCode):
     required_permission = 'ai_models.tts.view'
 
 
+class CanViewCompanyTTSOptions(permissions.BasePermission):
+    message = '当前账号缺少所需权限'
+
+    def has_permission(self, request, view):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+        permission_codes = set(get_active_permission_codes_for_user(user))
+        return bool({'ai_models.tts.view', 'devices.update'} & permission_codes)
+
+
 class CanUpdateTTS(HasPermissionCode):
     required_permission = 'ai_models.tts.update'
 
