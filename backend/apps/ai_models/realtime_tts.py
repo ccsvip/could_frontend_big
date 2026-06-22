@@ -9,6 +9,7 @@ import websockets
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.accounts.services.permissions import get_active_permission_codes_for_user
+from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device
 from apps.tenants.models import Tenant
 from apps.tenants.services import get_user_tenant
 
@@ -30,6 +31,10 @@ from .services.tts import (
 
 
 def resolve_tts_realtime_connection(token: str, *, query_params: dict[str, list[str]] | None = None) -> dict[str, Any] | None:
+    device_connection = _resolve_device_connection(query_params)
+    if device_connection is not None:
+        return device_connection
+
     if not token:
         return None
 
@@ -53,6 +58,23 @@ def resolve_tts_realtime_connection(token: str, *, query_params: dict[str, list[
     if tenant is not None:
         connection['tenant_id'] = tenant.id
     return connection
+
+
+def _resolve_device_connection(query_params: dict[str, list[str]] | None) -> dict[str, Any] | None:
+    params = query_params or {}
+    device_code = (params.get('deviceCode') or params.get('device_code') or [''])[0].strip()
+    if not device_code:
+        return None
+    try:
+        device = get_runtime_device(device_code)
+    except RuntimeDeviceError:
+        return None
+    return {
+        'device_id': device.id,
+        'device_code': device.code,
+        'tenant_id': device.tenant_id,
+        'is_superuser': False,
+    }
 
 
 def resolve_tts_voice(connection: dict[str, Any], raw_voice_id, provider: TTSProvider) -> TTSVoice | None:

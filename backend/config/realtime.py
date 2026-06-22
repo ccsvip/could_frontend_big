@@ -7,6 +7,7 @@ from typing import Any
 from asgiref.sync import sync_to_async
 
 from apps.ai_models import realtime_asr, realtime_tts
+from apps.devices.views import DeviceVoiceChatView
 from apps.devices.realtime import (
     add_device_event_subscriber,
     publish_device_event,
@@ -170,6 +171,9 @@ async def _handle_client_event(event, send, connection: RealtimeConnection) -> b
         return False
     if command_type == 'tts.session.cancel':
         await _handle_tts_session_cancel(send, connection, message)
+        return False
+    if command_type == 'llm.session.start':
+        await _handle_llm_session_start(send, message)
         return False
 
     await _send_error(
@@ -371,12 +375,70 @@ async def _handle_tts_session_cancel(send, connection: RealtimeConnection, messa
     )
 
 
+async def _handle_llm_session_start(send, message: dict[str, Any]) -> None:
+    command_id = message.get('id')
+    payload = message.get('payload') if isinstance(message.get('payload'), dict) else {}
+    device_code = str(payload.get('deviceCode') or payload.get('device_code') or '').strip()
+    question_text = str(payload.get('text') or payload.get('questionText') or payload.get('question') or '').strip()
+    request_id = _request_id_from_payload(payload)
+    trace_id = _trace_id_from_payload(payload, request_id)
+    if not device_code:
+        await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message='Device code is required'))
+        return
+    if not question_text:
+        await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message='Question text is required'))
+        return
+
+    try:
+        result = await sync_to_async(_run_device_llm_answer, thread_sensitive=True)(device_code, question_text)
+    except Exception as exc:
+        await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message=str(exc)[:200]))
+        return
+
+    await _send_json(
+        send,
+        {
+            'type': 'llm.answer',
+            'id': command_id,
+            'requestId': request_id,
+            'traceId': trace_id,
+            'payload': {
+                'deviceCode': result['deviceCode'],
+                'questionText': question_text,
+                'answerText': result['answerText'],
+                'agentApplicationId': result['agentApplicationId'],
+                'agentApplicationName': result['agentApplicationName'],
+                'applicationId': result['applicationId'],
+                'applicationName': result['applicationName'],
+            },
+        },
+    )
+
+
+def _run_device_llm_answer(device_code: str, question_text: str) -> dict[str, Any]:
+    from apps.devices.services.runtime import get_runtime_device
+
+    device = get_runtime_device(device_code)
+    agent_application = device.effective_agent_application
+    if agent_application is None or not agent_application.is_active:
+        raise RuntimeError('设备未绑定可用智能体')
+    answer_text = DeviceVoiceChatView._generate_answer(device, question_text)
+    return {
+        'deviceCode': device.code,
+        'answerText': answer_text,
+        'agentApplicationId': agent_application.id,
+        'agentApplicationName': agent_application.name,
+        'applicationId': device.application_id,
+        'applicationName': device.application.name if device.application else '',
+    }
+
+
 async def _run_tts_session(send, connection: RealtimeConnection, command_id, message: dict[str, Any]) -> None:
     command_id = message.get('id')
     try:
         payload = message.get('payload') if isinstance(message.get('payload'), dict) else {}
         token = str(payload.get('token') or '').strip()
-        query_params = _payload_query_params(payload, 'tenantId', 'tenant')
+        query_params = _payload_query_params(payload, 'tenantId', 'tenant', 'deviceCode', 'device_code')
 
         resolved_connection = await sync_to_async(realtime_tts.resolve_tts_realtime_connection, thread_sensitive=True)(
             token,

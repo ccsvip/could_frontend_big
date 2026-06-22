@@ -14,6 +14,7 @@ from django.test import TestCase
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
+from apps.ai_models.models import AgentApplication, LLMModel, LLMProvider, TenantLLMModelGrant
 from apps.devices.models import Device, DeviceApplication
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
@@ -672,6 +673,101 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                     },
                 },
             )
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
+    def test_unified_realtime_websocket_runs_device_llm_session_command(self):
+        provider = LLMProvider.objects.create(
+            name='Runtime LLM Provider',
+            provider_type='openai',
+            api_base_url='https://llm.example/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='runtime-model', is_active=True)
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        agent_application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime Agent',
+            llm_model=model,
+            system_prompt='你是设备助手。',
+            temperature=0.2,
+            max_tokens=256,
+        )
+        device_application = DeviceApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime LLM App',
+            code='runtime-llm-app',
+            agent_application=agent_application,
+        )
+        Device.objects.create(
+            tenant=self.tenant,
+            application=device_application,
+            name='Runtime LLM Device',
+            code='ANDROID-LLM-WS-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+
+        async def run_websocket():
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            response = await communicator.receive_output(timeout=1)
+            self.assertEqual(response['type'], 'websocket.accept')
+
+            with patch('apps.ai_models.llm_services.run_llm_chat_completion', return_value='这是实时回答。') as run_llm:
+                await communicator.send_input({
+                    'type': 'websocket.receive',
+                    'text': json.dumps({
+                        'type': 'llm.session.start',
+                        'id': 'llm-session-1',
+                        'payload': {
+                            'deviceCode': 'ANDROID-LLM-WS-001',
+                            'text': '介绍一下展厅',
+                            'requestId': 'req-llm-1',
+                            'traceId': 'trace-llm-1',
+                        },
+                    }),
+                })
+
+                message = await communicator.receive_output(timeout=1)
+                self.assertEqual(
+                    json.loads(message['text']),
+                    {
+                        'type': 'llm.answer',
+                        'id': 'llm-session-1',
+                        'requestId': 'req-llm-1',
+                        'traceId': 'trace-llm-1',
+                        'payload': {
+                            'deviceCode': 'ANDROID-LLM-WS-001',
+                            'questionText': '介绍一下展厅',
+                            'answerText': '这是实时回答。',
+                            'agentApplicationId': agent_application.id,
+                            'agentApplicationName': 'Runtime Agent',
+                            'applicationId': device_application.id,
+                            'applicationName': 'Runtime LLM App',
+                        },
+                    },
+                )
+                call_kwargs = run_llm.call_args.kwargs
+                self.assertEqual(call_kwargs['model'].id, model.id)
+                self.assertEqual(call_kwargs['temperature'], 0.2)
+                self.assertEqual(call_kwargs['max_tokens'], 256)
+                self.assertEqual(call_kwargs['messages'][0]['role'], 'system')
+                self.assertIn('Runtime Agent', call_kwargs['messages'][0]['content'])
+                self.assertEqual(call_kwargs['messages'][1], {'role': 'user', 'content': '介绍一下展厅'})
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)

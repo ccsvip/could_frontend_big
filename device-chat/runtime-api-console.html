@@ -1,0 +1,915 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <title>设备运行时接口控制台</title>
+  <style>
+    :root {
+      --bg: #eef3f1;
+      --surface: #ffffff;
+      --surface-soft: #f8faf9;
+      --line: #dfe8e5;
+      --line-strong: #c8d6d2;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --teal: #14b8a6;
+      --teal-deep: #0f766e;
+      --teal-soft: #f0fdfa;
+      --red: #b91c1c;
+      --red-soft: #fef2f2;
+      --amber: #b45309;
+      --amber-soft: #fffbeb;
+      --green: #047857;
+      --green-soft: #ecfdf5;
+      --mono: Consolas, "SFMono-Regular", Monaco, ui-monospace, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 18px rgba(15, 23, 42, 0.04);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font: 14px/1.5 var(--sans);
+    }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .56; }
+    a { color: inherit; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) minmax(220px, 360px) minmax(180px, 260px) auto auto;
+      gap: 12px;
+      align-items: end;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, .96);
+      backdrop-filter: blur(8px);
+    }
+    .brand h1 { margin: 0; font-size: 18px; line-height: 1.25; }
+    .brand p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+    .field { display: grid; gap: 5px; }
+    .field label { color: #334155; font-size: 12px; font-weight: 600; }
+    .input, .textarea {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+      transition: border-color .18s ease, box-shadow .18s ease;
+    }
+    .input { min-height: 38px; padding: 8px 10px; }
+    .textarea { min-height: 96px; padding: 10px; resize: vertical; }
+    .input:focus, .textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(20, 184, 166, .14); }
+    .mono { font-family: var(--mono); }
+
+    .button {
+      min-height: 38px;
+      padding: 8px 14px;
+      border: 1px solid var(--teal);
+      border-radius: 8px;
+      background: var(--teal);
+      color: #fff;
+      font-weight: 700;
+      transition: background .18s ease, border-color .18s ease, transform .18s ease;
+    }
+    .button:hover { background: var(--teal-deep); border-color: var(--teal-deep); }
+    .button:active { transform: translateY(1px); }
+    .button.secondary { background: #fff; color: var(--teal-deep); border-color: var(--line-strong); }
+    .button.secondary:hover { background: var(--teal-soft); border-color: var(--teal); }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 32px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface-soft);
+      color: var(--muted);
+      white-space: nowrap;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-pill::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+    .status-pill.ok { color: var(--green); background: var(--green-soft); border-color: #bbf7d0; }
+    .status-pill.ok::before { background: var(--green); }
+    .status-pill.warn { color: var(--amber); background: var(--amber-soft); border-color: #fde68a; }
+    .status-pill.warn::before { background: var(--amber); }
+    .status-pill.error { color: var(--red); background: var(--red-soft); border-color: #fecaca; }
+    .status-pill.error::before { background: var(--red); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 244px minmax(0, 1fr) minmax(340px, 430px);
+      gap: 14px;
+      padding: 14px;
+      min-height: calc(100vh - 67px);
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+    .side, .request-panel { position: sticky; top: 82px; height: calc(100vh - 96px); overflow: auto; }
+    .side { padding: 12px; }
+    .section-title { margin: 0 0 8px; color: var(--muted); font-size: 12px; font-weight: 700; }
+    .nav { display: grid; gap: 4px; }
+    .nav button {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: #334155;
+      text-align: left;
+    }
+    .nav button:hover { background: var(--surface-soft); border-color: var(--line); }
+    .nav button.active { background: var(--teal-soft); border-color: #99f6e4; color: var(--teal-deep); font-weight: 700; }
+    .method { font: 11px/1 var(--mono); padding: 4px 6px; border-radius: 6px; background: var(--surface-soft); color: var(--muted); }
+    .method.post { color: #92400e; background: #fffbeb; }
+    .method.ws { color: #334155; background: #f1f5f9; }
+
+    .content { overflow: hidden; }
+    .content-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; padding: 18px; border-bottom: 1px solid var(--line); }
+    .content-head h2 { margin: 0; font-size: 20px; line-height: 1.3; }
+    .content-head p { margin: 4px 0 0; max-width: 74ch; color: var(--muted); }
+    .content-body { padding: 18px; display: grid; gap: 14px; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+    .card { border: 1px solid var(--line); border-radius: 12px; background: var(--surface-soft); padding: 12px; min-width: 0; }
+    .card h3 { margin: 0 0 8px; font-size: 14px; }
+    .kv { display: grid; gap: 8px; }
+    .kv-row { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 10px; align-items: start; }
+    .kv-row span:first-child { color: var(--muted); }
+    .code-chip { display: inline-block; max-width: 100%; overflow-wrap: anywhere; padding: 2px 6px; border-radius: 6px; background: #f1f5f9; color: #0f172a; font-family: var(--mono); font-size: 12px; }
+    .empty { padding: 24px; border: 1px dashed var(--line-strong); border-radius: 12px; background: var(--surface-soft); color: var(--muted); text-align: center; }
+    .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: var(--surface-soft); color: #334155; font-size: 12px; }
+    tr:last-child td { border-bottom: 0; }
+    img.preview, video.preview { width: 100%; max-height: 180px; object-fit: contain; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+    audio { width: 100%; }
+
+    .request-panel { display: grid; grid-template-rows: auto minmax(0, 1fr); }
+    .request-head { padding: 16px; border-bottom: 1px solid var(--line); }
+    .request-head h2 { margin: 0; font-size: 16px; }
+    .request-head p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .request-body { padding: 14px; overflow: auto; display: grid; gap: 12px; align-content: start; }
+    .detail-block { display: grid; gap: 7px; }
+    .detail-block strong { font-size: 12px; color: #334155; }
+    pre {
+      margin: 0;
+      max-height: 320px;
+      overflow: auto;
+      padding: 11px;
+      border-radius: 10px;
+      background: #0f172a;
+      color: #e2e8f0;
+      font: 12px/1.55 var(--mono);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .note { padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-soft); color: #334155; font-size: 12px; }
+    .note.warn { border-color: #fde68a; background: var(--amber-soft); color: #92400e; }
+
+    @media (max-width: 1180px) {
+      .layout { grid-template-columns: 220px minmax(0, 1fr); }
+      .request-panel { position: static; grid-column: 1 / -1; height: auto; max-height: none; }
+    }
+    @media (max-width: 760px) {
+      .topbar { position: static; grid-template-columns: 1fr; align-items: stretch; }
+      .layout { grid-template-columns: 1fr; padding: 10px; }
+      .side { position: static; height: auto; }
+      .nav { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+      .content-head { display: grid; }
+      .kv-row { grid-template-columns: 1fr; gap: 3px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <h1>设备运行时接口控制台</h1>
+      <p>只使用设备码请求，不依赖后台登录态。资源类菜单按真实运行时配置切片展示。</p>
+    </div>
+    <div class="field">
+      <label for="apiBaseInput">API Base URL</label>
+      <input id="apiBaseInput" class="input mono" autocomplete="off" />
+    </div>
+    <div class="field">
+      <label for="deviceCodeInput">X-Device-Code</label>
+      <input id="deviceCodeInput" class="input mono" placeholder="DEVICE_001" autocomplete="off" />
+    </div>
+    <button id="connectButton" class="button" type="button">确认并拉取</button>
+    <span id="statusPill" class="status-pill">未连接</span>
+  </header>
+
+  <main class="layout">
+    <aside class="panel side">
+      <p class="section-title">运行时数据</p>
+      <nav class="nav" aria-label="接口菜单">
+        <button class="active" type="button" data-section="device"><span>设备与公司</span><span class="method">GET</span></button>
+        <button type="button" data-section="application"><span>应用</span><span class="method">GET</span></button>
+        <button type="button" data-section="voiceTones"><span>获取音色列表</span><span class="method">GET</span></button>
+        <button type="button" data-section="images"><span>获取背景图片</span><span class="method">GET</span></button>
+        <button type="button" data-section="models"><span>获取数字人模型</span><span class="method">GET</span></button>
+        <button type="button" data-section="videos"><span>获取视频</span><span class="method">GET</span></button>
+      </nav>
+      <p class="section-title" style="margin-top:18px">能力测试</p>
+      <nav class="nav" aria-label="能力测试菜单">
+        <button type="button" data-section="asr"><span>ASR WebSocket</span><span class="method ws">WS</span></button>
+        <button type="button" data-section="llm"><span>LLM 问答</span><span class="method post">POST</span></button>
+        <button type="button" data-section="ttsWs"><span>TTS WebSocket</span><span class="method ws">WS</span></button>
+        <button type="button" data-section="ttsHttp"><span>TTS HTTP</span><span class="method post">POST</span></button>
+      </nav>
+    </aside>
+
+    <section class="panel content">
+      <div class="content-head">
+        <div>
+          <h2 id="sectionTitle">设备与公司</h2>
+          <p id="sectionDescription">输入设备码后，页面会先上报设备，再拉取运行时配置。</p>
+        </div>
+        <button id="refreshButton" class="button secondary" type="button">刷新运行时配置</button>
+      </div>
+      <div id="contentBody" class="content-body"></div>
+    </section>
+
+    <aside class="panel request-panel">
+      <div class="request-head">
+        <h2>请求接口</h2>
+        <p>Swagger 风格展示真实请求方式、接口路径、请求头/体和返回结果。</p>
+      </div>
+      <div class="request-body">
+        <div class="detail-block"><strong>接口说明</strong><div id="requestNote" class="note">等待选择接口。</div></div>
+        <div class="detail-block"><strong>Method / Path</strong><pre id="requestLine">-</pre></div>
+        <div class="detail-block"><strong>Headers</strong><pre id="requestHeaders">{}</pre></div>
+        <div class="detail-block"><strong>Body</strong><pre id="requestBody">null</pre></div>
+        <div class="detail-block"><strong>Response</strong><pre id="responseBody">等待请求</pre></div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const DEFAULT_API_BASE = location.protocol === 'file:' ? 'http://localhost:8880/api/v1' : location.origin + '/api/v1';
+      const CONFIG = {
+        deviceCodeHeader: 'X-Device-Code',
+        requestIdHeader: 'X-Request-ID',
+        traceIdHeader: 'X-Trace-ID',
+      };
+      const query = new URLSearchParams(location.search);
+      const state = {
+        apiBaseUrl: normalizeApiBase(query.get('apiBaseUrl') || DEFAULT_API_BASE),
+        deviceCode: query.get('deviceCode') || query.get('device_code') || '',
+        activation: null,
+        runtimeConfig: null,
+        resourceSlices: {},
+        activeSection: 'device',
+        lastRequest: null,
+        sockets: [],
+      };
+
+      const els = {
+        apiBaseInput: document.getElementById('apiBaseInput'),
+        deviceCodeInput: document.getElementById('deviceCodeInput'),
+        connectButton: document.getElementById('connectButton'),
+        refreshButton: document.getElementById('refreshButton'),
+        statusPill: document.getElementById('statusPill'),
+        sectionTitle: document.getElementById('sectionTitle'),
+        sectionDescription: document.getElementById('sectionDescription'),
+        contentBody: document.getElementById('contentBody'),
+        requestNote: document.getElementById('requestNote'),
+        requestLine: document.getElementById('requestLine'),
+        requestHeaders: document.getElementById('requestHeaders'),
+        requestBody: document.getElementById('requestBody'),
+        responseBody: document.getElementById('responseBody'),
+        navButtons: Array.from(document.querySelectorAll('[data-section]')),
+      };
+
+      const sections = {
+        device: { title: '设备与公司', description: '展示 device.tenantName、expiresAt、授权状态和设备绑定信息。' },
+        application: { title: '应用', description: '通过设备码读取资源应用与完整智能体配置，包括开场白、建议问题和语音播报开关。' },
+        voiceTones: { title: '获取音色列表', description: '通过固定设备码读取 AI 大模型/TTS 管理的全部可用音色，并可直接测试合成。' },
+        images: { title: '获取背景图片', description: '通过固定设备码读取资源管理/背景图片管理数据。' },
+        models: { title: '获取数字人模型', description: '通过固定设备码读取资源管理/模型管理数据。' },
+        videos: { title: '获取视频', description: '通过固定设备码读取资源管理/视频管理数据。' },
+        asr: { title: 'ASR WebSocket', description: '先检查 ASR 设备状态，再用统一 /ws/realtime/ 发送 asr.session.start。' },
+        llm: { title: 'LLM 问答', description: '当前真实设备问答入口是 POST /device/voice-chat，后端执行 LLM 并尝试 TTS。' },
+        ttsWs: { title: 'TTS WebSocket', description: '统一 /ws/realtime/ 支持 tts.session.start。设备码测试优先使用 TTS HTTP，确保无需后台 JWT。' },
+        ttsHttp: { title: 'TTS HTTP', description: '设备码免登录 TTS 入口：POST /ai-models/tts/runtime/。' },
+      };
+
+      init();
+
+      function init() {
+        els.apiBaseInput.value = state.apiBaseUrl;
+        els.deviceCodeInput.value = state.deviceCode;
+        bindEvents();
+        renderActiveSection();
+        if (state.deviceCode) connectDevice().catch(showError);
+      }
+
+      function bindEvents() {
+        els.connectButton.addEventListener('click', () => connectDevice().catch(showError));
+        els.refreshButton.addEventListener('click', () => fetchRuntimeConfig().then(renderActiveSection).catch(showError));
+        els.deviceCodeInput.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter') connectDevice().catch(showError);
+        });
+        for (const button of els.navButtons) {
+          button.addEventListener('click', () => {
+            state.activeSection = button.dataset.section;
+            renderActiveSection();
+          });
+        }
+      }
+
+      async function connectDevice() {
+        state.apiBaseUrl = normalizeApiBase(els.apiBaseInput.value || DEFAULT_API_BASE);
+        state.deviceCode = els.deviceCodeInput.value.trim();
+        els.apiBaseInput.value = state.apiBaseUrl;
+        if (!state.deviceCode) throw new Error('请输入设备码');
+        setStatus('正在上报设备...', 'warn');
+        const body = {
+          deviceCode: state.deviceCode,
+          softwareVersion: 'runtime-api-console-html',
+          systemVersion: navigator.userAgent || '',
+          mainboardInfo: 'browser',
+          deviceInfo: {
+            source: 'runtime-api-console',
+            pageUrl: location.href,
+            language: navigator.language || '',
+          },
+        };
+        state.activation = unwrap(await apiRequest('/device-auth/activate/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }, '设备上报与绑定检查'));
+
+        if (state.activation.bindingStatus !== 'bound') {
+          state.runtimeConfig = null;
+          setStatus('设备待绑定', 'warn');
+          renderActiveSection();
+          return;
+        }
+        await fetchRuntimeConfig();
+        setStatus('设备已连接', 'ok');
+        renderActiveSection();
+      }
+
+      async function fetchRuntimeConfig() {
+        if (!state.deviceCode) throw new Error('请输入设备码');
+        setStatus('正在拉取运行时配置...', 'warn');
+        const path = '/device-runtime/config/?deviceCode=' + encodeURIComponent(state.deviceCode);
+        state.runtimeConfig = unwrap(await apiRequest(path, { method: 'GET' }, '运行时配置'));
+        setStatus('运行时配置已更新', 'ok');
+        return state.runtimeConfig;
+      }
+
+      async function apiRequest(path, options, label) {
+        const requestIds = makeRequestIds();
+        const method = (options.method || 'GET').toUpperCase();
+        const headers = Object.assign({
+          [CONFIG.deviceCodeHeader]: state.deviceCode,
+          [CONFIG.requestIdHeader]: requestIds.requestId,
+          [CONFIG.traceIdHeader]: requestIds.traceId,
+        }, options.headers || {});
+        const url = state.apiBaseUrl + path;
+        writeRequestDetail({ label, method, url, path, headers, body: options.body || null, note: endpointNote(path) });
+        let response;
+        try {
+          response = await fetch(url, {
+            method,
+            headers,
+            body: options.body,
+            credentials: 'omit',
+          });
+        } catch (error) {
+          const message = '网络请求失败：' + (error && error.message ? error.message : String(error));
+          writeResponse({ ok: false, status: 0, message });
+          throw new Error(message);
+        }
+        const contentType = response.headers.get('content-type') || '';
+        let body;
+        if (contentType.includes('application/json')) {
+          body = await response.json();
+        } else if (contentType.startsWith('audio/') || contentType.includes('octet-stream')) {
+          body = await response.blob();
+        } else {
+          body = await response.text();
+        }
+        const result = { ok: response.ok, status: response.status, statusText: response.statusText, contentType, body };
+        writeResponse(result);
+        if (!response.ok) throw new Error(extractErrorMessage(body, response.status));
+        return result;
+      }
+
+      function renderActiveSection() {
+        for (const button of els.navButtons) button.classList.toggle('active', button.dataset.section === state.activeSection);
+        const meta = sections[state.activeSection] || sections.device;
+        els.sectionTitle.textContent = meta.title;
+        els.sectionDescription.textContent = meta.description;
+        if (state.activeSection === 'asr') return renderAsr();
+        if (state.activeSection === 'llm') return renderLlm();
+        if (state.activeSection === 'ttsWs') return renderTtsWs();
+        if (state.activeSection === 'ttsHttp') return renderTtsHttp();
+        if (!state.activation && !state.runtimeConfig) {
+          renderEmpty('请输入设备码并点击“确认并拉取”。');
+          writeResourceSliceDetail(state.activeSection);
+          return;
+        }
+        if (state.activeSection === 'device') return renderDevice();
+        if (state.activeSection === 'application') return fetchResourceSlice('application').then(renderApplication).catch(showError);
+        if (state.activeSection === 'voiceTones') return fetchResourceSlice('voiceTones').then(renderVoiceTones).catch(showError);
+        if (state.activeSection === 'images') return fetchResourceSlice('images').then(() => renderResourceCards('images')).catch(showError);
+        if (state.activeSection === 'models') return fetchResourceSlice('models').then(() => renderResourceCards('models')).catch(showError);
+        if (state.activeSection === 'videos') return fetchResourceSlice('videos').then(() => renderResourceCards('videos')).catch(showError);
+      }
+
+      async function fetchResourceSlice(type) {
+        if (!state.deviceCode) throw new Error('请输入设备码');
+        setStatus('正在拉取 ' + type + '...', 'warn');
+        const result = unwrap(await apiRequest('/device-runtime/resources/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deviceCode: state.deviceCode, resourceType: type }),
+        }, '设备码资源切片'));
+        state.resourceSlices[type] = result;
+        if (type === 'application') {
+          state.runtimeConfig = Object.assign({}, state.runtimeConfig || {}, {
+            device: result.device,
+            application: result.application,
+            agentApplication: result.agentApplication,
+            resources: result.resources || (state.runtimeConfig && state.runtimeConfig.resources) || {},
+          });
+        }
+        setStatus('资源已更新', 'ok');
+        return result;
+      }
+
+      function renderDevice() {
+        const device = currentDevice();
+        if (!device) return renderEmpty('尚未拿到设备信息。');
+        els.contentBody.innerHTML = cardGrid([
+          infoCard('设备身份', [
+            ['设备码', code(device.deviceCode || device.code || state.deviceCode)],
+            ['设备名称', escapeHtml(device.name || device.deviceName || '-')],
+            ['状态', escapeHtml(device.status || '-')],
+            ['启用', escapeHtml(String(device.isEnabled !== false))],
+          ]),
+          infoCard('公司与授权', [
+            ['所属公司', escapeHtml(device.tenantName || '-')],
+            ['公司 ID', code(device.tenantId || '-')],
+            ['授权类型', escapeHtml(device.authorizationTypeLabel || device.authorizationType || '-')],
+            ['设备过期时间', code(device.expiresAt || '永久或未设置')],
+          ]),
+          infoCard('运行记录', [
+            ['注册时间', code(device.registeredAt || '-')],
+            ['最后认证', code(device.lastAuthAt || '-')],
+            ['最后心跳', code(device.lastHeartbeat || '-')],
+            ['Trace', code((state.runtimeConfig && state.runtimeConfig.traceId) || (state.activation && state.activation.traceId) || '-')],
+          ]),
+        ]);
+        writeResourceSliceDetail('device');
+      }
+
+      function renderApplication() {
+        const slice = state.resourceSlices.application || {};
+        const config = state.runtimeConfig || state.activation || {};
+        const application = slice.application || config.application || null;
+        const agentApplication = slice.agentApplication || config.agentApplication || null;
+        const suggestedQuestions = Array.isArray(agentApplication && agentApplication.suggestedQuestions) ? agentApplication.suggestedQuestions : [];
+        els.contentBody.innerHTML = cardGrid([
+          infoCard('绑定资源应用', [
+            ['应用 ID', code(application && application.id || '-')],
+            ['应用名称', escapeHtml(application && application.name || '-')],
+            ['应用编码', code(application && application.code || '-')],
+            ['应用说明', escapeHtml(application && application.description || '-')],
+          ]),
+          infoCard('绑定智能体应用', [
+            ['智能体 ID', code(agentApplication && agentApplication.id || '-')],
+            ['智能体名称', escapeHtml(agentApplication && agentApplication.name || '-')],
+            ['LLM 模型 ID', code(agentApplication && agentApplication.llmModelId || '-')],
+            ['LLM 模型名', code(agentApplication && agentApplication.llmModelName || '-')],
+            ['Temperature', code(agentApplication && agentApplication.temperature)],
+            ['最大 Tokens', code(agentApplication && (agentApplication.maxTokensUnlimited ? '不限' : agentApplication.maxTokens))],
+          ]),
+          infoCard('智能体体验配置', [
+            ['开场白启用', escapeHtml(String(Boolean(agentApplication && agentApplication.openingMessageEnabled)))],
+            ['开场白', escapeHtml(agentApplication && agentApplication.openingMessage || '-')],
+            ['建议问题', suggestedQuestions.length ? suggestedQuestions.map(escapeHtml).join('<br>') : '-'],
+            ['语音输入', escapeHtml(String(Boolean(agentApplication && agentApplication.voiceInputEnabled)))],
+            ['自动播报', escapeHtml(String(Boolean(agentApplication && agentApplication.replyPlaybackEnabled)))],
+          ]),
+        ]) + '<div class="detail-block"><strong>原始应用数据</strong><pre>' + escapeHtml(pretty({ application, agentApplication })) + '</pre></div>';
+        writeResourceSliceDetail('application');
+      }
+
+      function renderVoiceTones() {
+        const items = resourceList('voiceTones');
+        if (!items.length) return renderResourceEmpty('voiceTones');
+        els.contentBody.innerHTML = '<div class="table-wrap"><table><thead><tr><th>头像</th><th>名称</th><th>voiceCode</th><th>示例内容</th><th>测试</th></tr></thead><tbody>' +
+          items.map((item) => '<tr><td>' + voiceAvatar(item) + '</td><td>' + escapeHtml(item.name || item.displayName || '-') + '</td><td><span class="code-chip">' + escapeHtml(item.voiceCode || '-') + '</span></td><td>' + escapeHtml(item.content || item.exampleText || item.defaultTestText || '你好，我是数字人设备。') + '</td><td><button class="button secondary" type="button" data-voice-test="' + escapeAttr(item.id) + '">测试</button></td></tr>').join('') +
+          '</tbody></table></div><audio id="voiceToneAudio" controls preload="none" hidden></audio><div class="detail-block"><strong>测试结果</strong><pre id="voiceToneOutput">等待测试</pre></div>';
+        for (const button of Array.from(els.contentBody.querySelectorAll('[data-voice-test]'))) {
+          button.addEventListener('click', () => testVoiceTone(button.dataset.voiceTest));
+        }
+        writeResourceSliceDetail('voiceTones');
+      }
+
+      function renderResourceCards(type) {
+        const items = resourceList(type);
+        if (!items.length) return renderResourceEmpty(type);
+        els.contentBody.innerHTML = '<div class="grid">' + items.map((item) => resourceCard(type, item)).join('') + '</div>';
+        writeResourceSliceDetail(type);
+      }
+
+      function renderAsr() {
+        els.contentBody.innerHTML = '<div class="toolbar"><button class="button" id="asrStatusBtn" type="button">检查 ASR 状态</button><button class="button secondary" id="asrWsBtn" type="button">测试 asr.session.start</button></div><div class="detail-block"><strong>事件输出</strong><pre id="asrOutput">等待请求</pre></div><div class="note">WS 流程：连接 /ws/realtime/，发送 asr.session.start；收到 asr.ready 后才可以发送 16k PCM 二进制分片。本页只测试 start，不采集麦克风。</div>';
+        document.getElementById('asrStatusBtn').addEventListener('click', fetchAsrStatus);
+        document.getElementById('asrWsBtn').addEventListener('click', testAsrWebSocket);
+        writeRequestDetail({
+          label: 'ASR WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/',
+          headers: {},
+          body: { type: 'asr.session.start', id: 'asr-session-<timestamp>', payload: { deviceCode: state.deviceCode || '<deviceCode>', requestId: '<requestId>', traceId: '<traceId>' } },
+          note: 'ASR 通过统一 WebSocket 命令 asr.session.start 按 deviceCode 解析公司上下文。',
+        });
+      }
+
+      async function fetchAsrStatus() {
+        const output = document.getElementById('asrOutput');
+        try {
+          const result = await apiRequest('/ai-models/asr/device-status/', { method: 'GET' }, 'ASR 设备状态');
+          output.textContent = pretty(result.body);
+        } catch (error) {
+          output.textContent = error.message;
+        }
+      }
+
+      function testAsrWebSocket() {
+        const output = document.getElementById('asrOutput');
+        const requestIds = makeRequestIds();
+        const command = { type: 'asr.session.start', id: 'asr-session-' + Date.now(), payload: { deviceCode: state.deviceCode, requestId: requestIds.requestId, traceId: requestIds.traceId } };
+        testWebSocket(command, output, 'ASR WebSocket', 'asr.ready');
+      }
+
+      function renderLlm() {
+        const suggested = (((state.runtimeConfig || {}).agentApplication || {}).suggestedQuestions || [])[0] || '你好，请介绍一下你自己。';
+        els.contentBody.innerHTML = '<div class="field"><label for="llmText">模拟麦克风问题</label><textarea id="llmText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmBtn" type="button">模拟 ASR → LLM → TTS</button><button class="button secondary" id="llmHttpBtn" type="button">仅 POST /device/voice-chat</button></div><audio id="llmAudio" controls preload="none" hidden></audio><div class="detail-block"><strong>链路结果</strong><pre id="llmOutput">等待请求</pre></div><div class="note">完整模拟会用设备码启动 ASR 状态检查，展示替换词处理后的文本，再通过统一 WebSocket 的 llm.session.start 获取智能体回复，最后调用设备码 TTS runtime 合成语音。标注回复命中由后端智能体逻辑处理。</div>';
+        document.getElementById('llmBtn').addEventListener('click', sendLlmText);
+        document.getElementById('llmHttpBtn').addEventListener('click', sendVoiceChatHttp);
+        writeRequestDetail({ label: '完整能力模拟', method: 'WS + POST', url: realtimeWsUrl(), path: '/ws/realtime/ + /ai-models/tts/runtime/', headers: previewHeaders('application/json'), body: { type: 'llm.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: suggested } }, note: '模拟安卓端麦克风文本进入 ASR 替换词处理后的结果，再走设备智能体 LLM 和 TTS。' });
+      }
+
+      async function sendLlmText() {
+        const output = document.getElementById('llmOutput');
+        const text = document.getElementById('llmText').value.trim();
+        if (!text) return showError(new Error('请输入模拟问题'));
+        output.textContent = '1. 检查 ASR 设备状态...';
+        try {
+          const asrStatus = await apiRequest('/ai-models/asr/device-status/', { method: 'GET' }, 'ASR 设备状态');
+          const asrText = text;
+          output.textContent = pretty([
+            { step: 'ASR', status: 'ready', device: unwrap(asrStatus.body), replacementResult: asrText },
+            { step: 'LLM', status: 'running' },
+          ]);
+          const llmAnswer = await runLlmWebSocket(asrText);
+          output.textContent = pretty([
+            { step: 'ASR', replacementResult: asrText },
+            { step: 'LLM', result: llmAnswer },
+            { step: 'TTS', status: 'running' },
+          ]);
+          const ttsResult = await apiRequest('/ai-models/tts/runtime/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: llmAnswer.answerText || '' }),
+          }, 'TTS 合成回复');
+          if (ttsResult.body instanceof Blob) {
+            const audio = document.getElementById('llmAudio');
+            const url = URL.createObjectURL(ttsResult.body);
+            audio.src = url;
+            audio.hidden = false;
+            output.textContent = pretty([
+              { step: 'ASR', replacementResult: asrText },
+              { step: 'LLM', result: llmAnswer },
+              { step: 'TTS', status: ttsResult.status, contentType: ttsResult.contentType, size: ttsResult.body.size, objectUrl: url },
+            ]);
+          } else {
+            output.textContent = pretty({ asrText, llmAnswer, tts: ttsResult.body });
+          }
+        } catch (error) {
+          output.textContent = error.message;
+        }
+      }
+
+      async function sendVoiceChatHttp() {
+        const output = document.getElementById('llmOutput');
+        const text = document.getElementById('llmText').value.trim();
+        try {
+          const result = await apiRequest('/device/voice-chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceCode: state.deviceCode, text }) }, 'LLM 文本问答');
+          output.textContent = pretty(result.body);
+          attachBase64Audio(document.getElementById('llmAudio'), unwrap(result.body));
+        } catch (error) {
+          output.textContent = error.message;
+        }
+      }
+
+      function runLlmWebSocket(text) {
+        return new Promise((resolve, reject) => {
+          const requestIds = makeRequestIds();
+          const command = {
+            type: 'llm.session.start',
+            id: 'llm-session-' + Date.now(),
+            payload: { deviceCode: state.deviceCode, text, requestId: requestIds.requestId, traceId: requestIds.traceId },
+          };
+          writeRequestDetail({ label: 'LLM WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: command, note: '统一实时通信入口，llm.session.start 按 deviceCode 解析智能体并返回 llm.answer。' });
+          const socket = new WebSocket(realtimeWsUrl());
+          state.sockets.push(socket);
+          const timer = window.setTimeout(() => {
+            socket.close();
+            reject(new Error('LLM WebSocket 10 秒内未返回'));
+          }, 10000);
+          socket.addEventListener('open', () => socket.send(JSON.stringify(command)));
+          socket.addEventListener('message', (event) => {
+            const payload = parseJson(event.data) || {};
+            writeResponse({ ok: true, status: 'WS', body: payload });
+            if (payload.type === 'llm.answer') {
+              window.clearTimeout(timer);
+              socket.close();
+              resolve(payload.payload || {});
+            }
+            if (payload.type === 'llm.error' || payload.type === 'error') {
+              window.clearTimeout(timer);
+              socket.close();
+              reject(new Error((payload.error && payload.error.message) || payload.message || 'LLM WebSocket 失败'));
+            }
+          });
+          socket.addEventListener('error', () => {
+            window.clearTimeout(timer);
+            reject(new Error('LLM WebSocket 连接失败'));
+          });
+        });
+      }
+
+      async function testVoiceTone(voiceId) {
+        const item = resourceList('voiceTones').find((voice) => String(voice.id) === String(voiceId)) || {};
+        const text = item.content || item.exampleText || item.defaultTestText || '你好，我是数字人设备。';
+        const output = document.getElementById('voiceToneOutput');
+        const audio = document.getElementById('voiceToneAudio');
+        try {
+          const result = await apiRequest('/ai-models/tts/runtime/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, voiceId: Number(voiceId) }),
+          }, '设备码 TTS 音色测试');
+          if (result.body instanceof Blob) {
+            const url = URL.createObjectURL(result.body);
+            audio.src = url;
+            audio.hidden = false;
+            output.textContent = pretty({ voiceId, text, status: result.status, contentType: result.contentType, size: result.body.size, objectUrl: url });
+          } else {
+            output.textContent = pretty(result.body);
+          }
+        } catch (error) {
+          output.textContent = error.message;
+        }
+      }
+
+      function renderTtsWs() {
+        const voiceOptions = resourceList('voiceTones').map((item) => '<option value="' + escapeHtml(item.id) + '">' + escapeHtml(item.name || item.voiceCode || item.id) + '</option>').join('');
+        els.contentBody.innerHTML = '<div class="field"><label for="ttsWsText">合成文本</label><textarea id="ttsWsText" class="textarea">你好，我是数字人设备。</textarea></div><div class="field"><label for="ttsWsVoice">音色 voiceId（可选）</label><select id="ttsWsVoice" class="input"><option value="">使用公司默认音色</option>' + voiceOptions + '</select></div><div class="toolbar"><button class="button secondary" id="ttsWsBtn" type="button">测试 tts.session.start</button></div><div class="detail-block"><strong>事件输出</strong><pre id="ttsWsOutput">等待请求</pre></div><div class="note">设备码放在 tts.session.start payload.deviceCode 中；如果需要浏览器直接播放，请使用 TTS HTTP。</div>';
+        document.getElementById('ttsWsBtn').addEventListener('click', testTtsWebSocket);
+        writeRequestDetail({ label: 'TTS WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { type: 'tts.session.start', id: 'tts-session-<timestamp>', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: '你好，我是数字人设备。', voiceId: '<optional voice id>' } }, note: '统一实时 TTS 命令，使用 payload.deviceCode 解析公司上下文。' });
+      }
+
+      function testTtsWebSocket() {
+        const output = document.getElementById('ttsWsOutput');
+        const voiceId = document.getElementById('ttsWsVoice').value;
+        const payload = { deviceCode: state.deviceCode, text: document.getElementById('ttsWsText').value.trim() };
+        if (voiceId) payload.voiceId = Number(voiceId);
+        const command = { type: 'tts.session.start', id: 'tts-session-' + Date.now(), payload };
+        testWebSocket(command, output, 'TTS WebSocket', 'tts.ready');
+      }
+
+      function renderTtsHttp() {
+        els.contentBody.innerHTML = '<div class="field"><label for="ttsHttpText">合成文本</label><textarea id="ttsHttpText" class="textarea">你好，我是数字人设备。</textarea></div><div class="toolbar"><button class="button" id="ttsHttpBtn" type="button">合成语音</button></div><audio id="ttsHttpAudio" controls preload="none" hidden></audio><div class="detail-block"><strong>返回结果</strong><pre id="ttsHttpOutput">等待请求</pre></div>';
+        document.getElementById('ttsHttpBtn').addEventListener('click', sendTtsHttp);
+        writeRequestDetail({ label: 'TTS HTTP', method: 'POST', url: state.apiBaseUrl + '/ai-models/tts/runtime/', path: '/ai-models/tts/runtime/', headers: previewHeaders('application/json'), body: { text: '你好，我是数字人设备。' }, note: '设备码免登录 TTS 入口，响应通常为 audio/pcm。' });
+      }
+
+      async function sendTtsHttp() {
+        const output = document.getElementById('ttsHttpOutput');
+        const text = document.getElementById('ttsHttpText').value.trim();
+        try {
+          const result = await apiRequest('/ai-models/tts/runtime/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }, 'TTS HTTP');
+          if (result.body instanceof Blob) {
+            const url = URL.createObjectURL(result.body);
+            const audio = document.getElementById('ttsHttpAudio');
+            audio.src = url;
+            audio.hidden = false;
+            output.textContent = pretty({ status: result.status, contentType: result.contentType, size: result.body.size, objectUrl: url });
+          } else {
+            output.textContent = pretty(result.body);
+          }
+        } catch (error) {
+          output.textContent = error.message;
+        }
+      }
+
+      function testWebSocket(command, output, label, readyType) {
+        if (!state.deviceCode && command.type !== 'tts.session.start') return showError(new Error('请输入设备码'));
+        const url = realtimeWsUrl();
+        writeRequestDetail({ label, method: 'WS', url, path: '/ws/realtime/', headers: {}, body: command, note: '统一实时通信入口，使用 type 字段区分能力。' });
+        output.textContent = 'connecting ' + url;
+        const events = [];
+        const socket = new WebSocket(url);
+        state.sockets.push(socket);
+        const timer = window.setTimeout(() => {
+          events.push({ type: 'client.timeout', message: '10 秒内未收到 ready/error，关闭连接' });
+          output.textContent = pretty(events);
+          socket.close();
+        }, 10000);
+        socket.addEventListener('open', () => {
+          events.push({ type: 'client.open' });
+          socket.send(JSON.stringify(command));
+          output.textContent = pretty(events);
+        });
+        socket.addEventListener('message', (event) => {
+          const payload = parseJson(event.data) || event.data;
+          events.push(payload);
+          output.textContent = pretty(events);
+          writeResponse({ ok: true, status: 'WS', body: events });
+          const eventType = payload && payload.type;
+          if (String(eventType).includes(readyType) || String(eventType).includes('error')) {
+            window.clearTimeout(timer);
+            socket.close();
+          }
+        });
+        socket.addEventListener('error', () => {
+          events.push({ type: 'client.error', message: 'WebSocket 连接失败' });
+          output.textContent = pretty(events);
+        });
+        socket.addEventListener('close', () => {
+          window.clearTimeout(timer);
+          events.push({ type: 'client.close' });
+          output.textContent = pretty(events);
+        });
+      }
+
+      function writeResourceSliceDetail(type) {
+        const sliceMap = {
+          device: 'device', application: 'application + agentApplication', voiceTones: 'AI 大模型/TTS 管理音色', images: '资源管理/背景图片管理', models: '资源管理/模型管理', videos: '资源管理/视频管理',
+        };
+        const isRuntimeResource = ['application', 'voiceTones', 'images', 'models', 'videos'].includes(type);
+        writeRequestDetail({
+          label: sections[type] && sections[type].title || '运行时配置',
+          method: isRuntimeResource ? 'POST' : 'GET',
+          url: isRuntimeResource ? state.apiBaseUrl + '/device-runtime/resources/' : state.apiBaseUrl + '/device-runtime/config/?deviceCode=' + encodeURIComponent(state.deviceCode || '<deviceCode>'),
+          path: isRuntimeResource ? '/device-runtime/resources/' : '/device-runtime/config/?deviceCode=' + (state.deviceCode || '<deviceCode>'),
+          headers: previewHeaders(isRuntimeResource ? 'application/json' : undefined),
+          body: isRuntimeResource ? { deviceCode: state.deviceCode || '<deviceCode>', resourceType: type } : null,
+          note: isRuntimeResource ? '通过固定设备码请求运行时资源切片：' + (sliceMap[type] || type) + '。' : '当前真实来源：GET /device-runtime/config/?deviceCode=...。',
+        });
+        writeResponse({ ok: Boolean(state.runtimeConfig || state.activation), status: state.runtimeConfig || state.activation ? 'cached' : '-', body: previewSlice(type) });
+      }
+
+      function writeRequestDetail(detail) {
+        state.lastRequest = detail;
+        els.requestNote.className = detail.note && detail.note.includes('限制') ? 'note warn' : 'note';
+        els.requestNote.textContent = detail.note || '-';
+        els.requestLine.textContent = detail.method + ' ' + detail.path + '\n' + detail.url;
+        els.requestHeaders.textContent = pretty(detail.headers || {});
+        els.requestBody.textContent = detail.body == null ? 'null' : pretty(maybeJson(detail.body));
+      }
+
+      function writeResponse(result) {
+        const body = result.body instanceof Blob ? { contentType: result.contentType, size: result.body.size } : result.body;
+        els.responseBody.textContent = pretty({ ok: result.ok, status: result.status, statusText: result.statusText || '', body });
+      }
+
+      function previewHeaders(contentType) {
+        const headers = {
+          'X-Device-Code': state.deviceCode || '<deviceCode>',
+          'X-Request-ID': '<requestId>',
+          'X-Trace-ID': '<traceId>',
+        };
+        if (contentType) headers['Content-Type'] = contentType;
+        return headers;
+      }
+
+      function endpointNote(path) {
+        if (path.includes('/device-auth/activate/')) return '设备首次/重复上报，后端按 deviceCode 返回绑定状态、公司、应用摘要。';
+        if (path.includes('/device-runtime/config/')) return '当前真实来源：返回 device、application、agentApplication、resources.*。';
+        if (path.includes('/device-runtime/resources/')) return '设备码免登录资源切片接口，按 resourceType 返回应用、音色、背景图片、模型或视频。';
+        if (path.includes('/ai-models/asr/device-status/')) return '设备码免登录 ASR 状态检查。';
+        if (path.includes('/device/voice-chat')) return '真实设备问答入口，支持 text 或 multipart audio。';
+        if (path.includes('/ai-models/tts/runtime/')) return '设备码免登录 TTS 合成入口。';
+        return '真实请求详情。';
+      }
+
+      function currentDevice() {
+        return (state.runtimeConfig && state.runtimeConfig.device) || (state.activation && state.activation.device) || {};
+      }
+      function resourceList(type) {
+        if (state.resourceSlices[type] && Array.isArray(state.resourceSlices[type].items)) return state.resourceSlices[type].items;
+        return ((state.runtimeConfig && state.runtimeConfig.resources && state.runtimeConfig.resources[type]) || []);
+      }
+      function previewSlice(type) {
+        if (type === 'device') return currentDevice();
+        if (state.resourceSlices[type]) return state.resourceSlices[type];
+        if (type === 'application') return { application: state.runtimeConfig && state.runtimeConfig.application, agentApplication: state.runtimeConfig && state.runtimeConfig.agentApplication };
+        return resourceList(type);
+      }
+      function renderResourceEmpty(name) {
+        els.contentBody.innerHTML = '<div class="empty">当前配置中没有 ' + escapeHtml(name) + ' 数据。请检查设备是否已绑定资源应用，以及应用内是否选择对应资源。</div>';
+        writeResourceSliceDetail(state.activeSection);
+      }
+      function renderEmpty(message) { els.contentBody.innerHTML = '<div class="empty">' + escapeHtml(message) + '</div>'; }
+      function cardGrid(cards) { return '<div class="grid">' + cards.join('') + '</div>'; }
+      function infoCard(title, rows) {
+        return '<article class="card"><h3>' + escapeHtml(title) + '</h3><div class="kv">' + rows.map((row) => '<div class="kv-row"><span>' + escapeHtml(row[0]) + '</span><span>' + row[1] + '</span></div>').join('') + '</div></article>';
+      }
+      function resourceCard(type, item) {
+        const media = type === 'images' && item.url ? '<img class="preview" src="' + escapeAttr(item.url) + '" alt="' + escapeAttr(item.name || '背景图片') + '">' : type === 'videos' && item.url ? '<video class="preview" src="' + escapeAttr(item.url) + '" controls preload="metadata"></video>' : type === 'models' && item.thumbnailUrl ? '<img class="preview" src="' + escapeAttr(item.thumbnailUrl) + '" alt="' + escapeAttr(item.name || '模型缩略图') + '">' : '';
+        const rows = type === 'models'
+          ? [['ID', code(item.id)], ['类型', escapeHtml(item.modelType || '-')], ['朝向', escapeHtml(item.orientation || '-')], ['URL', linkOrDash(item.url)], ['缩略图', linkOrDash(item.thumbnailUrl)]]
+          : [['ID', code(item.id)], ['分类', escapeHtml(item.category || '-')], ['URL', linkOrDash(item.url)]];
+        return '<article class="card">' + media + '<h3 style="margin-top:10px">' + escapeHtml(item.name || '-') + '</h3><div class="kv">' + rows.map((row) => '<div class="kv-row"><span>' + row[0] + '</span><span>' + row[1] + '</span></div>').join('') + '</div></article>';
+      }
+      function voiceAvatar(item) {
+        const url = item.iconUrl || item.avatarPath || '';
+        if (url) return '<img src="' + escapeAttr(url) + '" alt="' + escapeAttr(item.name || item.displayName || '音色头像') + '" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:1px solid var(--line)">';
+        return '<span class="code-chip">无</span>';
+      }
+
+      function attachBase64Audio(audio, payload) {
+        const audioBase64 = payload && payload.audioBase64;
+        if (!audioBase64) return;
+        audio.src = 'data:' + (payload.audioContentType || 'audio/wav') + ';base64,' + audioBase64;
+        audio.hidden = false;
+      }
+      function realtimeWsUrl() {
+        const api = new URL(state.apiBaseUrl);
+        return (api.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + api.host + '/ws/realtime/';
+      }
+      function normalizeApiBase(value) { return String(value || DEFAULT_API_BASE).trim().replace(/\/+$/, ''); }
+      function makeRequestIds() {
+        const suffix = Date.now().toString(36) + '-' + Math.random().toString(16).slice(2, 8);
+        return { requestId: 'req-' + suffix, traceId: 'trace-' + suffix };
+      }
+      function unwrap(payload) {
+        const body = payload && payload.body !== undefined ? payload.body : payload;
+        return body && typeof body === 'object' && body.data !== undefined ? body.data : body;
+      }
+      function extractErrorMessage(body, status) {
+        if (body && typeof body === 'object') return body.message || body.detail || JSON.stringify(body);
+        return body ? String(body) : '请求失败：HTTP ' + status;
+      }
+      function maybeJson(value) {
+        return typeof value === 'string' ? (parseJson(value) || value) : value;
+      }
+      function parseJson(value) {
+        try { return JSON.parse(value); } catch (_) { return null; }
+      }
+      function pretty(value) { return JSON.stringify(value, null, 2); }
+      function code(value) { return '<span class="code-chip">' + escapeHtml(value == null || value === '' ? '-' : String(value)) + '</span>'; }
+      function linkOrDash(url) { return url ? '<a class="code-chip" href="' + escapeAttr(url) + '" target="_blank" rel="noreferrer">' + escapeHtml(url) + '</a>' : '-'; }
+      function setStatus(message, tone) {
+        els.statusPill.textContent = message;
+        els.statusPill.className = 'status-pill ' + (tone || '');
+      }
+      function showError(error) {
+        setStatus(error.message || String(error), 'error');
+        els.contentBody.innerHTML = '<div class="empty">' + escapeHtml(error.message || String(error)) + '</div>';
+      }
+      function escapeHtml(value) {
+        return String(value == null ? '' : value).replace(/[&<>"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
+      }
+      function escapeAttr(value) { return escapeHtml(value).replace(/'/g, '&#39;'); }
+    })();
+  </script>
+</body>
+</html>

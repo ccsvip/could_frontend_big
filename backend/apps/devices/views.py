@@ -5,7 +5,7 @@ import uuid
 
 from django.core.cache import cache
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, F, Q
 from django.http import Http404
 from django.utils import timezone
 from rest_framework import status, viewsets
@@ -19,6 +19,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from apps.accounts.permissions import CanCreateDevices, CanDeleteDevices, CanUpdateDevices, CanViewDevices, IsSuperUser
 from apps.ai_models import llm_services
+from apps.ai_models.models import AgentAnnotation
 from apps.ai_models.services import asr as asr_services
 from apps.ai_models.services import tts as tts_services
 from apps.tenants.mixins import TenantScopedQuerysetMixin
@@ -556,6 +557,84 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
         }
 
 
+class DeviceRuntimeResourcesView(DeviceRuntimeView):
+    @extend_schema(tags=['Device Runtime'])
+    def post(self, request):
+        device, error = self.validate_device(request)
+        if error is not None:
+            return error
+
+        application = device.application
+        agent_application = device.effective_agent_application
+        resource_type = str(request.data.get('resourceType') or request.data.get('resource_type') or 'application').strip()
+        payload = DeviceRuntimeConfigView._resources_payload(application, request)
+        resource_map = {
+            'application': None,
+            'voiceTones': payload['voiceTones'],
+            'images': payload['images'],
+            'models': payload['models'],
+            'videos': payload['videos'],
+        }
+        if resource_type not in resource_map:
+            return Response(
+                {'resourceType': '支持 application、voiceTones、images、models、videos'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        application_payload = self._application_payload(application)
+        agent_payload = self._agent_application_payload(agent_application)
+        response_payload = {
+            'requestId': get_request_id(request),
+            'traceId': get_trace_id(request),
+            'resourceType': resource_type,
+            'device': DeviceSerializer(device, context={'request': request}).data,
+            'application': application_payload,
+            'agentApplication': agent_payload,
+            'items': [] if resource_type == 'application' else resource_map[resource_type],
+            'resourcesSummary': {
+                'voiceTones': len(payload['voiceTones']),
+                'images': len(payload['images']),
+                'models': len(payload['models']),
+                'videos': len(payload['videos']),
+            },
+        }
+        if resource_type == 'application':
+            response_payload['resources'] = payload
+        return Response(response_payload, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def _application_payload(application):
+        if application is None:
+            return None
+        return {
+            'id': application.id,
+            'name': application.name,
+            'code': application.code,
+            'description': application.description,
+            'isActive': application.is_active,
+        }
+
+    @staticmethod
+    def _agent_application_payload(agent_application):
+        if agent_application is None:
+            return None
+        return {
+            **DeviceActivationView._agent_application_payload(agent_application),
+            'description': agent_application.description,
+            'systemPrompt': agent_application.system_prompt,
+            'temperature': agent_application.temperature,
+            'maxTokens': agent_application.max_tokens,
+            'maxTokensUnlimited': agent_application.max_tokens_unlimited,
+            'openingMessageEnabled': agent_application.opening_message_enabled,
+            'openingMessage': agent_application.opening_message,
+            'suggestedQuestions': agent_application.suggested_questions or [],
+            'voiceInputEnabled': agent_application.voice_input_enabled,
+            'replyPlaybackEnabled': agent_application.reply_playback_enabled,
+            'ttsFilterPunctuation': agent_application.tts_filter_punctuation,
+            'ttsFilterEmoji': agent_application.tts_filter_emoji,
+        }
+
+
 class DeviceRuntimeHeartbeatView(DeviceRuntimeView):
     @extend_schema(tags=['Device Runtime'])
     def post(self, request):
@@ -672,6 +751,15 @@ class DeviceVoiceChatView(DeviceRuntimeView):
     @staticmethod
     def _generate_answer(device: Device, question_text: str) -> str:
         agent_application = device.effective_agent_application
+        annotation = DeviceVoiceChatView._find_annotation(agent_application, question_text)
+        if annotation is not None:
+            now = timezone.now()
+            AgentAnnotation.objects.filter(id=annotation.id).update(
+                hit_count=F('hit_count') + 1,
+                last_hit_at=now,
+            )
+            return annotation.answer
+
         model = agent_application.llm_model if agent_application is not None else None
         if model is None:
             settings = llm_services.get_tenant_llm_settings(device.tenant)
@@ -688,7 +776,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             system_prompt += f' 当前设备智能体：{agent_application.name}。'
         if device.application is not None:
             system_prompt += f' 当前设备资源应用：{device.application.name}。'
-        return llm_services.run_llm_chat_completion(
+        answer_text = llm_services.run_llm_chat_completion(
             model=model,
             messages=[
                 {'role': 'system', 'content': system_prompt},
@@ -696,6 +784,23 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             ],
             temperature=agent_application.temperature if agent_application is not None else 0.7,
             max_tokens=None if agent_application is not None and agent_application.max_tokens_unlimited else (agent_application.max_tokens if agent_application is not None else 1000),
+        )
+        if not answer_text:
+            raise RuntimeError('LLM 没有返回有效回复')
+        return answer_text
+
+    @staticmethod
+    def _find_annotation(agent_application, question_text: str):
+        if agent_application is None:
+            return None
+        normalized = question_text.strip()
+        if not normalized:
+            return None
+        return (
+            agent_application.annotations
+            .filter(is_active=True, question__iexact=normalized)
+            .order_by('-updated_at', '-id')
+            .first()
         )
 
     @staticmethod

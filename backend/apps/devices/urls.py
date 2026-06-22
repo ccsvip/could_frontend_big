@@ -9,6 +9,7 @@ from .views import (
     DeviceGroupViewSet,
     DeviceRuntimeConfigView,
     DeviceRuntimeHeartbeatView,
+    DeviceRuntimeResourcesView,
     DeviceVoiceChatView,
     DeviceViewSet,
 )
@@ -23,6 +24,7 @@ router.register('device-authorization-requests', DeviceAuthorizationRequestViewS
 urlpatterns = [
     path('device-auth/activate/', DeviceActivationView.as_view(), name='device-auth-activate'),
     path('device-runtime/config/', DeviceRuntimeConfigView.as_view(), name='device-runtime-config'),
+    path('device-runtime/resources/', DeviceRuntimeResourcesView.as_view(), name='device-runtime-resources'),
     path('device-runtime/heartbeat/', DeviceRuntimeHeartbeatView.as_view(), name='device-runtime-heartbeat'),
     path('device/voice-chat', DeviceVoiceChatView.as_view(), name='device-voice-chat'),
     path('device/voice-chat/', DeviceVoiceChatView.as_view(), name='device-voice-chat-slash'),

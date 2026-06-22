@@ -152,6 +152,25 @@ class TTSRealtimeTests(TenantTestMixin, TestCase):
         self.assertIsNotNone(connection)
         self.assertTrue(connection['is_superuser'])
 
+    def test_tts_realtime_resolver_accepts_device_code_without_jwt(self):
+        from apps.ai_models.realtime_tts import resolve_tts_realtime_connection
+
+        device = Device.objects.create(
+            tenant=self.tenant,
+            name='TTS WS Device',
+            code='ANDROID-TTS-WS-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+
+        connection = resolve_tts_realtime_connection(
+            '',
+            query_params={'deviceCode': ['ANDROID-TTS-WS-001']},
+        )
+
+        self.assertEqual(connection['device_id'], device.id)
+        self.assertEqual(connection['device_code'], 'ANDROID-TTS-WS-001')
+        self.assertEqual(connection['tenant_id'], self.tenant.id)
+
 
 class TTSApiTests(TenantTestMixin, APITestCase):
     def setUp(self):
@@ -324,3 +343,32 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response['X-TTS-Voice'], 'Cherry')
         self.assertEqual(response.content, b'\x03\x04')
         self.assertEqual(synthesize_tts_pcm.call_args.kwargs['text'], '设备端测试')
+
+    @patch('apps.ai_models.services.tts.synthesize_tts_pcm', return_value=b'\x05\x06')
+    def test_device_runtime_can_use_selected_voice_by_device_code(self, synthesize_tts_pcm):
+        other_voice = TTSVoice.objects.create(
+            provider=self.provider,
+            display_name='Device Voice',
+            voice_code='DeviceVoice',
+            is_active=True,
+            is_visible=True,
+        )
+        Device.objects.create(
+            tenant=self.tenant,
+            name='TTS Runtime Voice Device',
+            code='ANDROID-TTS-VOICE-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+        TenantTTSSettings.objects.create(tenant=self.tenant, default_voice=self.cherry)
+        self.client.force_authenticate(user=None)
+
+        response = self.client.post(
+            '/api/v1/ai-models/tts/runtime/',
+            {'text': '设备端指定音色', 'voiceId': other_voice.id},
+            format='json',
+            HTTP_X_DEVICE_CODE='ANDROID-TTS-VOICE-001',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['X-TTS-Voice'], 'DeviceVoice')
+        self.assertEqual(synthesize_tts_pcm.call_args.kwargs['voice'].id, other_voice.id)

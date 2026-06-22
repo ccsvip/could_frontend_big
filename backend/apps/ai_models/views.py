@@ -402,7 +402,7 @@ class TTSRuntimeView(APIView):
         device = Device.objects.select_related('tenant').get(id=connection['device_id'])
         provider = tts_services.get_aliyun_tts_provider()
         config = tts_services.get_effective_tts_config(provider)
-        voice = tts_services.get_effective_tts_voice_for_tenant(device.tenant, provider)
+        voice = _select_company_tts_voice(device.tenant, provider, request.data.get('voiceId'))
         if voice is None:
             return Response({'voiceId': '请先配置默认音色'}, status=status.HTTP_400_BAD_REQUEST)
         text = tts_services.normalize_tts_text(request.data.get('text'), config)

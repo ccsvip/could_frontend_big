@@ -12,6 +12,16 @@ device-chat/index.html?deviceCode=DEVICE_001&apiBaseUrl=http://localhost:8880/ap
 
 也可以不传 `deviceCode`，页面会展示设备码输入框。`apiBaseUrl` 不传时，如果通过 `file://` 打开，默认使用 `http://localhost:8880/api/v1`；如果部署在 Web 服务下，默认使用同源 `/api/v1`。
 
+## 运行时接口控制台
+
+如果需要按 Swagger 风格查看设备码运行时接口、请求头/体和原始响应，可以打开独立控制台：
+
+```text
+device-chat/runtime-api-console.html?deviceCode=DEVICE_001&apiBaseUrl=http://localhost:8880/api/v1
+```
+
+该页面不需要登录，不携带后台 JWT，只通过 `X-Device-Code`、`X-Request-ID`、`X-Trace-ID` 调用设备侧公开接口。左侧菜单会分别展示应用、AI 大模型/TTS 管理音色、资源管理背景图片、资源管理模型、资源管理视频、ASR、LLM、TTS；资源类数据通过 `POST /api/v1/device-runtime/resources/` 按 `resourceType` 单独获取。
+
 ## 页面能力
 
 - 从 URL `deviceCode` 自动连接设备，或手动输入设备码连接。

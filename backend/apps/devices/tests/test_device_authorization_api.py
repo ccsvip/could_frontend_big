@@ -21,7 +21,7 @@ from apps.devices.services.authorization import record_device_authorization_acti
 from apps.devices.services.queries import device_authorization_requests_queryset
 from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device
 from apps.devices.serializers import DeviceActivationLogSerializer
-from apps.resources.models import ScrollingText, ScrollingTextItem
+from apps.resources.models import ModelAsset, Resource, ScrollingText, ScrollingTextItem
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
 
@@ -370,6 +370,86 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(voice_tones[0]['id'], voice.id)
         self.assertEqual(voice_tones[0]['name'], 'Cherry')
         self.assertEqual(voice_tones[0]['voiceCode'], 'Cherry')
+
+    def test_runtime_resources_post_returns_bound_application_resource_slices_by_device_code(self):
+        self.application.agent_application = self.agent_application
+        self.application.save(update_fields=['agent_application', 'updated_at'])
+        image = Resource.objects.create(
+            tenant=self.tenant,
+            name='Lobby Background',
+            resource_type=Resource.TYPE_IMAGE,
+            category=Resource.CATEGORY_HORIZONTAL,
+            cloud_url='https://cdn.example.com/bg.jpg',
+        )
+        video = Resource.objects.create(
+            tenant=self.tenant,
+            name='Welcome Video',
+            resource_type=Resource.TYPE_VIDEO,
+            category=Resource.CATEGORY_VERTICAL,
+            cloud_url='https://cdn.example.com/welcome.mp4',
+        )
+        model = ModelAsset.objects.create(
+            tenant=self.tenant,
+            name='Digital Human A',
+            model_type=ModelAsset.TYPE_FEMALE,
+            orientation=ModelAsset.ORIENTATION_VERTICAL,
+            cloud_url='https://cdn.example.com/model.glb',
+        )
+        tts_provider = TTSProvider.objects.get(code='aliyun')
+        voice = TTSVoice.objects.get(provider=tts_provider, voice_code='Cherry')
+        self.application.resources.add(image, video)
+        self.application.model_assets.add(model)
+        self.application.tts_voices.add(voice)
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            name='Runtime Resource Device',
+            code='ANDROID-RUNTIME-RESOURCES-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        response = self.client.post(
+            '/api/v1/device-runtime/resources/',
+            {'resourceType': 'voiceTones'},
+            format='json',
+            HTTP_X_DEVICE_CODE='ANDROID-RUNTIME-RESOURCES-001',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['resourceType'], 'voiceTones')
+        self.assertEqual(response.data['application']['id'], self.application.id)
+        self.assertEqual(response.data['device']['tenantName'], self.tenant.name)
+        self.assertEqual(response.data['items'][0]['voiceCode'], 'Cherry')
+
+        resource_expectations = {
+            'images': 'https://cdn.example.com/bg.jpg',
+            'models': 'https://cdn.example.com/model.glb',
+            'videos': 'https://cdn.example.com/welcome.mp4',
+        }
+        for resource_type, expected_url in resource_expectations.items():
+            with self.subTest(resource_type=resource_type):
+                slice_response = self.client.post(
+                    '/api/v1/device-runtime/resources/',
+                    {'resourceType': resource_type, 'deviceCode': 'ANDROID-RUNTIME-RESOURCES-001'},
+                    format='json',
+                )
+                self.assertEqual(slice_response.status_code, status.HTTP_200_OK)
+                self.assertEqual(slice_response.data['resourceType'], resource_type)
+                self.assertEqual(slice_response.data['items'][0]['url'], expected_url)
+
+        application_response = self.client.post(
+            '/api/v1/device-runtime/resources/',
+            {'resourceType': 'application'},
+            format='json',
+            HTTP_X_DEVICE_CODE='ANDROID-RUNTIME-RESOURCES-001',
+        )
+        self.assertEqual(application_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(application_response.data['application']['name'], 'Lobby App')
+        self.assertEqual(application_response.data['agentApplication']['name'], 'Lobby Agent')
+        self.assertEqual(application_response.data['agentApplication']['openingMessage'], self.agent_application.opening_message)
+        self.assertEqual(application_response.data['agentApplication']['suggestedQuestions'], self.agent_application.suggested_questions)
+        self.assertEqual(application_response.data['resourcesSummary']['voiceTones'], 1)
 
     def test_device_voice_chat_path_exists_without_trailing_slash(self):
         Device.objects.create(
