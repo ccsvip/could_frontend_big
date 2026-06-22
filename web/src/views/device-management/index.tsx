@@ -62,10 +62,6 @@ import {
   type DeviceRecord,
 } from '../../api/modules/devices';
 import { fetchCommandGroups } from '../../api/modules/commands';
-import { fetchImageResources, fetchVideoResources } from '../../api/modules/resources';
-import { fetchScrollingTexts } from '../../api/modules/scrolling-texts';
-import { fetchModelAssets } from '../../api/modules/models';
-import { fetchCompanyTtsOptions } from '../../api/modules/tts';
 import { fetchAgentApplications, type AgentApplicationRecord } from '../../api/modules/applications';
 import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
@@ -124,10 +120,10 @@ const resolveDeviceRuntimeDiagnostic = (device: DeviceRecord): DeviceRuntimeDiag
   if (!device.applicationId) {
     return {
       level: 'warning',
-      label: '无资源包',
+      label: '无应用绑定',
       color: 'warning',
-      hint: '按需绑定资源应用，否则设备可运行但展示资源为空。',
-      detail: '配置接口仍会返回智能体信息，但图片、视频、模型、音色等资源列表为空。',
+      hint: '按需绑定应用，否则设备可运行但缺少应用级指令配置。',
+      detail: '配置接口仍会返回智能体信息，但应用绑定相关配置为空。',
     };
   }
 
@@ -153,6 +149,8 @@ const authorizationMap: Record<DeviceAuthorizationType, { color: string; text: s
 const toSelectOptions = <T extends { id: number; name: string }>(items: T[]) =>
   items.map((item) => ({ label: item.name, value: item.id }));
 
+const buildGeneratedApplicationCode = () => `device-app-${Date.now().toString(36)}`;
+
 const isDeviceRealtimePayload = (payload: unknown): payload is { type: string } =>
   !!payload && typeof payload === 'object' && typeof (payload as { type?: unknown }).type === 'string';
 
@@ -167,10 +165,6 @@ export const DeviceManagementPage = () => {
   const [groups, setGroups] = useState<DeviceGroupRecord[]>([]);
   const [applications, setApplications] = useState<DeviceApplicationRecord[]>([]);
   const [agentApplications, setAgentApplications] = useState<AgentApplicationRecord[]>([]);
-  const [resourceOptions, setResourceOptions] = useState<ResourceOption[]>([]);
-  const [scrollingTextOptions, setScrollingTextOptions] = useState<ResourceOption[]>([]);
-  const [voiceToneOptions, setVoiceToneOptions] = useState<ResourceOption[]>([]);
-  const [modelOptions, setModelOptions] = useState<ResourceOption[]>([]);
   const [commandGroupOptions, setCommandGroupOptions] = useState<ResourceOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState('');
@@ -229,39 +223,9 @@ export const DeviceManagementPage = () => {
     [devices],
   );
 
-  const loadResourceOptions = async () => {
-    const [imagesResult, videosResult, scrollingTextsResult, voiceTonesResult, modelsResult, commandGroupsResult] =
-      await Promise.allSettled([
-        fetchImageResources({ pageSize: 100 }),
-        fetchVideoResources({ pageSize: 100 }),
-        fetchScrollingTexts({ pageSize: 100, status: 'active' }),
-        fetchCompanyTtsOptions(),
-        fetchModelAssets({ pageSize: 100 }),
-        fetchCommandGroups({ pageSize: 100 }),
-      ]);
-
-    const imageOptions =
-      imagesResult.status === 'fulfilled'
-        ? imagesResult.value.results.map((item) => ({ label: `图片 · ${item.name}`, value: item.id }))
-        : [];
-    const videoOptions =
-      videosResult.status === 'fulfilled'
-        ? videosResult.value.results.map((item) => ({ label: `视频 · ${item.name}`, value: item.id }))
-        : [];
-
-    setResourceOptions([...imageOptions, ...videoOptions]);
-    setScrollingTextOptions(
-      scrollingTextsResult.status === 'fulfilled'
-        ? scrollingTextsResult.value.results.map((item) => ({ label: item.title, value: item.id }))
-        : [],
-    );
-    setVoiceToneOptions(
-      voiceTonesResult.status === 'fulfilled'
-        ? voiceTonesResult.value.voices.map((item) => ({ label: `${item.displayName} (${item.voiceCode})`, value: item.id }))
-        : [],
-    );
-    setModelOptions(modelsResult.status === 'fulfilled' ? toSelectOptions(modelsResult.value.results) : []);
-    setCommandGroupOptions(commandGroupsResult.status === 'fulfilled' ? toSelectOptions(commandGroupsResult.value.results) : []);
+  const loadApplicationConfigOptions = async () => {
+    const commandGroupsResult = await fetchCommandGroups({ pageSize: 100 });
+    setCommandGroupOptions(toSelectOptions(commandGroupsResult.results));
   };
 
   const loadData = async (query: DeviceListQuery = filters, page = devicePage) => {
@@ -308,7 +272,7 @@ export const DeviceManagementPage = () => {
     }
     hasLoadedRef.current = true;
     void loadData();
-    void loadResourceOptions();
+    void loadApplicationConfigOptions();
   }, [canUseDeviceWorkspace]);
 
   useEffect(() => {
@@ -441,10 +405,6 @@ export const DeviceManagementPage = () => {
     applicationForm.setFieldsValue({
       isActive: true,
       agentApplicationId: null,
-      resourceIds: [],
-      scrollingTextIds: [],
-      voiceToneIds: [],
-      modelAssetIds: [],
       commandGroupIds: [],
     });
     setApplicationModalOpen(true);
@@ -455,14 +415,9 @@ export const DeviceManagementPage = () => {
     setEditingApplication(record);
     applicationForm.setFieldsValue({
       name: record.name,
-      code: record.code,
       description: record.description,
       isActive: record.isActive,
       agentApplicationId: record.agentApplicationId ?? null,
-      resourceIds: record.resourceIds,
-      scrollingTextIds: record.scrollingTextIds,
-      voiceToneIds: record.voiceToneIds,
-      modelAssetIds: record.modelAssetIds,
       commandGroupIds: record.commandGroupIds,
     });
     setApplicationModalOpen(true);
@@ -476,7 +431,7 @@ export const DeviceManagementPage = () => {
       setSelectedApplicationId(next.id);
       message.success('应用配置已更新');
     } else {
-      const created = await createDeviceApplication(values);
+      const created = await createDeviceApplication({ ...values, code: buildGeneratedApplicationCode() });
       setApplications((current) => [created, ...current]);
       setSelectedApplicationId(created.id);
       message.success('应用已创建');
@@ -870,23 +825,16 @@ export const DeviceManagementPage = () => {
                                 <Typography.Title level={5} className="!mb-1 !truncate">
                                   {item.name}
                                 </Typography.Title>
-                                <Typography.Text className="!text-xs !text-slate-500" copyable>
-                                  {item.code}
-                                </Typography.Text>
                               </div>
                               <Tag color={item.isActive ? 'success' : 'default'}>{item.isActive ? '启用' : '停用'}</Tag>
                             </div>
                             <Typography.Paragraph className="!mb-0 !min-h-[40px] !text-[13px] !text-slate-500">
                               {item.description || '未填写说明'}
                             </Typography.Paragraph>
-                          <Space size={[4, 4]} wrap>
+                            <Space size={[4, 4]} wrap>
                               <Tag color={item.agentApplicationId ? 'purple' : 'warning'}>
                                 {item.agentApplicationName || '待绑定智能体'}
                               </Tag>
-                              <Tag>媒体 {item.resourceIds.length}</Tag>
-                              <Tag>滚动文本 {item.scrollingTextIds.length}</Tag>
-                              <Tag>音色 {item.voiceToneIds.length}</Tag>
-                              <Tag>模型 {item.modelAssetIds.length}</Tag>
                               <Tag>指令 {item.commandGroupIds.length}</Tag>
                             </Space>
                             {canUpdateDevice ? (
@@ -907,7 +855,7 @@ export const DeviceManagementPage = () => {
                         <Typography.Title level={5} className="!mb-1">
                           {selectedApplication.name}
                         </Typography.Title>
-                        <Typography.Text type="secondary">当前应用资源包概览</Typography.Text>
+                        <Typography.Text type="secondary">当前应用绑定概览</Typography.Text>
                       </div>
                       {canUpdateDevice ? (
                         <Button icon={<SettingOutlined />} onClick={() => openApplicationConfig(selectedApplication)}>
@@ -918,14 +866,10 @@ export const DeviceManagementPage = () => {
                     <Divider className="!my-4" />
                     <Row gutter={[10, 10]}>
                       {[
-                        ['媒体素材', selectedApplication.resourceIds.length, '图片 / 视频资源'],
                         ['智能体', selectedApplication.agentApplicationName || '未绑定', '应用运行时使用的智能体'],
-                        ['滚动文本', selectedApplication.scrollingTextIds.length, '多语言滚动字幕'],
-                        ['音色', selectedApplication.voiceToneIds.length, 'TTS 音色与展示资产'],
-                        ['模型', selectedApplication.modelAssetIds.length, '数字人模型资产'],
                         ['指令组', selectedApplication.commandGroupIds.length, '控制与任务指令'],
                       ].map(([label, count, desc]) => (
-                        <Col xs={12} md={8} xl={4} key={label}>
+                        <Col xs={24} md={12} key={label}>
                           <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
                             <Typography.Text type="secondary">{label}</Typography.Text>
                             <div className="mt-1 truncate text-2xl font-semibold tabular-nums">{count}</div>
@@ -987,21 +931,12 @@ export const DeviceManagementPage = () => {
         okText="保存"
         cancelText="取消"
         destroyOnHidden
-        width="58vw"
+        width="42vw"
       >
         <Form<ApplicationForm> form={applicationForm} layout="vertical">
-          <Row gutter={12}>
-            <Col span={12}>
-              <Form.Item label="应用名称" name="name" rules={[{ required: true, message: '请输入应用名称' }]}>
-                <Input />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label="应用码" name="code" rules={[{ required: true, message: '请输入应用码' }]}>
-                <Input disabled={!!editingApplication} />
-              </Form.Item>
-            </Col>
-          </Row>
+          <Form.Item label="应用名称" name="name" rules={[{ required: true, message: '请输入应用名称' }]}>
+            <Input />
+          </Form.Item>
           <Form.Item label="说明" name="description">
             <Input.TextArea rows={2} />
           </Form.Item>
@@ -1010,19 +945,6 @@ export const DeviceManagementPage = () => {
           </Form.Item>
           <Form.Item label="绑定智能体" name="agentApplicationId">
             <Select options={[...emptyAgentApplicationOption, ...agentApplicationOptions]} optionFilterProp="label" showSearch />
-          </Form.Item>
-          <Divider className="!my-4" />
-          <Form.Item label="图片 / 视频素材" name="resourceIds">
-            <Select mode="multiple" options={resourceOptions} optionFilterProp="label" />
-          </Form.Item>
-          <Form.Item label="滚动文本" name="scrollingTextIds">
-            <Select mode="multiple" options={scrollingTextOptions} optionFilterProp="label" />
-          </Form.Item>
-          <Form.Item label="音色" name="voiceToneIds">
-            <Select mode="multiple" options={voiceToneOptions} optionFilterProp="label" showSearch />
-          </Form.Item>
-          <Form.Item label="模型" name="modelAssetIds">
-            <Select mode="multiple" options={modelOptions} optionFilterProp="label" />
           </Form.Item>
           <Form.Item label="指令组" name="commandGroupIds">
             <Select mode="multiple" options={commandGroupOptions} optionFilterProp="label" />
