@@ -22,6 +22,8 @@ from apps.ai_models import llm_services
 from apps.ai_models.models import AgentAnnotation
 from apps.ai_models.services import asr as asr_services
 from apps.ai_models.services import tts as tts_services
+from apps.resources.models import ModelAsset, Resource, ScrollingText
+from apps.resources.services.minio_client import build_public_object_url
 from apps.tenants.mixins import TenantScopedQuerysetMixin
 from apps.tenants.services import get_request_tenant
 from config.request_id import get_request_id, get_trace_id
@@ -309,7 +311,12 @@ class DeviceActivationView(APIView):
     @extend_schema(tags=['Device Runtime'])
     @transaction.atomic
     def post(self, request):
-        device_code = str(request.data.get('deviceCode') or request.data.get('device_code') or '').strip()
+        device_code = str(
+            request.headers.get('X-Device-Code')
+            or request.data.get('deviceCode')
+            or request.data.get('device_code')
+            or ''
+        ).strip()
         if not device_code:
             self._log_activation(None, '', False, '设备码不能为空', request)
             return Response({'message': '设备码不能为空'}, status=status.HTTP_400_BAD_REQUEST)
@@ -413,11 +420,11 @@ class DeviceRuntimeView(APIView):
 
     def get_device_code(self, request) -> str:
         return str(
-            request.data.get('deviceCode')
+            request.headers.get('X-Device-Code')
+            or request.data.get('deviceCode')
             or request.data.get('device_code')
             or request.query_params.get('deviceCode')
             or request.query_params.get('device_code')
-            or request.headers.get('X-Device-Code')
             or ''
         ).strip()
 
@@ -464,19 +471,21 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
                     else None
                 ),
                 'agentApplication': DeviceActivationView._agent_application_payload(agent_application),
-                'resources': self._resources_payload(application, request),
+                'resources': self._resources_payload(device, request),
             },
             status=status.HTTP_200_OK,
         )
 
     @staticmethod
-    def _resources_payload(application: DeviceApplication | None, request):
+    def _resources_payload(device: Device, request):
         def file_url(file_field):
             if not file_field:
                 return ''
             return request.build_absolute_uri(file_field.url)
 
-        if application is None or not application.is_active:
+        tenant = device.tenant
+        application = device.application
+        if tenant is None:
             return {
                 'images': [],
                 'videos': [],
@@ -486,27 +495,37 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
                 'commandGroups': [],
             }
 
-        resources = application.resources.all()
+        images = Resource.objects.filter(tenant=tenant, resource_type=Resource.TYPE_IMAGE).order_by('-updated_at', '-id')
+        videos = Resource.objects.filter(tenant=tenant, resource_type=Resource.TYPE_VIDEO).order_by('-updated_at', '-id')
+        models = ModelAsset.objects.filter(tenant=tenant, is_visible=True).order_by('-updated_at', '-id')
+        scrolling_texts = ScrollingText.objects.filter(tenant=tenant, is_active=True).prefetch_related('items').order_by('-updated_at', '-id')
+        application_is_active = application is not None and application.is_active
+
+        def resource_url(item):
+            if item.cloud_url:
+                return item.cloud_url
+            if item.object_key:
+                return build_public_object_url(item.object_key)
+            return file_url(item.file)
+
         return {
             'images': [
                 {
                     'id': item.id,
                     'name': item.name,
-                    'url': item.cloud_url or file_url(item.file),
+                    'url': resource_url(item),
                     'category': item.category,
                 }
-                for item in resources
-                if item.resource_type == item.TYPE_IMAGE
+                for item in images
             ],
             'videos': [
                 {
                     'id': item.id,
                     'name': item.name,
-                    'url': item.cloud_url or file_url(item.file),
+                    'url': resource_url(item),
                     'category': item.category,
                 }
-                for item in resources
-                if item.resource_type == item.TYPE_VIDEO
+                for item in videos
             ],
             'scrollingTexts': [
                 {
@@ -523,7 +542,7 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
                         for text_item in item.items.all()
                     ],
                 }
-                for item in application.scrolling_texts.filter(is_active=True).prefetch_related('items')
+                for item in scrolling_texts
             ],
             'voiceTones': [
                 {
@@ -533,7 +552,11 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
                     'audioUrl': '',
                     'iconUrl': request.build_absolute_uri(item.avatar_path) if item.avatar_path.startswith('/') else item.avatar_path,
                 }
-                for item in application.tts_voices.filter(is_active=True, is_visible=True, provider__is_active=True)
+                for item in (
+                    application.tts_voices.filter(is_active=True, is_visible=True, provider__is_active=True)
+                    if application_is_active
+                    else []
+                )
             ],
             'models': [
                 {
@@ -544,7 +567,7 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
                     'url': item.cloud_url or file_url(item.model_file),
                     'thumbnailUrl': file_url(item.thumbnail),
                 }
-                for item in application.model_assets.filter(is_visible=True)
+                for item in models
             ],
             'commandGroups': [
                 {
@@ -552,7 +575,11 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
                     'name': item.name,
                     'groupType': item.group_type,
                 }
-                for item in application.command_groups.filter(is_active=True)
+                for item in (
+                    application.command_groups.filter(is_active=True)
+                    if application_is_active
+                    else []
+                )
             ],
         }
 
@@ -567,38 +594,33 @@ class DeviceRuntimeResourcesView(DeviceRuntimeView):
         application = device.application
         agent_application = device.effective_agent_application
         resource_type = str(request.data.get('resourceType') or request.data.get('resource_type') or 'application').strip()
-        payload = DeviceRuntimeConfigView._resources_payload(application, request)
+        payload = DeviceRuntimeConfigView._resources_payload(device, request)
         resource_map = {
             'application': None,
             'voiceTones': payload['voiceTones'],
             'images': payload['images'],
+            'scrollingTexts': payload['scrollingTexts'],
             'models': payload['models'],
             'videos': payload['videos'],
         }
         if resource_type not in resource_map:
             return Response(
-                {'resourceType': '支持 application、voiceTones、images、models、videos'},
+                {'resourceType': '支持 application、voiceTones、images、scrollingTexts、models、videos'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        application_payload = self._application_payload(application)
-        agent_payload = self._agent_application_payload(agent_application)
         response_payload = {
             'requestId': get_request_id(request),
             'traceId': get_trace_id(request),
             'resourceType': resource_type,
-            'device': DeviceSerializer(device, context={'request': request}).data,
-            'application': application_payload,
-            'agentApplication': agent_payload,
             'items': [] if resource_type == 'application' else resource_map[resource_type],
-            'resourcesSummary': {
-                'voiceTones': len(payload['voiceTones']),
-                'images': len(payload['images']),
-                'models': len(payload['models']),
-                'videos': len(payload['videos']),
-            },
         }
         if resource_type == 'application':
+            application_payload = self._application_payload(application)
+            agent_payload = self._agent_application_payload(agent_application)
+            response_payload['device'] = DeviceSerializer(device, context={'request': request}).data
+            response_payload['application'] = application_payload
+            response_payload['agentApplication'] = agent_payload
             response_payload['resources'] = payload
         return Response(response_payload, status=status.HTTP_200_OK)
 

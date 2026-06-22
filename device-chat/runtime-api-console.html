@@ -210,7 +210,7 @@
   <header class="topbar">
     <div class="brand">
       <h1>设备运行时接口控制台</h1>
-      <p>只使用设备码请求，不依赖后台登录态。资源类菜单按真实运行时配置切片展示。</p>
+      <p>HTTP 接口统一使用 X-Device-Code，请求体只放业务参数；WebSocket 命令在 payload 中携带 deviceCode。</p>
     </div>
     <div class="field">
       <label for="apiBaseInput">API Base URL</label>
@@ -229,17 +229,19 @@
       <p class="section-title">运行时数据</p>
       <nav class="nav" aria-label="接口菜单">
         <button class="active" type="button" data-section="device"><span>设备与公司</span><span class="method">GET</span></button>
-        <button type="button" data-section="application"><span>应用</span><span class="method">GET</span></button>
+        <button type="button" data-section="application"><span>应用</span><span class="method post">POST</span></button>
         <button type="button" data-section="voiceTones"><span>获取音色列表</span><span class="method">GET</span></button>
-        <button type="button" data-section="images"><span>获取背景图片</span><span class="method">GET</span></button>
-        <button type="button" data-section="models"><span>获取数字人模型</span><span class="method">GET</span></button>
-        <button type="button" data-section="videos"><span>获取视频</span><span class="method">GET</span></button>
+        <button type="button" data-section="images"><span>获取背景图片</span><span class="method post">POST</span></button>
+        <button type="button" data-section="scrollingTexts"><span>获取滚动文本</span><span class="method post">POST</span></button>
+        <button type="button" data-section="models"><span>获取数字人模型</span><span class="method post">POST</span></button>
+        <button type="button" data-section="videos"><span>获取视频</span><span class="method post">POST</span></button>
       </nav>
       <p class="section-title" style="margin-top:18px">能力测试</p>
       <nav class="nav" aria-label="能力测试菜单">
         <button type="button" data-section="asr"><span>ASR WebSocket</span><span class="method ws">WS</span></button>
-        <button type="button" data-section="llm"><span>LLM 问答</span><span class="method post">POST</span></button>
+        <button type="button" data-section="llmWs"><span>LLM WebSocket</span><span class="method ws">WS</span></button>
         <button type="button" data-section="ttsWs"><span>TTS WebSocket</span><span class="method ws">WS</span></button>
+        <button type="button" data-section="agentChat"><span>智能体问答</span><span class="method ws">WS</span></button>
         <button type="button" data-section="ttsHttp"><span>TTS HTTP</span><span class="method post">POST</span></button>
       </nav>
     </aside>
@@ -286,7 +288,11 @@
         deviceCode: query.get('deviceCode') || query.get('device_code') || '',
         activation: null,
         runtimeConfig: null,
+        ttsOptions: null,
         resourceSlices: {},
+        asrRecorder: null,
+        agentRecorder: null,
+        ttsPlaybackContext: null,
         activeSection: 'device',
         lastRequest: null,
         sockets: [],
@@ -312,13 +318,15 @@
       const sections = {
         device: { title: '设备与公司', description: '展示 device.tenantName、expiresAt、授权状态和设备绑定信息。' },
         application: { title: '应用', description: '通过设备码读取资源应用与完整智能体配置，包括开场白、建议问题和语音播报开关。' },
-        voiceTones: { title: '获取音色列表', description: '通过固定设备码读取 AI 大模型/TTS 管理的全部可用音色，并可直接测试合成。' },
-        images: { title: '获取背景图片', description: '通过固定设备码读取资源管理/背景图片管理数据。' },
-        models: { title: '获取数字人模型', description: '通过固定设备码读取资源管理/模型管理数据。' },
-        videos: { title: '获取视频', description: '通过固定设备码读取资源管理/视频管理数据。' },
-        asr: { title: 'ASR WebSocket', description: '先检查 ASR 设备状态，再用统一 /ws/realtime/ 发送 asr.session.start。' },
-        llm: { title: 'LLM 问答', description: '当前真实设备问答入口是 POST /device/voice-chat，后端执行 LLM 并尝试 TTS。' },
-        ttsWs: { title: 'TTS WebSocket', description: '统一 /ws/realtime/ 支持 tts.session.start。设备码测试优先使用 TTS HTTP，确保无需后台 JWT。' },
+        voiceTones: { title: '获取音色列表', description: '通过固定设备码读取 /ai-models/tts/options/ 返回的 TTS 音色列表，并可直接测试合成。' },
+        images: { title: '获取背景图片', description: '通过固定设备码读取当前公司在资源管理/背景图片管理维护的数据。' },
+        scrollingTexts: { title: '获取滚动文本', description: '通过固定设备码读取当前公司在资源管理/滚动文本维护的数据。' },
+        models: { title: '获取数字人模型', description: '通过固定设备码读取当前公司在资源管理/模型管理维护的数据。' },
+        videos: { title: '获取视频', description: '通过固定设备码读取当前公司在资源管理/视频管理维护的数据。' },
+        asr: { title: 'ASR WebSocket', description: '先检查 ASR 设备状态，再用统一 /ws/realtime/ 发送 asr.session.start，并通过麦克风推送 16k PCM 分片。' },
+        llmWs: { title: 'LLM WebSocket', description: '统一 /ws/realtime/ 的 llm.session.start，按设备码找到绑定智能体，流式返回 llm.delta，完成返回 llm.done。' },
+        ttsWs: { title: 'TTS WebSocket', description: '统一 /ws/realtime/ 支持 tts.session.start，按 type 返回 ready、audio/pcm 二进制分片和 done。' },
+        agentChat: { title: '智能体问答', description: '麦克风 ASR 实时显示问题，停止后进入 LLM，并按开关控制 TTS 回复自动播放。' },
         ttsHttp: { title: 'TTS HTTP', description: '设备码免登录 TTS 入口：POST /ai-models/tts/runtime/。' },
       };
 
@@ -353,7 +361,6 @@
         if (!state.deviceCode) throw new Error('请输入设备码');
         setStatus('正在上报设备...', 'warn');
         const body = {
-          deviceCode: state.deviceCode,
           softwareVersion: 'runtime-api-console-html',
           systemVersion: navigator.userAgent || '',
           mainboardInfo: 'browser',
@@ -383,7 +390,7 @@
       async function fetchRuntimeConfig() {
         if (!state.deviceCode) throw new Error('请输入设备码');
         setStatus('正在拉取运行时配置...', 'warn');
-        const path = '/device-runtime/config/?deviceCode=' + encodeURIComponent(state.deviceCode);
+        const path = '/device-runtime/config/';
         state.runtimeConfig = unwrap(await apiRequest(path, { method: 'GET' }, '运行时配置'));
         setStatus('运行时配置已更新', 'ok');
         return state.runtimeConfig;
@@ -433,7 +440,8 @@
         els.sectionTitle.textContent = meta.title;
         els.sectionDescription.textContent = meta.description;
         if (state.activeSection === 'asr') return renderAsr();
-        if (state.activeSection === 'llm') return renderLlm();
+        if (state.activeSection === 'llmWs') return renderLlmWs();
+        if (state.activeSection === 'agentChat') return renderAgentChat();
         if (state.activeSection === 'ttsWs') return renderTtsWs();
         if (state.activeSection === 'ttsHttp') return renderTtsHttp();
         if (!state.activation && !state.runtimeConfig) {
@@ -443,8 +451,9 @@
         }
         if (state.activeSection === 'device') return renderDevice();
         if (state.activeSection === 'application') return fetchResourceSlice('application').then(renderApplication).catch(showError);
-        if (state.activeSection === 'voiceTones') return fetchResourceSlice('voiceTones').then(renderVoiceTones).catch(showError);
+        if (state.activeSection === 'voiceTones') return fetchTtsOptions().then(renderVoiceTones).catch(showError);
         if (state.activeSection === 'images') return fetchResourceSlice('images').then(() => renderResourceCards('images')).catch(showError);
+        if (state.activeSection === 'scrollingTexts') return fetchResourceSlice('scrollingTexts').then(renderScrollingTexts).catch(showError);
         if (state.activeSection === 'models') return fetchResourceSlice('models').then(() => renderResourceCards('models')).catch(showError);
         if (state.activeSection === 'videos') return fetchResourceSlice('videos').then(() => renderResourceCards('videos')).catch(showError);
       }
@@ -455,7 +464,7 @@
         const result = unwrap(await apiRequest('/device-runtime/resources/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ deviceCode: state.deviceCode, resourceType: type }),
+          body: JSON.stringify({ resourceType: type }),
         }, '设备码资源切片'));
         state.resourceSlices[type] = result;
         if (type === 'application') {
@@ -467,6 +476,19 @@
           });
         }
         setStatus('资源已更新', 'ok');
+        return result;
+      }
+
+      async function fetchTtsOptions() {
+        if (!state.deviceCode) throw new Error('请输入设备码');
+        setStatus('正在拉取 TTS 音色...', 'warn');
+        const result = unwrap(await apiRequest('/ai-models/tts/options/', { method: 'GET' }, 'TTS 音色列表'));
+        state.ttsOptions = result;
+        state.resourceSlices.voiceTones = Object.assign({}, result, {
+          resourceType: 'voiceTones',
+          items: Array.isArray(result && result.voices) ? result.voices : [],
+        });
+        setStatus('TTS 音色已更新', 'ok');
         return result;
       }
 
@@ -484,7 +506,7 @@
             ['所属公司', escapeHtml(device.tenantName || '-')],
             ['公司 ID', code(device.tenantId || '-')],
             ['授权类型', escapeHtml(device.authorizationTypeLabel || device.authorizationType || '-')],
-            ['设备过期时间', code(device.expiresAt || '永久或未设置')],
+            ['设备过期时间', code(formatDeviceExpiry(device))],
           ]),
           infoCard('运行记录', [
             ['注册时间', code(device.registeredAt || '-')],
@@ -533,7 +555,7 @@
         if (!items.length) return renderResourceEmpty('voiceTones');
         els.contentBody.innerHTML = '<div class="table-wrap"><table><thead><tr><th>头像</th><th>名称</th><th>voiceCode</th><th>示例内容</th><th>测试</th></tr></thead><tbody>' +
           items.map((item) => '<tr><td>' + voiceAvatar(item) + '</td><td>' + escapeHtml(item.name || item.displayName || '-') + '</td><td><span class="code-chip">' + escapeHtml(item.voiceCode || '-') + '</span></td><td>' + escapeHtml(item.content || item.exampleText || item.defaultTestText || '你好，我是数字人设备。') + '</td><td><button class="button secondary" type="button" data-voice-test="' + escapeAttr(item.id) + '">测试</button></td></tr>').join('') +
-          '</tbody></table></div><audio id="voiceToneAudio" controls preload="none" hidden></audio><div class="detail-block"><strong>测试结果</strong><pre id="voiceToneOutput">等待测试</pre></div>';
+          '</tbody></table></div><audio id="voiceToneAudio" controls preload="none" hidden></audio><div class="note">特殊说明：本页“测试”按钮会在 /ai-models/tts/runtime/ 请求体里传 wrapWav=true，让浏览器收到 audio/wav 并直接播放；安卓端正常调用不传该字段，默认返回 audio/pcm raw PCM，请按 X-Audio-Sample-Rate 和 X-Audio-Channels 播放。</div><div class="detail-block"><strong>测试结果</strong><pre id="voiceToneOutput">等待测试</pre></div>';
         for (const button of Array.from(els.contentBody.querySelectorAll('[data-voice-test]'))) {
           button.addEventListener('click', () => testVoiceTone(button.dataset.voiceTest));
         }
@@ -547,15 +569,27 @@
         writeResourceSliceDetail(type);
       }
 
+      function renderScrollingTexts() {
+        const items = resourceList('scrollingTexts');
+        if (!items.length) return renderResourceEmpty('scrollingTexts');
+        els.contentBody.innerHTML = '<div class="grid">' + items.map((item) => {
+          const lines = Array.isArray(item.items) ? item.items : [];
+          const preview = lines.length ? lines.map((line) => '<div class="kv-row"><span>' + escapeHtml(String(line.order || '-')) + '</span><span>' + escapeHtml(line.zh || '-') + '<br><span style="color:var(--muted)">' + escapeHtml(line.en || '-') + '</span></span></div>').join('') : '<div class="empty">没有文本明细</div>';
+          return '<article class="card"><h3>' + escapeHtml(item.title || '-') + '</h3><div class="kv"><div class="kv-row"><span>ID</span><span>' + code(item.id) + '</span></div><div class="kv-row"><span>国际化</span><span>' + escapeHtml(item.i18nScheme || '-') + '</span></div>' + preview + '</div></article>';
+        }).join('') + '</div>';
+        writeResourceSliceDetail('scrollingTexts');
+      }
+
       function renderAsr() {
-        els.contentBody.innerHTML = '<div class="toolbar"><button class="button" id="asrStatusBtn" type="button">检查 ASR 状态</button><button class="button secondary" id="asrWsBtn" type="button">测试 asr.session.start</button></div><div class="detail-block"><strong>事件输出</strong><pre id="asrOutput">等待请求</pre></div><div class="note">WS 流程：连接 /ws/realtime/，发送 asr.session.start；收到 asr.ready 后才可以发送 16k PCM 二进制分片。本页只测试 start，不采集麦克风。</div>';
+        els.contentBody.innerHTML = '<div class="toolbar"><button class="button" id="asrStatusBtn" type="button">检查 ASR 状态</button><button class="button secondary" id="asrMicStartBtn" type="button">开始麦克风测试</button><button class="button secondary" id="asrMicStopBtn" type="button" disabled>停止并提交</button></div><div class="grid"><article class="card"><h3>原始识别</h3><div id="asrOriginalText" class="code-chip">等待识别</div></article><article class="card"><h3>替换词纠错后</h3><div id="asrCorrectedText" class="code-chip">等待识别</div></article><article class="card"><h3>纠错状态</h3><div id="asrReplacementState" class="code-chip">未命中</div></article></div><div class="detail-block"><strong>事件输出</strong><pre id="asrOutput">等待请求</pre></div><div class="note">特殊说明：本页 ASR WebSocket 测试会申请浏览器麦克风权限，把输入音频重采样为 16k mono pcm_s16le，并以二进制分片发送；后端会按设备所属公司的 ASR 替换词规则返回 text、originalText、replacementApplied，安卓端应使用 text 作为纠错后的最终文本。</div>';
         document.getElementById('asrStatusBtn').addEventListener('click', fetchAsrStatus);
-        document.getElementById('asrWsBtn').addEventListener('click', testAsrWebSocket);
+        document.getElementById('asrMicStartBtn').addEventListener('click', startAsrMicTest);
+        document.getElementById('asrMicStopBtn').addEventListener('click', stopAsrMicTest);
         writeRequestDetail({
           label: 'ASR WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/',
           headers: {},
-          body: { type: 'asr.session.start', id: 'asr-session-<timestamp>', payload: { deviceCode: state.deviceCode || '<deviceCode>', requestId: '<requestId>', traceId: '<traceId>' } },
-          note: 'ASR 通过统一 WebSocket 命令 asr.session.start 按 deviceCode 解析公司上下文。',
+          body: { type: 'asr.session.start', id: 'asr-session-<timestamp>', payload: { deviceCode: state.deviceCode || '<deviceCode>', requestId: '<requestId>', traceId: '<traceId>' }, binary: '16k mono pcm_s16le chunks', finish: { type: 'asr.session.finish', id: 'asr-session-<timestamp>' } },
+          note: 'ASR 通过统一 WebSocket 命令 asr.session.start 按 deviceCode 解析公司上下文；收到 asr.ready 后发送 16k PCM 二进制分片，停止时发送 asr.session.finish。',
         });
       }
 
@@ -569,58 +603,323 @@
         }
       }
 
-      function testAsrWebSocket() {
+      async function startAsrMicTest() {
         const output = document.getElementById('asrOutput');
+        const startButton = document.getElementById('asrMicStartBtn');
+        const stopButton = document.getElementById('asrMicStopBtn');
+        if (!state.deviceCode) return showError(new Error('请输入设备码'));
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return showError(new Error('当前浏览器不支持麦克风录音'));
+        stopAsrMicTest({ silent: true });
         const requestIds = makeRequestIds();
-        const command = { type: 'asr.session.start', id: 'asr-session-' + Date.now(), payload: { deviceCode: state.deviceCode, requestId: requestIds.requestId, traceId: requestIds.traceId } };
-        testWebSocket(command, output, 'ASR WebSocket', 'asr.ready');
-      }
-
-      function renderLlm() {
-        const suggested = (((state.runtimeConfig || {}).agentApplication || {}).suggestedQuestions || [])[0] || '你好，请介绍一下你自己。';
-        els.contentBody.innerHTML = '<div class="field"><label for="llmText">模拟麦克风问题</label><textarea id="llmText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmBtn" type="button">模拟 ASR → LLM → TTS</button><button class="button secondary" id="llmHttpBtn" type="button">仅 POST /device/voice-chat</button></div><audio id="llmAudio" controls preload="none" hidden></audio><div class="detail-block"><strong>链路结果</strong><pre id="llmOutput">等待请求</pre></div><div class="note">完整模拟会用设备码启动 ASR 状态检查，展示替换词处理后的文本，再通过统一 WebSocket 的 llm.session.start 获取智能体回复，最后调用设备码 TTS runtime 合成语音。标注回复命中由后端智能体逻辑处理。</div>';
-        document.getElementById('llmBtn').addEventListener('click', sendLlmText);
-        document.getElementById('llmHttpBtn').addEventListener('click', sendVoiceChatHttp);
-        writeRequestDetail({ label: '完整能力模拟', method: 'WS + POST', url: realtimeWsUrl(), path: '/ws/realtime/ + /ai-models/tts/runtime/', headers: previewHeaders('application/json'), body: { type: 'llm.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: suggested } }, note: '模拟安卓端麦克风文本进入 ASR 替换词处理后的结果，再走设备智能体 LLM 和 TTS。' });
-      }
-
-      async function sendLlmText() {
-        const output = document.getElementById('llmOutput');
-        const text = document.getElementById('llmText').value.trim();
-        if (!text) return showError(new Error('请输入模拟问题'));
-        output.textContent = '1. 检查 ASR 设备状态...';
+        const sessionId = 'asr-session-' + Date.now();
+        const command = { type: 'asr.session.start', id: sessionId, payload: { deviceCode: state.deviceCode, requestId: requestIds.requestId, traceId: requestIds.traceId } };
+        const events = [{ type: 'client.microphone.requesting' }];
+        output.textContent = pretty(events);
         try {
-          const asrStatus = await apiRequest('/ai-models/asr/device-status/', { method: 'GET' }, 'ASR 设备状态');
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+          const socket = new WebSocket(realtimeWsUrl());
+          state.sockets.push(socket);
+          state.asrRecorder = { socket, stream, sessionId, output, events, started: false, chunks: 0, audioContext: null, source: null, processor: null };
+          startButton.disabled = true;
+          stopButton.disabled = false;
+          writeRequestDetail({ label: 'ASR WebSocket 麦克风流式测试', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: command, note: '收到 asr.ready 后开始推送麦克风 16k mono pcm_s16le 二进制分片；点击停止会发送 asr.session.finish。' });
+
+          socket.addEventListener('open', () => {
+            socket.send(JSON.stringify(command));
+            events.push({ type: 'client.sent', command: command.type, id: sessionId });
+            output.textContent = pretty(events);
+          });
+          socket.addEventListener('message', (event) => {
+            const payload = parseJson(event.data) || event.data;
+            events.push(payload);
+            output.textContent = pretty(events);
+            writeResponse({ ok: true, status: 'WS', body: events });
+            const eventType = payload && payload.type;
+            if (eventType === 'asr.transcript') updateAsrTranscriptSummary(payload);
+            if (eventType === 'asr.ready') startMicrophonePcmPump(state.asrRecorder);
+            if (String(eventType).includes('completed') || String(eventType).includes('finished') || eventType === 'asr.error') {
+              stopAsrMicTest({ closeSocket: eventType === 'asr.error', skipFinish: true, silent: true });
+            }
+          });
+          socket.addEventListener('error', () => {
+            events.push({ type: 'client.error', message: 'WebSocket 连接失败' });
+            output.textContent = pretty(events);
+            stopAsrMicTest({ closeSocket: true, silent: true });
+          });
+          socket.addEventListener('close', () => {
+            events.push({ type: 'client.close' });
+            output.textContent = pretty(events);
+            stopAsrMicTest({ silent: true });
+          });
+        } catch (error) {
+          startButton.disabled = false;
+          stopButton.disabled = true;
+          output.textContent = error.message;
+        }
+      }
+
+      function startMicrophonePcmPump(recorder) {
+        if (!recorder || recorder.started) return;
+        const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+        recorder.audioContext = new AudioContextCtor();
+        recorder.source = recorder.audioContext.createMediaStreamSource(recorder.stream);
+        recorder.processor = recorder.audioContext.createScriptProcessor(4096, 1, 1);
+        recorder.processor.onaudioprocess = (event) => {
+          if (!recorder.started || !recorder.socket || recorder.socket.readyState !== WebSocket.OPEN) return;
+          const pcm = floatTo16kPcm(event.inputBuffer.getChannelData(0), recorder.audioContext.sampleRate);
+          if (!pcm.byteLength) return;
+          recorder.socket.send(pcm);
+          recorder.chunks += 1;
+        };
+        recorder.source.connect(recorder.processor);
+        recorder.processor.connect(recorder.audioContext.destination);
+        recorder.started = true;
+        recorder.events.push({ type: 'client.microphone.started', inputSampleRate: recorder.audioContext.sampleRate, outputSampleRate: 16000, format: 'pcm_s16le' });
+        recorder.output.textContent = pretty(recorder.events);
+      }
+
+      function stopAsrMicTest(options) {
+        const recorder = state.asrRecorder;
+        if (!recorder) return;
+        const opts = options || {};
+        recorder.started = false;
+        if (recorder.processor) recorder.processor.disconnect();
+        if (recorder.source) recorder.source.disconnect();
+        if (recorder.audioContext) recorder.audioContext.close().catch(function () {});
+        if (recorder.stream) recorder.stream.getTracks().forEach((track) => track.stop());
+        if (recorder.socket && recorder.socket.readyState === WebSocket.OPEN && !opts.closeSocket && !opts.skipFinish) {
+          recorder.socket.send(JSON.stringify({ type: 'asr.session.finish', id: recorder.sessionId }));
+          recorder.events.push({ type: 'client.sent', command: 'asr.session.finish', chunks: recorder.chunks });
+        } else if (recorder.socket && opts.closeSocket) {
+          recorder.socket.close();
+        }
+        const startButton = document.getElementById('asrMicStartBtn');
+        const stopButton = document.getElementById('asrMicStopBtn');
+        if (startButton) startButton.disabled = false;
+        if (stopButton) stopButton.disabled = true;
+        if (!opts.silent && recorder.output) recorder.output.textContent = pretty(recorder.events);
+        state.asrRecorder = null;
+      }
+
+      function updateAsrTranscriptSummary(payload) {
+        const original = document.getElementById('asrOriginalText');
+        const corrected = document.getElementById('asrCorrectedText');
+        const stateLabel = document.getElementById('asrReplacementState');
+        if (original) original.textContent = payload.originalText || payload.text || '-';
+        if (corrected) corrected.textContent = payload.text || '-';
+        if (stateLabel) stateLabel.textContent = payload.replacementApplied ? '已命中替换词' : '未命中';
+      }
+
+      function floatTo16kPcm(input, inputSampleRate) {
+        const targetRate = 16000;
+        const ratio = inputSampleRate / targetRate;
+        const length = Math.max(0, Math.floor(input.length / ratio));
+        const pcm = new Int16Array(length);
+        for (let i = 0; i < length; i += 1) {
+          const sample = input[Math.floor(i * ratio)] || 0;
+          const clamped = Math.max(-1, Math.min(1, sample));
+          pcm[i] = clamped < 0 ? clamped * 0x8000 : clamped * 0x7fff;
+        }
+        return pcm.buffer;
+      }
+
+      function renderLlmWs() {
+        const suggested = (((state.runtimeConfig || {}).agentApplication || {}).suggestedQuestions || [])[0] || '你好，请介绍一下你自己。';
+        els.contentBody.innerHTML = '<div class="field"><label for="llmWsText">问题文本</label><textarea id="llmWsText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmWsBtn" type="button">发送 llm.session.start</button></div><div class="grid"><article class="card"><h3>智能体回复</h3><div id="llmWsAnswer" class="code-chip">等待回复</div></article></div><div class="detail-block"><strong>事件输出</strong><pre id="llmWsOutput">等待请求</pre></div><div class="note">特殊说明：LLM WebSocket 是智能体问答接口，只负责文本问题到智能体回复；ASR 和 TTS 分别使用自己的 WebSocket type。</div>';
+        document.getElementById('llmWsBtn').addEventListener('click', sendLlmWs);
+        writeRequestDetail({ label: 'LLM WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { type: 'llm.session.start', id: 'llm-session-<timestamp>', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: suggested, requestId: '<requestId>', traceId: '<traceId>' } }, note: '统一实时通信入口，llm.session.start 按设备码解析绑定智能体，流式返回 llm.delta，完成返回 llm.done。' });
+      }
+
+      async function sendLlmWs() {
+        const output = document.getElementById('llmWsOutput');
+        const answerNode = document.getElementById('llmWsAnswer');
+        const text = document.getElementById('llmWsText').value.trim();
+        if (!text) return showError(new Error('请输入问题文本'));
+        if (answerNode) answerNode.textContent = '生成中';
+        output.textContent = '正在请求 LLM WebSocket...';
+        try {
+          if (answerNode) answerNode.textContent = '';
+          const answer = await runLlmWebSocket(text, {
+            onDelta: (delta) => {
+              if (answerNode) answerNode.textContent += delta;
+            },
+          });
+          output.textContent = pretty(answer);
+          if (answerNode && !answerNode.textContent) answerNode.textContent = answer.answerText || '-';
+        } catch (error) {
+          if (answerNode) answerNode.textContent = '失败';
+          output.textContent = error.message;
+        }
+      }
+
+      function renderAgentChat() {
+        const suggested = (((state.runtimeConfig || {}).agentApplication || {}).suggestedQuestions || [])[0] || '你好，请介绍一下你自己。';
+        els.contentBody.innerHTML = '<div class="field"><label for="llmText">实时问题</label><textarea id="llmText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmVoiceStartBtn" type="button">开始问答</button><button class="button secondary" id="llmVoiceStopBtn" type="button" disabled>停止识别</button><button class="button secondary" id="llmBtn" type="button">用当前问题发送</button><label class="code-chip"><input id="llmAutoPlay" type="checkbox" checked> 自动播放</label></div><div class="grid"><article class="card"><h3>识别状态</h3><div id="llmAsrState" class="code-chip">等待录音</div></article><article class="card"><h3>智能体回复</h3><div id="llmAnswerText" class="code-chip">等待回复</div></article><article class="card"><h3>语音播放</h3><div id="llmTtsState" class="code-chip">等待合成</div></article></div><audio id="llmAudio" controls preload="none" hidden></audio><div class="detail-block"><strong>链路结果</strong><pre id="llmOutput">等待请求</pre></div><div class="note">特殊说明：智能体问答主链路统一使用 /ws/realtime/：asr.session.start、llm.session.start、tts.session.start 通过不同 type 区分；HTTP 仅保留为单接口调试入口。</div>';
+        document.getElementById('llmVoiceStartBtn').addEventListener('click', startAgentVoiceQuestion);
+        document.getElementById('llmVoiceStopBtn').addEventListener('click', () => stopAgentVoiceQuestion({ ask: true }));
+        document.getElementById('llmBtn').addEventListener('click', () => sendLlmText({ source: 'manual' }));
+        writeRequestDetail({ label: '智能体问答链路', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { asr: { type: 'asr.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>' }, binary: '16k mono pcm_s16le chunks' }, llm: { type: 'llm.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: suggested } }, tts: { type: 'tts.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: '<answerText>' }, binary: 'audio/pcm chunks' } }, note: '统一实时通信入口：ASR、LLM、TTS 都走 /ws/realtime/，通过 type 区分能力。' });
+      }
+
+      async function startAgentVoiceQuestion() {
+        const output = document.getElementById('llmOutput');
+        const startButton = document.getElementById('llmVoiceStartBtn');
+        const stopButton = document.getElementById('llmVoiceStopBtn');
+        const asrState = document.getElementById('llmAsrState');
+        const answerText = document.getElementById('llmAnswerText');
+        const ttsState = document.getElementById('llmTtsState');
+        if (!state.deviceCode) return showError(new Error('请输入设备码'));
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return showError(new Error('当前浏览器不支持麦克风录音'));
+        stopAgentVoiceQuestion({ silent: true });
+        stopAsrMicTest({ silent: true });
+        if (document.getElementById('llmAutoPlay') && document.getElementById('llmAutoPlay').checked) unlockTtsPlayback();
+        if (answerText) answerText.textContent = '等待回复';
+        if (ttsState) ttsState.textContent = '等待合成';
+        const requestIds = makeRequestIds();
+        const sessionId = 'asr-agent-' + Date.now();
+        const command = { type: 'asr.session.start', id: sessionId, payload: { deviceCode: state.deviceCode, requestId: requestIds.requestId, traceId: requestIds.traceId } };
+        const events = [{ type: 'client.microphone.requesting' }];
+        output.textContent = pretty(events);
+        if (asrState) asrState.textContent = '请求麦克风';
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+          const socket = new WebSocket(realtimeWsUrl());
+          state.sockets.push(socket);
+          state.agentRecorder = { socket, stream, sessionId, output, events, started: false, chunks: 0, audioContext: null, source: null, processor: null, latestText: '', asked: false };
+          startButton.disabled = true;
+          stopButton.disabled = false;
+          writeRequestDetail({ label: '智能体问答 ASR', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: command, note: '收到 asr.ready 后推送麦克风 16k mono pcm_s16le；asr.transcript 会实时刷新问题文本。' });
+
+          socket.addEventListener('open', () => {
+            socket.send(JSON.stringify(command));
+            events.push({ type: 'client.sent', command: command.type, id: sessionId });
+            output.textContent = pretty(events);
+          });
+          socket.addEventListener('message', (event) => {
+            const payload = parseJson(event.data) || event.data;
+            events.push(payload);
+            output.textContent = pretty(events);
+            writeResponse({ ok: true, status: 'WS', body: events });
+            const eventType = payload && payload.type;
+            if (eventType === 'asr.ready') {
+              if (asrState) asrState.textContent = '正在识别';
+              startMicrophonePcmPump(state.agentRecorder);
+            }
+            if (eventType === 'asr.transcript') updateAgentQuestionFromAsr(payload);
+            if (String(eventType).includes('completed') || String(eventType).includes('finished')) {
+              stopAgentVoiceQuestion({ skipFinish: true, silent: true, ask: true });
+            }
+            if (eventType === 'asr.error') {
+              if (asrState) asrState.textContent = '识别失败';
+              stopAgentVoiceQuestion({ closeSocket: true, silent: true });
+            }
+          });
+          socket.addEventListener('error', () => {
+            events.push({ type: 'client.error', message: 'WebSocket 连接失败' });
+            output.textContent = pretty(events);
+            if (asrState) asrState.textContent = '连接失败';
+            stopAgentVoiceQuestion({ closeSocket: true, silent: true });
+          });
+          socket.addEventListener('close', () => {
+            events.push({ type: 'client.close' });
+            output.textContent = pretty(events);
+            stopAgentVoiceQuestion({ silent: true });
+          });
+        } catch (error) {
+          startButton.disabled = false;
+          stopButton.disabled = true;
+          if (asrState) asrState.textContent = '麦克风不可用';
+          output.textContent = error.message;
+        }
+      }
+
+      function updateAgentQuestionFromAsr(payload) {
+        const text = String(payload.text || '').trim();
+        const original = String(payload.originalText || text || '').trim();
+        const textarea = document.getElementById('llmText');
+        const asrState = document.getElementById('llmAsrState');
+        const recorder = state.agentRecorder;
+        if (text && textarea) textarea.value = text;
+        if (recorder && text) recorder.latestText = text;
+        if (asrState) asrState.textContent = payload.replacementApplied ? '已纠错：' + original : '实时识别中';
+      }
+
+      function stopAgentVoiceQuestion(options) {
+        const recorder = state.agentRecorder;
+        if (!recorder) return;
+        const opts = options || {};
+        recorder.started = false;
+        if (recorder.processor) recorder.processor.disconnect();
+        if (recorder.source) recorder.source.disconnect();
+        if (recorder.audioContext) recorder.audioContext.close().catch(function () {});
+        if (recorder.stream) recorder.stream.getTracks().forEach((track) => track.stop());
+        if (recorder.socket && recorder.socket.readyState === WebSocket.OPEN && !opts.closeSocket && !opts.skipFinish) {
+          recorder.socket.send(JSON.stringify({ type: 'asr.session.finish', id: recorder.sessionId }));
+          recorder.events.push({ type: 'client.sent', command: 'asr.session.finish', chunks: recorder.chunks });
+        } else if (recorder.socket && opts.closeSocket) {
+          recorder.socket.close();
+        }
+        const startButton = document.getElementById('llmVoiceStartBtn');
+        const stopButton = document.getElementById('llmVoiceStopBtn');
+        const asrState = document.getElementById('llmAsrState');
+        if (startButton) startButton.disabled = false;
+        if (stopButton) stopButton.disabled = true;
+        if (asrState && !opts.silent) asrState.textContent = '识别已停止';
+        if (!opts.silent && recorder.output) recorder.output.textContent = pretty(recorder.events);
+        state.agentRecorder = null;
+        if (opts.ask && !recorder.asked) {
+          recorder.asked = true;
+          window.setTimeout(() => sendLlmText({ source: 'asr' }), opts.skipFinish ? 0 : 600);
+        }
+      }
+
+      async function sendLlmText(options) {
+        const output = document.getElementById('llmOutput');
+        const answerNode = document.getElementById('llmAnswerText');
+        const ttsNode = document.getElementById('llmTtsState');
+        const text = document.getElementById('llmText').value.trim();
+        if (!text) return showError(new Error('没有识别到问题，请重新录音或手动输入'));
+        const source = options && options.source === 'asr' ? 'ASR' : '手动输入';
+        output.textContent = source + ' 问题已提交，正在请求 LLM...';
+        if (answerNode) answerNode.textContent = '生成中';
+        if (ttsNode) ttsNode.textContent = '等待回复';
+        if (document.getElementById('llmAutoPlay') && document.getElementById('llmAutoPlay').checked) unlockTtsPlayback();
+        try {
           const asrText = text;
           output.textContent = pretty([
-            { step: 'ASR', status: 'ready', device: unwrap(asrStatus.body), replacementResult: asrText },
+            { step: 'ASR', status: source, text: asrText },
             { step: 'LLM', status: 'running' },
           ]);
-          const llmAnswer = await runLlmWebSocket(asrText);
+          if (answerNode) answerNode.textContent = '';
+          const llmAnswer = await runLlmWebSocket(asrText, {
+            onDelta: (delta) => {
+              if (answerNode) answerNode.textContent += delta;
+            },
+          });
+          const answer = llmAnswer.answerText || '';
+          if (answerNode && !answerNode.textContent) answerNode.textContent = answer || '-';
           output.textContent = pretty([
             { step: 'ASR', replacementResult: asrText },
             { step: 'LLM', result: llmAnswer },
-            { step: 'TTS', status: 'running' },
+            { step: 'TTS WebSocket', status: 'running' },
           ]);
-          const ttsResult = await apiRequest('/ai-models/tts/runtime/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: llmAnswer.answerText || '' }),
-          }, 'TTS 合成回复');
-          if (ttsResult.body instanceof Blob) {
-            const audio = document.getElementById('llmAudio');
-            const url = URL.createObjectURL(ttsResult.body);
-            audio.src = url;
-            audio.hidden = false;
-            output.textContent = pretty([
-              { step: 'ASR', replacementResult: asrText },
-              { step: 'LLM', result: llmAnswer },
-              { step: 'TTS', status: ttsResult.status, contentType: ttsResult.contentType, size: ttsResult.body.size, objectUrl: url },
-            ]);
-          } else {
-            output.textContent = pretty({ asrText, llmAnswer, tts: ttsResult.body });
-          }
+          if (ttsNode) ttsNode.textContent = '合成中';
+          const autoPlay = Boolean(document.getElementById('llmAutoPlay') && document.getElementById('llmAutoPlay').checked);
+          const ttsResult = await runTtsWebSocket(answer, {
+            audio: document.getElementById('llmAudio'),
+            output,
+            autoPlay,
+            label: 'TTS WebSocket 合成回复',
+          });
+          if (ttsNode) ttsNode.textContent = autoPlay ? '已自动播放' : '已生成，等待手动播放';
+          output.textContent = pretty([
+            { step: 'ASR', replacementResult: asrText },
+            { step: 'LLM', result: llmAnswer },
+            { step: 'TTS WebSocket', autoPlay, sampleRate: ttsResult.sampleRate, chunks: ttsResult.chunks, bytes: ttsResult.bytes, objectUrl: ttsResult.objectUrl },
+          ]);
         } catch (error) {
+          if (answerNode) answerNode.textContent = '失败';
+          if (ttsNode) ttsNode.textContent = '失败';
           output.textContent = error.message;
         }
       }
@@ -629,47 +928,154 @@
         const output = document.getElementById('llmOutput');
         const text = document.getElementById('llmText').value.trim();
         try {
-          const result = await apiRequest('/device/voice-chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceCode: state.deviceCode, text }) }, 'LLM 文本问答');
+          const result = await apiRequest('/device/voice-chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }, 'LLM 文本问答');
           output.textContent = pretty(result.body);
-          attachBase64Audio(document.getElementById('llmAudio'), unwrap(result.body));
+          const autoPlay = Boolean(document.getElementById('llmAutoPlay') && document.getElementById('llmAutoPlay').checked);
+          attachBase64Audio(document.getElementById('llmAudio'), unwrap(result.body), autoPlay);
         } catch (error) {
           output.textContent = error.message;
         }
       }
 
-      function runLlmWebSocket(text) {
+      function runLlmWebSocket(text, options) {
         return new Promise((resolve, reject) => {
+          const opts = options || {};
           const requestIds = makeRequestIds();
           const command = {
             type: 'llm.session.start',
             id: 'llm-session-' + Date.now(),
             payload: { deviceCode: state.deviceCode, text, requestId: requestIds.requestId, traceId: requestIds.traceId },
           };
-          writeRequestDetail({ label: 'LLM WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: command, note: '统一实时通信入口，llm.session.start 按 deviceCode 解析智能体并返回 llm.answer。' });
+          writeRequestDetail({ label: 'LLM WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: command, note: '统一实时通信入口，llm.session.start 按 deviceCode 解析智能体，流式返回 llm.delta，完成时返回 llm.done。' });
           const socket = new WebSocket(realtimeWsUrl());
           state.sockets.push(socket);
-          const timer = window.setTimeout(() => {
-            socket.close();
-            reject(new Error('LLM WebSocket 10 秒内未返回'));
-          }, 10000);
+          let answerText = '';
+          let lastPayload = null;
+          let settled = false;
+          let timer = null;
+          const refreshTimer = () => {
+            if (timer) window.clearTimeout(timer);
+            timer = window.setTimeout(() => {
+              if (settled) return;
+              settled = true;
+              socket.close();
+              reject(new Error('LLM WebSocket 30 秒内没有新内容'));
+            }, 30000);
+          };
+          refreshTimer();
           socket.addEventListener('open', () => socket.send(JSON.stringify(command)));
           socket.addEventListener('message', (event) => {
+            refreshTimer();
             const payload = parseJson(event.data) || {};
             writeResponse({ ok: true, status: 'WS', body: payload });
-            if (payload.type === 'llm.answer') {
+            if (payload.type === 'llm.started') {
+              if (opts.onStarted) opts.onStarted(payload.payload || {});
+            }
+            if (payload.type === 'llm.delta') {
+              const delta = String((payload.payload && payload.payload.text) || payload.text || '');
+              answerText += delta;
+              if (opts.onDelta) opts.onDelta(delta, payload);
+            }
+            if (payload.type === 'llm.done' || payload.type === 'llm.answer') {
+              settled = true;
               window.clearTimeout(timer);
+              lastPayload = payload.payload || {};
+              if (!answerText) answerText = lastPayload.answerText || '';
               socket.close();
-              resolve(payload.payload || {});
+              resolve(Object.assign({}, lastPayload, { answerText }));
             }
             if (payload.type === 'llm.error' || payload.type === 'error') {
+              settled = true;
               window.clearTimeout(timer);
               socket.close();
               reject(new Error((payload.error && payload.error.message) || payload.message || 'LLM WebSocket 失败'));
             }
           });
           socket.addEventListener('error', () => {
+            settled = true;
             window.clearTimeout(timer);
             reject(new Error('LLM WebSocket 连接失败'));
+          });
+        });
+      }
+
+      function runTtsWebSocket(text, options) {
+        return new Promise((resolve, reject) => {
+          const opts = options || {};
+          const output = opts.output;
+          const audio = opts.audio || document.getElementById('ttsHttpAudio') || document.getElementById('llmAudio');
+          const autoPlay = opts.autoPlay !== false;
+          const payload = { deviceCode: state.deviceCode, text };
+          if (opts.voiceId) payload.voiceId = opts.voiceId;
+          const command = { type: 'tts.session.start', id: 'tts-session-' + Date.now(), payload };
+          const events = [];
+          const chunks = [];
+          let sampleRate = 24000;
+          let bytes = 0;
+          let audioContext = autoPlay ? unlockTtsPlayback() : null;
+          let nextStartTime = 0;
+
+          writeRequestDetail({ label: opts.label || 'TTS WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: command, note: '统一实时通信入口，tts.session.start 返回 tts.ready 后持续推送 audio/pcm 二进制分片，完成时返回 tts.done。' });
+          const socket = new WebSocket(realtimeWsUrl());
+          socket.binaryType = 'arraybuffer';
+          state.sockets.push(socket);
+          const timer = window.setTimeout(() => {
+            socket.close();
+            reject(new Error('TTS WebSocket 30 秒内未完成'));
+          }, 30000);
+
+          socket.addEventListener('open', () => {
+            socket.send(JSON.stringify(command));
+            events.push({ type: 'client.sent', command: command.type, id: command.id });
+            if (output) output.textContent = pretty(events);
+          });
+          socket.addEventListener('message', async (event) => {
+            if (typeof event.data === 'string') {
+              const payload = parseJson(event.data) || {};
+              events.push(payload);
+              if (payload.type === 'tts.ready') {
+                sampleRate = Number(payload.sampleRate || sampleRate);
+                if (autoPlay) {
+                  audioContext = audioContext || unlockTtsPlayback();
+                  if (audioContext && audioContext.state === 'suspended') await audioContext.resume().catch(function () {});
+                  nextStartTime = audioContext ? Math.max(audioContext.currentTime + 0.05, nextStartTime) : 0;
+                }
+              }
+              if (payload.type === 'tts.done') {
+                window.clearTimeout(timer);
+                const wavBlob = pcmChunksToWavBlob(chunks, sampleRate);
+                const objectUrl = audio ? attachAudioBlob(audio, wavBlob, false) : '';
+                socket.close();
+                resolve({ events, chunks: chunks.length, bytes, sampleRate, objectUrl });
+              }
+              if (payload.type === 'tts.error' || payload.type === 'error') {
+                window.clearTimeout(timer);
+                socket.close();
+                reject(new Error(payload.message || 'TTS WebSocket 失败'));
+              }
+              if (output) output.textContent = pretty(events);
+              writeResponse({ ok: true, status: 'WS', body: events });
+              return;
+            }
+
+            const buffer = event.data instanceof ArrayBuffer ? event.data : await event.data.arrayBuffer();
+            const chunk = new Uint8Array(buffer);
+            chunks.push(chunk);
+            bytes += chunk.byteLength;
+            events.push({ type: 'tts.audio', bytes: chunk.byteLength });
+            if (autoPlay) {
+              audioContext = audioContext || unlockTtsPlayback();
+              if (audioContext && audioContext.state === 'suspended') await audioContext.resume().catch(function () {});
+              nextStartTime = playPcmChunk(audioContext, chunk, sampleRate, nextStartTime);
+            }
+            if (output) output.textContent = pretty(events);
+          });
+          socket.addEventListener('error', () => {
+            window.clearTimeout(timer);
+            reject(new Error('TTS WebSocket 连接失败'));
+          });
+          socket.addEventListener('close', () => {
+            window.clearTimeout(timer);
           });
         });
       }
@@ -683,12 +1089,10 @@
           const result = await apiRequest('/ai-models/tts/runtime/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text, voiceId: Number(voiceId) }),
+            body: JSON.stringify({ text, voiceId: Number(voiceId), wrapWav: true }),
           }, '设备码 TTS 音色测试');
           if (result.body instanceof Blob) {
-            const url = URL.createObjectURL(result.body);
-            audio.src = url;
-            audio.hidden = false;
+            const url = playAudioBlob(audio, result.body);
             output.textContent = pretty({ voiceId, text, status: result.status, contentType: result.contentType, size: result.body.size, objectUrl: url });
           } else {
             output.textContent = pretty(result.body);
@@ -700,7 +1104,7 @@
 
       function renderTtsWs() {
         const voiceOptions = resourceList('voiceTones').map((item) => '<option value="' + escapeHtml(item.id) + '">' + escapeHtml(item.name || item.voiceCode || item.id) + '</option>').join('');
-        els.contentBody.innerHTML = '<div class="field"><label for="ttsWsText">合成文本</label><textarea id="ttsWsText" class="textarea">你好，我是数字人设备。</textarea></div><div class="field"><label for="ttsWsVoice">音色 voiceId（可选）</label><select id="ttsWsVoice" class="input"><option value="">使用公司默认音色</option>' + voiceOptions + '</select></div><div class="toolbar"><button class="button secondary" id="ttsWsBtn" type="button">测试 tts.session.start</button></div><div class="detail-block"><strong>事件输出</strong><pre id="ttsWsOutput">等待请求</pre></div><div class="note">设备码放在 tts.session.start payload.deviceCode 中；如果需要浏览器直接播放，请使用 TTS HTTP。</div>';
+        els.contentBody.innerHTML = '<div class="field"><label for="ttsWsText">合成文本</label><textarea id="ttsWsText" class="textarea">你好，我是数字人设备。</textarea></div><div class="field"><label for="ttsWsVoice">音色 voiceId（可选）</label><select id="ttsWsVoice" class="input"><option value="">使用公司默认音色</option>' + voiceOptions + '</select></div><div class="toolbar"><button class="button secondary" id="ttsWsBtn" type="button">测试 tts.session.start</button></div><div class="detail-block"><strong>事件输出</strong><pre id="ttsWsOutput">等待请求</pre></div><div class="note">设备码放在 tts.session.start payload.deviceCode 中；页面会用 Web Audio 播放返回的 audio/pcm 二进制分片。</div>';
         document.getElementById('ttsWsBtn').addEventListener('click', testTtsWebSocket);
         writeRequestDetail({ label: 'TTS WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { type: 'tts.session.start', id: 'tts-session-<timestamp>', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: '你好，我是数字人设备。', voiceId: '<optional voice id>' } }, note: '统一实时 TTS 命令，使用 payload.deviceCode 解析公司上下文。' });
       }
@@ -708,28 +1112,26 @@
       function testTtsWebSocket() {
         const output = document.getElementById('ttsWsOutput');
         const voiceId = document.getElementById('ttsWsVoice').value;
-        const payload = { deviceCode: state.deviceCode, text: document.getElementById('ttsWsText').value.trim() };
-        if (voiceId) payload.voiceId = Number(voiceId);
-        const command = { type: 'tts.session.start', id: 'tts-session-' + Date.now(), payload };
-        testWebSocket(command, output, 'TTS WebSocket', 'tts.ready');
+        const text = document.getElementById('ttsWsText').value.trim();
+        runTtsWebSocket(text, { output, voiceId: voiceId ? Number(voiceId) : null, label: 'TTS WebSocket' }).catch((error) => {
+          output.textContent = error.message;
+        });
       }
 
       function renderTtsHttp() {
-        els.contentBody.innerHTML = '<div class="field"><label for="ttsHttpText">合成文本</label><textarea id="ttsHttpText" class="textarea">你好，我是数字人设备。</textarea></div><div class="toolbar"><button class="button" id="ttsHttpBtn" type="button">合成语音</button></div><audio id="ttsHttpAudio" controls preload="none" hidden></audio><div class="detail-block"><strong>返回结果</strong><pre id="ttsHttpOutput">等待请求</pre></div>';
+        els.contentBody.innerHTML = '<div class="field"><label for="ttsHttpText">合成文本</label><textarea id="ttsHttpText" class="textarea">你好，我是数字人设备。</textarea></div><div class="toolbar"><button class="button" id="ttsHttpBtn" type="button">合成语音</button></div><audio id="ttsHttpAudio" controls preload="none" hidden></audio><div class="note">特殊说明：本页为了浏览器播放会传 wrapWav=true，响应为 audio/wav；安卓端默认不传 wrapWav，响应为 audio/pcm raw PCM，采样率见 X-Audio-Sample-Rate，声道见 X-Audio-Channels。</div><div class="detail-block"><strong>返回结果</strong><pre id="ttsHttpOutput">等待请求</pre></div>';
         document.getElementById('ttsHttpBtn').addEventListener('click', sendTtsHttp);
-        writeRequestDetail({ label: 'TTS HTTP', method: 'POST', url: state.apiBaseUrl + '/ai-models/tts/runtime/', path: '/ai-models/tts/runtime/', headers: previewHeaders('application/json'), body: { text: '你好，我是数字人设备。' }, note: '设备码免登录 TTS 入口，响应通常为 audio/pcm。' });
+        writeRequestDetail({ label: 'TTS HTTP', method: 'POST', url: state.apiBaseUrl + '/ai-models/tts/runtime/', path: '/ai-models/tts/runtime/', headers: previewHeaders('application/json'), body: { text: '你好，我是数字人设备。', wrapWav: true }, note: '设备码免登录 TTS 入口；HTML 测试请求 wrapWav=true，返回 audio/wav 便于浏览器直接播放。' });
       }
 
       async function sendTtsHttp() {
         const output = document.getElementById('ttsHttpOutput');
         const text = document.getElementById('ttsHttpText').value.trim();
         try {
-          const result = await apiRequest('/ai-models/tts/runtime/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }, 'TTS HTTP');
+          const result = await apiRequest('/ai-models/tts/runtime/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, wrapWav: true }) }, 'TTS HTTP');
           if (result.body instanceof Blob) {
-            const url = URL.createObjectURL(result.body);
             const audio = document.getElementById('ttsHttpAudio');
-            audio.src = url;
-            audio.hidden = false;
+            const url = playAudioBlob(audio, result.body);
             output.textContent = pretty({ status: result.status, contentType: result.contentType, size: result.body.size, objectUrl: url });
           } else {
             output.textContent = pretty(result.body);
@@ -781,17 +1183,18 @@
 
       function writeResourceSliceDetail(type) {
         const sliceMap = {
-          device: 'device', application: 'application + agentApplication', voiceTones: 'AI 大模型/TTS 管理音色', images: '资源管理/背景图片管理', models: '资源管理/模型管理', videos: '资源管理/视频管理',
+          device: 'device', application: 'application + agentApplication', voiceTones: 'AI 大模型/TTS 管理音色', images: '资源管理/背景图片管理', scrollingTexts: '资源管理/滚动文本', models: '资源管理/模型管理', videos: '资源管理/视频管理',
         };
-        const isRuntimeResource = ['application', 'voiceTones', 'images', 'models', 'videos'].includes(type);
+        const isRuntimeResource = ['application', 'voiceTones', 'images', 'scrollingTexts', 'models', 'videos'].includes(type);
+        const isTtsOptions = type === 'voiceTones';
         writeRequestDetail({
           label: sections[type] && sections[type].title || '运行时配置',
-          method: isRuntimeResource ? 'POST' : 'GET',
-          url: isRuntimeResource ? state.apiBaseUrl + '/device-runtime/resources/' : state.apiBaseUrl + '/device-runtime/config/?deviceCode=' + encodeURIComponent(state.deviceCode || '<deviceCode>'),
-          path: isRuntimeResource ? '/device-runtime/resources/' : '/device-runtime/config/?deviceCode=' + (state.deviceCode || '<deviceCode>'),
-          headers: previewHeaders(isRuntimeResource ? 'application/json' : undefined),
-          body: isRuntimeResource ? { deviceCode: state.deviceCode || '<deviceCode>', resourceType: type } : null,
-          note: isRuntimeResource ? '通过固定设备码请求运行时资源切片：' + (sliceMap[type] || type) + '。' : '当前真实来源：GET /device-runtime/config/?deviceCode=...。',
+          method: isTtsOptions ? 'GET' : isRuntimeResource ? 'POST' : 'GET',
+          url: isTtsOptions ? state.apiBaseUrl + '/ai-models/tts/options/' : isRuntimeResource ? state.apiBaseUrl + '/device-runtime/resources/' : state.apiBaseUrl + '/device-runtime/config/',
+          path: isTtsOptions ? '/ai-models/tts/options/' : isRuntimeResource ? '/device-runtime/resources/' : '/device-runtime/config/',
+          headers: previewHeaders(isTtsOptions || !isRuntimeResource ? undefined : 'application/json'),
+          body: isTtsOptions || !isRuntimeResource ? null : { resourceType: type },
+          note: isTtsOptions ? '真实来源：GET /ai-models/tts/options/，带 X-Device-Code 时按设备所属公司返回 TTS voices。' : isRuntimeResource ? '设备端通过免登录运行时入口请求：' + (sliceMap[type] || type) + '；背景图片、滚动文本、数字人模型、视频的数据来源分别是资源管理下对应菜单。' : '当前真实来源：GET /device-runtime/config/，设备码放在 X-Device-Code。',
         });
         writeResponse({ ok: Boolean(state.runtimeConfig || state.activation), status: state.runtimeConfig || state.activation ? 'cached' : '-', body: previewSlice(type) });
       }
@@ -806,8 +1209,8 @@
       }
 
       function writeResponse(result) {
-        const body = result.body instanceof Blob ? { contentType: result.contentType, size: result.body.size } : result.body;
-        els.responseBody.textContent = pretty({ ok: result.ok, status: result.status, statusText: result.statusText || '', body });
+        const body = result.body instanceof Blob ? { contentType: result.contentType, size: result.body.size } : result.body !== undefined ? result.body : { message: result.message || result.statusText || '' };
+        els.responseBody.textContent = pretty(body);
       }
 
       function previewHeaders(contentType) {
@@ -821,30 +1224,42 @@
       }
 
       function endpointNote(path) {
-        if (path.includes('/device-auth/activate/')) return '设备首次/重复上报，后端按 deviceCode 返回绑定状态、公司、应用摘要。';
-        if (path.includes('/device-runtime/config/')) return '当前真实来源：返回 device、application、agentApplication、resources.*。';
-        if (path.includes('/device-runtime/resources/')) return '设备码免登录资源切片接口，按 resourceType 返回应用、音色、背景图片、模型或视频。';
+        if (path.includes('/device-auth/activate/')) return '设备首次/重复上报，HTTP 设备码统一放在 X-Device-Code 请求头，body 只放设备版本和诊断信息。';
+        if (path.includes('/device-runtime/config/')) return '当前真实来源：HTTP 设备码放 X-Device-Code，返回 device、application、agentApplication、resources.*。';
+        if (path.includes('/device-runtime/resources/')) return '设备码免登录资源切片接口；images/scrollingTexts/models/videos 分别读取资源管理下对应菜单。';
+        if (path.includes('/ai-models/tts/options/')) return 'TTS 音色 options 列表；带 X-Device-Code 时按设备所属公司返回 voices。';
         if (path.includes('/ai-models/asr/device-status/')) return '设备码免登录 ASR 状态检查。';
-        if (path.includes('/device/voice-chat')) return '真实设备问答入口，支持 text 或 multipart audio。';
-        if (path.includes('/ai-models/tts/runtime/')) return '设备码免登录 TTS 合成入口。';
+        if (path.includes('/device/voice-chat')) return '真实设备问答入口，HTTP 设备码放 X-Device-Code，body 支持 text 或 multipart audio。';
+        if (path.includes('/ai-models/tts/runtime/')) return '设备码免登录 TTS 合成入口；HTML 测试会传 wrapWav=true 以便浏览器播放。';
         return '真实请求详情。';
       }
 
       function currentDevice() {
         return (state.runtimeConfig && state.runtimeConfig.device) || (state.activation && state.activation.device) || {};
       }
+      function formatDeviceExpiry(device) {
+        if (device && device.expiresAt) return device.expiresAt;
+        const type = String((device && device.authorizationType) || '').toLowerCase();
+        if (type === 'permanent') return '永久';
+        if (type === 'trial') return '未设置到期时间';
+        return '-';
+      }
       function resourceList(type) {
         if (state.resourceSlices[type] && Array.isArray(state.resourceSlices[type].items)) return state.resourceSlices[type].items;
+        if (type === 'voiceTones' && state.ttsOptions && Array.isArray(state.ttsOptions.voices)) return state.ttsOptions.voices;
         return ((state.runtimeConfig && state.runtimeConfig.resources && state.runtimeConfig.resources[type]) || []);
       }
       function previewSlice(type) {
         if (type === 'device') return currentDevice();
         if (state.resourceSlices[type]) return state.resourceSlices[type];
+        if (type === 'voiceTones') return state.ttsOptions || resourceList(type);
         if (type === 'application') return { application: state.runtimeConfig && state.runtimeConfig.application, agentApplication: state.runtimeConfig && state.runtimeConfig.agentApplication };
         return resourceList(type);
       }
       function renderResourceEmpty(name) {
-        els.contentBody.innerHTML = '<div class="empty">当前配置中没有 ' + escapeHtml(name) + ' 数据。请检查设备是否已绑定资源应用，以及应用内是否选择对应资源。</div>';
+        const sourceMap = { images: '资源管理/背景图片管理', scrollingTexts: '资源管理/滚动文本', models: '资源管理/模型管理', videos: '资源管理/视频管理', voiceTones: 'TTS options 音色列表' };
+        const source = sourceMap[name] || '当前配置';
+        els.contentBody.innerHTML = '<div class="empty">' + escapeHtml(source) + ' 中没有可展示数据。</div>';
         writeResourceSliceDetail(state.activeSection);
       }
       function renderEmpty(message) { els.contentBody.innerHTML = '<div class="empty">' + escapeHtml(message) + '</div>'; }
@@ -865,11 +1280,96 @@
         return '<span class="code-chip">无</span>';
       }
 
-      function attachBase64Audio(audio, payload) {
+      function attachBase64Audio(audio, payload, autoPlay) {
         const audioBase64 = payload && payload.audioBase64;
         if (!audioBase64) return;
         audio.src = 'data:' + (payload.audioContentType || 'audio/wav') + ';base64,' + audioBase64;
         audio.hidden = false;
+        if (autoPlay !== false) audio.play().catch(function () {});
+      }
+      function playAudioBlob(audio, blob, autoPlay) {
+        const url = attachAudioBlob(audio, blob, autoPlay);
+        return url;
+      }
+      function attachAudioBlob(audio, blob, autoPlay) {
+        const url = URL.createObjectURL(blob);
+        audio.src = url;
+        audio.hidden = false;
+        if (autoPlay !== false) audio.play().catch(function () {});
+        return url;
+      }
+      function unlockTtsPlayback() {
+        state.ttsPlaybackContext = state.ttsPlaybackContext || createAudioContext();
+        if (state.ttsPlaybackContext && state.ttsPlaybackContext.state === 'suspended') {
+          state.ttsPlaybackContext.resume().catch(function () {});
+        }
+        return state.ttsPlaybackContext;
+      }
+      function typewriterText(element, text) {
+        if (!element) return Promise.resolve();
+        const content = String(text || '');
+        element.textContent = '';
+        if (!content) return Promise.resolve();
+        return new Promise((resolve) => {
+          let index = 0;
+          const step = () => {
+            index += 1;
+            element.textContent = content.slice(0, index);
+            if (index >= content.length) {
+              resolve();
+              return;
+            }
+            window.setTimeout(step, content.charCodeAt(index - 1) > 255 ? 36 : 22);
+          };
+          step();
+        });
+      }
+      function createAudioContext() {
+        const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+        return AudioContextCtor ? new AudioContextCtor() : null;
+      }
+      function closeAudioContext(audioContext) {
+        if (audioContext && audioContext.state !== 'closed') audioContext.close().catch(function () {});
+      }
+      function playPcmChunk(audioContext, chunk, sampleRate, nextStartTime) {
+        if (!audioContext || !chunk || !chunk.byteLength) return nextStartTime || 0;
+        const samples = new Int16Array(chunk.buffer, chunk.byteOffset, Math.floor(chunk.byteLength / 2));
+        const audioBuffer = audioContext.createBuffer(1, samples.length, sampleRate);
+        const channel = audioBuffer.getChannelData(0);
+        for (let i = 0; i < samples.length; i += 1) channel[i] = samples[i] / 32768;
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+        const startAt = Math.max(audioContext.currentTime + 0.02, nextStartTime || 0);
+        source.start(startAt);
+        return startAt + audioBuffer.duration;
+      }
+      function pcmChunksToWavBlob(chunks, sampleRate) {
+        const bytes = chunks.reduce((total, chunk) => total + chunk.byteLength, 0);
+        const wav = new ArrayBuffer(44 + bytes);
+        const view = new DataView(wav);
+        writeAscii(view, 0, 'RIFF');
+        view.setUint32(4, 36 + bytes, true);
+        writeAscii(view, 8, 'WAVE');
+        writeAscii(view, 12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, 1, true);
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);
+        writeAscii(view, 36, 'data');
+        view.setUint32(40, bytes, true);
+        let offset = 44;
+        for (const chunk of chunks) {
+          new Uint8Array(wav, offset, chunk.byteLength).set(chunk);
+          offset += chunk.byteLength;
+        }
+        return new Blob([wav], { type: 'audio/wav' });
+      }
+      function writeAscii(view, offset, text) {
+        for (let i = 0; i < text.length; i += 1) view.setUint8(offset + i, text.charCodeAt(i));
       }
       function realtimeWsUrl() {
         const api = new URL(state.apiBaseUrl);

@@ -314,8 +314,8 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(activate_response.status_code, status.HTTP_200_OK)
         config_response = self.client.get(
             '/api/v1/device-runtime/config/',
-            {'deviceCode': 'ANDROID-TEXT-001'},
             format='json',
+            HTTP_X_DEVICE_CODE='ANDROID-TEXT-001',
             HTTP_X_REQUEST_ID='req-runtime-config-1',
             HTTP_X_TRACE_ID='trace-runtime-config-1',
         )
@@ -360,8 +360,8 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
 
         config_response = self.client.get(
             '/api/v1/device-runtime/config/',
-            {'deviceCode': 'ANDROID-VOICE-CONFIG-001'},
             format='json',
+            HTTP_X_DEVICE_CODE='ANDROID-VOICE-CONFIG-001',
         )
 
         self.assertEqual(config_response.status_code, status.HTTP_200_OK)
@@ -418,9 +418,11 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['resourceType'], 'voiceTones')
-        self.assertEqual(response.data['application']['id'], self.application.id)
-        self.assertEqual(response.data['device']['tenantName'], self.tenant.name)
         self.assertEqual(response.data['items'][0]['voiceCode'], 'Cherry')
+        self.assertNotIn('device', response.data)
+        self.assertNotIn('application', response.data)
+        self.assertNotIn('agentApplication', response.data)
+        self.assertNotIn('resourcesSummary', response.data)
 
         resource_expectations = {
             'images': 'https://cdn.example.com/bg.jpg',
@@ -431,8 +433,9 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             with self.subTest(resource_type=resource_type):
                 slice_response = self.client.post(
                     '/api/v1/device-runtime/resources/',
-                    {'resourceType': resource_type, 'deviceCode': 'ANDROID-RUNTIME-RESOURCES-001'},
+                    {'resourceType': resource_type},
                     format='json',
+                    HTTP_X_DEVICE_CODE='ANDROID-RUNTIME-RESOURCES-001',
                 )
                 self.assertEqual(slice_response.status_code, status.HTTP_200_OK)
                 self.assertEqual(slice_response.data['resourceType'], resource_type)
@@ -449,7 +452,96 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(application_response.data['agentApplication']['name'], 'Lobby Agent')
         self.assertEqual(application_response.data['agentApplication']['openingMessage'], self.agent_application.opening_message)
         self.assertEqual(application_response.data['agentApplication']['suggestedQuestions'], self.agent_application.suggested_questions)
-        self.assertEqual(application_response.data['resourcesSummary']['voiceTones'], 1)
+        self.assertEqual(len(application_response.data['resources']['voiceTones']), 1)
+
+    def test_runtime_resource_slices_read_resource_management_records_by_tenant(self):
+        self.application.agent_application = self.agent_application
+        self.application.save(update_fields=['agent_application', 'updated_at'])
+        other_tenant = Tenant.objects.create(name='Other Company', code='other-runtime-company')
+        Resource.objects.create(
+            tenant=other_tenant,
+            name='Other Background',
+            resource_type=Resource.TYPE_IMAGE,
+            category=Resource.CATEGORY_HORIZONTAL,
+            cloud_url='https://cdn.example.com/other-bg.jpg',
+        )
+        ScrollingText.objects.create(
+            tenant=other_tenant,
+            title='Other Notice',
+            is_active=True,
+        )
+        image = Resource.objects.create(
+            tenant=self.tenant,
+            name='Managed Background',
+            resource_type=Resource.TYPE_IMAGE,
+            category=Resource.CATEGORY_HORIZONTAL,
+            cloud_url='https://cdn.example.com/managed-bg.jpg',
+        )
+        video = Resource.objects.create(
+            tenant=self.tenant,
+            name='Managed Video',
+            resource_type=Resource.TYPE_VIDEO,
+            category=Resource.CATEGORY_VERTICAL,
+            cloud_url='https://cdn.example.com/managed-video.mp4',
+        )
+        model = ModelAsset.objects.create(
+            tenant=self.tenant,
+            name='Managed Digital Human',
+            model_type=ModelAsset.TYPE_FEMALE,
+            orientation=ModelAsset.ORIENTATION_VERTICAL,
+            cloud_url='https://cdn.example.com/managed-model.glb',
+        )
+        scrolling_text = ScrollingText.objects.create(
+            tenant=self.tenant,
+            title='Managed Notice',
+            is_active=True,
+        )
+        ScrollingTextItem.objects.create(
+            scrolling_text=scrolling_text,
+            order=1,
+            zh_text='欢迎参观',
+            en_text='Welcome',
+        )
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            name='Runtime Managed Resource Device',
+            code='ANDROID-RUNTIME-MANAGED-RESOURCES-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        expectations = {
+            'images': (image.id, 'https://cdn.example.com/managed-bg.jpg'),
+            'models': (model.id, 'https://cdn.example.com/managed-model.glb'),
+            'videos': (video.id, 'https://cdn.example.com/managed-video.mp4'),
+        }
+        for resource_type, (expected_id, expected_url) in expectations.items():
+            with self.subTest(resource_type=resource_type):
+                response = self.client.post(
+                    '/api/v1/device-runtime/resources/',
+                    {'resourceType': resource_type},
+                    format='json',
+                    HTTP_X_DEVICE_CODE='ANDROID-RUNTIME-MANAGED-RESOURCES-001',
+                )
+
+                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                self.assertEqual(response.data['items'][0]['id'], expected_id)
+                self.assertEqual(response.data['items'][0]['url'], expected_url)
+                self.assertEqual(len(response.data['items']), 1)
+
+        text_response = self.client.post(
+            '/api/v1/device-runtime/resources/',
+            {'resourceType': 'scrollingTexts'},
+            format='json',
+            HTTP_X_DEVICE_CODE='ANDROID-RUNTIME-MANAGED-RESOURCES-001',
+        )
+
+        self.assertEqual(text_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(text_response.data['items'][0]['id'], scrolling_text.id)
+        self.assertEqual(text_response.data['items'][0]['title'], 'Managed Notice')
+        self.assertEqual(text_response.data['items'][0]['items'][0]['zh'], '欢迎参观')
+        self.assertEqual(len(text_response.data['items']), 1)
 
     def test_device_voice_chat_path_exists_without_trailing_slash(self):
         Device.objects.create(
@@ -464,8 +556,9 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
 
         response = self.client.post(
             '/api/v1/device/voice-chat',
-            {'deviceCode': 'ANDROID-VOICE-001', 'text': '你好'},
+            {'text': '你好'},
             format='json',
+            HTTP_X_DEVICE_CODE='ANDROID-VOICE-001',
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -521,12 +614,12 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             response = self.client.post(
                 '/api/v1/device/voice-chat',
                 {
-                    'deviceCode': 'ANDROID-VOICE-002',
                     'format': 'pcm',
                     'sampleRate': '16000',
                     'audio': SimpleUploadedFile('voice.pcm', b'\x00\x01\x00\x01', content_type='application/octet-stream'),
                 },
                 format='multipart',
+                HTTP_X_DEVICE_CODE='ANDROID-VOICE-002',
             )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -566,6 +659,26 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(device.system_version, 'Android 14')
         self.assertEqual(device.mainboard_info, 'rk3588')
         self.assertEqual(device.authorization_type, Device.AUTHORIZATION_PERMANENT)
+
+    def test_activate_accepts_device_code_from_header(self):
+        response = self.client.post(
+            '/api/v1/device-auth/activate/',
+            {
+                'softwareVersion': 'runtime-api-console-html',
+                'systemVersion': 'Android 14',
+                'mainboardInfo': 'rk3588',
+            },
+            format='json',
+            HTTP_X_DEVICE_CODE='ANDROID-HEADER-ACTIVATE-001',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['bindingStatus'], 'pending')
+        device = Device.objects.get(code='ANDROID-HEADER-ACTIVATE-001')
+        self.assertIsNone(device.tenant_id)
+        self.assertEqual(device.software_version, 'runtime-api-console-html')
+        self.assertEqual(device.system_version, 'Android 14')
+        self.assertEqual(device.mainboard_info, 'rk3588')
 
     def test_activate_company_bound_device_without_agent_reports_bound(self):
         Device.objects.create(
@@ -1003,6 +1116,76 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         async_to_sync(run_websocket)()
         device.refresh_from_db()
         self.assertEqual(device.status, Device.STATUS_OFFLINE)
+
+    def test_llm_session_start_streams_agent_answer_deltas(self):
+        provider = LLMProvider.objects.create(
+            name='OpenAI compatible',
+            provider_type='openai',
+            api_base_url='https://example.com/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='qwen/qwen3-32b', is_active=True)
+        self.agent_application.llm_model = model
+        self.agent_application.save(update_fields=['llm_model', 'updated_at'])
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='LLM WebSocket Android',
+            code='ANDROID-LLM-WS-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        async def fake_stream_llm_chat_completion(**kwargs):
+            yield '欢迎'
+            yield '来到展厅'
+
+        async def run_websocket():
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            response = await communicator.receive_output(timeout=1)
+            self.assertEqual(response['type'], 'websocket.accept')
+
+            with patch('config.realtime.llm_services.stream_llm_chat_completion', fake_stream_llm_chat_completion):
+                await communicator.send_input({
+                    'type': 'websocket.receive',
+                    'text': json.dumps({
+                        'type': 'llm.session.start',
+                        'id': 'llm-suite-1',
+                        'payload': {'deviceCode': 'ANDROID-LLM-WS-001', 'text': '介绍一下展厅'},
+                    }),
+                })
+
+                started = json.loads((await communicator.receive_output(timeout=1))['text'])
+                first_delta = json.loads((await communicator.receive_output(timeout=1))['text'])
+                second_delta = json.loads((await communicator.receive_output(timeout=1))['text'])
+                done = json.loads((await communicator.receive_output(timeout=1))['text'])
+
+            self.assertEqual(started['type'], 'llm.started')
+            self.assertEqual(first_delta['type'], 'llm.delta')
+            self.assertEqual(first_delta['payload']['text'], '欢迎')
+            self.assertEqual(second_delta['type'], 'llm.delta')
+            self.assertEqual(second_delta['payload']['text'], '来到展厅')
+            self.assertEqual(done['type'], 'llm.done')
+            self.assertEqual(done['payload']['answerText'], '欢迎来到展厅')
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
 
     def test_unified_device_events_command_sends_same_tenant_events(self):
         token = str(AccessToken.for_user(self.user))

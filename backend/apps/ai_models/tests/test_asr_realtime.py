@@ -80,7 +80,16 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
             'text': '你好',
         })
 
-        self.assertEqual(payload, {'type': 'asr.transcript', 'text': '你好', 'final': False})
+        self.assertEqual(
+            payload,
+            {
+                'type': 'asr.transcript',
+                'text': '你好',
+                'originalText': '你好',
+                'replacementApplied': False,
+                'final': False,
+            },
+        )
 
     def test_extract_transcript_payload_normalizes_final_text(self):
         from apps.ai_models.realtime_asr import extract_transcript_payload
@@ -90,7 +99,16 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
             'transcript': '你好，欢迎使用',
         })
 
-        self.assertEqual(payload, {'type': 'asr.transcript', 'text': '你好，欢迎使用', 'final': True})
+        self.assertEqual(
+            payload,
+            {
+                'type': 'asr.transcript',
+                'text': '你好，欢迎使用',
+                'originalText': '你好，欢迎使用',
+                'replacementApplied': False,
+                'final': True,
+            },
+        )
 
     def test_extract_transcript_payload_applies_tenant_replacement_rules(self):
         from apps.ai_models.realtime_asr import extract_transcript_payload
@@ -115,7 +133,16 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
             tenant_id=self.tenant.id,
         )
 
-        self.assertEqual(payload, {'type': 'asr.transcript', 'text': '请小张关闭展厅灯光', 'final': True})
+        self.assertEqual(
+            payload,
+            {
+                'type': 'asr.transcript',
+                'text': '请小张关闭展厅灯光',
+                'originalText': '请小明关闭展厅灯光',
+                'replacementApplied': True,
+                'final': True,
+            },
+        )
 
     def test_resolve_realtime_connection_requires_asr_permission(self):
         from apps.ai_models.realtime_asr import resolve_asr_realtime_connection

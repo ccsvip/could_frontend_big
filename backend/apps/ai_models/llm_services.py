@@ -1,3 +1,4 @@
+import json
 import time
 
 import httpx
@@ -165,6 +166,114 @@ def run_llm_chat_completion(
     if not text:
         raise RuntimeError('LLM 响应为空')
     return text
+
+
+async def stream_llm_chat_completion(
+    *,
+    model: LLMModel | None = None,
+    model_config: dict | None = None,
+    messages: list[dict],
+    temperature: float = 0.7,
+    max_tokens: int = 1000,
+    timeout: int = 120,
+):
+    if model_config is None:
+        if model is None:
+            raise RuntimeError('LLM 模型未配置')
+        provider = model.provider
+        model_config = {
+            'name': model.name,
+            'apiBaseUrl': provider.api_base_url,
+            'apiKey': provider.api_key,
+            'enableWebSearch': model.enable_web_search,
+        }
+    api_url = _build_chat_completions_url(model_config['apiBaseUrl'])
+    payload = {
+        'model': model_config['name'],
+        'messages': messages,
+        'stream': True,
+        'temperature': temperature,
+        'max_tokens': max_tokens,
+    }
+    if model_config.get('enableWebSearch'):
+        payload['enable_search'] = True
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            async with client.stream(
+                'POST',
+                api_url,
+                json=payload,
+                headers={
+                    'Authorization': f"Bearer {model_config['apiKey']}",
+                    'Accept': 'text/event-stream',
+                    'Content-Type': 'application/json',
+                },
+            ) as response:
+                if response.status_code != 200:
+                    raise RuntimeError(f'LLM 请求失败 (HTTP {response.status_code})')
+
+                saw_sse_data = False
+                buffered_plain_lines: list[str] = []
+                async for line in response.aiter_lines():
+                    if not line:
+                        continue
+                    data_str = _parse_sse_data_line(line)
+                    if data_str is None:
+                        if not saw_sse_data:
+                            buffered_plain_lines.append(line)
+                        continue
+
+                    saw_sse_data = True
+                    buffered_plain_lines.clear()
+                    if data_str.strip() == '[DONE]':
+                        break
+                    try:
+                        chunk = json.loads(data_str)
+                    except json.JSONDecodeError:
+                        continue
+                    error_message = _extract_openai_error_message(chunk)
+                    if error_message:
+                        raise RuntimeError(error_message[:200])
+                    text = _extract_openai_completion_delta(chunk)
+                    if text:
+                        yield text
+
+                if not saw_sse_data and buffered_plain_lines:
+                    raw_text = ''.join(buffered_plain_lines).strip()
+                    try:
+                        body = json.loads(raw_text)
+                    except json.JSONDecodeError:
+                        body = None
+                    if isinstance(body, dict):
+                        error_message = _extract_openai_error_message(body)
+                        if error_message:
+                            raise RuntimeError(error_message[:200])
+                        text = _extract_openai_completion_text(body)
+                        if text:
+                            yield text
+    except httpx.TimeoutException as exc:
+        raise RuntimeError('LLM 请求超时') from exc
+    except httpx.HTTPError as exc:
+        raise RuntimeError('LLM 连接失败') from exc
+
+
+def _parse_sse_data_line(line: str) -> str | None:
+    if line.startswith('data:'):
+        return line[5:].strip()
+    return None
+
+
+def _extract_openai_completion_delta(payload: dict) -> str:
+    choices = payload.get('choices')
+    if not isinstance(choices, list) or not choices:
+        return ''
+    first_choice = choices[0] if isinstance(choices[0], dict) else {}
+    delta = first_choice.get('delta')
+    if isinstance(delta, dict):
+        content = _coerce_openai_content_to_text(delta.get('content'))
+        if content:
+            return content
+    return _coerce_openai_content_to_text(first_choice.get('text'))
 
 
 def _extract_openai_completion_text(payload: dict) -> str:

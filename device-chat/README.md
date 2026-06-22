@@ -20,7 +20,43 @@ device-chat/index.html?deviceCode=DEVICE_001&apiBaseUrl=http://localhost:8880/ap
 device-chat/runtime-api-console.html?deviceCode=DEVICE_001&apiBaseUrl=http://localhost:8880/api/v1
 ```
 
-该页面不需要登录，不携带后台 JWT，只通过 `X-Device-Code`、`X-Request-ID`、`X-Trace-ID` 调用设备侧公开接口。左侧菜单会分别展示应用、AI 大模型/TTS 管理音色、资源管理背景图片、资源管理模型、资源管理视频、ASR、LLM、TTS；资源类数据通过 `POST /api/v1/device-runtime/resources/` 按 `resourceType` 单独获取。
+该页面不需要登录，不携带后台 JWT，只通过 `X-Device-Code`、`X-Request-ID`、`X-Trace-ID` 调用设备侧公开接口。左侧菜单会分别展示应用、AI 大模型/TTS 管理音色、资源管理背景图片、资源管理滚动文本、资源管理模型、资源管理视频、ASR、LLM、TTS；资源类数据通过 `POST /api/v1/device-runtime/resources/` 按 `resourceType` 单独获取。
+
+设备码位置约定：
+
+- 普通 HTTP 接口统一把设备码放在 `X-Device-Code` 请求头，请求体只放业务参数。
+- WebSocket 浏览器握手不能自定义 `X-Device-Code` 请求头，因此统一实时通信命令在 payload 里携带 `deviceCode`。
+- 资源切片接口除 `resourceType=application` 外，只返回当前资源列表 `items`；安卓端只需要消费 `items` 里的字段。
+
+ASR WebSocket 能力测试会申请浏览器麦克风权限，收到 `asr.ready` 后把麦克风输入重采样为 16k mono `pcm_s16le`，并通过 `/ws/realtime/` 发送二进制分片；点击停止时发送 `asr.session.finish`。安卓端对接同样遵循 `asr.session.start` → 16k PCM bytes → `asr.session.finish` 的顺序。
+
+ASR 替换词纠错由后端按设备所属公司自动应用。`asr.transcript` 事件里：
+
+- `originalText` 是上游原始识别文本。
+- `text` 是替换词纠错后的文本，安卓端应使用这个字段进入后续 LLM/TTS。
+- `replacementApplied` 表示本次文本是否命中替换词。
+
+### TTS HTTP 音频格式说明
+
+`POST /api/v1/ai-models/tts/runtime/` 默认面向安卓设备返回 `audio/pcm` raw PCM，并通过响应头说明播放参数：
+
+```http
+Content-Type: audio/pcm
+X-Audio-Source-Format: pcm_s16le
+X-Audio-Sample-Rate: 16000
+X-Audio-Channels: 1
+X-TTS-Voice: Cherry
+```
+
+运行时接口控制台里的“TTS HTTP”和音色“测试”按钮是浏览器测试场景，会在请求体里额外传 `wrapWav: true`，让后端把同一段 PCM 包装成 `audio/wav`，方便 `<audio>` 直接播放。安卓端正常接入不需要传 `wrapWav`；如果安卓同学临时用浏览器或调试工具验证播放，也可以传：
+
+```json
+{
+  "text": "你好，我是数字人设备。",
+  "voiceId": 1,
+  "wrapWav": true
+}
+```
 
 ## 页面能力
 
@@ -44,7 +80,6 @@ X-Trace-ID: trace-...
 Content-Type: application/json
 
 {
-  "deviceCode": "DEVICE_001",
   "softwareVersion": "device-chat-html-demo",
   "systemVersion": "<browser user agent>",
   "mainboardInfo": "browser",
@@ -59,7 +94,7 @@ Content-Type: application/json
 当激活接口返回 `bindingStatus: "bound"` 后，页面再拉取运行时配置：
 
 ```http
-GET /api/v1/device-runtime/config/?deviceCode=DEVICE_001
+GET /api/v1/device-runtime/config/
 X-Device-Code: DEVICE_001
 X-Request-ID: req-...
 X-Trace-ID: trace-...

@@ -278,6 +278,25 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(settings.default_voice_id, self.cherry.id)
         self.assertEqual(update_response.data['defaultVoiceId'], self.cherry.id)
 
+    def test_device_code_can_read_company_tts_options_without_jwt(self):
+        Device.objects.create(
+            tenant=self.tenant,
+            name='TTS Options Device',
+            code='ANDROID-TTS-OPTIONS-001',
+            is_enabled=True,
+        )
+
+        response = self.client.get(
+            '/api/v1/ai-models/tts/options/',
+            HTTP_X_DEVICE_CODE='ANDROID-TTS-OPTIONS-001',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['provider']['code'], 'aliyun')
+        self.assertGreaterEqual(len(response.data['voices']), 1)
+        self.assertEqual(response.data['voices'][0]['voiceCode'], 'Cherry')
+        self.assertNotIn('apiKey', str(response.data))
+
     @patch('apps.ai_models.services.tts.synthesize_tts_pcm', return_value=b'\x01\x02')
     def test_company_test_returns_wav_wrapped_pcm(self, synthesize_tts_pcm):
         self.grant_permissions('ai_models.tts.view')
@@ -343,6 +362,30 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response['X-TTS-Voice'], 'Cherry')
         self.assertEqual(response.content, b'\x03\x04')
         self.assertEqual(synthesize_tts_pcm.call_args.kwargs['text'], '设备端测试')
+
+    @patch('apps.ai_models.services.tts.synthesize_tts_pcm', return_value=b'\x03\x04')
+    def test_device_runtime_can_wrap_pcm_as_wav_for_browser_playback(self, synthesize_tts_pcm):
+        Device.objects.create(
+            tenant=self.tenant,
+            name='TTS Runtime Browser Device',
+            code='ANDROID-TTS-WAV-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+        TenantTTSSettings.objects.create(tenant=self.tenant, default_voice=self.cherry)
+        self.client.force_authenticate(user=None)
+
+        response = self.client.post(
+            '/api/v1/ai-models/tts/runtime/',
+            {'text': '浏览器播放测试', 'wrapWav': True},
+            format='json',
+            HTTP_X_DEVICE_CODE='ANDROID-TTS-WAV-001',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['Content-Type'], 'audio/wav')
+        self.assertEqual(response['X-Audio-Source-Format'], 'pcm_s16le')
+        self.assertTrue(response.content.startswith(b'RIFF'))
+        self.assertEqual(synthesize_tts_pcm.call_args.kwargs['text'], '浏览器播放测试')
 
     @patch('apps.ai_models.services.tts.synthesize_tts_pcm', return_value=b'\x05\x06')
     def test_device_runtime_can_use_selected_voice_by_device_code(self, synthesize_tts_pcm):

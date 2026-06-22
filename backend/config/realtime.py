@@ -5,8 +5,10 @@ import json
 from typing import Any
 
 from asgiref.sync import sync_to_async
+from django.db.models import F
+from django.utils import timezone
 
-from apps.ai_models import realtime_asr, realtime_tts
+from apps.ai_models import llm_services, realtime_asr, realtime_tts
 from apps.devices.views import DeviceVoiceChatView
 from apps.devices.realtime import (
     add_device_event_subscriber,
@@ -390,29 +392,147 @@ async def _handle_llm_session_start(send, message: dict[str, Any]) -> None:
         return
 
     try:
-        result = await sync_to_async(_run_device_llm_answer, thread_sensitive=True)(device_code, question_text)
+        session = await sync_to_async(_prepare_device_llm_session, thread_sensitive=True)(device_code, question_text)
     except Exception as exc:
         await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message=str(exc)[:200]))
+        return
+
+    started_payload = {
+        'type': 'llm.started',
+        'id': command_id,
+        'requestId': request_id,
+        'traceId': trace_id,
+        'payload': {
+            'deviceCode': session['deviceCode'],
+            'questionText': question_text,
+            'agentApplicationId': session['agentApplicationId'],
+            'agentApplicationName': session['agentApplicationName'],
+            'applicationId': session['applicationId'],
+            'applicationName': session['applicationName'],
+        },
+    }
+    await _send_json(send, started_payload)
+
+    answer_text = ''
+    if session.get('annotationAnswer') is not None:
+        answer_text = session['annotationAnswer']
+        await _send_json(
+            send,
+            {
+                'type': 'llm.delta',
+                'id': command_id,
+                'requestId': request_id,
+                'traceId': trace_id,
+                'payload': {'text': answer_text},
+            },
+        )
+    else:
+        try:
+            async for delta in llm_services.stream_llm_chat_completion(
+                model_config=session['modelConfig'],
+                messages=session['messages'],
+                temperature=session['temperature'],
+                max_tokens=session['maxTokens'],
+            ):
+                answer_text += delta
+                await _send_json(
+                    send,
+                    {
+                        'type': 'llm.delta',
+                        'id': command_id,
+                        'requestId': request_id,
+                        'traceId': trace_id,
+                        'payload': {'text': delta},
+                    },
+                )
+        except Exception as exc:
+            await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message=str(exc)[:200]))
+            return
+
+    if not answer_text:
+        await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message='LLM 没有返回有效回复'))
         return
 
     await _send_json(
         send,
         {
-            'type': 'llm.answer',
+            'type': 'llm.done',
             'id': command_id,
             'requestId': request_id,
             'traceId': trace_id,
             'payload': {
-                'deviceCode': result['deviceCode'],
+                'deviceCode': session['deviceCode'],
                 'questionText': question_text,
-                'answerText': result['answerText'],
-                'agentApplicationId': result['agentApplicationId'],
-                'agentApplicationName': result['agentApplicationName'],
-                'applicationId': result['applicationId'],
-                'applicationName': result['applicationName'],
+                'answerText': answer_text,
+                'agentApplicationId': session['agentApplicationId'],
+                'agentApplicationName': session['agentApplicationName'],
+                'applicationId': session['applicationId'],
+                'applicationName': session['applicationName'],
             },
         },
     )
+
+
+def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[str, Any]:
+    from apps.devices.services.runtime import get_runtime_device
+
+    device = get_runtime_device(device_code)
+    agent_application = device.effective_agent_application
+    if agent_application is None or not agent_application.is_active:
+        raise RuntimeError('设备未绑定可用智能体')
+
+    annotation = DeviceVoiceChatView._find_annotation(agent_application, question_text)
+    if annotation is not None:
+        now = timezone.now()
+        annotation.__class__.objects.filter(id=annotation.id).update(
+            hit_count=F('hit_count') + 1,
+            last_hit_at=now,
+        )
+        return {
+            'deviceCode': device.code,
+            'annotationAnswer': annotation.answer,
+            'agentApplicationId': agent_application.id,
+            'agentApplicationName': agent_application.name,
+            'applicationId': device.application_id,
+            'applicationName': device.application.name if device.application else '',
+        }
+
+    model = agent_application.llm_model
+    if model is None:
+        settings = llm_services.get_tenant_llm_settings(device.tenant)
+        model = settings.default_model if settings is not None else None
+    if not llm_services.is_llm_model_effective_for_tenant(device.tenant, model):
+        raise RuntimeError('请先为设备绑定智能体配置可用 LLM 模型')
+
+    system_prompt = (
+        agent_application.system_prompt.strip()
+        if agent_application.system_prompt.strip()
+        else '你是数字人设备的中文语音问答助手。回答要自然、简洁，适合直接转成语音播报。'
+    )
+    system_prompt += f' 当前设备智能体：{agent_application.name}。'
+    if device.application is not None:
+        system_prompt += f' 当前设备资源应用：{device.application.name}。'
+
+    return {
+        'deviceCode': device.code,
+        'modelConfig': {
+            'name': model.name,
+            'apiBaseUrl': model.provider.api_base_url,
+            'apiKey': model.provider.api_key,
+            'enableWebSearch': model.enable_web_search,
+        },
+        'messages': [
+            {'role': 'system', 'content': system_prompt},
+            {'role': 'user', 'content': question_text},
+        ],
+        'temperature': agent_application.temperature,
+        'maxTokens': None if agent_application.max_tokens_unlimited else agent_application.max_tokens,
+        'annotationAnswer': None,
+        'agentApplicationId': agent_application.id,
+        'agentApplicationName': agent_application.name,
+        'applicationId': device.application_id,
+        'applicationName': device.application.name if device.application else '',
+    }
 
 
 def _run_device_llm_answer(device_code: str, question_text: str) -> dict[str, Any]:

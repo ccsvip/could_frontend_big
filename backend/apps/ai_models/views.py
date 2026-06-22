@@ -37,6 +37,7 @@ from apps.accounts.permissions import (
     IsSuperUser,
 )
 from apps.devices.models import Device
+from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device
 from apps.resources.views import PermissionMappedModelViewSet
 from apps.tenants.mixins import TenantScopedQuerysetMixin
 from apps.tenants.models import Tenant
@@ -242,6 +243,12 @@ def _tts_audio_response(*, pcm: bytes, config, voice: TTSVoice, wrap_wav: bool) 
     return response
 
 
+def _request_wav_audio(request) -> bool:
+    raw_wrap_wav = request.data.get('wrapWav', request.data.get('wrap_wav', False))
+    raw_format = str(request.data.get('format') or request.data.get('audioFormat') or request.data.get('audio_format') or '').strip().lower()
+    return raw_wrap_wav is True or str(raw_wrap_wav).strip().lower() == 'true' or raw_format == 'wav'
+
+
 def _select_platform_tts_voice(provider, raw_voice_id=None) -> TTSVoice | None:
     if raw_voice_id not in (None, ''):
         try:
@@ -340,7 +347,19 @@ class TTSSettingsTestView(APIView):
 class CompanyTTSOptionsView(TenantScopedQuerysetMixin, APIView):
     permission_classes = [CanViewCompanyTTSOptions]
 
+    def get_permissions(self):
+        if str(self.request.headers.get('X-Device-Code') or '').strip():
+            return [AllowAny()]
+        return super().get_permissions()
+
     def get(self, request):
+        device_code = str(request.headers.get('X-Device-Code') or '').strip()
+        if device_code:
+            try:
+                device = get_runtime_device(device_code, require_tenant=True)
+            except RuntimeDeviceError as exc:
+                return Response({'message': exc.message}, status=exc.status_code)
+            return Response(_build_company_tts_options_payload(device.tenant, request))
         return Response(_build_company_tts_options_payload(self.request_tenant, request))
 
 
@@ -410,7 +429,7 @@ class TTSRuntimeView(APIView):
             pcm = tts_services.synthesize_tts_pcm(text=text, voice=voice, config=config)
         except Exception as exc:
             return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
-        return _tts_audio_response(pcm=pcm, config=config, voice=voice, wrap_wav=False)
+        return _tts_audio_response(pcm=pcm, config=config, voice=voice, wrap_wav=_request_wav_audio(request))
 
 
 _PLATFORM_LLM_PERMISSION_MAP = {

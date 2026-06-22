@@ -134,9 +134,12 @@ def extract_transcript_payload(
         return None
     pairs = replacement_pairs if replacement_pairs is not None else load_asr_replacement_pairs(tenant_id)
 
+    replaced_text = apply_asr_replacement_rules(text, pairs)
     return {
         'type': 'asr.transcript',
-        'text': apply_asr_replacement_rules(text, pairs),
+        'text': replaced_text,
+        'originalText': text,
+        'replacementApplied': replaced_text != text,
         'final': event_type in FINAL_EVENT_TYPES,
     }
 
