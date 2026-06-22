@@ -99,7 +99,7 @@ class CompanyDeviceWritePermission(BasePermission):
     destroy=extend_schema(tags=['Devices']),
 )
 class DeviceViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin, viewsets.ModelViewSet):
-    queryset = Device.objects.select_related('application', 'agent_application', 'group').all()
+    queryset = Device.objects.select_related('application__agent_application', 'agent_application', 'group').all()
     lookup_field = 'code'
 
     def get_serializer_class(self):
@@ -175,10 +175,11 @@ class DeviceGroupViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin, views
 
 
 class DeviceApplicationViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin, viewsets.ModelViewSet):
-    queryset = DeviceApplication.objects.prefetch_related(
+    queryset = DeviceApplication.objects.select_related('agent_application').prefetch_related(
         'resources',
         'scrolling_texts__items',
         'voice_tones',
+        'tts_voices',
         'model_assets',
         'command_groups',
     ).all()
@@ -199,14 +200,14 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
     serializer_class = DeviceAuthorizationRequestSerializer
     lookup_field = 'code'
     lookup_value_regex = '[^/]+'
-    queryset = Device.objects.select_related('tenant', 'application', 'agent_application', 'group').all()
+    queryset = Device.objects.select_related('tenant', 'application__agent_application', 'agent_application', 'group').all()
 
     def get_queryset(self):
         return device_authorization_requests_queryset(self.request.query_params)
 
     def get_authorization_device(self, code) -> Device:
         devices = list(
-            Device.objects.select_related('tenant', 'application', 'agent_application', 'group')
+            Device.objects.select_related('tenant', 'application__agent_application', 'agent_application', 'group')
             .filter(code=code)
             .order_by('id')[:2]
         )
@@ -346,7 +347,7 @@ class DeviceActivationView(APIView):
                 is_enabled=True,
                 **defaults,
             )
-            message = '设备上报成功，待后台绑定智能体'
+            message = '设备上报成功，待后台绑定公司'
         self._log_activation(device, device_code, True, message, request)
         return Response(
             {
@@ -355,7 +356,7 @@ class DeviceActivationView(APIView):
                 'device': DeviceSerializer(device, context={'request': request}).data,
                 'application': self._application_payload(device.application),
                 'agentApplication': self._agent_application_payload(device.agent_application),
-                'bindingStatus': 'bound' if device.agent_application_id and device.tenant_id else 'pending',
+                'bindingStatus': 'bound' if device.tenant_id else 'pending',
             },
             status=status.HTTP_200_OK,
         )
@@ -433,7 +434,7 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
         if error is not None:
             return error
         application = device.application
-        agent_application = device.agent_application
+        agent_application = device.effective_agent_application
         if agent_application is None or not agent_application.is_active:
             return Response({'message': '设备未绑定可用智能体'}, status=status.HTTP_403_FORBIDDEN)
         DeviceAuthLog.objects.create(
@@ -526,12 +527,12 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
             'voiceTones': [
                 {
                     'id': item.id,
-                    'name': item.name,
+                    'name': item.display_name,
                     'voiceCode': item.voice_code,
-                    'audioUrl': file_url(item.audio),
-                    'iconUrl': file_url(item.icon),
+                    'audioUrl': '',
+                    'iconUrl': request.build_absolute_uri(item.avatar_path) if item.avatar_path.startswith('/') else item.avatar_path,
                 }
-                for item in application.voice_tones.filter(is_active=True, is_visible=True)
+                for item in application.tts_voices.filter(is_active=True, is_visible=True, provider__is_active=True)
             ],
             'models': [
                 {
@@ -603,7 +604,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         device, error = self.validate_device(request)
         if error is not None:
             return error
-        if device.agent_application is None or not device.agent_application.is_active:
+        if device.effective_agent_application is None or not device.effective_agent_application.is_active:
             return Response({'message': '设备未绑定可用智能体'}, status=status.HTTP_403_FORBIDDEN)
 
         question_text = self._request_question_text(request)
@@ -670,7 +671,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
 
     @staticmethod
     def _generate_answer(device: Device, question_text: str) -> str:
-        agent_application = device.agent_application
+        agent_application = device.effective_agent_application
         model = agent_application.llm_model if agent_application is not None else None
         if model is None:
             settings = llm_services.get_tenant_llm_settings(device.tenant)

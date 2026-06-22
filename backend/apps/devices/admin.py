@@ -15,7 +15,7 @@ class DeviceApplicationAdmin(admin.ModelAdmin):
     list_display = ('name', 'code', 'tenant', 'is_active', 'updated_at')
     list_filter = ('tenant', 'is_active')
     search_fields = ('name', 'code', 'description')
-    filter_horizontal = ('resources', 'scrolling_texts', 'voice_tones', 'model_assets', 'command_groups')
+    filter_horizontal = ('resources', 'scrolling_texts', 'voice_tones', 'tts_voices', 'model_assets', 'command_groups')
 
 
 @admin.register(DeviceAuthorizationCode)
