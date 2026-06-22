@@ -92,7 +92,8 @@ class DeviceApplicationSerializer(serializers.ModelSerializer):
 
 class DeviceSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
-    deviceCode = serializers.CharField(source='code', required=False)
+    recordId = serializers.IntegerField(source='id', read_only=True)
+    deviceCode = serializers.CharField(source='code', required=False, validators=[])
     tenantId = serializers.IntegerField(source='tenant_id', read_only=True)
     tenantName = serializers.CharField(source='tenant.name', read_only=True, default='')
     groupId = TenantOwnedPrimaryKeyField(
@@ -136,6 +137,7 @@ class DeviceSerializer(serializers.ModelSerializer):
         model = Device
         fields = (
             'id',
+            'recordId',
             'deviceCode',
             'name',
             'location',
@@ -164,6 +166,7 @@ class DeviceSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             'id',
+            'recordId',
             'tenantId',
             'tenantName',
             'status',
@@ -189,6 +192,13 @@ class DeviceSerializer(serializers.ModelSerializer):
                 attrs['code'] = legacy_id
         if self.instance is None and not attrs.get('code'):
             raise serializers.ValidationError({'deviceCode': '设备码不能为空'})
+        code = attrs.get('code')
+        if code:
+            duplicate_queryset = Device.objects.filter(code=code)
+            if self.instance is not None:
+                duplicate_queryset = duplicate_queryset.exclude(pk=self.instance.pk)
+            if duplicate_queryset.exists():
+                raise serializers.ValidationError({'deviceCode': '设备码已存在，不能重复绑定'})
         application = attrs.get('application')
         agent_application = attrs.get('agent_application')
         group = attrs.get('group')

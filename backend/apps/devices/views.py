@@ -6,10 +6,11 @@ import uuid
 from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Count, Q
+from django.http import Http404
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.generics import get_object_or_404
+from rest_framework.exceptions import APIException
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.permissions import SAFE_METHODS, AllowAny, BasePermission
 from rest_framework.response import Response
@@ -203,6 +204,20 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
     def get_queryset(self):
         return device_authorization_requests_queryset(self.request.query_params)
 
+    def get_authorization_device(self, code) -> Device:
+        devices = list(
+            Device.objects.select_related('tenant', 'application', 'agent_application', 'group')
+            .filter(code=code)
+            .order_by('id')[:2]
+        )
+        if not devices:
+            raise Http404
+        if len(devices) > 1:
+            conflict = APIException('设备码存在重复绑定，请先清理重复设备记录')
+            conflict.status_code = status.HTTP_409_CONFLICT
+            raise conflict
+        return devices[0]
+
     def list(self, request):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -234,7 +249,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=['post'], url_path='bind')
     def bind(self, request, code=None):
-        device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'agent_application', 'group'), code=code)
+        device = self.get_authorization_device(code)
         serializer = DeviceBindSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         device = bind_device_authorization(device, serializer)
@@ -244,14 +259,14 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=['post'], url_path='ignore')
     def ignore(self, request, code=None):
-        device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'agent_application', 'group'), code=code)
+        device = self.get_authorization_device(code)
         device = ignore_device_authorization_request(device)
         self._log_platform_action(device, DeviceAuthLog.ACTION_IGNORE, '设备授权请求已忽略', request)
         return Response(DeviceAuthorizationRequestSerializer(device, context={'request': request}).data)
 
     @action(detail=True, methods=['patch'], url_path='name')
     def rename(self, request, code=None):
-        device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'agent_application', 'group'), code=code)
+        device = self.get_authorization_device(code)
         next_name = str(request.data.get('name') or '').strip()
         if not next_name:
             return Response({'name': '设备名称不能为空'}, status=status.HTTP_400_BAD_REQUEST)
@@ -260,7 +275,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=['post'], url_path='authorize')
     def authorize(self, request, code=None):
-        device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'agent_application', 'group'), code=code)
+        device = self.get_authorization_device(code)
         serializer = DeviceBindSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         device = bind_device_authorization(device, serializer)
@@ -270,7 +285,7 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=['post'], url_path='revoke')
     def revoke(self, request, code=None):
-        device = get_object_or_404(Device.objects.select_related('tenant', 'application', 'agent_application', 'group'), code=code)
+        device = self.get_authorization_device(code)
         device = revoke_device_authorization(device)
         self._log_platform_action(device, DeviceAuthLog.ACTION_REVOKE, '设备授权已撤销', request)
         self._publish_authorization_event(device, DeviceAuthLog.ACTION_REVOKE)

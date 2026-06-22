@@ -5,7 +5,7 @@ import { PAGE_SIZE } from '../constants';
 type AuthorizationTableCardProps<T extends object> = {
   columns: ColumnsType<T>;
   dataSource: T[];
-  rowKey: string;
+  rowKey: string | ((record: T) => string | number);
   loading: boolean;
   scrollX: number;
   currentPage: number;

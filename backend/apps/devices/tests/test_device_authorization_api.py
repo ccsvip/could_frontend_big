@@ -8,6 +8,7 @@ from asgiref.sync import async_to_sync, sync_to_async
 from asgiref.testing import ApplicationCommunicator
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import IntegrityError
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -159,7 +160,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(data['agentApplicationId'], original_agent.id)
         self.assertEqual(data['agentApplicationName'], original_agent.name)
 
-    def test_runtime_device_lookup_reports_duplicate_device_code(self):
+    def test_device_code_is_globally_unique(self):
         Device.objects.create(
             tenant=self.tenant,
             application=self.application,
@@ -168,19 +169,34 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             code='ANDROID-DUPLICATE-001',
         )
         other_tenant = Tenant.objects.create(name='Other Company', code='other-company')
+
+        with self.assertRaises(IntegrityError):
+            Device.objects.create(
+                tenant=other_tenant,
+                application=self.application,
+                agent_application=self.agent_application,
+                name='Runtime Android B',
+                code='ANDROID-DUPLICATE-001',
+            )
+
+    def test_device_create_rejects_duplicate_device_code(self):
         Device.objects.create(
-            tenant=other_tenant,
+            tenant=self.tenant,
             application=self.application,
             agent_application=self.agent_application,
-            name='Runtime Android B',
-            code='ANDROID-DUPLICATE-001',
+            name='Existing Android',
+            code='ANDROID-DUPLICATE-API-001',
+            is_enabled=True,
         )
 
-        with self.assertRaises(RuntimeDeviceError) as context:
-            get_runtime_device('ANDROID-DUPLICATE-001')
+        response = self.client.post(
+            '/api/v1/devices/',
+            {'deviceCode': 'ANDROID-DUPLICATE-API-001', 'name': 'Duplicate Android'},
+            format='json',
+        )
 
-        self.assertEqual(context.exception.status_code, status.HTTP_409_CONFLICT)
-        self.assertEqual(context.exception.message, '设备码存在重复绑定，请联系后台处理')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['message'], '设备码已存在，不能重复绑定')
 
     def test_runtime_device_lookup_rejects_unbound_company(self):
         Device.objects.create(

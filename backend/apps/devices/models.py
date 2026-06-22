@@ -104,7 +104,7 @@ class Device(models.Model):
     ]
 
     # code is the Android-generated unique device code.
-    code = models.CharField('设备码', max_length=128)
+    code = models.CharField('设备码', max_length=128, unique=True)
     name = models.CharField('设备名称', max_length=128)
     location = models.CharField('部署位置', max_length=128, blank=True, default='')
     status = models.CharField('设备状态', max_length=20, choices=STATUS_CHOICES, default=STATUS_OFFLINE)
@@ -158,9 +158,6 @@ class Device(models.Model):
         ordering = ['code']
         verbose_name = '设备'
         verbose_name_plural = '设备'
-        constraints = [
-            models.UniqueConstraint(fields=['tenant', 'code'], name='unique_device_code_per_tenant'),
-        ]
 
     def __str__(self) -> str:
         return f'{self.code} - {self.name}'

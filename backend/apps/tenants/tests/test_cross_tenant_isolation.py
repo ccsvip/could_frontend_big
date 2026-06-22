@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
@@ -39,9 +40,8 @@ class CrossTenantIsolationTests(APITestCase):
 
         cls.superuser = User.objects.create_superuser('root', 'root@x.com', 'pw12345678')
 
-        # 同 code 跨租户，验证 UniqueConstraint(tenant, code) 允许且数据互不可见。
         cls.dev_a = Device.objects.create(code='D1', name='a-dev', location='x', tenant=cls.tenant_a)
-        cls.dev_b = Device.objects.create(code='D1', name='b-dev', location='y', tenant=cls.tenant_b)
+        cls.dev_b = Device.objects.create(code='D2', name='b-dev', location='y', tenant=cls.tenant_b)
 
         VoiceTone.objects.create(name='va', voice_code='vc', tenant=cls.tenant_a)
         VoiceTone.objects.create(name='vb', voice_code='vc', tenant=cls.tenant_b)
@@ -69,10 +69,13 @@ class CrossTenantIsolationTests(APITestCase):
     # ---- 跨租户单条访问 404 ----
     def test_cross_tenant_retrieve_returns_404(self):
         self.client.force_authenticate(self.user_a)
-        # user_a 访问 user_b 的 D1：D1 在 A 也存在，但应命中 A 的那条，绝不能是 B 的。
         resp = self.client.get(reverse('device-detail', kwargs={'code': 'D1'}))
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(resp.data['name'], 'a-dev')
+
+    def test_device_code_is_globally_unique_across_tenants(self):
+        with self.assertRaises(IntegrityError):
+            Device.objects.create(code='D1', name='duplicate-dev', location='z', tenant=self.tenant_b)
 
     def test_cross_tenant_retrieve_of_foreign_only_code_is_404(self):
         # 仅 B 公司有的设备，A 用户取不到。

@@ -66,7 +66,7 @@ export const DeviceAuthorizationTabs = ({
           <AuthorizationTableCard
             columns={requestColumns}
             dataSource={requests}
-            rowKey="deviceCode"
+            rowKey={(record) => record.recordId}
             loading={requestLoading}
             scrollX={1480}
             currentPage={requestPage}
@@ -88,7 +88,7 @@ export const DeviceAuthorizationTabs = ({
           <AuthorizationTableCard
             columns={authorizationColumns}
             dataSource={authorizations}
-            rowKey="deviceCode"
+            rowKey={(record) => record.recordId}
             loading={authorizationLoading}
             scrollX={1380}
             currentPage={authorizationPage}

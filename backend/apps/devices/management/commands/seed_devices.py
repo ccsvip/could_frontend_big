@@ -50,9 +50,9 @@ class Command(BaseCommand):
         now = timezone.now()
         for item in seed_data:
             Device.objects.update_or_create(
-                tenant=tenant,
                 code=item['code'],
                 defaults={
+                    'tenant': tenant,
                     'application': application,
                     'group': group,
                     'name': item['name'],

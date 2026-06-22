@@ -6,6 +6,7 @@ export type DeviceEnabledStatus = 'enabled' | 'disabled';
 
 export type DeviceRecord = {
   id: string;
+  recordId: number;
   deviceCode: string;
   name: string;
   location: string;
