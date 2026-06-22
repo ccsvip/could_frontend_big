@@ -10,20 +10,15 @@ import {
   bindDeviceAuthorizationRequest,
   authorizeDevice,
   fetchDeviceActivationLogs,
-  fetchDeviceApplications,
   fetchDeviceAuthorizations,
   fetchDeviceAuthorizationRequests,
-  fetchDeviceGroups,
   ignoreDeviceAuthorizationRequest,
   revokeDeviceAuthorization,
   updateDeviceAuthorizationRequestName,
   type DeviceActivationLogRecord,
-  type DeviceApplicationRecord,
   type DeviceAuthorizationRequestRecord,
-  type DeviceGroupRecord,
 } from '../../api/modules/devices';
 import { fetchTenants, type TenantRecord } from '../../api/modules/tenants';
-import { fetchAgentApplications, type AgentApplicationRecord } from '../../api/modules/applications';
 import { EditableDeviceNameCell } from './components/EditableDeviceNameCell';
 import { DeviceAuthorizationModal } from './components/DeviceAuthorizationModal';
 import { DeviceAuthorizationTabs } from './components/DeviceAuthorizationTabs';
@@ -31,10 +26,7 @@ import { DeviceAuthorizationToolbar } from './components/DeviceAuthorizationTool
 import { useDeviceAuthorizationColumns } from './columns';
 import type { BindForm, BindMode } from './types';
 import {
-  buildAgentApplicationOptions,
-  buildApplicationOptions,
   buildBindPayload,
-  buildGroupOptions,
   buildTenantOptions,
 } from './utils';
 
@@ -43,9 +35,6 @@ export const DeviceAuthorizationCenterPage = () => {
   const [authorizations, setAuthorizations] = useState<DeviceAuthorizationRequestRecord[]>([]);
   const [logs, setLogs] = useState<DeviceActivationLogRecord[]>([]);
   const [tenants, setTenants] = useState<TenantRecord[]>([]);
-  const [applications, setApplications] = useState<DeviceApplicationRecord[]>([]);
-  const [agentApplications, setAgentApplications] = useState<AgentApplicationRecord[]>([]);
-  const [groups, setGroups] = useState<DeviceGroupRecord[]>([]);
   const [requestTotal, setRequestTotal] = useState(0);
   const [authorizationTotal, setAuthorizationTotal] = useState(0);
   const [logTotal, setLogTotal] = useState(0);
@@ -68,9 +57,6 @@ export const DeviceAuthorizationCenterPage = () => {
   const hasLoadedRef = useRef(false);
 
   const tenantOptions = useMemo(() => buildTenantOptions(tenants), [tenants]);
-  const applicationOptions = useMemo(() => buildApplicationOptions(applications), [applications]);
-  const agentApplicationOptions = useMemo(() => buildAgentApplicationOptions(agentApplications), [agentApplications]);
-  const groupOptions = useMemo(() => buildGroupOptions(groups), [groups]);
 
   const loadRequests = async (page = requestPage) => {
     setRequestLoading(true);
@@ -124,23 +110,6 @@ export const DeviceAuthorizationCenterPage = () => {
     }
   };
 
-  const loadTenantOwnedOptions = async (tenantId: number) => {
-    try {
-      const [applicationResponse, agentApplicationResponse, groupResponse] = await Promise.all([
-        fetchDeviceApplications({ tenant: tenantId }),
-        fetchAgentApplications({ page: 1, tenant: tenantId }),
-        fetchDeviceGroups({ tenant: tenantId }),
-      ]);
-      setApplications(applicationResponse.results);
-      setAgentApplications(agentApplicationResponse.results.filter((item) => item.isActive));
-      setGroups(groupResponse.results);
-    } catch {
-      setApplications([]);
-      setAgentApplications([]);
-      setGroups([]);
-    }
-  };
-
   useEffect(() => {
     if (hasLoadedRef.current) return;
     hasLoadedRef.current = true;
@@ -184,21 +153,10 @@ export const DeviceAuthorizationCenterPage = () => {
     const tenantId = record.tenantId ?? tenants[0]?.id;
     bindForm.setFieldsValue({
       tenantId,
-      applicationId: record.applicationId ?? null,
-      agentApplicationId: record.agentApplicationId ?? null,
-      groupId: record.groupId ?? null,
       authorizationType: record.authorizationType,
       expiresAt: record.expiresAt ? dayjs(record.expiresAt) : null,
       isEnabled: record.isEnabled,
     });
-    if (tenantId) {
-      void loadTenantOwnedOptions(tenantId);
-    }
-  };
-
-  const handleTenantChange = (tenantId: number) => {
-    bindForm.setFieldsValue({ applicationId: null, agentApplicationId: null, groupId: null });
-    void loadTenantOwnedOptions(tenantId);
   };
 
   const saveAuthorizationChange = async (mode: BindMode) => {
@@ -363,13 +321,9 @@ export const DeviceAuthorizationCenterPage = () => {
         mode={bindMode}
         form={bindForm}
         tenantOptions={tenantOptions}
-        applicationOptions={applicationOptions}
-        agentApplicationOptions={agentApplicationOptions}
-        groupOptions={groupOptions}
         saving={bindSaving}
         onCancel={() => setBindingRequest(null)}
         onSave={handleModalSave}
-        onTenantChange={handleTenantChange}
       />
     </Space>
   );

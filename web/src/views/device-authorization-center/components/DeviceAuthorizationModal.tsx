@@ -9,13 +9,9 @@ type DeviceAuthorizationModalProps = {
   mode: BindMode;
   form: FormInstance<BindForm>;
   tenantOptions: SelectOption<number>[];
-  applicationOptions: SelectOption<number | null>[];
-  agentApplicationOptions: SelectOption<number | null>[];
-  groupOptions: SelectOption<number | null>[];
   saving: boolean;
   onCancel: () => void;
   onSave: () => void;
-  onTenantChange: (tenantId: number) => void;
 };
 
 export const DeviceAuthorizationModal = ({
@@ -23,13 +19,9 @@ export const DeviceAuthorizationModal = ({
   mode,
   form,
   tenantOptions,
-  applicationOptions,
-  agentApplicationOptions,
-  groupOptions,
   saving,
   onCancel,
   onSave,
-  onTenantChange,
 }: DeviceAuthorizationModalProps) => {
   const actionText = mode === 'bind' ? '绑定设备' : '再次授权';
 
@@ -46,16 +38,7 @@ export const DeviceAuthorizationModal = ({
     >
       <Form<BindForm> form={form} layout="vertical">
         <Form.Item label="所属公司" name="tenantId" rules={[{ required: true, message: '请选择公司' }]}>
-          <Select options={tenantOptions} onChange={onTenantChange} />
-        </Form.Item>
-        <Form.Item label="绑定智能体" name="agentApplicationId" rules={[{ required: true, message: '请选择智能体' }]}>
-          <Select options={agentApplicationOptions} optionFilterProp="label" showSearch />
-        </Form.Item>
-        <Form.Item label="资源应用" name="applicationId">
-          <Select options={applicationOptions} optionFilterProp="label" showSearch />
-        </Form.Item>
-        <Form.Item label="设备分组" name="groupId">
-          <Select options={groupOptions} optionFilterProp="label" showSearch />
+          <Select options={tenantOptions} />
         </Form.Item>
         <Form.Item label="授权类型" name="authorizationType" rules={[{ required: true, message: '请选择授权类型' }]}>
           <Select
