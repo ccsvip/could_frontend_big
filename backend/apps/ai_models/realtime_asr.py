@@ -70,7 +70,7 @@ def resolve_asr_device_connection(device_code: str) -> dict[str, Any] | None:
         'device_code': device.code,
         'tenant_id': device.tenant_id,
         'application_id': device.application_id,
-        'agent_application_id': device.agent_application_id,
+        'agent_application_id': device.effective_agent_application.id if device.effective_agent_application else None,
     }
 
 

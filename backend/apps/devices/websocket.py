@@ -32,7 +32,7 @@ def touch_device_for_websocket(device_id: int) -> None:
 
 
 def mark_device_offline_for_websocket(device_id: int) -> dict | None:
-    device = Device.objects.select_related('tenant', 'application', 'agent_application').filter(id=device_id).first()
+    device = Device.objects.select_related('tenant', 'application__agent_application', 'agent_application').filter(id=device_id).first()
     if device is None:
         return None
     device.status = Device.STATUS_OFFLINE
@@ -45,7 +45,7 @@ def _device_status_event(device: Device, status: str) -> dict:
         'type': 'device.status',
         'tenantId': device.tenant_id,
         'applicationId': device.application_id,
-        'agentApplicationId': device.agent_application_id,
+        'agentApplicationId': device.effective_agent_application.id if device.effective_agent_application else None,
         'deviceCode': device.code,
         'status': status,
         'isEnabled': device.is_enabled,

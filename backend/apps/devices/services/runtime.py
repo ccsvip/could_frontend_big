@@ -25,7 +25,7 @@ def get_runtime_device(device_code: str, *, require_tenant: bool = False) -> Dev
         raise RuntimeDeviceError('设备码不能为空', status.HTTP_400_BAD_REQUEST)
 
     devices = list(
-        Device.objects.select_related('tenant', 'application', 'agent_application')
+        Device.objects.select_related('tenant', 'application__agent_application', 'agent_application')
         .filter(code=device_code)
         .order_by('id')[:2]
     )

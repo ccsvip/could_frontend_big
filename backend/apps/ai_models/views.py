@@ -30,6 +30,7 @@ from apps.accounts.permissions import (
     CanViewAgentApplications,
     CanUpdateLLMProviders,
     CanViewCompanyLLMOptions,
+    CanViewCompanyTTSOptions,
     CanViewChat,
     CanViewLLMProviders,
     CanViewTTS,
@@ -174,7 +175,8 @@ class ASRDeviceStatusView(APIView):
         if connection is None:
             return Response({'message': '设备未绑定公司或不可用'}, status=status.HTTP_403_FORBIDDEN)
 
-        device = Device.objects.select_related('tenant', 'application', 'agent_application').get(id=connection['device_id'])
+        device = Device.objects.select_related('tenant', 'application__agent_application', 'agent_application').get(id=connection['device_id'])
+        agent_application = device.effective_agent_application
         return Response({
             **serialize_asr_status(),
             'requestId': get_request_id(request),
@@ -185,8 +187,8 @@ class ASRDeviceStatusView(APIView):
             'tenantName': device.tenant.name if device.tenant else '',
             'applicationId': device.application_id,
             'applicationName': device.application.name if device.application else '',
-            'agentApplicationId': device.agent_application_id,
-            'agentApplicationName': device.agent_application.name if device.agent_application else '',
+            'agentApplicationId': agent_application.id if agent_application else None,
+            'agentApplicationName': agent_application.name if agent_application else '',
         })
 
 
@@ -336,7 +338,7 @@ class TTSSettingsTestView(APIView):
 
 
 class CompanyTTSOptionsView(TenantScopedQuerysetMixin, APIView):
-    permission_classes = [CanViewTTS]
+    permission_classes = [CanViewCompanyTTSOptions]
 
     def get(self, request):
         return Response(_build_company_tts_options_payload(self.request_tenant, request))
