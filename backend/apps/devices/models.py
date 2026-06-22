@@ -42,6 +42,14 @@ class DeviceApplication(models.Model):
     description = models.CharField('应用说明', max_length=255, blank=True, default='')
     is_active = models.BooleanField('是否启用', default=True)
     tenant = _tenant_fk()
+    agent_application = models.ForeignKey(
+        'ai_models.AgentApplication',
+        on_delete=models.SET_NULL,
+        related_name='device_applications',
+        verbose_name='绑定智能体',
+        null=True,
+        blank=True,
+    )
     resources = models.ManyToManyField(
         'resources.Resource',
         blank=True,
@@ -59,6 +67,12 @@ class DeviceApplication(models.Model):
         blank=True,
         related_name='device_applications',
         verbose_name='音色',
+    )
+    tts_voices = models.ManyToManyField(
+        'ai_models.TTSVoice',
+        blank=True,
+        related_name='device_applications',
+        verbose_name='TTS 音色',
     )
     model_assets = models.ManyToManyField(
         'resources.ModelAsset',
@@ -161,6 +175,13 @@ class Device(models.Model):
 
     def __str__(self) -> str:
         return f'{self.code} - {self.name}'
+
+    @property
+    def effective_agent_application(self):
+        if self.agent_application_id:
+            return self.agent_application
+        application = getattr(self, 'application', None)
+        return getattr(application, 'agent_application', None)
 
     @property
     def is_expired(self) -> bool:
