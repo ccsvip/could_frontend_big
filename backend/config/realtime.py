@@ -36,11 +36,14 @@ class RealtimeConnection:
         self.asr_upstream = None
         self.asr_upstream_context = None
         self.asr_upstream_task = None
+        self.llm_session_id = None
+        self.llm_task = None
         self.tts_session_id = None
         self.tts_task = None
 
     async def close(self) -> None:
         await self.close_asr_session()
+        await self.close_llm_session()
         await self.close_tts_session()
         self.close_device_events()
         if self.device_status_device_id is not None:
@@ -69,6 +72,14 @@ class RealtimeConnection:
             self.asr_upstream_context = None
         self.asr_upstream = None
         self.asr_session_id = None
+
+    async def close_llm_session(self) -> None:
+        if self.llm_task is not None:
+            if not self.llm_task.done():
+                self.llm_task.cancel()
+            await asyncio.gather(self.llm_task, return_exceptions=True)
+            self.llm_task = None
+        self.llm_session_id = None
 
     async def close_tts_session(self) -> None:
         if self.tts_task is not None:
@@ -176,7 +187,10 @@ async def _handle_client_event(event, send, connection: RealtimeConnection) -> b
         await _handle_tts_session_cancel(send, connection, message)
         return False
     if command_type == 'llm.session.start':
-        await _handle_llm_session_start(send, message)
+        await _handle_llm_session_start(send, connection, message)
+        return False
+    if command_type == 'llm.session.cancel':
+        await _handle_llm_session_cancel(send, connection, message)
         return False
 
     await _send_error(
@@ -318,7 +332,10 @@ async def _handle_asr_session_start(send, connection: RealtimeConnection, messag
             max_size=2 * 1024 * 1024,
         )
         upstream = await upstream_context.__aenter__()
-        await upstream.send(json.dumps(realtime_asr._session_update_event()))
+        await upstream.send(json.dumps(realtime_asr._session_update_event(
+            vad_threshold=getattr(config, 'vad_threshold', 0.0),
+            vad_silence_duration_ms=getattr(config, 'vad_silence_duration_ms', 400),
+        )))
     except Exception as exc:
         await _send_json(send, _trace_payload('asr.error', command_id, request_id, trace_id, message=str(exc)[:200]))
         return
@@ -378,7 +395,41 @@ async def _handle_tts_session_cancel(send, connection: RealtimeConnection, messa
     )
 
 
-async def _handle_llm_session_start(send, message: dict[str, Any]) -> None:
+async def _handle_llm_session_start(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:
+    await connection.close_llm_session()
+    command_id = message.get('id')
+    connection.llm_session_id = command_id
+    connection.llm_task = asyncio.create_task(_run_llm_session(send, connection, command_id, message))
+
+
+async def _handle_llm_session_cancel(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:
+    session_id = connection.llm_session_id
+    if connection.llm_task is None:
+        await _send_json(send, {'type': 'llm.error', 'id': message.get('id'), 'message': 'LLM session is not started'})
+        return
+    await connection.close_llm_session()
+    await _send_json(
+        send,
+        {
+            'type': 'llm.cancelled',
+            'id': message.get('id'),
+            'payload': {'sessionId': session_id},
+        },
+    )
+
+
+async def _run_llm_session(send, connection: RealtimeConnection, command_id, message: dict[str, Any]) -> None:
+    try:
+        await _run_llm_session_body(send, command_id, message)
+    except asyncio.CancelledError:
+        raise
+    finally:
+        if connection.llm_task is asyncio.current_task():
+            connection.llm_task = None
+            connection.llm_session_id = None
+
+
+async def _run_llm_session_body(send, command_id, message: dict[str, Any]) -> None:
     command_id = message.get('id')
     payload = message.get('payload') if isinstance(message.get('payload'), dict) else {}
     device_code = str(payload.get('deviceCode') or payload.get('device_code') or '').strip()

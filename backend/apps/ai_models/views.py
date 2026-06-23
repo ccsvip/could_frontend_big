@@ -78,6 +78,7 @@ from .models import (
 from .realtime_asr import resolve_asr_device_connection
 from .serializers import (
     ASRConfigSerializer,
+    ASRVADConfigSerializer,
     AgentAnnotationCreateFromMessageSerializer,
     AgentAnnotationSerializer,
     ASRReplacementRuleSerializer,
@@ -165,6 +166,22 @@ class ASRStatusView(APIView):
     permission_classes = [CanViewASR]
 
     def get(self, request):
+        return Response(serialize_asr_status())
+
+
+class ASRConfigView(APIView):
+    permission_classes = [CanViewASR]
+
+    def get(self, request):
+        return Response(serialize_asr_status())
+
+    def patch(self, request):
+        from .models import ASRConfig
+
+        instance = ASRConfig.load()
+        serializer = ASRVADConfigSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serialize_asr_status())
 
 

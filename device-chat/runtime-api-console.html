@@ -244,7 +244,8 @@
         <button type="button" data-section="scrollingTexts"><span>获取滚动文本</span><span class="method post">POST</span></button>
         <button type="button" data-section="models"><span>获取数字人模型</span><span class="method post">POST</span></button>
         <button type="button" data-section="videos"><span>获取视频</span><span class="method post">POST</span></button>
-        <button type="button" data-section="heartbeat"><span>设备心跳</span><span class="method post">POST</span></button>
+        <button type="button" data-section="deviceStatus"><span>在线状态</span><span class="method ws">WS</span></button>
+        <button type="button" data-section="heartbeat"><span>兼容心跳</span><span class="method post">POST</span></button>
       </nav>
       <p class="section-title" style="margin-top:18px">能力测试</p>
       <nav class="nav" aria-label="能力测试菜单">
@@ -312,6 +313,8 @@
         activeSection: 'device',
         lastRequest: null,
         sockets: [],
+        deviceStatusSocket: null,
+        deviceStatusPingTimer: null,
       };
 
       const els = {
@@ -346,7 +349,8 @@
         scrollingTexts: { title: '获取滚动文本', description: '通过固定设备码读取当前公司在资源管理/滚动文本维护的数据。' },
         models: { title: '获取数字人模型', description: '通过固定设备码读取当前公司在资源管理/模型管理维护的数据。' },
         videos: { title: '获取视频', description: '通过固定设备码读取当前公司在资源管理/视频管理维护的数据。' },
-        heartbeat: { title: '设备心跳', description: '设备运行期间定期上报心跳，刷新 lastHeartbeat，并可同步软件版本、系统版本和诊断信息。' },
+        deviceStatus: { title: '在线状态 WebSocket', description: '设备在线 / 离线由统一 /ws/realtime/ 的 device.status.start、device.status.ping 和连接断开决定。' },
+        heartbeat: { title: '兼容心跳', description: 'POST /device-runtime/heartbeat/ 只兼容旧端刷新 lastHeartbeat 和版本信息，不决定设备 online / offline。' },
         asr: { title: 'ASR WebSocket', description: '先检查 ASR 设备状态，再用统一 /ws/realtime/ 发送 asr.session.start，并通过麦克风推送 16k PCM 分片。' },
         llmWs: { title: 'LLM WebSocket', description: '统一 /ws/realtime/ 的 llm.session.start，按设备码找到绑定智能体，流式返回 llm.delta，完成返回 llm.done。' },
         ttsWs: { title: 'TTS WebSocket', description: '统一 /ws/realtime/ 支持 tts.session.start，按 type 返回 ready、audio/pcm 二进制分片和 done。' },
@@ -468,6 +472,7 @@
         if (state.activeSection === 'agentChat') return renderAgentChat();
         if (state.activeSection === 'ttsWs') return renderTtsWs();
         if (state.activeSection === 'ttsHttp') return renderTtsHttp();
+        if (state.activeSection === 'deviceStatus') return renderDeviceStatus();
         if (state.activeSection === 'heartbeat') return renderHeartbeat();
         if (state.activeSection === 'runtimeConfig') return renderRuntimeConfig();
         if (!state.activation && !state.runtimeConfig) {
@@ -639,15 +644,15 @@
       }
 
       function renderHeartbeat() {
-        els.contentBody.innerHTML = '<div class="toolbar"><button class="button" id="heartbeatBtn" type="button">发送心跳</button></div><div class="detail-block"><strong>返回结果</strong><pre id="heartbeatOutput">等待请求</pre></div><div class="note">设备运行期间定期调用即可，不需要先调用 activate；后端会按 X-Device-Code 校验设备、刷新 lastHeartbeat，并记录心跳日志。</div>';
+        els.contentBody.innerHTML = '<div class="toolbar"><button class="button" id="heartbeatBtn" type="button">发送兼容心跳</button></div><div class="detail-block"><strong>返回结果</strong><pre id="heartbeatOutput">等待请求</pre></div><div class="note">该 POST 接口只用于兼容旧端：刷新 lastHeartbeat、同步软件版本/系统版本并记录心跳日志；设备在线 / 离线请使用“在线状态 WebSocket”。</div>';
         writeRequestDetail({
-          label: '设备心跳',
+          label: '兼容心跳',
           method: 'POST',
           url: state.apiBaseUrl + '/device-runtime/heartbeat/',
           path: '/device-runtime/heartbeat/',
           headers: previewHeaders('application/json'),
           body: heartbeatBody(),
-          note: '设备运行期间定期调用，用于刷新 lastHeartbeat。设备码放 X-Device-Code，body 可选传版本和诊断信息。',
+          note: '兼容旧端调用，用于刷新 lastHeartbeat。设备码放 X-Device-Code，body 可选传版本和诊断信息；不改变 online/offline。',
         });
         writeResponse({ ok: false, status: '-', body: { message: '等待发送心跳' } });
         const button = document.getElementById('heartbeatBtn');
@@ -669,15 +674,108 @@
 
       async function sendHeartbeat(output) {
         if (!state.deviceCode) throw new Error('请输入设备码');
-        setStatus('正在发送心跳...', 'warn');
+        setStatus('正在发送兼容心跳...', 'warn');
         const result = unwrap(await apiRequest('/device-runtime/heartbeat/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(heartbeatBody()),
-        }, '设备心跳'));
+        }, '兼容心跳'));
         if (output) output.textContent = pretty(result);
-        setStatus('心跳成功', 'ok');
+        setStatus('兼容心跳成功', 'ok');
         return result;
+      }
+
+      function renderDeviceStatus() {
+        els.contentBody.innerHTML = '<div class="toolbar"><button class="button" id="deviceStatusStartBtn" type="button">连接并置为在线</button><button class="button secondary" id="deviceStatusStopBtn" type="button">断开并置为离线</button></div><div class="detail-block"><strong>事件输出</strong><pre id="deviceStatusOutput">等待连接</pre></div><div class="note">当前在线状态以 WebSocket 连接生命周期为准：连接后发送 device.status.start，保持连接期间定时发送 device.status.ping，断开后后端发布 offline。</div>';
+        writeRequestDetail({
+          label: '在线状态 WebSocket',
+          method: 'WS',
+          url: realtimeWsUrl(),
+          path: '/ws/realtime/',
+          headers: {},
+          body: {
+            type: 'device.status.start',
+            id: 'device-status-<timestamp>',
+            payload: { deviceCode: state.deviceCode || '<deviceCode>' },
+            keepalive: { type: 'device.status.ping', id: 'device-ping-<timestamp>' },
+          },
+          note: '设备在线 / 离线由统一 WebSocket 决定；HTTP heartbeat 只兼容旧端字段更新。',
+        });
+        writeResponse({ ok: false, status: '-', body: { message: '等待 WebSocket 连接' } });
+        const output = document.getElementById('deviceStatusOutput');
+        document.getElementById('deviceStatusStartBtn').addEventListener('click', () => startDeviceStatusWebSocket(output));
+        document.getElementById('deviceStatusStopBtn').addEventListener('click', () => stopDeviceStatusWebSocket(output, true));
+      }
+
+      function startDeviceStatusWebSocket(output) {
+        if (!state.deviceCode) return showError(new Error('请输入设备码'));
+        stopDeviceStatusWebSocket(output, false);
+        const events = [];
+        const socket = new WebSocket(realtimeWsUrl());
+        state.deviceStatusSocket = socket;
+        state.sockets.push(socket);
+        setStatus('正在连接在线状态 WebSocket...', 'warn');
+        output.textContent = 'connecting ' + realtimeWsUrl();
+        writeRequestDetail({
+          label: '在线状态 WebSocket',
+          method: 'WS',
+          url: realtimeWsUrl(),
+          path: '/ws/realtime/',
+          headers: {},
+          body: { type: 'device.status.start', id: 'device-status-<timestamp>', payload: { deviceCode: state.deviceCode } },
+          note: '连接成功后服务端将设备置为 online；关闭连接后服务端将设备置为 offline。',
+        });
+        socket.addEventListener('open', () => {
+          const command = { type: 'device.status.start', id: createCommandId('device-status'), payload: { deviceCode: state.deviceCode } };
+          events.push({ type: 'client.open' }, command);
+          socket.send(JSON.stringify(command));
+          state.deviceStatusPingTimer = window.setInterval(() => {
+            if (socket.readyState !== WebSocket.OPEN) return;
+            const ping = { type: 'device.status.ping', id: createCommandId('device-ping') };
+            socket.send(JSON.stringify(ping));
+            events.push(ping);
+            output.textContent = pretty(events);
+          }, 30000);
+          setStatus('设备在线 WebSocket 已连接', 'ok');
+          output.textContent = pretty(events);
+        });
+        socket.addEventListener('message', (event) => {
+          events.push(parseJson(event.data) || event.data);
+          output.textContent = pretty(events);
+          writeResponse({ ok: true, status: 'WS', body: events });
+        });
+        socket.addEventListener('error', () => {
+          events.push({ type: 'client.error', message: 'WebSocket 连接失败' });
+          output.textContent = pretty(events);
+          setStatus('在线状态 WebSocket 连接失败', 'error');
+        });
+        socket.addEventListener('close', (event) => {
+          clearDeviceStatusPing();
+          if (state.deviceStatusSocket === socket) state.deviceStatusSocket = null;
+          events.push({ type: 'client.close', code: event.code, reason: event.reason || '' });
+          output.textContent = pretty(events);
+          setStatus('在线状态 WebSocket 已断开', 'warn');
+        });
+      }
+
+      function stopDeviceStatusWebSocket(output, announce) {
+        clearDeviceStatusPing();
+        const socket = state.deviceStatusSocket;
+        state.deviceStatusSocket = null;
+        if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+          socket.close(1000, 'client stop');
+        }
+        if (announce && output) {
+          output.textContent = pretty([{ type: 'client.close.requested', message: '已请求断开 WebSocket，后端应将设备置为 offline' }]);
+          setStatus('已断开在线状态 WebSocket', 'warn');
+        }
+      }
+
+      function clearDeviceStatusPing() {
+        if (state.deviceStatusPingTimer) {
+          window.clearInterval(state.deviceStatusPingTimer);
+          state.deviceStatusPingTimer = null;
+        }
       }
 
       function renderScrollingTexts() {
@@ -836,9 +934,9 @@
 
       function renderLlmWs() {
         const suggested = (((state.runtimeConfig || {}).agentApplication || {}).suggestedQuestions || [])[0] || '你好，请介绍一下你自己。';
-        els.contentBody.innerHTML = '<div class="field"><label for="llmWsText">问题文本</label><textarea id="llmWsText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmWsBtn" type="button">发送 llm.session.start</button></div><div class="grid"><article class="card"><h3>智能体回复</h3><div id="llmWsAnswer" class="code-chip">等待回复</div></article></div><div class="detail-block"><strong>事件输出</strong><pre id="llmWsOutput">等待请求</pre></div><div class="note">特殊说明：LLM WebSocket 是智能体问答接口，只负责文本问题到智能体回复；ASR 和 TTS 分别使用自己的 WebSocket type。</div>';
+        els.contentBody.innerHTML = '<div class="field"><label for="llmWsText">问题文本</label><textarea id="llmWsText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmWsBtn" type="button">发送 llm.session.start</button></div><div class="grid"><article class="card"><h3>智能体回复</h3><div id="llmWsAnswer" class="code-chip">等待回复</div></article></div><div class="detail-block"><strong>事件输出</strong><pre id="llmWsOutput">等待请求</pre></div><div class="note">特殊说明：LLM WebSocket 是智能体问答接口，只负责文本问题到智能体回复；打断当前回答发送 llm.session.cancel。ASR 和 TTS 分别使用自己的 WebSocket type。</div>';
         document.getElementById('llmWsBtn').addEventListener('click', sendLlmWs);
-        writeRequestDetail({ label: 'LLM WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { type: 'llm.session.start', id: 'llm-session-<timestamp>', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: suggested, requestId: '<requestId>', traceId: '<traceId>' } }, note: '统一实时通信入口，llm.session.start 按设备码解析绑定智能体，流式返回 llm.delta，完成返回 llm.done。' });
+        writeRequestDetail({ label: 'LLM WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { start: { type: 'llm.session.start', id: 'llm-session-<timestamp>', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: suggested, requestId: '<requestId>', traceId: '<traceId>' } }, cancel: { type: 'llm.session.cancel', id: 'llm-cancel-<timestamp>' } }, note: '统一实时通信入口，llm.session.start 按设备码解析绑定智能体，流式返回 llm.delta，完成返回 llm.done；llm.session.cancel 打断当前回答。' });
       }
 
       async function sendLlmWs() {
@@ -865,11 +963,11 @@
 
       function renderAgentChat() {
         const suggested = (((state.runtimeConfig || {}).agentApplication || {}).suggestedQuestions || [])[0] || '你好，请介绍一下你自己。';
-        els.contentBody.innerHTML = '<div class="field"><label for="llmText">实时问题</label><textarea id="llmText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmVoiceStartBtn" type="button">开始问答</button><button class="button secondary" id="llmVoiceStopBtn" type="button" disabled>停止识别</button><button class="button secondary" id="llmBtn" type="button">用当前问题发送</button><label class="code-chip"><input id="llmAutoPlay" type="checkbox" checked> 自动播放</label></div><div class="grid"><article class="card"><h3>识别状态</h3><div id="llmAsrState" class="code-chip">等待录音</div></article><article class="card"><h3>智能体回复</h3><div id="llmAnswerText" class="code-chip">等待回复</div></article><article class="card"><h3>语音播放</h3><div id="llmTtsState" class="code-chip">等待合成</div></article></div><audio id="llmAudio" controls preload="none" hidden></audio><div class="detail-block"><strong>链路结果</strong><pre id="llmOutput">等待请求</pre></div><div class="note">特殊说明：智能体问答主链路统一使用 /ws/realtime/：asr.session.start、llm.session.start、tts.session.start 通过不同 type 区分；HTTP 仅保留为单接口调试入口。</div>';
+        els.contentBody.innerHTML = '<div class="field"><label for="llmText">实时问题</label><textarea id="llmText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmVoiceStartBtn" type="button">开始问答</button><button class="button secondary" id="llmVoiceStopBtn" type="button" disabled>停止识别</button><button class="button secondary" id="llmBtn" type="button">用当前问题发送</button><label class="code-chip"><input id="llmAutoPlay" type="checkbox" checked> 自动播放</label></div><div class="grid"><article class="card"><h3>识别状态</h3><div id="llmAsrState" class="code-chip">等待录音</div></article><article class="card"><h3>智能体回复</h3><div id="llmAnswerText" class="code-chip">等待回复</div></article><article class="card"><h3>语音播放</h3><div id="llmTtsState" class="code-chip">等待合成</div></article></div><audio id="llmAudio" controls preload="none" hidden></audio><div class="detail-block"><strong>链路结果</strong><pre id="llmOutput">等待请求</pre></div><div class="note">特殊说明：智能体问答主链路统一使用 /ws/realtime/：asr.session.start、llm.session.start、llm.session.cancel、tts.session.start 和 tts.session.cancel 通过不同 type 区分；HTTP 仅保留为单接口调试入口。</div>';
         document.getElementById('llmVoiceStartBtn').addEventListener('click', startAgentVoiceQuestion);
         document.getElementById('llmVoiceStopBtn').addEventListener('click', () => stopAgentVoiceQuestion({ ask: true }));
         document.getElementById('llmBtn').addEventListener('click', () => sendLlmText({ source: 'manual' }));
-        writeRequestDetail({ label: '智能体问答链路', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { asr: { type: 'asr.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>' }, binary: '16k mono pcm_s16le chunks' }, llm: { type: 'llm.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: suggested } }, tts: { type: 'tts.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: '<answerText>' }, binary: 'audio/pcm chunks' } }, note: '统一实时通信入口：ASR、LLM、TTS 都走 /ws/realtime/，通过 type 区分能力。' });
+        writeRequestDetail({ label: '智能体问答链路', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { asr: { type: 'asr.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>' }, binary: '16k mono pcm_s16le chunks' }, llm: { start: { type: 'llm.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: suggested } }, cancel: { type: 'llm.session.cancel', id: 'llm-cancel-<timestamp>' } }, tts: { start: { type: 'tts.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: '<answerText>' }, binary: 'audio/pcm chunks' }, cancel: { type: 'tts.session.cancel', id: 'tts-cancel-<timestamp>' } } }, note: '统一实时通信入口：ASR、LLM、TTS 都走 /ws/realtime/，通过 type 区分能力；用户打断时取消 LLM/TTS 后重新开始 ASR。' });
       }
 
       async function startAgentVoiceQuestion() {
@@ -1420,7 +1518,7 @@
           errors: runtimeDeviceErrors([['403 / 44021 / DEVICE_AGENT_UNBOUND', '设备未绑定可用智能体。']]),
         };
         if (path.includes('/device-runtime/heartbeat/')) return {
-          summary: '设备心跳接口。设备运行期间定期调用，用于刷新 lastHeartbeat；不需要每次心跳前调用 activate。',
+          summary: '兼容心跳接口。只用于刷新 lastHeartbeat、版本和诊断日志；不改变设备 online/offline，在线状态以 /ws/realtime/ 的 device.status.* 为准。',
           query: null,
           headers: deviceJsonHeadersDoc(),
           body: [
@@ -1432,6 +1530,7 @@
             ['status', '<code>success</code> 表示心跳写入成功。'],
             ['message', '固定为“心跳成功”。'],
             ['requestId / traceId', '链路追踪字段。'],
+            ['online/offline', '不会由该接口改变；请使用 WebSocket 在线状态命令。'],
           ],
           responseExample: {
             status: 'success',
@@ -1524,6 +1623,29 @@
           },
           errors: runtimeDeviceErrors([['400', '文本为空或音色参数不合法。']]),
         };
+        if (detail.method === 'WS' && state.activeSection === 'deviceStatus') return {
+          summary: detail.note || '统一 WebSocket 在线状态命令接口。',
+          query: null,
+          headers: [
+            ['无业务必填 Header', '设备码在 WebSocket command 的 <code>payload.deviceCode</code> 中传递。'],
+          ],
+          body: [
+            ['type', '<code>device.status.start</code> 建立在线状态会话；<code>device.status.ping</code> 刷新 lastHeartbeat。'],
+            ['id', '客户端生成的 command id。'],
+            ['payload.deviceCode', '<code>device.status.start</code> 必填；用于解析设备。'],
+          ],
+          response: [
+            ['device.status.started', '服务端确认设备已进入 online。'],
+            ['device.status.pong', '服务端确认 ping，刷新 lastHeartbeat。'],
+            ['close / disconnect', '连接断开后服务端将设备置为 offline，并发布设备状态事件。'],
+            ['error', '设备码无效或设备不可用。'],
+          ],
+          responseExample: [
+            { type: 'device.status.started', id: '<commandId>', payload: { deviceCode: '<deviceCode>', status: 'online' } },
+            { type: 'device.status.pong', id: '<commandId>', payload: { deviceCode: '<deviceCode>' } },
+          ],
+          errors: runtimeDeviceErrors([['device_not_found', '设备不存在、未授权或不可用。']]),
+        };
         if (detail.method === 'WS') return {
           summary: detail.note || '统一 WebSocket 实时命令接口。',
           query: null,
@@ -1531,7 +1653,7 @@
             ['无业务必填 Header', '设备码在 WebSocket command 的 <code>payload.deviceCode</code> 中传递。'],
           ],
           body: [
-            ['type', '命令类型，例如 asr.session.start、llm.session.start、tts.session.start。'],
+            ['type', '命令类型，例如 device.status.start、asr.session.start、asr.session.cancel、llm.session.start、llm.session.cancel、tts.session.start、tts.session.cancel。'],
             ['id', '客户端生成的 session/request id。'],
             ['payload.deviceCode', '必填；用于解析设备、公司和绑定智能体。'],
             ['payload.requestId / traceId', '可选；链路追踪。'],
@@ -1540,6 +1662,7 @@
             ['*.ready', '会话就绪事件。'],
             ['*.delta / 二进制音频', '流式结果。ASR/LLM 返回文本事件，TTS 返回 audio/pcm 二进制分片。'],
             ['*.done', '会话完成事件。'],
+            ['*.cancelled', '会话取消事件。'],
             ['*.error', '失败事件，包含 message。'],
           ],
           responseExample: [
@@ -1668,7 +1791,7 @@
       function endpointNote(path) {
         if (path.includes('/device-auth/activate/')) return '设备首次/重复上报，HTTP 设备码统一放在 X-Device-Code 请求头，body 只放设备版本和诊断信息。';
         if (path.includes('/device-runtime/config/')) return '当前真实来源：HTTP 设备码放 X-Device-Code，返回 device、application、agentApplication、resources.*。';
-        if (path.includes('/device-runtime/heartbeat/')) return '设备心跳接口；HTTP 设备码放 X-Device-Code，body 可选传 softwareVersion、systemVersion、deviceInfo。';
+        if (path.includes('/device-runtime/heartbeat/')) return '兼容心跳接口；HTTP 设备码放 X-Device-Code，body 可选传 softwareVersion、systemVersion、deviceInfo，不决定在线状态。';
         if (path.includes('/device-runtime/resources/')) return '设备码免登录资源切片接口；images/scrollingTexts/models/videos 分别读取资源管理下对应菜单。';
         if (path.includes('/ai-models/tts/options/')) return 'TTS 音色 options 列表；带 X-Device-Code 时按设备所属公司返回 voices。';
         if (path.includes('/ai-models/asr/device-status/')) return '设备码免登录 ASR 状态检查。';
@@ -1836,6 +1959,9 @@
       function makeRequestIds() {
         const suffix = Date.now().toString(36) + '-' + Math.random().toString(16).slice(2, 8);
         return { requestId: 'req-' + suffix, traceId: 'trace-' + suffix };
+      }
+      function createCommandId(prefix) {
+        return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(16).slice(2, 8);
       }
       function unwrap(payload) {
         const body = payload && payload.body !== undefined ? payload.body : payload;

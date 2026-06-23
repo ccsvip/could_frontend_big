@@ -30,6 +30,8 @@ class EffectiveASRConfig:
     base_url: str
     model: str
     is_active: bool
+    vad_threshold: float = 0.0
+    vad_silence_duration_ms: int = 400
     updated_at: object | None = None
 
 
@@ -48,6 +50,8 @@ def get_effective_asr_config() -> EffectiveASRConfig:
         api_key=(cfg.api_key or getattr(settings, 'MULTIMODAL_API_KEY', '')).strip(),
         base_url=(cfg.base_url or getattr(settings, 'ASR_BASE_URL', '')).strip(),
         model=(cfg.model or getattr(settings, 'ASR_MODEL', '')).strip(),
+        vad_threshold=float(getattr(cfg, 'vad_threshold', 0.0)),
+        vad_silence_duration_ms=int(getattr(cfg, 'vad_silence_duration_ms', 400)),
         is_active=bool(cfg.is_active),
         updated_at=cfg.updated_at,
     )
@@ -65,6 +69,8 @@ def serialize_asr_settings(config: EffectiveASRConfig) -> dict:
         'apiKey': mask_secret(config.api_key),
         'baseUrl': config.base_url,
         'model': config.model,
+        'vadThreshold': config.vad_threshold,
+        'vadSilenceDurationMs': config.vad_silence_duration_ms,
         'isActive': config.is_active,
         'configured': is_asr_configured(config),
         'updated_at': config.updated_at,
@@ -79,6 +85,8 @@ def serialize_asr_status(config: EffectiveASRConfig | None = None) -> dict:
         'workspaceId': effective.workspace_id,
         'baseUrl': effective.base_url,
         'model': effective.model,
+        'vadThreshold': effective.vad_threshold,
+        'vadSilenceDurationMs': effective.vad_silence_duration_ms,
         'updated_at': effective.updated_at,
     }
 
@@ -109,7 +117,7 @@ def transcribe_pcm_audio(*, pcm: bytes, sample_rate: int = 16000, config: Effect
                 'User-Agent: solin-device-runtime/1.0',
             ],
         )
-        ws.send(json.dumps(_transcription_session_update_event(sample_rate)))
+        ws.send(json.dumps(_transcription_session_update_event(sample_rate, effective)))
         for offset in range(0, len(pcm), 32 * 1024):
             chunk = pcm[offset:offset + 32 * 1024]
             ws.send(json.dumps(_audio_append_event(chunk)))
@@ -159,7 +167,7 @@ def _missing_config_message(config: EffectiveASRConfig) -> str:
     return f'Missing ASR config: {", ".join(missing)}'
 
 
-def _transcription_session_update_event(sample_rate: int) -> dict:
+def _transcription_session_update_event(sample_rate: int, config: EffectiveASRConfig) -> dict:
     return {
         'event_id': 'event_device_voice_asr_session_update',
         'type': 'session.update',
@@ -169,8 +177,8 @@ def _transcription_session_update_event(sample_rate: int) -> dict:
             'input_audio_transcription': {'language': 'zh'},
             'turn_detection': {
                 'type': 'server_vad',
-                'threshold': 0.0,
-                'silence_duration_ms': 400,
+                'threshold': config.vad_threshold,
+                'silence_duration_ms': config.vad_silence_duration_ms,
             },
         },
     }
@@ -229,8 +237,8 @@ def test_asr_connection() -> dict:
                 'input_audio_transcription': {'language': 'zh'},
                 'turn_detection': {
                     'type': 'server_vad',
-                    'threshold': 0.0,
-                    'silence_duration_ms': 400,
+                    'threshold': config.vad_threshold,
+                    'silence_duration_ms': config.vad_silence_duration_ms,
                 },
             },
         }))

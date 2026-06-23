@@ -1056,6 +1056,9 @@ export const ApplicationManagementPage = () => {
 
   const handleSend = async () => {
     const content = inputValue.trim();
+    if (agentAudio.recording || agentAudio.transcribing) {
+      agentAudio.stopRecording({ suppressDone: true, cancel: true });
+    }
     await sendChatContent(content);
   };
 
@@ -1797,7 +1800,20 @@ export const ApplicationManagementPage = () => {
                     agentAudio.stopRecording();
                     return;
                   }
-                  void agentAudio.startRecording((text) => setInputValue(text));
+                  if (streaming) {
+                    handleStopStreaming();
+                  } else {
+                    agentAudio.stopPlayback();
+                  }
+                  void agentAudio.startRecording(
+                    (text) => setInputValue(text),
+                    {
+                      onDone: (text) => {
+                        setInputValue(text);
+                        void sendChatContent(text);
+                      },
+                    },
+                  );
                 }}
                 className={`flex items-center justify-center ${agentAudio.recording ? 'bg-red-50 text-red-500 border-red-200 hover:bg-red-100' : ''}`}
               >
@@ -2063,7 +2079,20 @@ export const ApplicationManagementPage = () => {
                     agentAudio.stopRecording();
                     return;
                   }
-                  void agentAudio.startRecording((text) => setInputValue(text));
+                  if (streaming) {
+                    handleStopStreaming();
+                  } else {
+                    agentAudio.stopPlayback();
+                  }
+                  void agentAudio.startRecording(
+                    (text) => setInputValue(text),
+                    {
+                      onDone: (text) => {
+                        setInputValue(text);
+                        void sendChatContent(text);
+                      },
+                    },
+                  );
                 }}
                 className={`flex items-center justify-center ${agentAudio.recording ? 'bg-red-50 text-red-500 border-red-200 hover:bg-red-100' : ''}`}
               >

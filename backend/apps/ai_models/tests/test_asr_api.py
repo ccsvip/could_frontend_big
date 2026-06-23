@@ -1,3 +1,4 @@
+import json
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -6,7 +7,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import ASRReplacementRule
+from apps.ai_models.models import ASRConfig, ASRReplacementRule
 from apps.devices.models import Device
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
@@ -53,6 +54,8 @@ class ASRApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(read_response.status_code, status.HTTP_200_OK)
         self.assertEqual(read_response.data['workspaceId'], 'env-workspace')
         self.assertEqual(read_response.data['apiKey'], '********cret')
+        self.assertEqual(read_response.data['vadThreshold'], 0.0)
+        self.assertEqual(read_response.data['vadSilenceDurationMs'], 400)
 
         update_response = self.client.patch(
             '/api/v1/settings/asr/',
@@ -61,6 +64,8 @@ class ASRApiTests(TenantTestMixin, APITestCase):
                 'apiKey': 'new-secret',
                 'baseUrl': 'wss://dashscope.aliyuncs.com/api-ws/v1/realtime',
                 'model': 'qwen3-asr-flash-realtime',
+                'vadThreshold': 0.35,
+                'vadSilenceDurationMs': 1200,
                 'isActive': False,
             },
             format='json',
@@ -69,7 +74,27 @@ class ASRApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(update_response.status_code, status.HTTP_200_OK)
         self.assertEqual(update_response.data['workspaceId'], 'new-workspace')
         self.assertEqual(update_response.data['apiKey'], '********cret')
+        self.assertEqual(update_response.data['vadThreshold'], 0.35)
+        self.assertEqual(update_response.data['vadSilenceDurationMs'], 1200)
         self.assertFalse(update_response.data['isActive'])
+
+    def test_asr_settings_validate_vad_range(self):
+        superuser = User.objects.create_superuser(username='vad-root', password='test123456')
+        self.client.force_authenticate(user=superuser)
+
+        response = self.client.patch(
+            '/api/v1/settings/asr/',
+            {
+                'vadThreshold': 1.2,
+                'vadSilenceDurationMs': 100,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['status'], 'error')
+        self.assertIn('小于或者等于 1', response.data['message'])
+        self.assertIn('大于或者等于 200', response.data['message'])
 
     def test_non_superuser_cannot_update_asr_settings(self):
         self.grant_permissions('ai_models.asr.view')
@@ -77,6 +102,34 @@ class ASRApiTests(TenantTestMixin, APITestCase):
         response = self.client.patch('/api/v1/settings/asr/', {'model': 'x'}, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    @override_settings(
+        MULTIMODAL_WORKSPACE_ID='env-workspace',
+        MULTIMODAL_API_KEY='env-secret',
+        ASR_BASE_URL='wss://dashscope.aliyuncs.com/api-ws/v1/realtime',
+        ASR_MODEL='qwen3-asr-flash-realtime',
+    )
+    def test_user_with_asr_view_can_update_vad_config_only(self):
+        self.grant_permissions('ai_models.asr.view')
+
+        response = self.client.patch(
+            '/api/v1/ai-models/asr/config/',
+            {
+                'vadThreshold': -0.1,
+                'vadSilenceDurationMs': 500,
+                'apiKey': 'should-not-change',
+                'model': 'should-not-change',
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['vadThreshold'], -0.1)
+        self.assertEqual(response.data['vadSilenceDurationMs'], 500)
+        self.assertNotIn('apiKey', response.data)
+        config = ASRConfig.load()
+        self.assertEqual(config.api_key, 'env-secret')
+        self.assertEqual(config.model, 'qwen3-asr-flash-realtime')
 
     @override_settings(
         MULTIMODAL_WORKSPACE_ID='env-workspace',
@@ -93,6 +146,8 @@ class ASRApiTests(TenantTestMixin, APITestCase):
         self.assertTrue(response.data['configured'])
         self.assertEqual(response.data['workspaceId'], 'env-workspace')
         self.assertEqual(response.data['model'], 'qwen3-asr-flash-realtime')
+        self.assertEqual(response.data['vadThreshold'], 0.0)
+        self.assertEqual(response.data['vadSilenceDurationMs'], 400)
         self.assertNotIn('apiKey', response.data)
         self.assertNotIn('env-secret', str(response.data))
 
@@ -105,6 +160,14 @@ class ASRApiTests(TenantTestMixin, APITestCase):
     @patch('apps.ai_models.services.asr.websocket.create_connection')
     def test_asr_test_uses_masked_response_and_mocked_success(self, create_connection):
         self.grant_permissions('ai_models.asr.view')
+        superuser = User.objects.create_superuser(username='asr-config-root', password='test123456')
+        self.client.force_authenticate(user=superuser)
+        self.client.patch(
+            '/api/v1/settings/asr/',
+            {'vadThreshold': -0.25, 'vadSilenceDurationMs': 900},
+            format='json',
+        )
+        self.client.force_authenticate(user=self.user)
         ws = create_connection.return_value
         ws.recv.return_value = '{"type":"session.updated"}'
 
@@ -118,6 +181,9 @@ class ASRApiTests(TenantTestMixin, APITestCase):
         call_kwargs = create_connection.call_args.kwargs
         self.assertIn('Authorization: Bearer env-secret', call_kwargs['header'])
         self.assertIn('X-DashScope-WorkSpace: env-workspace', call_kwargs['header'])
+        session_update = json.loads(ws.send.call_args_list[0].args[0])
+        self.assertEqual(session_update['session']['turn_detection']['threshold'], -0.25)
+        self.assertEqual(session_update['session']['turn_detection']['silence_duration_ms'], 900)
         ws.close.assert_called_once()
 
     @override_settings(

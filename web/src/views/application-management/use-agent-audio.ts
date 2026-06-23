@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { message } from 'antd';
 
 import {
+  buildAsrSessionCancelCommand,
   buildAsrSessionFinishCommand,
   buildAsrSessionStartCommand,
   buildRealtimeWebSocketUrl,
@@ -31,6 +32,15 @@ type AsrSocketMessage = {
   message?: string;
 };
 
+type StopRecordingOptions = {
+  cancel?: boolean;
+  suppressDone?: boolean;
+};
+
+type StartRecordingOptions = {
+  onDone?: (text: string) => void;
+};
+
 export type TtsFilterRules = {
   punctuation?: string;
   emoji?: boolean;
@@ -58,12 +68,16 @@ export const useAgentAudio = () => {
   const playbackRequestGuardRef = useRef(createPlaybackRequestGuard());
   const playbackKeyRef = useRef<string | null>(null);
   const playbackAbortRef = useRef<AbortController | null>(null);
+  const latestTranscriptRef = useRef('');
+  const asrDoneCallbackRef = useRef<((text: string) => void) | null>(null);
+  const suppressAsrDoneRef = useRef(false);
   const streamPlaybackQueueRef = useRef<string[]>([]);
   const streamPlaybackBufferRef = useRef('');
   const streamPlaybackActiveRef = useRef(false);
   const streamPlaybackSessionRef = useRef(0);
 
-  const stopRecording = useCallback(() => {
+  const stopRecording = useCallback((options?: StopRecordingOptions) => {
+    suppressAsrDoneRef.current = Boolean(options?.suppressDone);
     workletNodeRef.current?.port.close();
     workletNodeRef.current?.disconnect();
     sourceRef.current?.disconnect();
@@ -73,7 +87,14 @@ export const useAgentAudio = () => {
 
     const socket = socketRef.current;
     if (socket?.readyState === WebSocket.OPEN) {
-      socket.send(encodeRealtimeCommand(buildAsrSessionFinishCommand(createRealtimeCommandId('asr-finish'))));
+      socket.send(encodeRealtimeCommand(
+        options?.cancel
+          ? buildAsrSessionCancelCommand(createRealtimeCommandId('asr-cancel'))
+          : buildAsrSessionFinishCommand(createRealtimeCommandId('asr-finish')),
+      ));
+      if (options?.cancel) {
+        socket.close(1000, 'asr cancelled');
+      }
     } else {
       socket?.close();
     }
@@ -138,13 +159,19 @@ export const useAgentAudio = () => {
     gainRef.current = silentGain;
   }, []);
 
-  const startRecording = useCallback(async (onTranscript: (text: string) => void) => {
+  const startRecording = useCallback(async (
+    onTranscript: (text: string) => void,
+    options?: StartRecordingOptions,
+  ) => {
     if (!token) {
       message.error('登录状态已失效，请重新登录');
       return;
     }
 
     transcriptRef.current = '';
+    latestTranscriptRef.current = '';
+    asrDoneCallbackRef.current = options?.onDone ?? null;
+    suppressAsrDoneRef.current = false;
     setTranscribing(true);
     try {
       const stream = await requestMicrophoneStream();
@@ -163,7 +190,7 @@ export const useAgentAudio = () => {
         })));
         void setupAudioStreaming(stream, socket).catch((error: unknown) => {
           message.error(error instanceof Error ? error.message : '无法打开麦克风');
-          stopRecording();
+          stopRecording({ suppressDone: true, cancel: true });
         });
       };
       socket.onmessage = (event: MessageEvent<string>) => {
@@ -185,22 +212,40 @@ export const useAgentAudio = () => {
           if (payload.final) {
             transcriptRef.current = nextText;
           }
+          latestTranscriptRef.current = nextText;
           onTranscript(nextText);
+          if (payload.final) {
+            const doneText = nextText.trim();
+            if (!suppressAsrDoneRef.current && doneText) {
+              stopRecording({ suppressDone: true, cancel: true });
+              asrDoneCallbackRef.current?.(doneText);
+              asrDoneCallbackRef.current = null;
+              suppressAsrDoneRef.current = false;
+            }
+          }
           return;
         }
         if (payload.type === 'asr.done') {
           setRecording(false);
           setTranscribing(false);
+          socketRef.current = null;
+          socket.close(1000, 'asr done');
+          const doneText = latestTranscriptRef.current.trim();
+          if (!suppressAsrDoneRef.current && doneText) {
+            asrDoneCallbackRef.current?.(doneText);
+          }
+          asrDoneCallbackRef.current = null;
+          suppressAsrDoneRef.current = false;
           return;
         }
         if (payload.type === 'asr.error') {
           message.error(payload.message || '语音识别失败');
-          stopRecording();
+          stopRecording({ suppressDone: true, cancel: true });
         }
       };
       socket.onerror = () => {
         message.error('ASR 连接异常');
-        stopRecording();
+        stopRecording({ suppressDone: true, cancel: true });
       };
       socket.onclose = () => {
         setRecording(false);
@@ -208,7 +253,7 @@ export const useAgentAudio = () => {
       };
     } catch (error) {
       message.error(error instanceof Error ? error.message : '无法打开麦克风');
-      stopRecording();
+      stopRecording({ suppressDone: true, cancel: true });
     }
   }, [setupAudioStreaming, stopRecording, tenant?.id, tenantScopeId, token]);
 
@@ -382,7 +427,7 @@ export const useAgentAudio = () => {
 
   useEffect(() => {
     return () => {
-      stopRecording();
+      stopRecording({ suppressDone: true, cancel: true });
       stopPlayback();
     };
   }, [stopPlayback, stopRecording]);

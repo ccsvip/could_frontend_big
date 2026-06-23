@@ -325,17 +325,47 @@ class ASRConfigSerializer(serializers.ModelSerializer):
     workspaceId = serializers.CharField(source='workspace_id', required=False, allow_blank=True)
     apiKey = serializers.CharField(source='api_key', required=False, allow_blank=True, write_only=True)
     baseUrl = serializers.CharField(source='base_url', required=False, allow_blank=True, max_length=512)
+    vadThreshold = serializers.FloatField(source='vad_threshold', required=False, min_value=-1, max_value=1)
+    vadSilenceDurationMs = serializers.IntegerField(
+        source='vad_silence_duration_ms',
+        required=False,
+        min_value=200,
+        max_value=6000,
+    )
     isActive = serializers.BooleanField(source='is_active', required=False)
 
     class Meta:
         model = ASRConfig
-        fields = ('workspaceId', 'apiKey', 'baseUrl', 'model', 'isActive', 'updated_at')
+        fields = (
+            'workspaceId',
+            'apiKey',
+            'baseUrl',
+            'model',
+            'vadThreshold',
+            'vadSilenceDurationMs',
+            'isActive',
+            'updated_at',
+        )
         read_only_fields = ('updated_at',)
 
     def update(self, instance, validated_data):
         if validated_data.get('api_key', None) == '':
             validated_data.pop('api_key', None)
         return super().update(instance, validated_data)
+
+
+class ASRVADConfigSerializer(serializers.ModelSerializer):
+    vadThreshold = serializers.FloatField(source='vad_threshold', required=False, min_value=-1, max_value=1)
+    vadSilenceDurationMs = serializers.IntegerField(
+        source='vad_silence_duration_ms',
+        required=False,
+        min_value=200,
+        max_value=6000,
+    )
+
+    class Meta:
+        model = ASRConfig
+        fields = ('vadThreshold', 'vadSilenceDurationMs')
 
 
 class ASRReplacementRuleSerializer(serializers.ModelSerializer):

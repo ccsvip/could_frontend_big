@@ -703,6 +703,10 @@
               "traceId": "trace-001"
             }
           },
+          "llm.session.cancel": {
+            "type": "llm.session.cancel",
+            "id": "llm-cancel-001"
+          },
           "tts.session.start": {
             "type": "tts.session.start",
             "id": "tts-session-001",
@@ -711,6 +715,10 @@
               "text": "你好，我是数字人设备。",
               "voiceId": 1
             }
+          },
+          "tts.session.cancel": {
+            "type": "tts.session.cancel",
+            "id": "tts-cancel-001"
           }
         }
       }

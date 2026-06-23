@@ -6,6 +6,8 @@ export type AsrSettingsRecord = {
   apiKey: string;
   baseUrl: string;
   model: string;
+  vadThreshold: number;
+  vadSilenceDurationMs: number;
   isActive: boolean;
   configured: boolean;
   updated_at: string | null;
@@ -18,6 +20,8 @@ export type AsrSettingsPayload = Partial<{
   apiKey: string;
   baseUrl: string;
   model: string;
+  vadThreshold: number;
+  vadSilenceDurationMs: number;
   isActive: boolean;
 }>;
 
@@ -67,6 +71,13 @@ export const testAsrSettings = async () => {
 
 export const fetchAsrStatus = async () => {
   const response = await httpClient.get<AsrStatusRecord>('/ai-models/asr/status/');
+  return response.data;
+};
+
+export const updateAsrRuntimeConfig = async (
+  payload: Pick<AsrSettingsPayload, 'vadThreshold' | 'vadSilenceDurationMs'>,
+) => {
+  const response = await httpClient.patch<AsrStatusRecord>('/ai-models/asr/config/', payload);
   return response.data;
 };
 

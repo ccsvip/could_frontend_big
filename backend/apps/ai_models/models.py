@@ -282,6 +282,8 @@ class ASRConfig(models.Model):
     api_key = models.CharField('API Key', max_length=512, blank=True, default='')
     base_url = models.CharField('WebSocket URL', max_length=512, blank=True, default='')
     model = models.CharField('模型名称', max_length=128, blank=True, default='')
+    vad_threshold = models.FloatField('VAD检测阈值', default=0.0)
+    vad_silence_duration_ms = models.PositiveIntegerField('VAD断句检测阈值(ms)', default=400)
     is_active = models.BooleanField('是否启用', default=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
 
@@ -308,6 +310,8 @@ class ASRConfig(models.Model):
                 'api_key': getattr(settings, 'MULTIMODAL_API_KEY', ''),
                 'base_url': getattr(settings, 'ASR_BASE_URL', ''),
                 'model': getattr(settings, 'ASR_MODEL', ''),
+                'vad_threshold': 0.0,
+                'vad_silence_duration_ms': 400,
                 'is_active': True,
             },
         )

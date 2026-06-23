@@ -4,6 +4,7 @@ import {
   Card,
   Form,
   Input,
+  InputNumber,
   Modal,
   Popconfirm,
   Switch,
@@ -15,6 +16,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import {
   AudioOutlined,
+  ClockCircleOutlined,
   DeleteOutlined,
   EditOutlined,
   LoadingOutlined,
@@ -22,6 +24,8 @@ import {
   PlayCircleOutlined,
   PlusOutlined,
   ReloadOutlined,
+  SaveOutlined,
+  SettingOutlined,
   SwapOutlined,
 } from '@ant-design/icons';
 import {
@@ -29,9 +33,11 @@ import {
   deleteAsrReplacementRule,
   fetchAsrReplacementRules,
   fetchAsrStatus,
+  updateAsrRuntimeConfig,
   updateAsrReplacementRule,
   type AsrReplacementRulePayload,
   type AsrReplacementRuleRecord,
+  type AsrStatusRecord,
 } from '../../api/modules/asr';
 import {
   buildAsrSessionFinishCommand,
@@ -61,6 +67,11 @@ type ReplacementRuleFormValues = {
   sourceText: string;
   replacementText: string;
   isActive: boolean;
+};
+
+type VadConfigFormValues = {
+  vadThreshold: number;
+  vadSilenceDurationMs: number;
 };
 
 const TARGET_SAMPLE_RATE = 16000;
@@ -158,8 +169,10 @@ export const AsrManagementPage = () => {
   const token = useAuthStore((state) => state.token);
   const tenantScopeId = useTenantScopeStore((state) => state.tenantId);
   const [phase, setPhase] = useState<TestPhase>('idle');
+  const [status, setStatus] = useState<AsrStatusRecord | null>(null);
   const [serviceReady, setServiceReady] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
+  const [vadSaving, setVadSaving] = useState(false);
   const [liveText, setLiveText] = useState('');
   const [finalText, setFinalText] = useState('');
   const [errorText, setErrorText] = useState('');
@@ -171,6 +184,7 @@ export const AsrManagementPage = () => {
   const [editingRule, setEditingRule] = useState<AsrReplacementRuleRecord | null>(null);
   const [ruleSubmitting, setRuleSubmitting] = useState(false);
   const [ruleForm] = Form.useForm<ReplacementRuleFormValues>();
+  const [vadForm] = Form.useForm<VadConfigFormValues>();
 
   const socketRef = useRef<WebSocket | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -199,12 +213,17 @@ export const AsrManagementPage = () => {
   const loadStatus = useCallback(async () => {
     setStatusLoading(true);
     try {
-      const status = await fetchAsrStatus();
-      setServiceReady(Boolean(status.configured && status.isActive));
+      const data = await fetchAsrStatus();
+      setStatus(data);
+      setServiceReady(Boolean(data.configured && data.isActive));
+      vadForm.setFieldsValue({
+        vadThreshold: data.vadThreshold,
+        vadSilenceDurationMs: data.vadSilenceDurationMs,
+      });
     } finally {
       setStatusLoading(false);
     }
-  }, []);
+  }, [vadForm]);
 
   useEffect(() => {
     void loadStatus();
@@ -300,6 +319,23 @@ export const AsrManagementPage = () => {
     const nextPage = replacementRules.length === 1 && rulesPage > 1 ? rulesPage - 1 : rulesPage;
     setRulesPage(nextPage);
     await loadReplacementRules(nextPage);
+  };
+
+  const handleVadSave = async () => {
+    const values = await vadForm.validateFields();
+    setVadSaving(true);
+    try {
+      const data = await updateAsrRuntimeConfig(values);
+      setStatus(data);
+      setServiceReady(Boolean(data.configured && data.isActive));
+      vadForm.setFieldsValue({
+        vadThreshold: data.vadThreshold,
+        vadSilenceDurationMs: data.vadSilenceDurationMs,
+      });
+      message.success('ASR 断句参数已保存');
+    } finally {
+      setVadSaving(false);
+    }
   };
 
   const setupAudioStreaming = useCallback(async (stream: MediaStream, socket: WebSocket) => {
@@ -665,6 +701,92 @@ export const AsrManagementPage = () => {
           </div>
         </div>
       </div>
+
+      {/* VAD 断句参数 */}
+      <Card className="shadow-sm border-slate-100">
+        <div className="p-6">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-50 text-cyan-700 shadow-sm">
+                <SettingOutlined className="text-lg" />
+              </div>
+              <div>
+                <Typography.Title level={5} className="!mb-0 !text-slate-900">
+                  VAD 断句参数
+                </Typography.Title>
+                <Typography.Text className="!text-slate-500 text-xs block mt-0.5">
+                  控制实时语音识别的触发灵敏度和停止说话后的断句等待时间。
+                </Typography.Text>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Tag color="blue" className="px-2.5 py-1 font-medium">
+                threshold {status?.vadThreshold ?? '-'}
+              </Tag>
+              <Tag color="cyan" className="px-2.5 py-1 font-medium">
+                silence {status?.vadSilenceDurationMs ? `${status.vadSilenceDurationMs}ms` : '-'}
+              </Tag>
+            </div>
+          </div>
+
+          <Form<VadConfigFormValues> form={vadForm} layout="vertical" requiredMark="optional">
+            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-4 items-end">
+              <Form.Item
+                name="vadThreshold"
+                label={
+                  <span className="flex items-center gap-1.5 font-medium text-slate-700">
+                    <AudioOutlined className="text-slate-400" /> VAD 检测阈值
+                  </span>
+                }
+                rules={[{ required: true, message: '请输入 VAD 检测阈值' }]}
+                className="mb-0"
+                tooltip="session.turn_detection.threshold，推荐 0.0，范围 -1 到 1"
+              >
+                <InputNumber
+                  min={-1}
+                  max={1}
+                  step={0.1}
+                  precision={2}
+                  className="w-full h-10"
+                  placeholder="0.0"
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="vadSilenceDurationMs"
+                label={
+                  <span className="flex items-center gap-1.5 font-medium text-slate-700">
+                    <ClockCircleOutlined className="text-slate-400" /> VAD 静音时长
+                  </span>
+                }
+                rules={[{ required: true, message: '请输入 VAD 静音时长' }]}
+                className="mb-0"
+                tooltip="session.turn_detection.silence_duration_ms，推荐 400ms，范围 200 到 6000"
+              >
+                <InputNumber
+                  min={200}
+                  max={6000}
+                  step={100}
+                  precision={0}
+                  addonAfter="ms"
+                  className="w-full h-10"
+                  placeholder="400"
+                />
+              </Form.Item>
+
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                loading={vadSaving}
+                onClick={() => void handleVadSave()}
+                className="h-10 bg-teal-700 hover:bg-teal-600 border-none flex items-center gap-1"
+              >
+                保存参数
+              </Button>
+            </div>
+          </Form>
+        </div>
+      </Card>
 
       {/* 语音测试工作台 */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">

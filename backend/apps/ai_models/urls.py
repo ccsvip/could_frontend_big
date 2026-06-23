@@ -3,6 +3,7 @@ from django.urls import path
 
 from .views import (
     ASRDeviceStatusView,
+    ASRConfigView,
     ASRSettingsTestView,
     ASRSettingsView,
     ASRStatusView,
@@ -57,6 +58,7 @@ urlpatterns = [
     path('ai-models/tts/test/', CompanyTTSTestView.as_view(), name='company-tts-test'),
     path('ai-models/tts/runtime/', TTSRuntimeView.as_view(), name='tts-runtime'),
     path('ai-models/asr/status/', ASRStatusView.as_view(), name='asr-status'),
+    path('ai-models/asr/config/', ASRConfigView.as_view(), name='asr-config'),
     path('ai-models/asr/device-status/', ASRDeviceStatusView.as_view(), name='asr-device-status'),
     path('ai-models/asr/test/', ASRTestView.as_view(), name='asr-test'),
 ] + router.urls

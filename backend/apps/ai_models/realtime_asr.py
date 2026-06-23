@@ -144,7 +144,7 @@ def extract_transcript_payload(
     }
 
 
-def _session_update_event() -> dict[str, Any]:
+def _session_update_event(*, vad_threshold: float = 0.0, vad_silence_duration_ms: int = 400) -> dict[str, Any]:
     return {
         'event_id': 'event_asr_test_session_update',
         'type': 'session.update',
@@ -154,8 +154,8 @@ def _session_update_event() -> dict[str, Any]:
             'input_audio_transcription': {'language': 'zh'},
             'turn_detection': {
                 'type': 'server_vad',
-                'threshold': 0.0,
-                'silence_duration_ms': 400,
+                'threshold': vad_threshold,
+                'silence_duration_ms': vad_silence_duration_ms,
             },
         },
     }

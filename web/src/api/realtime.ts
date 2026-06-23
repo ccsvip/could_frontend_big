@@ -89,6 +89,11 @@ export const buildTtsSessionCancelCommand = (id: string): RealtimeCommand => ({
   id,
 });
 
+export const buildLlmSessionCancelCommand = (id: string): RealtimeCommand => ({
+  type: 'llm.session.cancel',
+  id,
+});
+
 export const parseRealtimeMessage = <TPayload = unknown>(data: unknown): RealtimeEnvelope<TPayload> | null => {
   if (typeof data !== 'string') {
     return null;

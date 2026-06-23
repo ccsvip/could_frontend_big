@@ -211,7 +211,13 @@ class RealtimeWebSocketTests(SimpleTestCase):
             response = await communicator.receive_output(timeout=1)
             self.assertEqual(response['type'], 'websocket.accept')
 
-            config = SimpleNamespace(is_active=True, api_key='test-api-key', workspace_id='test-workspace')
+            config = SimpleNamespace(
+                is_active=True,
+                api_key='test-api-key',
+                workspace_id='test-workspace',
+                vad_threshold=-0.4,
+                vad_silence_duration_ms=700,
+            )
             upstream = UnifiedASRUpstream()
             with (
                 patch(
@@ -252,7 +258,14 @@ class RealtimeWebSocketTests(SimpleTestCase):
                 transcript = await communicator.receive_output(timeout=1)
                 self.assertEqual(
                     json.loads(transcript['text']),
-                    {'type': 'asr.transcript', 'id': 'asr-session-1', 'text': '统一 ASR', 'final': False},
+                    {
+                        'type': 'asr.transcript',
+                        'id': 'asr-session-1',
+                        'text': '统一 ASR',
+                        'originalText': '统一 ASR',
+                        'replacementApplied': False,
+                        'final': False,
+                    },
                 )
 
                 await communicator.send_input({
@@ -266,6 +279,9 @@ class RealtimeWebSocketTests(SimpleTestCase):
             self.assertIn('session.update', sent_types)
             self.assertIn('input_audio_buffer.append', sent_types)
             self.assertIn('session.finish', sent_types)
+            session_update = next(message for message in upstream.messages if message.get('type') == 'session.update')
+            self.assertEqual(session_update['session']['turn_detection']['threshold'], -0.4)
+            self.assertEqual(session_update['session']['turn_detection']['silence_duration_ms'], 700)
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)
@@ -727,7 +743,11 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
             response = await communicator.receive_output(timeout=1)
             self.assertEqual(response['type'], 'websocket.accept')
 
-            with patch('apps.ai_models.llm_services.run_llm_chat_completion', return_value='这是实时回答。') as run_llm:
+            async def stream_answer(**kwargs):
+                yield '这是'
+                yield '实时回答。'
+
+            with patch('apps.ai_models.llm_services.stream_llm_chat_completion', side_effect=stream_answer) as stream_llm:
                 await communicator.send_input({
                     'type': 'websocket.receive',
                     'text': json.dumps({
@@ -746,7 +766,47 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 self.assertEqual(
                     json.loads(message['text']),
                     {
-                        'type': 'llm.answer',
+                        'type': 'llm.started',
+                        'id': 'llm-session-1',
+                        'requestId': 'req-llm-1',
+                        'traceId': 'trace-llm-1',
+                        'payload': {
+                            'deviceCode': 'ANDROID-LLM-WS-001',
+                            'questionText': '介绍一下展厅',
+                            'agentApplicationId': agent_application.id,
+                            'agentApplicationName': 'Runtime Agent',
+                            'applicationId': device_application.id,
+                            'applicationName': 'Runtime LLM App',
+                        },
+                    },
+                )
+                first_delta = await communicator.receive_output(timeout=1)
+                self.assertEqual(
+                    json.loads(first_delta['text']),
+                    {
+                        'type': 'llm.delta',
+                        'id': 'llm-session-1',
+                        'requestId': 'req-llm-1',
+                        'traceId': 'trace-llm-1',
+                        'payload': {'text': '这是'},
+                    },
+                )
+                second_delta = await communicator.receive_output(timeout=1)
+                self.assertEqual(
+                    json.loads(second_delta['text']),
+                    {
+                        'type': 'llm.delta',
+                        'id': 'llm-session-1',
+                        'requestId': 'req-llm-1',
+                        'traceId': 'trace-llm-1',
+                        'payload': {'text': '实时回答。'},
+                    },
+                )
+                done = await communicator.receive_output(timeout=1)
+                self.assertEqual(
+                    json.loads(done['text']),
+                    {
+                        'type': 'llm.done',
                         'id': 'llm-session-1',
                         'requestId': 'req-llm-1',
                         'traceId': 'trace-llm-1',
@@ -761,13 +821,127 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                         },
                     },
                 )
-                call_kwargs = run_llm.call_args.kwargs
-                self.assertEqual(call_kwargs['model'].id, model.id)
+                call_kwargs = stream_llm.call_args.kwargs
+                self.assertEqual(call_kwargs['model_config']['name'], model.name)
                 self.assertEqual(call_kwargs['temperature'], 0.2)
                 self.assertEqual(call_kwargs['max_tokens'], 256)
                 self.assertEqual(call_kwargs['messages'][0]['role'], 'system')
                 self.assertIn('Runtime Agent', call_kwargs['messages'][0]['content'])
                 self.assertEqual(call_kwargs['messages'][1], {'role': 'user', 'content': '介绍一下展厅'})
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
+    def test_unified_realtime_websocket_cancels_llm_session(self):
+        provider = LLMProvider.objects.create(
+            name='Cancelable LLM Provider',
+            provider_type='openai',
+            api_base_url='https://llm.example/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='cancelable-model', is_active=True)
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        agent_application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Cancelable Agent',
+            llm_model=model,
+            system_prompt='你是设备助手。',
+            temperature=0.2,
+            max_tokens=256,
+        )
+        device_application = DeviceApplication.objects.create(
+            tenant=self.tenant,
+            name='Cancelable LLM App',
+            code='cancelable-llm-app',
+            agent_application=agent_application,
+        )
+        Device.objects.create(
+            tenant=self.tenant,
+            application=device_application,
+            name='Cancelable LLM Device',
+            code='ANDROID-LLM-CANCEL-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+
+        async def run_websocket():
+            from config.asgi import application
+
+            stream_started = asyncio.Event()
+            stream_cancelled = asyncio.Event()
+
+            async def hanging_stream(**kwargs):
+                stream_started.set()
+                try:
+                    await asyncio.Event().wait()
+                    yield ''
+                finally:
+                    stream_cancelled.set()
+
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            response = await communicator.receive_output(timeout=1)
+            self.assertEqual(response['type'], 'websocket.accept')
+
+            with patch('apps.ai_models.llm_services.stream_llm_chat_completion', side_effect=hanging_stream):
+                await communicator.send_input({
+                    'type': 'websocket.receive',
+                    'text': json.dumps({
+                        'type': 'llm.session.start',
+                        'id': 'llm-cancel-session',
+                        'payload': {
+                            'deviceCode': 'ANDROID-LLM-CANCEL-001',
+                            'text': '请开始长回答',
+                            'requestId': 'req-llm-cancel-1',
+                            'traceId': 'trace-llm-cancel-1',
+                        },
+                    }),
+                })
+
+                started = await communicator.receive_output(timeout=1)
+                self.assertEqual(
+                    json.loads(started['text']),
+                    {
+                        'type': 'llm.started',
+                        'id': 'llm-cancel-session',
+                        'requestId': 'req-llm-cancel-1',
+                        'traceId': 'trace-llm-cancel-1',
+                        'payload': {
+                            'deviceCode': 'ANDROID-LLM-CANCEL-001',
+                            'questionText': '请开始长回答',
+                            'agentApplicationId': agent_application.id,
+                            'agentApplicationName': 'Cancelable Agent',
+                            'applicationId': device_application.id,
+                            'applicationName': 'Cancelable LLM App',
+                        },
+                    },
+                )
+                await asyncio.wait_for(stream_started.wait(), timeout=1)
+
+                await communicator.send_input({
+                    'type': 'websocket.receive',
+                    'text': json.dumps({'type': 'llm.session.cancel', 'id': 'llm-cancel-1'}),
+                })
+                cancelled = await communicator.receive_output(timeout=1)
+                self.assertEqual(
+                    json.loads(cancelled['text']),
+                    {
+                        'type': 'llm.cancelled',
+                        'id': 'llm-cancel-1',
+                        'payload': {'sessionId': 'llm-cancel-session'},
+                    },
+                )
+                await asyncio.wait_for(stream_cancelled.wait(), timeout=1)
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)
