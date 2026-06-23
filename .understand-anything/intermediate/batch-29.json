@@ -1,0 +1,485 @@
+{
+  "nodes": [
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-33.json",
+      "type": "config",
+      "name": "ua-file-analyzer-output-33.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-33.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-33.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        1430
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-34.json",
+      "type": "config",
+      "name": "ua-file-analyzer-output-34.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-34.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-34.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        788
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-35.json",
+      "type": "config",
+      "name": "ua-file-analyzer-output-35.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-35.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-35.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        2367
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-36.json",
+      "type": "config",
+      "name": "ua-file-analyzer-output-36.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-36.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-36.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        1588
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-37.json",
+      "type": "config",
+      "name": "ua-file-analyzer-output-37.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-37.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-37.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        1127
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-38.json",
+      "type": "config",
+      "name": "ua-file-analyzer-output-38.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-38.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-38.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        738
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-39.json",
+      "type": "config",
+      "name": "ua-file-analyzer-output-39.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-39.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-39.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "json",
+      "lineRange": [
+        1,
+        211
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-4.json",
+      "type": "config",
+      "name": "ua-file-analyzer-output-4.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-4.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-4.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        14857
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-5.json",
+      "type": "config",
+      "name": "ua-file-analyzer-output-5.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-5.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-5.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        12829
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-6.json",
+      "type": "config",
+      "name": "ua-file-analyzer-output-6.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-6.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-6.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        7686
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-7.json",
+      "type": "config",
+      "name": "ua-file-analyzer-output-7.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-7.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-7.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        12139
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-8.json",
+      "type": "config",
+      "name": "ua-file-analyzer-output-8.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-8.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-8.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        3819
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-9.json",
+      "type": "config",
+      "name": "ua-file-analyzer-output-9.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-9.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-9.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        1163
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-1.json",
+      "type": "config",
+      "name": "ua-file-extract-results-1.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-1.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-1.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        13711
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-10.json",
+      "type": "config",
+      "name": "ua-file-extract-results-10.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-10.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-10.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        467
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-11.json",
+      "type": "config",
+      "name": "ua-file-extract-results-11.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-11.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-11.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "simple",
+      "language": "json",
+      "lineRange": [
+        1,
+        107
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-12.json",
+      "type": "config",
+      "name": "ua-file-extract-results-12.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-12.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-12.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        801
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-13.json",
+      "type": "config",
+      "name": "ua-file-extract-results-13.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-13.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-13.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "simple",
+      "language": "json",
+      "lineRange": [
+        1,
+        88
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-14.json",
+      "type": "config",
+      "name": "ua-file-extract-results-14.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-14.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-14.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "simple",
+      "language": "json",
+      "lineRange": [
+        1,
+        63
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-15.json",
+      "type": "config",
+      "name": "ua-file-extract-results-15.json",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-15.json",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-15.json (json); 4 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "json",
+      "lineRange": [
+        1,
+        150
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    }
+  ],
+  "edges": []
+}

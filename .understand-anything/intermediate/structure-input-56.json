@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": "backend/apps/tenants/tests/test_isolation_contract.py",
+      "language": "python",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/tenants/tests/test_llm_isolation.py",
+      "language": "python",
+      "sizeLines": 79,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/tenants/tests/test_tenant_management_api.py",
+      "language": "python",
+      "sizeLines": 123,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/tenants/tests/test_three_tier_access.py",
+      "language": "python",
+      "sizeLines": 141,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/tenants/urls.py",
+      "language": "python",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/tenants/views.py",
+      "language": "python",
+      "sizeLines": 87,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/__init__.py",
+      "language": "python",
+      "sizeLines": 3,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 48,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "backend/config/asgi.py",
+      "language": "python",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/business_cache.py",
+      "language": "python",
+      "sizeLines": 185,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/celery.py",
+      "language": "python",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/exceptions.py",
+      "language": "python",
+      "sizeLines": 99,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/pagination.py",
+      "language": "python",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/realtime.py",
+      "language": "python",
+      "sizeLines": 746,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/request_id.py",
+      "language": "python",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/sentry.py",
+      "language": "python",
+      "sizeLines": 90,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/settings/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/settings/base.py",
+      "language": "python",
+      "sizeLines": 354,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/settings/dev.py",
+      "language": "python",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/settings/prod.py",
+      "language": "python",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/tasks.py",
+      "language": "python",
+      "sizeLines": 13,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/test_sentry_filters.py",
+      "language": "python",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/tests/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/tests/test_business_cache.py",
+      "language": "python",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/tests/test_cache_settings.py",
+      "language": "python",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "backend/apps/tenants/tests/test_isolation_contract.py": [],
+    "backend/apps/tenants/tests/test_llm_isolation.py": [],
+    "backend/apps/tenants/tests/test_tenant_management_api.py": [],
+    "backend/apps/tenants/tests/test_three_tier_access.py": [],
+    "backend/apps/tenants/urls.py": [],
+    "backend/apps/tenants/views.py": [],
+    "backend/config/__init__.py": [],
+    "backend/config/AGENTS.md": [],
+    "backend/config/asgi.py": [],
+    "backend/config/business_cache.py": [],
+    "backend/config/celery.py": [],
+    "backend/config/exceptions.py": [],
+    "backend/config/pagination.py": [],
+    "backend/config/realtime.py": [],
+    "backend/config/request_id.py": [],
+    "backend/config/sentry.py": [],
+    "backend/config/settings/__init__.py": [],
+    "backend/config/settings/base.py": [],
+    "backend/config/settings/dev.py": [],
+    "backend/config/settings/prod.py": [],
+    "backend/config/tasks.py": [],
+    "backend/config/test_sentry_filters.py": [],
+    "backend/config/tests/__init__.py": [],
+    "backend/config/tests/test_business_cache.py": [],
+    "backend/config/tests/test_cache_settings.py": []
+  }
+}

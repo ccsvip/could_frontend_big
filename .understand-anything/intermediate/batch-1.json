@@ -1,0 +1,52 @@
+{
+  "nodes": [
+    {
+      "id": "service:backend/Dockerfile",
+      "type": "service",
+      "name": "Dockerfile",
+      "filePath": "backend/Dockerfile",
+      "summary": "backend/Dockerfile (dockerfile); 1 services",
+      "tags": [
+        "dockerfile",
+        "infra"
+      ],
+      "complexity": "simple",
+      "language": "dockerfile",
+      "lineRange": [
+        1,
+        36
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "serviceCount": 1,
+        "stepCount": 11
+      }
+    },
+    {
+      "id": "service:backend/Dockerfile:python",
+      "type": "service",
+      "name": "python",
+      "filePath": "backend/Dockerfile",
+      "summary": "Service python configured in backend/Dockerfile",
+      "tags": [
+        "service",
+        "dockerfile"
+      ],
+      "complexity": "simple",
+      "image": "python:3.13",
+      "ports": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "service:backend/Dockerfile",
+      "target": "service:backend/Dockerfile:python",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

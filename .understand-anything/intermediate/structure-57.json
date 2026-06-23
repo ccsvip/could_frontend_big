@@ -1,0 +1,4022 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "backend/config/tests/test_realtime_websocket.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1112,
+      "nonEmptyLines": 977,
+      "classes": [
+        {
+          "name": "UnifiedASRUpstream",
+          "startLine": 25,
+          "endLine": 61,
+          "methods": [
+            "__init__",
+            "__aenter__",
+            "__aexit__",
+            "send",
+            "__aiter__",
+            "__anext__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "UnifiedTTSUpstream",
+          "startLine": 64,
+          "endLine": 88,
+          "methods": [
+            "__init__",
+            "__aenter__",
+            "__aexit__",
+            "send",
+            "__aiter__",
+            "__anext__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "HangingUnifiedTTSUpstream",
+          "startLine": 91,
+          "endLine": 112,
+          "methods": [
+            "__init__",
+            "__aenter__",
+            "__aexit__",
+            "send",
+            "__aiter__",
+            "__anext__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "FailingUnifiedASRUpstream",
+          "startLine": 115,
+          "endLine": 120,
+          "methods": [
+            "__aenter__",
+            "__aexit__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "RealtimeWebSocketTests",
+          "startLine": 123,
+          "endLine": 582,
+          "methods": [
+            "test_unified_realtime_websocket_responds_to_ping_command",
+            "test_unified_realtime_websocket_reports_unknown_command",
+            "test_unified_realtime_websocket_runs_asr_session_commands_and_binary_audio",
+            "test_unified_realtime_asr_error_paths_echo_trace_context",
+            "test_unified_realtime_websocket_runs_tts_session_command_and_binary_audio",
+            "test_unified_realtime_websocket_cancels_asr_session",
+            "test_unified_realtime_websocket_cancels_tts_session"
+          ],
+          "properties": []
+        },
+        {
+          "name": "RealtimeDeviceEventsTests",
+          "startLine": 585,
+          "endLine": 900,
+          "methods": [
+            "setUp",
+            "grant_permissions",
+            "test_unified_realtime_websocket_subscribes_to_device_events",
+            "test_unified_realtime_websocket_runs_device_llm_session_command",
+            "test_unified_realtime_websocket_unsubscribes_from_device_events",
+            "test_device_events_subscription_does_not_stop_device_status_session"
+          ],
+          "properties": []
+        },
+        {
+          "name": "RealtimeDeviceStatusTests",
+          "startLine": 903,
+          "endLine": 1112,
+          "methods": [
+            "setUp",
+            "test_unified_realtime_websocket_marks_device_online_until_disconnect",
+            "test_unified_realtime_websocket_device_status_ping_requires_started_session",
+            "test_unified_realtime_websocket_filters_other_tenant_device_events",
+            "test_unified_realtime_websocket_requires_command_type"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "UnifiedASRUpstream",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "UnifiedTTSUpstream",
+          "line": 64,
+          "isDefault": false
+        },
+        {
+          "name": "HangingUnifiedTTSUpstream",
+          "line": 91,
+          "isDefault": false
+        },
+        {
+          "name": "FailingUnifiedASRUpstream",
+          "line": 115,
+          "isDefault": false
+        },
+        {
+          "name": "RealtimeWebSocketTests",
+          "line": 123,
+          "isDefault": false
+        },
+        {
+          "name": "RealtimeDeviceEventsTests",
+          "line": 585,
+          "isDefault": false
+        },
+        {
+          "name": "RealtimeDeviceStatusTests",
+          "line": 903,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__init__",
+          "callee": "asyncio.Event",
+          "lineNumber": 28
+        },
+        {
+          "caller": "__init__",
+          "callee": "asyncio.Event",
+          "lineNumber": 29
+        },
+        {
+          "caller": "send",
+          "callee": "json.loads",
+          "lineNumber": 39
+        },
+        {
+          "caller": "send",
+          "callee": "self.messages.append",
+          "lineNumber": 40
+        },
+        {
+          "caller": "send",
+          "callee": "payload.get",
+          "lineNumber": 41
+        },
+        {
+          "caller": "send",
+          "callee": "self._audio_seen.set",
+          "lineNumber": 42
+        },
+        {
+          "caller": "send",
+          "callee": "payload.get",
+          "lineNumber": 43
+        },
+        {
+          "caller": "send",
+          "callee": "self._finish_seen.set",
+          "lineNumber": 44
+        },
+        {
+          "caller": "__anext__",
+          "callee": "self._audio_seen.wait",
+          "lineNumber": 51
+        },
+        {
+          "caller": "__anext__",
+          "callee": "json.dumps",
+          "lineNumber": 53
+        },
+        {
+          "caller": "__anext__",
+          "callee": "self._finish_seen.wait",
+          "lineNumber": 58
+        },
+        {
+          "caller": "__anext__",
+          "callee": "json.dumps",
+          "lineNumber": 60
+        },
+        {
+          "caller": "__init__",
+          "callee": "iter",
+          "lineNumber": 67
+        },
+        {
+          "caller": "__init__",
+          "callee": "json.dumps",
+          "lineNumber": 68
+        },
+        {
+          "caller": "__init__",
+          "callee": "base64.b64encode(b'\\x03\\x04').decode",
+          "lineNumber": 68
+        },
+        {
+          "caller": "__init__",
+          "callee": "base64.b64encode",
+          "lineNumber": 68
+        },
+        {
+          "caller": "__init__",
+          "callee": "json.dumps",
+          "lineNumber": 69
+        },
+        {
+          "caller": "send",
+          "callee": "self.messages.append",
+          "lineNumber": 79
+        },
+        {
+          "caller": "send",
+          "callee": "json.loads",
+          "lineNumber": 79
+        },
+        {
+          "caller": "__anext__",
+          "callee": "next",
+          "lineNumber": 86
+        },
+        {
+          "caller": "__init__",
+          "callee": "asyncio.Event",
+          "lineNumber": 95
+        },
+        {
+          "caller": "send",
+          "callee": "self.messages.append",
+          "lineNumber": 105
+        },
+        {
+          "caller": "send",
+          "callee": "json.loads",
+          "lineNumber": 105
+        },
+        {
+          "caller": "__anext__",
+          "callee": "self._event.wait",
+          "lineNumber": 111
+        },
+        {
+          "caller": "__aenter__",
+          "callee": "RuntimeError",
+          "lineNumber": 117
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "ApplicationCommunicator",
+          "lineNumber": 128
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 137
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 138
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 139
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 141
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 143
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 145
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 146
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 147
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 148
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 152
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.wait",
+          "lineNumber": 153
+        },
+        {
+          "caller": "test_unified_realtime_websocket_responds_to_ping_command",
+          "callee": "async_to_sync",
+          "lineNumber": 155
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "ApplicationCommunicator",
+          "lineNumber": 161
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 170
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 171
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 172
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 174
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 176
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 178
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 179
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 180
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 181
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 192
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.wait",
+          "lineNumber": 193
+        },
+        {
+          "caller": "test_unified_realtime_websocket_reports_unknown_command",
+          "callee": "async_to_sync",
+          "lineNumber": 195
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "ApplicationCommunicator",
+          "lineNumber": 201
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 210
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 211
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 212
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "SimpleNamespace",
+          "lineNumber": 214
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "UnifiedASRUpstream",
+          "lineNumber": 215
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 217
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 221
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 222
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 223
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 224
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 225
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 227
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 229
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 240
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 241
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 242
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 251
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 252
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 253
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 254
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 258
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 260
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 262
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 263
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 263
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "message.get",
+          "lineNumber": 265
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertIn",
+          "lineNumber": 266
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertIn",
+          "lineNumber": 267
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertIn",
+          "lineNumber": 268
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 270
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.wait",
+          "lineNumber": 271
+        },
+        {
+          "caller": "test_unified_realtime_websocket_runs_asr_session_commands_and_binary_audio",
+          "callee": "async_to_sync",
+          "lineNumber": 273
+        },
+        {
+          "caller": "send",
+          "callee": "sent.append",
+          "lineNumber": 282
+        },
+        {
+          "caller": "run_start",
+          "callee": "_handle_asr_session_start",
+          "lineNumber": 284
+        },
+        {
+          "caller": "run_start",
+          "callee": "RealtimeConnection",
+          "lineNumber": 286
+        },
+        {
+          "caller": "run_start",
+          "callee": "self.assertEqual",
+          "lineNumber": 298
+        },
+        {
+          "caller": "run_start",
+          "callee": "json.loads",
+          "lineNumber": 299
+        },
+        {
+          "caller": "run_cases",
+          "callee": "patch",
+          "lineNumber": 302
+        },
+        {
+          "caller": "run_cases",
+          "callee": "run_start",
+          "lineNumber": 303
+        },
+        {
+          "caller": "run_cases",
+          "callee": "self.assertEqual",
+          "lineNumber": 304
+        },
+        {
+          "caller": "run_cases",
+          "callee": "SimpleNamespace",
+          "lineNumber": 315
+        },
+        {
+          "caller": "run_cases",
+          "callee": "patch",
+          "lineNumber": 317
+        },
+        {
+          "caller": "run_cases",
+          "callee": "patch",
+          "lineNumber": 318
+        },
+        {
+          "caller": "run_cases",
+          "callee": "run_start",
+          "lineNumber": 320
+        },
+        {
+          "caller": "run_cases",
+          "callee": "self.assertEqual",
+          "lineNumber": 321
+        },
+        {
+          "caller": "run_cases",
+          "callee": "SimpleNamespace",
+          "lineNumber": 332
+        },
+        {
+          "caller": "run_cases",
+          "callee": "patch",
+          "lineNumber": 334
+        },
+        {
+          "caller": "run_cases",
+          "callee": "patch",
+          "lineNumber": 335
+        },
+        {
+          "caller": "run_cases",
+          "callee": "patch",
+          "lineNumber": 336
+        },
+        {
+          "caller": "run_cases",
+          "callee": "patch",
+          "lineNumber": 337
+        },
+        {
+          "caller": "run_cases",
+          "callee": "patch",
+          "lineNumber": 338
+        },
+        {
+          "caller": "run_cases",
+          "callee": "patch",
+          "lineNumber": 339
+        },
+        {
+          "caller": "run_cases",
+          "callee": "FailingUnifiedASRUpstream",
+          "lineNumber": 339
+        },
+        {
+          "caller": "run_cases",
+          "callee": "run_start",
+          "lineNumber": 341
+        },
+        {
+          "caller": "run_cases",
+          "callee": "self.assertEqual",
+          "lineNumber": 342
+        },
+        {
+          "caller": "test_unified_realtime_asr_error_paths_echo_trace_context",
+          "callee": "async_to_sync",
+          "lineNumber": 353
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "ApplicationCommunicator",
+          "lineNumber": 359
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 368
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 369
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 370
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "SimpleNamespace",
+          "lineNumber": 372
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "SimpleNamespace",
+          "lineNumber": 373
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "SimpleNamespace",
+          "lineNumber": 374
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "UnifiedTTSUpstream",
+          "lineNumber": 382
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 384
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 388
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 389
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 390
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 391
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 392
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 393
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 395
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 397
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 410
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 411
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 412
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 415
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 416
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 417
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 418
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 418
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "message.get",
+          "lineNumber": 420
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertIn",
+          "lineNumber": 421
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertIn",
+          "lineNumber": 422
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertIn",
+          "lineNumber": 423
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 425
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.wait",
+          "lineNumber": 426
+        },
+        {
+          "caller": "test_unified_realtime_websocket_runs_tts_session_command_and_binary_audio",
+          "callee": "async_to_sync",
+          "lineNumber": 428
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "ApplicationCommunicator",
+          "lineNumber": 434
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 443
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 444
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 445
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "SimpleNamespace",
+          "lineNumber": 447
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "HangingUnifiedTTSUpstream",
+          "lineNumber": 448
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 450
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 454
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 455
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 456
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 457
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 458
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 460
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 462
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 473
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 474
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 475
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 484
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 486
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 488
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 489
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 490
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertTrue",
+          "lineNumber": 498
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 499
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.wait",
+          "lineNumber": 500
+        },
+        {
+          "caller": "test_unified_realtime_websocket_cancels_asr_session",
+          "callee": "async_to_sync",
+          "lineNumber": 502
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "ApplicationCommunicator",
+          "lineNumber": 508
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 517
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 518
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 519
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "SimpleNamespace",
+          "lineNumber": 521
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "SimpleNamespace",
+          "lineNumber": 522
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "SimpleNamespace",
+          "lineNumber": 523
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "HangingUnifiedTTSUpstream",
+          "lineNumber": 531
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 533
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 537
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 538
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 539
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 540
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 541
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 542
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 544
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 546
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 558
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 559
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 560
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 564
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 566
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 568
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 569
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 570
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertTrue",
+          "lineNumber": 578
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 579
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.wait",
+          "lineNumber": 580
+        },
+        {
+          "caller": "test_unified_realtime_websocket_cancels_tts_session",
+          "callee": "async_to_sync",
+          "lineNumber": 582
+        },
+        {
+          "caller": "setUp",
+          "callee": "User.objects.create_user",
+          "lineNumber": 587
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.setup_tenant",
+          "lineNumber": 588
+        },
+        {
+          "caller": "setUp",
+          "callee": "Role.objects.create",
+          "lineNumber": 589
+        },
+        {
+          "caller": "setUp",
+          "callee": "UserRole.objects.create",
+          "lineNumber": 590
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.grant_permissions",
+          "lineNumber": 591
+        },
+        {
+          "caller": "setUp",
+          "callee": "DeviceApplication.objects.create",
+          "lineNumber": 592
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 601
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "permission_points.append",
+          "lineNumber": 610
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "self.role.permission_points.set",
+          "lineNumber": 611
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "self.tenant.permission_points.set",
+          "lineNumber": 612
+        },
+        {
+          "caller": "test_unified_realtime_websocket_subscribes_to_device_events",
+          "callee": "str",
+          "lineNumber": 615
+        },
+        {
+          "caller": "test_unified_realtime_websocket_subscribes_to_device_events",
+          "callee": "AccessToken.for_user",
+          "lineNumber": 615
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "ApplicationCommunicator",
+          "lineNumber": 621
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 630
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 631
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 632
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 634
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 636
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 642
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 643
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 644
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 645
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "publish_device_event",
+          "lineNumber": 653
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 661
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 662
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 663
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 664
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 677
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.wait",
+          "lineNumber": 678
+        },
+        {
+          "caller": "test_unified_realtime_websocket_subscribes_to_device_events",
+          "callee": "async_to_sync",
+          "lineNumber": 680
+        },
+        {
+          "caller": "test_unified_realtime_websocket_runs_device_llm_session_command",
+          "callee": "LLMProvider.objects.create",
+          "lineNumber": 683
+        },
+        {
+          "caller": "test_unified_realtime_websocket_runs_device_llm_session_command",
+          "callee": "LLMModel.objects.create",
+          "lineNumber": 690
+        },
+        {
+          "caller": "test_unified_realtime_websocket_runs_device_llm_session_command",
+          "callee": "TenantLLMModelGrant.objects.create",
+          "lineNumber": 691
+        },
+        {
+          "caller": "test_unified_realtime_websocket_runs_device_llm_session_command",
+          "callee": "AgentApplication.objects.create",
+          "lineNumber": 692
+        },
+        {
+          "caller": "test_unified_realtime_websocket_runs_device_llm_session_command",
+          "callee": "DeviceApplication.objects.create",
+          "lineNumber": 700
+        },
+        {
+          "caller": "test_unified_realtime_websocket_runs_device_llm_session_command",
+          "callee": "Device.objects.create",
+          "lineNumber": 706
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "ApplicationCommunicator",
+          "lineNumber": 717
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 726
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 727
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 728
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "patch",
+          "lineNumber": 730
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 731
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 733
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 745
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 746
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 747
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 765
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 766
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 767
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 768
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertIn",
+          "lineNumber": 769
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 770
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 772
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.wait",
+          "lineNumber": 773
+        },
+        {
+          "caller": "test_unified_realtime_websocket_runs_device_llm_session_command",
+          "callee": "async_to_sync",
+          "lineNumber": 775
+        },
+        {
+          "caller": "test_unified_realtime_websocket_unsubscribes_from_device_events",
+          "callee": "str",
+          "lineNumber": 778
+        },
+        {
+          "caller": "test_unified_realtime_websocket_unsubscribes_from_device_events",
+          "callee": "AccessToken.for_user",
+          "lineNumber": 778
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "ApplicationCommunicator",
+          "lineNumber": 784
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 793
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 794
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 795
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 797
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 799
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 805
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 806
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 806
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 808
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 810
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 812
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 813
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 814
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "publish_device_event",
+          "lineNumber": 818
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 827
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 829
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 831
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 832
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 832
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 834
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.wait",
+          "lineNumber": 835
+        },
+        {
+          "caller": "test_unified_realtime_websocket_unsubscribes_from_device_events",
+          "callee": "async_to_sync",
+          "lineNumber": 837
+        },
+        {
+          "caller": "test_device_events_subscription_does_not_stop_device_status_session",
+          "callee": "Device.objects.create",
+          "lineNumber": 840
+        },
+        {
+          "caller": "test_device_events_subscription_does_not_stop_device_status_session",
+          "callee": "str",
+          "lineNumber": 848
+        },
+        {
+          "caller": "test_device_events_subscription_does_not_stop_device_status_session",
+          "callee": "AccessToken.for_user",
+          "lineNumber": 848
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "ApplicationCommunicator",
+          "lineNumber": 854
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 863
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 864
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 865
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 867
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 869
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 875
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 876
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 876
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 878
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 880
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 886
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 887
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 887
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "sync_to_async",
+          "lineNumber": 889
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "Device.objects.get",
+          "lineNumber": 890
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 893
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 895
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.wait",
+          "lineNumber": 896
+        },
+        {
+          "caller": "test_device_events_subscription_does_not_stop_device_status_session",
+          "callee": "async_to_sync",
+          "lineNumber": 898
+        },
+        {
+          "caller": "test_device_events_subscription_does_not_stop_device_status_session",
+          "callee": "device.refresh_from_db",
+          "lineNumber": 899
+        },
+        {
+          "caller": "test_device_events_subscription_does_not_stop_device_status_session",
+          "callee": "self.assertEqual",
+          "lineNumber": 900
+        },
+        {
+          "caller": "setUp",
+          "callee": "User.objects.create_user",
+          "lineNumber": 905
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.setup_tenant",
+          "lineNumber": 906
+        },
+        {
+          "caller": "setUp",
+          "callee": "DeviceApplication.objects.create",
+          "lineNumber": 907
+        },
+        {
+          "caller": "test_unified_realtime_websocket_marks_device_online_until_disconnect",
+          "callee": "Device.objects.create",
+          "lineNumber": 914
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "ApplicationCommunicator",
+          "lineNumber": 927
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 936
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 937
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 938
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 940
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 942
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 948
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 949
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 950
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 951
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "sync_to_async",
+          "lineNumber": 962
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "Device.objects.get",
+          "lineNumber": 963
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 966
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 968
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.wait",
+          "lineNumber": 969
+        },
+        {
+          "caller": "test_unified_realtime_websocket_marks_device_online_until_disconnect",
+          "callee": "async_to_sync",
+          "lineNumber": 971
+        },
+        {
+          "caller": "test_unified_realtime_websocket_marks_device_online_until_disconnect",
+          "callee": "device.refresh_from_db",
+          "lineNumber": 972
+        },
+        {
+          "caller": "test_unified_realtime_websocket_marks_device_online_until_disconnect",
+          "callee": "self.assertEqual",
+          "lineNumber": 973
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "ApplicationCommunicator",
+          "lineNumber": 979
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 988
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 989
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 990
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 992
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 994
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 996
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 997
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 998
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 1009
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.wait",
+          "lineNumber": 1010
+        },
+        {
+          "caller": "test_unified_realtime_websocket_device_status_ping_requires_started_session",
+          "callee": "async_to_sync",
+          "lineNumber": 1012
+        },
+        {
+          "caller": "test_unified_realtime_websocket_filters_other_tenant_device_events",
+          "callee": "Tenant.objects.create",
+          "lineNumber": 1015
+        },
+        {
+          "caller": "test_unified_realtime_websocket_filters_other_tenant_device_events",
+          "callee": "str",
+          "lineNumber": 1016
+        },
+        {
+          "caller": "test_unified_realtime_websocket_filters_other_tenant_device_events",
+          "callee": "AccessToken.for_user",
+          "lineNumber": 1016
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "ApplicationCommunicator",
+          "lineNumber": 1022
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 1031
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 1032
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 1033
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 1035
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 1037
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 1043
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 1044
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 1044
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "publish_device_event",
+          "lineNumber": 1046
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "publish_device_event",
+          "lineNumber": 1054
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 1063
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 1064
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 1065
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 1066
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertNotEqual",
+          "lineNumber": 1067
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 1069
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.wait",
+          "lineNumber": 1070
+        },
+        {
+          "caller": "test_unified_realtime_websocket_filters_other_tenant_device_events",
+          "callee": "async_to_sync",
+          "lineNumber": 1072
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "ApplicationCommunicator",
+          "lineNumber": 1078
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 1087
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 1088
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 1089
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 1091
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.dumps",
+          "lineNumber": 1093
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.receive_output",
+          "lineNumber": 1095
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 1096
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "self.assertEqual",
+          "lineNumber": 1097
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "json.loads",
+          "lineNumber": 1098
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.send_input",
+          "lineNumber": 1109
+        },
+        {
+          "caller": "run_websocket",
+          "callee": "communicator.wait",
+          "lineNumber": 1110
+        },
+        {
+          "caller": "test_unified_realtime_websocket_requires_command_type",
+          "callee": "async_to_sync",
+          "lineNumber": 1112
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 7,
+        "functionCount": 0,
+        "classCount": 7
+      }
+    },
+    {
+      "path": "backend/config/urls.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 114,
+      "nonEmptyLines": 104,
+      "functions": [
+        {
+          "name": "backend_not_found_view",
+          "startLine": 14,
+          "endLine": 15,
+          "params": [
+            "request"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "ApiV1RootView",
+          "startLine": 18,
+          "endLine": 67,
+          "methods": [
+            "get"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "backend_not_found_view",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "ApiV1RootView",
+          "line": 18,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "backend_not_found_view",
+          "callee": "render",
+          "lineNumber": 15
+        },
+        {
+          "caller": "get",
+          "callee": "request.build_absolute_uri('/api/v1/').rstrip",
+          "lineNumber": 22
+        },
+        {
+          "caller": "get",
+          "callee": "request.build_absolute_uri",
+          "lineNumber": 22
+        },
+        {
+          "caller": "get",
+          "callee": "Response",
+          "lineNumber": 23
+        },
+        {
+          "caller": "get",
+          "callee": "base_url.replace",
+          "lineNumber": 26
+        },
+        {
+          "caller": "get",
+          "callee": "base_url.replace",
+          "lineNumber": 27
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/config/wsgi.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 7,
+      "nonEmptyLines": 4,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/manage.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 14,
+      "nonEmptyLines": 9,
+      "functions": [
+        {
+          "name": "main",
+          "startLine": 6,
+          "endLine": 10,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "main",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "main",
+          "callee": "os.environ.setdefault",
+          "lineNumber": 7
+        },
+        {
+          "caller": "main",
+          "callee": "execute_from_command_line",
+          "lineNumber": 10
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/templates/404.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 234,
+      "nonEmptyLines": 207,
+      "metrics": {}
+    },
+    {
+      "path": "build_graph.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 247,
+      "nonEmptyLines": 218,
+      "functions": [
+        {
+          "name": "get_complexity",
+          "startLine": 55,
+          "endLine": 58,
+          "params": [
+            "lines"
+          ]
+        },
+        {
+          "name": "get_part_for_file",
+          "startLine": 221,
+          "endLine": 224,
+          "params": [
+            "p"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "get_complexity",
+          "line": 55,
+          "isDefault": false
+        },
+        {
+          "name": "get_part_for_file",
+          "line": 221,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_part_for_file",
+          "callee": "file_paths.index",
+          "lineNumber": 223
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "device-chat/app.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 909,
+      "nonEmptyLines": 829,
+      "callGraph": [
+        {
+          "caller": "init",
+          "callee": "query.get",
+          "lineNumber": 87
+        },
+        {
+          "caller": "init",
+          "callee": "urlDeviceCode.trim",
+          "lineNumber": 88
+        },
+        {
+          "caller": "init",
+          "callee": "clearResult",
+          "lineNumber": 90
+        },
+        {
+          "caller": "init",
+          "callee": "bindEvents",
+          "lineNumber": 91
+        },
+        {
+          "caller": "init",
+          "callee": "urlDeviceCode.trim",
+          "lineNumber": 92
+        },
+        {
+          "caller": "init",
+          "callee": "connectDevice().catch",
+          "lineNumber": 93
+        },
+        {
+          "caller": "init",
+          "callee": "connectDevice",
+          "lineNumber": 93
+        },
+        {
+          "caller": "init",
+          "callee": "showError",
+          "lineNumber": 93
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "els.connectForm.addEventListener",
+          "lineNumber": 98
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "event.preventDefault",
+          "lineNumber": 99
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "connectDevice().catch",
+          "lineNumber": 100
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "connectDevice",
+          "lineNumber": 100
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "showError",
+          "lineNumber": 100
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "els.recordButton.addEventListener",
+          "lineNumber": 102
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "stopRecording",
+          "lineNumber": 104
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "startRecording().catch",
+          "lineNumber": 107
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "startRecording",
+          "lineNumber": 107
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "showError",
+          "lineNumber": 107
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "els.retryButton.addEventListener",
+          "lineNumber": 109
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "uploadVoice(state.lastAudioBlob, state.lastAudioFormat).catch",
+          "lineNumber": 111
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "uploadVoice",
+          "lineNumber": 111
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "showError",
+          "lineNumber": 111
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "els.clearButton.addEventListener",
+          "lineNumber": 114
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "els.resetButton.addEventListener",
+          "lineNumber": 115
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "els.playButton.addEventListener",
+          "lineNumber": 116
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "playAudio",
+          "lineNumber": 116
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "els.answerAudio.addEventListener",
+          "lineNumber": 117
+        },
+        {
+          "caller": "bindEvents",
+          "callee": "showNotice",
+          "lineNumber": 118
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "els.deviceCodeInput.value.trim",
+          "lineNumber": 123
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "normalizeApiBase",
+          "lineNumber": 129
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "setPhase",
+          "lineNumber": 132
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "showNotice",
+          "lineNumber": 133
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "apiRequest",
+          "lineNumber": 134
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "JSON.stringify",
+          "lineNumber": 140
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "buildActivationPayload",
+          "lineNumber": 140
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "normalizeSessionPayload",
+          "lineNumber": 142
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "renderDevice",
+          "lineNumber": 144
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "setPhase",
+          "lineNumber": 147
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "showNotice",
+          "lineNumber": 148
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "logDiagnostic",
+          "lineNumber": 149
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "showNotice",
+          "lineNumber": 156
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "apiRequest",
+          "lineNumber": 157
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "buildSessionPath",
+          "lineNumber": 157
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "normalizeSessionPayload",
+          "lineNumber": 163
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "renderDevice",
+          "lineNumber": 165
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "setPhase",
+          "lineNumber": 166
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "showNotice",
+          "lineNumber": 167
+        },
+        {
+          "caller": "connectDevice",
+          "callee": "logDiagnostic",
+          "lineNumber": 168
+        },
+        {
+          "caller": "buildSessionPath",
+          "callee": "url.searchParams.has",
+          "lineNumber": 194
+        },
+        {
+          "caller": "buildSessionPath",
+          "callee": "url.searchParams.set",
+          "lineNumber": 195
+        },
+        {
+          "caller": "normalizeSessionPayload",
+          "callee": "unwrapApiPayload",
+          "lineNumber": 201
+        },
+        {
+          "caller": "startRecording",
+          "callee": "connectDevice",
+          "lineNumber": 220
+        },
+        {
+          "caller": "startRecording",
+          "callee": "ensureRecorderSupport",
+          "lineNumber": 222
+        },
+        {
+          "caller": "startRecording",
+          "callee": "clearResult",
+          "lineNumber": 223
+        },
+        {
+          "caller": "startRecording",
+          "callee": "navigator.mediaDevices.getUserMedia",
+          "lineNumber": 227
+        },
+        {
+          "caller": "startRecording",
+          "callee": "Date.now",
+          "lineNumber": 238
+        },
+        {
+          "caller": "startRecording",
+          "callee": "setPhase",
+          "lineNumber": 240
+        },
+        {
+          "caller": "startRecording",
+          "callee": "updateRealtimeQuestionText",
+          "lineNumber": 241
+        },
+        {
+          "caller": "startRecording",
+          "callee": "showNotice",
+          "lineNumber": 242
+        },
+        {
+          "caller": "startRecording",
+          "callee": "startRealtimeAsr",
+          "lineNumber": 243
+        },
+        {
+          "caller": "startRecording",
+          "callee": "setupPcmCapture",
+          "lineNumber": 244
+        },
+        {
+          "caller": "startRecording",
+          "callee": "startRecordingClock",
+          "lineNumber": 245
+        },
+        {
+          "caller": "startRecording",
+          "callee": "window.setTimeout",
+          "lineNumber": 246
+        },
+        {
+          "caller": "stopRecording",
+          "callee": "handleRecordingStopped().catch",
+          "lineNumber": 254
+        },
+        {
+          "caller": "stopRecording",
+          "callee": "handleRecordingStopped",
+          "lineNumber": 254
+        },
+        {
+          "caller": "stopRecording",
+          "callee": "showError",
+          "lineNumber": 254
+        },
+        {
+          "caller": "handleRecordingStopped",
+          "callee": "stopRecordingClock",
+          "lineNumber": 258
+        },
+        {
+          "caller": "handleRecordingStopped",
+          "callee": "stopStream",
+          "lineNumber": 259
+        },
+        {
+          "caller": "handleRecordingStopped",
+          "callee": "Date.now",
+          "lineNumber": 265
+        },
+        {
+          "caller": "handleRecordingStopped",
+          "callee": "finishRealtimeAsr",
+          "lineNumber": 266
+        },
+        {
+          "caller": "handleRecordingStopped",
+          "callee": "closeRealtimeAsr",
+          "lineNumber": 268
+        },
+        {
+          "caller": "handleRecordingStopped",
+          "callee": "setPhase",
+          "lineNumber": 269
+        },
+        {
+          "caller": "handleRecordingStopped",
+          "callee": "showError",
+          "lineNumber": 270
+        },
+        {
+          "caller": "handleRecordingStopped",
+          "callee": "closeRealtimeAsr",
+          "lineNumber": 277
+        },
+        {
+          "caller": "handleRecordingStopped",
+          "callee": "setPhase",
+          "lineNumber": 278
+        },
+        {
+          "caller": "handleRecordingStopped",
+          "callee": "showError",
+          "lineNumber": 279
+        },
+        {
+          "caller": "handleRecordingStopped",
+          "callee": "uploadVoice",
+          "lineNumber": 287
+        },
+        {
+          "caller": "handleRecordingStopped",
+          "callee": "showError",
+          "lineNumber": 289
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "setPhase",
+          "lineNumber": 297
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "showNotice",
+          "lineNumber": 298
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "formData.append",
+          "lineNumber": 300
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "Date.now",
+          "lineNumber": 300
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "formData.append",
+          "lineNumber": 301
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "formData.append",
+          "lineNumber": 302
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "formData.append",
+          "lineNumber": 304
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "String",
+          "lineNumber": 304
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "formData.append",
+          "lineNumber": 307
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "performance.now",
+          "lineNumber": 310
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "apiRequest",
+          "lineNumber": 311
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "unwrapApiPayload",
+          "lineNumber": 318
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "renderAnswer",
+          "lineNumber": 319
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "setPhase",
+          "lineNumber": 320
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "Math.round",
+          "lineNumber": 321
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "performance.now",
+          "lineNumber": 321
+        },
+        {
+          "caller": "uploadVoice",
+          "callee": "logDiagnostic",
+          "lineNumber": 322
+        },
+        {
+          "caller": "startRealtimeAsr",
+          "callee": "resetRealtimeTranscript",
+          "lineNumber": 332
+        },
+        {
+          "caller": "startRealtimeAsr",
+          "callee": "closeRealtimeAsr",
+          "lineNumber": 333
+        },
+        {
+          "caller": "startRealtimeAsr",
+          "callee": "handleRealtimeAsrError",
+          "lineNumber": 336
+        },
+        {
+          "caller": "startRealtimeAsr",
+          "callee": "buildAsrRealtimeWebSocketUrl",
+          "lineNumber": 342
+        },
+        {
+          "caller": "startRealtimeAsr",
+          "callee": "handleRealtimeAsrError",
+          "lineNumber": 344
+        },
+        {
+          "caller": "startRealtimeAsr",
+          "callee": "socket.send",
+          "lineNumber": 352
+        },
+        {
+          "caller": "startRealtimeAsr",
+          "callee": "JSON.stringify",
+          "lineNumber": 352
+        },
+        {
+          "caller": "startRealtimeAsr",
+          "callee": "createRealtimeCommandId",
+          "lineNumber": 354
+        },
+        {
+          "caller": "startRealtimeAsr",
+          "callee": "logDiagnostic",
+          "lineNumber": 357
+        },
+        {
+          "caller": "startRealtimeAsr",
+          "callee": "handleRealtimeAsrError",
+          "lineNumber": 361
+        },
+        {
+          "caller": "startRealtimeAsr",
+          "callee": "window.clearTimeout",
+          "lineNumber": 367
+        },
+        {
+          "caller": "handleRealtimeAsrMessage",
+          "callee": "JSON.parse",
+          "lineNumber": 375
+        },
+        {
+          "caller": "handleRealtimeAsrMessage",
+          "callee": "flushPendingRealtimeAudio",
+          "lineNumber": 382
+        },
+        {
+          "caller": "handleRealtimeAsrMessage",
+          "callee": "logDiagnostic",
+          "lineNumber": 383
+        },
+        {
+          "caller": "handleRealtimeAsrMessage",
+          "callee": "appendRealtimeTranscript",
+          "lineNumber": 388
+        },
+        {
+          "caller": "handleRealtimeAsrMessage",
+          "callee": "String",
+          "lineNumber": 388
+        },
+        {
+          "caller": "handleRealtimeAsrMessage",
+          "callee": "Boolean",
+          "lineNumber": 388
+        },
+        {
+          "caller": "handleRealtimeAsrMessage",
+          "callee": "closeRealtimeAsr",
+          "lineNumber": 393
+        },
+        {
+          "caller": "handleRealtimeAsrMessage",
+          "callee": "handleRealtimeAsrError",
+          "lineNumber": 398
+        },
+        {
+          "caller": "appendRealtimeTranscript",
+          "callee": "text.trim",
+          "lineNumber": 403
+        },
+        {
+          "caller": "appendRealtimeTranscript",
+          "callee": "updateRealtimeQuestionText",
+          "lineNumber": 415
+        },
+        {
+          "caller": "updateRealtimeQuestionText",
+          "callee": "getRealtimeTranscript",
+          "lineNumber": 419
+        },
+        {
+          "caller": "updateRealtimeQuestionText",
+          "callee": "setText",
+          "lineNumber": 421
+        },
+        {
+          "caller": "updateRealtimeQuestionText",
+          "callee": "setText",
+          "lineNumber": 425
+        },
+        {
+          "caller": "getRealtimeTranscript",
+          "callee": "[state.asrFinalText, state.asrLiveText].filter(Boolean).join",
+          "lineNumber": 430
+        },
+        {
+          "caller": "getRealtimeTranscript",
+          "callee": "[state.asrFinalText, state.asrLiveText].filter",
+          "lineNumber": 430
+        },
+        {
+          "caller": "sendRealtimeAudio",
+          "callee": "state.asrPendingBuffers.push",
+          "lineNumber": 446
+        },
+        {
+          "caller": "sendRealtimeAudio",
+          "callee": "state.asrPendingBuffers.shift",
+          "lineNumber": 448
+        },
+        {
+          "caller": "sendRealtimeAudio",
+          "callee": "socket.send",
+          "lineNumber": 455
+        },
+        {
+          "caller": "flushPendingRealtimeAudio",
+          "callee": "socket.send",
+          "lineNumber": 466
+        },
+        {
+          "caller": "finishRealtimeAsr",
+          "callee": "socket.send",
+          "lineNumber": 476
+        },
+        {
+          "caller": "finishRealtimeAsr",
+          "callee": "JSON.stringify",
+          "lineNumber": 476
+        },
+        {
+          "caller": "finishRealtimeAsr",
+          "callee": "createRealtimeCommandId",
+          "lineNumber": 476
+        },
+        {
+          "caller": "finishRealtimeAsr",
+          "callee": "window.clearTimeout",
+          "lineNumber": 477
+        },
+        {
+          "caller": "finishRealtimeAsr",
+          "callee": "window.setTimeout",
+          "lineNumber": 478
+        },
+        {
+          "caller": "finishRealtimeAsr",
+          "callee": "closeRealtimeAsr",
+          "lineNumber": 482
+        },
+        {
+          "caller": "closeRealtimeAsr",
+          "callee": "window.clearTimeout",
+          "lineNumber": 488
+        },
+        {
+          "caller": "closeRealtimeAsr",
+          "callee": "socket.close",
+          "lineNumber": 493
+        },
+        {
+          "caller": "handleRealtimeAsrError",
+          "callee": "String",
+          "lineNumber": 498
+        },
+        {
+          "caller": "handleRealtimeAsrError",
+          "callee": "logDiagnostic",
+          "lineNumber": 499
+        },
+        {
+          "caller": "handleRealtimeAsrError",
+          "callee": "showNotice",
+          "lineNumber": 504
+        },
+        {
+          "caller": "apiRequest",
+          "callee": "window.setTimeout",
+          "lineNumber": 510
+        },
+        {
+          "caller": "apiRequest",
+          "callee": "controller.abort",
+          "lineNumber": 510
+        },
+        {
+          "caller": "apiRequest",
+          "callee": "toApiUrl",
+          "lineNumber": 511
+        },
+        {
+          "caller": "apiRequest",
+          "callee": "fetch",
+          "lineNumber": 513
+        },
+        {
+          "caller": "apiRequest",
+          "callee": "response.headers.get",
+          "lineNumber": 519
+        },
+        {
+          "caller": "apiRequest",
+          "callee": "response.text",
+          "lineNumber": 520
+        },
+        {
+          "caller": "apiRequest",
+          "callee": "parseResponse",
+          "lineNumber": 521
+        },
+        {
+          "caller": "apiRequest",
+          "callee": "extractMessage",
+          "lineNumber": 523
+        },
+        {
+          "caller": "apiRequest",
+          "callee": "mapErrorCode",
+          "lineNumber": 526
+        },
+        {
+          "caller": "apiRequest",
+          "callee": "window.clearTimeout",
+          "lineNumber": 538
+        },
+        {
+          "caller": "renderDevice",
+          "callee": "normalizeDeviceState",
+          "lineNumber": 544
+        },
+        {
+          "caller": "renderAnswer",
+          "callee": "showNotice",
+          "lineNumber": 553
+        },
+        {
+          "caller": "renderAnswer",
+          "callee": "showNotice",
+          "lineNumber": 559
+        },
+        {
+          "caller": "renderAnswer",
+          "callee": "setText",
+          "lineNumber": 564
+        },
+        {
+          "caller": "renderAnswer",
+          "callee": "setText",
+          "lineNumber": 565
+        },
+        {
+          "caller": "renderAnswer",
+          "callee": "buildAudioSource",
+          "lineNumber": 568
+        },
+        {
+          "caller": "renderAnswer",
+          "callee": "setAudioSource",
+          "lineNumber": 570
+        },
+        {
+          "caller": "renderAnswer",
+          "callee": "playAudio",
+          "lineNumber": 572
+        },
+        {
+          "caller": "renderAnswer",
+          "callee": "showNotice",
+          "lineNumber": 574
+        },
+        {
+          "caller": "renderAnswer",
+          "callee": "showNotice",
+          "lineNumber": 577
+        },
+        {
+          "caller": "buildAudioSource",
+          "callee": "normalizeMediaUrl",
+          "lineNumber": 583
+        },
+        {
+          "caller": "buildAudioSource",
+          "callee": "String",
+          "lineNumber": 586
+        },
+        {
+          "caller": "buildAudioSource",
+          "callee": "value.startsWith",
+          "lineNumber": 587
+        },
+        {
+          "caller": "playAudio",
+          "callee": "els.answerAudio.play().then(() => {\n      showNotice('正在播放语音回复', 'ok');\n    }).catch",
+          "lineNumber": 604
+        },
+        {
+          "caller": "playAudio",
+          "callee": "els.answerAudio.play().then",
+          "lineNumber": 604
+        },
+        {
+          "caller": "playAudio",
+          "callee": "els.answerAudio.play",
+          "lineNumber": 604
+        },
+        {
+          "caller": "playAudio",
+          "callee": "showNotice",
+          "lineNumber": 605
+        },
+        {
+          "caller": "playAudio",
+          "callee": "showNotice",
+          "lineNumber": 608
+        },
+        {
+          "caller": "playAudio",
+          "callee": "showNotice",
+          "lineNumber": 610
+        },
+        {
+          "caller": "clearResult",
+          "callee": "resetRealtimeTranscript",
+          "lineNumber": 616
+        },
+        {
+          "caller": "clearResult",
+          "callee": "setText",
+          "lineNumber": 617
+        },
+        {
+          "caller": "clearResult",
+          "callee": "setText",
+          "lineNumber": 618
+        },
+        {
+          "caller": "clearResult",
+          "callee": "els.answerAudio.removeAttribute",
+          "lineNumber": 620
+        },
+        {
+          "caller": "clearResult",
+          "callee": "els.answerAudio.load",
+          "lineNumber": 621
+        },
+        {
+          "caller": "clearResult",
+          "callee": "hideNotice",
+          "lineNumber": 623
+        },
+        {
+          "caller": "resetPageState",
+          "callee": "stopRecording",
+          "lineNumber": 629
+        },
+        {
+          "caller": "resetPageState",
+          "callee": "stopRecordingClock",
+          "lineNumber": 631
+        },
+        {
+          "caller": "resetPageState",
+          "callee": "stopStream",
+          "lineNumber": 632
+        },
+        {
+          "caller": "resetPageState",
+          "callee": "closeRealtimeAsr",
+          "lineNumber": 633
+        },
+        {
+          "caller": "resetPageState",
+          "callee": "clearResult",
+          "lineNumber": 634
+        },
+        {
+          "caller": "resetPageState",
+          "callee": "setPhase",
+          "lineNumber": 646
+        },
+        {
+          "caller": "setPhase",
+          "callee": "Boolean",
+          "lineNumber": 663
+        },
+        {
+          "caller": "setPhase",
+          "callee": "['ready', 'completed', 'error'].includes",
+          "lineNumber": 663
+        },
+        {
+          "caller": "showError",
+          "callee": "String",
+          "lineNumber": 671
+        },
+        {
+          "caller": "showError",
+          "callee": "setPhase",
+          "lineNumber": 672
+        },
+        {
+          "caller": "showError",
+          "callee": "showNotice",
+          "lineNumber": 673
+        },
+        {
+          "caller": "showError",
+          "callee": "logDiagnostic",
+          "lineNumber": 674
+        },
+        {
+          "caller": "hideNotice",
+          "callee": "els.noticeBox.removeAttribute",
+          "lineNumber": 690
+        },
+        {
+          "caller": "setText",
+          "callee": "node.classList.toggle",
+          "lineNumber": 696
+        },
+        {
+          "caller": "setupPcmCapture",
+          "callee": "audioContext.createMediaStreamSource",
+          "lineNumber": 710
+        },
+        {
+          "caller": "setupPcmCapture",
+          "callee": "audioContext.createScriptProcessor",
+          "lineNumber": 711
+        },
+        {
+          "caller": "setupPcmCapture",
+          "callee": "audioContext.createGain",
+          "lineNumber": 712
+        },
+        {
+          "caller": "setupPcmCapture",
+          "callee": "event.inputBuffer.getChannelData",
+          "lineNumber": 719
+        },
+        {
+          "caller": "setupPcmCapture",
+          "callee": "encodePCM16",
+          "lineNumber": 720
+        },
+        {
+          "caller": "setupPcmCapture",
+          "callee": "downsampleBuffer",
+          "lineNumber": 720
+        },
+        {
+          "caller": "setupPcmCapture",
+          "callee": "pcm.buffer.slice",
+          "lineNumber": 721
+        },
+        {
+          "caller": "setupPcmCapture",
+          "callee": "state.pcmChunks.push",
+          "lineNumber": 722
+        },
+        {
+          "caller": "setupPcmCapture",
+          "callee": "sendRealtimeAudio",
+          "lineNumber": 723
+        },
+        {
+          "caller": "setupPcmCapture",
+          "callee": "source.connect",
+          "lineNumber": 726
+        },
+        {
+          "caller": "setupPcmCapture",
+          "callee": "processor.connect",
+          "lineNumber": 727
+        },
+        {
+          "caller": "setupPcmCapture",
+          "callee": "silentGain.connect",
+          "lineNumber": 728
+        },
+        {
+          "caller": "downsampleBuffer",
+          "callee": "Math.round",
+          "lineNumber": 740
+        },
+        {
+          "caller": "downsampleBuffer",
+          "callee": "Math.round",
+          "lineNumber": 745
+        },
+        {
+          "caller": "encodePCM16",
+          "callee": "Math.max",
+          "lineNumber": 762
+        },
+        {
+          "caller": "encodePCM16",
+          "callee": "Math.min",
+          "lineNumber": 762
+        },
+        {
+          "caller": "startRecordingClock",
+          "callee": "updateRecordingTime",
+          "lineNumber": 769
+        },
+        {
+          "caller": "startRecordingClock",
+          "callee": "window.setInterval",
+          "lineNumber": 770
+        },
+        {
+          "caller": "stopRecordingClock",
+          "callee": "window.clearInterval",
+          "lineNumber": 774
+        },
+        {
+          "caller": "stopRecordingClock",
+          "callee": "window.clearTimeout",
+          "lineNumber": 775
+        },
+        {
+          "caller": "updateRecordingTime",
+          "callee": "Math.floor",
+          "lineNumber": 782
+        },
+        {
+          "caller": "updateRecordingTime",
+          "callee": "Date.now",
+          "lineNumber": 782
+        },
+        {
+          "caller": "updateRecordingTime",
+          "callee": "String(Math.floor(elapsedSeconds / 60)).padStart",
+          "lineNumber": 783
+        },
+        {
+          "caller": "updateRecordingTime",
+          "callee": "String",
+          "lineNumber": 783
+        },
+        {
+          "caller": "updateRecordingTime",
+          "callee": "Math.floor",
+          "lineNumber": 783
+        },
+        {
+          "caller": "updateRecordingTime",
+          "callee": "String(elapsedSeconds % 60).padStart",
+          "lineNumber": 784
+        },
+        {
+          "caller": "updateRecordingTime",
+          "callee": "String",
+          "lineNumber": 784
+        },
+        {
+          "caller": "stopStream",
+          "callee": "state.audioProcessor.disconnect",
+          "lineNumber": 789
+        },
+        {
+          "caller": "stopStream",
+          "callee": "state.audioSource.disconnect",
+          "lineNumber": 790
+        },
+        {
+          "caller": "stopStream",
+          "callee": "state.audioGain.disconnect",
+          "lineNumber": 791
+        },
+        {
+          "caller": "stopStream",
+          "callee": "state.audioContext.close().catch",
+          "lineNumber": 792
+        },
+        {
+          "caller": "stopStream",
+          "callee": "state.audioContext.close",
+          "lineNumber": 792
+        },
+        {
+          "caller": "stopStream",
+          "callee": "state.mediaStream.getTracks().forEach",
+          "lineNumber": 798
+        },
+        {
+          "caller": "stopStream",
+          "callee": "state.mediaStream.getTracks",
+          "lineNumber": 798
+        },
+        {
+          "caller": "stopStream",
+          "callee": "track.stop",
+          "lineNumber": 798
+        },
+        {
+          "caller": "toApiUrl",
+          "callee": "path.startsWith",
+          "lineNumber": 804
+        },
+        {
+          "caller": "toApiUrl",
+          "callee": "normalizeApiBase",
+          "lineNumber": 805
+        },
+        {
+          "caller": "buildAsrRealtimeWebSocketUrl",
+          "callee": "String(CONFIG.ASR_REALTIME_PATH || '/ws/realtime/').trim",
+          "lineNumber": 809
+        },
+        {
+          "caller": "buildAsrRealtimeWebSocketUrl",
+          "callee": "String",
+          "lineNumber": 809
+        },
+        {
+          "caller": "buildAsrRealtimeWebSocketUrl",
+          "callee": "normalizeApiBase",
+          "lineNumber": 810
+        },
+        {
+          "caller": "buildAsrRealtimeWebSocketUrl",
+          "callee": "/^wss?:\\/\\//i.test",
+          "lineNumber": 811
+        },
+        {
+          "caller": "buildAsrRealtimeWebSocketUrl",
+          "callee": "/^https?:\\/\\//i.test",
+          "lineNumber": 811
+        },
+        {
+          "caller": "buildAsrRealtimeWebSocketUrl",
+          "callee": "path.startsWith",
+          "lineNumber": 813
+        },
+        {
+          "caller": "buildAsrRealtimeWebSocketUrl",
+          "callee": "url.toString",
+          "lineNumber": 820
+        },
+        {
+          "caller": "createRealtimeCommandId",
+          "callee": "Date.now",
+          "lineNumber": 824
+        },
+        {
+          "caller": "createRealtimeCommandId",
+          "callee": "Math.random().toString(36).slice",
+          "lineNumber": 824
+        },
+        {
+          "caller": "createRealtimeCommandId",
+          "callee": "Math.random().toString",
+          "lineNumber": 824
+        },
+        {
+          "caller": "createRealtimeCommandId",
+          "callee": "Math.random",
+          "lineNumber": 824
+        },
+        {
+          "caller": "normalizeApiBase",
+          "callee": "String(value || '').trim",
+          "lineNumber": 828
+        },
+        {
+          "caller": "normalizeApiBase",
+          "callee": "String",
+          "lineNumber": 828
+        },
+        {
+          "caller": "normalizeApiBase",
+          "callee": "rawValue.replace",
+          "lineNumber": 829
+        },
+        {
+          "caller": "normalizeMediaUrl",
+          "callee": "String(value || '').trim",
+          "lineNumber": 833
+        },
+        {
+          "caller": "normalizeMediaUrl",
+          "callee": "String",
+          "lineNumber": 833
+        },
+        {
+          "caller": "normalizeMediaUrl",
+          "callee": "raw.startsWith",
+          "lineNumber": 835
+        },
+        {
+          "caller": "normalizeMediaUrl",
+          "callee": "normalizeApiBase",
+          "lineNumber": 836
+        },
+        {
+          "caller": "normalizeMediaUrl",
+          "callee": "['backend', 'solin_backend'].includes",
+          "lineNumber": 841
+        },
+        {
+          "caller": "normalizeMediaUrl",
+          "callee": "normalizeApiBase",
+          "lineNumber": 842
+        },
+        {
+          "caller": "normalizeMediaUrl",
+          "callee": "mediaUrl.toString",
+          "lineNumber": 846
+        },
+        {
+          "caller": "parseResponse",
+          "callee": "contentType.includes",
+          "lineNumber": 854
+        },
+        {
+          "caller": "parseResponse",
+          "callee": "JSON.parse",
+          "lineNumber": 855
+        },
+        {
+          "caller": "parseResponse",
+          "callee": "JSON.parse",
+          "lineNumber": 858
+        },
+        {
+          "caller": "unwrapApiPayload",
+          "callee": "Object.prototype.hasOwnProperty.call",
+          "lineNumber": 865
+        },
+        {
+          "caller": "normalizeDeviceState",
+          "callee": "String(session.status || '').toLowerCase",
+          "lineNumber": 879
+        },
+        {
+          "caller": "normalizeDeviceState",
+          "callee": "String",
+          "lineNumber": 879
+        },
+        {
+          "caller": "normalizeDeviceState",
+          "callee": "['active', 'online', 'enabled', 'success'].includes",
+          "lineNumber": 880
+        },
+        {
+          "caller": "normalizeDeviceState",
+          "callee": "['disabled', 'inactive'].includes",
+          "lineNumber": 881
+        },
+        {
+          "caller": "logDiagnostic",
+          "callee": "console.info",
+          "lineNumber": 905
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "flow-web/index.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 488,
+      "nonEmptyLines": 463,
+      "metrics": {}
+    },
+    {
+      "path": "flow-web/my-video/renders/my-video_2026-05-31_00-51-48.meta.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "sections": [
+        {
+          "heading": "status",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "durationMs",
+          "level": 1,
+          "line": 1
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "flow-web/TERMINAL-ENCODING.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 88,
+      "nonEmptyLines": 61,
+      "sections": [
+        {
+          "heading": "Windows 终端编码修复说明",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. cmd 里中文 / traceback / `docker compose logs` 乱码",
+          "level": 2,
+          "line": 10
+        },
+        {
+          "heading": "临时（当前窗口生效）",
+          "level": 3,
+          "line": 17
+        },
+        {
+          "heading": "永久（推荐其一）",
+          "level": 3,
+          "line": 26
+        },
+        {
+          "heading": "2. 中文文件名被显示成 `\\xxx` 八进制转义",
+          "level": 2,
+          "line": 36
+        },
+        {
+          "heading": "3. `git add` 一直刷 `LF will be replaced by CRLF`",
+          "level": 2,
+          "line": 50
+        },
+        {
+          "heading": "4. 宿主直接跑 Python（非容器）时 traceback 乱码（可选）",
+          "level": 2,
+          "line": 70
+        },
+        {
+          "heading": "不在本说明范围",
+          "level": 2,
+          "line": 84
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": "generate-graph-5.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 193,
+      "nonEmptyLines": 172,
+      "functions": [
+        {
+          "name": "getSummaryAndTags",
+          "startLine": 23,
+          "endLine": 54,
+          "params": [
+            "path",
+            "type",
+            "name"
+          ]
+        },
+        {
+          "name": "getComplexity",
+          "startLine": 56,
+          "endLine": 60,
+          "params": [
+            "lines"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "path.endsWith",
+          "lineNumber": 24
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "path.endsWith",
+          "lineNumber": 25
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "path.endsWith",
+          "lineNumber": 26
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "path.endsWith",
+          "lineNumber": 27
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "path.endsWith",
+          "lineNumber": 28
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "path.endsWith",
+          "lineNumber": 29
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "path.includes",
+          "lineNumber": 29
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "path.endsWith",
+          "lineNumber": 30
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "path.endsWith",
+          "lineNumber": 31
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "path.endsWith",
+          "lineNumber": 32
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "path.endsWith",
+          "lineNumber": 33
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "path.endsWith",
+          "lineNumber": 34
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "path.endsWith",
+          "lineNumber": 35
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "path.endsWith",
+          "lineNumber": 36
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "path.endsWith",
+          "lineNumber": 37
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "name.startsWith",
+          "lineNumber": 40
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "name.startsWith",
+          "lineNumber": 41
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "name.endsWith",
+          "lineNumber": 45
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "name.endsWith",
+          "lineNumber": 46
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "name.endsWith",
+          "lineNumber": 47
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "name.endsWith",
+          "lineNumber": 47
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "name.endsWith",
+          "lineNumber": 48
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "name.endsWith",
+          "lineNumber": 48
+        },
+        {
+          "caller": "getSummaryAndTags",
+          "callee": "name.endsWith",
+          "lineNumber": 49
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "generate-graphs.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 154,
+      "nonEmptyLines": 139,
+      "functions": [
+        {
+          "name": "processBatch",
+          "startLine": 50,
+          "endLine": 149,
+          "params": [
+            "input",
+            "result",
+            "batchIndex"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "processBatch",
+          "callee": "result.results.find",
+          "lineNumber": 58
+        },
+        {
+          "caller": "processBatch",
+          "callee": "result.filesSkipped.includes",
+          "lineNumber": 61
+        },
+        {
+          "caller": "processBatch",
+          "callee": "nodes.push",
+          "lineNumber": 68
+        },
+        {
+          "caller": "processBatch",
+          "callee": "path.basename",
+          "lineNumber": 71
+        },
+        {
+          "caller": "processBatch",
+          "callee": "edges.push",
+          "lineNumber": 81
+        },
+        {
+          "caller": "processBatch",
+          "callee": "res.exports?.some",
+          "lineNumber": 94
+        },
+        {
+          "caller": "processBatch",
+          "callee": "nodes.push",
+          "lineNumber": 96
+        },
+        {
+          "caller": "processBatch",
+          "callee": "edges.push",
+          "lineNumber": 106
+        },
+        {
+          "caller": "processBatch",
+          "callee": "res.exports?.some",
+          "lineNumber": 119
+        },
+        {
+          "caller": "processBatch",
+          "callee": "nodes.push",
+          "lineNumber": 121
+        },
+        {
+          "caller": "processBatch",
+          "callee": "edges.push",
+          "lineNumber": 131
+        },
+        {
+          "caller": "processBatch",
+          "callee": "fs.existsSync",
+          "lineNumber": 144
+        },
+        {
+          "caller": "processBatch",
+          "callee": "fs.mkdirSync",
+          "lineNumber": 145
+        },
+        {
+          "caller": "processBatch",
+          "callee": "fs.writeFileSync",
+          "lineNumber": 148
+        },
+        {
+          "caller": "processBatch",
+          "callee": "JSON.stringify",
+          "lineNumber": 148
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "generate.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 294,
+      "nonEmptyLines": 276,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "process_batches.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 135,
+      "nonEmptyLines": 125,
+      "functions": [
+        {
+          "name": "processBatch",
+          "startLine": 91,
+          "endLine": 133,
+          "params": [
+            "batchIndex"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "processBatch",
+          "callee": "fs.existsSync",
+          "lineNumber": 93
+        },
+        {
+          "caller": "processBatch",
+          "callee": "console.error",
+          "lineNumber": 94
+        },
+        {
+          "caller": "processBatch",
+          "callee": "JSON.parse",
+          "lineNumber": 98
+        },
+        {
+          "caller": "processBatch",
+          "callee": "fs.readFileSync",
+          "lineNumber": 98
+        },
+        {
+          "caller": "processBatch",
+          "callee": "filePath.split('/').pop",
+          "lineNumber": 105
+        },
+        {
+          "caller": "processBatch",
+          "callee": "filePath.split",
+          "lineNumber": 105
+        },
+        {
+          "caller": "processBatch",
+          "callee": "nodes.push",
+          "lineNumber": 122
+        },
+        {
+          "caller": "processBatch",
+          "callee": "fs.writeFileSync",
+          "lineNumber": 131
+        },
+        {
+          "caller": "processBatch",
+          "callee": "JSON.stringify",
+          "lineNumber": 131
+        },
+        {
+          "caller": "processBatch",
+          "callee": "console.log",
+          "lineNumber": 132
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "script.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 9,
+      "nonEmptyLines": 7,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/asr-replacement-test.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 1166,
+      "nonEmptyLines": 1045,
+      "metrics": {}
+    },
+    {
+      "path": "scripts/check-runtime-api-console.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 81,
+      "nonEmptyLines": 75,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "scripts/multi-tenant-design.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 593,
+      "nonEmptyLines": 553,
+      "metrics": {}
+    },
+    {
+      "path": "scripts/test-device-chat-realtime-static.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 80,
+      "nonEmptyLines": 76,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "test.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 20,
+      "nonEmptyLines": 16,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "update-batch12.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 27,
+      "nonEmptyLines": 23,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/postcss.config.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 6,
+      "nonEmptyLines": 6,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "web/public/asr-replacement-test.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 1166,
+      "nonEmptyLines": 1045,
+      "metrics": {}
+    },
+    {
+      "path": "web/public/multi-tenant-design.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 593,
+      "nonEmptyLines": 553,
+      "metrics": {}
+    },
+    {
+      "path": "web/scripts/agent-audio-playback-guard.test.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 39,
+      "nonEmptyLines": 31,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

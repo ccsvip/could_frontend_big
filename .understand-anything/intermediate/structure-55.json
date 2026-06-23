@@ -1,0 +1,5836 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "backend/apps/resources/tests/test_voice_tone_access_data.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 27,
+      "nonEmptyLines": 19,
+      "classes": [
+        {
+          "name": "VoiceToneAccessDataMigrationTests",
+          "startLine": 12,
+          "endLine": 27,
+          "methods": [
+            "test_seed_voice_tone_access_data_assigns_menu_and_permissions_to_existing_roles"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "VoiceToneAccessDataMigrationTests",
+          "line": 12,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "test_seed_voice_tone_access_data_assigns_menu_and_permissions_to_existing_roles",
+          "callee": "Role.objects.create",
+          "lineNumber": 14
+        },
+        {
+          "caller": "test_seed_voice_tone_access_data_assigns_menu_and_permissions_to_existing_roles",
+          "callee": "voice_tone_access_migration.seed_voice_tone_access_data",
+          "lineNumber": 16
+        },
+        {
+          "caller": "test_seed_voice_tone_access_data_assigns_menu_and_permissions_to_existing_roles",
+          "callee": "self.assertTrue",
+          "lineNumber": 18
+        },
+        {
+          "caller": "test_seed_voice_tone_access_data_assigns_menu_and_permissions_to_existing_roles",
+          "callee": "role.menus.filter(key='/resources/voice-tones').exists",
+          "lineNumber": 18
+        },
+        {
+          "caller": "test_seed_voice_tone_access_data_assigns_menu_and_permissions_to_existing_roles",
+          "callee": "role.menus.filter",
+          "lineNumber": 18
+        },
+        {
+          "caller": "test_seed_voice_tone_access_data_assigns_menu_and_permissions_to_existing_roles",
+          "callee": "self.assertCountEqual",
+          "lineNumber": 19
+        },
+        {
+          "caller": "test_seed_voice_tone_access_data_assigns_menu_and_permissions_to_existing_roles",
+          "callee": "role.permission_points.filter(code__startswith='resources.voice_tones.').values_list",
+          "lineNumber": 20
+        },
+        {
+          "caller": "test_seed_voice_tone_access_data_assigns_menu_and_permissions_to_existing_roles",
+          "callee": "role.permission_points.filter",
+          "lineNumber": 20
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/resources/tests/test_voice_tone_api.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 225,
+      "nonEmptyLines": 195,
+      "functions": [
+        {
+          "name": "build_test_png",
+          "startLine": 19,
+          "endLine": 24,
+          "params": [
+            "name"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "VoiceToneApiTests",
+          "startLine": 27,
+          "endLine": 225,
+          "methods": [
+            "setUp",
+            "tearDown",
+            "grant_permissions",
+            "test_list_voice_tones_requires_view_permission",
+            "test_create_voice_tone_success",
+            "test_create_voice_tone_rejects_duplicate_voice_code",
+            "test_create_voice_tone_rejects_invalid_icon",
+            "test_update_voice_tone_allows_changing_unique_voice_code_and_asr_text",
+            "test_list_voice_tones_supports_keyword_and_active_filters",
+            "test_update_voice_tone_can_clear_icon_and_audio"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "build_test_png",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "VoiceToneApiTests",
+          "line": 27,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "build_test_png",
+          "callee": "Image.new",
+          "lineNumber": 20
+        },
+        {
+          "caller": "build_test_png",
+          "callee": "BytesIO",
+          "lineNumber": 21
+        },
+        {
+          "caller": "build_test_png",
+          "callee": "image.save",
+          "lineNumber": 22
+        },
+        {
+          "caller": "build_test_png",
+          "callee": "buffer.seek",
+          "lineNumber": 23
+        },
+        {
+          "caller": "build_test_png",
+          "callee": "SimpleUploadedFile",
+          "lineNumber": 24
+        },
+        {
+          "caller": "build_test_png",
+          "callee": "buffer.getvalue",
+          "lineNumber": 24
+        },
+        {
+          "caller": "setUp",
+          "callee": "tempfile.mkdtemp",
+          "lineNumber": 29
+        },
+        {
+          "caller": "setUp",
+          "callee": "override_settings",
+          "lineNumber": 30
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.override_media_root.enable",
+          "lineNumber": 31
+        },
+        {
+          "caller": "setUp",
+          "callee": "User.objects.create_user",
+          "lineNumber": 32
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.setup_tenant",
+          "lineNumber": 33
+        },
+        {
+          "caller": "setUp",
+          "callee": "Role.objects.create",
+          "lineNumber": 34
+        },
+        {
+          "caller": "setUp",
+          "callee": "UserRole.objects.create",
+          "lineNumber": 35
+        },
+        {
+          "caller": "setUp",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 36
+        },
+        {
+          "caller": "tearDown",
+          "callee": "self.override_media_root.disable",
+          "lineNumber": 39
+        },
+        {
+          "caller": "tearDown",
+          "callee": "shutil.rmtree",
+          "lineNumber": 40
+        },
+        {
+          "caller": "tearDown",
+          "callee": "super().tearDown",
+          "lineNumber": 41
+        },
+        {
+          "caller": "tearDown",
+          "callee": "super",
+          "lineNumber": 41
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 46
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "permission_points.append",
+          "lineNumber": 55
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "self.role.permission_points.set",
+          "lineNumber": 56
+        },
+        {
+          "caller": "grant_permissions",
+          "callee": "self.tenant.permission_points.set",
+          "lineNumber": 57
+        },
+        {
+          "caller": "test_list_voice_tones_requires_view_permission",
+          "callee": "self.tenant.permission_points.clear",
+          "lineNumber": 60
+        },
+        {
+          "caller": "test_list_voice_tones_requires_view_permission",
+          "callee": "self.client.get",
+          "lineNumber": 62
+        },
+        {
+          "caller": "test_list_voice_tones_requires_view_permission",
+          "callee": "self.assertEqual",
+          "lineNumber": 64
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "self.grant_permissions",
+          "lineNumber": 67
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "build_test_png",
+          "lineNumber": 68
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "SimpleUploadedFile",
+          "lineNumber": 69
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "self.client.post",
+          "lineNumber": 71
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "self.assertEqual",
+          "lineNumber": 85
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "self.assertEqual",
+          "lineNumber": 86
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "self.assertEqual",
+          "lineNumber": 87
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "self.assertEqual",
+          "lineNumber": 88
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "self.assertEqual",
+          "lineNumber": 89
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "self.assertEqual",
+          "lineNumber": 90
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "len",
+          "lineNumber": 90
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "self.assertTrue",
+          "lineNumber": 91
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "self.assertTrue",
+          "lineNumber": 92
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "self.assertTrue",
+          "lineNumber": 93
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "self.assertTrue",
+          "lineNumber": 94
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "self.assertTrue",
+          "lineNumber": 95
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "self.assertTrue",
+          "lineNumber": 96
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "VoiceTone.objects.filter(voice_code='voice_female_soft_v1', is_visible=True).exists",
+          "lineNumber": 96
+        },
+        {
+          "caller": "test_create_voice_tone_success",
+          "callee": "VoiceTone.objects.filter",
+          "lineNumber": 96
+        },
+        {
+          "caller": "test_create_voice_tone_rejects_duplicate_voice_code",
+          "callee": "self.grant_permissions",
+          "lineNumber": 99
+        },
+        {
+          "caller": "test_create_voice_tone_rejects_duplicate_voice_code",
+          "callee": "VoiceTone.objects.create",
+          "lineNumber": 100
+        },
+        {
+          "caller": "test_create_voice_tone_rejects_duplicate_voice_code",
+          "callee": "self.client.post",
+          "lineNumber": 108
+        },
+        {
+          "caller": "test_create_voice_tone_rejects_duplicate_voice_code",
+          "callee": "self.assertEqual",
+          "lineNumber": 120
+        },
+        {
+          "caller": "test_create_voice_tone_rejects_duplicate_voice_code",
+          "callee": "self.assertEqual",
+          "lineNumber": 121
+        },
+        {
+          "caller": "test_create_voice_tone_rejects_invalid_icon",
+          "callee": "self.grant_permissions",
+          "lineNumber": 124
+        },
+        {
+          "caller": "test_create_voice_tone_rejects_invalid_icon",
+          "callee": "self.client.post",
+          "lineNumber": 126
+        },
+        {
+          "caller": "test_create_voice_tone_rejects_invalid_icon",
+          "callee": "SimpleUploadedFile",
+          "lineNumber": 132
+        },
+        {
+          "caller": "test_create_voice_tone_rejects_invalid_icon",
+          "callee": "self.assertEqual",
+          "lineNumber": 139
+        },
+        {
+          "caller": "test_create_voice_tone_rejects_invalid_icon",
+          "callee": "self.assertIn",
+          "lineNumber": 140
+        },
+        {
+          "caller": "test_update_voice_tone_allows_changing_unique_voice_code_and_asr_text",
+          "callee": "self.grant_permissions",
+          "lineNumber": 143
+        },
+        {
+          "caller": "test_update_voice_tone_allows_changing_unique_voice_code_and_asr_text",
+          "callee": "VoiceTone.objects.create",
+          "lineNumber": 144
+        },
+        {
+          "caller": "test_update_voice_tone_allows_changing_unique_voice_code_and_asr_text",
+          "callee": "self.client.patch",
+          "lineNumber": 153
+        },
+        {
+          "caller": "test_update_voice_tone_allows_changing_unique_voice_code_and_asr_text",
+          "callee": "self.assertEqual",
+          "lineNumber": 163
+        },
+        {
+          "caller": "test_update_voice_tone_allows_changing_unique_voice_code_and_asr_text",
+          "callee": "voice_tone.refresh_from_db",
+          "lineNumber": 164
+        },
+        {
+          "caller": "test_update_voice_tone_allows_changing_unique_voice_code_and_asr_text",
+          "callee": "self.assertEqual",
+          "lineNumber": 165
+        },
+        {
+          "caller": "test_update_voice_tone_allows_changing_unique_voice_code_and_asr_text",
+          "callee": "self.assertEqual",
+          "lineNumber": 166
+        },
+        {
+          "caller": "test_update_voice_tone_allows_changing_unique_voice_code_and_asr_text",
+          "callee": "self.assertFalse",
+          "lineNumber": 167
+        },
+        {
+          "caller": "test_list_voice_tones_supports_keyword_and_active_filters",
+          "callee": "self.grant_permissions",
+          "lineNumber": 170
+        },
+        {
+          "caller": "test_list_voice_tones_supports_keyword_and_active_filters",
+          "callee": "VoiceTone.objects.create",
+          "lineNumber": 171
+        },
+        {
+          "caller": "test_list_voice_tones_supports_keyword_and_active_filters",
+          "callee": "VoiceTone.objects.create",
+          "lineNumber": 179
+        },
+        {
+          "caller": "test_list_voice_tones_supports_keyword_and_active_filters",
+          "callee": "self.client.get",
+          "lineNumber": 188
+        },
+        {
+          "caller": "test_list_voice_tones_supports_keyword_and_active_filters",
+          "callee": "self.assertEqual",
+          "lineNumber": 190
+        },
+        {
+          "caller": "test_list_voice_tones_supports_keyword_and_active_filters",
+          "callee": "self.assertEqual",
+          "lineNumber": 191
+        },
+        {
+          "caller": "test_list_voice_tones_supports_keyword_and_active_filters",
+          "callee": "self.assertEqual",
+          "lineNumber": 192
+        },
+        {
+          "caller": "test_list_voice_tones_supports_keyword_and_active_filters",
+          "callee": "self.assertTrue",
+          "lineNumber": 193
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "self.grant_permissions",
+          "lineNumber": 196
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "VoiceTone.objects.create",
+          "lineNumber": 197
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "build_test_png",
+          "lineNumber": 203
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "SimpleUploadedFile",
+          "lineNumber": 204
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "self.client.patch",
+          "lineNumber": 208
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "self.assertEqual",
+          "lineNumber": 214
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "self.assertFalse",
+          "lineNumber": 215
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "self.assertEqual",
+          "lineNumber": 216
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "self.assertIsNone",
+          "lineNumber": 217
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "self.assertFalse",
+          "lineNumber": 218
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "self.assertFalse",
+          "lineNumber": 219
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "self.assertEqual",
+          "lineNumber": 220
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "self.assertIsNone",
+          "lineNumber": 221
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "self.assertFalse",
+          "lineNumber": 222
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "voice_tone.refresh_from_db",
+          "lineNumber": 223
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "self.assertFalse",
+          "lineNumber": 224
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "bool",
+          "lineNumber": 224
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "self.assertFalse",
+          "lineNumber": 225
+        },
+        {
+          "caller": "test_update_voice_tone_can_clear_icon_and_audio",
+          "callee": "bool",
+          "lineNumber": 225
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/resources/urls.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 45,
+      "nonEmptyLines": 42,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/resources/views.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1012,
+      "nonEmptyLines": 911,
+      "functions": [
+        {
+          "name": "get_business_write_tenant",
+          "startLine": 90,
+          "endLine": 97,
+          "params": [
+            "request"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "PermissionMappedModelViewSet",
+          "startLine": 82,
+          "endLine": 87,
+          "methods": [
+            "get_permissions"
+          ],
+          "properties": []
+        },
+        {
+          "name": "BaseResourceViewSet",
+          "startLine": 100,
+          "endLine": 124,
+          "methods": [
+            "get_queryset",
+            "get_serializer_context",
+            "tenant_create_kwargs"
+          ],
+          "properties": []
+        },
+        {
+          "name": "AliyunCommandListView",
+          "startLine": 128,
+          "endLine": 163,
+          "methods": [
+            "get"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ImageResourceViewSet",
+          "startLine": 174,
+          "endLine": 183,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "VideoResourceViewSet",
+          "startLine": 194,
+          "endLine": 209,
+          "methods": [
+            "perform_destroy"
+          ],
+          "properties": []
+        },
+        {
+          "name": "VideoUploadConfigView",
+          "startLine": 212,
+          "endLine": 216,
+          "methods": [
+            "get"
+          ],
+          "properties": []
+        },
+        {
+          "name": "VideoUploadPresignView",
+          "startLine": 219,
+          "endLine": 247,
+          "methods": [
+            "post"
+          ],
+          "properties": []
+        },
+        {
+          "name": "MinioSettingsView",
+          "startLine": 250,
+          "endLine": 277,
+          "methods": [
+            "_response_payload",
+            "get",
+            "patch"
+          ],
+          "properties": []
+        },
+        {
+          "name": "MinioTenantQuotaView",
+          "startLine": 280,
+          "endLine": 324,
+          "methods": [
+            "_tenant_quotas",
+            "get",
+            "patch"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ScrollingTextViewSet",
+          "startLine": 474,
+          "endLine": 573,
+          "methods": [
+            "get_permissions",
+            "get_queryset",
+            "perform_create",
+            "list",
+            "get_serializer_context",
+            "build_content_payload",
+            "content"
+          ],
+          "properties": []
+        },
+        {
+          "name": "VoiceToneViewSet",
+          "startLine": 584,
+          "endLine": 606,
+          "methods": [
+            "get_queryset"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ModelAssetViewSet",
+          "startLine": 617,
+          "endLine": 650,
+          "methods": [
+            "get_queryset"
+          ],
+          "properties": []
+        },
+        {
+          "name": "CommandGroupViewSet",
+          "startLine": 661,
+          "endLine": 711,
+          "methods": [
+            "get_queryset",
+            "perform_create",
+            "perform_update",
+            "perform_destroy"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ControlCommandViewSet",
+          "startLine": 722,
+          "endLine": 797,
+          "methods": [
+            "get_queryset",
+            "perform_create",
+            "perform_update",
+            "perform_destroy"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TaskCommandViewSet",
+          "startLine": 808,
+          "endLine": 894,
+          "methods": [
+            "get_queryset",
+            "perform_create",
+            "perform_update",
+            "perform_destroy"
+          ],
+          "properties": []
+        },
+        {
+          "name": "CommandDataLookupView",
+          "startLine": 898,
+          "endLine": 967,
+          "methods": [
+            "get"
+          ],
+          "properties": []
+        },
+        {
+          "name": "CommandExportEnabledGroupsView",
+          "startLine": 971,
+          "endLine": 982,
+          "methods": [
+            "get"
+          ],
+          "properties": []
+        },
+        {
+          "name": "CommandExportCommandsView",
+          "startLine": 986,
+          "endLine": 1012,
+          "methods": [
+            "get"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "PermissionMappedModelViewSet",
+          "line": 82,
+          "isDefault": false
+        },
+        {
+          "name": "get_business_write_tenant",
+          "line": 90,
+          "isDefault": false
+        },
+        {
+          "name": "BaseResourceViewSet",
+          "line": 100,
+          "isDefault": false
+        },
+        {
+          "name": "AliyunCommandListView",
+          "line": 127,
+          "isDefault": false
+        },
+        {
+          "name": "ImageResourceViewSet",
+          "line": 166,
+          "isDefault": false
+        },
+        {
+          "name": "VideoResourceViewSet",
+          "line": 186,
+          "isDefault": false
+        },
+        {
+          "name": "VideoUploadConfigView",
+          "line": 212,
+          "isDefault": false
+        },
+        {
+          "name": "VideoUploadPresignView",
+          "line": 219,
+          "isDefault": false
+        },
+        {
+          "name": "MinioSettingsView",
+          "line": 250,
+          "isDefault": false
+        },
+        {
+          "name": "MinioTenantQuotaView",
+          "line": 280,
+          "isDefault": false
+        },
+        {
+          "name": "ScrollingTextViewSet",
+          "line": 432,
+          "isDefault": false
+        },
+        {
+          "name": "VoiceToneViewSet",
+          "line": 576,
+          "isDefault": false
+        },
+        {
+          "name": "ModelAssetViewSet",
+          "line": 609,
+          "isDefault": false
+        },
+        {
+          "name": "CommandGroupViewSet",
+          "line": 653,
+          "isDefault": false
+        },
+        {
+          "name": "ControlCommandViewSet",
+          "line": 714,
+          "isDefault": false
+        },
+        {
+          "name": "TaskCommandViewSet",
+          "line": 800,
+          "isDefault": false
+        },
+        {
+          "name": "CommandDataLookupView",
+          "line": 897,
+          "isDefault": false
+        },
+        {
+          "name": "CommandExportEnabledGroupsView",
+          "line": 970,
+          "isDefault": false
+        },
+        {
+          "name": "CommandExportCommandsView",
+          "line": 985,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_permissions",
+          "callee": "self.permission_map.get",
+          "lineNumber": 86
+        },
+        {
+          "caller": "get_permissions",
+          "callee": "self.permission_map.get",
+          "lineNumber": 86
+        },
+        {
+          "caller": "get_permissions",
+          "callee": "permission",
+          "lineNumber": 87
+        },
+        {
+          "caller": "get_business_write_tenant",
+          "callee": "getattr",
+          "lineNumber": 91
+        },
+        {
+          "caller": "get_business_write_tenant",
+          "callee": "request.query_params.get",
+          "lineNumber": 93
+        },
+        {
+          "caller": "get_business_write_tenant",
+          "callee": "raw.strip().isdigit",
+          "lineNumber": 94
+        },
+        {
+          "caller": "get_business_write_tenant",
+          "callee": "raw.strip",
+          "lineNumber": 94
+        },
+        {
+          "caller": "get_business_write_tenant",
+          "callee": "Tenant.objects.filter(id=int(raw), is_active=True).first",
+          "lineNumber": 95
+        },
+        {
+          "caller": "get_business_write_tenant",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 95
+        },
+        {
+          "caller": "get_business_write_tenant",
+          "callee": "int",
+          "lineNumber": 95
+        },
+        {
+          "caller": "get_business_write_tenant",
+          "callee": "get_request_tenant",
+          "lineNumber": 97
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Resource.objects.filter(resource_type=self.resource_type).order_by",
+          "lineNumber": 107
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Resource.objects.filter",
+          "lineNumber": 107
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 108
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 110
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('keyword', '').strip",
+          "lineNumber": 111
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 111
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 113
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.apply_tenant_scope",
+          "lineNumber": 114
+        },
+        {
+          "caller": "get_serializer_context",
+          "callee": "super().get_serializer_context",
+          "lineNumber": 117
+        },
+        {
+          "caller": "get_serializer_context",
+          "callee": "super",
+          "lineNumber": 117
+        },
+        {
+          "caller": "get_serializer_context",
+          "callee": "get_business_write_tenant",
+          "lineNumber": 119
+        },
+        {
+          "caller": "tenant_create_kwargs",
+          "callee": "get_business_write_tenant",
+          "lineNumber": 123
+        },
+        {
+          "caller": "get",
+          "callee": "fetch_aliyun_commands",
+          "lineNumber": 133
+        },
+        {
+          "caller": "get",
+          "callee": "Response",
+          "lineNumber": 135
+        },
+        {
+          "caller": "get",
+          "callee": "str",
+          "lineNumber": 138
+        },
+        {
+          "caller": "get",
+          "callee": "Response",
+          "lineNumber": 144
+        },
+        {
+          "caller": "get",
+          "callee": "str",
+          "lineNumber": 147
+        },
+        {
+          "caller": "get",
+          "callee": "AliyunCommandItemSerializer",
+          "lineNumber": 153
+        },
+        {
+          "caller": "get",
+          "callee": "Response",
+          "lineNumber": 154
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "(instance.object_key or '').strip",
+          "lineNumber": 206
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "super().perform_destroy",
+          "lineNumber": 207
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "super",
+          "lineNumber": 207
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "delete_object",
+          "lineNumber": 209
+        },
+        {
+          "caller": "get",
+          "callee": "Response",
+          "lineNumber": 216
+        },
+        {
+          "caller": "get",
+          "callee": "get_video_upload_config",
+          "lineNumber": 216
+        },
+        {
+          "caller": "get",
+          "callee": "get_business_write_tenant",
+          "lineNumber": 216
+        },
+        {
+          "caller": "post",
+          "callee": "isinstance",
+          "lineNumber": 223
+        },
+        {
+          "caller": "post",
+          "callee": "str(data.get('filename') or '').strip",
+          "lineNumber": 224
+        },
+        {
+          "caller": "post",
+          "callee": "str",
+          "lineNumber": 224
+        },
+        {
+          "caller": "post",
+          "callee": "data.get",
+          "lineNumber": 224
+        },
+        {
+          "caller": "post",
+          "callee": "str(data.get('contentType') or data.get('content_type') or '').strip",
+          "lineNumber": 225
+        },
+        {
+          "caller": "post",
+          "callee": "str",
+          "lineNumber": 225
+        },
+        {
+          "caller": "post",
+          "callee": "data.get",
+          "lineNumber": 225
+        },
+        {
+          "caller": "post",
+          "callee": "data.get",
+          "lineNumber": 225
+        },
+        {
+          "caller": "post",
+          "callee": "int",
+          "lineNumber": 227
+        },
+        {
+          "caller": "post",
+          "callee": "data.get",
+          "lineNumber": 227
+        },
+        {
+          "caller": "post",
+          "callee": "data.get",
+          "lineNumber": 227
+        },
+        {
+          "caller": "post",
+          "callee": "Response",
+          "lineNumber": 232
+        },
+        {
+          "caller": "post",
+          "callee": "Response",
+          "lineNumber": 234
+        },
+        {
+          "caller": "post",
+          "callee": "get_business_write_tenant",
+          "lineNumber": 236
+        },
+        {
+          "caller": "post",
+          "callee": "Response",
+          "lineNumber": 238
+        },
+        {
+          "caller": "post",
+          "callee": "presign_video_put_url",
+          "lineNumber": 239
+        },
+        {
+          "caller": "post",
+          "callee": "Response",
+          "lineNumber": 247
+        },
+        {
+          "caller": "post",
+          "callee": "str",
+          "lineNumber": 247
+        },
+        {
+          "caller": "_response_payload",
+          "callee": "MinioConfig.load",
+          "lineNumber": 254
+        },
+        {
+          "caller": "_response_payload",
+          "callee": "get_minio_settings",
+          "lineNumber": 255
+        },
+        {
+          "caller": "get",
+          "callee": "Response",
+          "lineNumber": 270
+        },
+        {
+          "caller": "get",
+          "callee": "self._response_payload",
+          "lineNumber": 270
+        },
+        {
+          "caller": "patch",
+          "callee": "MinioConfig.load",
+          "lineNumber": 273
+        },
+        {
+          "caller": "patch",
+          "callee": "MinioConfigSerializer",
+          "lineNumber": 274
+        },
+        {
+          "caller": "patch",
+          "callee": "serializer.is_valid",
+          "lineNumber": 275
+        },
+        {
+          "caller": "patch",
+          "callee": "serializer.save",
+          "lineNumber": 276
+        },
+        {
+          "caller": "patch",
+          "callee": "Response",
+          "lineNumber": 277
+        },
+        {
+          "caller": "patch",
+          "callee": "self._response_payload",
+          "lineNumber": 277
+        },
+        {
+          "caller": "_tenant_quotas",
+          "callee": "Tenant.objects.filter(is_active=True).order_by",
+          "lineNumber": 284
+        },
+        {
+          "caller": "_tenant_quotas",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 284
+        },
+        {
+          "caller": "_tenant_quotas",
+          "callee": "TenantVideoQuota.objects.get_or_create",
+          "lineNumber": 287
+        },
+        {
+          "caller": "_tenant_quotas",
+          "callee": "quotas.append",
+          "lineNumber": 288
+        },
+        {
+          "caller": "get",
+          "callee": "TenantVideoQuotaSerializer",
+          "lineNumber": 292
+        },
+        {
+          "caller": "get",
+          "callee": "self._tenant_quotas",
+          "lineNumber": 292
+        },
+        {
+          "caller": "get",
+          "callee": "Response",
+          "lineNumber": 293
+        },
+        {
+          "caller": "patch",
+          "callee": "request.data.get",
+          "lineNumber": 296
+        },
+        {
+          "caller": "patch",
+          "callee": "isinstance",
+          "lineNumber": 296
+        },
+        {
+          "caller": "patch",
+          "callee": "isinstance",
+          "lineNumber": 297
+        },
+        {
+          "caller": "patch",
+          "callee": "Response",
+          "lineNumber": 298
+        },
+        {
+          "caller": "patch",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 300
+        },
+        {
+          "caller": "patch",
+          "callee": "isinstance",
+          "lineNumber": 302
+        },
+        {
+          "caller": "patch",
+          "callee": "Response",
+          "lineNumber": 303
+        },
+        {
+          "caller": "patch",
+          "callee": "int",
+          "lineNumber": 305
+        },
+        {
+          "caller": "patch",
+          "callee": "item.get",
+          "lineNumber": 305
+        },
+        {
+          "caller": "patch",
+          "callee": "item.get",
+          "lineNumber": 305
+        },
+        {
+          "caller": "patch",
+          "callee": "Response",
+          "lineNumber": 307
+        },
+        {
+          "caller": "patch",
+          "callee": "Response",
+          "lineNumber": 309
+        },
+        {
+          "caller": "patch",
+          "callee": "bool",
+          "lineNumber": 310
+        },
+        {
+          "caller": "patch",
+          "callee": "item.get",
+          "lineNumber": 310
+        },
+        {
+          "caller": "patch",
+          "callee": "item.get",
+          "lineNumber": 311
+        },
+        {
+          "caller": "patch",
+          "callee": "int",
+          "lineNumber": 316
+        },
+        {
+          "caller": "patch",
+          "callee": "Response",
+          "lineNumber": 318
+        },
+        {
+          "caller": "patch",
+          "callee": "Response",
+          "lineNumber": 320
+        },
+        {
+          "caller": "patch",
+          "callee": "TenantVideoQuota.objects.update_or_create",
+          "lineNumber": 321
+        },
+        {
+          "caller": "patch",
+          "callee": "TenantVideoQuotaSerializer",
+          "lineNumber": 323
+        },
+        {
+          "caller": "patch",
+          "callee": "self._tenant_quotas",
+          "lineNumber": 323
+        },
+        {
+          "caller": "patch",
+          "callee": "Response",
+          "lineNumber": 324
+        },
+        {
+          "caller": "get_permissions",
+          "callee": "AllowAny",
+          "lineNumber": 486
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "ScrollingText.objects.prefetch_related(\n                Prefetch('items', queryset=ScrollingTextItem.objects.order_by('order', 'id'))\n            )\n            .order_by",
+          "lineNumber": 490
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "ScrollingText.objects.prefetch_related",
+          "lineNumber": 490
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Prefetch",
+          "lineNumber": 491
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "ScrollingTextItem.objects.order_by",
+          "lineNumber": 491
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('title', '').strip",
+          "lineNumber": 495
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 495
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 497
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('keyword', '').strip",
+          "lineNumber": 499
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 499
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter(\n                Q(title__icontains=keyword)\n                | Q(items__zh_text__icontains=keyword)\n                | Q(items__en_text__icontains=keyword)\n            ).distinct",
+          "lineNumber": 501
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 501
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Q",
+          "lineNumber": 502
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Q",
+          "lineNumber": 503
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Q",
+          "lineNumber": 504
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('is_active', '').strip().lower",
+          "lineNumber": 507
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('is_active', '').strip",
+          "lineNumber": 507
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 507
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 509
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "scope_queryset_member_or_public",
+          "lineNumber": 510
+        },
+        {
+          "caller": "perform_create",
+          "callee": "resolve_member_or_public_tenant",
+          "lineNumber": 513
+        },
+        {
+          "caller": "perform_create",
+          "callee": "serializer.save",
+          "lineNumber": 515
+        },
+        {
+          "caller": "perform_create",
+          "callee": "serializer.save",
+          "lineNumber": 517
+        },
+        {
+          "caller": "perform_create",
+          "callee": "self.clear_cached_business_responses",
+          "lineNumber": 518
+        },
+        {
+          "caller": "list",
+          "callee": "Response",
+          "lineNumber": 522
+        },
+        {
+          "caller": "list",
+          "callee": "self.build_content_payload",
+          "lineNumber": 522
+        },
+        {
+          "caller": "list",
+          "callee": "super().list",
+          "lineNumber": 523
+        },
+        {
+          "caller": "list",
+          "callee": "super",
+          "lineNumber": 523
+        },
+        {
+          "caller": "get_serializer_context",
+          "callee": "super().get_serializer_context",
+          "lineNumber": 526
+        },
+        {
+          "caller": "get_serializer_context",
+          "callee": "super",
+          "lineNumber": 526
+        },
+        {
+          "caller": "get_serializer_context",
+          "callee": "self.request.query_params.get('lang', 'zh').strip().lower",
+          "lineNumber": 527
+        },
+        {
+          "caller": "get_serializer_context",
+          "callee": "self.request.query_params.get('lang', 'zh').strip",
+          "lineNumber": 527
+        },
+        {
+          "caller": "get_serializer_context",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 527
+        },
+        {
+          "caller": "build_content_payload",
+          "callee": "language.strip().lower",
+          "lineNumber": 532
+        },
+        {
+          "caller": "build_content_payload",
+          "callee": "language.strip",
+          "lineNumber": 532
+        },
+        {
+          "caller": "build_content_payload",
+          "callee": "ScrollingTextItem.objects.filter(scrolling_text__is_active=True).order_by",
+          "lineNumber": 533
+        },
+        {
+          "caller": "build_content_payload",
+          "callee": "ScrollingTextItem.objects.filter",
+          "lineNumber": 533
+        },
+        {
+          "caller": "build_content_payload",
+          "callee": "getattr",
+          "lineNumber": 535
+        },
+        {
+          "caller": "build_content_payload",
+          "callee": "resolve_member_or_public_tenant",
+          "lineNumber": 537
+        },
+        {
+          "caller": "build_content_payload",
+          "callee": "items.filter",
+          "lineNumber": 538
+        },
+        {
+          "caller": "build_content_payload",
+          "callee": "items.none",
+          "lineNumber": 538
+        },
+        {
+          "caller": "content",
+          "callee": "request.data.get",
+          "lineNumber": 570
+        },
+        {
+          "caller": "content",
+          "callee": "isinstance",
+          "lineNumber": 570
+        },
+        {
+          "caller": "content",
+          "callee": "request.query_params.get",
+          "lineNumber": 572
+        },
+        {
+          "caller": "content",
+          "callee": "Response",
+          "lineNumber": 573
+        },
+        {
+          "caller": "content",
+          "callee": "self.build_content_payload",
+          "lineNumber": 573
+        },
+        {
+          "caller": "content",
+          "callee": "str",
+          "lineNumber": 573
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "VoiceTone.objects.order_by",
+          "lineNumber": 598
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('keyword', '').strip",
+          "lineNumber": 599
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 599
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 601
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Q",
+          "lineNumber": 601
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Q",
+          "lineNumber": 601
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('is_active', '').strip().lower",
+          "lineNumber": 603
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('is_active', '').strip",
+          "lineNumber": 603
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 603
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 605
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.apply_tenant_scope",
+          "lineNumber": 606
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "ModelAsset.objects.order_by",
+          "lineNumber": 630
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('keyword', '').strip",
+          "lineNumber": 631
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 631
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 633
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Q",
+          "lineNumber": 634
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Q",
+          "lineNumber": 635
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Q",
+          "lineNumber": 636
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('model_type', '').strip",
+          "lineNumber": 639
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 639
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 641
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('orientation', '').strip",
+          "lineNumber": 643
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 643
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 645
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('is_visible', '').strip().lower",
+          "lineNumber": 647
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('is_visible', '').strip",
+          "lineNumber": 647
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 647
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 649
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.apply_tenant_scope",
+          "lineNumber": 650
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "CommandGroup.objects.order_by",
+          "lineNumber": 674
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('group_type', '').strip",
+          "lineNumber": 675
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 675
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 677
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('keyword', '').strip",
+          "lineNumber": 678
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 678
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 680
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('is_active', '').strip().lower",
+          "lineNumber": 681
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('is_active', '').strip",
+          "lineNumber": 681
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 681
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 683
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.apply_tenant_scope",
+          "lineNumber": 684
+        },
+        {
+          "caller": "perform_create",
+          "callee": "serializer.save",
+          "lineNumber": 687
+        },
+        {
+          "caller": "perform_create",
+          "callee": "self.tenant_create_kwargs",
+          "lineNumber": 687
+        },
+        {
+          "caller": "perform_create",
+          "callee": "enqueue_command_notification",
+          "lineNumber": 688
+        },
+        {
+          "caller": "perform_create",
+          "callee": "getattr",
+          "lineNumber": 690
+        },
+        {
+          "caller": "perform_create",
+          "callee": "instance.get_group_type_display",
+          "lineNumber": 693
+        },
+        {
+          "caller": "perform_update",
+          "callee": "serializer.save",
+          "lineNumber": 697
+        },
+        {
+          "caller": "perform_update",
+          "callee": "enqueue_command_notification",
+          "lineNumber": 698
+        },
+        {
+          "caller": "perform_update",
+          "callee": "getattr",
+          "lineNumber": 700
+        },
+        {
+          "caller": "perform_update",
+          "callee": "instance.get_group_type_display",
+          "lineNumber": 703
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "instance.get_group_type_display",
+          "lineNumber": 708
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "getattr",
+          "lineNumber": 709
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "super().perform_destroy",
+          "lineNumber": 710
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "super",
+          "lineNumber": 710
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "enqueue_command_notification",
+          "lineNumber": 711
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "ControlCommand.objects.select_related('group').order_by",
+          "lineNumber": 735
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "ControlCommand.objects.select_related",
+          "lineNumber": 735
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('keyword', '').strip",
+          "lineNumber": 736
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 736
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 738
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Q",
+          "lineNumber": 738
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Q",
+          "lineNumber": 738
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('group_id', '').strip",
+          "lineNumber": 739
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 739
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 741
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('is_active', '').strip().lower",
+          "lineNumber": 742
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('is_active', '').strip",
+          "lineNumber": 742
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 742
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 744
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.apply_tenant_scope",
+          "lineNumber": 745
+        },
+        {
+          "caller": "perform_create",
+          "callee": "serializer.save",
+          "lineNumber": 748
+        },
+        {
+          "caller": "perform_create",
+          "callee": "self.tenant_create_kwargs",
+          "lineNumber": 748
+        },
+        {
+          "caller": "perform_create",
+          "callee": "enqueue_command_change_notification",
+          "lineNumber": 749
+        },
+        {
+          "caller": "perform_create",
+          "callee": "getattr",
+          "lineNumber": 751
+        },
+        {
+          "caller": "perform_update",
+          "callee": "serializer.save",
+          "lineNumber": 766
+        },
+        {
+          "caller": "perform_update",
+          "callee": "enqueue_command_change_notification",
+          "lineNumber": 771
+        },
+        {
+          "caller": "perform_update",
+          "callee": "getattr",
+          "lineNumber": 773
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "getattr",
+          "lineNumber": 786
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "super().perform_destroy",
+          "lineNumber": 787
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "super",
+          "lineNumber": 787
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "enqueue_command_change_notification",
+          "lineNumber": 788
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "TaskCommandStep.objects.select_related('control_command', 'point', 'resource').order_by",
+          "lineNumber": 821
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "TaskCommandStep.objects.select_related",
+          "lineNumber": 821
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "TaskCommandStep.objects.filter(parent__isnull=True)\n            .select_related('control_command', 'point', 'resource')\n            .prefetch_related(Prefetch('inner_tasks', queryset=inner_step_queryset))\n            .order_by",
+          "lineNumber": 823
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "TaskCommandStep.objects.filter(parent__isnull=True)\n            .select_related('control_command', 'point', 'resource')\n            .prefetch_related",
+          "lineNumber": 823
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "TaskCommandStep.objects.filter(parent__isnull=True)\n            .select_related",
+          "lineNumber": 823
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "TaskCommandStep.objects.filter",
+          "lineNumber": 823
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Prefetch",
+          "lineNumber": 825
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "TaskCommand.objects.select_related('group')\n            .prefetch_related(Prefetch('tasks', queryset=step_queryset))\n            .order_by",
+          "lineNumber": 829
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "TaskCommand.objects.select_related('group')\n            .prefetch_related",
+          "lineNumber": 829
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "TaskCommand.objects.select_related",
+          "lineNumber": 829
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Prefetch",
+          "lineNumber": 830
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('keyword', '').strip",
+          "lineNumber": 833
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 833
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 835
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Q",
+          "lineNumber": 835
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Q",
+          "lineNumber": 835
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('group_id', '').strip",
+          "lineNumber": 836
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 836
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 838
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('is_active', '').strip().lower",
+          "lineNumber": 839
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get('is_active', '').strip",
+          "lineNumber": 839
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 839
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "queryset.filter",
+          "lineNumber": 841
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.apply_tenant_scope",
+          "lineNumber": 842
+        },
+        {
+          "caller": "perform_create",
+          "callee": "serializer.save",
+          "lineNumber": 845
+        },
+        {
+          "caller": "perform_create",
+          "callee": "self.tenant_create_kwargs",
+          "lineNumber": 845
+        },
+        {
+          "caller": "perform_create",
+          "callee": "enqueue_command_change_notification",
+          "lineNumber": 846
+        },
+        {
+          "caller": "perform_create",
+          "callee": "getattr",
+          "lineNumber": 848
+        },
+        {
+          "caller": "perform_update",
+          "callee": "serializer.save",
+          "lineNumber": 863
+        },
+        {
+          "caller": "perform_update",
+          "callee": "enqueue_command_change_notification",
+          "lineNumber": 868
+        },
+        {
+          "caller": "perform_update",
+          "callee": "getattr",
+          "lineNumber": 870
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "getattr",
+          "lineNumber": 883
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "super().perform_destroy",
+          "lineNumber": 884
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "super",
+          "lineNumber": 884
+        },
+        {
+          "caller": "perform_destroy",
+          "callee": "enqueue_command_change_notification",
+          "lineNumber": 885
+        },
+        {
+          "caller": "get",
+          "callee": "request.query_params.get('command', '').strip",
+          "lineNumber": 904
+        },
+        {
+          "caller": "get",
+          "callee": "request.query_params.get",
+          "lineNumber": 904
+        },
+        {
+          "caller": "get",
+          "callee": "Response",
+          "lineNumber": 906
+        },
+        {
+          "caller": "get",
+          "callee": "scope_queryset_member_or_public",
+          "lineNumber": 912
+        },
+        {
+          "caller": "get",
+          "callee": "ControlCommand.objects.all",
+          "lineNumber": 912
+        },
+        {
+          "caller": "get",
+          "callee": "control_qs.filter(command_code=command, is_active=True).select_related('group').first",
+          "lineNumber": 913
+        },
+        {
+          "caller": "get",
+          "callee": "control_qs.filter(command_code=command, is_active=True).select_related",
+          "lineNumber": 913
+        },
+        {
+          "caller": "get",
+          "callee": "control_qs.filter",
+          "lineNumber": 913
+        },
+        {
+          "caller": "get",
+          "callee": "Response",
+          "lineNumber": 915
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommandStep.objects.select_related('control_command', 'point', 'resource').order_by",
+          "lineNumber": 933
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommandStep.objects.select_related",
+          "lineNumber": 933
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommandStep.objects.filter(parent__isnull=True)\n            .select_related('control_command', 'point', 'resource')\n            .prefetch_related(Prefetch('inner_tasks', queryset=inner_step_queryset))\n            .order_by",
+          "lineNumber": 935
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommandStep.objects.filter(parent__isnull=True)\n            .select_related('control_command', 'point', 'resource')\n            .prefetch_related",
+          "lineNumber": 935
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommandStep.objects.filter(parent__isnull=True)\n            .select_related",
+          "lineNumber": 935
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommandStep.objects.filter",
+          "lineNumber": 935
+        },
+        {
+          "caller": "get",
+          "callee": "Prefetch",
+          "lineNumber": 937
+        },
+        {
+          "caller": "get",
+          "callee": "scope_queryset_member_or_public(TaskCommand.objects.all(), request)\n            .filter(command_code=command, is_active=True, group__is_active=True)\n            .select_related('group')\n            .prefetch_related(Prefetch('tasks', queryset=step_queryset))\n            .first",
+          "lineNumber": 941
+        },
+        {
+          "caller": "get",
+          "callee": "scope_queryset_member_or_public(TaskCommand.objects.all(), request)\n            .filter(command_code=command, is_active=True, group__is_active=True)\n            .select_related('group')\n            .prefetch_related",
+          "lineNumber": 941
+        },
+        {
+          "caller": "get",
+          "callee": "scope_queryset_member_or_public(TaskCommand.objects.all(), request)\n            .filter(command_code=command, is_active=True, group__is_active=True)\n            .select_related",
+          "lineNumber": 941
+        },
+        {
+          "caller": "get",
+          "callee": "scope_queryset_member_or_public(TaskCommand.objects.all(), request)\n            .filter",
+          "lineNumber": 941
+        },
+        {
+          "caller": "get",
+          "callee": "scope_queryset_member_or_public",
+          "lineNumber": 941
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommand.objects.all",
+          "lineNumber": 941
+        },
+        {
+          "caller": "get",
+          "callee": "Prefetch",
+          "lineNumber": 944
+        },
+        {
+          "caller": "get",
+          "callee": "Response",
+          "lineNumber": 948
+        },
+        {
+          "caller": "get",
+          "callee": "build_task_step_runtime_data",
+          "lineNumber": 953
+        },
+        {
+          "caller": "get",
+          "callee": "task_command.tasks.all",
+          "lineNumber": 953
+        },
+        {
+          "caller": "get",
+          "callee": "Response",
+          "lineNumber": 954
+        },
+        {
+          "caller": "get",
+          "callee": "build_task_command_list",
+          "lineNumber": 964
+        },
+        {
+          "caller": "get",
+          "callee": "list",
+          "lineNumber": 964
+        },
+        {
+          "caller": "get",
+          "callee": "task_command.tasks.all",
+          "lineNumber": 964
+        },
+        {
+          "caller": "get",
+          "callee": "CommandGroup.objects.filter(export_enabled=True, is_active=True).order_by",
+          "lineNumber": 975
+        },
+        {
+          "caller": "get",
+          "callee": "CommandGroup.objects.filter",
+          "lineNumber": 975
+        },
+        {
+          "caller": "get",
+          "callee": "Response",
+          "lineNumber": 976
+        },
+        {
+          "caller": "get",
+          "callee": "CommandGroupSerializer",
+          "lineNumber": 980
+        },
+        {
+          "caller": "get",
+          "callee": "ControlCommand.objects.select_related('group').order_by",
+          "lineNumber": 990
+        },
+        {
+          "caller": "get",
+          "callee": "ControlCommand.objects.select_related",
+          "lineNumber": 990
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommandStep.objects.select_related('control_command', 'point', 'resource').order_by",
+          "lineNumber": 991
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommandStep.objects.select_related",
+          "lineNumber": 991
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommandStep.objects.filter(parent__isnull=True)\n            .select_related('control_command', 'point', 'resource')\n            .prefetch_related(Prefetch('inner_tasks', queryset=inner_step_queryset))\n            .order_by",
+          "lineNumber": 993
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommandStep.objects.filter(parent__isnull=True)\n            .select_related('control_command', 'point', 'resource')\n            .prefetch_related",
+          "lineNumber": 993
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommandStep.objects.filter(parent__isnull=True)\n            .select_related",
+          "lineNumber": 993
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommandStep.objects.filter",
+          "lineNumber": 993
+        },
+        {
+          "caller": "get",
+          "callee": "Prefetch",
+          "lineNumber": 995
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommand.objects.select_related('group')\n            .prefetch_related(Prefetch('tasks', queryset=step_queryset))\n            .order_by",
+          "lineNumber": 999
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommand.objects.select_related('group')\n            .prefetch_related",
+          "lineNumber": 999
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommand.objects.select_related",
+          "lineNumber": 999
+        },
+        {
+          "caller": "get",
+          "callee": "Prefetch",
+          "lineNumber": 1000
+        },
+        {
+          "caller": "get",
+          "callee": "Response",
+          "lineNumber": 1003
+        },
+        {
+          "caller": "get",
+          "callee": "ControlCommandSerializer",
+          "lineNumber": 1008
+        },
+        {
+          "caller": "get",
+          "callee": "TaskCommandSerializer",
+          "lineNumber": 1009
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 19,
+        "functionCount": 1,
+        "classCount": 18
+      }
+    },
+    {
+      "path": "backend/apps/tenants/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/tenants/admin.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 21,
+      "nonEmptyLines": 16,
+      "classes": [
+        {
+          "name": "TenantAdmin",
+          "startLine": 7,
+          "endLine": 12,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "MembershipAdmin",
+          "startLine": 16,
+          "endLine": 21,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TenantAdmin",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "MembershipAdmin",
+          "line": 15,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "backend/apps/tenants/AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 98,
+      "nonEmptyLines": 69,
+      "sections": [
+        {
+          "heading": "tenants 模块 AGENTS",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "模块职责",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "三道防线（任一层都能挡跨租户读取）",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "租户解析（关键：为什么不用 middleware）",
+          "level": 2,
+          "line": 23
+        },
+        {
+          "heading": "三级菜单（在 accounts，不在本模块）",
+          "level": 2,
+          "line": 33
+        },
+        {
+          "heading": "对外接口",
+          "level": 2,
+          "line": 41
+        },
+        {
+          "heading": "数据模型",
+          "level": 2,
+          "line": 53
+        },
+        {
+          "heading": "测试与质量",
+          "level": 2,
+          "line": 61
+        },
+        {
+          "heading": "常见问题 (FAQ)",
+          "level": 2,
+          "line": 74
+        },
+        {
+          "heading": "相关文件清单",
+          "level": 2,
+          "line": 87
+        },
+        {
+          "heading": "变更记录 (Changelog)",
+          "level": 2,
+          "line": 96
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "path": "backend/apps/tenants/apps.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 7,
+      "nonEmptyLines": 5,
+      "classes": [
+        {
+          "name": "TenantsConfig",
+          "startLine": 4,
+          "endLine": 7,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TenantsConfig",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/tenants/employee_serializers.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 230,
+      "nonEmptyLines": 194,
+      "functions": [
+        {
+          "name": "_tenant_from_context",
+          "startLine": 14,
+          "endLine": 17,
+          "params": [
+            "serializer"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "EmployeeSerializer",
+          "startLine": 20,
+          "endLine": 48,
+          "methods": [
+            "get_displayName",
+            "get_mustChangePassword",
+            "get_roleId",
+            "get_roleName"
+          ],
+          "properties": []
+        },
+        {
+          "name": "EmployeeCreateSerializer",
+          "startLine": 51,
+          "endLine": 112,
+          "methods": [
+            "validate_username",
+            "validate_password",
+            "validate_roleName",
+            "validate_roleId",
+            "create"
+          ],
+          "properties": []
+        },
+        {
+          "name": "EmployeeUpdateSerializer",
+          "startLine": 115,
+          "endLine": 165,
+          "methods": [
+            "validate_username",
+            "validate_roleName",
+            "validate_roleId",
+            "update"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ResetPasswordSerializer",
+          "startLine": 168,
+          "endLine": 177,
+          "methods": [
+            "validate_newPassword"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TenantRoleSerializer",
+          "startLine": 180,
+          "endLine": 230,
+          "methods": [
+            "_clamp_to_tenant",
+            "validate",
+            "create",
+            "update"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_tenant_from_context",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "EmployeeSerializer",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "EmployeeCreateSerializer",
+          "line": 51,
+          "isDefault": false
+        },
+        {
+          "name": "EmployeeUpdateSerializer",
+          "line": 115,
+          "isDefault": false
+        },
+        {
+          "name": "ResetPasswordSerializer",
+          "line": 168,
+          "isDefault": false
+        },
+        {
+          "name": "TenantRoleSerializer",
+          "line": 180,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_tenant_from_context",
+          "callee": "get_user_tenant",
+          "lineNumber": 17
+        },
+        {
+          "caller": "get_displayName",
+          "callee": "obj.get_full_name",
+          "lineNumber": 33
+        },
+        {
+          "caller": "get_mustChangePassword",
+          "callee": "getattr",
+          "lineNumber": 36
+        },
+        {
+          "caller": "get_mustChangePassword",
+          "callee": "bool",
+          "lineNumber": 37
+        },
+        {
+          "caller": "get_roleId",
+          "callee": "getattr",
+          "lineNumber": 40
+        },
+        {
+          "caller": "get_roleName",
+          "callee": "getattr",
+          "lineNumber": 44
+        },
+        {
+          "caller": "get_roleName",
+          "callee": "getattr",
+          "lineNumber": 47
+        },
+        {
+          "caller": "validate_username",
+          "callee": "value.strip",
+          "lineNumber": 63
+        },
+        {
+          "caller": "validate_username",
+          "callee": "User.objects.filter(username=username).exists",
+          "lineNumber": 65
+        },
+        {
+          "caller": "validate_username",
+          "callee": "User.objects.filter",
+          "lineNumber": 65
+        },
+        {
+          "caller": "validate_username",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 66
+        },
+        {
+          "caller": "validate_password",
+          "callee": "value.isdigit",
+          "lineNumber": 70
+        },
+        {
+          "caller": "validate_password",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 71
+        },
+        {
+          "caller": "validate_password",
+          "callee": "len",
+          "lineNumber": 72
+        },
+        {
+          "caller": "validate_password",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 73
+        },
+        {
+          "caller": "validate_password",
+          "callee": "password_validation.validate_password",
+          "lineNumber": 74
+        },
+        {
+          "caller": "validate_roleName",
+          "callee": "value.strip",
+          "lineNumber": 78
+        },
+        {
+          "caller": "validate_roleName",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 80
+        },
+        {
+          "caller": "validate_roleId",
+          "callee": "_tenant_from_context",
+          "lineNumber": 86
+        },
+        {
+          "caller": "validate_roleId",
+          "callee": "Role.objects.filter(id=value, tenant=tenant).exists",
+          "lineNumber": 88
+        },
+        {
+          "caller": "validate_roleId",
+          "callee": "Role.objects.filter",
+          "lineNumber": 88
+        },
+        {
+          "caller": "validate_roleId",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 89
+        },
+        {
+          "caller": "create",
+          "callee": "_tenant_from_context",
+          "lineNumber": 93
+        },
+        {
+          "caller": "create",
+          "callee": "User.objects.create",
+          "lineNumber": 94
+        },
+        {
+          "caller": "create",
+          "callee": "user.set_password",
+          "lineNumber": 99
+        },
+        {
+          "caller": "create",
+          "callee": "user.save",
+          "lineNumber": 100
+        },
+        {
+          "caller": "create",
+          "callee": "Membership.objects.create",
+          "lineNumber": 102
+        },
+        {
+          "caller": "create",
+          "callee": "validated_data.get",
+          "lineNumber": 109
+        },
+        {
+          "caller": "create",
+          "callee": "UserRole.objects.create",
+          "lineNumber": 111
+        },
+        {
+          "caller": "validate_username",
+          "callee": "value.strip",
+          "lineNumber": 128
+        },
+        {
+          "caller": "validate_username",
+          "callee": "User.objects.filter(username=username).exclude(id=self.instance.id).exists",
+          "lineNumber": 129
+        },
+        {
+          "caller": "validate_username",
+          "callee": "User.objects.filter(username=username).exclude",
+          "lineNumber": 129
+        },
+        {
+          "caller": "validate_username",
+          "callee": "User.objects.filter",
+          "lineNumber": 129
+        },
+        {
+          "caller": "validate_username",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 130
+        },
+        {
+          "caller": "validate_roleName",
+          "callee": "value.strip",
+          "lineNumber": 134
+        },
+        {
+          "caller": "validate_roleName",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 136
+        },
+        {
+          "caller": "validate_roleId",
+          "callee": "_tenant_from_context",
+          "lineNumber": 142
+        },
+        {
+          "caller": "validate_roleId",
+          "callee": "Role.objects.filter(id=value, tenant=tenant).exists",
+          "lineNumber": 143
+        },
+        {
+          "caller": "validate_roleId",
+          "callee": "Role.objects.filter",
+          "lineNumber": 143
+        },
+        {
+          "caller": "validate_roleId",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 144
+        },
+        {
+          "caller": "update",
+          "callee": "instance.save",
+          "lineNumber": 154
+        },
+        {
+          "caller": "update",
+          "callee": "Membership.objects.filter(user=instance).update",
+          "lineNumber": 156
+        },
+        {
+          "caller": "update",
+          "callee": "Membership.objects.filter",
+          "lineNumber": 156
+        },
+        {
+          "caller": "update",
+          "callee": "hasattr",
+          "lineNumber": 157
+        },
+        {
+          "caller": "update",
+          "callee": "UserRole.objects.filter(user=instance).delete",
+          "lineNumber": 162
+        },
+        {
+          "caller": "update",
+          "callee": "UserRole.objects.filter",
+          "lineNumber": 162
+        },
+        {
+          "caller": "update",
+          "callee": "UserRole.objects.update_or_create",
+          "lineNumber": 164
+        },
+        {
+          "caller": "validate_newPassword",
+          "callee": "value.isdigit",
+          "lineNumber": 172
+        },
+        {
+          "caller": "validate_newPassword",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 173
+        },
+        {
+          "caller": "validate_newPassword",
+          "callee": "len",
+          "lineNumber": 174
+        },
+        {
+          "caller": "validate_newPassword",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 175
+        },
+        {
+          "caller": "validate_newPassword",
+          "callee": "password_validation.validate_password",
+          "lineNumber": 176
+        },
+        {
+          "caller": "_clamp_to_tenant",
+          "callee": "_tenant_from_context",
+          "lineNumber": 196
+        },
+        {
+          "caller": "_clamp_to_tenant",
+          "callee": "set",
+          "lineNumber": 197
+        },
+        {
+          "caller": "_clamp_to_tenant",
+          "callee": "tenant.menus.values_list",
+          "lineNumber": 197
+        },
+        {
+          "caller": "_clamp_to_tenant",
+          "callee": "set",
+          "lineNumber": 198
+        },
+        {
+          "caller": "_clamp_to_tenant",
+          "callee": "tenant.permission_points.values_list",
+          "lineNumber": 198
+        },
+        {
+          "caller": "_clamp_to_tenant",
+          "callee": "attrs.get",
+          "lineNumber": 199
+        },
+        {
+          "caller": "_clamp_to_tenant",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 201
+        },
+        {
+          "caller": "_clamp_to_tenant",
+          "callee": "attrs.get",
+          "lineNumber": 202
+        },
+        {
+          "caller": "_clamp_to_tenant",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 204
+        },
+        {
+          "caller": "validate",
+          "callee": "super().validate",
+          "lineNumber": 208
+        },
+        {
+          "caller": "validate",
+          "callee": "super",
+          "lineNumber": 208
+        },
+        {
+          "caller": "validate",
+          "callee": "self._clamp_to_tenant",
+          "lineNumber": 209
+        },
+        {
+          "caller": "create",
+          "callee": "_tenant_from_context",
+          "lineNumber": 212
+        },
+        {
+          "caller": "create",
+          "callee": "validated_data.pop",
+          "lineNumber": 213
+        },
+        {
+          "caller": "create",
+          "callee": "validated_data.pop",
+          "lineNumber": 214
+        },
+        {
+          "caller": "create",
+          "callee": "Role.objects.create",
+          "lineNumber": 215
+        },
+        {
+          "caller": "create",
+          "callee": "role.menus.set",
+          "lineNumber": 216
+        },
+        {
+          "caller": "create",
+          "callee": "role.permission_points.set",
+          "lineNumber": 217
+        },
+        {
+          "caller": "update",
+          "callee": "validated_data.pop",
+          "lineNumber": 221
+        },
+        {
+          "caller": "update",
+          "callee": "validated_data.pop",
+          "lineNumber": 222
+        },
+        {
+          "caller": "update",
+          "callee": "validated_data.items",
+          "lineNumber": 223
+        },
+        {
+          "caller": "update",
+          "callee": "setattr",
+          "lineNumber": 224
+        },
+        {
+          "caller": "update",
+          "callee": "instance.save",
+          "lineNumber": 225
+        },
+        {
+          "caller": "update",
+          "callee": "instance.menus.set",
+          "lineNumber": 227
+        },
+        {
+          "caller": "update",
+          "callee": "instance.permission_points.set",
+          "lineNumber": 229
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 6,
+        "functionCount": 1,
+        "classCount": 5
+      }
+    },
+    {
+      "path": "backend/apps/tenants/employee_views.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 128,
+      "nonEmptyLines": 107,
+      "classes": [
+        {
+          "name": "MyTenantCatalogView",
+          "startLine": 28,
+          "endLine": 42,
+          "methods": [
+            "get"
+          ],
+          "properties": []
+        },
+        {
+          "name": "EmployeeViewSet",
+          "startLine": 52,
+          "endLine": 98,
+          "methods": [
+            "get_queryset",
+            "get_serializer_class",
+            "create",
+            "partial_update",
+            "reset_password"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TenantRoleViewSet",
+          "startLine": 109,
+          "endLine": 128,
+          "methods": [
+            "get_queryset",
+            "destroy"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "MyTenantCatalogView",
+          "line": 27,
+          "isDefault": false
+        },
+        {
+          "name": "EmployeeViewSet",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "TenantRoleViewSet",
+          "line": 101,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get",
+          "callee": "get_user_tenant",
+          "lineNumber": 34
+        },
+        {
+          "caller": "get",
+          "callee": "Response",
+          "lineNumber": 36
+        },
+        {
+          "caller": "get",
+          "callee": "tenant.menus.filter(is_active=True, audience=Menu.AUDIENCE_ALL).order_by",
+          "lineNumber": 37
+        },
+        {
+          "caller": "get",
+          "callee": "tenant.menus.filter",
+          "lineNumber": 37
+        },
+        {
+          "caller": "get",
+          "callee": "tenant.permission_points.filter(is_active=True).order_by",
+          "lineNumber": 38
+        },
+        {
+          "caller": "get",
+          "callee": "tenant.permission_points.filter",
+          "lineNumber": 38
+        },
+        {
+          "caller": "get",
+          "callee": "Response",
+          "lineNumber": 39
+        },
+        {
+          "caller": "get",
+          "callee": "MenuCatalogItemSerializer",
+          "lineNumber": 40
+        },
+        {
+          "caller": "get",
+          "callee": "PermissionPointCatalogSerializer",
+          "lineNumber": 41
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "get_user_tenant",
+          "lineNumber": 59
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "User.objects.none",
+          "lineNumber": 61
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "User.objects.filter(membership__tenant=tenant, membership__is_tenant_admin=False)\n            .select_related('membership', 'role_binding__role')\n            .order_by",
+          "lineNumber": 63
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "User.objects.filter(membership__tenant=tenant, membership__is_tenant_admin=False)\n            .select_related",
+          "lineNumber": 63
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "User.objects.filter",
+          "lineNumber": 63
+        },
+        {
+          "caller": "create",
+          "callee": "self.get_serializer",
+          "lineNumber": 76
+        },
+        {
+          "caller": "create",
+          "callee": "serializer.is_valid",
+          "lineNumber": 77
+        },
+        {
+          "caller": "create",
+          "callee": "serializer.save",
+          "lineNumber": 78
+        },
+        {
+          "caller": "create",
+          "callee": "Response",
+          "lineNumber": 79
+        },
+        {
+          "caller": "create",
+          "callee": "EmployeeSerializer",
+          "lineNumber": 79
+        },
+        {
+          "caller": "partial_update",
+          "callee": "self.get_object",
+          "lineNumber": 82
+        },
+        {
+          "caller": "partial_update",
+          "callee": "self.get_serializer",
+          "lineNumber": 83
+        },
+        {
+          "caller": "partial_update",
+          "callee": "serializer.is_valid",
+          "lineNumber": 84
+        },
+        {
+          "caller": "partial_update",
+          "callee": "serializer.save",
+          "lineNumber": 85
+        },
+        {
+          "caller": "partial_update",
+          "callee": "Response",
+          "lineNumber": 86
+        },
+        {
+          "caller": "partial_update",
+          "callee": "EmployeeSerializer",
+          "lineNumber": 86
+        },
+        {
+          "caller": "reset_password",
+          "callee": "self.get_object",
+          "lineNumber": 91
+        },
+        {
+          "caller": "reset_password",
+          "callee": "ResetPasswordSerializer",
+          "lineNumber": 92
+        },
+        {
+          "caller": "reset_password",
+          "callee": "serializer.is_valid",
+          "lineNumber": 93
+        },
+        {
+          "caller": "reset_password",
+          "callee": "user.set_password",
+          "lineNumber": 94
+        },
+        {
+          "caller": "reset_password",
+          "callee": "user.save",
+          "lineNumber": 95
+        },
+        {
+          "caller": "reset_password",
+          "callee": "Membership.objects.filter(user=user).update",
+          "lineNumber": 97
+        },
+        {
+          "caller": "reset_password",
+          "callee": "Membership.objects.filter",
+          "lineNumber": 97
+        },
+        {
+          "caller": "reset_password",
+          "callee": "Response",
+          "lineNumber": 98
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "get_user_tenant",
+          "lineNumber": 116
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Role.objects.none",
+          "lineNumber": 118
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Role.objects.filter(tenant=tenant).prefetch_related('menus', 'permission_points').order_by",
+          "lineNumber": 119
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Role.objects.filter(tenant=tenant).prefetch_related",
+          "lineNumber": 119
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "Role.objects.filter",
+          "lineNumber": 119
+        },
+        {
+          "caller": "destroy",
+          "callee": "self.get_object",
+          "lineNumber": 122
+        },
+        {
+          "caller": "destroy",
+          "callee": "UserRole.objects.filter(role=role).exists",
+          "lineNumber": 123
+        },
+        {
+          "caller": "destroy",
+          "callee": "UserRole.objects.filter",
+          "lineNumber": 123
+        },
+        {
+          "caller": "destroy",
+          "callee": "Response",
+          "lineNumber": 124
+        },
+        {
+          "caller": "destroy",
+          "callee": "super().destroy",
+          "lineNumber": 128
+        },
+        {
+          "caller": "destroy",
+          "callee": "super",
+          "lineNumber": 128
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 3
+      }
+    },
+    {
+      "path": "backend/apps/tenants/managers.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 19,
+      "nonEmptyLines": 13,
+      "classes": [
+        {
+          "name": "TenantQuerySet",
+          "startLine": 4,
+          "endLine": 9,
+          "methods": [
+            "for_tenant"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TenantManager",
+          "startLine": 12,
+          "endLine": 19,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TenantQuerySet",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "TenantManager",
+          "line": 12,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "for_tenant",
+          "callee": "self.none",
+          "lineNumber": 8
+        },
+        {
+          "caller": "for_tenant",
+          "callee": "self.filter",
+          "lineNumber": 9
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "backend/apps/tenants/migrations/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/tenants/migrations/0001_initial.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 54,
+      "nonEmptyLines": 48,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 8,
+          "endLine": 54,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/tenants/migrations/0002_default_company.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 58,
+      "nonEmptyLines": 44,
+      "functions": [
+        {
+          "name": "create_default_company",
+          "startLine": 8,
+          "endLine": 29,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "remove_default_company",
+          "startLine": 32,
+          "endLine": 40,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 43,
+          "endLine": 58,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "create_default_company",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "remove_default_company",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 43,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create_default_company",
+          "callee": "apps.get_model",
+          "lineNumber": 9
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "apps.get_model",
+          "lineNumber": 10
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "apps.get_model",
+          "lineNumber": 11
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "apps.get_model",
+          "lineNumber": 12
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "apps.get_model",
+          "lineNumber": 13
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "Tenant.objects.get_or_create",
+          "lineNumber": 15
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "tenant.menus.set",
+          "lineNumber": 21
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "Menu.objects.all",
+          "lineNumber": 21
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "tenant.permission_points.set",
+          "lineNumber": 22
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "PermissionPoint.objects.all",
+          "lineNumber": 22
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "User.objects.filter",
+          "lineNumber": 25
+        },
+        {
+          "caller": "create_default_company",
+          "callee": "Membership.objects.get_or_create",
+          "lineNumber": 26
+        },
+        {
+          "caller": "remove_default_company",
+          "callee": "apps.get_model",
+          "lineNumber": 33
+        },
+        {
+          "caller": "remove_default_company",
+          "callee": "apps.get_model",
+          "lineNumber": 34
+        },
+        {
+          "caller": "remove_default_company",
+          "callee": "Tenant.objects.filter(code=DEFAULT_TENANT_CODE).first",
+          "lineNumber": 36
+        },
+        {
+          "caller": "remove_default_company",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 36
+        },
+        {
+          "caller": "remove_default_company",
+          "callee": "Membership.objects.filter(tenant=tenant).delete",
+          "lineNumber": 39
+        },
+        {
+          "caller": "remove_default_company",
+          "callee": "Membership.objects.filter",
+          "lineNumber": 39
+        },
+        {
+          "caller": "remove_default_company",
+          "callee": "tenant.delete",
+          "lineNumber": 40
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/tenants/migrations/0003_backfill_business_tenants.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 56,
+      "nonEmptyLines": 46,
+      "functions": [
+        {
+          "name": "backfill_default_tenant",
+          "startLine": 21,
+          "endLine": 30,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "clear_default_tenant",
+          "startLine": 33,
+          "endLine": 41,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 44,
+          "endLine": 56,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "backfill_default_tenant",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "clear_default_tenant",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 44,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "backfill_default_tenant",
+          "callee": "apps.get_model",
+          "lineNumber": 22
+        },
+        {
+          "caller": "backfill_default_tenant",
+          "callee": "Tenant.objects.filter(code='default').first",
+          "lineNumber": 23
+        },
+        {
+          "caller": "backfill_default_tenant",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 23
+        },
+        {
+          "caller": "backfill_default_tenant",
+          "callee": "apps.get_model",
+          "lineNumber": 29
+        },
+        {
+          "caller": "backfill_default_tenant",
+          "callee": "model.objects.filter(tenant__isnull=True).update",
+          "lineNumber": 30
+        },
+        {
+          "caller": "backfill_default_tenant",
+          "callee": "model.objects.filter",
+          "lineNumber": 30
+        },
+        {
+          "caller": "clear_default_tenant",
+          "callee": "apps.get_model",
+          "lineNumber": 35
+        },
+        {
+          "caller": "clear_default_tenant",
+          "callee": "Tenant.objects.filter(code='default').first",
+          "lineNumber": 36
+        },
+        {
+          "caller": "clear_default_tenant",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 36
+        },
+        {
+          "caller": "clear_default_tenant",
+          "callee": "apps.get_model",
+          "lineNumber": 40
+        },
+        {
+          "caller": "clear_default_tenant",
+          "callee": "model.objects.filter(tenant=tenant).update",
+          "lineNumber": 41
+        },
+        {
+          "caller": "clear_default_tenant",
+          "callee": "model.objects.filter",
+          "lineNumber": 41
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/tenants/migrations/0004_membership_role_name.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 18,
+      "nonEmptyLines": 13,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 6,
+          "endLine": 18,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/tenants/mixins.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 68,
+      "nonEmptyLines": 55,
+      "classes": [
+        {
+          "name": "TenantScopedQuerysetMixin",
+          "startLine": 4,
+          "endLine": 68,
+          "methods": [
+            "request_tenant",
+            "superuser_tenant_filter",
+            "apply_tenant_scope",
+            "tenant_create_kwargs",
+            "get_queryset",
+            "perform_create"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TenantScopedQuerysetMixin",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "request_tenant",
+          "callee": "get_request_tenant",
+          "lineNumber": 25
+        },
+        {
+          "caller": "superuser_tenant_filter",
+          "callee": "self.request.query_params.get",
+          "lineNumber": 36
+        },
+        {
+          "caller": "superuser_tenant_filter",
+          "callee": "raw.strip",
+          "lineNumber": 39
+        },
+        {
+          "caller": "superuser_tenant_filter",
+          "callee": "raw.isdigit",
+          "lineNumber": 40
+        },
+        {
+          "caller": "superuser_tenant_filter",
+          "callee": "int",
+          "lineNumber": 42
+        },
+        {
+          "caller": "apply_tenant_scope",
+          "callee": "getattr",
+          "lineNumber": 50
+        },
+        {
+          "caller": "apply_tenant_scope",
+          "callee": "self.superuser_tenant_filter",
+          "lineNumber": 52
+        },
+        {
+          "caller": "apply_tenant_scope",
+          "callee": "queryset.filter",
+          "lineNumber": 54
+        },
+        {
+          "caller": "apply_tenant_scope",
+          "callee": "queryset.for_tenant",
+          "lineNumber": 57
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "self.apply_tenant_scope",
+          "lineNumber": 65
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "super().get_queryset",
+          "lineNumber": 65
+        },
+        {
+          "caller": "get_queryset",
+          "callee": "super",
+          "lineNumber": 65
+        },
+        {
+          "caller": "perform_create",
+          "callee": "serializer.save",
+          "lineNumber": 68
+        },
+        {
+          "caller": "perform_create",
+          "callee": "self.tenant_create_kwargs",
+          "lineNumber": 68
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/tenants/models.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 76,
+      "nonEmptyLines": 63,
+      "classes": [
+        {
+          "name": "Tenant",
+          "startLine": 7,
+          "endLine": 37,
+          "methods": [
+            "__str__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "Membership",
+          "startLine": 40,
+          "endLine": 76,
+          "methods": [
+            "__str__"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Tenant",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "Membership",
+          "line": 40,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "backend/apps/tenants/serializers.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 84,
+      "nonEmptyLines": 61,
+      "classes": [
+        {
+          "name": "TenantSerializer",
+          "startLine": 8,
+          "endLine": 23,
+          "methods": [
+            "get_menuCount",
+            "get_memberCount"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TenantCreateSerializer",
+          "startLine": 26,
+          "endLine": 36,
+          "methods": [
+            "create"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TenantMenuAssignmentSerializer",
+          "startLine": 39,
+          "endLine": 70,
+          "methods": [
+            "validate_menuIds",
+            "validate_permissionPointIds",
+            "save"
+          ],
+          "properties": []
+        },
+        {
+          "name": "MenuCatalogItemSerializer",
+          "startLine": 73,
+          "endLine": 78,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "PermissionPointCatalogSerializer",
+          "startLine": 81,
+          "endLine": 84,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TenantSerializer",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "TenantCreateSerializer",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "TenantMenuAssignmentSerializer",
+          "line": 39,
+          "isDefault": false
+        },
+        {
+          "name": "MenuCatalogItemSerializer",
+          "line": 73,
+          "isDefault": false
+        },
+        {
+          "name": "PermissionPointCatalogSerializer",
+          "line": 81,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_menuCount",
+          "callee": "obj.menus.count",
+          "lineNumber": 20
+        },
+        {
+          "caller": "get_memberCount",
+          "callee": "obj.memberships.count",
+          "lineNumber": 23
+        },
+        {
+          "caller": "create",
+          "callee": "Tenant.objects.create",
+          "lineNumber": 36
+        },
+        {
+          "caller": "create",
+          "callee": "generate_unique_tenant_code",
+          "lineNumber": 36
+        },
+        {
+          "caller": "validate_menuIds",
+          "callee": "set",
+          "lineNumber": 50
+        },
+        {
+          "caller": "validate_menuIds",
+          "callee": "Menu.objects.filter(id__in=value, audience=Menu.AUDIENCE_ALL).values_list",
+          "lineNumber": 51
+        },
+        {
+          "caller": "validate_menuIds",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 51
+        },
+        {
+          "caller": "validate_menuIds",
+          "callee": "set",
+          "lineNumber": 53
+        },
+        {
+          "caller": "validate_menuIds",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 55
+        },
+        {
+          "caller": "validate_menuIds",
+          "callee": "sorted",
+          "lineNumber": 55
+        },
+        {
+          "caller": "validate_permissionPointIds",
+          "callee": "set",
+          "lineNumber": 59
+        },
+        {
+          "caller": "validate_permissionPointIds",
+          "callee": "PermissionPoint.objects.filter(id__in=value).values_list",
+          "lineNumber": 59
+        },
+        {
+          "caller": "validate_permissionPointIds",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 59
+        },
+        {
+          "caller": "validate_permissionPointIds",
+          "callee": "set",
+          "lineNumber": 60
+        },
+        {
+          "caller": "validate_permissionPointIds",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 62
+        },
+        {
+          "caller": "validate_permissionPointIds",
+          "callee": "sorted",
+          "lineNumber": 62
+        },
+        {
+          "caller": "save",
+          "callee": "tenant.menus.set",
+          "lineNumber": 66
+        },
+        {
+          "caller": "save",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 66
+        },
+        {
+          "caller": "save",
+          "callee": "tenant.permission_points.set",
+          "lineNumber": 67
+        },
+        {
+          "caller": "save",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 68
+        },
+        {
+          "caller": "save",
+          "callee": "self.validated_data.get",
+          "lineNumber": 68
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 5,
+        "functionCount": 0,
+        "classCount": 5
+      }
+    },
+    {
+      "path": "backend/apps/tenants/services.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 102,
+      "nonEmptyLines": 79,
+      "functions": [
+        {
+          "name": "get_user_membership",
+          "startLine": 9,
+          "endLine": 16,
+          "params": [
+            "user"
+          ]
+        },
+        {
+          "name": "get_user_tenant",
+          "startLine": 19,
+          "endLine": 27,
+          "params": [
+            "user"
+          ]
+        },
+        {
+          "name": "get_request_tenant",
+          "startLine": 30,
+          "endLine": 39,
+          "params": [
+            "request"
+          ]
+        },
+        {
+          "name": "get_tenant_from_code_param",
+          "startLine": 42,
+          "endLine": 52,
+          "params": [
+            "request"
+          ]
+        },
+        {
+          "name": "scope_queryset_member_or_public",
+          "startLine": 55,
+          "endLine": 66,
+          "params": [
+            "queryset",
+            "request"
+          ]
+        },
+        {
+          "name": "resolve_member_or_public_tenant",
+          "startLine": 69,
+          "endLine": 74,
+          "params": [
+            "request"
+          ]
+        },
+        {
+          "name": "generate_unique_tenant_code",
+          "startLine": 77,
+          "endLine": 86,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "provision_company",
+          "startLine": 90,
+          "endLine": 102,
+          "params": [
+            "name",
+            "admin_user"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "get_user_membership",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "get_user_tenant",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "get_request_tenant",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "get_tenant_from_code_param",
+          "line": 42,
+          "isDefault": false
+        },
+        {
+          "name": "scope_queryset_member_or_public",
+          "line": 55,
+          "isDefault": false
+        },
+        {
+          "name": "resolve_member_or_public_tenant",
+          "line": 69,
+          "isDefault": false
+        },
+        {
+          "name": "generate_unique_tenant_code",
+          "line": 77,
+          "isDefault": false
+        },
+        {
+          "name": "provision_company",
+          "line": 89,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get_user_tenant",
+          "callee": "get_user_membership",
+          "lineNumber": 26
+        },
+        {
+          "caller": "get_request_tenant",
+          "callee": "getattr",
+          "lineNumber": 34
+        },
+        {
+          "caller": "get_request_tenant",
+          "callee": "get_user_tenant",
+          "lineNumber": 36
+        },
+        {
+          "caller": "get_request_tenant",
+          "callee": "getattr",
+          "lineNumber": 36
+        },
+        {
+          "caller": "get_tenant_from_code_param",
+          "callee": "(request.query_params.get('tenant') or '').strip",
+          "lineNumber": 49
+        },
+        {
+          "caller": "get_tenant_from_code_param",
+          "callee": "request.query_params.get",
+          "lineNumber": 49
+        },
+        {
+          "caller": "get_tenant_from_code_param",
+          "callee": "Tenant.objects.filter(code=code, is_active=True).first",
+          "lineNumber": 52
+        },
+        {
+          "caller": "get_tenant_from_code_param",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 52
+        },
+        {
+          "caller": "scope_queryset_member_or_public",
+          "callee": "getattr",
+          "lineNumber": 61
+        },
+        {
+          "caller": "scope_queryset_member_or_public",
+          "callee": "queryset.for_tenant",
+          "lineNumber": 65
+        },
+        {
+          "caller": "scope_queryset_member_or_public",
+          "callee": "get_user_tenant",
+          "lineNumber": 65
+        },
+        {
+          "caller": "scope_queryset_member_or_public",
+          "callee": "queryset.for_tenant",
+          "lineNumber": 66
+        },
+        {
+          "caller": "scope_queryset_member_or_public",
+          "callee": "get_tenant_from_code_param",
+          "lineNumber": 66
+        },
+        {
+          "caller": "resolve_member_or_public_tenant",
+          "callee": "getattr",
+          "lineNumber": 71
+        },
+        {
+          "caller": "resolve_member_or_public_tenant",
+          "callee": "get_user_tenant",
+          "lineNumber": 73
+        },
+        {
+          "caller": "resolve_member_or_public_tenant",
+          "callee": "get_tenant_from_code_param",
+          "lineNumber": 74
+        },
+        {
+          "caller": "generate_unique_tenant_code",
+          "callee": "slugify",
+          "lineNumber": 79
+        },
+        {
+          "caller": "generate_unique_tenant_code",
+          "callee": "Tenant.objects.filter(code=code).exists",
+          "lineNumber": 83
+        },
+        {
+          "caller": "generate_unique_tenant_code",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 83
+        },
+        {
+          "caller": "provision_company",
+          "callee": "get_user_membership",
+          "lineNumber": 96
+        },
+        {
+          "caller": "provision_company",
+          "callee": "Tenant.objects.create",
+          "lineNumber": 100
+        },
+        {
+          "caller": "provision_company",
+          "callee": "generate_unique_tenant_code",
+          "lineNumber": 100
+        },
+        {
+          "caller": "provision_company",
+          "callee": "Membership.objects.create",
+          "lineNumber": 101
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 8,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/tenants/test_utils.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 32,
+      "nonEmptyLines": 25,
+      "classes": [
+        {
+          "name": "TenantTestMixin",
+          "startLine": 14,
+          "endLine": 32,
+          "methods": [
+            "setup_tenant",
+            "grant_all_scope_to_tenant"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TenantTestMixin",
+          "line": 14,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "setup_tenant",
+          "callee": "Tenant.objects.create",
+          "lineNumber": 19
+        },
+        {
+          "caller": "setup_tenant",
+          "callee": "Membership.objects.create",
+          "lineNumber": 20
+        },
+        {
+          "caller": "setup_tenant",
+          "callee": "self.grant_all_scope_to_tenant",
+          "lineNumber": 21
+        },
+        {
+          "caller": "grant_all_scope_to_tenant",
+          "callee": "self.tenant.menus.set",
+          "lineNumber": 31
+        },
+        {
+          "caller": "grant_all_scope_to_tenant",
+          "callee": "Menu.objects.all",
+          "lineNumber": 31
+        },
+        {
+          "caller": "grant_all_scope_to_tenant",
+          "callee": "self.tenant.permission_points.set",
+          "lineNumber": 32
+        },
+        {
+          "caller": "grant_all_scope_to_tenant",
+          "callee": "PermissionPoint.objects.all",
+          "lineNumber": 32
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/tenants/tests/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/tenants/tests/test_approval_provisioning.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 82,
+      "nonEmptyLines": 69,
+      "classes": [
+        {
+          "name": "ApprovalProvisionsCompanyTests",
+          "startLine": 15,
+          "endLine": 82,
+          "methods": [
+            "_make_application",
+            "test_approval_creates_tenant_and_admin_membership",
+            "test_tenant_code_is_slug_and_unique_for_chinese_names",
+            "test_reapproval_is_idempotent",
+            "test_login_response_includes_tenant",
+            "test_superuser_serializer_has_null_tenant"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ApprovalProvisionsCompanyTests",
+          "line": 15,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_make_application",
+          "callee": "dict",
+          "lineNumber": 17
+        },
+        {
+          "caller": "_make_application",
+          "callee": "make_password",
+          "lineNumber": 22
+        },
+        {
+          "caller": "_make_application",
+          "callee": "data.update",
+          "lineNumber": 26
+        },
+        {
+          "caller": "_make_application",
+          "callee": "AccountApplication.objects.create",
+          "lineNumber": 27
+        },
+        {
+          "caller": "test_approval_creates_tenant_and_admin_membership",
+          "callee": "self._make_application",
+          "lineNumber": 30
+        },
+        {
+          "caller": "test_approval_creates_tenant_and_admin_membership",
+          "callee": "self.assertIsNone",
+          "lineNumber": 31
+        },
+        {
+          "caller": "test_approval_creates_tenant_and_admin_membership",
+          "callee": "app.save",
+          "lineNumber": 34
+        },
+        {
+          "caller": "test_approval_creates_tenant_and_admin_membership",
+          "callee": "User.objects.get",
+          "lineNumber": 36
+        },
+        {
+          "caller": "test_approval_creates_tenant_and_admin_membership",
+          "callee": "Tenant.objects.get",
+          "lineNumber": 38
+        },
+        {
+          "caller": "test_approval_creates_tenant_and_admin_membership",
+          "callee": "Membership.objects.get",
+          "lineNumber": 40
+        },
+        {
+          "caller": "test_approval_creates_tenant_and_admin_membership",
+          "callee": "self.assertEqual",
+          "lineNumber": 41
+        },
+        {
+          "caller": "test_approval_creates_tenant_and_admin_membership",
+          "callee": "self.assertTrue",
+          "lineNumber": 42
+        },
+        {
+          "caller": "test_approval_creates_tenant_and_admin_membership",
+          "callee": "app.refresh_from_db",
+          "lineNumber": 44
+        },
+        {
+          "caller": "test_approval_creates_tenant_and_admin_membership",
+          "callee": "self.assertEqual",
+          "lineNumber": 45
+        },
+        {
+          "caller": "test_tenant_code_is_slug_and_unique_for_chinese_names",
+          "callee": "self._make_application",
+          "lineNumber": 49
+        },
+        {
+          "caller": "test_tenant_code_is_slug_and_unique_for_chinese_names",
+          "callee": "self._make_application",
+          "lineNumber": 50
+        },
+        {
+          "caller": "test_tenant_code_is_slug_and_unique_for_chinese_names",
+          "callee": "app1.save",
+          "lineNumber": 51
+        },
+        {
+          "caller": "test_tenant_code_is_slug_and_unique_for_chinese_names",
+          "callee": "app2.save",
+          "lineNumber": 52
+        },
+        {
+          "caller": "test_tenant_code_is_slug_and_unique_for_chinese_names",
+          "callee": "set",
+          "lineNumber": 53
+        },
+        {
+          "caller": "test_tenant_code_is_slug_and_unique_for_chinese_names",
+          "callee": "Tenant.objects.filter(name__in=['北京公司', '上海公司']).values_list",
+          "lineNumber": 53
+        },
+        {
+          "caller": "test_tenant_code_is_slug_and_unique_for_chinese_names",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 53
+        },
+        {
+          "caller": "test_tenant_code_is_slug_and_unique_for_chinese_names",
+          "callee": "self.assertEqual",
+          "lineNumber": 54
+        },
+        {
+          "caller": "test_tenant_code_is_slug_and_unique_for_chinese_names",
+          "callee": "len",
+          "lineNumber": 54
+        },
+        {
+          "caller": "test_tenant_code_is_slug_and_unique_for_chinese_names",
+          "callee": "self.assertTrue",
+          "lineNumber": 55
+        },
+        {
+          "caller": "test_tenant_code_is_slug_and_unique_for_chinese_names",
+          "callee": "all",
+          "lineNumber": 55
+        },
+        {
+          "caller": "test_reapproval_is_idempotent",
+          "callee": "self._make_application",
+          "lineNumber": 58
+        },
+        {
+          "caller": "test_reapproval_is_idempotent",
+          "callee": "app.save",
+          "lineNumber": 59
+        },
+        {
+          "caller": "test_reapproval_is_idempotent",
+          "callee": "Tenant.objects.count",
+          "lineNumber": 60
+        },
+        {
+          "caller": "test_reapproval_is_idempotent",
+          "callee": "app.save",
+          "lineNumber": 62
+        },
+        {
+          "caller": "test_reapproval_is_idempotent",
+          "callee": "self.assertEqual",
+          "lineNumber": 63
+        },
+        {
+          "caller": "test_reapproval_is_idempotent",
+          "callee": "Tenant.objects.count",
+          "lineNumber": 63
+        },
+        {
+          "caller": "test_reapproval_is_idempotent",
+          "callee": "self.assertEqual",
+          "lineNumber": 64
+        },
+        {
+          "caller": "test_reapproval_is_idempotent",
+          "callee": "Membership.objects.filter(user__username='acme_admin').count",
+          "lineNumber": 64
+        },
+        {
+          "caller": "test_reapproval_is_idempotent",
+          "callee": "Membership.objects.filter",
+          "lineNumber": 64
+        },
+        {
+          "caller": "test_login_response_includes_tenant",
+          "callee": "self._make_application",
+          "lineNumber": 67
+        },
+        {
+          "caller": "test_login_response_includes_tenant",
+          "callee": "app.save",
+          "lineNumber": 68
+        },
+        {
+          "caller": "test_login_response_includes_tenant",
+          "callee": "self.client.post",
+          "lineNumber": 70
+        },
+        {
+          "caller": "test_login_response_includes_tenant",
+          "callee": "self.assertEqual",
+          "lineNumber": 71
+        },
+        {
+          "caller": "test_login_response_includes_tenant",
+          "callee": "self.assertIsNotNone",
+          "lineNumber": 73
+        },
+        {
+          "caller": "test_login_response_includes_tenant",
+          "callee": "self.assertEqual",
+          "lineNumber": 74
+        },
+        {
+          "caller": "test_login_response_includes_tenant",
+          "callee": "self.assertTrue",
+          "lineNumber": 75
+        },
+        {
+          "caller": "test_login_response_includes_tenant",
+          "callee": "self.assertIn",
+          "lineNumber": 76
+        },
+        {
+          "caller": "test_superuser_serializer_has_null_tenant",
+          "callee": "User.objects.create_superuser",
+          "lineNumber": 79
+        },
+        {
+          "caller": "test_superuser_serializer_has_null_tenant",
+          "callee": "UserSerializer",
+          "lineNumber": 80
+        },
+        {
+          "caller": "test_superuser_serializer_has_null_tenant",
+          "callee": "self.assertIsNone",
+          "lineNumber": 81
+        },
+        {
+          "caller": "test_superuser_serializer_has_null_tenant",
+          "callee": "self.assertFalse",
+          "lineNumber": 82
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/tenants/tests/test_cross_tenant_isolation.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 131,
+      "nonEmptyLines": 109,
+      "classes": [
+        {
+          "name": "CrossTenantIsolationTests",
+          "startLine": 28,
+          "endLine": 131,
+          "methods": [
+            "setUpTestData",
+            "_results",
+            "test_device_list_scoped_to_own_tenant",
+            "test_voicetone_list_scoped_to_own_tenant",
+            "test_cross_tenant_retrieve_returns_404",
+            "test_device_code_is_globally_unique_across_tenants",
+            "test_cross_tenant_retrieve_of_foreign_only_code_is_404",
+            "test_create_assigns_requesting_user_tenant",
+            "test_superuser_sees_all_tenants",
+            "test_manager_for_tenant_none_is_empty",
+            "test_manager_for_tenant_scopes",
+            "test_public_point_endpoint_scoped_by_tenant_param",
+            "test_public_point_endpoint_without_tenant_param_is_empty"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "CrossTenantIsolationTests",
+          "line": 27,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "setUpTestData",
+          "callee": "Tenant.objects.create",
+          "lineNumber": 31
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "Tenant.objects.create",
+          "lineNumber": 32
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "User.objects.create_user",
+          "lineNumber": 36
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "User.objects.create_user",
+          "lineNumber": 37
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "Membership.objects.create",
+          "lineNumber": 38
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "Membership.objects.create",
+          "lineNumber": 39
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "User.objects.create_superuser",
+          "lineNumber": 41
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "Device.objects.create",
+          "lineNumber": 43
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "Device.objects.create",
+          "lineNumber": 44
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "VoiceTone.objects.create",
+          "lineNumber": 46
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "VoiceTone.objects.create",
+          "lineNumber": 47
+        },
+        {
+          "caller": "_results",
+          "callee": "isinstance",
+          "lineNumber": 52
+        },
+        {
+          "caller": "test_device_list_scoped_to_own_tenant",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 56
+        },
+        {
+          "caller": "test_device_list_scoped_to_own_tenant",
+          "callee": "self.client.get",
+          "lineNumber": 57
+        },
+        {
+          "caller": "test_device_list_scoped_to_own_tenant",
+          "callee": "reverse",
+          "lineNumber": 57
+        },
+        {
+          "caller": "test_device_list_scoped_to_own_tenant",
+          "callee": "self.assertEqual",
+          "lineNumber": 58
+        },
+        {
+          "caller": "test_device_list_scoped_to_own_tenant",
+          "callee": "self._results",
+          "lineNumber": 59
+        },
+        {
+          "caller": "test_device_list_scoped_to_own_tenant",
+          "callee": "self.assertEqual",
+          "lineNumber": 60
+        },
+        {
+          "caller": "test_voicetone_list_scoped_to_own_tenant",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 63
+        },
+        {
+          "caller": "test_voicetone_list_scoped_to_own_tenant",
+          "callee": "self.client.get",
+          "lineNumber": 64
+        },
+        {
+          "caller": "test_voicetone_list_scoped_to_own_tenant",
+          "callee": "reverse",
+          "lineNumber": 64
+        },
+        {
+          "caller": "test_voicetone_list_scoped_to_own_tenant",
+          "callee": "self.assertEqual",
+          "lineNumber": 65
+        },
+        {
+          "caller": "test_voicetone_list_scoped_to_own_tenant",
+          "callee": "sorted",
+          "lineNumber": 66
+        },
+        {
+          "caller": "test_voicetone_list_scoped_to_own_tenant",
+          "callee": "self._results",
+          "lineNumber": 66
+        },
+        {
+          "caller": "test_voicetone_list_scoped_to_own_tenant",
+          "callee": "self.assertEqual",
+          "lineNumber": 67
+        },
+        {
+          "caller": "test_cross_tenant_retrieve_returns_404",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 71
+        },
+        {
+          "caller": "test_cross_tenant_retrieve_returns_404",
+          "callee": "self.client.get",
+          "lineNumber": 72
+        },
+        {
+          "caller": "test_cross_tenant_retrieve_returns_404",
+          "callee": "reverse",
+          "lineNumber": 72
+        },
+        {
+          "caller": "test_cross_tenant_retrieve_returns_404",
+          "callee": "self.assertEqual",
+          "lineNumber": 73
+        },
+        {
+          "caller": "test_cross_tenant_retrieve_returns_404",
+          "callee": "self.assertEqual",
+          "lineNumber": 74
+        },
+        {
+          "caller": "test_device_code_is_globally_unique_across_tenants",
+          "callee": "self.assertRaises",
+          "lineNumber": 77
+        },
+        {
+          "caller": "test_device_code_is_globally_unique_across_tenants",
+          "callee": "Device.objects.create",
+          "lineNumber": 78
+        },
+        {
+          "caller": "test_cross_tenant_retrieve_of_foreign_only_code_is_404",
+          "callee": "Device.objects.create",
+          "lineNumber": 82
+        },
+        {
+          "caller": "test_cross_tenant_retrieve_of_foreign_only_code_is_404",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 83
+        },
+        {
+          "caller": "test_cross_tenant_retrieve_of_foreign_only_code_is_404",
+          "callee": "self.client.get",
+          "lineNumber": 84
+        },
+        {
+          "caller": "test_cross_tenant_retrieve_of_foreign_only_code_is_404",
+          "callee": "reverse",
+          "lineNumber": 84
+        },
+        {
+          "caller": "test_cross_tenant_retrieve_of_foreign_only_code_is_404",
+          "callee": "self.assertEqual",
+          "lineNumber": 85
+        },
+        {
+          "caller": "test_create_assigns_requesting_user_tenant",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 89
+        },
+        {
+          "caller": "test_create_assigns_requesting_user_tenant",
+          "callee": "self.client.post",
+          "lineNumber": 90
+        },
+        {
+          "caller": "test_create_assigns_requesting_user_tenant",
+          "callee": "reverse",
+          "lineNumber": 91
+        },
+        {
+          "caller": "test_create_assigns_requesting_user_tenant",
+          "callee": "self.assertEqual",
+          "lineNumber": 95
+        },
+        {
+          "caller": "test_create_assigns_requesting_user_tenant",
+          "callee": "Device.objects.get",
+          "lineNumber": 96
+        },
+        {
+          "caller": "test_create_assigns_requesting_user_tenant",
+          "callee": "self.assertEqual",
+          "lineNumber": 97
+        },
+        {
+          "caller": "test_superuser_sees_all_tenants",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 101
+        },
+        {
+          "caller": "test_superuser_sees_all_tenants",
+          "callee": "self.client.get",
+          "lineNumber": 102
+        },
+        {
+          "caller": "test_superuser_sees_all_tenants",
+          "callee": "reverse",
+          "lineNumber": 102
+        },
+        {
+          "caller": "test_superuser_sees_all_tenants",
+          "callee": "sorted",
+          "lineNumber": 103
+        },
+        {
+          "caller": "test_superuser_sees_all_tenants",
+          "callee": "self._results",
+          "lineNumber": 103
+        },
+        {
+          "caller": "test_superuser_sees_all_tenants",
+          "callee": "self.assertEqual",
+          "lineNumber": 104
+        },
+        {
+          "caller": "test_manager_for_tenant_none_is_empty",
+          "callee": "self.assertEqual",
+          "lineNumber": 108
+        },
+        {
+          "caller": "test_manager_for_tenant_none_is_empty",
+          "callee": "Device.objects.for_tenant(None).count",
+          "lineNumber": 108
+        },
+        {
+          "caller": "test_manager_for_tenant_none_is_empty",
+          "callee": "Device.objects.for_tenant",
+          "lineNumber": 108
+        },
+        {
+          "caller": "test_manager_for_tenant_scopes",
+          "callee": "self.assertEqual",
+          "lineNumber": 111
+        },
+        {
+          "caller": "test_manager_for_tenant_scopes",
+          "callee": "sorted",
+          "lineNumber": 112
+        },
+        {
+          "caller": "test_manager_for_tenant_scopes",
+          "callee": "Device.objects.for_tenant(self.tenant_a).values_list",
+          "lineNumber": 112
+        },
+        {
+          "caller": "test_manager_for_tenant_scopes",
+          "callee": "Device.objects.for_tenant",
+          "lineNumber": 112
+        },
+        {
+          "caller": "test_public_point_endpoint_scoped_by_tenant_param",
+          "callee": "Point.objects.create",
+          "lineNumber": 118
+        },
+        {
+          "caller": "test_public_point_endpoint_scoped_by_tenant_param",
+          "callee": "Point.objects.create",
+          "lineNumber": 119
+        },
+        {
+          "caller": "test_public_point_endpoint_scoped_by_tenant_param",
+          "callee": "self.client.get",
+          "lineNumber": 121
+        },
+        {
+          "caller": "test_public_point_endpoint_scoped_by_tenant_param",
+          "callee": "reverse",
+          "lineNumber": 121
+        },
+        {
+          "caller": "test_public_point_endpoint_scoped_by_tenant_param",
+          "callee": "self.assertEqual",
+          "lineNumber": 122
+        },
+        {
+          "caller": "test_public_point_endpoint_scoped_by_tenant_param",
+          "callee": "self._results",
+          "lineNumber": 123
+        },
+        {
+          "caller": "test_public_point_endpoint_scoped_by_tenant_param",
+          "callee": "self.assertEqual",
+          "lineNumber": 124
+        },
+        {
+          "caller": "test_public_point_endpoint_without_tenant_param_is_empty",
+          "callee": "Point.objects.create",
+          "lineNumber": 127
+        },
+        {
+          "caller": "test_public_point_endpoint_without_tenant_param_is_empty",
+          "callee": "self.client.get",
+          "lineNumber": 129
+        },
+        {
+          "caller": "test_public_point_endpoint_without_tenant_param_is_empty",
+          "callee": "reverse",
+          "lineNumber": 129
+        },
+        {
+          "caller": "test_public_point_endpoint_without_tenant_param_is_empty",
+          "callee": "self.assertEqual",
+          "lineNumber": 130
+        },
+        {
+          "caller": "test_public_point_endpoint_without_tenant_param_is_empty",
+          "callee": "self.assertEqual",
+          "lineNumber": 131
+        },
+        {
+          "caller": "test_public_point_endpoint_without_tenant_param_is_empty",
+          "callee": "self._results",
+          "lineNumber": 131
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/tenants/tests/test_employee_management_api.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 202,
+      "nonEmptyLines": 170,
+      "functions": [
+        {
+          "name": "_menu_paths",
+          "startLine": 14,
+          "endLine": 24,
+          "params": [
+            "ctx"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "EmployeeManagementApiTests",
+          "startLine": 27,
+          "endLine": 202,
+          "methods": [
+            "setUpTestData",
+            "test_admin_creates_employee_with_must_change_password",
+            "test_created_employee_gets_default_tenant_access_without_role_binding",
+            "test_employee_role_name_is_required_but_can_repeat",
+            "test_duplicate_username_friendly_error",
+            "test_employee_list_scoped_to_own_company",
+            "test_reset_password_sets_must_change",
+            "test_admin_updates_employee_profile_fields",
+            "test_admin_cannot_update_employee_to_duplicate_username",
+            "test_admin_deletes_employee",
+            "test_role_menu_clamped_to_tenant_grant",
+            "test_role_code_unique_per_tenant_not_global",
+            "test_employee_cannot_access_employee_endpoints"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_menu_paths",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "EmployeeManagementApiTests",
+          "line": 27,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "walk",
+          "callee": "paths.append",
+          "lineNumber": 19
+        },
+        {
+          "caller": "walk",
+          "callee": "it.get",
+          "lineNumber": 20
+        },
+        {
+          "caller": "walk",
+          "callee": "walk",
+          "lineNumber": 21
+        },
+        {
+          "caller": "_menu_paths",
+          "callee": "walk",
+          "lineNumber": 23
+        },
+        {
+          "caller": "_menu_paths",
+          "callee": "set",
+          "lineNumber": 24
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "Tenant.objects.create",
+          "lineNumber": 31
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "Menu.objects.create",
+          "lineNumber": 32
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "PermissionPoint.objects.create",
+          "lineNumber": 33
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "PermissionPoint.objects.get",
+          "lineNumber": 34
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "cls.tenant_a.menus.set",
+          "lineNumber": 35
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "cls.tenant_a.permission_points.set",
+          "lineNumber": 36
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "Device.objects.create",
+          "lineNumber": 37
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "User.objects.create_user",
+          "lineNumber": 38
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "Membership.objects.create",
+          "lineNumber": 39
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "Tenant.objects.create",
+          "lineNumber": 42
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "User.objects.create_user",
+          "lineNumber": 43
+        },
+        {
+          "caller": "setUpTestData",
+          "callee": "Membership.objects.create",
+          "lineNumber": 44
+        },
+        {
+          "caller": "test_admin_creates_employee_with_must_change_password",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 47
+        },
+        {
+          "caller": "test_admin_creates_employee_with_must_change_password",
+          "callee": "self.client.post",
+          "lineNumber": 48
+        },
+        {
+          "caller": "test_admin_creates_employee_with_must_change_password",
+          "callee": "self.assertEqual",
+          "lineNumber": 51
+        },
+        {
+          "caller": "test_admin_creates_employee_with_must_change_password",
+          "callee": "self.assertTrue",
+          "lineNumber": 52
+        },
+        {
+          "caller": "test_admin_creates_employee_with_must_change_password",
+          "callee": "self.assertEqual",
+          "lineNumber": 53
+        },
+        {
+          "caller": "test_admin_creates_employee_with_must_change_password",
+          "callee": "User.objects.get",
+          "lineNumber": 54
+        },
+        {
+          "caller": "test_admin_creates_employee_with_must_change_password",
+          "callee": "Membership.objects.get",
+          "lineNumber": 55
+        },
+        {
+          "caller": "test_admin_creates_employee_with_must_change_password",
+          "callee": "self.assertEqual",
+          "lineNumber": 56
+        },
+        {
+          "caller": "test_admin_creates_employee_with_must_change_password",
+          "callee": "self.assertFalse",
+          "lineNumber": 57
+        },
+        {
+          "caller": "test_admin_creates_employee_with_must_change_password",
+          "callee": "self.assertTrue",
+          "lineNumber": 58
+        },
+        {
+          "caller": "test_admin_creates_employee_with_must_change_password",
+          "callee": "self.assertEqual",
+          "lineNumber": 59
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 62
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "self.client.post",
+          "lineNumber": 63
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "self.assertEqual",
+          "lineNumber": 66
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "User.objects.get",
+          "lineNumber": 67
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "self.assertFalse",
+          "lineNumber": 68
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "UserRole.objects.filter(user=emp).exists",
+          "lineNumber": 68
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "UserRole.objects.filter",
+          "lineNumber": 68
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 70
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "self.client.get",
+          "lineNumber": 71
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "self.assertEqual",
+          "lineNumber": 72
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "self.assertEqual",
+          "lineNumber": 73
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "_menu_paths",
+          "lineNumber": 73
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "self.assertIn",
+          "lineNumber": 74
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "self.assertNotIn",
+          "lineNumber": 75
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "self.assertEqual",
+          "lineNumber": 77
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "self.client.get",
+          "lineNumber": 77
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "self.assertEqual",
+          "lineNumber": 78
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "self.client.get",
+          "lineNumber": 78
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "self.assertEqual",
+          "lineNumber": 79
+        },
+        {
+          "caller": "test_created_employee_gets_default_tenant_access_without_role_binding",
+          "callee": "self.client.get",
+          "lineNumber": 79
+        },
+        {
+          "caller": "test_employee_role_name_is_required_but_can_repeat",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 82
+        },
+        {
+          "caller": "test_employee_role_name_is_required_but_can_repeat",
+          "callee": "self.client.post",
+          "lineNumber": 83
+        },
+        {
+          "caller": "test_employee_role_name_is_required_but_can_repeat",
+          "callee": "self.assertEqual",
+          "lineNumber": 86
+        },
+        {
+          "caller": "test_employee_role_name_is_required_but_can_repeat",
+          "callee": "self.assertIn",
+          "lineNumber": 87
+        },
+        {
+          "caller": "test_employee_role_name_is_required_but_can_repeat",
+          "callee": "str",
+          "lineNumber": 87
+        },
+        {
+          "caller": "test_employee_role_name_is_required_but_can_repeat",
+          "callee": "self.client.post",
+          "lineNumber": 90
+        },
+        {
+          "caller": "test_employee_role_name_is_required_but_can_repeat",
+          "callee": "self.assertEqual",
+          "lineNumber": 93
+        },
+        {
+          "caller": "test_employee_role_name_is_required_but_can_repeat",
+          "callee": "self.assertEqual",
+          "lineNumber": 94
+        },
+        {
+          "caller": "test_duplicate_username_friendly_error",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 97
+        },
+        {
+          "caller": "test_duplicate_username_friendly_error",
+          "callee": "User.objects.create_user",
+          "lineNumber": 98
+        },
+        {
+          "caller": "test_duplicate_username_friendly_error",
+          "callee": "self.client.post",
+          "lineNumber": 99
+        },
+        {
+          "caller": "test_duplicate_username_friendly_error",
+          "callee": "self.assertEqual",
+          "lineNumber": 102
+        },
+        {
+          "caller": "test_duplicate_username_friendly_error",
+          "callee": "self.assertIn",
+          "lineNumber": 103
+        },
+        {
+          "caller": "test_duplicate_username_friendly_error",
+          "callee": "str",
+          "lineNumber": 103
+        },
+        {
+          "caller": "test_employee_list_scoped_to_own_company",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 107
+        },
+        {
+          "caller": "test_employee_list_scoped_to_own_company",
+          "callee": "self.client.post",
+          "lineNumber": 108
+        },
+        {
+          "caller": "test_employee_list_scoped_to_own_company",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 109
+        },
+        {
+          "caller": "test_employee_list_scoped_to_own_company",
+          "callee": "self.client.post",
+          "lineNumber": 110
+        },
+        {
+          "caller": "test_employee_list_scoped_to_own_company",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 112
+        },
+        {
+          "caller": "test_employee_list_scoped_to_own_company",
+          "callee": "self.client.get",
+          "lineNumber": 113
+        },
+        {
+          "caller": "test_employee_list_scoped_to_own_company",
+          "callee": "isinstance",
+          "lineNumber": 114
+        },
+        {
+          "caller": "test_employee_list_scoped_to_own_company",
+          "callee": "self.assertEqual",
+          "lineNumber": 115
+        },
+        {
+          "caller": "test_reset_password_sets_must_change",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 118
+        },
+        {
+          "caller": "test_reset_password_sets_must_change",
+          "callee": "self.client.post",
+          "lineNumber": 119
+        },
+        {
+          "caller": "test_reset_password_sets_must_change",
+          "callee": "User.objects.get",
+          "lineNumber": 120
+        },
+        {
+          "caller": "test_reset_password_sets_must_change",
+          "callee": "Membership.objects.filter(user=emp).update",
+          "lineNumber": 122
+        },
+        {
+          "caller": "test_reset_password_sets_must_change",
+          "callee": "Membership.objects.filter",
+          "lineNumber": 122
+        },
+        {
+          "caller": "test_reset_password_sets_must_change",
+          "callee": "self.client.post",
+          "lineNumber": 123
+        },
+        {
+          "caller": "test_reset_password_sets_must_change",
+          "callee": "self.assertEqual",
+          "lineNumber": 124
+        },
+        {
+          "caller": "test_reset_password_sets_must_change",
+          "callee": "self.assertTrue",
+          "lineNumber": 125
+        },
+        {
+          "caller": "test_reset_password_sets_must_change",
+          "callee": "Membership.objects.get",
+          "lineNumber": 125
+        },
+        {
+          "caller": "test_admin_updates_employee_profile_fields",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 128
+        },
+        {
+          "caller": "test_admin_updates_employee_profile_fields",
+          "callee": "self.client.post",
+          "lineNumber": 129
+        },
+        {
+          "caller": "test_admin_updates_employee_profile_fields",
+          "callee": "User.objects.get",
+          "lineNumber": 132
+        },
+        {
+          "caller": "test_admin_updates_employee_profile_fields",
+          "callee": "self.client.patch",
+          "lineNumber": 134
+        },
+        {
+          "caller": "test_admin_updates_employee_profile_fields",
+          "callee": "self.assertEqual",
+          "lineNumber": 138
+        },
+        {
+          "caller": "test_admin_updates_employee_profile_fields",
+          "callee": "self.assertEqual",
+          "lineNumber": 139
+        },
+        {
+          "caller": "test_admin_updates_employee_profile_fields",
+          "callee": "self.assertEqual",
+          "lineNumber": 140
+        },
+        {
+          "caller": "test_admin_updates_employee_profile_fields",
+          "callee": "self.assertEqual",
+          "lineNumber": 141
+        },
+        {
+          "caller": "test_admin_updates_employee_profile_fields",
+          "callee": "emp.refresh_from_db",
+          "lineNumber": 142
+        },
+        {
+          "caller": "test_admin_updates_employee_profile_fields",
+          "callee": "self.assertEqual",
+          "lineNumber": 143
+        },
+        {
+          "caller": "test_admin_updates_employee_profile_fields",
+          "callee": "self.assertEqual",
+          "lineNumber": 144
+        },
+        {
+          "caller": "test_admin_updates_employee_profile_fields",
+          "callee": "self.assertEqual",
+          "lineNumber": 145
+        },
+        {
+          "caller": "test_admin_updates_employee_profile_fields",
+          "callee": "Membership.objects.get",
+          "lineNumber": 145
+        },
+        {
+          "caller": "test_admin_cannot_update_employee_to_duplicate_username",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 148
+        },
+        {
+          "caller": "test_admin_cannot_update_employee_to_duplicate_username",
+          "callee": "User.objects.create_user",
+          "lineNumber": 149
+        },
+        {
+          "caller": "test_admin_cannot_update_employee_to_duplicate_username",
+          "callee": "self.client.post",
+          "lineNumber": 150
+        },
+        {
+          "caller": "test_admin_cannot_update_employee_to_duplicate_username",
+          "callee": "User.objects.get",
+          "lineNumber": 153
+        },
+        {
+          "caller": "test_admin_cannot_update_employee_to_duplicate_username",
+          "callee": "self.client.patch",
+          "lineNumber": 155
+        },
+        {
+          "caller": "test_admin_cannot_update_employee_to_duplicate_username",
+          "callee": "self.assertEqual",
+          "lineNumber": 157
+        },
+        {
+          "caller": "test_admin_cannot_update_employee_to_duplicate_username",
+          "callee": "self.assertIn",
+          "lineNumber": 158
+        },
+        {
+          "caller": "test_admin_cannot_update_employee_to_duplicate_username",
+          "callee": "str",
+          "lineNumber": 158
+        },
+        {
+          "caller": "test_admin_deletes_employee",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 161
+        },
+        {
+          "caller": "test_admin_deletes_employee",
+          "callee": "self.client.post",
+          "lineNumber": 162
+        },
+        {
+          "caller": "test_admin_deletes_employee",
+          "callee": "User.objects.get",
+          "lineNumber": 165
+        },
+        {
+          "caller": "test_admin_deletes_employee",
+          "callee": "self.client.delete",
+          "lineNumber": 167
+        },
+        {
+          "caller": "test_admin_deletes_employee",
+          "callee": "self.assertEqual",
+          "lineNumber": 169
+        },
+        {
+          "caller": "test_admin_deletes_employee",
+          "callee": "self.assertFalse",
+          "lineNumber": 170
+        },
+        {
+          "caller": "test_admin_deletes_employee",
+          "callee": "User.objects.filter(username='deleteEmp').exists",
+          "lineNumber": 170
+        },
+        {
+          "caller": "test_admin_deletes_employee",
+          "callee": "User.objects.filter",
+          "lineNumber": 170
+        },
+        {
+          "caller": "test_admin_deletes_employee",
+          "callee": "self.assertFalse",
+          "lineNumber": 171
+        },
+        {
+          "caller": "test_admin_deletes_employee",
+          "callee": "Membership.objects.filter(user_id=emp.id).exists",
+          "lineNumber": 171
+        },
+        {
+          "caller": "test_admin_deletes_employee",
+          "callee": "Membership.objects.filter",
+          "lineNumber": 171
+        },
+        {
+          "caller": "test_role_menu_clamped_to_tenant_grant",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 175
+        },
+        {
+          "caller": "test_role_menu_clamped_to_tenant_grant",
+          "callee": "Menu.objects.create",
+          "lineNumber": 176
+        },
+        {
+          "caller": "test_role_menu_clamped_to_tenant_grant",
+          "callee": "self.client.post",
+          "lineNumber": 177
+        },
+        {
+          "caller": "test_role_menu_clamped_to_tenant_grant",
+          "callee": "self.assertEqual",
+          "lineNumber": 180
+        },
+        {
+          "caller": "test_role_menu_clamped_to_tenant_grant",
+          "callee": "self.client.post",
+          "lineNumber": 182
+        },
+        {
+          "caller": "test_role_menu_clamped_to_tenant_grant",
+          "callee": "self.assertEqual",
+          "lineNumber": 185
+        },
+        {
+          "caller": "test_role_menu_clamped_to_tenant_grant",
+          "callee": "Role.objects.get",
+          "lineNumber": 186
+        },
+        {
+          "caller": "test_role_menu_clamped_to_tenant_grant",
+          "callee": "self.assertEqual",
+          "lineNumber": 187
+        },
+        {
+          "caller": "test_role_menu_clamped_to_tenant_grant",
+          "callee": "list",
+          "lineNumber": 187
+        },
+        {
+          "caller": "test_role_menu_clamped_to_tenant_grant",
+          "callee": "role.menus.values_list",
+          "lineNumber": 187
+        },
+        {
+          "caller": "test_role_code_unique_per_tenant_not_global",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 191
+        },
+        {
+          "caller": "test_role_code_unique_per_tenant_not_global",
+          "callee": "self.assertEqual",
+          "lineNumber": 192
+        },
+        {
+          "caller": "test_role_code_unique_per_tenant_not_global",
+          "callee": "self.client.post",
+          "lineNumber": 192
+        },
+        {
+          "caller": "test_role_code_unique_per_tenant_not_global",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 193
+        },
+        {
+          "caller": "test_role_code_unique_per_tenant_not_global",
+          "callee": "self.assertEqual",
+          "lineNumber": 194
+        },
+        {
+          "caller": "test_role_code_unique_per_tenant_not_global",
+          "callee": "self.client.post",
+          "lineNumber": 194
+        },
+        {
+          "caller": "test_employee_cannot_access_employee_endpoints",
+          "callee": "User.objects.create_user",
+          "lineNumber": 198
+        },
+        {
+          "caller": "test_employee_cannot_access_employee_endpoints",
+          "callee": "Membership.objects.create",
+          "lineNumber": 199
+        },
+        {
+          "caller": "test_employee_cannot_access_employee_endpoints",
+          "callee": "self.client.force_authenticate",
+          "lineNumber": 200
+        },
+        {
+          "caller": "test_employee_cannot_access_employee_endpoints",
+          "callee": "self.assertEqual",
+          "lineNumber": 201
+        },
+        {
+          "caller": "test_employee_cannot_access_employee_endpoints",
+          "callee": "self.client.get",
+          "lineNumber": 201
+        },
+        {
+          "caller": "test_employee_cannot_access_employee_endpoints",
+          "callee": "self.assertEqual",
+          "lineNumber": 202
+        },
+        {
+          "caller": "test_employee_cannot_access_employee_endpoints",
+          "callee": "self.client.get",
+          "lineNumber": 202
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    }
+  ]
+}

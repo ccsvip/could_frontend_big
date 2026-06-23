@@ -1,0 +1,485 @@
+{
+  "nodes": [
+    {
+      "id": "config:.codex/agents/analyst.toml",
+      "type": "config",
+      "name": "analyst.toml",
+      "filePath": ".codex/agents/analyst.toml",
+      "summary": ".codex/agents/analyst.toml (toml)",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "toml",
+      "lineRange": [
+        1,
+        171
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "config:.codex/agents/architect.toml",
+      "type": "config",
+      "name": "architect.toml",
+      "filePath": ".codex/agents/architect.toml",
+      "summary": ".codex/agents/architect.toml (toml); 3 document sections",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "toml",
+      "lineRange": [
+        1,
+        157
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "id": "config:.codex/agents/code-reviewer.toml",
+      "type": "config",
+      "name": "code-reviewer.toml",
+      "filePath": ".codex/agents/code-reviewer.toml",
+      "summary": ".codex/agents/code-reviewer.toml (toml); 1 document sections",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "toml",
+      "lineRange": [
+        1,
+        175
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "id": "config:.codex/agents/code-simplifier.toml",
+      "type": "config",
+      "name": "code-simplifier.toml",
+      "filePath": ".codex/agents/code-simplifier.toml",
+      "summary": ".codex/agents/code-simplifier.toml (toml)",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "toml",
+      "lineRange": [
+        1,
+        167
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "config:.codex/agents/critic.toml",
+      "type": "config",
+      "name": "critic.toml",
+      "filePath": ".codex/agents/critic.toml",
+      "summary": ".codex/agents/critic.toml (toml); 1 document sections",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "simple",
+      "language": "toml",
+      "lineRange": [
+        1,
+        116
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "id": "config:.codex/agents/debugger.toml",
+      "type": "config",
+      "name": "debugger.toml",
+      "filePath": ".codex/agents/debugger.toml",
+      "summary": ".codex/agents/debugger.toml (toml)",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "toml",
+      "lineRange": [
+        1,
+        152
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "config:.codex/agents/dependency-expert.toml",
+      "type": "config",
+      "name": "dependency-expert.toml",
+      "filePath": ".codex/agents/dependency-expert.toml",
+      "summary": ".codex/agents/dependency-expert.toml (toml)",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "toml",
+      "lineRange": [
+        1,
+        165
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "config:.codex/agents/designer.toml",
+      "type": "config",
+      "name": "designer.toml",
+      "filePath": ".codex/agents/designer.toml",
+      "summary": ".codex/agents/designer.toml (toml)",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "toml",
+      "lineRange": [
+        1,
+        161
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "config:.codex/agents/executor.toml",
+      "type": "config",
+      "name": "executor.toml",
+      "filePath": ".codex/agents/executor.toml",
+      "summary": ".codex/agents/executor.toml (toml)",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "toml",
+      "lineRange": [
+        1,
+        143
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "config:.codex/agents/explore.toml",
+      "type": "config",
+      "name": "explore.toml",
+      "filePath": ".codex/agents/explore.toml",
+      "summary": ".codex/agents/explore.toml (toml)",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "simple",
+      "language": "toml",
+      "lineRange": [
+        1,
+        120
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "config:.codex/agents/git-master.toml",
+      "type": "config",
+      "name": "git-master.toml",
+      "filePath": ".codex/agents/git-master.toml",
+      "summary": ".codex/agents/git-master.toml (toml); 1 document sections",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "toml",
+      "lineRange": [
+        1,
+        149
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "id": "config:.codex/agents/planner.toml",
+      "type": "config",
+      "name": "planner.toml",
+      "filePath": ".codex/agents/planner.toml",
+      "summary": ".codex/agents/planner.toml (toml)",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "toml",
+      "lineRange": [
+        1,
+        156
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "config:.codex/agents/prometheus-strict-metis.toml",
+      "type": "config",
+      "name": "prometheus-strict-metis.toml",
+      "filePath": ".codex/agents/prometheus-strict-metis.toml",
+      "summary": ".codex/agents/prometheus-strict-metis.toml (toml)",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "toml",
+      "lineRange": [
+        1,
+        304
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "config:.codex/agents/prometheus-strict-momus.toml",
+      "type": "config",
+      "name": "prometheus-strict-momus.toml",
+      "filePath": ".codex/agents/prometheus-strict-momus.toml",
+      "summary": ".codex/agents/prometheus-strict-momus.toml (toml)",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "simple",
+      "language": "toml",
+      "lineRange": [
+        1,
+        118
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "config:.codex/agents/prometheus-strict-oracle.toml",
+      "type": "config",
+      "name": "prometheus-strict-oracle.toml",
+      "filePath": ".codex/agents/prometheus-strict-oracle.toml",
+      "summary": ".codex/agents/prometheus-strict-oracle.toml (toml)",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "toml",
+      "lineRange": [
+        1,
+        143
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "config:.codex/agents/researcher.toml",
+      "type": "config",
+      "name": "researcher.toml",
+      "filePath": ".codex/agents/researcher.toml",
+      "summary": ".codex/agents/researcher.toml (toml); 2 document sections",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "toml",
+      "lineRange": [
+        1,
+        167
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.codex/agents/scholastic.toml",
+      "type": "config",
+      "name": "scholastic.toml",
+      "filePath": ".codex/agents/scholastic.toml",
+      "summary": ".codex/agents/scholastic.toml (toml)",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "simple",
+      "language": "toml",
+      "lineRange": [
+        1,
+        47
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "config:.codex/agents/team-executor.toml",
+      "type": "config",
+      "name": "team-executor.toml",
+      "filePath": ".codex/agents/team-executor.toml",
+      "summary": ".codex/agents/team-executor.toml (toml)",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "simple",
+      "language": "toml",
+      "lineRange": [
+        1,
+        92
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "config:.codex/agents/test-engineer.toml",
+      "type": "config",
+      "name": "test-engineer.toml",
+      "filePath": ".codex/agents/test-engineer.toml",
+      "summary": ".codex/agents/test-engineer.toml (toml)",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "toml",
+      "lineRange": [
+        1,
+        165
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "config:.codex/agents/verifier.toml",
+      "type": "config",
+      "name": "verifier.toml",
+      "filePath": ".codex/agents/verifier.toml",
+      "summary": ".codex/agents/verifier.toml (toml)",
+      "tags": [
+        "toml",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "toml",
+      "lineRange": [
+        1,
+        121
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    }
+  ],
+  "edges": []
+}

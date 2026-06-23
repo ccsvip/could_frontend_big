@@ -1,0 +1,126 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": ".codex/prompts/prometheus-strict-momus.md",
+      "language": "markdown",
+      "sizeLines": 82,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/prometheus-strict-oracle.md",
+      "language": "markdown",
+      "sizeLines": 107,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/qa-tester.md",
+      "language": "markdown",
+      "sizeLines": 124,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/quality-reviewer.md",
+      "language": "markdown",
+      "sizeLines": 123,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/quality-strategist.md",
+      "language": "markdown",
+      "sizeLines": 274,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/researcher.md",
+      "language": "markdown",
+      "sizeLines": 122,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/scholastic.md",
+      "language": "markdown",
+      "sizeLines": 11,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/security-reviewer.md",
+      "language": "markdown",
+      "sizeLines": 143,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/sisyphus-lite.md",
+      "language": "markdown",
+      "sizeLines": 111,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/style-reviewer.md",
+      "language": "markdown",
+      "sizeLines": 102,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/team-executor.md",
+      "language": "markdown",
+      "sizeLines": 57,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/team-orchestrator.md",
+      "language": "markdown",
+      "sizeLines": 8,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/test-engineer.md",
+      "language": "markdown",
+      "sizeLines": 130,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/ux-researcher.md",
+      "language": "markdown",
+      "sizeLines": 327,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/verifier.md",
+      "language": "markdown",
+      "sizeLines": 85,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/vision.md",
+      "language": "markdown",
+      "sizeLines": 98,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/writer.md",
+      "language": "markdown",
+      "sizeLines": 109,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    ".codex/prompts/prometheus-strict-momus.md": [],
+    ".codex/prompts/prometheus-strict-oracle.md": [],
+    ".codex/prompts/qa-tester.md": [],
+    ".codex/prompts/quality-reviewer.md": [],
+    ".codex/prompts/quality-strategist.md": [],
+    ".codex/prompts/researcher.md": [],
+    ".codex/prompts/scholastic.md": [],
+    ".codex/prompts/security-reviewer.md": [],
+    ".codex/prompts/sisyphus-lite.md": [],
+    ".codex/prompts/style-reviewer.md": [],
+    ".codex/prompts/team-executor.md": [],
+    ".codex/prompts/team-orchestrator.md": [],
+    ".codex/prompts/test-engineer.md": [],
+    ".codex/prompts/ux-researcher.md": [],
+    ".codex/prompts/verifier.md": [],
+    ".codex/prompts/vision.md": [],
+    ".codex/prompts/writer.md": []
+  }
+}

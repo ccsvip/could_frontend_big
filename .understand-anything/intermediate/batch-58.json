@@ -1,0 +1,3330 @@
+{
+  "nodes": [
+    {
+      "id": "file:web/scripts/test-agent-application-delete-dialog-static.mjs",
+      "type": "file",
+      "name": "test-agent-application-delete-dialog-static.mjs",
+      "filePath": "web/scripts/test-agent-application-delete-dialog-static.mjs",
+      "summary": "web/scripts/test-agent-application-delete-dialog-static.mjs (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        54
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:web/scripts/test-audit-log-management-static.mjs",
+      "type": "file",
+      "name": "test-audit-log-management-static.mjs",
+      "filePath": "web/scripts/test-audit-log-management-static.mjs",
+      "summary": "web/scripts/test-audit-log-management-static.mjs (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        28
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:web/scripts/test-auth-client-unauthorized-static.mjs",
+      "type": "file",
+      "name": "test-auth-client-unauthorized-static.mjs",
+      "filePath": "web/scripts/test-auth-client-unauthorized-static.mjs",
+      "summary": "web/scripts/test-auth-client-unauthorized-static.mjs (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        32
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:web/scripts/test-command-export-format.mjs",
+      "type": "file",
+      "name": "test-command-export-format.mjs",
+      "filePath": "web/scripts/test-command-export-format.mjs",
+      "summary": "web/scripts/test-command-export-format.mjs (javascript); 2 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        73
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/scripts/test-command-export-format.mjs:assert",
+      "type": "function",
+      "name": "assert",
+      "filePath": "web/scripts/test-command-export-format.mjs",
+      "summary": "Function assert in web/scripts/test-command-export-format.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        3,
+        7
+      ],
+      "params": [
+        "condition",
+        "message"
+      ]
+    },
+    {
+      "id": "function:web/scripts/test-command-export-format.mjs:assertKeys",
+      "type": "function",
+      "name": "assertKeys",
+      "filePath": "web/scripts/test-command-export-format.mjs",
+      "summary": "Function assertKeys in web/scripts/test-command-export-format.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        9,
+        11
+      ],
+      "params": [
+        "value",
+        "expected",
+        "message"
+      ]
+    },
+    {
+      "id": "file:web/scripts/test-command-export-management-state.mjs",
+      "type": "file",
+      "name": "test-command-export-management-state.mjs",
+      "filePath": "web/scripts/test-command-export-management-state.mjs",
+      "summary": "web/scripts/test-command-export-management-state.mjs (javascript); 1 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        51
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/scripts/test-command-export-management-state.mjs:assert",
+      "type": "function",
+      "name": "assert",
+      "filePath": "web/scripts/test-command-export-management-state.mjs",
+      "summary": "Function assert in web/scripts/test-command-export-management-state.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        6,
+        10
+      ],
+      "params": [
+        "condition",
+        "message"
+      ]
+    },
+    {
+      "id": "file:web/scripts/test-command-workspace-card-layout.mjs",
+      "type": "file",
+      "name": "test-command-workspace-card-layout.mjs",
+      "filePath": "web/scripts/test-command-workspace-card-layout.mjs",
+      "summary": "web/scripts/test-command-workspace-card-layout.mjs (javascript); 1 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        49
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/scripts/test-command-workspace-card-layout.mjs:assert",
+      "type": "function",
+      "name": "assert",
+      "filePath": "web/scripts/test-command-workspace-card-layout.mjs",
+      "summary": "Function assert in web/scripts/test-command-workspace-card-layout.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        8,
+        12
+      ],
+      "params": [
+        "condition",
+        "message"
+      ]
+    },
+    {
+      "id": "file:web/scripts/test-command-workspace-pagination.mjs",
+      "type": "file",
+      "name": "test-command-workspace-pagination.mjs",
+      "filePath": "web/scripts/test-command-workspace-pagination.mjs",
+      "summary": "web/scripts/test-command-workspace-pagination.mjs (javascript); 1 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        44
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/scripts/test-command-workspace-pagination.mjs:assert",
+      "type": "function",
+      "name": "assert",
+      "filePath": "web/scripts/test-command-workspace-pagination.mjs",
+      "summary": "Function assert in web/scripts/test-command-workspace-pagination.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        11,
+        15
+      ],
+      "params": [
+        "condition",
+        "message"
+      ]
+    },
+    {
+      "id": "file:web/scripts/test-device-management-pagination-static.mjs",
+      "type": "file",
+      "name": "test-device-management-pagination-static.mjs",
+      "filePath": "web/scripts/test-device-management-pagination-static.mjs",
+      "summary": "web/scripts/test-device-management-pagination-static.mjs (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        22
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:web/scripts/test-llm-settings-static.mjs",
+      "type": "file",
+      "name": "test-llm-settings-static.mjs",
+      "filePath": "web/scripts/test-llm-settings-static.mjs",
+      "summary": "web/scripts/test-llm-settings-static.mjs (javascript); 2 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        41
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/scripts/test-llm-settings-static.mjs:read",
+      "type": "function",
+      "name": "read",
+      "filePath": "web/scripts/test-llm-settings-static.mjs",
+      "summary": "Function read in web/scripts/test-llm-settings-static.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        6,
+        6
+      ],
+      "params": [
+        "path"
+      ]
+    },
+    {
+      "id": "function:web/scripts/test-llm-settings-static.mjs:assert",
+      "type": "function",
+      "name": "assert",
+      "filePath": "web/scripts/test-llm-settings-static.mjs",
+      "summary": "Function assert in web/scripts/test-llm-settings-static.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        8,
+        12
+      ],
+      "params": [
+        "condition",
+        "message"
+      ]
+    },
+    {
+      "id": "file:web/scripts/test-login-command-center-static.mjs",
+      "type": "file",
+      "name": "test-login-command-center-static.mjs",
+      "filePath": "web/scripts/test-login-command-center-static.mjs",
+      "summary": "web/scripts/test-login-command-center-static.mjs (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        53
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:web/scripts/test-minio-settings-static.mjs",
+      "type": "file",
+      "name": "test-minio-settings-static.mjs",
+      "filePath": "web/scripts/test-minio-settings-static.mjs",
+      "summary": "web/scripts/test-minio-settings-static.mjs (javascript); 1 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        79
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/scripts/test-minio-settings-static.mjs:read",
+      "type": "function",
+      "name": "read",
+      "filePath": "web/scripts/test-minio-settings-static.mjs",
+      "summary": "Function read in web/scripts/test-minio-settings-static.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        3,
+        3
+      ],
+      "params": [
+        "path"
+      ]
+    },
+    {
+      "id": "file:web/scripts/test-scrolling-text-management-static.mjs",
+      "type": "file",
+      "name": "test-scrolling-text-management-static.mjs",
+      "filePath": "web/scripts/test-scrolling-text-management-static.mjs",
+      "summary": "web/scripts/test-scrolling-text-management-static.mjs (javascript); 1 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        62
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/scripts/test-scrolling-text-management-static.mjs:read",
+      "type": "function",
+      "name": "read",
+      "filePath": "web/scripts/test-scrolling-text-management-static.mjs",
+      "summary": "Function read in web/scripts/test-scrolling-text-management-static.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        3,
+        3
+      ],
+      "params": [
+        "path"
+      ]
+    },
+    {
+      "id": "file:web/scripts/test-sidebar-open-keys-static.mjs",
+      "type": "file",
+      "name": "test-sidebar-open-keys-static.mjs",
+      "filePath": "web/scripts/test-sidebar-open-keys-static.mjs",
+      "summary": "web/scripts/test-sidebar-open-keys-static.mjs (javascript); 2 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        55
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/scripts/test-sidebar-open-keys-static.mjs:expectIncludes",
+      "type": "function",
+      "name": "expectIncludes",
+      "filePath": "web/scripts/test-sidebar-open-keys-static.mjs",
+      "summary": "Function expectIncludes in web/scripts/test-sidebar-open-keys-static.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        7,
+        11
+      ],
+      "params": [
+        "source",
+        "needle",
+        "label"
+      ]
+    },
+    {
+      "id": "function:web/scripts/test-sidebar-open-keys-static.mjs:expectExcludes",
+      "type": "function",
+      "name": "expectExcludes",
+      "filePath": "web/scripts/test-sidebar-open-keys-static.mjs",
+      "summary": "Function expectExcludes in web/scripts/test-sidebar-open-keys-static.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        13,
+        17
+      ],
+      "params": [
+        "source",
+        "needle",
+        "label"
+      ]
+    },
+    {
+      "id": "file:web/scripts/test-super-admin-tenant-menu-static.mjs",
+      "type": "file",
+      "name": "test-super-admin-tenant-menu-static.mjs",
+      "filePath": "web/scripts/test-super-admin-tenant-menu-static.mjs",
+      "summary": "web/scripts/test-super-admin-tenant-menu-static.mjs (javascript); 3 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        85
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/scripts/test-super-admin-tenant-menu-static.mjs:expectIncludes",
+      "type": "function",
+      "name": "expectIncludes",
+      "filePath": "web/scripts/test-super-admin-tenant-menu-static.mjs",
+      "summary": "Function expectIncludes in web/scripts/test-super-admin-tenant-menu-static.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        8,
+        12
+      ],
+      "params": [
+        "source",
+        "needle",
+        "label"
+      ]
+    },
+    {
+      "id": "function:web/scripts/test-super-admin-tenant-menu-static.mjs:expectExcludes",
+      "type": "function",
+      "name": "expectExcludes",
+      "filePath": "web/scripts/test-super-admin-tenant-menu-static.mjs",
+      "summary": "Function expectExcludes in web/scripts/test-super-admin-tenant-menu-static.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        14,
+        18
+      ],
+      "params": [
+        "source",
+        "needle",
+        "label"
+      ]
+    },
+    {
+      "id": "function:web/scripts/test-super-admin-tenant-menu-static.mjs:sliceBetween",
+      "type": "function",
+      "name": "sliceBetween",
+      "filePath": "web/scripts/test-super-admin-tenant-menu-static.mjs",
+      "summary": "Function sliceBetween in web/scripts/test-super-admin-tenant-menu-static.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        20,
+        28
+      ],
+      "params": [
+        "source",
+        "startNeedle",
+        "endNeedle",
+        "label"
+      ]
+    },
+    {
+      "id": "file:web/scripts/test-task-step-form-list-static.mjs",
+      "type": "file",
+      "name": "test-task-step-form-list-static.mjs",
+      "filePath": "web/scripts/test-task-step-form-list-static.mjs",
+      "summary": "web/scripts/test-task-step-form-list-static.mjs (javascript); 1 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        107
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/scripts/test-task-step-form-list-static.mjs:read",
+      "type": "function",
+      "name": "read",
+      "filePath": "web/scripts/test-task-step-form-list-static.mjs",
+      "summary": "Function read in web/scripts/test-task-step-form-list-static.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        3,
+        3
+      ],
+      "params": [
+        "path"
+      ]
+    },
+    {
+      "id": "document:web/src/api/AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "web/src/api/AGENTS.md",
+      "summary": "web/src/api/AGENTS.md (markdown); 6 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        48
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "id": "file:web/src/api/client.ts",
+      "type": "file",
+      "name": "client.ts",
+      "filePath": "web/src/api/client.ts",
+      "summary": "web/src/api/client.ts (typescript); 5 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        152
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 3,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/api/client.ts:isTenantScopedUrl",
+      "type": "function",
+      "name": "isTenantScopedUrl",
+      "filePath": "web/src/api/client.ts",
+      "summary": "Function isTenantScopedUrl in web/src/api/client.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        21,
+        36
+      ],
+      "params": [
+        "url"
+      ]
+    },
+    {
+      "id": "function:web/src/api/client.ts:normalizeDevMediaUrl",
+      "type": "function",
+      "name": "normalizeDevMediaUrl",
+      "filePath": "web/src/api/client.ts",
+      "summary": "Function normalizeDevMediaUrl in web/src/api/client.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        50,
+        68
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:web/src/api/client.ts:normalizeDevMediaUrls",
+      "type": "function",
+      "name": "normalizeDevMediaUrls",
+      "filePath": "web/src/api/client.ts",
+      "summary": "Function normalizeDevMediaUrls in web/src/api/client.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        70,
+        99
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:web/src/api/client.ts:clearAuth",
+      "type": "function",
+      "name": "clearAuth",
+      "filePath": "web/src/api/client.ts",
+      "summary": "Function clearAuth in web/src/api/client.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        101,
+        103
+      ],
+      "params": []
+    },
+    {
+      "id": "function:web/src/api/client.ts:handleUnauthorizedResponse",
+      "type": "function",
+      "name": "handleUnauthorizedResponse",
+      "filePath": "web/src/api/client.ts",
+      "summary": "Function handleUnauthorizedResponse in web/src/api/client.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        105,
+        110
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/api/modules/applications.ts",
+      "type": "file",
+      "name": "applications.ts",
+      "filePath": "web/src/api/modules/applications.ts",
+      "summary": "web/src/api/modules/applications.ts (typescript); 13 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        204
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 12,
+        "functionCount": 13,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:buildListParams",
+      "type": "function",
+      "name": "buildListParams",
+      "filePath": "web/src/api/modules/applications.ts",
+      "summary": "Function buildListParams in web/src/api/modules/applications.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        81,
+        85
+      ],
+      "params": [
+        "query"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:fetchAgentApplications",
+      "type": "function",
+      "name": "fetchAgentApplications",
+      "filePath": "web/src/api/modules/applications.ts",
+      "summary": "Function fetchAgentApplications in web/src/api/modules/applications.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        87,
+        92
+      ],
+      "params": [
+        "query"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:fetchAgentApplication",
+      "type": "function",
+      "name": "fetchAgentApplication",
+      "filePath": "web/src/api/modules/applications.ts",
+      "summary": "Function fetchAgentApplication in web/src/api/modules/applications.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        94,
+        97
+      ],
+      "params": [
+        "id"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:createAgentApplication",
+      "type": "function",
+      "name": "createAgentApplication",
+      "filePath": "web/src/api/modules/applications.ts",
+      "summary": "Function createAgentApplication in web/src/api/modules/applications.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        99,
+        102
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:updateAgentApplication",
+      "type": "function",
+      "name": "updateAgentApplication",
+      "filePath": "web/src/api/modules/applications.ts",
+      "summary": "Function updateAgentApplication in web/src/api/modules/applications.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        104,
+        107
+      ],
+      "params": [
+        "id",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:deleteAgentApplication",
+      "type": "function",
+      "name": "deleteAgentApplication",
+      "filePath": "web/src/api/modules/applications.ts",
+      "summary": "Function deleteAgentApplication in web/src/api/modules/applications.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        109,
+        111
+      ],
+      "params": [
+        "id"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:createAgentApplicationConversation",
+      "type": "function",
+      "name": "createAgentApplicationConversation",
+      "filePath": "web/src/api/modules/applications.ts",
+      "summary": "Function createAgentApplicationConversation in web/src/api/modules/applications.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        113,
+        116
+      ],
+      "params": [
+        "id"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:fetchAgentApplicationStats",
+      "type": "function",
+      "name": "fetchAgentApplicationStats",
+      "filePath": "web/src/api/modules/applications.ts",
+      "summary": "Function fetchAgentApplicationStats in web/src/api/modules/applications.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        129,
+        132
+      ],
+      "params": [
+        "id"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:fetchAgentAnnotations",
+      "type": "function",
+      "name": "fetchAgentAnnotations",
+      "filePath": "web/src/api/modules/applications.ts",
+      "summary": "Function fetchAgentAnnotations in web/src/api/modules/applications.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        160,
+        166
+      ],
+      "params": [
+        "applicationId",
+        "keyword"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:createAgentAnnotation",
+      "type": "function",
+      "name": "createAgentAnnotation",
+      "filePath": "web/src/api/modules/applications.ts",
+      "summary": "Function createAgentAnnotation in web/src/api/modules/applications.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        168,
+        177
+      ],
+      "params": [
+        "applicationId",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:createAgentAnnotationFromMessage",
+      "type": "function",
+      "name": "createAgentAnnotationFromMessage",
+      "filePath": "web/src/api/modules/applications.ts",
+      "summary": "Function createAgentAnnotationFromMessage in web/src/api/modules/applications.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        179,
+        188
+      ],
+      "params": [
+        "applicationId",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:updateAgentAnnotation",
+      "type": "function",
+      "name": "updateAgentAnnotation",
+      "filePath": "web/src/api/modules/applications.ts",
+      "summary": "Function updateAgentAnnotation in web/src/api/modules/applications.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        190,
+        200
+      ],
+      "params": [
+        "applicationId",
+        "annotationId",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/applications.ts:deleteAgentAnnotation",
+      "type": "function",
+      "name": "deleteAgentAnnotation",
+      "filePath": "web/src/api/modules/applications.ts",
+      "summary": "Function deleteAgentAnnotation in web/src/api/modules/applications.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        202,
+        204
+      ],
+      "params": [
+        "applicationId",
+        "annotationId"
+      ]
+    },
+    {
+      "id": "file:web/src/api/modules/asr.ts",
+      "type": "file",
+      "name": "asr.ts",
+      "filePath": "web/src/api/modules/asr.ts",
+      "summary": "web/src/api/modules/asr.ts (typescript); 10 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        99
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 10,
+        "functionCount": 10,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:fetchAsrSettings",
+      "type": "function",
+      "name": "fetchAsrSettings",
+      "filePath": "web/src/api/modules/asr.ts",
+      "summary": "Function fetchAsrSettings in web/src/api/modules/asr.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        53,
+        56
+      ],
+      "params": []
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:updateAsrSettings",
+      "type": "function",
+      "name": "updateAsrSettings",
+      "filePath": "web/src/api/modules/asr.ts",
+      "summary": "Function updateAsrSettings in web/src/api/modules/asr.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        58,
+        61
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:testAsrSettings",
+      "type": "function",
+      "name": "testAsrSettings",
+      "filePath": "web/src/api/modules/asr.ts",
+      "summary": "Function testAsrSettings in web/src/api/modules/asr.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        63,
+        66
+      ],
+      "params": []
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:fetchAsrStatus",
+      "type": "function",
+      "name": "fetchAsrStatus",
+      "filePath": "web/src/api/modules/asr.ts",
+      "summary": "Function fetchAsrStatus in web/src/api/modules/asr.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        68,
+        71
+      ],
+      "params": []
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:testAsr",
+      "type": "function",
+      "name": "testAsr",
+      "filePath": "web/src/api/modules/asr.ts",
+      "summary": "Function testAsr in web/src/api/modules/asr.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        73,
+        76
+      ],
+      "params": []
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:fetchAsrReplacementRules",
+      "type": "function",
+      "name": "fetchAsrReplacementRules",
+      "filePath": "web/src/api/modules/asr.ts",
+      "summary": "Function fetchAsrReplacementRules in web/src/api/modules/asr.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        78,
+        83
+      ],
+      "params": [
+        "page"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:createAsrReplacementRule",
+      "type": "function",
+      "name": "createAsrReplacementRule",
+      "filePath": "web/src/api/modules/asr.ts",
+      "summary": "Function createAsrReplacementRule in web/src/api/modules/asr.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        85,
+        88
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:updateAsrReplacementRule",
+      "type": "function",
+      "name": "updateAsrReplacementRule",
+      "filePath": "web/src/api/modules/asr.ts",
+      "summary": "Function updateAsrReplacementRule in web/src/api/modules/asr.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        90,
+        93
+      ],
+      "params": [
+        "id",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:deleteAsrReplacementRule",
+      "type": "function",
+      "name": "deleteAsrReplacementRule",
+      "filePath": "web/src/api/modules/asr.ts",
+      "summary": "Function deleteAsrReplacementRule in web/src/api/modules/asr.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        95,
+        97
+      ],
+      "params": [
+        "id"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/asr.ts:buildAsrRealtimeWebSocketUrl",
+      "type": "function",
+      "name": "buildAsrRealtimeWebSocketUrl",
+      "filePath": "web/src/api/modules/asr.ts",
+      "summary": "Function buildAsrRealtimeWebSocketUrl in web/src/api/modules/asr.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        99,
+        99
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/api/modules/audit.ts",
+      "type": "file",
+      "name": "audit.ts",
+      "filePath": "web/src/api/modules/audit.ts",
+      "summary": "web/src/api/modules/audit.ts (typescript); 2 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        42
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/api/modules/audit.ts:fetchOperationLogs",
+      "type": "function",
+      "name": "fetchOperationLogs",
+      "filePath": "web/src/api/modules/audit.ts",
+      "summary": "Function fetchOperationLogs in web/src/api/modules/audit.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        34,
+        37
+      ],
+      "params": [
+        "params"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/audit.ts:clearOperationLogs",
+      "type": "function",
+      "name": "clearOperationLogs",
+      "filePath": "web/src/api/modules/audit.ts",
+      "summary": "Function clearOperationLogs in web/src/api/modules/audit.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        39,
+        42
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/api/modules/auth.ts",
+      "type": "file",
+      "name": "auth.ts",
+      "filePath": "web/src/api/modules/auth.ts",
+      "summary": "web/src/api/modules/auth.ts (typescript); 6 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        101
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 6,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/api/modules/auth.ts:loginRequest",
+      "type": "function",
+      "name": "loginRequest",
+      "filePath": "web/src/api/modules/auth.ts",
+      "summary": "Function loginRequest in web/src/api/modules/auth.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        73,
+        76
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/auth.ts:fetchCurrentUser",
+      "type": "function",
+      "name": "fetchCurrentUser",
+      "filePath": "web/src/api/modules/auth.ts",
+      "summary": "Function fetchCurrentUser in web/src/api/modules/auth.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        78,
+        81
+      ],
+      "params": []
+    },
+    {
+      "id": "function:web/src/api/modules/auth.ts:applyAccountRequest",
+      "type": "function",
+      "name": "applyAccountRequest",
+      "filePath": "web/src/api/modules/auth.ts",
+      "summary": "Function applyAccountRequest in web/src/api/modules/auth.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        83,
+        86
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/auth.ts:fetchAccountApplications",
+      "type": "function",
+      "name": "fetchAccountApplications",
+      "filePath": "web/src/api/modules/auth.ts",
+      "summary": "Function fetchAccountApplications in web/src/api/modules/auth.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        88,
+        91
+      ],
+      "params": []
+    },
+    {
+      "id": "function:web/src/api/modules/auth.ts:updateAccountApplicationStatus",
+      "type": "function",
+      "name": "updateAccountApplicationStatus",
+      "filePath": "web/src/api/modules/auth.ts",
+      "summary": "Function updateAccountApplicationStatus in web/src/api/modules/auth.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        93,
+        96
+      ],
+      "params": [
+        "id",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/auth.ts:changePasswordRequest",
+      "type": "function",
+      "name": "changePasswordRequest",
+      "filePath": "web/src/api/modules/auth.ts",
+      "summary": "Function changePasswordRequest in web/src/api/modules/auth.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        98,
+        101
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "file:web/src/api/modules/chat.ts",
+      "type": "file",
+      "name": "chat.ts",
+      "filePath": "web/src/api/modules/chat.ts",
+      "summary": "web/src/api/modules/chat.ts (typescript); 6 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        215
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 4,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/api/modules/chat.ts:parseSseDataLine",
+      "type": "function",
+      "name": "parseSseDataLine",
+      "filePath": "web/src/api/modules/chat.ts",
+      "summary": "Function parseSseDataLine in web/src/api/modules/chat.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        40,
+        43
+      ],
+      "params": [
+        "line"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/chat.ts:fetchConversation",
+      "type": "function",
+      "name": "fetchConversation",
+      "filePath": "web/src/api/modules/chat.ts",
+      "summary": "Function fetchConversation in web/src/api/modules/chat.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        45,
+        50
+      ],
+      "params": [
+        "id"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/chat.ts:updateConversationConfig",
+      "type": "function",
+      "name": "updateConversationConfig",
+      "filePath": "web/src/api/modules/chat.ts",
+      "summary": "Function updateConversationConfig in web/src/api/modules/chat.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        52,
+        61
+      ],
+      "params": [
+        "id",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/chat.ts:sendMessageStream",
+      "type": "function",
+      "name": "sendMessageStream",
+      "filePath": "web/src/api/modules/chat.ts",
+      "summary": "Function sendMessageStream in web/src/api/modules/chat.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        67,
+        172
+      ],
+      "params": [
+        "conversationId",
+        "content",
+        "stream",
+        "regenerateMessageId",
+        "onChunk",
+        "onTitle",
+        "onSummary",
+        "onError",
+        "onDone"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/chat.ts:buildConversationListParams",
+      "type": "function",
+      "name": "buildConversationListParams",
+      "filePath": "web/src/api/modules/chat.ts",
+      "summary": "Function buildConversationListParams in web/src/api/modules/chat.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        203,
+        208
+      ],
+      "params": [
+        "query"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/chat.ts:fetchConversations",
+      "type": "function",
+      "name": "fetchConversations",
+      "filePath": "web/src/api/modules/chat.ts",
+      "summary": "Function fetchConversations in web/src/api/modules/chat.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        210,
+        215
+      ],
+      "params": [
+        "params"
+      ]
+    },
+    {
+      "id": "file:web/src/api/modules/commands.ts",
+      "type": "file",
+      "name": "commands.ts",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "web/src/api/modules/commands.ts (typescript); 17 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        233
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 14,
+        "functionCount": 17,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:buildActiveParam",
+      "type": "function",
+      "name": "buildActiveParam",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function buildActiveParam in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        133,
+        137
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:buildGroupParams",
+      "type": "function",
+      "name": "buildGroupParams",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function buildGroupParams in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        139,
+        145
+      ],
+      "params": [
+        "query"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:buildCommandParams",
+      "type": "function",
+      "name": "buildCommandParams",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function buildCommandParams in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        147,
+        153
+      ],
+      "params": [
+        "query"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:fetchCommandGroups",
+      "type": "function",
+      "name": "fetchCommandGroups",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function fetchCommandGroups in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        155,
+        160
+      ],
+      "params": [
+        "query"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:createCommandGroup",
+      "type": "function",
+      "name": "createCommandGroup",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function createCommandGroup in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        162,
+        165
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:updateCommandGroup",
+      "type": "function",
+      "name": "updateCommandGroup",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function updateCommandGroup in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        167,
+        170
+      ],
+      "params": [
+        "id",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:deleteCommandGroup",
+      "type": "function",
+      "name": "deleteCommandGroup",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function deleteCommandGroup in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        172,
+        174
+      ],
+      "params": [
+        "id"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:fetchControlCommands",
+      "type": "function",
+      "name": "fetchControlCommands",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function fetchControlCommands in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        176,
+        181
+      ],
+      "params": [
+        "query"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:createControlCommand",
+      "type": "function",
+      "name": "createControlCommand",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function createControlCommand in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        183,
+        186
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:updateControlCommand",
+      "type": "function",
+      "name": "updateControlCommand",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function updateControlCommand in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        188,
+        191
+      ],
+      "params": [
+        "id",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:deleteControlCommand",
+      "type": "function",
+      "name": "deleteControlCommand",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function deleteControlCommand in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        193,
+        195
+      ],
+      "params": [
+        "id"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:fetchTaskCommands",
+      "type": "function",
+      "name": "fetchTaskCommands",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function fetchTaskCommands in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        197,
+        202
+      ],
+      "params": [
+        "query"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:createTaskCommand",
+      "type": "function",
+      "name": "createTaskCommand",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function createTaskCommand in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        204,
+        207
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:updateTaskCommand",
+      "type": "function",
+      "name": "updateTaskCommand",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function updateTaskCommand in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        209,
+        212
+      ],
+      "params": [
+        "id",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:deleteTaskCommand",
+      "type": "function",
+      "name": "deleteTaskCommand",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function deleteTaskCommand in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        214,
+        216
+      ],
+      "params": [
+        "id"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:exportEnabledCommandGroups",
+      "type": "function",
+      "name": "exportEnabledCommandGroups",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function exportEnabledCommandGroups in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        218,
+        221
+      ],
+      "params": []
+    },
+    {
+      "id": "function:web/src/api/modules/commands.ts:exportAllCommands",
+      "type": "function",
+      "name": "exportAllCommands",
+      "filePath": "web/src/api/modules/commands.ts",
+      "summary": "Function exportAllCommands in web/src/api/modules/commands.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        223,
+        233
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/api/modules/devices.ts",
+      "type": "file",
+      "name": "devices.ts",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "web/src/api/modules/devices.ts (typescript); 21 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        303
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 19,
+        "functionCount": 21,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:normalizeList",
+      "type": "function",
+      "name": "normalizeList",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function normalizeList in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        160,
+        165
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:buildDeviceParams",
+      "type": "function",
+      "name": "buildDeviceParams",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function buildDeviceParams in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        167,
+        176
+      ],
+      "params": [
+        "query"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:fetchDevices",
+      "type": "function",
+      "name": "fetchDevices",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function fetchDevices in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        178,
+        181
+      ],
+      "params": [
+        "query"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:fetchDeviceStats",
+      "type": "function",
+      "name": "fetchDeviceStats",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function fetchDeviceStats in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        183,
+        186
+      ],
+      "params": []
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:updateDevice",
+      "type": "function",
+      "name": "updateDevice",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function updateDevice in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        188,
+        191
+      ],
+      "params": [
+        "deviceCode",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:deleteDevice",
+      "type": "function",
+      "name": "deleteDevice",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function deleteDevice in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        193,
+        195
+      ],
+      "params": [
+        "deviceCode"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:fetchDeviceAuthorizationRequests",
+      "type": "function",
+      "name": "fetchDeviceAuthorizationRequests",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function fetchDeviceAuthorizationRequests in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        197,
+        210
+      ],
+      "params": [
+        "query"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:fetchDeviceAuthorizations",
+      "type": "function",
+      "name": "fetchDeviceAuthorizations",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function fetchDeviceAuthorizations in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        212,
+        218
+      ],
+      "params": [
+        "query"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:updateDeviceAuthorizationRequestName",
+      "type": "function",
+      "name": "updateDeviceAuthorizationRequestName",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function updateDeviceAuthorizationRequestName in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        220,
+        226
+      ],
+      "params": [
+        "deviceCode",
+        "name"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:fetchDeviceActivationLogs",
+      "type": "function",
+      "name": "fetchDeviceActivationLogs",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function fetchDeviceActivationLogs in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        228,
+        234
+      ],
+      "params": [
+        "query"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:bindDeviceAuthorizationRequest",
+      "type": "function",
+      "name": "bindDeviceAuthorizationRequest",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function bindDeviceAuthorizationRequest in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        236,
+        242
+      ],
+      "params": [
+        "deviceCode",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:ignoreDeviceAuthorizationRequest",
+      "type": "function",
+      "name": "ignoreDeviceAuthorizationRequest",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function ignoreDeviceAuthorizationRequest in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        244,
+        249
+      ],
+      "params": [
+        "deviceCode"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:authorizeDevice",
+      "type": "function",
+      "name": "authorizeDevice",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function authorizeDevice in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        251,
+        257
+      ],
+      "params": [
+        "deviceCode",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:revokeDeviceAuthorization",
+      "type": "function",
+      "name": "revokeDeviceAuthorization",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function revokeDeviceAuthorization in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        259,
+        264
+      ],
+      "params": [
+        "deviceCode"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:fetchDeviceGroups",
+      "type": "function",
+      "name": "fetchDeviceGroups",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function fetchDeviceGroups in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        266,
+        271
+      ],
+      "params": [
+        "params"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:createDeviceGroup",
+      "type": "function",
+      "name": "createDeviceGroup",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function createDeviceGroup in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        273,
+        276
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:updateDeviceGroup",
+      "type": "function",
+      "name": "updateDeviceGroup",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function updateDeviceGroup in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        278,
+        281
+      ],
+      "params": [
+        "id",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:deleteDeviceGroup",
+      "type": "function",
+      "name": "deleteDeviceGroup",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function deleteDeviceGroup in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        283,
+        285
+      ],
+      "params": [
+        "id"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:fetchDeviceApplications",
+      "type": "function",
+      "name": "fetchDeviceApplications",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function fetchDeviceApplications in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        287,
+        293
+      ],
+      "params": [
+        "params"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:createDeviceApplication",
+      "type": "function",
+      "name": "createDeviceApplication",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function createDeviceApplication in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        295,
+        298
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/devices.ts:updateDeviceApplication",
+      "type": "function",
+      "name": "updateDeviceApplication",
+      "filePath": "web/src/api/modules/devices.ts",
+      "summary": "Function updateDeviceApplication in web/src/api/modules/devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        300,
+        303
+      ],
+      "params": [
+        "id",
+        "payload"
+      ]
+    },
+    {
+      "id": "file:web/src/api/modules/employees.ts",
+      "type": "file",
+      "name": "employees.ts",
+      "filePath": "web/src/api/modules/employees.ts",
+      "summary": "web/src/api/modules/employees.ts (typescript); 10 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        106
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 10,
+        "functionCount": 10,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:fetchEmployees",
+      "type": "function",
+      "name": "fetchEmployees",
+      "filePath": "web/src/api/modules/employees.ts",
+      "summary": "Function fetchEmployees in web/src/api/modules/employees.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        41,
+        44
+      ],
+      "params": [
+        "params"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:createEmployee",
+      "type": "function",
+      "name": "createEmployee",
+      "filePath": "web/src/api/modules/employees.ts",
+      "summary": "Function createEmployee in web/src/api/modules/employees.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        46,
+        54
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:updateEmployee",
+      "type": "function",
+      "name": "updateEmployee",
+      "filePath": "web/src/api/modules/employees.ts",
+      "summary": "Function updateEmployee in web/src/api/modules/employees.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        56,
+        62
+      ],
+      "params": [
+        "id",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:deleteEmployee",
+      "type": "function",
+      "name": "deleteEmployee",
+      "filePath": "web/src/api/modules/employees.ts",
+      "summary": "Function deleteEmployee in web/src/api/modules/employees.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        64,
+        67
+      ],
+      "params": [
+        "id"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:resetEmployeePassword",
+      "type": "function",
+      "name": "resetEmployeePassword",
+      "filePath": "web/src/api/modules/employees.ts",
+      "summary": "Function resetEmployeePassword in web/src/api/modules/employees.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        69,
+        72
+      ],
+      "params": [
+        "id",
+        "newPassword"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:fetchTenantRoles",
+      "type": "function",
+      "name": "fetchTenantRoles",
+      "filePath": "web/src/api/modules/employees.ts",
+      "summary": "Function fetchTenantRoles in web/src/api/modules/employees.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        74,
+        77
+      ],
+      "params": []
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:createTenantRole",
+      "type": "function",
+      "name": "createTenantRole",
+      "filePath": "web/src/api/modules/employees.ts",
+      "summary": "Function createTenantRole in web/src/api/modules/employees.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        79,
+        88
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:updateTenantRole",
+      "type": "function",
+      "name": "updateTenantRole",
+      "filePath": "web/src/api/modules/employees.ts",
+      "summary": "Function updateTenantRole in web/src/api/modules/employees.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        90,
+        96
+      ],
+      "params": [
+        "id",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:deleteTenantRole",
+      "type": "function",
+      "name": "deleteTenantRole",
+      "filePath": "web/src/api/modules/employees.ts",
+      "summary": "Function deleteTenantRole in web/src/api/modules/employees.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        98,
+        101
+      ],
+      "params": [
+        "id"
+      ]
+    },
+    {
+      "id": "function:web/src/api/modules/employees.ts:fetchMyTenantCatalog",
+      "type": "function",
+      "name": "fetchMyTenantCatalog",
+      "filePath": "web/src/api/modules/employees.ts",
+      "summary": "Function fetchMyTenantCatalog in web/src/api/modules/employees.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        103,
+        106
+      ],
+      "params": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:web/scripts/test-command-export-format.mjs",
+      "target": "function:web/scripts/test-command-export-format.mjs:assert",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/scripts/test-command-export-format.mjs",
+      "target": "function:web/scripts/test-command-export-format.mjs:assertKeys",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/scripts/test-command-export-management-state.mjs",
+      "target": "function:web/scripts/test-command-export-management-state.mjs:assert",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/scripts/test-command-workspace-card-layout.mjs",
+      "target": "function:web/scripts/test-command-workspace-card-layout.mjs:assert",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/scripts/test-command-workspace-pagination.mjs",
+      "target": "function:web/scripts/test-command-workspace-pagination.mjs:assert",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/scripts/test-llm-settings-static.mjs",
+      "target": "function:web/scripts/test-llm-settings-static.mjs:read",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/scripts/test-llm-settings-static.mjs",
+      "target": "function:web/scripts/test-llm-settings-static.mjs:assert",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/scripts/test-minio-settings-static.mjs",
+      "target": "function:web/scripts/test-minio-settings-static.mjs:read",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/scripts/test-scrolling-text-management-static.mjs",
+      "target": "function:web/scripts/test-scrolling-text-management-static.mjs:read",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/scripts/test-sidebar-open-keys-static.mjs",
+      "target": "function:web/scripts/test-sidebar-open-keys-static.mjs:expectIncludes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/scripts/test-sidebar-open-keys-static.mjs",
+      "target": "function:web/scripts/test-sidebar-open-keys-static.mjs:expectExcludes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/scripts/test-super-admin-tenant-menu-static.mjs",
+      "target": "function:web/scripts/test-super-admin-tenant-menu-static.mjs:expectIncludes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/scripts/test-super-admin-tenant-menu-static.mjs",
+      "target": "function:web/scripts/test-super-admin-tenant-menu-static.mjs:expectExcludes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/scripts/test-super-admin-tenant-menu-static.mjs",
+      "target": "function:web/scripts/test-super-admin-tenant-menu-static.mjs:sliceBetween",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/scripts/test-task-step-form-list-static.mjs",
+      "target": "function:web/scripts/test-task-step-form-list-static.mjs:read",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/client.ts",
+      "target": "function:web/src/api/client.ts:isTenantScopedUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/client.ts",
+      "target": "function:web/src/api/client.ts:normalizeDevMediaUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/client.ts",
+      "target": "function:web/src/api/client.ts:normalizeDevMediaUrls",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/client.ts",
+      "target": "function:web/src/api/client.ts:clearAuth",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/client.ts",
+      "target": "function:web/src/api/client.ts:handleUnauthorizedResponse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:buildListParams",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:fetchAgentApplications",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:fetchAgentApplication",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:createAgentApplication",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:updateAgentApplication",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:deleteAgentApplication",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:createAgentApplicationConversation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:fetchAgentApplicationStats",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:fetchAgentAnnotations",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:createAgentAnnotation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:createAgentAnnotationFromMessage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:updateAgentAnnotation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/applications.ts",
+      "target": "function:web/src/api/modules/applications.ts:deleteAgentAnnotation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:fetchAsrSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:updateAsrSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:testAsrSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:fetchAsrStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:testAsr",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:fetchAsrReplacementRules",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:createAsrReplacementRule",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:updateAsrReplacementRule",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:deleteAsrReplacementRule",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/asr.ts",
+      "target": "function:web/src/api/modules/asr.ts:buildAsrRealtimeWebSocketUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/audit.ts",
+      "target": "function:web/src/api/modules/audit.ts:fetchOperationLogs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/audit.ts",
+      "target": "function:web/src/api/modules/audit.ts:clearOperationLogs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:loginRequest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:fetchCurrentUser",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:applyAccountRequest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:fetchAccountApplications",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:updateAccountApplicationStatus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/auth.ts",
+      "target": "function:web/src/api/modules/auth.ts:changePasswordRequest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/chat.ts",
+      "target": "function:web/src/api/modules/chat.ts:parseSseDataLine",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/chat.ts",
+      "target": "function:web/src/api/modules/chat.ts:fetchConversation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/chat.ts",
+      "target": "function:web/src/api/modules/chat.ts:updateConversationConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/chat.ts",
+      "target": "function:web/src/api/modules/chat.ts:sendMessageStream",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/chat.ts",
+      "target": "function:web/src/api/modules/chat.ts:buildConversationListParams",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/chat.ts",
+      "target": "function:web/src/api/modules/chat.ts:fetchConversations",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:buildActiveParam",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:buildGroupParams",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:buildCommandParams",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:fetchCommandGroups",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:createCommandGroup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:updateCommandGroup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:deleteCommandGroup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:fetchControlCommands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:createControlCommand",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:updateControlCommand",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:deleteControlCommand",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:fetchTaskCommands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:createTaskCommand",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:updateTaskCommand",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:deleteTaskCommand",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:exportEnabledCommandGroups",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/commands.ts",
+      "target": "function:web/src/api/modules/commands.ts:exportAllCommands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:normalizeList",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:buildDeviceParams",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDevices",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceStats",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:updateDevice",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:deleteDevice",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceAuthorizationRequests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceAuthorizations",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:updateDeviceAuthorizationRequestName",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceActivationLogs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:bindDeviceAuthorizationRequest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:ignoreDeviceAuthorizationRequest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:authorizeDevice",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:revokeDeviceAuthorization",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceGroups",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:createDeviceGroup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:updateDeviceGroup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:deleteDeviceGroup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:fetchDeviceApplications",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:createDeviceApplication",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/devices.ts",
+      "target": "function:web/src/api/modules/devices.ts:updateDeviceApplication",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:fetchEmployees",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:createEmployee",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:updateEmployee",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:deleteEmployee",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:resetEmployeePassword",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:fetchTenantRoles",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:createTenantRole",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:updateTenantRole",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:deleteTenantRole",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/api/modules/employees.ts",
+      "target": "function:web/src/api/modules/employees.ts:fetchMyTenantCatalog",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    }
+  ]
+}

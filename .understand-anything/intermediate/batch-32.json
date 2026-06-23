@@ -1,0 +1,71 @@
+{
+  "nodes": [
+    {
+      "id": "document:backend/AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "backend/AGENTS.md",
+      "summary": "backend/AGENTS.md (markdown); 12 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        158
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "id": "document:backend/CLAUDE.md",
+      "type": "document",
+      "name": "CLAUDE.md",
+      "filePath": "backend/CLAUDE.md",
+      "summary": "backend/CLAUDE.md (markdown); 10 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        177
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    },
+    {
+      "id": "document:backend/requirements.txt",
+      "type": "document",
+      "name": "requirements.txt",
+      "filePath": "backend/requirements.txt",
+      "summary": "backend/requirements.txt (txt)",
+      "tags": [
+        "txt",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "txt",
+      "lineRange": [
+        1,
+        21
+      ],
+      "metrics": {}
+    }
+  ],
+  "edges": []
+}

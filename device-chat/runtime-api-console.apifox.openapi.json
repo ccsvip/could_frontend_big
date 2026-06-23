@@ -1,0 +1,1410 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "设备运行时接口",
+    "version": "1.0.0",
+    "description": "安卓/设备端运行时接口。HTTP 接口统一使用 X-Device-Code 识别设备；X-Request-ID 和 X-Trace-ID 为可选链路追踪字段。设备运行时错误码区间为 44000-44999。"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8880/api/v1",
+      "description": "本地 Docker API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "设备认证"
+    },
+    {
+      "name": "设备运行时"
+    },
+    {
+      "name": "设备资源"
+    },
+    {
+      "name": "AI 能力"
+    },
+    {
+      "name": "实时 WebSocket"
+    }
+  ],
+  "paths": {
+    "/device-auth/activate/": {
+      "post": {
+        "tags": [
+          "设备认证"
+        ],
+        "summary": "新增/上报设备",
+        "description": "设备启动、首次联网或需要刷新设备版本/诊断信息时调用。不是每个业务接口前都调用。设备码不存在时会创建待绑定设备记录。",
+        "operationId": "activateDevice",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/XDeviceCode"
+          },
+          {
+            "$ref": "#/components/parameters/XRequestId"
+          },
+          {
+            "$ref": "#/components/parameters/XTraceId"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceActivationRequest"
+              },
+              "example": {
+                "softwareVersion": "runtime-api-console-html",
+                "systemVersion": "Android 14",
+                "mainboardInfo": "rk3568",
+                "deviceInfo": {
+                  "source": "android",
+                  "language": "zh-CN"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "上报成功；bindingStatus=bound 表示已绑定，pending 表示待后台绑定。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceActivationResponse"
+                },
+                "examples": {
+                  "pending": {
+                    "summary": "新增设备待绑定",
+                    "value": {
+                      "requestId": "req-001",
+                      "traceId": "trace-001",
+                      "bindingStatus": "pending",
+                      "device": {
+                        "deviceCode": "DEVICE_001",
+                        "name": "待授权设备",
+                        "tenantId": null,
+                        "tenantName": "",
+                        "agentApplicationId": null,
+                        "agentApplicationName": "",
+                        "isEnabled": true,
+                        "registeredAt": "2026-06-23T10:00:00+08:00",
+                        "lastAuthAt": "2026-06-23T10:00:00+08:00"
+                      },
+                      "application": null,
+                      "agentApplication": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/DeviceCodeRequired"
+          },
+          "409": {
+            "$ref": "#/components/responses/DeviceCodeDuplicated"
+          }
+        }
+      }
+    },
+    "/device-runtime/config/": {
+      "get": {
+        "tags": [
+          "设备运行时"
+        ],
+        "summary": "获取完整运行时配置",
+        "description": "获取设备、公司、资源应用、智能体应用和资源配置。device.name 是后台维护的设备名称，设备端只读使用。设备必须已登记、启用、绑定公司，并绑定可用智能体。",
+        "operationId": "getDeviceRuntimeConfig",
+        "security": [
+          {
+            "DeviceCodeHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/XRequestId"
+          },
+          {
+            "$ref": "#/components/parameters/XTraceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "运行时配置",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuntimeConfigResponse"
+                },
+                "example": {
+                  "requestId": "req-001",
+                  "traceId": "trace-001",
+                  "device": {
+                    "deviceCode": "DEVICE_001",
+                    "name": "展厅设备 A",
+                    "tenantId": 1,
+                    "tenantName": "示例公司",
+                    "isEnabled": true,
+                    "authorizationType": "trial",
+                    "expiresAt": "2026-12-31T23:59:59+08:00",
+                    "agentApplicationId": 12,
+                    "agentApplicationName": "展厅讲解智能体"
+                  },
+                  "application": {
+                    "id": 8,
+                    "name": "展厅资源应用",
+                    "code": "SHOWROOM"
+                  },
+                  "agentApplication": {
+                    "id": 12,
+                    "name": "展厅讲解智能体",
+                    "llmModelId": 3,
+                    "llmModelName": "示例 LLM"
+                  },
+                  "resources": {
+                    "images": [
+                      {
+                        "id": 1,
+                        "name": "欢迎页背景",
+                        "url": "https://example.com/bg.png"
+                      }
+                    ],
+                    "scrollingTexts": [
+                      {
+                        "id": 2,
+                        "title": "欢迎文本",
+                        "items": [
+                          {
+                            "id": 20,
+                            "zh": "欢迎参观",
+                            "en": "Welcome"
+                          }
+                        ]
+                      }
+                    ],
+                    "models": [
+                      {
+                        "id": 3,
+                        "name": "数字人 A",
+                        "modelType": "human",
+                        "url": "https://example.com/model.glb"
+                      }
+                    ],
+                    "videos": [
+                      {
+                        "id": 4,
+                        "name": "宣传片",
+                        "url": "https://example.com/video.mp4"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/DeviceCodeRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/DeviceRuntimeForbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/DeviceNotRegistered"
+          },
+          "409": {
+            "$ref": "#/components/responses/DeviceCodeDuplicated"
+          }
+        }
+      }
+    },
+    "/device-runtime/resources/": {
+      "post": {
+        "tags": [
+          "设备资源"
+        ],
+        "summary": "获取资源切片",
+        "description": "按 resourceType 获取应用摘要、背景图片、滚动文本、数字人模型或视频资源。",
+        "operationId": "getDeviceRuntimeResources",
+        "security": [
+          {
+            "DeviceCodeHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/XRequestId"
+          },
+          {
+            "$ref": "#/components/parameters/XTraceId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuntimeResourcesRequest"
+              },
+              "examples": {
+                "application": {
+                  "value": {
+                    "resourceType": "application"
+                  }
+                },
+                "images": {
+                  "value": {
+                    "resourceType": "images"
+                  }
+                },
+                "scrollingTexts": {
+                  "value": {
+                    "resourceType": "scrollingTexts"
+                  }
+                },
+                "models": {
+                  "value": {
+                    "resourceType": "models"
+                  }
+                },
+                "videos": {
+                  "value": {
+                    "resourceType": "videos"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "资源切片",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuntimeResourcesResponse"
+                },
+                "example": {
+                  "requestId": "req-001",
+                  "traceId": "trace-001",
+                  "resourceType": "images",
+                  "items": [
+                    {
+                      "id": 1,
+                      "name": "欢迎页背景",
+                      "category": "home",
+                      "url": "https://example.com/bg.png"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/DeviceCodeRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/DeviceRuntimeForbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/DeviceNotRegistered"
+          },
+          "409": {
+            "$ref": "#/components/responses/DeviceCodeDuplicated"
+          }
+        }
+      }
+    },
+    "/device-runtime/heartbeat/": {
+      "post": {
+        "tags": [
+          "设备运行时"
+        ],
+        "summary": "设备心跳",
+        "description": "设备运行期间定期调用，用于刷新 lastHeartbeat。可同步软件版本、系统版本和诊断信息。不需要每次心跳前调用 activate。",
+        "operationId": "sendDeviceHeartbeat",
+        "security": [
+          {
+            "DeviceCodeHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/XRequestId"
+          },
+          {
+            "$ref": "#/components/parameters/XTraceId"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeartbeatRequest"
+              },
+              "example": {
+                "softwareVersion": "1.0.0",
+                "systemVersion": "Android 14",
+                "deviceInfo": {
+                  "battery": 88,
+                  "network": "wifi"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "心跳成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HeartbeatResponse"
+                },
+                "example": {
+                  "status": "success",
+                  "message": "心跳成功",
+                  "requestId": "req-001",
+                  "traceId": "trace-001"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/DeviceCodeRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/DeviceRuntimeForbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/DeviceNotRegistered"
+          },
+          "409": {
+            "$ref": "#/components/responses/DeviceCodeDuplicated"
+          }
+        }
+      }
+    },
+    "/ai-models/tts/options/": {
+      "get": {
+        "tags": [
+          "AI 能力"
+        ],
+        "summary": "获取 TTS 音色列表",
+        "description": "带 X-Device-Code 时按设备所属公司返回可用 TTS 音色。",
+        "operationId": "getTtsOptions",
+        "security": [
+          {
+            "DeviceCodeHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/XRequestId"
+          },
+          {
+            "$ref": "#/components/parameters/XTraceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "音色列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TtsOptionsResponse"
+                },
+                "example": {
+                  "defaultVoiceId": 1,
+                  "voices": [
+                    {
+                      "id": 1,
+                      "name": "女声讲解",
+                      "voiceCode": "female_narrator",
+                      "content": "你好，我是数字人设备。"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/DeviceCodeRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/DeviceRuntimeForbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/DeviceNotRegistered"
+          },
+          "409": {
+            "$ref": "#/components/responses/DeviceCodeDuplicated"
+          }
+        }
+      }
+    },
+    "/ai-models/asr/device-status/": {
+      "get": {
+        "tags": [
+          "AI 能力"
+        ],
+        "summary": "检查 ASR 设备状态",
+        "description": "进入 ASR WebSocket 前检查设备公司上下文和 ASR 服务配置。",
+        "operationId": "getAsrDeviceStatus",
+        "security": [
+          {
+            "DeviceCodeHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/XRequestId"
+          },
+          {
+            "$ref": "#/components/parameters/XTraceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ASR 状态",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsrDeviceStatusResponse"
+                },
+                "example": {
+                  "configured": true,
+                  "deviceCode": "DEVICE_001",
+                  "deviceId": 1,
+                  "tenantId": 1,
+                  "tenantName": "示例公司",
+                  "model": "asr-model",
+                  "requestId": "req-001",
+                  "traceId": "trace-001"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/DeviceCodeRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/DeviceRuntimeForbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/DeviceNotRegistered"
+          },
+          "409": {
+            "$ref": "#/components/responses/DeviceCodeDuplicated"
+          }
+        }
+      }
+    },
+    "/device/voice-chat": {
+      "post": {
+        "tags": [
+          "AI 能力"
+        ],
+        "summary": "设备文本/语音问答",
+        "description": "按设备码解析公司和绑定智能体。文本问答使用 JSON；语音问答使用 multipart/form-data 上传 16k PCM 音频。",
+        "operationId": "deviceVoiceChat",
+        "security": [
+          {
+            "DeviceCodeHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/XRequestId"
+          },
+          {
+            "$ref": "#/components/parameters/XTraceId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoiceChatTextRequest"
+              },
+              "example": {
+                "text": "介绍一下展厅"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/VoiceChatAudioRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "问答结果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoiceChatResponse"
+                },
+                "example": {
+                  "sessionId": "session-001",
+                  "requestId": "req-001",
+                  "traceId": "trace-001",
+                  "deviceCode": "DEVICE_001",
+                  "questionText": "介绍一下展厅",
+                  "answerText": "这里是示例展厅。",
+                  "audioBase64": "base64-audio",
+                  "audioContentType": "audio/wav"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/DeviceRuntimeForbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/DeviceNotRegistered"
+          },
+          "409": {
+            "$ref": "#/components/responses/DeviceCodeDuplicated"
+          },
+          "415": {
+            "description": "音频格式不支持",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "语音问答接口暂只支持 16k PCM 音频"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai-models/tts/runtime/": {
+      "post": {
+        "tags": [
+          "AI 能力"
+        ],
+        "summary": "设备端 TTS HTTP 合成",
+        "description": "按设备码解析公司默认音色。安卓端通常不传 wrapWav，默认返回 raw PCM；浏览器调试可传 wrapWav=true 返回 audio/wav。",
+        "operationId": "runtimeTts",
+        "security": [
+          {
+            "DeviceCodeHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/XRequestId"
+          },
+          {
+            "$ref": "#/components/parameters/XTraceId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TtsRuntimeRequest"
+              },
+              "example": {
+                "text": "你好，我是数字人设备。",
+                "voiceId": 1,
+                "wrapWav": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "音频二进制。响应头包含采样率、声道等音频参数。",
+            "content": {
+              "audio/pcm": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "audio/wav": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "403": {
+            "$ref": "#/components/responses/DeviceRuntimeForbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/DeviceNotRegistered"
+          },
+          "409": {
+            "$ref": "#/components/responses/DeviceCodeDuplicated"
+          }
+        }
+      }
+    },
+    "/ws/realtime/": {
+      "get": {
+        "tags": [
+          "实时 WebSocket"
+        ],
+        "summary": "统一实时 WebSocket",
+        "description": "WebSocket 地址通常为 ws://localhost:8880/ws/realtime/。通过消息 type 区分 ASR、LLM、TTS。OpenAPI 对 WebSocket 支持有限，导入 Apifox 后建议将该接口切换为 WebSocket 请求并使用下方消息示例。",
+        "operationId": "realtimeWebSocket",
+        "servers": [
+          {
+            "url": "ws://localhost:8880",
+            "description": "本地 Docker WebSocket"
+          }
+        ],
+        "responses": {
+          "101": {
+            "description": "WebSocket 握手成功"
+          }
+        },
+        "x-websocket-message-examples": {
+          "asr.session.start": {
+            "type": "asr.session.start",
+            "id": "asr-session-001",
+            "payload": {
+              "deviceCode": "DEVICE_001",
+              "requestId": "req-001",
+              "traceId": "trace-001"
+            }
+          },
+          "asr.session.finish": {
+            "type": "asr.session.finish",
+            "id": "asr-session-001"
+          },
+          "llm.session.start": {
+            "type": "llm.session.start",
+            "id": "llm-session-001",
+            "payload": {
+              "deviceCode": "DEVICE_001",
+              "text": "介绍一下展厅",
+              "requestId": "req-001",
+              "traceId": "trace-001"
+            }
+          },
+          "tts.session.start": {
+            "type": "tts.session.start",
+            "id": "tts-session-001",
+            "payload": {
+              "deviceCode": "DEVICE_001",
+              "text": "你好，我是数字人设备。",
+              "voiceId": 1
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "DeviceCodeHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Device-Code",
+        "description": "设备码，设备运行时 HTTP 接口必填。"
+      }
+    },
+    "parameters": {
+      "XDeviceCode": {
+        "name": "X-Device-Code",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "example": "DEVICE_001"
+        },
+        "description": "设备码。"
+      },
+      "XRequestId": {
+        "name": "X-Request-ID",
+        "in": "header",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "example": "req-001"
+        },
+        "description": "可选链路追踪 ID。"
+      },
+      "XTraceId": {
+        "name": "X-Trace-ID",
+        "in": "header",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "example": "trace-001"
+        },
+        "description": "可选链路追踪 ID。"
+      }
+    },
+    "responses": {
+      "DeviceCodeRequired": {
+        "description": "设备码为空",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "code": "DEVICE_CODE_REQUIRED",
+              "statusCode": 44001,
+              "message": "设备码不能为空"
+            }
+          }
+        }
+      },
+      "DeviceNotRegistered": {
+        "description": "设备未登记",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "code": "DEVICE_NOT_REGISTERED",
+              "statusCode": 44004,
+              "message": "设备未登记"
+            }
+          }
+        }
+      },
+      "DeviceCodeDuplicated": {
+        "description": "设备码重复",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "code": "DEVICE_CODE_DUPLICATED",
+              "statusCode": 44009,
+              "message": "设备码存在重复绑定，请联系后台处理"
+            }
+          }
+        }
+      },
+      "DeviceRuntimeForbidden": {
+        "description": "设备运行时状态不满足要求。前端按 code/statusCode 判断具体原因。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "tenantUnbound": {
+                "value": {
+                  "code": "DEVICE_TENANT_UNBOUND",
+                  "statusCode": 44011,
+                  "message": "设备未绑定公司"
+                }
+              },
+              "tenantDisabled": {
+                "value": {
+                  "code": "DEVICE_TENANT_DISABLED",
+                  "statusCode": 44012,
+                  "message": "公司已停用"
+                }
+              },
+              "deviceDisabled": {
+                "value": {
+                  "code": "DEVICE_DISABLED",
+                  "statusCode": 44013,
+                  "message": "设备已停用"
+                }
+              },
+              "deviceExpired": {
+                "value": {
+                  "code": "DEVICE_EXPIRED",
+                  "statusCode": 44014,
+                  "message": "设备授权已过期"
+                }
+              },
+              "agentUnbound": {
+                "value": {
+                  "code": "DEVICE_AGENT_UNBOUND",
+                  "statusCode": 44021,
+                  "message": "设备未绑定可用智能体"
+                }
+              }
+            }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "请求参数错误",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "message": "请求参数错误"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "稳定业务错误码。设备运行时错误使用 DEVICE_*。"
+          },
+          "statusCode": {
+            "type": "integer",
+            "description": "稳定业务状态码。设备运行时错误码区间：44000-44999。"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "DeviceActivationRequest": {
+        "type": "object",
+        "properties": {
+          "deviceCode": {
+            "type": "string",
+            "description": "可选；推荐放在 X-Device-Code 请求头。"
+          },
+          "softwareVersion": {
+            "type": "string"
+          },
+          "systemVersion": {
+            "type": "string"
+          },
+          "mainboardInfo": {
+            "type": "string"
+          },
+          "deviceInfo": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "DeviceActivationResponse": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "bindingStatus": {
+            "type": "string",
+            "enum": [
+              "bound",
+              "pending"
+            ]
+          },
+          "device": {
+            "$ref": "#/components/schemas/DeviceSummary"
+          },
+          "application": {
+            "$ref": "#/components/schemas/ApplicationSummary"
+          },
+          "agentApplication": {
+            "$ref": "#/components/schemas/AgentApplicationSummary"
+          }
+        },
+        "required": [
+          "bindingStatus",
+          "device"
+        ]
+      },
+      "RuntimeConfigResponse": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "device": {
+            "$ref": "#/components/schemas/DeviceSummary"
+          },
+          "application": {
+            "$ref": "#/components/schemas/ApplicationSummary"
+          },
+          "agentApplication": {
+            "$ref": "#/components/schemas/AgentApplicationSummary"
+          },
+          "resources": {
+            "$ref": "#/components/schemas/RuntimeResources"
+          }
+        }
+      },
+      "RuntimeResourcesRequest": {
+        "type": "object",
+        "properties": {
+          "resourceType": {
+            "type": "string",
+            "enum": [
+              "application",
+              "voiceTones",
+              "images",
+              "scrollingTexts",
+              "models",
+              "videos"
+            ]
+          }
+        },
+        "required": [
+          "resourceType"
+        ]
+      },
+      "RuntimeResourcesResponse": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "resourceType": {
+            "type": "string"
+          },
+          "device": {
+            "$ref": "#/components/schemas/DeviceSummary"
+          },
+          "application": {
+            "$ref": "#/components/schemas/ApplicationSummary"
+          },
+          "agentApplication": {
+            "$ref": "#/components/schemas/AgentApplicationSummary"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "HeartbeatRequest": {
+        "type": "object",
+        "properties": {
+          "softwareVersion": {
+            "type": "string"
+          },
+          "systemVersion": {
+            "type": "string"
+          },
+          "deviceInfo": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "HeartbeatResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "success"
+          },
+          "message": {
+            "type": "string",
+            "example": "心跳成功"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          }
+        }
+      },
+      "TtsOptionsResponse": {
+        "type": "object",
+        "properties": {
+          "defaultVoiceId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "voices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TtsVoice"
+            }
+          }
+        }
+      },
+      "AsrDeviceStatusResponse": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "configured": {
+            "type": "boolean"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "deviceCode": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "integer"
+          },
+          "tenantId": {
+            "type": "integer"
+          },
+          "tenantName": {
+            "type": "string"
+          },
+          "applicationId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "agentApplicationId": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "VoiceChatTextRequest": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "VoiceChatAudioRequest": {
+        "type": "object",
+        "properties": {
+          "audio": {
+            "type": "string",
+            "format": "binary"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "pcm"
+            ],
+            "default": "pcm"
+          },
+          "sampleRate": {
+            "type": "integer",
+            "default": 16000
+          },
+          "sessionId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "audio"
+        ]
+      },
+      "VoiceChatResponse": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "deviceCode": {
+            "type": "string"
+          },
+          "questionText": {
+            "type": "string"
+          },
+          "answerText": {
+            "type": "string"
+          },
+          "audioBase64": {
+            "type": "string",
+            "nullable": true
+          },
+          "audioContentType": {
+            "type": "string"
+          },
+          "ttsError": {
+            "type": "string"
+          }
+        }
+      },
+      "TtsRuntimeRequest": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "voiceId": {
+            "type": "integer"
+          },
+          "wrapWav": {
+            "type": "boolean",
+            "description": "浏览器调试可传 true；安卓端通常不传。"
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "DeviceSummary": {
+        "type": "object",
+        "nullable": true,
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "recordId": {
+            "type": "integer"
+          },
+          "deviceCode": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "后台维护的设备名称，设备端只读使用。"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "online",
+              "offline"
+            ]
+          },
+          "tenantId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "tenantName": {
+            "type": "string"
+          },
+          "applicationId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "applicationName": {
+            "type": "string"
+          },
+          "agentApplicationId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "agentApplicationName": {
+            "type": "string"
+          },
+          "authorizationType": {
+            "type": "string",
+            "enum": [
+              "permanent",
+              "trial"
+            ]
+          },
+          "authorizationTypeLabel": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isEnabled": {
+            "type": "boolean"
+          },
+          "registeredAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastAuthAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastHeartbeat": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "ApplicationSummary": {
+        "type": "object",
+        "nullable": true,
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          }
+        }
+      },
+      "AgentApplicationSummary": {
+        "type": "object",
+        "nullable": true,
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "llmModelId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "llmModelName": {
+            "type": "string"
+          }
+        }
+      },
+      "RuntimeResources": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "images": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResourceItem"
+            }
+          },
+          "videos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResourceItem"
+            }
+          },
+          "scrollingTexts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "voiceTones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TtsVoice"
+            }
+          },
+          "models": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ModelItem"
+            }
+          }
+        }
+      },
+      "ResourceItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          }
+        }
+      },
+      "ModelItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "modelType": {
+            "type": "string"
+          },
+          "orientation": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "thumbnailUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "TtsVoice": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "voiceCode": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "iconUrl": {
+            "type": "string"
+          },
+          "avatarPath": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

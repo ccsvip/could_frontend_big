@@ -174,6 +174,14 @@
     .request-body { padding: 14px; overflow: auto; display: grid; gap: 12px; align-content: start; }
     .detail-block { display: grid; gap: 7px; }
     .detail-block strong { font-size: 12px; color: #334155; }
+    .doc-box { display: grid; gap: 8px; }
+    .doc-table { width: 100%; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; }
+    .doc-row { display: grid; grid-template-columns: minmax(104px, 34%) minmax(0, 1fr); border-bottom: 1px solid var(--line); }
+    .doc-row:last-child { border-bottom: 0; }
+    .doc-key, .doc-value { padding: 8px 10px; min-width: 0; overflow-wrap: anywhere; }
+    .doc-key { background: var(--surface-soft); color: var(--muted); font: 12px/1.45 var(--mono); }
+    .doc-value { color: #334155; font-size: 12px; }
+    .doc-value code { font-family: var(--mono); }
     pre {
       margin: 0;
       max-height: 320px;
@@ -228,13 +236,15 @@
     <aside class="panel side">
       <p class="section-title">运行时数据</p>
       <nav class="nav" aria-label="接口菜单">
-        <button class="active" type="button" data-section="device"><span>设备与公司</span><span class="method">GET</span></button>
+        <button class="active" type="button" data-section="device"><span>设备与公司</span><span class="method post">POST/GET</span></button>
+        <button type="button" data-section="runtimeConfig"><span>运行时配置</span><span class="method">GET</span></button>
         <button type="button" data-section="application"><span>应用</span><span class="method post">POST</span></button>
         <button type="button" data-section="voiceTones"><span>获取音色列表</span><span class="method">GET</span></button>
         <button type="button" data-section="images"><span>获取背景图片</span><span class="method post">POST</span></button>
         <button type="button" data-section="scrollingTexts"><span>获取滚动文本</span><span class="method post">POST</span></button>
         <button type="button" data-section="models"><span>获取数字人模型</span><span class="method post">POST</span></button>
         <button type="button" data-section="videos"><span>获取视频</span><span class="method post">POST</span></button>
+        <button type="button" data-section="heartbeat"><span>设备心跳</span><span class="method post">POST</span></button>
       </nav>
       <p class="section-title" style="margin-top:18px">能力测试</p>
       <nav class="nav" aria-label="能力测试菜单">
@@ -265,9 +275,15 @@
       <div class="request-body">
         <div class="detail-block"><strong>接口说明</strong><div id="requestNote" class="note">等待选择接口。</div></div>
         <div class="detail-block"><strong>Method / Path</strong><pre id="requestLine">-</pre></div>
+        <div class="detail-block"><strong>Query</strong><div id="requestQueryDoc" class="doc-box"></div></div>
         <div class="detail-block"><strong>Headers</strong><pre id="requestHeaders">{}</pre></div>
+        <div class="detail-block"><strong>Header 字段</strong><div id="requestHeaderDoc" class="doc-box"></div></div>
+        <div class="detail-block"><strong>Body 字段</strong><div id="requestBodyDoc" class="doc-box"></div></div>
+        <div class="detail-block"><strong>关键返回字段</strong><div id="responseFieldsDoc" class="doc-box"></div></div>
+        <div class="detail-block"><strong>返回示例</strong><pre id="responseExample">等待选择接口</pre></div>
+        <div class="detail-block"><strong>常见失败</strong><div id="errorFieldsDoc" class="doc-box"></div></div>
         <div class="detail-block"><strong>Body</strong><pre id="requestBody">null</pre></div>
-        <div class="detail-block"><strong>Response</strong><pre id="responseBody">等待请求</pre></div>
+        <div class="detail-block"><strong>实际 Response</strong><pre id="responseBody">等待请求</pre></div>
       </div>
     </aside>
   </main>
@@ -309,20 +325,28 @@
         contentBody: document.getElementById('contentBody'),
         requestNote: document.getElementById('requestNote'),
         requestLine: document.getElementById('requestLine'),
+        requestQueryDoc: document.getElementById('requestQueryDoc'),
         requestHeaders: document.getElementById('requestHeaders'),
+        requestHeaderDoc: document.getElementById('requestHeaderDoc'),
+        requestBodyDoc: document.getElementById('requestBodyDoc'),
+        responseFieldsDoc: document.getElementById('responseFieldsDoc'),
+        responseExample: document.getElementById('responseExample'),
+        errorFieldsDoc: document.getElementById('errorFieldsDoc'),
         requestBody: document.getElementById('requestBody'),
         responseBody: document.getElementById('responseBody'),
         navButtons: Array.from(document.querySelectorAll('[data-section]')),
       };
 
       const sections = {
-        device: { title: '设备与公司', description: '展示 device.tenantName、expiresAt、授权状态和设备绑定信息。' },
+        device: { title: '设备与公司', description: '设备启动或首次联网时调用 /device-auth/activate/ 上报一次；设备名称可在后台编辑，后续直接通过 /device-runtime/config/ 获取最新公司、授权和应用配置。' },
+        runtimeConfig: { title: '运行时配置', description: 'GET /device-runtime/config/：设备端启动业务前拉取完整配置，包括设备名称、资源应用、智能体应用和资源列表。' },
         application: { title: '应用', description: '通过设备码读取资源应用与完整智能体配置，包括开场白、建议问题和语音播报开关。' },
         voiceTones: { title: '获取音色列表', description: '通过固定设备码读取 /ai-models/tts/options/ 返回的 TTS 音色列表，并可直接测试合成。' },
         images: { title: '获取背景图片', description: '通过固定设备码读取当前公司在资源管理/背景图片管理维护的数据。' },
         scrollingTexts: { title: '获取滚动文本', description: '通过固定设备码读取当前公司在资源管理/滚动文本维护的数据。' },
         models: { title: '获取数字人模型', description: '通过固定设备码读取当前公司在资源管理/模型管理维护的数据。' },
         videos: { title: '获取视频', description: '通过固定设备码读取当前公司在资源管理/视频管理维护的数据。' },
+        heartbeat: { title: '设备心跳', description: '设备运行期间定期上报心跳，刷新 lastHeartbeat，并可同步软件版本、系统版本和诊断信息。' },
         asr: { title: 'ASR WebSocket', description: '先检查 ASR 设备状态，再用统一 /ws/realtime/ 发送 asr.session.start，并通过麦克风推送 16k PCM 分片。' },
         llmWs: { title: 'LLM WebSocket', description: '统一 /ws/realtime/ 的 llm.session.start，按设备码找到绑定智能体，流式返回 llm.delta，完成返回 llm.done。' },
         ttsWs: { title: 'TTS WebSocket', description: '统一 /ws/realtime/ 支持 tts.session.start，按 type 返回 ready、audio/pcm 二进制分片和 done。' },
@@ -444,6 +468,8 @@
         if (state.activeSection === 'agentChat') return renderAgentChat();
         if (state.activeSection === 'ttsWs') return renderTtsWs();
         if (state.activeSection === 'ttsHttp') return renderTtsHttp();
+        if (state.activeSection === 'heartbeat') return renderHeartbeat();
+        if (state.activeSection === 'runtimeConfig') return renderRuntimeConfig();
         if (!state.activation && !state.runtimeConfig) {
           renderEmpty('请输入设备码并点击“确认并拉取”。');
           writeResourceSliceDetail(state.activeSection);
@@ -499,13 +525,14 @@
           infoCard('设备身份', [
             ['设备码', code(device.deviceCode || device.code || state.deviceCode)],
             ['设备名称', escapeHtml(device.name || device.deviceName || '-')],
+            ['绑定状态', code(currentBindingStatus())],
             ['状态', escapeHtml(device.status || '-')],
             ['启用', escapeHtml(String(device.isEnabled !== false))],
           ]),
           infoCard('公司与授权', [
             ['所属公司', escapeHtml(device.tenantName || '-')],
             ['公司 ID', code(device.tenantId || '-')],
-            ['授权类型', escapeHtml(device.authorizationTypeLabel || device.authorizationType || '-')],
+            ['授权类型', escapeHtml(formatAuthType(device))],
             ['设备过期时间', code(formatDeviceExpiry(device))],
           ]),
           infoCard('运行记录', [
@@ -516,6 +543,48 @@
           ]),
         ]);
         writeResourceSliceDetail('device');
+      }
+
+      function renderRuntimeConfig() {
+        writeResourceSliceDetail('runtimeConfig');
+        const config = state.runtimeConfig || null;
+        if (!config) {
+          els.contentBody.innerHTML = '<div class="toolbar"><button class="button" id="runtimeConfigFetchBtn" type="button">拉取运行时配置</button></div><div class="empty">尚未拉取 /device-runtime/config/。请输入设备码后点击“拉取运行时配置”。</div>';
+          document.getElementById('runtimeConfigFetchBtn').addEventListener('click', () => fetchRuntimeConfig().then(renderRuntimeConfig).catch(showError));
+          return;
+        }
+        const device = config.device || {};
+        const application = config.application || null;
+        const agentApplication = config.agentApplication || null;
+        const resources = config.resources || {};
+        els.contentBody.innerHTML = '<div class="toolbar"><button class="button secondary" id="runtimeConfigFetchBtn" type="button">重新拉取运行时配置</button></div>' + cardGrid([
+          infoCard('设备校验结果', [
+            ['设备码', code(device.deviceCode || device.code || state.deviceCode || '-')],
+            ['设备名称', escapeHtml(device.name || device.deviceName || '-')],
+            ['所属公司', escapeHtml(device.tenantName || '-')],
+            ['公司 ID', code(device.tenantId || '-')],
+            ['启用', escapeHtml(String(device.isEnabled !== false))],
+            ['授权类型', escapeHtml(formatAuthType(device))],
+            ['过期时间', code(formatDeviceExpiry(device))],
+          ]),
+          infoCard('绑定应用', [
+            ['资源应用 ID', code(application && application.id || '-')],
+            ['资源应用名称', escapeHtml(application && application.name || '-')],
+            ['资源应用编码', code(application && application.code || '-')],
+            ['智能体 ID', code(agentApplication && agentApplication.id || '-')],
+            ['智能体名称', escapeHtml(agentApplication && agentApplication.name || '-')],
+            ['LLM 模型', code(agentApplication && (agentApplication.llmModelName || agentApplication.llmModelId) || '-')],
+          ]),
+          infoCard('资源数量', [
+            ['背景图片', code(resourceCount(resources.images))],
+            ['滚动文本', code(resourceCount(resources.scrollingTexts))],
+            ['数字人模型', code(resourceCount(resources.models))],
+            ['视频', code(resourceCount(resources.videos))],
+            ['音色', code(resourceCount(resources.voiceTones))],
+            ['指令组', code(resourceCount(resources.commandGroups))],
+          ]),
+        ]) + '<div class="detail-block"><strong>完整返回</strong><pre>' + escapeHtml(pretty(config)) + '</pre></div>';
+        document.getElementById('runtimeConfigFetchBtn').addEventListener('click', () => fetchRuntimeConfig().then(renderRuntimeConfig).catch(showError));
       }
 
       function renderApplication() {
@@ -567,6 +636,48 @@
         if (!items.length) return renderResourceEmpty(type);
         els.contentBody.innerHTML = '<div class="grid">' + items.map((item) => resourceCard(type, item)).join('') + '</div>';
         writeResourceSliceDetail(type);
+      }
+
+      function renderHeartbeat() {
+        els.contentBody.innerHTML = '<div class="toolbar"><button class="button" id="heartbeatBtn" type="button">发送心跳</button></div><div class="detail-block"><strong>返回结果</strong><pre id="heartbeatOutput">等待请求</pre></div><div class="note">设备运行期间定期调用即可，不需要先调用 activate；后端会按 X-Device-Code 校验设备、刷新 lastHeartbeat，并记录心跳日志。</div>';
+        writeRequestDetail({
+          label: '设备心跳',
+          method: 'POST',
+          url: state.apiBaseUrl + '/device-runtime/heartbeat/',
+          path: '/device-runtime/heartbeat/',
+          headers: previewHeaders('application/json'),
+          body: heartbeatBody(),
+          note: '设备运行期间定期调用，用于刷新 lastHeartbeat。设备码放 X-Device-Code，body 可选传版本和诊断信息。',
+        });
+        writeResponse({ ok: false, status: '-', body: { message: '等待发送心跳' } });
+        const button = document.getElementById('heartbeatBtn');
+        const output = document.getElementById('heartbeatOutput');
+        button.addEventListener('click', () => sendHeartbeat(output).catch(showError));
+      }
+
+      function heartbeatBody() {
+        return {
+          softwareVersion: 'runtime-api-console-html',
+          systemVersion: navigator.userAgent || '',
+          deviceInfo: {
+            source: 'runtime-api-console',
+            pageUrl: location.href,
+            language: navigator.language || '',
+          },
+        };
+      }
+
+      async function sendHeartbeat(output) {
+        if (!state.deviceCode) throw new Error('请输入设备码');
+        setStatus('正在发送心跳...', 'warn');
+        const result = unwrap(await apiRequest('/device-runtime/heartbeat/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(heartbeatBody()),
+        }, '设备心跳'));
+        if (output) output.textContent = pretty(result);
+        setStatus('心跳成功', 'ok');
+        return result;
       }
 
       function renderScrollingTexts() {
@@ -1187,25 +1298,356 @@
         };
         const isRuntimeResource = ['application', 'voiceTones', 'images', 'scrollingTexts', 'models', 'videos'].includes(type);
         const isTtsOptions = type === 'voiceTones';
+        const isDeviceActivation = type === 'device';
+        const activationBody = {
+          softwareVersion: 'runtime-api-console-html',
+          systemVersion: '<android system version or user agent>',
+          mainboardInfo: '<hardware id>',
+          deviceInfo: { source: 'runtime-api-console', pageUrl: '<page url>', language: '<locale>' },
+        };
         writeRequestDetail({
           label: sections[type] && sections[type].title || '运行时配置',
-          method: isTtsOptions ? 'GET' : isRuntimeResource ? 'POST' : 'GET',
-          url: isTtsOptions ? state.apiBaseUrl + '/ai-models/tts/options/' : isRuntimeResource ? state.apiBaseUrl + '/device-runtime/resources/' : state.apiBaseUrl + '/device-runtime/config/',
-          path: isTtsOptions ? '/ai-models/tts/options/' : isRuntimeResource ? '/device-runtime/resources/' : '/device-runtime/config/',
-          headers: previewHeaders(isTtsOptions || !isRuntimeResource ? undefined : 'application/json'),
-          body: isTtsOptions || !isRuntimeResource ? null : { resourceType: type },
-          note: isTtsOptions ? '真实来源：GET /ai-models/tts/options/，带 X-Device-Code 时按设备所属公司返回 TTS voices。' : isRuntimeResource ? '设备端通过免登录运行时入口请求：' + (sliceMap[type] || type) + '；背景图片、滚动文本、数字人模型、视频的数据来源分别是资源管理下对应菜单。' : '当前真实来源：GET /device-runtime/config/，设备码放在 X-Device-Code。',
+          method: isDeviceActivation ? 'POST' : isTtsOptions ? 'GET' : isRuntimeResource ? 'POST' : 'GET',
+          url: isDeviceActivation ? state.apiBaseUrl + '/device-auth/activate/' : isTtsOptions ? state.apiBaseUrl + '/ai-models/tts/options/' : isRuntimeResource ? state.apiBaseUrl + '/device-runtime/resources/' : state.apiBaseUrl + '/device-runtime/config/',
+          path: isDeviceActivation ? '/device-auth/activate/' : isTtsOptions ? '/ai-models/tts/options/' : isRuntimeResource ? '/device-runtime/resources/' : '/device-runtime/config/',
+          headers: previewHeaders(isDeviceActivation || isRuntimeResource ? 'application/json' : undefined),
+          body: isDeviceActivation ? activationBody : isTtsOptions || !isRuntimeResource ? null : { resourceType: type },
+          docKey: type,
+          note: isDeviceActivation ? '新增/上报设备入口；通常在设备启动、首次联网或需要刷新设备版本/诊断信息时调用，不是每个业务接口前都调用。设备码放 X-Device-Code，body 只放设备版本和诊断信息。' : isTtsOptions ? '真实来源：GET /ai-models/tts/options/，带 X-Device-Code 时按设备所属公司返回 TTS voices。' : isRuntimeResource ? '设备端通过免登录运行时入口请求：' + (sliceMap[type] || type) + '；背景图片、滚动文本、数字人模型、视频的数据来源分别是资源管理下对应菜单。' : '当前真实来源：GET /device-runtime/config/，设备码放在 X-Device-Code。',
         });
         writeResponse({ ok: Boolean(state.runtimeConfig || state.activation), status: state.runtimeConfig || state.activation ? 'cached' : '-', body: previewSlice(type) });
       }
 
       function writeRequestDetail(detail) {
         state.lastRequest = detail;
+        const doc = endpointDoc(detail);
         els.requestNote.className = detail.note && detail.note.includes('限制') ? 'note warn' : 'note';
-        els.requestNote.textContent = detail.note || '-';
+        els.requestNote.textContent = doc.summary || detail.note || '-';
         els.requestLine.textContent = detail.method + ' ' + detail.path + '\n' + detail.url;
+        els.requestQueryDoc.innerHTML = renderDocRows(doc.query);
         els.requestHeaders.textContent = pretty(detail.headers || {});
+        els.requestHeaderDoc.innerHTML = renderDocRows(doc.headers);
+        els.requestBodyDoc.innerHTML = renderDocRows(doc.body);
+        els.responseFieldsDoc.innerHTML = renderDocRows(doc.response);
+        els.responseExample.textContent = doc.responseExample ? pretty(doc.responseExample) : '无。';
+        els.errorFieldsDoc.innerHTML = renderDocRows(doc.errors);
         els.requestBody.textContent = detail.body == null ? 'null' : pretty(maybeJson(detail.body));
+      }
+
+      function endpointDoc(detail) {
+        const path = detail.path || '';
+        const body = maybeJson(detail.body);
+        const docKey = detail.docKey || (body && body.resourceType) || state.activeSection;
+        if (path.includes('/device-auth/activate/')) return {
+          summary: '新增/上报设备入口。通常在设备启动、首次联网或需要刷新设备版本/诊断信息时调用；不是每个业务接口前都调用。如果设备码不存在，后端会创建一条待绑定设备记录，等待后台绑定公司和智能体。',
+          query: null,
+          headers: deviceJsonHeadersDoc(),
+          body: [
+            ['deviceCode', '可选；推荐放在请求头 <code>X-Device-Code</code>。如果放 body，也支持 <code>deviceCode</code>/<code>device_code</code>。'],
+            ['softwareVersion', '可选；设备端软件版本，用于后台排查。'],
+            ['systemVersion', '可选；安卓系统版本或浏览器 UA。'],
+            ['mainboardInfo', '可选；主板/硬件标识。'],
+            ['deviceInfo', '可选对象；诊断信息，例如 source、pageUrl、language。不要放后台 JWT。'],
+          ],
+          response: [
+            ['bindingStatus', '<code>bound</code> 表示已绑定公司；<code>pending</code> 表示新增/上报成功但尚未授权。'],
+            ['device.deviceCode', '后端识别到的设备码。新增设备时就是本次上报的设备码。'],
+            ['device.tenantId / tenantName', '公司绑定结果。为空时不能认为设备已授权。'],
+            ['device.agentApplicationId / agentApplicationName', '绑定智能体。语音问答依赖这个字段。'],
+            ['device.isEnabled', '设备是否启用。'],
+            ['application / agentApplication', '当前设备绑定的资源应用和智能体应用摘要；未绑定时为 <code>null</code>。'],
+          ],
+          responseExample: {
+            requestId: '<requestId>',
+            traceId: '<traceId>',
+            bindingStatus: 'pending',
+            device: {
+              deviceCode: '<deviceCode>',
+              name: '待授权设备',
+              tenantId: null,
+              tenantName: '',
+              agentApplicationId: null,
+              agentApplicationName: '',
+              isEnabled: true,
+              registeredAt: '2026-06-23T10:00:00+08:00',
+              lastAuthAt: '2026-06-23T10:00:00+08:00',
+            },
+            application: null,
+            agentApplication: null,
+          },
+          errors: [
+            ['400 / 44001 / DEVICE_CODE_REQUIRED', '设备码为空。'],
+            ['409 / 44009 / DEVICE_CODE_DUPLICATED', '设备码存在重复绑定，需要后台处理。'],
+          ],
+        };
+        if (path.includes('/device-runtime/config/')) return {
+          summary: '运行时完整配置接口。只读接口，不新增设备；设备必须已经登记、启用、绑定公司，并绑定可用智能体。',
+          query: null,
+          headers: deviceHeadersDoc(),
+          body: null,
+          response: [
+            ['device', '设备运行身份：deviceCode、name、tenantId、tenantName、isEnabled、authorizationType、expiresAt、lastHeartbeat。'],
+            ['application', '资源应用摘要：id、name、code。影响图片、模型、视频、滚动文本等资源展示。'],
+            ['agentApplication', '智能体应用摘要：id、name、llmModelId、llmModelName。影响 voice-chat/LLM。'],
+            ['resources.images', '背景图片数组。'],
+            ['resources.scrollingTexts', '滚动文本数组。'],
+            ['resources.models', '数字人模型数组。'],
+            ['resources.videos', '视频数组。'],
+          ],
+          responseExample: {
+            requestId: '<requestId>',
+            traceId: '<traceId>',
+            device: {
+              deviceCode: '<deviceCode>',
+              name: '展厅设备 A',
+              tenantId: 1,
+              tenantName: '示例公司',
+              isEnabled: true,
+              authorizationType: 'trial',
+              expiresAt: '2026-12-31T23:59:59+08:00',
+              agentApplicationId: 12,
+              agentApplicationName: '展厅讲解智能体',
+            },
+            application: { id: 8, name: '展厅资源应用', code: 'SHOWROOM' },
+            agentApplication: { id: 12, name: '展厅讲解智能体', llmModelId: 3, llmModelName: '示例 LLM' },
+            resources: {
+              images: [{ id: 1, name: '欢迎页背景', url: 'https://example.com/bg.png' }],
+              scrollingTexts: [{ id: 2, content: '欢迎参观', speed: 40 }],
+              models: [{ id: 3, name: '数字人 A', modelType: 'human', url: 'https://example.com/model.glb' }],
+              videos: [{ id: 4, name: '宣传片', url: 'https://example.com/video.mp4' }],
+            },
+          },
+          errors: runtimeDeviceErrors([['403 / 44021 / DEVICE_AGENT_UNBOUND', '设备未绑定可用智能体。']]),
+        };
+        if (path.includes('/device-runtime/heartbeat/')) return {
+          summary: '设备心跳接口。设备运行期间定期调用，用于刷新 lastHeartbeat；不需要每次心跳前调用 activate。',
+          query: null,
+          headers: deviceJsonHeadersDoc(),
+          body: [
+            ['softwareVersion', '可选；设备端软件版本，传了会同步到设备记录。'],
+            ['systemVersion', '可选；系统版本或运行环境信息，传了会同步到设备记录。'],
+            ['deviceInfo', '可选对象；诊断信息，会写入心跳日志。'],
+          ],
+          response: [
+            ['status', '<code>success</code> 表示心跳写入成功。'],
+            ['message', '固定为“心跳成功”。'],
+            ['requestId / traceId', '链路追踪字段。'],
+          ],
+          responseExample: {
+            status: 'success',
+            message: '心跳成功',
+            requestId: '<requestId>',
+            traceId: '<traceId>',
+          },
+          errors: runtimeDeviceErrors(),
+        };
+        if (path.includes('/device-runtime/resources/')) return resourceEndpointDoc(docKey);
+        if (path.includes('/ai-models/tts/options/')) return {
+          summary: 'TTS 音色列表接口。按 X-Device-Code 解析公司，只返回设备所属公司可用音色。',
+          query: null,
+          headers: deviceHeadersDoc(),
+          body: null,
+          response: [
+            ['voices', '音色数组。页面主要使用 id、name/displayName、voiceCode、content/exampleText、iconUrl/avatarPath。'],
+            ['defaultVoiceId', '公司默认音色 ID，存在时用于 TTS 默认合成。'],
+          ],
+          responseExample: {
+            defaultVoiceId: 1,
+            voices: [
+              { id: 1, name: '女声讲解', voiceCode: 'female_narrator', content: '你好，我是数字人设备。' },
+            ],
+          },
+          errors: runtimeDeviceErrors(),
+        };
+        if (path.includes('/ai-models/asr/device-status/')) return {
+          summary: 'ASR 设备状态检查接口。用于进入 ASR WebSocket 前确认公司上下文和 ASR 服务配置。',
+          query: null,
+          headers: deviceHeadersDoc(),
+          body: null,
+          response: [
+            ['configured', 'ASR 服务是否已配置。'],
+            ['deviceCode', '当前设备码。'],
+            ['tenantId', '设备所属公司。'],
+            ['model', 'ASR 模型或服务标识。'],
+          ],
+          responseExample: {
+            configured: true,
+            deviceCode: '<deviceCode>',
+            tenantId: 1,
+            model: 'asr-model',
+          },
+          errors: runtimeDeviceErrors(),
+        };
+        if (path.includes('/device/voice-chat')) return {
+          summary: '设备文本/语音问答 HTTP 入口。按设备码解析公司和绑定智能体，返回问答结果；文本调试推荐 JSON。',
+          query: null,
+          headers: deviceJsonHeadersDoc(),
+          body: [
+            ['text', '文本问答必填；JSON 请求使用。'],
+            ['deviceCode', '可选；推荐请求头 <code>X-Device-Code</code>，兼容 body/form 中传递。'],
+            ['audio', '语音问答时使用 multipart/form-data 上传音频文件。'],
+            ['format / sampleRate', '语音问答时描述音频格式，例如 pcm、16000。'],
+          ],
+          response: [
+            ['text / answer', 'LLM 返回文本。'],
+            ['audioBase64 / audioUrl', '如果后端合成语音成功，返回音频内容或地址。'],
+            ['deviceCode / traceId', '链路定位信息。'],
+          ],
+          responseExample: {
+            text: '这是设备问答返回内容。',
+            deviceCode: '<deviceCode>',
+            traceId: '<traceId>',
+            audioBase64: '<base64 audio>',
+            audioContentType: 'audio/wav',
+          },
+          errors: runtimeDeviceErrors([['403 / 44021 / DEVICE_AGENT_UNBOUND', '设备未绑定可用智能体。']]),
+        };
+        if (path.includes('/ai-models/tts/runtime/')) return {
+          summary: '设备端 TTS HTTP 合成接口。按设备码解析公司默认音色；浏览器测试传 wrapWav=true 便于播放。',
+          query: null,
+          headers: deviceJsonHeadersDoc(),
+          body: [
+            ['text', '必填；需要合成的文本。'],
+            ['voiceId', '可选；指定音色 ID，不传则使用公司默认音色。'],
+            ['wrapWav', '可选；true 返回 audio/wav，安卓端通常不传，默认 raw PCM。'],
+          ],
+          response: [
+            ['audio/*', '音频二进制。响应头会带采样率、声道等音频参数。'],
+          ],
+          responseExample: {
+            contentType: 'audio/pcm',
+            headers: {
+              'X-Audio-Sample-Rate': '16000',
+              'X-Audio-Channels': '1',
+            },
+            body: '<binary audio>',
+          },
+          errors: runtimeDeviceErrors([['400', '文本为空或音色参数不合法。']]),
+        };
+        if (detail.method === 'WS') return {
+          summary: detail.note || '统一 WebSocket 实时命令接口。',
+          query: null,
+          headers: [
+            ['无业务必填 Header', '设备码在 WebSocket command 的 <code>payload.deviceCode</code> 中传递。'],
+          ],
+          body: [
+            ['type', '命令类型，例如 asr.session.start、llm.session.start、tts.session.start。'],
+            ['id', '客户端生成的 session/request id。'],
+            ['payload.deviceCode', '必填；用于解析设备、公司和绑定智能体。'],
+            ['payload.requestId / traceId', '可选；链路追踪。'],
+          ],
+          response: [
+            ['*.ready', '会话就绪事件。'],
+            ['*.delta / 二进制音频', '流式结果。ASR/LLM 返回文本事件，TTS 返回 audio/pcm 二进制分片。'],
+            ['*.done', '会话完成事件。'],
+            ['*.error', '失败事件，包含 message。'],
+          ],
+          responseExample: [
+            { type: 'llm.ready', id: '<sessionId>' },
+            { type: 'llm.delta', id: '<sessionId>', payload: { text: '你好' } },
+            { type: 'llm.done', id: '<sessionId>', payload: { text: '你好，我是数字人。' } },
+          ],
+          errors: runtimeDeviceErrors([['WS error / 440xx', '设备码不可解析、未绑定公司/智能体，或对应能力服务未配置。']]),
+        };
+        return { summary: detail.note || '真实请求详情。', query: null, headers: deviceHeadersDoc(), body: null, response: null, errors: null };
+      }
+
+      function resourceEndpointDoc(resourceType) {
+        const map = {
+          application: {
+            summary: '资源应用与智能体应用切片。用于安卓端只读取应用摘要，不需要完整 resources。',
+            response: [
+              ['device', '设备摘要。'],
+              ['application', '资源应用：id、name、code。'],
+              ['agentApplication', '智能体应用：id、name、llmModelId、llmModelName。'],
+            ],
+            example: {
+              resourceType: 'application',
+              device: { deviceCode: '<deviceCode>', tenantId: 1, tenantName: '示例公司' },
+              application: { id: 8, name: '展厅资源应用', code: 'SHOWROOM' },
+              agentApplication: { id: 12, name: '展厅讲解智能体', llmModelId: 3, llmModelName: '示例 LLM' },
+            },
+          },
+          images: {
+            summary: '背景图片资源切片。',
+            response: [['items', '背景图片数组；关键字段：id、name、category、url。']],
+            example: {
+              resourceType: 'images',
+              items: [{ id: 1, name: '欢迎页背景', category: 'home', url: 'https://example.com/bg.png' }],
+            },
+          },
+          scrollingTexts: {
+            summary: '滚动文本资源切片。',
+            response: [['items', '滚动文本数组；关键字段：id、content/text、speed、style、sortOrder。']],
+            example: {
+              resourceType: 'scrollingTexts',
+              items: [{ id: 2, content: '欢迎参观', speed: 40, sortOrder: 1 }],
+            },
+          },
+          models: {
+            summary: '数字人模型资源切片。',
+            response: [['items', '模型数组；关键字段：id、name、modelType、orientation、url、thumbnailUrl。']],
+            example: {
+              resourceType: 'models',
+              items: [{ id: 3, name: '数字人 A', modelType: 'human', orientation: 'front', url: 'https://example.com/model.glb', thumbnailUrl: 'https://example.com/model.png' }],
+            },
+          },
+          videos: {
+            summary: '视频资源切片。',
+            response: [['items', '视频数组；关键字段：id、name、category、url。']],
+            example: {
+              resourceType: 'videos',
+              items: [{ id: 4, name: '宣传片', category: 'intro', url: 'https://example.com/video.mp4' }],
+            },
+          },
+        };
+        const item = map[resourceType] || map.images;
+        return {
+          summary: item.summary + ' 设备必须已登记、启用并绑定公司。',
+          query: null,
+          headers: deviceJsonHeadersDoc(),
+          body: [
+            ['resourceType', '必填；可选值：application、images、scrollingTexts、models、videos。'],
+          ],
+          response: [
+            ['resourceType', '本次请求的资源类型。'],
+            ['device', '设备摘要。'],
+            ['resources', '按资源类型返回的 resources 对象。'],
+          ].concat(item.response),
+          responseExample: item.example,
+          errors: runtimeDeviceErrors([['400', 'resourceType 为空或不支持。']]),
+        };
+      }
+
+      function runtimeDeviceErrors(extra) {
+        return [
+          ['400 / 44001 / DEVICE_CODE_REQUIRED', '设备码为空。'],
+          ['404 / 44004 / DEVICE_NOT_REGISTERED', '设备未登记；先调用 POST /device-auth/activate/ 上报设备。'],
+          ['403 / 44011 / DEVICE_TENANT_UNBOUND', '设备未绑定公司。'],
+          ['403 / 44012 / DEVICE_TENANT_DISABLED', '公司已停用。'],
+          ['403 / 44013 / DEVICE_DISABLED', '设备已停用。'],
+          ['403 / 44014 / DEVICE_EXPIRED', '设备授权已过期。'],
+          ['409 / 44009 / DEVICE_CODE_DUPLICATED', '设备码重复绑定。'],
+        ].concat(extra || []);
+      }
+
+      function deviceHeadersDoc() {
+        return [
+          ['X-Device-Code', '必填；设备码，后端用它识别设备和公司。'],
+          ['X-Request-ID', '可选；链路追踪 ID。不传时后端仍应处理请求。'],
+          ['X-Trace-ID', '可选；链路追踪 ID。不传时后端仍应处理请求。'],
+        ];
+      }
+
+      function deviceJsonHeadersDoc() {
+        return deviceHeadersDoc().concat([
+          ['Content-Type', 'JSON 请求必填：<code>application/json</code>。GET 请求不需要。'],
+        ]);
+      }
+
+      function renderDocRows(rows) {
+        if (!rows || !rows.length) return '<div class="note">无。</div>';
+        return '<div class="doc-table">' + rows.map((row) => '<div class="doc-row"><div class="doc-key">' + escapeHtml(row[0]) + '</div><div class="doc-value">' + row[1] + '</div></div>').join('') + '</div>';
       }
 
       function writeResponse(result) {
@@ -1226,6 +1668,7 @@
       function endpointNote(path) {
         if (path.includes('/device-auth/activate/')) return '设备首次/重复上报，HTTP 设备码统一放在 X-Device-Code 请求头，body 只放设备版本和诊断信息。';
         if (path.includes('/device-runtime/config/')) return '当前真实来源：HTTP 设备码放 X-Device-Code，返回 device、application、agentApplication、resources.*。';
+        if (path.includes('/device-runtime/heartbeat/')) return '设备心跳接口；HTTP 设备码放 X-Device-Code，body 可选传 softwareVersion、systemVersion、deviceInfo。';
         if (path.includes('/device-runtime/resources/')) return '设备码免登录资源切片接口；images/scrollingTexts/models/videos 分别读取资源管理下对应菜单。';
         if (path.includes('/ai-models/tts/options/')) return 'TTS 音色 options 列表；带 X-Device-Code 时按设备所属公司返回 voices。';
         if (path.includes('/ai-models/asr/device-status/')) return '设备码免登录 ASR 状态检查。';
@@ -1237,7 +1680,19 @@
       function currentDevice() {
         return (state.runtimeConfig && state.runtimeConfig.device) || (state.activation && state.activation.device) || {};
       }
+      function currentBindingStatus() {
+        if (state.runtimeConfig && state.runtimeConfig.device) return 'bound';
+        return (state.activation && state.activation.bindingStatus) || '-';
+      }
+      function isPendingDevice(device) {
+        return currentBindingStatus() !== 'bound' || !(device && (device.tenantId || device.tenantName));
+      }
+      function formatAuthType(device) {
+        if (isPendingDevice(device)) return '待后台授权';
+        return device.authorizationTypeLabel || device.authorizationType || '-';
+      }
       function formatDeviceExpiry(device) {
+        if (isPendingDevice(device)) return '-';
         if (device && device.expiresAt) return device.expiresAt;
         const type = String((device && device.authorizationType) || '').toLowerCase();
         if (type === 'permanent') return '永久';
@@ -1251,11 +1706,13 @@
       }
       function previewSlice(type) {
         if (type === 'device') return currentDevice();
+        if (type === 'runtimeConfig') return state.runtimeConfig || {};
         if (state.resourceSlices[type]) return state.resourceSlices[type];
         if (type === 'voiceTones') return state.ttsOptions || resourceList(type);
         if (type === 'application') return { application: state.runtimeConfig && state.runtimeConfig.application, agentApplication: state.runtimeConfig && state.runtimeConfig.agentApplication };
         return resourceList(type);
       }
+      function resourceCount(value) { return Array.isArray(value) ? value.length : 0; }
       function renderResourceEmpty(name) {
         const sourceMap = { images: '资源管理/背景图片管理', scrollingTexts: '资源管理/滚动文本', models: '资源管理/模型管理', videos: '资源管理/视频管理', voiceTones: 'TTS options 音色列表' };
         const source = sourceMap[name] || '当前配置';

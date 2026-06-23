@@ -1,0 +1,28 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": ".claude/skills/prototype/LOGIC.md",
+      "language": "markdown",
+      "sizeLines": 79,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/prototype/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 30,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/prototype/UI.md",
+      "language": "markdown",
+      "sizeLines": 112,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    ".claude/skills/prototype/LOGIC.md": [],
+    ".claude/skills/prototype/SKILL.md": [],
+    ".claude/skills/prototype/UI.md": []
+  }
+}

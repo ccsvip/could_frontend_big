@@ -1,0 +1,173 @@
+{
+  "nodes": [
+    {
+      "id": "document:docs/superpowers/plans/2026-06-04-minio-settings.md",
+      "type": "document",
+      "name": "2026-06-04-minio-settings.md",
+      "filePath": "docs/superpowers/plans/2026-06-04-minio-settings.md",
+      "summary": "docs/superpowers/plans/2026-06-04-minio-settings.md (markdown); 6 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        154
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "id": "document:docs/superpowers/plans/2026-06-05-asr-settings.md",
+      "type": "document",
+      "name": "2026-06-05-asr-settings.md",
+      "filePath": "docs/superpowers/plans/2026-06-05-asr-settings.md",
+      "summary": "docs/superpowers/plans/2026-06-05-asr-settings.md (markdown); 6 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        251
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "id": "document:docs/superpowers/plans/2026-06-05-audit-log-management.md",
+      "type": "document",
+      "name": "2026-06-05-audit-log-management.md",
+      "filePath": "docs/superpowers/plans/2026-06-05-audit-log-management.md",
+      "summary": "docs/superpowers/plans/2026-06-05-audit-log-management.md (markdown); 8 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "complex",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        779
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "id": "document:docs/superpowers/plans/2026-06-06-login-command-center.md",
+      "type": "document",
+      "name": "2026-06-06-login-command-center.md",
+      "filePath": "docs/superpowers/plans/2026-06-06-login-command-center.md",
+      "summary": "docs/superpowers/plans/2026-06-06-login-command-center.md (markdown); 6 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        335
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "id": "document:docs/superpowers/plans/2026-06-10-llm-settings.md",
+      "type": "document",
+      "name": "2026-06-10-llm-settings.md",
+      "filePath": "docs/superpowers/plans/2026-06-10-llm-settings.md",
+      "summary": "docs/superpowers/plans/2026-06-10-llm-settings.md (markdown); 17 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "complex",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        1280
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 17
+      }
+    },
+    {
+      "id": "document:docs/superpowers/plans/2026-06-15-tts-settings.md",
+      "type": "document",
+      "name": "2026-06-15-tts-settings.md",
+      "filePath": "docs/superpowers/plans/2026-06-15-tts-settings.md",
+      "summary": "docs/superpowers/plans/2026-06-15-tts-settings.md (markdown); 7 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        267
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "id": "document:docs/superpowers/plans/2026-06-16-agent-conversation-settings.md",
+      "type": "document",
+      "name": "2026-06-16-agent-conversation-settings.md",
+      "filePath": "docs/superpowers/plans/2026-06-16-agent-conversation-settings.md",
+      "summary": "docs/superpowers/plans/2026-06-16-agent-conversation-settings.md (markdown); 8 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "complex",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        1403
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    }
+  ],
+  "edges": []
+}

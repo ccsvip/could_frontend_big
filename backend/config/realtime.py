@@ -9,6 +9,7 @@ from django.db.models import F
 from django.utils import timezone
 
 from apps.ai_models import llm_services, realtime_asr, realtime_tts
+from apps.devices.services.runtime import RuntimeDeviceError
 from apps.devices.views import DeviceVoiceChatView
 from apps.devices.realtime import (
     add_device_event_subscriber,
@@ -394,7 +395,7 @@ async def _handle_llm_session_start(send, message: dict[str, Any]) -> None:
     try:
         session = await sync_to_async(_prepare_device_llm_session, thread_sensitive=True)(device_code, question_text)
     except Exception as exc:
-        await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message=str(exc)[:200]))
+        await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, **_realtime_error_payload(exc)))
         return
 
     started_payload = {
@@ -675,6 +676,12 @@ def _trace_payload(event_type: str, command_id, request_id: str, trace_id: str, 
         'traceId': trace_id,
         **extra,
     }
+
+
+def _realtime_error_payload(exc: Exception) -> dict[str, object]:
+    if isinstance(exc, RuntimeDeviceError):
+        return exc.as_payload()
+    return {'message': str(exc)[:200]}
 
 
 async def _handle_device_status_ping(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:

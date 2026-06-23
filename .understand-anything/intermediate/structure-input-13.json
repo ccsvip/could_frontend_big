@@ -1,0 +1,147 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": ".codex/agents/analyst.toml",
+      "language": "toml",
+      "sizeLines": 171,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/architect.toml",
+      "language": "toml",
+      "sizeLines": 157,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/code-reviewer.toml",
+      "language": "toml",
+      "sizeLines": 175,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/code-simplifier.toml",
+      "language": "toml",
+      "sizeLines": 167,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/critic.toml",
+      "language": "toml",
+      "sizeLines": 116,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/debugger.toml",
+      "language": "toml",
+      "sizeLines": 152,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/dependency-expert.toml",
+      "language": "toml",
+      "sizeLines": 165,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/designer.toml",
+      "language": "toml",
+      "sizeLines": 161,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/executor.toml",
+      "language": "toml",
+      "sizeLines": 143,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/explore.toml",
+      "language": "toml",
+      "sizeLines": 120,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/git-master.toml",
+      "language": "toml",
+      "sizeLines": 149,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/planner.toml",
+      "language": "toml",
+      "sizeLines": 156,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/prometheus-strict-metis.toml",
+      "language": "toml",
+      "sizeLines": 304,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/prometheus-strict-momus.toml",
+      "language": "toml",
+      "sizeLines": 118,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/prometheus-strict-oracle.toml",
+      "language": "toml",
+      "sizeLines": 143,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/researcher.toml",
+      "language": "toml",
+      "sizeLines": 167,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/scholastic.toml",
+      "language": "toml",
+      "sizeLines": 47,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/team-executor.toml",
+      "language": "toml",
+      "sizeLines": 92,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/test-engineer.toml",
+      "language": "toml",
+      "sizeLines": 165,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/verifier.toml",
+      "language": "toml",
+      "sizeLines": 121,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    ".codex/agents/analyst.toml": [],
+    ".codex/agents/architect.toml": [],
+    ".codex/agents/code-reviewer.toml": [],
+    ".codex/agents/code-simplifier.toml": [],
+    ".codex/agents/critic.toml": [],
+    ".codex/agents/debugger.toml": [],
+    ".codex/agents/dependency-expert.toml": [],
+    ".codex/agents/designer.toml": [],
+    ".codex/agents/executor.toml": [],
+    ".codex/agents/explore.toml": [],
+    ".codex/agents/git-master.toml": [],
+    ".codex/agents/planner.toml": [],
+    ".codex/agents/prometheus-strict-metis.toml": [],
+    ".codex/agents/prometheus-strict-momus.toml": [],
+    ".codex/agents/prometheus-strict-oracle.toml": [],
+    ".codex/agents/researcher.toml": [],
+    ".codex/agents/scholastic.toml": [],
+    ".codex/agents/team-executor.toml": [],
+    ".codex/agents/test-engineer.toml": [],
+    ".codex/agents/verifier.toml": []
+  }
+}

@@ -1,0 +1,413 @@
+{
+  "nodes": [
+    {
+      "id": "document:.codex/prompts/prometheus-strict-momus.md",
+      "type": "document",
+      "name": "prometheus-strict-momus.md",
+      "filePath": ".codex/prompts/prometheus-strict-momus.md",
+      "summary": ".codex/prompts/prometheus-strict-momus.md (markdown); 6 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        82
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "id": "document:.codex/prompts/prometheus-strict-oracle.md",
+      "type": "document",
+      "name": "prometheus-strict-oracle.md",
+      "filePath": ".codex/prompts/prometheus-strict-oracle.md",
+      "summary": ".codex/prompts/prometheus-strict-oracle.md (markdown); 9 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        107
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "id": "document:.codex/prompts/qa-tester.md",
+      "type": "document",
+      "name": "qa-tester.md",
+      "filePath": ".codex/prompts/qa-tester.md",
+      "summary": ".codex/prompts/qa-tester.md (markdown); 6 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        124
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "id": "document:.codex/prompts/quality-reviewer.md",
+      "type": "document",
+      "name": "quality-reviewer.md",
+      "filePath": ".codex/prompts/quality-reviewer.md",
+      "summary": ".codex/prompts/quality-reviewer.md (markdown); 6 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        123
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "id": "document:.codex/prompts/quality-strategist.md",
+      "type": "document",
+      "name": "quality-strategist.md",
+      "filePath": ".codex/prompts/quality-strategist.md",
+      "summary": ".codex/prompts/quality-strategist.md (markdown); 21 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        274
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 21
+      }
+    },
+    {
+      "id": "document:.codex/prompts/researcher.md",
+      "type": "document",
+      "name": "researcher.md",
+      "filePath": ".codex/prompts/researcher.md",
+      "summary": ".codex/prompts/researcher.md (markdown); 11 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        122
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "id": "document:.codex/prompts/scholastic.md",
+      "type": "document",
+      "name": "scholastic.md",
+      "filePath": ".codex/prompts/scholastic.md",
+      "summary": ".codex/prompts/scholastic.md (markdown)",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        11
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "document:.codex/prompts/security-reviewer.md",
+      "type": "document",
+      "name": "security-reviewer.md",
+      "filePath": ".codex/prompts/security-reviewer.md",
+      "summary": ".codex/prompts/security-reviewer.md (markdown); 5 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        143
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "id": "document:.codex/prompts/sisyphus-lite.md",
+      "type": "document",
+      "name": "sisyphus-lite.md",
+      "filePath": ".codex/prompts/sisyphus-lite.md",
+      "summary": ".codex/prompts/sisyphus-lite.md (markdown); 4 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        111
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "document:.codex/prompts/style-reviewer.md",
+      "type": "document",
+      "name": "style-reviewer.md",
+      "filePath": ".codex/prompts/style-reviewer.md",
+      "summary": ".codex/prompts/style-reviewer.md (markdown); 5 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        102
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "id": "document:.codex/prompts/team-executor.md",
+      "type": "document",
+      "name": "team-executor.md",
+      "filePath": ".codex/prompts/team-executor.md",
+      "summary": ".codex/prompts/team-executor.md (markdown)",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        57
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "document:.codex/prompts/team-orchestrator.md",
+      "type": "document",
+      "name": "team-orchestrator.md",
+      "filePath": ".codex/prompts/team-orchestrator.md",
+      "summary": ".codex/prompts/team-orchestrator.md (markdown)",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        8
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "document:.codex/prompts/test-engineer.md",
+      "type": "document",
+      "name": "test-engineer.md",
+      "filePath": ".codex/prompts/test-engineer.md",
+      "summary": ".codex/prompts/test-engineer.md (markdown); 6 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        130
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "id": "document:.codex/prompts/ux-researcher.md",
+      "type": "document",
+      "name": "ux-researcher.md",
+      "filePath": ".codex/prompts/ux-researcher.md",
+      "summary": ".codex/prompts/ux-researcher.md (markdown); 23 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        327
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 23
+      }
+    },
+    {
+      "id": "document:.codex/prompts/verifier.md",
+      "type": "document",
+      "name": "verifier.md",
+      "filePath": ".codex/prompts/verifier.md",
+      "summary": ".codex/prompts/verifier.md (markdown); 4 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        85
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "document:.codex/prompts/vision.md",
+      "type": "document",
+      "name": "vision.md",
+      "filePath": ".codex/prompts/vision.md",
+      "summary": ".codex/prompts/vision.md (markdown)",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        98
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "document:.codex/prompts/writer.md",
+      "type": "document",
+      "name": "writer.md",
+      "filePath": ".codex/prompts/writer.md",
+      "summary": ".codex/prompts/writer.md (markdown)",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        109
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    }
+  ],
+  "edges": []
+}

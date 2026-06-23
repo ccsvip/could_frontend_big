@@ -1,0 +1,42 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": ".codex/skills/.system/imagegen/references/cli.md",
+      "language": "markdown",
+      "sizeLines": 242,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/references/codex-network.md",
+      "language": "markdown",
+      "sizeLines": 33,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/references/image-api.md",
+      "language": "markdown",
+      "sizeLines": 90,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/references/prompting.md",
+      "language": "markdown",
+      "sizeLines": 118,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/references/sample-prompts.md",
+      "language": "markdown",
+      "sizeLines": 433,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    ".codex/skills/.system/imagegen/references/cli.md": [],
+    ".codex/skills/.system/imagegen/references/codex-network.md": [],
+    ".codex/skills/.system/imagegen/references/image-api.md": [],
+    ".codex/skills/.system/imagegen/references/prompting.md": [],
+    ".codex/skills/.system/imagegen/references/sample-prompts.md": []
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "nodes": [
+    {
+      "id": "file:web/src/views/tts-settings/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/tts-settings/index.tsx",
+      "summary": "web/src/views/tts-settings/index.tsx (typescript); 1 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        486
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/tts-settings/index.tsx:TtsSettingsPage",
+      "type": "function",
+      "name": "TtsSettingsPage",
+      "filePath": "web/src/views/tts-settings/index.tsx",
+      "summary": "Function TtsSettingsPage in web/src/views/tts-settings/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "complex",
+      "lineRange": [
+        57,
+        486
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/vite-env.d.ts",
+      "type": "file",
+      "name": "vite-env.d.ts",
+      "filePath": "web/src/vite-env.d.ts",
+      "summary": "web/src/vite-env.d.ts (typescript)",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:web/tailwind.config.ts",
+      "type": "file",
+      "name": "tailwind.config.ts",
+      "filePath": "web/tailwind.config.ts",
+      "summary": "web/tailwind.config.ts (typescript)",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        31
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:web/vite.config.ts",
+      "type": "file",
+      "name": "vite.config.ts",
+      "filePath": "web/vite.config.ts",
+      "summary": "web/vite.config.ts (typescript)",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        78
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "config:wiki/voices/voices_qwen3.json",
+      "type": "config",
+      "name": "voices_qwen3.json",
+      "filePath": "wiki/voices/voices_qwen3.json",
+      "summary": "wiki/voices/voices_qwen3.json (json); 1 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "json",
+      "lineRange": [
+        1,
+        340
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:web/src/views/tts-settings/index.tsx",
+      "target": "function:web/src/views/tts-settings/index.tsx:TtsSettingsPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    }
+  ]
+}

@@ -1,0 +1,2941 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/apps/devices/models.py",
+      "type": "file",
+      "name": "models.py",
+      "filePath": "backend/apps/devices/models.py",
+      "summary": "backend/apps/devices/models.py (python); 1 functions; 5 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        301
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 6,
+        "functionCount": 1,
+        "classCount": 5
+      }
+    },
+    {
+      "id": "function:backend/apps/devices/models.py:_tenant_fk",
+      "type": "function",
+      "name": "_tenant_fk",
+      "filePath": "backend/apps/devices/models.py",
+      "summary": "Function _tenant_fk in backend/apps/devices/models.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        7,
+        15
+      ],
+      "params": []
+    },
+    {
+      "id": "class:backend/apps/devices/models.py:DeviceGroup",
+      "type": "class",
+      "name": "DeviceGroup",
+      "filePath": "backend/apps/devices/models.py",
+      "summary": "Class or type DeviceGroup in backend/apps/devices/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        18,
+        36
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/models.py:DeviceApplication",
+      "type": "class",
+      "name": "DeviceApplication",
+      "filePath": "backend/apps/devices/models.py",
+      "summary": "Class or type DeviceApplication in backend/apps/devices/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        39,
+        103
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/models.py:Device",
+      "type": "class",
+      "name": "Device",
+      "filePath": "backend/apps/devices/models.py",
+      "summary": "Class or type Device in backend/apps/devices/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        106,
+        188
+      ],
+      "methods": [
+        "__str__",
+        "effective_agent_application",
+        "is_expired"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/models.py:DeviceAuthorizationCode",
+      "type": "class",
+      "name": "DeviceAuthorizationCode",
+      "filePath": "backend/apps/devices/models.py",
+      "summary": "Class or type DeviceAuthorizationCode in backend/apps/devices/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        191,
+        252
+      ],
+      "methods": [
+        "__str__",
+        "is_available"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/models.py:DeviceAuthLog",
+      "type": "class",
+      "name": "DeviceAuthLog",
+      "filePath": "backend/apps/devices/models.py",
+      "summary": "Class or type DeviceAuthLog in backend/apps/devices/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        255,
+        301
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/devices/realtime.py",
+      "type": "file",
+      "name": "realtime.py",
+      "filePath": "backend/apps/devices/realtime.py",
+      "summary": "backend/apps/devices/realtime.py (python); 9 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        117
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 10,
+        "functionCount": 9,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/devices/realtime.py:publish_device_event",
+      "type": "function",
+      "name": "publish_device_event",
+      "filePath": "backend/apps/devices/realtime.py",
+      "summary": "Function publish_device_event in backend/apps/devices/realtime.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        26,
+        37
+      ],
+      "params": [
+        "event"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/realtime.py:publish_device_event_sync",
+      "type": "function",
+      "name": "publish_device_event_sync",
+      "filePath": "backend/apps/devices/realtime.py",
+      "summary": "Function publish_device_event_sync in backend/apps/devices/realtime.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        40,
+        41
+      ],
+      "params": [
+        "event"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/realtime.py:resolve_device_event_subscription",
+      "type": "function",
+      "name": "resolve_device_event_subscription",
+      "filePath": "backend/apps/devices/realtime.py",
+      "summary": "Function resolve_device_event_subscription in backend/apps/devices/realtime.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        44,
+        45
+      ],
+      "params": [
+        "token",
+        "tenant_id_param"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/realtime.py:add_device_event_subscriber",
+      "type": "function",
+      "name": "add_device_event_subscriber",
+      "filePath": "backend/apps/devices/realtime.py",
+      "summary": "Function add_device_event_subscriber in backend/apps/devices/realtime.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        48,
+        56
+      ],
+      "params": [
+        "tenant_id"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/realtime.py:remove_device_event_subscriber",
+      "type": "function",
+      "name": "remove_device_event_subscriber",
+      "filePath": "backend/apps/devices/realtime.py",
+      "summary": "Function remove_device_event_subscriber in backend/apps/devices/realtime.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        59,
+        61
+      ],
+      "params": [
+        "subscriber"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/realtime.py:_put_event",
+      "type": "function",
+      "name": "_put_event",
+      "filePath": "backend/apps/devices/realtime.py",
+      "summary": "Function _put_event in backend/apps/devices/realtime.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        64,
+        72
+      ],
+      "params": [
+        "queue",
+        "event"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/realtime.py:_resolve_connection",
+      "type": "function",
+      "name": "_resolve_connection",
+      "filePath": "backend/apps/devices/realtime.py",
+      "summary": "Function _resolve_connection in backend/apps/devices/realtime.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        75,
+        100
+      ],
+      "params": [
+        "token",
+        "tenant_id_param"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/realtime.py:_parse_positive_int",
+      "type": "function",
+      "name": "_parse_positive_int",
+      "filePath": "backend/apps/devices/realtime.py",
+      "summary": "Function _parse_positive_int in backend/apps/devices/realtime.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        103,
+        107
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/realtime.py:_invalidate_device_stats",
+      "type": "function",
+      "name": "_invalidate_device_stats",
+      "filePath": "backend/apps/devices/realtime.py",
+      "summary": "Function _invalidate_device_stats in backend/apps/devices/realtime.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        110,
+        117
+      ],
+      "params": [
+        "tenant_id"
+      ]
+    },
+    {
+      "id": "class:backend/apps/devices/realtime.py:DeviceEventSubscriber",
+      "type": "class",
+      "name": "DeviceEventSubscriber",
+      "filePath": "backend/apps/devices/realtime.py",
+      "summary": "Class or type DeviceEventSubscriber in backend/apps/devices/realtime.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        16,
+        19
+      ],
+      "methods": [],
+      "properties": [
+        "queue",
+        "loop",
+        "tenant_id"
+      ]
+    },
+    {
+      "id": "file:backend/apps/devices/serializers.py",
+      "type": "file",
+      "name": "serializers.py",
+      "filePath": "backend/apps/devices/serializers.py",
+      "summary": "backend/apps/devices/serializers.py (python); 1 functions; 11 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "python",
+      "lineRange": [
+        1,
+        448
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 12,
+        "functionCount": 1,
+        "classCount": 11
+      }
+    },
+    {
+      "id": "function:backend/apps/devices/serializers.py:_tenant_from_context",
+      "type": "function",
+      "name": "_tenant_from_context",
+      "filePath": "backend/apps/devices/serializers.py",
+      "summary": "Function _tenant_from_context in backend/apps/devices/serializers.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        13,
+        19
+      ],
+      "params": [
+        "serializer"
+      ]
+    },
+    {
+      "id": "class:backend/apps/devices/serializers.py:TenantOwnedPrimaryKeyField",
+      "type": "class",
+      "name": "TenantOwnedPrimaryKeyField",
+      "filePath": "backend/apps/devices/serializers.py",
+      "summary": "Class or type TenantOwnedPrimaryKeyField in backend/apps/devices/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        22,
+        31
+      ],
+      "methods": [
+        "get_queryset"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/serializers.py:AvailableTTSVoicePrimaryKeyField",
+      "type": "class",
+      "name": "AvailableTTSVoicePrimaryKeyField",
+      "filePath": "backend/apps/devices/serializers.py",
+      "summary": "Class or type AvailableTTSVoicePrimaryKeyField in backend/apps/devices/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        34,
+        36
+      ],
+      "methods": [
+        "get_queryset"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/serializers.py:DeviceGroupSerializer",
+      "type": "class",
+      "name": "DeviceGroupSerializer",
+      "filePath": "backend/apps/devices/serializers.py",
+      "summary": "Class or type DeviceGroupSerializer in backend/apps/devices/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        39,
+        43
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/serializers.py:DeviceApplicationSerializer",
+      "type": "class",
+      "name": "DeviceApplicationSerializer",
+      "filePath": "backend/apps/devices/serializers.py",
+      "summary": "Class or type DeviceApplicationSerializer in backend/apps/devices/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        46,
+        104
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/serializers.py:DeviceSerializer",
+      "type": "class",
+      "name": "DeviceSerializer",
+      "filePath": "backend/apps/devices/serializers.py",
+      "summary": "Class or type DeviceSerializer in backend/apps/devices/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        107,
+        246
+      ],
+      "methods": [
+        "get_id",
+        "get_agentApplicationId",
+        "get_agentApplicationName",
+        "validate",
+        "create",
+        "update"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/serializers.py:DeviceDetailSerializer",
+      "type": "class",
+      "name": "DeviceDetailSerializer",
+      "filePath": "backend/apps/devices/serializers.py",
+      "summary": "Class or type DeviceDetailSerializer in backend/apps/devices/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        249,
+        253
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/serializers.py:DeviceAuthorizationCodeSerializer",
+      "type": "class",
+      "name": "DeviceAuthorizationCodeSerializer",
+      "filePath": "backend/apps/devices/serializers.py",
+      "summary": "Class or type DeviceAuthorizationCodeSerializer in backend/apps/devices/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        256,
+        303
+      ],
+      "methods": [
+        "validate",
+        "create"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/serializers.py:DeviceAuthorizationRequestSerializer",
+      "type": "class",
+      "name": "DeviceAuthorizationRequestSerializer",
+      "filePath": "backend/apps/devices/serializers.py",
+      "summary": "Class or type DeviceAuthorizationRequestSerializer in backend/apps/devices/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        306,
+        352
+      ],
+      "methods": [
+        "_latest_activation_log",
+        "get_bindingStatus",
+        "get_runtimeStatus",
+        "get_latestActivationAt",
+        "get_latestActivationMessage",
+        "get_latestActivationIp",
+        "get_latestActivationDeviceInfo"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/serializers.py:DeviceActivationLogSerializer",
+      "type": "class",
+      "name": "DeviceActivationLogSerializer",
+      "filePath": "backend/apps/devices/serializers.py",
+      "summary": "Class or type DeviceActivationLogSerializer in backend/apps/devices/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        355,
+        396
+      ],
+      "methods": [
+        "get_agentApplicationId",
+        "get_agentApplicationName"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/serializers.py:DeviceBindSerializer",
+      "type": "class",
+      "name": "DeviceBindSerializer",
+      "filePath": "backend/apps/devices/serializers.py",
+      "summary": "Class or type DeviceBindSerializer in backend/apps/devices/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        399,
+        440
+      ],
+      "methods": [
+        "validate",
+        "save"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/serializers.py:DeviceStatsSerializer",
+      "type": "class",
+      "name": "DeviceStatsSerializer",
+      "filePath": "backend/apps/devices/serializers.py",
+      "summary": "Class or type DeviceStatsSerializer in backend/apps/devices/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        443,
+        448
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/devices/services/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/devices/services/__init__.py",
+      "summary": "backend/apps/devices/services/__init__.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:backend/apps/devices/services/authorization.py",
+      "type": "file",
+      "name": "authorization.py",
+      "filePath": "backend/apps/devices/services/authorization.py",
+      "summary": "backend/apps/devices/services/authorization.py (python); 7 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        78
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 7,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:backend/apps/devices/services/authorization.py:bind_device_authorization",
+      "type": "function",
+      "name": "bind_device_authorization",
+      "filePath": "backend/apps/devices/services/authorization.py",
+      "summary": "Function bind_device_authorization in backend/apps/devices/services/authorization.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        9,
+        10
+      ],
+      "params": [
+        "device",
+        "serializer"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/services/authorization.py:ignore_device_authorization_request",
+      "type": "function",
+      "name": "ignore_device_authorization_request",
+      "filePath": "backend/apps/devices/services/authorization.py",
+      "summary": "Function ignore_device_authorization_request in backend/apps/devices/services/authorization.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        13,
+        16
+      ],
+      "params": [
+        "device"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/services/authorization.py:rename_authorization_device",
+      "type": "function",
+      "name": "rename_authorization_device",
+      "filePath": "backend/apps/devices/services/authorization.py",
+      "summary": "Function rename_authorization_device in backend/apps/devices/services/authorization.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        19,
+        22
+      ],
+      "params": [
+        "device",
+        "name"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/services/authorization.py:revoke_device_authorization",
+      "type": "function",
+      "name": "revoke_device_authorization",
+      "filePath": "backend/apps/devices/services/authorization.py",
+      "summary": "Function revoke_device_authorization in backend/apps/devices/services/authorization.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        25,
+        29
+      ],
+      "params": [
+        "device"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/services/authorization.py:record_device_authorization_action",
+      "type": "function",
+      "name": "record_device_authorization_action",
+      "filePath": "backend/apps/devices/services/authorization.py",
+      "summary": "Function record_device_authorization_action in backend/apps/devices/services/authorization.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        32,
+        50
+      ],
+      "params": [
+        "device",
+        "action",
+        "message",
+        "ip_address"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/services/authorization.py:authorization_device_snapshot",
+      "type": "function",
+      "name": "authorization_device_snapshot",
+      "filePath": "backend/apps/devices/services/authorization.py",
+      "summary": "Function authorization_device_snapshot in backend/apps/devices/services/authorization.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        53,
+        62
+      ],
+      "params": [
+        "device"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/services/authorization.py:publish_device_authorization_event",
+      "type": "function",
+      "name": "publish_device_authorization_event",
+      "filePath": "backend/apps/devices/services/authorization.py",
+      "summary": "Function publish_device_authorization_event in backend/apps/devices/services/authorization.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        65,
+        78
+      ],
+      "params": [
+        "device",
+        "action"
+      ]
+    },
+    {
+      "id": "file:backend/apps/devices/services/queries.py",
+      "type": "file",
+      "name": "queries.py",
+      "filePath": "backend/apps/devices/services/queries.py",
+      "summary": "backend/apps/devices/services/queries.py (python); 4 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        83
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:backend/apps/devices/services/queries.py:_param",
+      "type": "function",
+      "name": "_param",
+      "filePath": "backend/apps/devices/services/queries.py",
+      "summary": "Function _param in backend/apps/devices/services/queries.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        19,
+        28
+      ],
+      "params": [
+        "params",
+        "name"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/services/queries.py:device_authorization_requests_queryset",
+      "type": "function",
+      "name": "device_authorization_requests_queryset",
+      "filePath": "backend/apps/devices/services/queries.py",
+      "summary": "Function device_authorization_requests_queryset in backend/apps/devices/services/queries.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        31,
+        55
+      ],
+      "params": [
+        "params"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/services/queries.py:device_authorization_logs_queryset",
+      "type": "function",
+      "name": "device_authorization_logs_queryset",
+      "filePath": "backend/apps/devices/services/queries.py",
+      "summary": "Function device_authorization_logs_queryset in backend/apps/devices/services/queries.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        58,
+        68
+      ],
+      "params": [
+        "params"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/services/queries.py:device_authorizations_queryset",
+      "type": "function",
+      "name": "device_authorizations_queryset",
+      "filePath": "backend/apps/devices/services/queries.py",
+      "summary": "Function device_authorizations_queryset in backend/apps/devices/services/queries.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        71,
+        83
+      ],
+      "params": [
+        "params"
+      ]
+    },
+    {
+      "id": "file:backend/apps/devices/services/runtime.py",
+      "type": "file",
+      "name": "runtime.py",
+      "filePath": "backend/apps/devices/services/runtime.py",
+      "summary": "backend/apps/devices/services/runtime.py (python); 3 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        77
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 3,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/devices/services/runtime.py:runtime_device_error",
+      "type": "function",
+      "name": "runtime_device_error",
+      "filePath": "backend/apps/devices/services/runtime.py",
+      "summary": "Function runtime_device_error in backend/apps/devices/services/runtime.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        35,
+        37
+      ],
+      "params": [
+        "message",
+        "status_code",
+        "error"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/services/runtime.py:get_runtime_device",
+      "type": "function",
+      "name": "get_runtime_device",
+      "filePath": "backend/apps/devices/services/runtime.py",
+      "summary": "Function get_runtime_device in backend/apps/devices/services/runtime.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        40,
+        70
+      ],
+      "params": [
+        "device_code",
+        "require_tenant"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/services/runtime.py:get_runtime_device_or_none",
+      "type": "function",
+      "name": "get_runtime_device_or_none",
+      "filePath": "backend/apps/devices/services/runtime.py",
+      "summary": "Function get_runtime_device_or_none in backend/apps/devices/services/runtime.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        73,
+        77
+      ],
+      "params": [
+        "device_code",
+        "require_tenant"
+      ]
+    },
+    {
+      "id": "class:backend/apps/devices/services/runtime.py:RuntimeDeviceError",
+      "type": "class",
+      "name": "RuntimeDeviceError",
+      "filePath": "backend/apps/devices/services/runtime.py",
+      "summary": "Class or type RuntimeDeviceError in backend/apps/devices/services/runtime.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        11,
+        22
+      ],
+      "methods": [
+        "as_payload"
+      ],
+      "properties": [
+        "message",
+        "status_code",
+        "code",
+        "business_status_code"
+      ]
+    },
+    {
+      "id": "file:backend/apps/devices/tests/test_device_authorization_api.py",
+      "type": "file",
+      "name": "test_device_authorization_api.py",
+      "filePath": "backend/apps/devices/tests/test_device_authorization_api.py",
+      "summary": "backend/apps/devices/tests/test_device_authorization_api.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "python",
+      "lineRange": [
+        1,
+        1386
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/devices/tests/test_device_authorization_api.py:DeviceAuthorizationApiTests",
+      "type": "class",
+      "name": "DeviceAuthorizationApiTests",
+      "filePath": "backend/apps/devices/tests/test_device_authorization_api.py",
+      "summary": "Class or type DeviceAuthorizationApiTests in backend/apps/devices/tests/test_device_authorization_api.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "complex",
+      "lineRange": [
+        31,
+        1386
+      ],
+      "methods": [
+        "setUp",
+        "grant_permissions",
+        "create_code",
+        "test_authorization_request_query_filters_pending_bound_and_ignored_devices",
+        "test_authorization_service_records_device_snapshot_in_log",
+        "test_authorization_log_serializer_uses_agent_application_snapshot",
+        "test_device_code_is_globally_unique",
+        "test_device_create_rejects_duplicate_device_code",
+        "test_runtime_device_lookup_rejects_unbound_company",
+        "test_runtime_config_expired_device_returns_stable_error_code",
+        "test_device_status_choices_match_android_runtime_states",
+        "test_superuser_cannot_create_company_owned_device_application",
+        "test_create_authorization_requires_user_supplied_code",
+        "test_create_authorization_uses_user_supplied_code",
+        "test_application_can_bind_scrolling_texts_and_runtime_config_returns_them",
+        "test_application_can_bind_tts_voices_and_runtime_config_returns_them",
+        "test_runtime_resources_post_returns_bound_application_resource_slices_by_device_code",
+        "test_runtime_resource_slices_read_resource_management_records_by_tenant",
+        "test_device_voice_chat_path_exists_without_trailing_slash",
+        "test_device_voice_chat_accepts_pcm_audio_for_bound_device",
+        "test_activate_updates_bound_device_by_device_code",
+        "test_activate_accepts_device_code_from_header",
+        "test_activate_company_bound_device_without_agent_reports_bound",
+        "test_activate_unknown_device_creates_pending_device",
+        "test_activate_ignores_android_supplied_device_name",
+        "test_activate_same_device_code_is_repeatable",
+        "test_device_list_filters_by_name_and_device_code",
+        "test_device_list_filters_by_enabled_status",
+        "test_device_patch_updates_application_but_ignores_agent_binding",
+        "test_device_group_can_be_deleted",
+        "test_activation_request_appears_in_superuser_request_list",
+        "test_superuser_binds_activation_request_to_company_without_company_owned_resources",
+        "test_superuser_updates_authorization_request_device_name",
+        "test_superuser_ignores_activation_request_and_reactivation_restores_pending",
+        "test_superuser_reauthorizes_and_revokes_authorized_device",
+        "test_heartbeat_updates_last_seen_but_does_not_mark_device_online",
+        "test_unified_device_status_command_marks_online_until_disconnect",
+        "test_llm_session_start_streams_agent_answer_deltas",
+        "test_unified_device_events_command_sends_same_tenant_events",
+        "test_unified_device_events_command_filters_other_tenant_events",
+        "test_unified_device_events_command_allows_superuser_scoped_tenant"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/devices/tokens.py",
+      "type": "file",
+      "name": "tokens.py",
+      "filePath": "backend/apps/devices/tokens.py",
+      "summary": "backend/apps/devices/tokens.py (python); 2 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        34
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:backend/apps/devices/tokens.py:make_device_token",
+      "type": "function",
+      "name": "make_device_token",
+      "filePath": "backend/apps/devices/tokens.py",
+      "summary": "Function make_device_token in backend/apps/devices/tokens.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        11,
+        19
+      ],
+      "params": [
+        "device"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/tokens.py:resolve_device_token",
+      "type": "function",
+      "name": "resolve_device_token",
+      "filePath": "backend/apps/devices/tokens.py",
+      "summary": "Function resolve_device_token in backend/apps/devices/tokens.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        22,
+        34
+      ],
+      "params": [
+        "token"
+      ]
+    },
+    {
+      "id": "file:backend/apps/devices/urls.py",
+      "type": "file",
+      "name": "urls.py",
+      "filePath": "backend/apps/devices/urls.py",
+      "summary": "backend/apps/devices/urls.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        32
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:backend/apps/devices/views.py",
+      "type": "file",
+      "name": "views.py",
+      "filePath": "backend/apps/devices/views.py",
+      "summary": "backend/apps/devices/views.py (python); 1 functions; 13 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "python",
+      "lineRange": [
+        1,
+        848
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 14,
+        "functionCount": 1,
+        "classCount": 13
+      }
+    },
+    {
+      "id": "function:backend/apps/devices/views.py:_client_ip",
+      "type": "function",
+      "name": "_client_ip",
+      "filePath": "backend/apps/devices/views.py",
+      "summary": "Function _client_ip in backend/apps/devices/views.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        67,
+        71
+      ],
+      "params": [
+        "request"
+      ]
+    },
+    {
+      "id": "class:backend/apps/devices/views.py:DevicePermissionMixin",
+      "type": "class",
+      "name": "DevicePermissionMixin",
+      "filePath": "backend/apps/devices/views.py",
+      "summary": "Class or type DevicePermissionMixin in backend/apps/devices/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        74,
+        88
+      ],
+      "methods": [
+        "get_permissions"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/views.py:CompanyDeviceWritePermission",
+      "type": "class",
+      "name": "CompanyDeviceWritePermission",
+      "filePath": "backend/apps/devices/views.py",
+      "summary": "Class or type CompanyDeviceWritePermission in backend/apps/devices/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        91,
+        100
+      ],
+      "methods": [
+        "has_permission"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/views.py:DeviceViewSet",
+      "type": "class",
+      "name": "DeviceViewSet",
+      "filePath": "backend/apps/devices/views.py",
+      "summary": "Class or type DeviceViewSet in backend/apps/devices/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        111,
+        179
+      ],
+      "methods": [
+        "get_serializer_class",
+        "get_queryset",
+        "stats"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/views.py:DeviceGroupViewSet",
+      "type": "class",
+      "name": "DeviceGroupViewSet",
+      "filePath": "backend/apps/devices/views.py",
+      "summary": "Class or type DeviceGroupViewSet in backend/apps/devices/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        182,
+        184
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/views.py:DeviceApplicationViewSet",
+      "type": "class",
+      "name": "DeviceApplicationViewSet",
+      "filePath": "backend/apps/devices/views.py",
+      "summary": "Class or type DeviceApplicationViewSet in backend/apps/devices/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        187,
+        196
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/views.py:DeviceAuthorizationCodeViewSet",
+      "type": "class",
+      "name": "DeviceAuthorizationCodeViewSet",
+      "filePath": "backend/apps/devices/views.py",
+      "summary": "Class or type DeviceAuthorizationCodeViewSet in backend/apps/devices/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        199,
+        205
+      ],
+      "methods": [
+        "perform_create"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/views.py:DeviceAuthorizationRequestViewSet",
+      "type": "class",
+      "name": "DeviceAuthorizationRequestViewSet",
+      "filePath": "backend/apps/devices/views.py",
+      "summary": "Class or type DeviceAuthorizationRequestViewSet in backend/apps/devices/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        208,
+        311
+      ],
+      "methods": [
+        "get_queryset",
+        "get_authorization_device",
+        "list",
+        "logs",
+        "authorizations",
+        "bind",
+        "ignore",
+        "rename",
+        "authorize",
+        "revoke",
+        "_log_platform_action",
+        "_publish_authorization_event"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/views.py:DeviceActivationView",
+      "type": "class",
+      "name": "DeviceActivationView",
+      "filePath": "backend/apps/devices/views.py",
+      "summary": "Class or type DeviceActivationView in backend/apps/devices/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        314,
+        423
+      ],
+      "methods": [
+        "post",
+        "_application_payload",
+        "_agent_application_payload",
+        "_log_activation"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/views.py:DeviceRuntimeView",
+      "type": "class",
+      "name": "DeviceRuntimeView",
+      "filePath": "backend/apps/devices/views.py",
+      "summary": "Class or type DeviceRuntimeView in backend/apps/devices/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        426,
+        444
+      ],
+      "methods": [
+        "get_device_code",
+        "validate_device"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/views.py:DeviceRuntimeConfigView",
+      "type": "class",
+      "name": "DeviceRuntimeConfigView",
+      "filePath": "backend/apps/devices/views.py",
+      "summary": "Class or type DeviceRuntimeConfigView in backend/apps/devices/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        447,
+        594
+      ],
+      "methods": [
+        "get",
+        "_resources_payload"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/views.py:DeviceRuntimeResourcesView",
+      "type": "class",
+      "name": "DeviceRuntimeResourcesView",
+      "filePath": "backend/apps/devices/views.py",
+      "summary": "Class or type DeviceRuntimeResourcesView in backend/apps/devices/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        597,
+        667
+      ],
+      "methods": [
+        "post",
+        "_application_payload",
+        "_agent_application_payload"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/views.py:DeviceRuntimeHeartbeatView",
+      "type": "class",
+      "name": "DeviceRuntimeHeartbeatView",
+      "filePath": "backend/apps/devices/views.py",
+      "summary": "Class or type DeviceRuntimeHeartbeatView in backend/apps/devices/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        670,
+        707
+      ],
+      "methods": [
+        "post"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/devices/views.py:DeviceVoiceChatView",
+      "type": "class",
+      "name": "DeviceVoiceChatView",
+      "filePath": "backend/apps/devices/views.py",
+      "summary": "Class or type DeviceVoiceChatView in backend/apps/devices/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        710,
+        848
+      ],
+      "methods": [
+        "post",
+        "_request_question_text",
+        "_request_sample_rate",
+        "_generate_answer",
+        "_find_annotation",
+        "_synthesize_answer_audio"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/devices/websocket.py",
+      "type": "file",
+      "name": "websocket.py",
+      "filePath": "backend/apps/devices/websocket.py",
+      "summary": "backend/apps/devices/websocket.py (python); 4 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        52
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:backend/apps/devices/websocket.py:mark_device_online_for_websocket",
+      "type": "function",
+      "name": "mark_device_online_for_websocket",
+      "filePath": "backend/apps/devices/websocket.py",
+      "summary": "Function mark_device_online_for_websocket in backend/apps/devices/websocket.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        9,
+        27
+      ],
+      "params": [
+        "device_code"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/websocket.py:touch_device_for_websocket",
+      "type": "function",
+      "name": "touch_device_for_websocket",
+      "filePath": "backend/apps/devices/websocket.py",
+      "summary": "Function touch_device_for_websocket in backend/apps/devices/websocket.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        30,
+        31
+      ],
+      "params": [
+        "device_id"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/websocket.py:mark_device_offline_for_websocket",
+      "type": "function",
+      "name": "mark_device_offline_for_websocket",
+      "filePath": "backend/apps/devices/websocket.py",
+      "summary": "Function mark_device_offline_for_websocket in backend/apps/devices/websocket.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        34,
+        40
+      ],
+      "params": [
+        "device_id"
+      ]
+    },
+    {
+      "id": "function:backend/apps/devices/websocket.py:_device_status_event",
+      "type": "function",
+      "name": "_device_status_event",
+      "filePath": "backend/apps/devices/websocket.py",
+      "summary": "Function _device_status_event in backend/apps/devices/websocket.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        43,
+        52
+      ],
+      "params": [
+        "device",
+        "status"
+      ]
+    },
+    {
+      "id": "file:backend/apps/knowledge_base/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/knowledge_base/__init__.py",
+      "summary": "backend/apps/knowledge_base/__init__.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:backend/apps/knowledge_base/admin.py",
+      "type": "file",
+      "name": "admin.py",
+      "filePath": "backend/apps/knowledge_base/admin.py",
+      "summary": "backend/apps/knowledge_base/admin.py (python); 3 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        69
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 3
+      }
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/admin.py:KnowledgeBaseAdmin",
+      "type": "class",
+      "name": "KnowledgeBaseAdmin",
+      "filePath": "backend/apps/knowledge_base/admin.py",
+      "summary": "Class or type KnowledgeBaseAdmin in backend/apps/knowledge_base/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        10,
+        15
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/admin.py:KnowledgeDocumentAdmin",
+      "type": "class",
+      "name": "KnowledgeDocumentAdmin",
+      "filePath": "backend/apps/knowledge_base/admin.py",
+      "summary": "Class or type KnowledgeDocumentAdmin in backend/apps/knowledge_base/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        19,
+        60
+      ],
+      "methods": [
+        "file_link",
+        "save_model"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/admin.py:KnowledgeDocumentChunkAdmin",
+      "type": "class",
+      "name": "KnowledgeDocumentChunkAdmin",
+      "filePath": "backend/apps/knowledge_base/admin.py",
+      "summary": "Class or type KnowledgeDocumentChunkAdmin in backend/apps/knowledge_base/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        64,
+        69
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "document:backend/apps/knowledge_base/AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "backend/apps/knowledge_base/AGENTS.md",
+      "summary": "backend/apps/knowledge_base/AGENTS.md (markdown); 7 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        54
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "id": "file:backend/apps/knowledge_base/apps.py",
+      "type": "file",
+      "name": "apps.py",
+      "filePath": "backend/apps/knowledge_base/apps.py",
+      "summary": "backend/apps/knowledge_base/apps.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        8
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/apps.py:KnowledgeBaseConfig",
+      "type": "class",
+      "name": "KnowledgeBaseConfig",
+      "filePath": "backend/apps/knowledge_base/apps.py",
+      "summary": "Class or type KnowledgeBaseConfig in backend/apps/knowledge_base/apps.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        7
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/knowledge_base/migrations/__init__.py",
+      "type": "table",
+      "name": "__init__.py",
+      "filePath": "backend/apps/knowledge_base/migrations/__init__.py",
+      "summary": "backend/apps/knowledge_base/migrations/__init__.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "table:backend/apps/knowledge_base/migrations/0001_initial.py",
+      "type": "table",
+      "name": "0001_initial.py",
+      "filePath": "backend/apps/knowledge_base/migrations/0001_initial.py",
+      "summary": "backend/apps/knowledge_base/migrations/0001_initial.py (python); 2 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        87
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/migrations/0001_initial.py:seed_knowledge_base_access_data",
+      "type": "function",
+      "name": "seed_knowledge_base_access_data",
+      "filePath": "backend/apps/knowledge_base/migrations/0001_initial.py",
+      "summary": "Function seed_knowledge_base_access_data in backend/apps/knowledge_base/migrations/0001_initial.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        6,
+        43
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/migrations/0001_initial.py:unseed_knowledge_base_access_data",
+      "type": "function",
+      "name": "unseed_knowledge_base_access_data",
+      "filePath": "backend/apps/knowledge_base/migrations/0001_initial.py",
+      "summary": "Function unseed_knowledge_base_access_data in backend/apps/knowledge_base/migrations/0001_initial.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        46,
+        51
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/migrations/0001_initial.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/knowledge_base/migrations/0001_initial.py",
+      "summary": "Class or type Migration in backend/apps/knowledge_base/migrations/0001_initial.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        54,
+        86
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "type": "table",
+      "name": "0002_access_data.py",
+      "filePath": "backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "summary": "backend/apps/knowledge_base/migrations/0002_access_data.py (python); 2 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        61
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/migrations/0002_access_data.py:seed_knowledge_base_access_data",
+      "type": "function",
+      "name": "seed_knowledge_base_access_data",
+      "filePath": "backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "summary": "Function seed_knowledge_base_access_data in backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        41
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/migrations/0002_access_data.py:unseed_knowledge_base_access_data",
+      "type": "function",
+      "name": "unseed_knowledge_base_access_data",
+      "filePath": "backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "summary": "Function unseed_knowledge_base_access_data in backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        44,
+        49
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/migrations/0002_access_data.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "summary": "Class or type Migration in backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        52,
+        60
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py",
+      "type": "table",
+      "name": "0003_knowledgedocument_tenant.py",
+      "filePath": "backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py",
+      "summary": "backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        20
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py",
+      "summary": "Class or type Migration in backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        7,
+        20
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/knowledge_base/migrations/0004_knowledgedocumentchunk.py",
+      "type": "table",
+      "name": "0004_knowledgedocumentchunk.py",
+      "filePath": "backend/apps/knowledge_base/migrations/0004_knowledgedocumentchunk.py",
+      "summary": "backend/apps/knowledge_base/migrations/0004_knowledgedocumentchunk.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        37
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/migrations/0004_knowledgedocumentchunk.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/knowledge_base/migrations/0004_knowledgedocumentchunk.py",
+      "summary": "Class or type Migration in backend/apps/knowledge_base/migrations/0004_knowledgedocumentchunk.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        7,
+        37
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py",
+      "type": "table",
+      "name": "0005_knowledgebase_document_relation_and_menu.py",
+      "filePath": "backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py",
+      "summary": "backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py (python); 2 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        101
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py:move_knowledge_base_menu",
+      "type": "function",
+      "name": "move_knowledge_base_menu",
+      "filePath": "backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py",
+      "summary": "Function move_knowledge_base_menu in backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        6,
+        35
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py:rollback_knowledge_base_menu",
+      "type": "function",
+      "name": "rollback_knowledge_base_menu",
+      "filePath": "backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py",
+      "summary": "Function rollback_knowledge_base_menu in backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        38,
+        60
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py",
+      "summary": "Class or type Migration in backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        63,
+        101
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py",
+      "type": "table",
+      "name": "0006_assign_knowledge_base_menu_to_tenants.py",
+      "filePath": "backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py",
+      "summary": "backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py (python); 2 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        40
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py:assign_knowledge_base_menu_to_tenants",
+      "type": "function",
+      "name": "assign_knowledge_base_menu_to_tenants",
+      "filePath": "backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py",
+      "summary": "Function assign_knowledge_base_menu_to_tenants in backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        16
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py:unassign_knowledge_base_menu_from_tenants",
+      "type": "function",
+      "name": "unassign_knowledge_base_menu_from_tenants",
+      "filePath": "backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py",
+      "summary": "Function unassign_knowledge_base_menu_from_tenants in backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        19,
+        29
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py",
+      "summary": "Class or type Migration in backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        32,
+        40
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py",
+      "type": "table",
+      "name": "0007_auto_approve_knowledge_documents.py",
+      "filePath": "backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py",
+      "summary": "backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py (python); 2 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        30
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py:approve_pending_documents",
+      "type": "function",
+      "name": "approve_pending_documents",
+      "filePath": "backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py",
+      "summary": "Function approve_pending_documents in backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        6
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "function:backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py:restore_pending_default",
+      "type": "function",
+      "name": "restore_pending_default",
+      "filePath": "backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py",
+      "summary": "Function restore_pending_default in backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        9,
+        10
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py",
+      "summary": "Class or type Migration in backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        13,
+        30
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/knowledge_base/migrations/0008_remove_knowledge_document_processing_status.py",
+      "type": "table",
+      "name": "0008_remove_knowledge_document_processing_status.py",
+      "filePath": "backend/apps/knowledge_base/migrations/0008_remove_knowledge_document_processing_status.py",
+      "summary": "backend/apps/knowledge_base/migrations/0008_remove_knowledge_document_processing_status.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        18
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/knowledge_base/migrations/0008_remove_knowledge_document_processing_status.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/knowledge_base/migrations/0008_remove_knowledge_document_processing_status.py",
+      "summary": "Class or type Migration in backend/apps/knowledge_base/migrations/0008_remove_knowledge_document_processing_status.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        18
+      ],
+      "methods": [],
+      "properties": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/devices/models.py",
+      "target": "function:backend/apps/devices/models.py:_tenant_fk",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/models.py",
+      "target": "class:backend/apps/devices/models.py:DeviceGroup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/models.py",
+      "target": "class:backend/apps/devices/models.py:DeviceApplication",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/models.py",
+      "target": "class:backend/apps/devices/models.py:Device",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/models.py",
+      "target": "class:backend/apps/devices/models.py:DeviceAuthorizationCode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/models.py",
+      "target": "class:backend/apps/devices/models.py:DeviceAuthLog",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/realtime.py",
+      "target": "function:backend/apps/devices/realtime.py:publish_device_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/realtime.py",
+      "target": "function:backend/apps/devices/realtime.py:publish_device_event_sync",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/realtime.py",
+      "target": "function:backend/apps/devices/realtime.py:resolve_device_event_subscription",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/realtime.py",
+      "target": "function:backend/apps/devices/realtime.py:add_device_event_subscriber",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/realtime.py",
+      "target": "function:backend/apps/devices/realtime.py:remove_device_event_subscriber",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/realtime.py",
+      "target": "function:backend/apps/devices/realtime.py:_put_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/realtime.py",
+      "target": "function:backend/apps/devices/realtime.py:_resolve_connection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/realtime.py",
+      "target": "function:backend/apps/devices/realtime.py:_parse_positive_int",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/realtime.py",
+      "target": "function:backend/apps/devices/realtime.py:_invalidate_device_stats",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/realtime.py",
+      "target": "class:backend/apps/devices/realtime.py:DeviceEventSubscriber",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/serializers.py",
+      "target": "function:backend/apps/devices/serializers.py:_tenant_from_context",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/serializers.py",
+      "target": "class:backend/apps/devices/serializers.py:TenantOwnedPrimaryKeyField",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/serializers.py",
+      "target": "class:backend/apps/devices/serializers.py:AvailableTTSVoicePrimaryKeyField",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/serializers.py",
+      "target": "class:backend/apps/devices/serializers.py:DeviceGroupSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/serializers.py",
+      "target": "class:backend/apps/devices/serializers.py:DeviceApplicationSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/serializers.py",
+      "target": "class:backend/apps/devices/serializers.py:DeviceSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/serializers.py",
+      "target": "class:backend/apps/devices/serializers.py:DeviceDetailSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/serializers.py",
+      "target": "class:backend/apps/devices/serializers.py:DeviceAuthorizationCodeSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/serializers.py",
+      "target": "class:backend/apps/devices/serializers.py:DeviceAuthorizationRequestSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/serializers.py",
+      "target": "class:backend/apps/devices/serializers.py:DeviceActivationLogSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/serializers.py",
+      "target": "class:backend/apps/devices/serializers.py:DeviceBindSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/serializers.py",
+      "target": "class:backend/apps/devices/serializers.py:DeviceStatsSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/services/authorization.py",
+      "target": "function:backend/apps/devices/services/authorization.py:bind_device_authorization",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/services/authorization.py",
+      "target": "function:backend/apps/devices/services/authorization.py:ignore_device_authorization_request",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/services/authorization.py",
+      "target": "function:backend/apps/devices/services/authorization.py:rename_authorization_device",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/services/authorization.py",
+      "target": "function:backend/apps/devices/services/authorization.py:revoke_device_authorization",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/services/authorization.py",
+      "target": "function:backend/apps/devices/services/authorization.py:record_device_authorization_action",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/services/authorization.py",
+      "target": "function:backend/apps/devices/services/authorization.py:authorization_device_snapshot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/services/authorization.py",
+      "target": "function:backend/apps/devices/services/authorization.py:publish_device_authorization_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/services/queries.py",
+      "target": "function:backend/apps/devices/services/queries.py:_param",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/services/queries.py",
+      "target": "function:backend/apps/devices/services/queries.py:device_authorization_requests_queryset",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/services/queries.py",
+      "target": "function:backend/apps/devices/services/queries.py:device_authorization_logs_queryset",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/services/queries.py",
+      "target": "function:backend/apps/devices/services/queries.py:device_authorizations_queryset",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/services/runtime.py",
+      "target": "function:backend/apps/devices/services/runtime.py:runtime_device_error",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/services/runtime.py",
+      "target": "function:backend/apps/devices/services/runtime.py:get_runtime_device",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/services/runtime.py",
+      "target": "function:backend/apps/devices/services/runtime.py:get_runtime_device_or_none",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/services/runtime.py",
+      "target": "class:backend/apps/devices/services/runtime.py:RuntimeDeviceError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/tests/test_device_authorization_api.py",
+      "target": "class:backend/apps/devices/tests/test_device_authorization_api.py:DeviceAuthorizationApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/tokens.py",
+      "target": "function:backend/apps/devices/tokens.py:make_device_token",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/tokens.py",
+      "target": "function:backend/apps/devices/tokens.py:resolve_device_token",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/views.py",
+      "target": "function:backend/apps/devices/views.py:_client_ip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/views.py",
+      "target": "class:backend/apps/devices/views.py:DevicePermissionMixin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/views.py",
+      "target": "class:backend/apps/devices/views.py:CompanyDeviceWritePermission",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/views.py",
+      "target": "class:backend/apps/devices/views.py:DeviceViewSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/views.py",
+      "target": "class:backend/apps/devices/views.py:DeviceGroupViewSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/views.py",
+      "target": "class:backend/apps/devices/views.py:DeviceApplicationViewSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/views.py",
+      "target": "class:backend/apps/devices/views.py:DeviceAuthorizationCodeViewSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/views.py",
+      "target": "class:backend/apps/devices/views.py:DeviceAuthorizationRequestViewSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/views.py",
+      "target": "class:backend/apps/devices/views.py:DeviceActivationView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/views.py",
+      "target": "class:backend/apps/devices/views.py:DeviceRuntimeView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/views.py",
+      "target": "class:backend/apps/devices/views.py:DeviceRuntimeConfigView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/views.py",
+      "target": "class:backend/apps/devices/views.py:DeviceRuntimeResourcesView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/views.py",
+      "target": "class:backend/apps/devices/views.py:DeviceRuntimeHeartbeatView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/views.py",
+      "target": "class:backend/apps/devices/views.py:DeviceVoiceChatView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/websocket.py",
+      "target": "function:backend/apps/devices/websocket.py:mark_device_online_for_websocket",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/websocket.py",
+      "target": "function:backend/apps/devices/websocket.py:touch_device_for_websocket",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/websocket.py",
+      "target": "function:backend/apps/devices/websocket.py:mark_device_offline_for_websocket",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/devices/websocket.py",
+      "target": "function:backend/apps/devices/websocket.py:_device_status_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/admin.py",
+      "target": "class:backend/apps/knowledge_base/admin.py:KnowledgeBaseAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/admin.py",
+      "target": "class:backend/apps/knowledge_base/admin.py:KnowledgeDocumentAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/admin.py",
+      "target": "class:backend/apps/knowledge_base/admin.py:KnowledgeDocumentChunkAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/knowledge_base/apps.py",
+      "target": "class:backend/apps/knowledge_base/apps.py:KnowledgeBaseConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0001_initial.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0001_initial.py:seed_knowledge_base_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0001_initial.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0001_initial.py:unseed_knowledge_base_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0001_initial.py",
+      "target": "class:backend/apps/knowledge_base/migrations/0001_initial.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0002_access_data.py:seed_knowledge_base_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0002_access_data.py:unseed_knowledge_base_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "target": "class:backend/apps/knowledge_base/migrations/0002_access_data.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py",
+      "target": "class:backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0004_knowledgedocumentchunk.py",
+      "target": "class:backend/apps/knowledge_base/migrations/0004_knowledgedocumentchunk.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py:move_knowledge_base_menu",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py:rollback_knowledge_base_menu",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py",
+      "target": "class:backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py:assign_knowledge_base_menu_to_tenants",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py:unassign_knowledge_base_menu_from_tenants",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py",
+      "target": "class:backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py:approve_pending_documents",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py",
+      "target": "function:backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py:restore_pending_default",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py",
+      "target": "class:backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/knowledge_base/migrations/0008_remove_knowledge_document_processing_status.py",
+      "target": "class:backend/apps/knowledge_base/migrations/0008_remove_knowledge_document_processing_status.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    }
+  ]
+}

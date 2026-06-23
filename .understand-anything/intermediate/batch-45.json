@@ -1,0 +1,834 @@
+{
+  "nodes": [
+    {
+      "id": "document:.codex/skills/ultrawork/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/ultrawork/SKILL.md",
+      "summary": ".codex/skills/ultrawork/SKILL.md (markdown); 2 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        190
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "document:.codex/skills/visual-ralph/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/visual-ralph/SKILL.md",
+      "summary": ".codex/skills/visual-ralph/SKILL.md (markdown); 14 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        161
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 14
+      }
+    },
+    {
+      "id": "document:.codex/skills/wiki/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/wiki/SKILL.md",
+      "summary": ".codex/skills/wiki/SKILL.md (markdown); 12 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        57
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "id": "document:.codex/skills/worker/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/worker/SKILL.md",
+      "summary": ".codex/skills/worker/SKILL.md (markdown); 9 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        120
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "id": "file:.codex/state_5.sqlite",
+      "type": "file",
+      "name": "state_5.sqlite",
+      "filePath": ".codex/state_5.sqlite",
+      "summary": ".codex/state_5.sqlite (sqlite)",
+      "tags": [
+        "sqlite",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "sqlite",
+      "lineRange": [
+        1,
+        959
+      ],
+      "metrics": {}
+    },
+    {
+      "id": "file:.gitattributes",
+      "type": "file",
+      "name": ".gitattributes",
+      "filePath": ".gitattributes",
+      "summary": ".gitattributes (unknown)",
+      "tags": [
+        "unknown",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "unknown",
+      "lineRange": [
+        1,
+        56
+      ],
+      "metrics": {}
+    },
+    {
+      "id": "document:.impeccable/critique/2026-06-16T03-06-58Z__web-src-views-application-management-index-tsx.md",
+      "type": "document",
+      "name": "2026-06-16T03-06-58Z__web-src-views-application-management-index-tsx.md",
+      "filePath": ".impeccable/critique/2026-06-16T03-06-58Z__web-src-views-application-management-index-tsx.md",
+      "summary": ".impeccable/critique/2026-06-16T03-06-58Z__web-src-views-application-management-index-tsx.md (markdown); 14 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        84
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 14
+      }
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/assemble.js",
+      "type": "file",
+      "name": "assemble.js",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/assemble.js",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/assemble.js (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        32
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/convert-batch.py",
+      "type": "file",
+      "name": "convert-batch.py",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/convert-batch.py",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/convert-batch.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        108
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/gen_prompts.py",
+      "type": "file",
+      "name": "gen_prompts.py",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/gen_prompts.py",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/gen_prompts.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        32
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/gen.js",
+      "type": "file",
+      "name": "gen.js",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/gen.js",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/gen.js (javascript); 2 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        261
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:.understand-anything/.trash-1781514098969/tmp/gen.js:getComplexity",
+      "type": "function",
+      "name": "getComplexity",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/gen.js",
+      "summary": "Function getComplexity in .understand-anything/.trash-1781514098969/tmp/gen.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        11,
+        15
+      ],
+      "params": [
+        "lines"
+      ]
+    },
+    {
+      "id": "function:.understand-anything/.trash-1781514098969/tmp/gen.js:getSummaryAndTags",
+      "type": "function",
+      "name": "getSummaryAndTags",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/gen.js",
+      "summary": "Function getSummaryAndTags in .understand-anything/.trash-1781514098969/tmp/gen.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        17,
+        105
+      ],
+      "params": [
+        "path"
+      ]
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/gen.py",
+      "type": "file",
+      "name": "gen.py",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/gen.py",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/gen.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "python",
+      "lineRange": [
+        1,
+        404
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/generate_batches.js",
+      "type": "file",
+      "name": "generate_batches.js",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate_batches.js",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/generate_batches.js (javascript); 1 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        348
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:.understand-anything/.trash-1781514098969/tmp/generate_batches.js:writeBatch",
+      "type": "function",
+      "name": "writeBatch",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate_batches.js",
+      "summary": "Function writeBatch in .understand-anything/.trash-1781514098969/tmp/generate_batches.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        339,
+        341
+      ],
+      "params": [
+        "i",
+        "data"
+      ]
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/generate_graph_33.mjs",
+      "type": "file",
+      "name": "generate_graph_33.mjs",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate_graph_33.mjs",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/generate_graph_33.mjs (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        130
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/generate_graph.py",
+      "type": "file",
+      "name": "generate_graph.py",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate_graph.py",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/generate_graph.py (python); 1 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        324
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:.understand-anything/.trash-1781514098969/tmp/generate_graph.py:create_nodes_and_edges",
+      "type": "function",
+      "name": "create_nodes_and_edges",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate_graph.py",
+      "summary": "Function create_nodes_and_edges in .understand-anything/.trash-1781514098969/tmp/generate_graph.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        5,
+        191
+      ],
+      "params": [
+        "batch_idx",
+        "file_metadata"
+      ]
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/generate_prompts.js",
+      "type": "file",
+      "name": "generate_prompts.js",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate_prompts.js",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/generate_prompts.js (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        21
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/generate-arch-prompts.js",
+      "type": "file",
+      "name": "generate-arch-prompts.js",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate-arch-prompts.js",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/generate-arch-prompts.js (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        61
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/generate-batch-3.js",
+      "type": "file",
+      "name": "generate-batch-3.js",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate-batch-3.js",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/generate-batch-3.js (javascript); 3 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        229
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:.understand-anything/.trash-1781514098969/tmp/generate-batch-3.js:getComplexity",
+      "type": "function",
+      "name": "getComplexity",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate-batch-3.js",
+      "summary": "Function getComplexity in .understand-anything/.trash-1781514098969/tmp/generate-batch-3.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        11,
+        17
+      ],
+      "params": [
+        "metrics"
+      ]
+    },
+    {
+      "id": "function:.understand-anything/.trash-1781514098969/tmp/generate-batch-3.js:getZhSummary",
+      "type": "function",
+      "name": "getZhSummary",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate-batch-3.js",
+      "summary": "Function getZhSummary in .understand-anything/.trash-1781514098969/tmp/generate-batch-3.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        19,
+        65
+      ],
+      "params": [
+        "filePath"
+      ]
+    },
+    {
+      "id": "function:.understand-anything/.trash-1781514098969/tmp/generate-batch-3.js:getTags",
+      "type": "function",
+      "name": "getTags",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate-batch-3.js",
+      "summary": "Function getTags in .understand-anything/.trash-1781514098969/tmp/generate-batch-3.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        67,
+        81
+      ],
+      "params": [
+        "filePath"
+      ]
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/generate-batch-37.js",
+      "type": "file",
+      "name": "generate-batch-37.js",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate-batch-37.js",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/generate-batch-37.js (javascript); 2 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        190
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:.understand-anything/.trash-1781514098969/tmp/generate-batch-37.js:getComplexity",
+      "type": "function",
+      "name": "getComplexity",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate-batch-37.js",
+      "summary": "Function getComplexity in .understand-anything/.trash-1781514098969/tmp/generate-batch-37.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        37,
+        41
+      ],
+      "params": [
+        "lines"
+      ]
+    },
+    {
+      "id": "function:.understand-anything/.trash-1781514098969/tmp/generate-batch-37.js:processBatch",
+      "type": "function",
+      "name": "processBatch",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate-batch-37.js",
+      "summary": "Function processBatch in .understand-anything/.trash-1781514098969/tmp/generate-batch-37.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        43,
+        188
+      ],
+      "params": []
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/generate-batches.js",
+      "type": "file",
+      "name": "generate-batches.js",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate-batches.js",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/generate-batches.js (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        272
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/generate.js",
+      "type": "file",
+      "name": "generate.js",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate.js",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/generate.js (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        3
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/generate.py",
+      "type": "file",
+      "name": "generate.py",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/generate.py",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/generate.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        243
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/process_batch_34.py",
+      "type": "file",
+      "name": "process_batch_34.py",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/process_batch_34.py",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/process_batch_34.py (python); 1 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        271
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:.understand-anything/.trash-1781514098969/tmp/process_batch_34.py:run",
+      "type": "function",
+      "name": "run",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/process_batch_34.py",
+      "summary": "Function run in .understand-anything/.trash-1781514098969/tmp/process_batch_34.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        5,
+        268
+      ],
+      "params": []
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/process.js",
+      "type": "file",
+      "name": "process.js",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/process.js",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/process.js (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        220
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/process2.js",
+      "type": "file",
+      "name": "process2.js",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/process2.js",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/process2.js (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        213
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:.understand-anything/.trash-1781514098969/tmp/gen.js",
+      "target": "function:.understand-anything/.trash-1781514098969/tmp/gen.js:getComplexity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.understand-anything/.trash-1781514098969/tmp/gen.js",
+      "target": "function:.understand-anything/.trash-1781514098969/tmp/gen.js:getSummaryAndTags",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.understand-anything/.trash-1781514098969/tmp/generate_batches.js",
+      "target": "function:.understand-anything/.trash-1781514098969/tmp/generate_batches.js:writeBatch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.understand-anything/.trash-1781514098969/tmp/generate_graph.py",
+      "target": "function:.understand-anything/.trash-1781514098969/tmp/generate_graph.py:create_nodes_and_edges",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.understand-anything/.trash-1781514098969/tmp/generate-batch-3.js",
+      "target": "function:.understand-anything/.trash-1781514098969/tmp/generate-batch-3.js:getComplexity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.understand-anything/.trash-1781514098969/tmp/generate-batch-3.js",
+      "target": "function:.understand-anything/.trash-1781514098969/tmp/generate-batch-3.js:getZhSummary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.understand-anything/.trash-1781514098969/tmp/generate-batch-3.js",
+      "target": "function:.understand-anything/.trash-1781514098969/tmp/generate-batch-3.js:getTags",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.understand-anything/.trash-1781514098969/tmp/generate-batch-37.js",
+      "target": "function:.understand-anything/.trash-1781514098969/tmp/generate-batch-37.js:getComplexity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.understand-anything/.trash-1781514098969/tmp/generate-batch-37.js",
+      "target": "function:.understand-anything/.trash-1781514098969/tmp/generate-batch-37.js:processBatch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.understand-anything/.trash-1781514098969/tmp/process_batch_34.py",
+      "target": "function:.understand-anything/.trash-1781514098969/tmp/process_batch_34.py:run",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    }
+  ]
+}

@@ -1,0 +1,868 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 20,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": ".codex/prompts/analyst.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 135,
+      "nonEmptyLines": 107,
+      "sections": [
+        {
+          "heading": "Metis Analysis: [Topic]",
+          "level": 2,
+          "line": 72
+        },
+        {
+          "heading": "Missing Questions",
+          "level": 3,
+          "line": 74
+        },
+        {
+          "heading": "Undefined Guardrails",
+          "level": 3,
+          "line": 77
+        },
+        {
+          "heading": "Scope Risks",
+          "level": 3,
+          "line": 80
+        },
+        {
+          "heading": "Unvalidated Assumptions",
+          "level": 3,
+          "line": 83
+        },
+        {
+          "heading": "Missing Acceptance Criteria",
+          "level": 3,
+          "line": 86
+        },
+        {
+          "heading": "Edge Cases",
+          "level": 3,
+          "line": 89
+        },
+        {
+          "heading": "Recommendations",
+          "level": 3,
+          "line": 92
+        },
+        {
+          "heading": "Open Questions",
+          "level": 3,
+          "line": 95
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": ".codex/prompts/api-reviewer.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 113,
+      "nonEmptyLines": 93,
+      "sections": [
+        {
+          "heading": "API Review",
+          "level": 2,
+          "line": 69
+        },
+        {
+          "heading": "Summary",
+          "level": 3,
+          "line": 71
+        },
+        {
+          "heading": "Breaking Changes Found",
+          "level": 3,
+          "line": 75
+        },
+        {
+          "heading": "API Design Issues",
+          "level": 3,
+          "line": 79
+        },
+        {
+          "heading": "Error Contract Issues",
+          "level": 3,
+          "line": 82
+        },
+        {
+          "heading": "Versioning Recommendation",
+          "level": 3,
+          "line": 85
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": ".codex/prompts/architect.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 111,
+      "nonEmptyLines": 90,
+      "sections": [
+        {
+          "heading": "Summary",
+          "level": 2,
+          "line": 61
+        },
+        {
+          "heading": "Analysis",
+          "level": 2,
+          "line": 64
+        },
+        {
+          "heading": "Root Cause",
+          "level": 2,
+          "line": 67
+        },
+        {
+          "heading": "Recommendations",
+          "level": 2,
+          "line": 70
+        },
+        {
+          "heading": "Architectural Status (code-review dual-lane only)",
+          "level": 2,
+          "line": 74
+        },
+        {
+          "heading": "Trade-offs",
+          "level": 2,
+          "line": 77
+        },
+        {
+          "heading": "Consensus Addendum (ralplan reviews only)",
+          "level": 2,
+          "line": 83
+        },
+        {
+          "heading": "References",
+          "level": 2,
+          "line": 88
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": ".codex/prompts/build-fixer.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 115,
+      "nonEmptyLines": 96,
+      "sections": [
+        {
+          "heading": "Build Error Resolution",
+          "level": 2,
+          "line": 75
+        },
+        {
+          "heading": "Errors Fixed",
+          "level": 3,
+          "line": 81
+        },
+        {
+          "heading": "Verification",
+          "level": 3,
+          "line": 84
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": ".codex/prompts/code-reviewer.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 139,
+      "nonEmptyLines": 116,
+      "sections": [
+        {
+          "heading": "Code Review Summary",
+          "level": 2,
+          "line": 91
+        },
+        {
+          "heading": "By Severity",
+          "level": 3,
+          "line": 96
+        },
+        {
+          "heading": "Issues",
+          "level": 3,
+          "line": 102
+        },
+        {
+          "heading": "Recommendation",
+          "level": 3,
+          "line": 108
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": ".codex/prompts/code-simplifier.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 134,
+      "nonEmptyLines": 113,
+      "sections": [
+        {
+          "heading": "Files Simplified",
+          "level": 2,
+          "line": 103
+        },
+        {
+          "heading": "Changes Applied",
+          "level": 2,
+          "line": 106
+        },
+        {
+          "heading": "Skipped",
+          "level": 2,
+          "line": 109
+        },
+        {
+          "heading": "Verification",
+          "level": 2,
+          "line": 112
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": ".codex/prompts/critic.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 80,
+      "nonEmptyLines": 68,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/prompts/debugger.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 117,
+      "nonEmptyLines": 98,
+      "sections": [
+        {
+          "heading": "Bug Report",
+          "level": 2,
+          "line": 75
+        },
+        {
+          "heading": "References",
+          "level": 2,
+          "line": 84
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": ".codex/prompts/dependency-expert.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 129,
+      "nonEmptyLines": 107,
+      "sections": [
+        {
+          "heading": "Dependency Evaluation: [capability needed]",
+          "level": 2,
+          "line": 80
+        },
+        {
+          "heading": "Candidates",
+          "level": 3,
+          "line": 82
+        },
+        {
+          "heading": "Recommendation",
+          "level": 3,
+          "line": 88
+        },
+        {
+          "heading": "Risks",
+          "level": 3,
+          "line": 92
+        },
+        {
+          "heading": "Migration Path (if replacing)",
+          "level": 3,
+          "line": 95
+        },
+        {
+          "heading": "Sources",
+          "level": 3,
+          "line": 98
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": ".codex/prompts/designer.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 126,
+      "nonEmptyLines": 105,
+      "sections": [
+        {
+          "heading": "Design Implementation",
+          "level": 2,
+          "line": 80
+        },
+        {
+          "heading": "Components Created/Modified",
+          "level": 3,
+          "line": 85
+        },
+        {
+          "heading": "Design Choices",
+          "level": 3,
+          "line": 88
+        },
+        {
+          "heading": "Verification",
+          "level": 3,
+          "line": 94
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": ".codex/prompts/executor.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 108,
+      "nonEmptyLines": 90,
+      "sections": [
+        {
+          "heading": "Changes Made",
+          "level": 2,
+          "line": 84
+        },
+        {
+          "heading": "Verification",
+          "level": 2,
+          "line": 87
+        },
+        {
+          "heading": "Assumptions / Notes",
+          "level": 2,
+          "line": 92
+        },
+        {
+          "heading": "Summary",
+          "level": 2,
+          "line": 95
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": ".codex/prompts/explore-harness.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 64,
+      "nonEmptyLines": 55,
+      "sections": [
+        {
+          "heading": "Files",
+          "level": 2,
+          "line": 53
+        },
+        {
+          "heading": "Relationships",
+          "level": 2,
+          "line": 56
+        },
+        {
+          "heading": "Answer",
+          "level": 2,
+          "line": 59
+        },
+        {
+          "heading": "Next steps",
+          "level": 2,
+          "line": 62
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": ".codex/prompts/explore.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 85,
+      "nonEmptyLines": 71,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/prompts/git-master.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 114,
+      "nonEmptyLines": 94,
+      "sections": [
+        {
+          "heading": "Git Operations",
+          "level": 2,
+          "line": 72
+        },
+        {
+          "heading": "Style Detected",
+          "level": 3,
+          "line": 74
+        },
+        {
+          "heading": "Commits Created",
+          "level": 3,
+          "line": 78
+        },
+        {
+          "heading": "Verification",
+          "level": 3,
+          "line": 82
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": ".codex/prompts/information-architect.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 226,
+      "nonEmptyLines": 173,
+      "sections": [
+        {
+          "heading": "Scenario Handling",
+          "level": 2,
+          "line": 24
+        },
+        {
+          "heading": "Investigation Protocol",
+          "level": 2,
+          "line": 32
+        },
+        {
+          "heading": "Success Criteria",
+          "level": 2,
+          "line": 45
+        },
+        {
+          "heading": "IA Framework",
+          "level": 2,
+          "line": 56
+        },
+        {
+          "heading": "Core IA Principles",
+          "level": 2,
+          "line": 58
+        },
+        {
+          "heading": "Taxonomy Assessment Criteria",
+          "level": 2,
+          "line": 69
+        },
+        {
+          "heading": "Findability Testing Method",
+          "level": 2,
+          "line": 79
+        },
+        {
+          "heading": "Tool Usage",
+          "level": 2,
+          "line": 89
+        },
+        {
+          "heading": "Output Format",
+          "level": 2,
+          "line": 108
+        },
+        {
+          "heading": "Artifact Types",
+          "level": 2,
+          "line": 112
+        },
+        {
+          "heading": "1. IA Map",
+          "level": 3,
+          "line": 114
+        },
+        {
+          "heading": "2. Taxonomy Proposal",
+          "level": 3,
+          "line": 138
+        },
+        {
+          "heading": "3. Naming Convention Guide",
+          "level": 3,
+          "line": 164
+        },
+        {
+          "heading": "4. Findability Assessment",
+          "level": 3,
+          "line": 182
+        },
+        {
+          "heading": "Failure Modes To Avoid",
+          "level": 2,
+          "line": 203
+        },
+        {
+          "heading": "Final Checklist",
+          "level": 2,
+          "line": 215
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 16
+      }
+    },
+    {
+      "path": ".codex/prompts/performance-reviewer.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 109,
+      "nonEmptyLines": 89,
+      "sections": [
+        {
+          "heading": "Performance Review",
+          "level": 2,
+          "line": 66
+        },
+        {
+          "heading": "Summary",
+          "level": 3,
+          "line": 68
+        },
+        {
+          "heading": "Critical Hotspots",
+          "level": 3,
+          "line": 71
+        },
+        {
+          "heading": "Optimization Opportunities",
+          "level": 3,
+          "line": 74
+        },
+        {
+          "heading": "Profiling Recommendations",
+          "level": 3,
+          "line": 77
+        },
+        {
+          "heading": "Acceptable Performance",
+          "level": 3,
+          "line": 82
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": ".codex/prompts/planner.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 110,
+      "nonEmptyLines": 94,
+      "sections": [
+        {
+          "heading": "Plan Summary",
+          "level": 2,
+          "line": 75
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": ".codex/prompts/product-analyst.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 304,
+      "nonEmptyLines": 244,
+      "sections": [
+        {
+          "heading": "Boundary: PRODUCT METRICS vs OTHER CONCERNS",
+          "level": 2,
+          "line": 29
+        },
+        {
+          "heading": "When You ARE Needed",
+          "level": 2,
+          "line": 90
+        },
+        {
+          "heading": "Workflow Position",
+          "level": 2,
+          "line": 100
+        },
+        {
+          "heading": "Metric Definition Template",
+          "level": 2,
+          "line": 126
+        },
+        {
+          "heading": "Event Schema Template",
+          "level": 2,
+          "line": 142
+        },
+        {
+          "heading": "Experiment Measurement Checklist",
+          "level": 2,
+          "line": 152
+        },
+        {
+          "heading": "Artifact Types",
+          "level": 2,
+          "line": 165
+        },
+        {
+          "heading": "1. KPI Definitions",
+          "level": 3,
+          "line": 167
+        },
+        {
+          "heading": "2. Instrumentation Checklist",
+          "level": 3,
+          "line": 200
+        },
+        {
+          "heading": "3. Experiment Readout Template",
+          "level": 3,
+          "line": 225
+        },
+        {
+          "heading": "4. Funnel Analysis Plan",
+          "level": 3,
+          "line": 253
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "path": ".codex/prompts/product-manager.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 245,
+      "nonEmptyLines": 200,
+      "sections": [
+        {
+          "heading": "Boundary: WHY/WHAT vs HOW",
+          "level": 2,
+          "line": 29
+        },
+        {
+          "heading": "When to Escalate to THOROUGH",
+          "level": 2,
+          "line": 76
+        },
+        {
+          "heading": "When You ARE Needed",
+          "level": 2,
+          "line": 104
+        },
+        {
+          "heading": "Workflow Position",
+          "level": 2,
+          "line": 127
+        },
+        {
+          "heading": "Artifact Types",
+          "level": 2,
+          "line": 144
+        },
+        {
+          "heading": "1. Opportunity Brief",
+          "level": 3,
+          "line": 146
+        },
+        {
+          "heading": "2. Scoped PRD",
+          "level": 3,
+          "line": 179
+        },
+        {
+          "heading": "3. KPI Tree",
+          "level": 3,
+          "line": 194
+        },
+        {
+          "heading": "4. Prioritization Analysis",
+          "level": 3,
+          "line": 206
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": ".codex/prompts/prometheus-strict-metis.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 274,
+      "nonEmptyLines": 215,
+      "sections": [
+        {
+          "heading": "Metis Clarification",
+          "level": 2,
+          "line": 247
+        },
+        {
+          "heading": "Target Result",
+          "level": 3,
+          "line": 249
+        },
+        {
+          "heading": "Requirements",
+          "level": 3,
+          "line": 252
+        },
+        {
+          "heading": "Non-Goals",
+          "level": 3,
+          "line": 255
+        },
+        {
+          "heading": "Acceptance Criteria",
+          "level": 3,
+          "line": 258
+        },
+        {
+          "heading": "Evidence vs Assumptions",
+          "level": 3,
+          "line": 261
+        },
+        {
+          "heading": "Gap-Fill Passes After Answers",
+          "level": 3,
+          "line": 265
+        },
+        {
+          "heading": "Questions Emitted This Round",
+          "level": 3,
+          "line": 269
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    }
+  ]
+}

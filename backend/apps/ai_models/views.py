@@ -37,7 +37,12 @@ from apps.accounts.permissions import (
     IsSuperUser,
 )
 from apps.devices.models import Device
-from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device
+from apps.devices.services.runtime import (
+    RUNTIME_ERROR_EMPTY_DEVICE_CODE,
+    RuntimeDeviceError,
+    get_runtime_device,
+    runtime_device_error,
+)
 from apps.resources.views import PermissionMappedModelViewSet
 from apps.tenants.mixins import TenantScopedQuerysetMixin
 from apps.tenants.models import Tenant
@@ -170,13 +175,14 @@ class ASRDeviceStatusView(APIView):
     def get(self, request):
         device_code = str(request.headers.get('X-Device-Code') or '').strip()
         if not device_code:
-            return Response({'message': '设备号不能为空'}, status=status.HTTP_400_BAD_REQUEST)
+            error = runtime_device_error('设备码不能为空', status.HTTP_400_BAD_REQUEST, RUNTIME_ERROR_EMPTY_DEVICE_CODE)
+            return Response(error.as_payload(), status=error.status_code)
 
-        connection = resolve_asr_device_connection(device_code)
-        if connection is None:
-            return Response({'message': '设备未绑定公司或不可用'}, status=status.HTTP_403_FORBIDDEN)
+        try:
+            device = get_runtime_device(device_code, require_tenant=True)
+        except RuntimeDeviceError as exc:
+            return Response(exc.as_payload(), status=exc.status_code)
 
-        device = Device.objects.select_related('tenant', 'application__agent_application', 'agent_application').get(id=connection['device_id'])
         agent_application = device.effective_agent_application
         return Response({
             **serialize_asr_status(),
@@ -358,7 +364,7 @@ class CompanyTTSOptionsView(TenantScopedQuerysetMixin, APIView):
             try:
                 device = get_runtime_device(device_code, require_tenant=True)
             except RuntimeDeviceError as exc:
-                return Response({'message': exc.message}, status=exc.status_code)
+                return Response(exc.as_payload(), status=exc.status_code)
             return Response(_build_company_tts_options_payload(device.tenant, request))
         return Response(_build_company_tts_options_payload(self.request_tenant, request))
 
@@ -412,13 +418,13 @@ class TTSRuntimeView(APIView):
     def post(self, request):
         device_code = str(request.headers.get('X-Device-Code') or '').strip()
         if not device_code:
-            return Response({'message': '设备号不能为空'}, status=status.HTTP_400_BAD_REQUEST)
+            error = runtime_device_error('设备码不能为空', status.HTTP_400_BAD_REQUEST, RUNTIME_ERROR_EMPTY_DEVICE_CODE)
+            return Response(error.as_payload(), status=error.status_code)
 
-        connection = resolve_asr_device_connection(device_code)
-        if connection is None:
-            return Response({'message': '设备未绑定公司或不可用'}, status=status.HTTP_403_FORBIDDEN)
-
-        device = Device.objects.select_related('tenant').get(id=connection['device_id'])
+        try:
+            device = get_runtime_device(device_code, require_tenant=True)
+        except RuntimeDeviceError as exc:
+            return Response(exc.as_payload(), status=exc.status_code)
         provider = tts_services.get_aliyun_tts_provider()
         config = tts_services.get_effective_tts_config(provider)
         voice = _select_company_tts_voice(device.tenant, provider, request.data.get('voiceId'))

@@ -1,0 +1,77 @@
+{
+  "nodes": [
+    {
+      "id": "document:.claude/skills/prototype/LOGIC.md",
+      "type": "document",
+      "name": "LOGIC.md",
+      "filePath": ".claude/skills/prototype/LOGIC.md",
+      "summary": ".claude/skills/prototype/LOGIC.md (markdown); 11 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        79
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "id": "document:.claude/skills/prototype/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".claude/skills/prototype/SKILL.md",
+      "summary": ".claude/skills/prototype/SKILL.md (markdown); 4 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        30
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "document:.claude/skills/prototype/UI.md",
+      "type": "document",
+      "name": "UI.md",
+      "filePath": ".claude/skills/prototype/UI.md",
+      "summary": ".claude/skills/prototype/UI.md (markdown); 13 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        112
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 13
+      }
+    }
+  ],
+  "edges": []
+}

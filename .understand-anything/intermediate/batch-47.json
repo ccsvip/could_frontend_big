@@ -1,0 +1,4684 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/apps/accounts/models.py",
+      "type": "file",
+      "name": "models.py",
+      "filePath": "backend/apps/accounts/models.py",
+      "summary": "backend/apps/accounts/models.py (python); 6 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        251
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 6,
+        "functionCount": 0,
+        "classCount": 6
+      }
+    },
+    {
+      "id": "class:backend/apps/accounts/models.py:AccountUser",
+      "type": "class",
+      "name": "AccountUser",
+      "filePath": "backend/apps/accounts/models.py",
+      "summary": "Class or type AccountUser in backend/apps/accounts/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        9,
+        20
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/models.py:AccountApplication",
+      "type": "class",
+      "name": "AccountApplication",
+      "filePath": "backend/apps/accounts/models.py",
+      "summary": "Class or type AccountApplication in backend/apps/accounts/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        23,
+        130
+      ],
+      "methods": [
+        "__str__",
+        "login_username",
+        "ensure_login_user",
+        "save",
+        "provision_company"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/models.py:Menu",
+      "type": "class",
+      "name": "Menu",
+      "filePath": "backend/apps/accounts/models.py",
+      "summary": "Class or type Menu in backend/apps/accounts/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        133,
+        169
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/models.py:PermissionPoint",
+      "type": "class",
+      "name": "PermissionPoint",
+      "filePath": "backend/apps/accounts/models.py",
+      "summary": "Class or type PermissionPoint in backend/apps/accounts/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        172,
+        187
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/models.py:Role",
+      "type": "class",
+      "name": "Role",
+      "filePath": "backend/apps/accounts/models.py",
+      "summary": "Class or type Role in backend/apps/accounts/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        190,
+        226
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/models.py:UserRole",
+      "type": "class",
+      "name": "UserRole",
+      "filePath": "backend/apps/accounts/models.py",
+      "summary": "Class or type UserRole in backend/apps/accounts/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        229,
+        251
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/accounts/permissions.py",
+      "type": "file",
+      "name": "permissions.py",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "backend/apps/accounts/permissions.py (python); 77 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        375
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 77,
+        "functionCount": 0,
+        "classCount": 77
+      }
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:IsAdminRole",
+      "type": "class",
+      "name": "IsAdminRole",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type IsAdminRole in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        6,
+        11
+      ],
+      "methods": [
+        "has_permission"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:IsSuperUser",
+      "type": "class",
+      "name": "IsSuperUser",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type IsSuperUser in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        14,
+        26
+      ],
+      "methods": [
+        "has_permission"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:IsAuthenticatedReadOnlyOrAdminWrite",
+      "type": "class",
+      "name": "IsAuthenticatedReadOnlyOrAdminWrite",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type IsAuthenticatedReadOnlyOrAdminWrite in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        29,
+        38
+      ],
+      "methods": [
+        "has_permission"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:HasPermissionCode",
+      "type": "class",
+      "name": "HasPermissionCode",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type HasPermissionCode in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        41,
+        50
+      ],
+      "methods": [
+        "has_permission"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewAccountApplications",
+      "type": "class",
+      "name": "CanViewAccountApplications",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewAccountApplications in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        53,
+        54
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanReviewAccountApplications",
+      "type": "class",
+      "name": "CanReviewAccountApplications",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanReviewAccountApplications in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        57,
+        58
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanManageTenants",
+      "type": "class",
+      "name": "CanManageTenants",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanManageTenants in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        61,
+        63
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanManageEmployees",
+      "type": "class",
+      "name": "CanManageEmployees",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanManageEmployees in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        66,
+        68
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewAuditLogs",
+      "type": "class",
+      "name": "CanViewAuditLogs",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewAuditLogs in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        71,
+        82
+      ],
+      "methods": [
+        "has_permission"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanClearAuditLogs",
+      "type": "class",
+      "name": "CanClearAuditLogs",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanClearAuditLogs in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        85,
+        89
+      ],
+      "methods": [
+        "has_permission"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewDevices",
+      "type": "class",
+      "name": "CanViewDevices",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewDevices in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        92,
+        93
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanCreateDevices",
+      "type": "class",
+      "name": "CanCreateDevices",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanCreateDevices in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        96,
+        97
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanUpdateDevices",
+      "type": "class",
+      "name": "CanUpdateDevices",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanUpdateDevices in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        100,
+        101
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanDeleteDevices",
+      "type": "class",
+      "name": "CanDeleteDevices",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanDeleteDevices in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        104,
+        105
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewImageResources",
+      "type": "class",
+      "name": "CanViewImageResources",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewImageResources in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        108,
+        109
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanCreateImageResources",
+      "type": "class",
+      "name": "CanCreateImageResources",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanCreateImageResources in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        112,
+        113
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanUpdateImageResources",
+      "type": "class",
+      "name": "CanUpdateImageResources",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanUpdateImageResources in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        116,
+        117
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanDeleteImageResources",
+      "type": "class",
+      "name": "CanDeleteImageResources",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanDeleteImageResources in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        120,
+        121
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewVideoResources",
+      "type": "class",
+      "name": "CanViewVideoResources",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewVideoResources in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        124,
+        125
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanCreateVideoResources",
+      "type": "class",
+      "name": "CanCreateVideoResources",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanCreateVideoResources in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        128,
+        129
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanUpdateVideoResources",
+      "type": "class",
+      "name": "CanUpdateVideoResources",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanUpdateVideoResources in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        132,
+        133
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanDeleteVideoResources",
+      "type": "class",
+      "name": "CanDeleteVideoResources",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanDeleteVideoResources in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        136,
+        137
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewScrollingTexts",
+      "type": "class",
+      "name": "CanViewScrollingTexts",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewScrollingTexts in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        140,
+        141
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanCreateScrollingTexts",
+      "type": "class",
+      "name": "CanCreateScrollingTexts",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanCreateScrollingTexts in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        144,
+        145
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanUpdateScrollingTexts",
+      "type": "class",
+      "name": "CanUpdateScrollingTexts",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanUpdateScrollingTexts in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        148,
+        149
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanDeleteScrollingTexts",
+      "type": "class",
+      "name": "CanDeleteScrollingTexts",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanDeleteScrollingTexts in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        152,
+        153
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewVoiceTones",
+      "type": "class",
+      "name": "CanViewVoiceTones",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewVoiceTones in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        156,
+        157
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanCreateVoiceTones",
+      "type": "class",
+      "name": "CanCreateVoiceTones",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanCreateVoiceTones in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        160,
+        161
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanUpdateVoiceTones",
+      "type": "class",
+      "name": "CanUpdateVoiceTones",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanUpdateVoiceTones in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        164,
+        165
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanDeleteVoiceTones",
+      "type": "class",
+      "name": "CanDeleteVoiceTones",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanDeleteVoiceTones in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        168,
+        169
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewModels",
+      "type": "class",
+      "name": "CanViewModels",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewModels in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        172,
+        173
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanCreateModels",
+      "type": "class",
+      "name": "CanCreateModels",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanCreateModels in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        176,
+        177
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanUpdateModels",
+      "type": "class",
+      "name": "CanUpdateModels",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanUpdateModels in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        180,
+        181
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanDeleteModels",
+      "type": "class",
+      "name": "CanDeleteModels",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanDeleteModels in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        184,
+        185
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewKnowledgeBase",
+      "type": "class",
+      "name": "CanViewKnowledgeBase",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewKnowledgeBase in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        188,
+        189
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanUploadKnowledgeBase",
+      "type": "class",
+      "name": "CanUploadKnowledgeBase",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanUploadKnowledgeBase in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        192,
+        193
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanDownloadKnowledgeBase",
+      "type": "class",
+      "name": "CanDownloadKnowledgeBase",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanDownloadKnowledgeBase in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        196,
+        197
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanBulkDownloadKnowledgeBase",
+      "type": "class",
+      "name": "CanBulkDownloadKnowledgeBase",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanBulkDownloadKnowledgeBase in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        200,
+        201
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewControlCommands",
+      "type": "class",
+      "name": "CanViewControlCommands",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewControlCommands in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        204,
+        205
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanCreateControlCommands",
+      "type": "class",
+      "name": "CanCreateControlCommands",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanCreateControlCommands in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        208,
+        209
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanUpdateControlCommands",
+      "type": "class",
+      "name": "CanUpdateControlCommands",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanUpdateControlCommands in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        212,
+        213
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanDeleteControlCommands",
+      "type": "class",
+      "name": "CanDeleteControlCommands",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanDeleteControlCommands in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        216,
+        217
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewCommandGroups",
+      "type": "class",
+      "name": "CanViewCommandGroups",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewCommandGroups in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        220,
+        221
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanCreateCommandGroups",
+      "type": "class",
+      "name": "CanCreateCommandGroups",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanCreateCommandGroups in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        224,
+        225
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanUpdateCommandGroups",
+      "type": "class",
+      "name": "CanUpdateCommandGroups",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanUpdateCommandGroups in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        228,
+        229
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanDeleteCommandGroups",
+      "type": "class",
+      "name": "CanDeleteCommandGroups",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanDeleteCommandGroups in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        232,
+        233
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewTaskCommands",
+      "type": "class",
+      "name": "CanViewTaskCommands",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewTaskCommands in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        236,
+        237
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanCreateTaskCommands",
+      "type": "class",
+      "name": "CanCreateTaskCommands",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanCreateTaskCommands in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        240,
+        241
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanUpdateTaskCommands",
+      "type": "class",
+      "name": "CanUpdateTaskCommands",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanUpdateTaskCommands in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        244,
+        245
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanDeleteTaskCommands",
+      "type": "class",
+      "name": "CanDeleteTaskCommands",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanDeleteTaskCommands in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        248,
+        249
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewCommandExports",
+      "type": "class",
+      "name": "CanViewCommandExports",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewCommandExports in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        252,
+        253
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanDownloadCommandExports",
+      "type": "class",
+      "name": "CanDownloadCommandExports",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanDownloadCommandExports in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        256,
+        257
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewAliyunCommands",
+      "type": "class",
+      "name": "CanViewAliyunCommands",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewAliyunCommands in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        260,
+        261
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewPoints",
+      "type": "class",
+      "name": "CanViewPoints",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewPoints in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        264,
+        265
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanCreatePoints",
+      "type": "class",
+      "name": "CanCreatePoints",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanCreatePoints in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        268,
+        269
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanUpdatePoints",
+      "type": "class",
+      "name": "CanUpdatePoints",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanUpdatePoints in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        272,
+        273
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanDeletePoints",
+      "type": "class",
+      "name": "CanDeletePoints",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanDeletePoints in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        276,
+        277
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewLLMProviders",
+      "type": "class",
+      "name": "CanViewLLMProviders",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewLLMProviders in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        280,
+        281
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewCompanyLLMOptions",
+      "type": "class",
+      "name": "CanViewCompanyLLMOptions",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewCompanyLLMOptions in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        284,
+        296
+      ],
+      "methods": [
+        "has_permission"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewASR",
+      "type": "class",
+      "name": "CanViewASR",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewASR in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        299,
+        300
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewTTS",
+      "type": "class",
+      "name": "CanViewTTS",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewTTS in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        303,
+        304
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewCompanyTTSOptions",
+      "type": "class",
+      "name": "CanViewCompanyTTSOptions",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewCompanyTTSOptions in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        307,
+        315
+      ],
+      "methods": [
+        "has_permission"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanUpdateTTS",
+      "type": "class",
+      "name": "CanUpdateTTS",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanUpdateTTS in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        318,
+        319
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanCreateLLMProviders",
+      "type": "class",
+      "name": "CanCreateLLMProviders",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanCreateLLMProviders in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        322,
+        323
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanUpdateLLMProviders",
+      "type": "class",
+      "name": "CanUpdateLLMProviders",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanUpdateLLMProviders in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        326,
+        327
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanDeleteLLMProviders",
+      "type": "class",
+      "name": "CanDeleteLLMProviders",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanDeleteLLMProviders in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        330,
+        331
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewChat",
+      "type": "class",
+      "name": "CanViewChat",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewChat in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        334,
+        335
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanCreateChat",
+      "type": "class",
+      "name": "CanCreateChat",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanCreateChat in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        338,
+        339
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanDeleteChat",
+      "type": "class",
+      "name": "CanDeleteChat",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanDeleteChat in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        342,
+        343
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewAgentApplications",
+      "type": "class",
+      "name": "CanViewAgentApplications",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewAgentApplications in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        346,
+        347
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanCreateAgentApplications",
+      "type": "class",
+      "name": "CanCreateAgentApplications",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanCreateAgentApplications in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        350,
+        351
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanUpdateAgentApplications",
+      "type": "class",
+      "name": "CanUpdateAgentApplications",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanUpdateAgentApplications in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        354,
+        355
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanDeleteAgentApplications",
+      "type": "class",
+      "name": "CanDeleteAgentApplications",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanDeleteAgentApplications in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        358,
+        359
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanViewKnowledgeBaseDocuments",
+      "type": "class",
+      "name": "CanViewKnowledgeBaseDocuments",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanViewKnowledgeBaseDocuments in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        362,
+        363
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanUploadKnowledgeBaseDocuments",
+      "type": "class",
+      "name": "CanUploadKnowledgeBaseDocuments",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanUploadKnowledgeBaseDocuments in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        366,
+        367
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanDownloadKnowledgeBaseDocuments",
+      "type": "class",
+      "name": "CanDownloadKnowledgeBaseDocuments",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanDownloadKnowledgeBaseDocuments in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        370,
+        371
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/permissions.py:CanBulkDownloadKnowledgeBaseDocuments",
+      "type": "class",
+      "name": "CanBulkDownloadKnowledgeBaseDocuments",
+      "filePath": "backend/apps/accounts/permissions.py",
+      "summary": "Class or type CanBulkDownloadKnowledgeBaseDocuments in backend/apps/accounts/permissions.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        374,
+        375
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/accounts/serializers.py",
+      "type": "file",
+      "name": "serializers.py",
+      "filePath": "backend/apps/accounts/serializers.py",
+      "summary": "backend/apps/accounts/serializers.py (python); 7 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        185
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 7,
+        "functionCount": 0,
+        "classCount": 7
+      }
+    },
+    {
+      "id": "class:backend/apps/accounts/serializers.py:UserRolePayloadSerializer",
+      "type": "class",
+      "name": "UserRolePayloadSerializer",
+      "filePath": "backend/apps/accounts/serializers.py",
+      "summary": "Class or type UserRolePayloadSerializer in backend/apps/accounts/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        15,
+        17
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/serializers.py:LoginSerializer",
+      "type": "class",
+      "name": "LoginSerializer",
+      "filePath": "backend/apps/accounts/serializers.py",
+      "summary": "Class or type LoginSerializer in backend/apps/accounts/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        20,
+        22
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/serializers.py:ChangePasswordSerializer",
+      "type": "class",
+      "name": "ChangePasswordSerializer",
+      "filePath": "backend/apps/accounts/serializers.py",
+      "summary": "Class or type ChangePasswordSerializer in backend/apps/accounts/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        25,
+        44
+      ],
+      "methods": [
+        "validate_oldPassword",
+        "validate_newPassword",
+        "validate"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/serializers.py:UserSerializer",
+      "type": "class",
+      "name": "UserSerializer",
+      "filePath": "backend/apps/accounts/serializers.py",
+      "summary": "Class or type UserSerializer in backend/apps/accounts/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        47,
+        105
+      ],
+      "methods": [
+        "get_display_name",
+        "_get_membership",
+        "get_tenant",
+        "get_must_change_password",
+        "_get_access_context",
+        "get_role",
+        "get_permissions",
+        "get_menus"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/serializers.py:AccountApplicationCreateSerializer",
+      "type": "class",
+      "name": "AccountApplicationCreateSerializer",
+      "filePath": "backend/apps/accounts/serializers.py",
+      "summary": "Class or type AccountApplicationCreateSerializer in backend/apps/accounts/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        108,
+        158
+      ],
+      "methods": [
+        "validate_username",
+        "validate_password",
+        "validate",
+        "create"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/serializers.py:AccountApplicationResponseSerializer",
+      "type": "class",
+      "name": "AccountApplicationResponseSerializer",
+      "filePath": "backend/apps/accounts/serializers.py",
+      "summary": "Class or type AccountApplicationResponseSerializer in backend/apps/accounts/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        161,
+        177
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/serializers.py:AccountApplicationStatusSerializer",
+      "type": "class",
+      "name": "AccountApplicationStatusSerializer",
+      "filePath": "backend/apps/accounts/serializers.py",
+      "summary": "Class or type AccountApplicationStatusSerializer in backend/apps/accounts/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        180,
+        185
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/accounts/services/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/accounts/services/__init__.py",
+      "summary": "backend/apps/accounts/services/__init__.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:backend/apps/accounts/services/notifications.py",
+      "type": "file",
+      "name": "notifications.py",
+      "filePath": "backend/apps/accounts/services/notifications.py",
+      "summary": "backend/apps/accounts/services/notifications.py (python); 2 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        42
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:backend/apps/accounts/services/notifications.py:notify_account_application_created",
+      "type": "function",
+      "name": "notify_account_application_created",
+      "filePath": "backend/apps/accounts/services/notifications.py",
+      "summary": "Function notify_account_application_created in backend/apps/accounts/services/notifications.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        10,
+        24
+      ],
+      "params": [
+        "application"
+      ]
+    },
+    {
+      "id": "function:backend/apps/accounts/services/notifications.py:notify_account_application_reviewed",
+      "type": "function",
+      "name": "notify_account_application_reviewed",
+      "filePath": "backend/apps/accounts/services/notifications.py",
+      "summary": "Function notify_account_application_reviewed in backend/apps/accounts/services/notifications.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        27,
+        42
+      ],
+      "params": [
+        "application",
+        "user"
+      ]
+    },
+    {
+      "id": "file:backend/apps/accounts/services/permissions.py",
+      "type": "file",
+      "name": "permissions.py",
+      "filePath": "backend/apps/accounts/services/permissions.py",
+      "summary": "backend/apps/accounts/services/permissions.py (python); 9 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        173
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 9,
+        "functionCount": 9,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:backend/apps/accounts/services/permissions.py:is_admin_user",
+      "type": "function",
+      "name": "is_admin_user",
+      "filePath": "backend/apps/accounts/services/permissions.py",
+      "summary": "Function is_admin_user in backend/apps/accounts/services/permissions.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        20,
+        21
+      ],
+      "params": [
+        "user"
+      ]
+    },
+    {
+      "id": "function:backend/apps/accounts/services/permissions.py:get_role_payload",
+      "type": "function",
+      "name": "get_role_payload",
+      "filePath": "backend/apps/accounts/services/permissions.py",
+      "summary": "Function get_role_payload in backend/apps/accounts/services/permissions.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        24,
+        46
+      ],
+      "params": [
+        "user"
+      ]
+    },
+    {
+      "id": "function:backend/apps/accounts/services/permissions.py:_get_membership",
+      "type": "function",
+      "name": "_get_membership",
+      "filePath": "backend/apps/accounts/services/permissions.py",
+      "summary": "Function _get_membership in backend/apps/accounts/services/permissions.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        49,
+        52
+      ],
+      "params": [
+        "user"
+      ]
+    },
+    {
+      "id": "function:backend/apps/accounts/services/permissions.py:_collect_with_ancestors",
+      "type": "function",
+      "name": "_collect_with_ancestors",
+      "filePath": "backend/apps/accounts/services/permissions.py",
+      "summary": "Function _collect_with_ancestors in backend/apps/accounts/services/permissions.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        55,
+        65
+      ],
+      "params": [
+        "assigned_menus"
+      ]
+    },
+    {
+      "id": "function:backend/apps/accounts/services/permissions.py:serialize_menu_tree",
+      "type": "function",
+      "name": "serialize_menu_tree",
+      "filePath": "backend/apps/accounts/services/permissions.py",
+      "summary": "Function serialize_menu_tree in backend/apps/accounts/services/permissions.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        68,
+        84
+      ],
+      "params": [
+        "menu",
+        "menu_map"
+      ]
+    },
+    {
+      "id": "function:backend/apps/accounts/services/permissions.py:_assemble_menu_tree",
+      "type": "function",
+      "name": "_assemble_menu_tree",
+      "filePath": "backend/apps/accounts/services/permissions.py",
+      "summary": "Function _assemble_menu_tree in backend/apps/accounts/services/permissions.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        87,
+        92
+      ],
+      "params": [
+        "menus"
+      ]
+    },
+    {
+      "id": "function:backend/apps/accounts/services/permissions.py:get_active_menus_for_user",
+      "type": "function",
+      "name": "get_active_menus_for_user",
+      "filePath": "backend/apps/accounts/services/permissions.py",
+      "summary": "Function get_active_menus_for_user in backend/apps/accounts/services/permissions.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        95,
+        131
+      ],
+      "params": [
+        "user"
+      ]
+    },
+    {
+      "id": "function:backend/apps/accounts/services/permissions.py:get_active_permission_codes_for_user",
+      "type": "function",
+      "name": "get_active_permission_codes_for_user",
+      "filePath": "backend/apps/accounts/services/permissions.py",
+      "summary": "Function get_active_permission_codes_for_user in backend/apps/accounts/services/permissions.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        134,
+        165
+      ],
+      "params": [
+        "user"
+      ]
+    },
+    {
+      "id": "function:backend/apps/accounts/services/permissions.py:build_user_access_context",
+      "type": "function",
+      "name": "build_user_access_context",
+      "filePath": "backend/apps/accounts/services/permissions.py",
+      "summary": "Function build_user_access_context in backend/apps/accounts/services/permissions.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        168,
+        173
+      ],
+      "params": [
+        "user"
+      ]
+    },
+    {
+      "id": "file:backend/apps/accounts/tasks.py",
+      "type": "file",
+      "name": "tasks.py",
+      "filePath": "backend/apps/accounts/tasks.py",
+      "summary": "backend/apps/accounts/tasks.py (python); 1 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        11
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:backend/apps/accounts/tasks.py:notify_account_application",
+      "type": "function",
+      "name": "notify_account_application",
+      "filePath": "backend/apps/accounts/tasks.py",
+      "summary": "Function notify_account_application in backend/apps/accounts/tasks.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        8,
+        11
+      ],
+      "params": [
+        "application_id"
+      ]
+    },
+    {
+      "id": "file:backend/apps/accounts/tests.py",
+      "type": "file",
+      "name": "tests.py",
+      "filePath": "backend/apps/accounts/tests.py",
+      "summary": "backend/apps/accounts/tests.py (python); 3 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        385
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 3
+      }
+    },
+    {
+      "id": "class:backend/apps/accounts/tests.py:AuthApiCsrfTests",
+      "type": "class",
+      "name": "AuthApiCsrfTests",
+      "filePath": "backend/apps/accounts/tests.py",
+      "summary": "Class or type AuthApiCsrfTests in backend/apps/accounts/tests.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        15,
+        307
+      ],
+      "methods": [
+        "setUp",
+        "test_login_allows_request_without_csrf_even_when_session_cookie_exists",
+        "test_account_application_allows_request_without_csrf_even_when_session_cookie_exists",
+        "test_account_application_falls_back_to_sync_notification_when_celery_unavailable",
+        "test_account_application_rejects_numeric_password",
+        "test_account_application_rejects_short_password",
+        "test_account_application_rejects_password_mismatch",
+        "test_account_application_rejects_username_with_special_chars",
+        "test_account_application_accepts_username_with_letters_and_digits",
+        "test_account_application_rejects_duplicate_username",
+        "test_approved_application_uses_requested_username_for_login",
+        "test_resaving_approved_application_repairs_missing_login_user",
+        "test_notify_account_application_task_sends_feishu_message",
+        "test_account_application_review_sends_feishu_notification_with_operator"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/tests.py:ChangePasswordApiTests",
+      "type": "class",
+      "name": "ChangePasswordApiTests",
+      "filePath": "backend/apps/accounts/tests.py",
+      "summary": "Class or type ChangePasswordApiTests in backend/apps/accounts/tests.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        310,
+        341
+      ],
+      "methods": [
+        "setUp",
+        "test_change_password_updates_password",
+        "test_change_password_rejects_wrong_old_password"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/tests.py:UserAdminPasswordResetEntryTests",
+      "type": "class",
+      "name": "UserAdminPasswordResetEntryTests",
+      "filePath": "backend/apps/accounts/tests.py",
+      "summary": "Class or type UserAdminPasswordResetEntryTests in backend/apps/accounts/tests.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        344,
+        385
+      ],
+      "methods": [
+        "setUp",
+        "test_user_admin_list_page_shows_reset_password_action_column",
+        "test_reset_password_link_target_page_is_reachable",
+        "test_user_admin_grouped_under_accounts_app",
+        "test_legacy_auth_user_changelist_no_longer_registered"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/accounts/urls.py",
+      "type": "file",
+      "name": "urls.py",
+      "filePath": "backend/apps/accounts/urls.py",
+      "summary": "backend/apps/accounts/urls.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        21
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:backend/apps/accounts/views.py",
+      "type": "file",
+      "name": "views.py",
+      "filePath": "backend/apps/accounts/views.py",
+      "summary": "backend/apps/accounts/views.py (python); 6 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        172
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 6,
+        "functionCount": 0,
+        "classCount": 6
+      }
+    },
+    {
+      "id": "class:backend/apps/accounts/views.py:LoginView",
+      "type": "class",
+      "name": "LoginView",
+      "filePath": "backend/apps/accounts/views.py",
+      "summary": "Class or type LoginView in backend/apps/accounts/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        24,
+        64
+      ],
+      "methods": [
+        "post"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/views.py:MeView",
+      "type": "class",
+      "name": "MeView",
+      "filePath": "backend/apps/accounts/views.py",
+      "summary": "Class or type MeView in backend/apps/accounts/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        67,
+        72
+      ],
+      "methods": [
+        "get"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/views.py:ChangePasswordView",
+      "type": "class",
+      "name": "ChangePasswordView",
+      "filePath": "backend/apps/accounts/views.py",
+      "summary": "Class or type ChangePasswordView in backend/apps/accounts/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        75,
+        97
+      ],
+      "methods": [
+        "post"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/views.py:AccountApplicationCreateView",
+      "type": "class",
+      "name": "AccountApplicationCreateView",
+      "filePath": "backend/apps/accounts/views.py",
+      "summary": "Class or type AccountApplicationCreateView in backend/apps/accounts/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        100,
+        128
+      ],
+      "methods": [
+        "create"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/views.py:AccountApplicationListView",
+      "type": "class",
+      "name": "AccountApplicationListView",
+      "filePath": "backend/apps/accounts/views.py",
+      "summary": "Class or type AccountApplicationListView in backend/apps/accounts/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        131,
+        134
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/views.py:AccountApplicationDetailView",
+      "type": "class",
+      "name": "AccountApplicationDetailView",
+      "filePath": "backend/apps/accounts/views.py",
+      "summary": "Class or type AccountApplicationDetailView in backend/apps/accounts/views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        137,
+        172
+      ],
+      "methods": [
+        "get_permissions",
+        "get_serializer_class",
+        "patch"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/ai_models/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/ai_models/__init__.py",
+      "summary": "backend/apps/ai_models/__init__.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:backend/apps/ai_models/admin.py",
+      "type": "file",
+      "name": "admin.py",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "summary": "backend/apps/ai_models/admin.py (python); 10 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        94
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 10,
+        "functionCount": 0,
+        "classCount": 10
+      }
+    },
+    {
+      "id": "class:backend/apps/ai_models/admin.py:LLMProviderAdmin",
+      "type": "class",
+      "name": "LLMProviderAdmin",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "summary": "Class or type LLMProviderAdmin in backend/apps/ai_models/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        18,
+        21
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/admin.py:EmbeddingModelAdmin",
+      "type": "class",
+      "name": "EmbeddingModelAdmin",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "summary": "Class or type EmbeddingModelAdmin in backend/apps/ai_models/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        25,
+        28
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/admin.py:RerankModelAdmin",
+      "type": "class",
+      "name": "RerankModelAdmin",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "summary": "Class or type RerankModelAdmin in backend/apps/ai_models/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        32,
+        35
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/admin.py:TenantKnowledgeModelSettingsAdmin",
+      "type": "class",
+      "name": "TenantKnowledgeModelSettingsAdmin",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "summary": "Class or type TenantKnowledgeModelSettingsAdmin in backend/apps/ai_models/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        39,
+        42
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/admin.py:TTSProviderAdmin",
+      "type": "class",
+      "name": "TTSProviderAdmin",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "summary": "Class or type TTSProviderAdmin in backend/apps/ai_models/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        46,
+        50
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/admin.py:TTSVoiceAdmin",
+      "type": "class",
+      "name": "TTSVoiceAdmin",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "summary": "Class or type TTSVoiceAdmin in backend/apps/ai_models/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        54,
+        57
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/admin.py:ChatConversationAdmin",
+      "type": "class",
+      "name": "ChatConversationAdmin",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "summary": "Class or type ChatConversationAdmin in backend/apps/ai_models/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        61,
+        65
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/admin.py:AgentApplicationAdmin",
+      "type": "class",
+      "name": "AgentApplicationAdmin",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "summary": "Class or type AgentApplicationAdmin in backend/apps/ai_models/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        69,
+        74
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/admin.py:AgentAnnotationAdmin",
+      "type": "class",
+      "name": "AgentAnnotationAdmin",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "summary": "Class or type AgentAnnotationAdmin in backend/apps/ai_models/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        78,
+        82
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/admin.py:ChatMessageAdmin",
+      "type": "class",
+      "name": "ChatMessageAdmin",
+      "filePath": "backend/apps/ai_models/admin.py",
+      "summary": "Class or type ChatMessageAdmin in backend/apps/ai_models/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        86,
+        94
+      ],
+      "methods": [
+        "content_truncated"
+      ],
+      "properties": []
+    },
+    {
+      "id": "document:backend/apps/ai_models/AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "backend/apps/ai_models/AGENTS.md",
+      "summary": "backend/apps/ai_models/AGENTS.md (markdown); 6 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        49
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "id": "file:backend/apps/ai_models/apps.py",
+      "type": "file",
+      "name": "apps.py",
+      "filePath": "backend/apps/ai_models/apps.py",
+      "summary": "backend/apps/ai_models/apps.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        7
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/ai_models/apps.py:AiModelsConfig",
+      "type": "class",
+      "name": "AiModelsConfig",
+      "filePath": "backend/apps/ai_models/apps.py",
+      "summary": "Class or type AiModelsConfig in backend/apps/ai_models/apps.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        7
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/ai_models/llm_services.py",
+      "type": "file",
+      "name": "llm_services.py",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "backend/apps/ai_models/llm_services.py (python); 21 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        372
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 21,
+        "functionCount": 21,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:mask_api_key",
+      "type": "function",
+      "name": "mask_api_key",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function mask_api_key in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        12,
+        17
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:get_effective_llm_models_for_tenant",
+      "type": "function",
+      "name": "get_effective_llm_models_for_tenant",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function get_effective_llm_models_for_tenant in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        20,
+        34
+      ],
+      "params": [
+        "tenant"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:get_effective_llm_model_for_tenant",
+      "type": "function",
+      "name": "get_effective_llm_model_for_tenant",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function get_effective_llm_model_for_tenant in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        37,
+        38
+      ],
+      "params": [
+        "tenant",
+        "model_id"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:get_tenant_llm_settings",
+      "type": "function",
+      "name": "get_tenant_llm_settings",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function get_tenant_llm_settings in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        41,
+        45
+      ],
+      "params": [
+        "tenant"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:is_llm_model_effective_for_tenant",
+      "type": "function",
+      "name": "is_llm_model_effective_for_tenant",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function is_llm_model_effective_for_tenant in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        48,
+        51
+      ],
+      "params": [
+        "tenant",
+        "model"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:llm_model_has_usage",
+      "type": "function",
+      "name": "llm_model_has_usage",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function llm_model_has_usage in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        54,
+        62
+      ],
+      "params": [
+        "model"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:llm_model_has_active_company_authorization",
+      "type": "function",
+      "name": "llm_model_has_active_company_authorization",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function llm_model_has_active_company_authorization in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        65,
+        68
+      ],
+      "params": [
+        "model"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:llm_provider_has_active_company_authorization",
+      "type": "function",
+      "name": "llm_provider_has_active_company_authorization",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function llm_provider_has_active_company_authorization in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        71,
+        74
+      ],
+      "params": [
+        "provider"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:llm_provider_has_usage",
+      "type": "function",
+      "name": "llm_provider_has_usage",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function llm_provider_has_usage in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        77,
+        85
+      ],
+      "params": [
+        "provider"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:validate_llm_test_settings_values",
+      "type": "function",
+      "name": "validate_llm_test_settings_values",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function validate_llm_test_settings_values in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        88,
+        98
+      ],
+      "params": [
+        "prompt",
+        "cooldown",
+        "timeout",
+        "max_tokens"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:_build_chat_completions_url",
+      "type": "function",
+      "name": "_build_chat_completions_url",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function _build_chat_completions_url in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        101,
+        109
+      ],
+      "params": [
+        "raw_url"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:_with_model_search_param",
+      "type": "function",
+      "name": "_with_model_search_param",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function _with_model_search_param in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        112,
+        115
+      ],
+      "params": [
+        "model",
+        "payload"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:run_llm_chat_completion",
+      "type": "function",
+      "name": "run_llm_chat_completion",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function run_llm_chat_completion in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        118,
+        168
+      ],
+      "params": [
+        "model",
+        "messages",
+        "temperature",
+        "max_tokens",
+        "timeout"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:stream_llm_chat_completion",
+      "type": "function",
+      "name": "stream_llm_chat_completion",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function stream_llm_chat_completion in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        171,
+        257
+      ],
+      "params": [
+        "model",
+        "model_config",
+        "messages",
+        "temperature",
+        "max_tokens",
+        "timeout"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:_parse_sse_data_line",
+      "type": "function",
+      "name": "_parse_sse_data_line",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function _parse_sse_data_line in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        260,
+        263
+      ],
+      "params": [
+        "line"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:_extract_openai_completion_delta",
+      "type": "function",
+      "name": "_extract_openai_completion_delta",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function _extract_openai_completion_delta in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        266,
+        276
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:_extract_openai_completion_text",
+      "type": "function",
+      "name": "_extract_openai_completion_text",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function _extract_openai_completion_text in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        279,
+        289
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:_coerce_openai_content_to_text",
+      "type": "function",
+      "name": "_coerce_openai_content_to_text",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function _coerce_openai_content_to_text in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        292,
+        311
+      ],
+      "params": [
+        "content"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:_extract_openai_error_message",
+      "type": "function",
+      "name": "_extract_openai_error_message",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function _extract_openai_error_message in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        314,
+        320
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:_test_summary",
+      "type": "function",
+      "name": "_test_summary",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function _test_summary in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        323,
+        329
+      ],
+      "params": [
+        "success",
+        "message",
+        "start"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/llm_services.py:run_llm_model_test",
+      "type": "function",
+      "name": "run_llm_model_test",
+      "filePath": "backend/apps/ai_models/llm_services.py",
+      "summary": "Function run_llm_model_test in backend/apps/ai_models/llm_services.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        332,
+        372
+      ],
+      "params": [
+        "model",
+        "settings"
+      ]
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/__init__.py",
+      "type": "table",
+      "name": "__init__.py",
+      "filePath": "backend/apps/ai_models/migrations/__init__.py",
+      "summary": "backend/apps/ai_models/migrations/__init__.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0001_initial.py",
+      "type": "table",
+      "name": "0001_initial.py",
+      "filePath": "backend/apps/ai_models/migrations/0001_initial.py",
+      "summary": "backend/apps/ai_models/migrations/0001_initial.py (python); 2 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        136
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0001_initial.py:seed_ai_models_access_data",
+      "type": "function",
+      "name": "seed_ai_models_access_data",
+      "filePath": "backend/apps/ai_models/migrations/0001_initial.py",
+      "summary": "Function seed_ai_models_access_data in backend/apps/ai_models/migrations/0001_initial.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        89
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0001_initial.py:unseed_ai_models_access_data",
+      "type": "function",
+      "name": "unseed_ai_models_access_data",
+      "filePath": "backend/apps/ai_models/migrations/0001_initial.py",
+      "summary": "Function unseed_ai_models_access_data in backend/apps/ai_models/migrations/0001_initial.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        92,
+        97
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0001_initial.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0001_initial.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0001_initial.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        100,
+        136
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "type": "table",
+      "name": "0002_chatconversation_chatmessage.py",
+      "filePath": "backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "summary": "backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py (python); 2 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        123
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py:seed_chat_access_data",
+      "type": "function",
+      "name": "seed_chat_access_data",
+      "filePath": "backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "summary": "Function seed_chat_access_data in backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        5,
+        53
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py:unseed_chat_access_data",
+      "type": "function",
+      "name": "unseed_chat_access_data",
+      "filePath": "backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "summary": "Function unseed_chat_access_data in backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        56,
+        61
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        64,
+        123
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py",
+      "type": "table",
+      "name": "0003_chatconversation_system_prompt.py",
+      "filePath": "backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py",
+      "summary": "backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        16
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        16
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py",
+      "type": "table",
+      "name": "0004_chatconversation_temperature_and_more.py",
+      "filePath": "backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py",
+      "summary": "backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        21
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        21
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py",
+      "type": "table",
+      "name": "0005_chat_summary_message_feedback.py",
+      "filePath": "backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py",
+      "summary": "backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        26
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        26
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py",
+      "type": "table",
+      "name": "0006_chatconversation_tenant_llmprovider_tenant.py",
+      "filePath": "backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py",
+      "summary": "backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        25
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        7,
+        25
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0007_asr_config.py",
+      "type": "table",
+      "name": "0007_asr_config.py",
+      "filePath": "backend/apps/ai_models/migrations/0007_asr_config.py",
+      "summary": "backend/apps/ai_models/migrations/0007_asr_config.py (python); 2 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        70
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0007_asr_config.py:seed_asr_access_data",
+      "type": "function",
+      "name": "seed_asr_access_data",
+      "filePath": "backend/apps/ai_models/migrations/0007_asr_config.py",
+      "summary": "Function seed_asr_access_data in backend/apps/ai_models/migrations/0007_asr_config.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        38
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0007_asr_config.py:unseed_asr_access_data",
+      "type": "function",
+      "name": "unseed_asr_access_data",
+      "filePath": "backend/apps/ai_models/migrations/0007_asr_config.py",
+      "summary": "Function unseed_asr_access_data in backend/apps/ai_models/migrations/0007_asr_config.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        41,
+        43
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0007_asr_config.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0007_asr_config.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0007_asr_config.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        46,
+        70
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py",
+      "type": "table",
+      "name": "0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py",
+      "filePath": "backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py",
+      "summary": "backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        32
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        6,
+        32
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0009_asr_replacement_rule.py",
+      "type": "table",
+      "name": "0009_asr_replacement_rule.py",
+      "filePath": "backend/apps/ai_models/migrations/0009_asr_replacement_rule.py",
+      "summary": "backend/apps/ai_models/migrations/0009_asr_replacement_rule.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        46
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0009_asr_replacement_rule.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0009_asr_replacement_rule.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0009_asr_replacement_rule.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        5,
+        46
+      ],
+      "methods": [],
+      "properties": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/accounts/models.py",
+      "target": "class:backend/apps/accounts/models.py:AccountUser",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/models.py",
+      "target": "class:backend/apps/accounts/models.py:AccountApplication",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/models.py",
+      "target": "class:backend/apps/accounts/models.py:Menu",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/models.py",
+      "target": "class:backend/apps/accounts/models.py:PermissionPoint",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/models.py",
+      "target": "class:backend/apps/accounts/models.py:Role",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/models.py",
+      "target": "class:backend/apps/accounts/models.py:UserRole",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:IsAdminRole",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:IsSuperUser",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:IsAuthenticatedReadOnlyOrAdminWrite",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:HasPermissionCode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewAccountApplications",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanReviewAccountApplications",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanManageTenants",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanManageEmployees",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewAuditLogs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanClearAuditLogs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewDevices",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanCreateDevices",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanUpdateDevices",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanDeleteDevices",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewImageResources",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanCreateImageResources",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanUpdateImageResources",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanDeleteImageResources",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewVideoResources",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanCreateVideoResources",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanUpdateVideoResources",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanDeleteVideoResources",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewScrollingTexts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanCreateScrollingTexts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanUpdateScrollingTexts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanDeleteScrollingTexts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewVoiceTones",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanCreateVoiceTones",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanUpdateVoiceTones",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanDeleteVoiceTones",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewModels",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanCreateModels",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanUpdateModels",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanDeleteModels",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewKnowledgeBase",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanUploadKnowledgeBase",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanDownloadKnowledgeBase",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanBulkDownloadKnowledgeBase",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewControlCommands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanCreateControlCommands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanUpdateControlCommands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanDeleteControlCommands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewCommandGroups",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanCreateCommandGroups",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanUpdateCommandGroups",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanDeleteCommandGroups",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewTaskCommands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanCreateTaskCommands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanUpdateTaskCommands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanDeleteTaskCommands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewCommandExports",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanDownloadCommandExports",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewAliyunCommands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewPoints",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanCreatePoints",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanUpdatePoints",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanDeletePoints",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewLLMProviders",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewCompanyLLMOptions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewASR",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewTTS",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewCompanyTTSOptions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanUpdateTTS",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanCreateLLMProviders",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanUpdateLLMProviders",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanDeleteLLMProviders",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewChat",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanCreateChat",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanDeleteChat",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewAgentApplications",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanCreateAgentApplications",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanUpdateAgentApplications",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanDeleteAgentApplications",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanViewKnowledgeBaseDocuments",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanUploadKnowledgeBaseDocuments",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanDownloadKnowledgeBaseDocuments",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/permissions.py",
+      "target": "class:backend/apps/accounts/permissions.py:CanBulkDownloadKnowledgeBaseDocuments",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/serializers.py",
+      "target": "class:backend/apps/accounts/serializers.py:UserRolePayloadSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/serializers.py",
+      "target": "class:backend/apps/accounts/serializers.py:LoginSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/serializers.py",
+      "target": "class:backend/apps/accounts/serializers.py:ChangePasswordSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/serializers.py",
+      "target": "class:backend/apps/accounts/serializers.py:UserSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/serializers.py",
+      "target": "class:backend/apps/accounts/serializers.py:AccountApplicationCreateSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/serializers.py",
+      "target": "class:backend/apps/accounts/serializers.py:AccountApplicationResponseSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/serializers.py",
+      "target": "class:backend/apps/accounts/serializers.py:AccountApplicationStatusSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/services/notifications.py",
+      "target": "function:backend/apps/accounts/services/notifications.py:notify_account_application_created",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/services/notifications.py",
+      "target": "function:backend/apps/accounts/services/notifications.py:notify_account_application_reviewed",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/services/permissions.py",
+      "target": "function:backend/apps/accounts/services/permissions.py:is_admin_user",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/services/permissions.py",
+      "target": "function:backend/apps/accounts/services/permissions.py:get_role_payload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/services/permissions.py",
+      "target": "function:backend/apps/accounts/services/permissions.py:_get_membership",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/services/permissions.py",
+      "target": "function:backend/apps/accounts/services/permissions.py:_collect_with_ancestors",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/services/permissions.py",
+      "target": "function:backend/apps/accounts/services/permissions.py:serialize_menu_tree",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/services/permissions.py",
+      "target": "function:backend/apps/accounts/services/permissions.py:_assemble_menu_tree",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/services/permissions.py",
+      "target": "function:backend/apps/accounts/services/permissions.py:get_active_menus_for_user",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/services/permissions.py",
+      "target": "function:backend/apps/accounts/services/permissions.py:get_active_permission_codes_for_user",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/services/permissions.py",
+      "target": "function:backend/apps/accounts/services/permissions.py:build_user_access_context",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/tasks.py",
+      "target": "function:backend/apps/accounts/tasks.py:notify_account_application",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/tests.py",
+      "target": "class:backend/apps/accounts/tests.py:AuthApiCsrfTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/tests.py",
+      "target": "class:backend/apps/accounts/tests.py:ChangePasswordApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/tests.py",
+      "target": "class:backend/apps/accounts/tests.py:UserAdminPasswordResetEntryTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "class:backend/apps/accounts/views.py:LoginView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "class:backend/apps/accounts/views.py:MeView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "class:backend/apps/accounts/views.py:ChangePasswordView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "class:backend/apps/accounts/views.py:AccountApplicationCreateView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "class:backend/apps/accounts/views.py:AccountApplicationListView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/views.py",
+      "target": "class:backend/apps/accounts/views.py:AccountApplicationDetailView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:LLMProviderAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:EmbeddingModelAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:RerankModelAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:TenantKnowledgeModelSettingsAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:TTSProviderAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:TTSVoiceAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:ChatConversationAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:AgentApplicationAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:AgentAnnotationAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/admin.py",
+      "target": "class:backend/apps/ai_models/admin.py:ChatMessageAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/apps.py",
+      "target": "class:backend/apps/ai_models/apps.py:AiModelsConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:mask_api_key",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:get_effective_llm_models_for_tenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:get_effective_llm_model_for_tenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:get_tenant_llm_settings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:is_llm_model_effective_for_tenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:llm_model_has_usage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:llm_model_has_active_company_authorization",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:llm_provider_has_active_company_authorization",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:llm_provider_has_usage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:validate_llm_test_settings_values",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:_build_chat_completions_url",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:_with_model_search_param",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:run_llm_chat_completion",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:stream_llm_chat_completion",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:_parse_sse_data_line",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:_extract_openai_completion_delta",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:_extract_openai_completion_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:_coerce_openai_content_to_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:_extract_openai_error_message",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:_test_summary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/llm_services.py",
+      "target": "function:backend/apps/ai_models/llm_services.py:run_llm_model_test",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0001_initial.py",
+      "target": "function:backend/apps/ai_models/migrations/0001_initial.py:seed_ai_models_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0001_initial.py",
+      "target": "function:backend/apps/ai_models/migrations/0001_initial.py:unseed_ai_models_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0001_initial.py",
+      "target": "class:backend/apps/ai_models/migrations/0001_initial.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "target": "function:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py:seed_chat_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "target": "function:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py:unseed_chat_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py",
+      "target": "class:backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py",
+      "target": "class:backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py",
+      "target": "class:backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py",
+      "target": "class:backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py",
+      "target": "class:backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0007_asr_config.py",
+      "target": "function:backend/apps/ai_models/migrations/0007_asr_config.py:seed_asr_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0007_asr_config.py",
+      "target": "function:backend/apps/ai_models/migrations/0007_asr_config.py:unseed_asr_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0007_asr_config.py",
+      "target": "class:backend/apps/ai_models/migrations/0007_asr_config.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py",
+      "target": "class:backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0009_asr_replacement_rule.py",
+      "target": "class:backend/apps/ai_models/migrations/0009_asr_replacement_rule.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    }
+  ]
+}

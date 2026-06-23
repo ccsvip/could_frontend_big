@@ -1,0 +1,4918 @@
+{
+  "nodes": [
+    {
+      "id": "table:backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py",
+      "type": "table",
+      "name": "0010_remove_asr_replacement_sort_order.py",
+      "filePath": "backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py",
+      "summary": "backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        21
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        6,
+        21
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "type": "table",
+      "name": "0011_agentapplication_chatconversation_application_and_more.py",
+      "filePath": "backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "summary": "backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py (python); 2 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        113
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py:seed_agent_application_access_data",
+      "type": "function",
+      "name": "seed_agent_application_access_data",
+      "filePath": "backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "summary": "Function seed_agent_application_access_data in backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        16,
+        57
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py:unseed_agent_application_access_data",
+      "type": "function",
+      "name": "unseed_agent_application_access_data",
+      "filePath": "backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "summary": "Function unseed_agent_application_access_data in backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        60,
+        65
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        68,
+        113
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "type": "table",
+      "name": "0012_seed_agent_application_tenant_access.py",
+      "filePath": "backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "summary": "backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py (python); 2 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        53
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py:seed_agent_application_tenant_access",
+      "type": "function",
+      "name": "seed_agent_application_tenant_access",
+      "filePath": "backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "summary": "Function seed_agent_application_tenant_access in backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        11,
+        26
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py:unseed_agent_application_tenant_access",
+      "type": "function",
+      "name": "unseed_agent_application_tenant_access",
+      "filePath": "backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "summary": "Function unseed_agent_application_tenant_access in backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        29,
+        42
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        45,
+        53
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0013_platform_llm_settings.py",
+      "type": "table",
+      "name": "0013_platform_llm_settings.py",
+      "filePath": "backend/apps/ai_models/migrations/0013_platform_llm_settings.py",
+      "summary": "backend/apps/ai_models/migrations/0013_platform_llm_settings.py (python); 1 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        111
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0013_platform_llm_settings.py:clear_old_llm_bindings",
+      "type": "function",
+      "name": "clear_old_llm_bindings",
+      "filePath": "backend/apps/ai_models/migrations/0013_platform_llm_settings.py",
+      "summary": "Function clear_old_llm_bindings in backend/apps/ai_models/migrations/0013_platform_llm_settings.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        7,
+        20
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0013_platform_llm_settings.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0013_platform_llm_settings.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0013_platform_llm_settings.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        23,
+        111
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py",
+      "type": "table",
+      "name": "0014_remove_standalone_chat_room_menu.py",
+      "filePath": "backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py",
+      "summary": "backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py (python); 1 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        18
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py:remove_standalone_chat_room_menu",
+      "type": "function",
+      "name": "remove_standalone_chat_room_menu",
+      "filePath": "backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py",
+      "summary": "Function remove_standalone_chat_room_menu in backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        7
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        10,
+        18
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0015_tts_settings.py",
+      "type": "table",
+      "name": "0015_tts_settings.py",
+      "filePath": "backend/apps/ai_models/migrations/0015_tts_settings.py",
+      "summary": "backend/apps/ai_models/migrations/0015_tts_settings.py (python); 3 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        233
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 3,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0015_tts_settings.py:load_voice_rows",
+      "type": "function",
+      "name": "load_voice_rows",
+      "filePath": "backend/apps/ai_models/migrations/0015_tts_settings.py",
+      "summary": "Function load_voice_rows in backend/apps/ai_models/migrations/0015_tts_settings.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        62,
+        79
+      ],
+      "params": []
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0015_tts_settings.py:seed_tts_data",
+      "type": "function",
+      "name": "seed_tts_data",
+      "filePath": "backend/apps/ai_models/migrations/0015_tts_settings.py",
+      "summary": "Function seed_tts_data in backend/apps/ai_models/migrations/0015_tts_settings.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        82,
+        154
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0015_tts_settings.py:unseed_tts_data",
+      "type": "function",
+      "name": "unseed_tts_data",
+      "filePath": "backend/apps/ai_models/migrations/0015_tts_settings.py",
+      "summary": "Function unseed_tts_data in backend/apps/ai_models/migrations/0015_tts_settings.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        157,
+        159
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0015_tts_settings.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0015_tts_settings.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0015_tts_settings.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        162,
+        233
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0016_update_agent_application_menu.py",
+      "type": "table",
+      "name": "0016_update_agent_application_menu.py",
+      "filePath": "backend/apps/ai_models/migrations/0016_update_agent_application_menu.py",
+      "summary": "backend/apps/ai_models/migrations/0016_update_agent_application_menu.py (python); 2 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        37
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0016_update_agent_application_menu.py:update_agent_application_menu",
+      "type": "function",
+      "name": "update_agent_application_menu",
+      "filePath": "backend/apps/ai_models/migrations/0016_update_agent_application_menu.py",
+      "summary": "Function update_agent_application_menu in backend/apps/ai_models/migrations/0016_update_agent_application_menu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        14
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0016_update_agent_application_menu.py:rollback_agent_application_menu",
+      "type": "function",
+      "name": "rollback_agent_application_menu",
+      "filePath": "backend/apps/ai_models/migrations/0016_update_agent_application_menu.py",
+      "summary": "Function rollback_agent_application_menu in backend/apps/ai_models/migrations/0016_update_agent_application_menu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        17,
+        26
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0016_update_agent_application_menu.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0016_update_agent_application_menu.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0016_update_agent_application_menu.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        29,
+        37
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0017_agent_conversation_settings.py",
+      "type": "table",
+      "name": "0017_agent_conversation_settings.py",
+      "filePath": "backend/apps/ai_models/migrations/0017_agent_conversation_settings.py",
+      "summary": "backend/apps/ai_models/migrations/0017_agent_conversation_settings.py (python); 3 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        105
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 3,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0017_agent_conversation_settings.py:default_opening_message",
+      "type": "function",
+      "name": "default_opening_message",
+      "filePath": "backend/apps/ai_models/migrations/0017_agent_conversation_settings.py",
+      "summary": "Function default_opening_message in backend/apps/ai_models/migrations/0017_agent_conversation_settings.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        5,
+        7
+      ],
+      "params": [
+        "name"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0017_agent_conversation_settings.py:backfill_agent_conversation_settings",
+      "type": "function",
+      "name": "backfill_agent_conversation_settings",
+      "filePath": "backend/apps/ai_models/migrations/0017_agent_conversation_settings.py",
+      "summary": "Function backfill_agent_conversation_settings in backend/apps/ai_models/migrations/0017_agent_conversation_settings.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        10,
+        42
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0017_agent_conversation_settings.py:rollback_agent_conversation_settings",
+      "type": "function",
+      "name": "rollback_agent_conversation_settings",
+      "filePath": "backend/apps/ai_models/migrations/0017_agent_conversation_settings.py",
+      "summary": "Function rollback_agent_conversation_settings in backend/apps/ai_models/migrations/0017_agent_conversation_settings.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        45,
+        57
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0017_agent_conversation_settings.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0017_agent_conversation_settings.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0017_agent_conversation_settings.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        60,
+        105
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0018_drop_stale_chatconversation_max_tokens_unlimited.py",
+      "type": "table",
+      "name": "0018_drop_stale_chatconversation_max_tokens_unlimited.py",
+      "filePath": "backend/apps/ai_models/migrations/0018_drop_stale_chatconversation_max_tokens_unlimited.py",
+      "summary": "backend/apps/ai_models/migrations/0018_drop_stale_chatconversation_max_tokens_unlimited.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        15
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0018_drop_stale_chatconversation_max_tokens_unlimited.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0018_drop_stale_chatconversation_max_tokens_unlimited.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0018_drop_stale_chatconversation_max_tokens_unlimited.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        15
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0019_drop_stale_agentapplication_max_tokens_unlimited.py",
+      "type": "table",
+      "name": "0019_drop_stale_agentapplication_max_tokens_unlimited.py",
+      "filePath": "backend/apps/ai_models/migrations/0019_drop_stale_agentapplication_max_tokens_unlimited.py",
+      "summary": "backend/apps/ai_models/migrations/0019_drop_stale_agentapplication_max_tokens_unlimited.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        15
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0019_drop_stale_agentapplication_max_tokens_unlimited.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0019_drop_stale_agentapplication_max_tokens_unlimited.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0019_drop_stale_agentapplication_max_tokens_unlimited.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        15
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0020_agent_annotation.py",
+      "type": "table",
+      "name": "0020_agent_annotation.py",
+      "filePath": "backend/apps/ai_models/migrations/0020_agent_annotation.py",
+      "summary": "backend/apps/ai_models/migrations/0020_agent_annotation.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        41
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0020_agent_annotation.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0020_agent_annotation.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0020_agent_annotation.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        6,
+        41
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0021_agent_max_tokens_unlimited.py",
+      "type": "table",
+      "name": "0021_agent_max_tokens_unlimited.py",
+      "filePath": "backend/apps/ai_models/migrations/0021_agent_max_tokens_unlimited.py",
+      "summary": "backend/apps/ai_models/migrations/0021_agent_max_tokens_unlimited.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        21
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0021_agent_max_tokens_unlimited.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0021_agent_max_tokens_unlimited.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0021_agent_max_tokens_unlimited.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        21
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0022_agent_tts_filter_rules.py",
+      "type": "table",
+      "name": "0022_agent_tts_filter_rules.py",
+      "filePath": "backend/apps/ai_models/migrations/0022_agent_tts_filter_rules.py",
+      "summary": "backend/apps/ai_models/migrations/0022_agent_tts_filter_rules.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        21
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0022_agent_tts_filter_rules.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0022_agent_tts_filter_rules.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0022_agent_tts_filter_rules.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        21
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0023_llmmodel_enable_web_search.py",
+      "type": "table",
+      "name": "0023_llmmodel_enable_web_search.py",
+      "filePath": "backend/apps/ai_models/migrations/0023_llmmodel_enable_web_search.py",
+      "summary": "backend/apps/ai_models/migrations/0023_llmmodel_enable_web_search.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        16
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0023_llmmodel_enable_web_search.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0023_llmmodel_enable_web_search.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0023_llmmodel_enable_web_search.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        16
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0024_embeddingmodel_rerankmodel.py",
+      "type": "table",
+      "name": "0024_embeddingmodel_rerankmodel.py",
+      "filePath": "backend/apps/ai_models/migrations/0024_embeddingmodel_rerankmodel.py",
+      "summary": "backend/apps/ai_models/migrations/0024_embeddingmodel_rerankmodel.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        50
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0024_embeddingmodel_rerankmodel.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0024_embeddingmodel_rerankmodel.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0024_embeddingmodel_rerankmodel.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        6,
+        50
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py",
+      "type": "table",
+      "name": "0025_knowledge_base_models_and_settings_menu.py",
+      "filePath": "backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py",
+      "summary": "backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py (python); 2 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        73
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py:seed_knowledge_model_settings_menu",
+      "type": "function",
+      "name": "seed_knowledge_model_settings_menu",
+      "filePath": "backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py",
+      "summary": "Function seed_knowledge_model_settings_menu in backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        5,
+        35
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py:unseed_knowledge_model_settings_menu",
+      "type": "function",
+      "name": "unseed_knowledge_model_settings_menu",
+      "filePath": "backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py",
+      "summary": "Function unseed_knowledge_model_settings_menu in backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        38,
+        40
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py",
+      "summary": "Class or type Migration in backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        43,
+        73
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/ai_models/models.py",
+      "type": "file",
+      "name": "models.py",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "backend/apps/ai_models/models.py (python); 1 functions; 17 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "python",
+      "lineRange": [
+        1,
+        705
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 18,
+        "functionCount": 1,
+        "classCount": 17
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/models.py:default_agent_opening_message",
+      "type": "function",
+      "name": "default_agent_opening_message",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Function default_agent_opening_message in backend/apps/ai_models/models.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        446,
+        448
+      ],
+      "params": [
+        "name"
+      ]
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:LLMProvider",
+      "type": "class",
+      "name": "LLMProvider",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type LLMProvider in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        20,
+        37
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:LLMModel",
+      "type": "class",
+      "name": "LLMModel",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type LLMModel in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        40,
+        61
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:TenantLLMModelGrant",
+      "type": "class",
+      "name": "TenantLLMModelGrant",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type TenantLLMModelGrant in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        64,
+        89
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:TenantLLMSettings",
+      "type": "class",
+      "name": "TenantLLMSettings",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type TenantLLMSettings in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        92,
+        112
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:LLMTestSettings",
+      "type": "class",
+      "name": "LLMTestSettings",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type LLMTestSettings in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        115,
+        128
+      ],
+      "methods": [
+        "__str__",
+        "load"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:EmbeddingModel",
+      "type": "class",
+      "name": "EmbeddingModel",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type EmbeddingModel in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        131,
+        187
+      ],
+      "methods": [
+        "__str__",
+        "load_aliyun"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:RerankModel",
+      "type": "class",
+      "name": "RerankModel",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type RerankModel in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        190,
+        241
+      ],
+      "methods": [
+        "__str__",
+        "load_aliyun"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:TenantKnowledgeModelSettings",
+      "type": "class",
+      "name": "TenantKnowledgeModelSettings",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type TenantKnowledgeModelSettings in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        244,
+        277
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:ASRConfig",
+      "type": "class",
+      "name": "ASRConfig",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type ASRConfig in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        280,
+        314
+      ],
+      "methods": [
+        "__str__",
+        "save",
+        "delete",
+        "load"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:TTSProvider",
+      "type": "class",
+      "name": "TTSProvider",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type TTSProvider in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        317,
+        361
+      ],
+      "methods": [
+        "__str__",
+        "load_aliyun"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:TTSVoice",
+      "type": "class",
+      "name": "TTSVoice",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type TTSVoice in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        364,
+        389
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:TenantTTSSettings",
+      "type": "class",
+      "name": "TenantTTSSettings",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type TenantTTSSettings in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        392,
+        416
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:ASRReplacementRule",
+      "type": "class",
+      "name": "ASRReplacementRule",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type ASRReplacementRule in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        419,
+        443
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:AgentApplication",
+      "type": "class",
+      "name": "AgentApplication",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type AgentApplication in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        451,
+        537
+      ],
+      "methods": [
+        "__str__",
+        "save"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:AgentAnnotation",
+      "type": "class",
+      "name": "AgentAnnotation",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type AgentAnnotation in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        540,
+        594
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:ChatConversation",
+      "type": "class",
+      "name": "ChatConversation",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type ChatConversation in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        598,
+        665
+      ],
+      "methods": [
+        "__str__",
+        "save"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/models.py:ChatMessage",
+      "type": "class",
+      "name": "ChatMessage",
+      "filePath": "backend/apps/ai_models/models.py",
+      "summary": "Class or type ChatMessage in backend/apps/ai_models/models.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        669,
+        705
+      ],
+      "methods": [
+        "__str__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/ai_models/realtime_asr.py",
+      "type": "file",
+      "name": "realtime_asr.py",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "summary": "backend/apps/ai_models/realtime_asr.py (python); 11 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        184
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 11,
+        "functionCount": 11,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:resolve_asr_realtime_connection",
+      "type": "function",
+      "name": "resolve_asr_realtime_connection",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "summary": "Function resolve_asr_realtime_connection in backend/apps/ai_models/realtime_asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        28,
+        57
+      ],
+      "params": [
+        "token",
+        "headers",
+        "query_params"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:resolve_asr_device_connection",
+      "type": "function",
+      "name": "resolve_asr_device_connection",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "summary": "Function resolve_asr_device_connection in backend/apps/ai_models/realtime_asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        60,
+        74
+      ],
+      "params": [
+        "device_code"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:_extract_device_code",
+      "type": "function",
+      "name": "_extract_device_code",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "summary": "Function _extract_device_code in backend/apps/ai_models/realtime_asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        77,
+        90
+      ],
+      "params": [
+        "headers",
+        "query_params"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:_extract_superuser_tenant",
+      "type": "function",
+      "name": "_extract_superuser_tenant",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "summary": "Function _extract_superuser_tenant in backend/apps/ai_models/realtime_asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        93,
+        101
+      ],
+      "params": [
+        "query_params"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:load_asr_replacement_pairs",
+      "type": "function",
+      "name": "load_asr_replacement_pairs",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "summary": "Function load_asr_replacement_pairs in backend/apps/ai_models/realtime_asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        104,
+        111
+      ],
+      "params": [
+        "tenant_id"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:apply_asr_replacement_rules",
+      "type": "function",
+      "name": "apply_asr_replacement_rules",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "summary": "Function apply_asr_replacement_rules in backend/apps/ai_models/realtime_asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        114,
+        119
+      ],
+      "params": [
+        "text",
+        "replacement_pairs"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:extract_transcript_payload",
+      "type": "function",
+      "name": "extract_transcript_payload",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "summary": "Function extract_transcript_payload in backend/apps/ai_models/realtime_asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        122,
+        144
+      ],
+      "params": [
+        "event",
+        "tenant_id",
+        "replacement_pairs"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:_session_update_event",
+      "type": "function",
+      "name": "_session_update_event",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "summary": "Function _session_update_event in backend/apps/ai_models/realtime_asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        147,
+        161
+      ],
+      "params": []
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:_session_finish_event",
+      "type": "function",
+      "name": "_session_finish_event",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "summary": "Function _session_finish_event in backend/apps/ai_models/realtime_asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        164,
+        168
+      ],
+      "params": []
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:_audio_append_event",
+      "type": "function",
+      "name": "_audio_append_event",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "summary": "Function _audio_append_event in backend/apps/ai_models/realtime_asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        171,
+        176
+      ],
+      "params": [
+        "audio_bytes"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_asr.py:_extract_text",
+      "type": "function",
+      "name": "_extract_text",
+      "filePath": "backend/apps/ai_models/realtime_asr.py",
+      "summary": "Function _extract_text in backend/apps/ai_models/realtime_asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        179,
+        184
+      ],
+      "params": [
+        "event"
+      ]
+    },
+    {
+      "id": "file:backend/apps/ai_models/realtime_tts.py",
+      "type": "file",
+      "name": "realtime_tts.py",
+      "filePath": "backend/apps/ai_models/realtime_tts.py",
+      "summary": "backend/apps/ai_models/realtime_tts.py (python); 8 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        171
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 8,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_tts.py:resolve_tts_realtime_connection",
+      "type": "function",
+      "name": "resolve_tts_realtime_connection",
+      "filePath": "backend/apps/ai_models/realtime_tts.py",
+      "summary": "Function resolve_tts_realtime_connection in backend/apps/ai_models/realtime_tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        33,
+        60
+      ],
+      "params": [
+        "token",
+        "query_params"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_tts.py:_resolve_device_connection",
+      "type": "function",
+      "name": "_resolve_device_connection",
+      "filePath": "backend/apps/ai_models/realtime_tts.py",
+      "summary": "Function _resolve_device_connection in backend/apps/ai_models/realtime_tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        63,
+        77
+      ],
+      "params": [
+        "query_params"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_tts.py:resolve_tts_voice",
+      "type": "function",
+      "name": "resolve_tts_voice",
+      "filePath": "backend/apps/ai_models/realtime_tts.py",
+      "summary": "Function resolve_tts_voice in backend/apps/ai_models/realtime_tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        80,
+        90
+      ],
+      "params": [
+        "connection",
+        "raw_voice_id",
+        "provider"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_tts.py:resolve_tts_provider",
+      "type": "function",
+      "name": "resolve_tts_provider",
+      "filePath": "backend/apps/ai_models/realtime_tts.py",
+      "summary": "Function resolve_tts_provider in backend/apps/ai_models/realtime_tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        93,
+        97
+      ],
+      "params": [
+        "raw_provider_code"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_tts.py:_stream_tts_audio",
+      "type": "function",
+      "name": "_stream_tts_audio",
+      "filePath": "backend/apps/ai_models/realtime_tts.py",
+      "summary": "Function _stream_tts_audio in backend/apps/ai_models/realtime_tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        100,
+        142
+      ],
+      "params": [
+        "text",
+        "voice",
+        "config",
+        "send"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_tts.py:_extract_upstream_error_message",
+      "type": "function",
+      "name": "_extract_upstream_error_message",
+      "filePath": "backend/apps/ai_models/realtime_tts.py",
+      "summary": "Function _extract_upstream_error_message in backend/apps/ai_models/realtime_tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        145,
+        152
+      ],
+      "params": [
+        "event"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_tts.py:_extract_superuser_tenant",
+      "type": "function",
+      "name": "_extract_superuser_tenant",
+      "filePath": "backend/apps/ai_models/realtime_tts.py",
+      "summary": "Function _extract_superuser_tenant in backend/apps/ai_models/realtime_tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        155,
+        161
+      ],
+      "params": [
+        "query_params"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/realtime_tts.py:_parse_positive_int",
+      "type": "function",
+      "name": "_parse_positive_int",
+      "filePath": "backend/apps/ai_models/realtime_tts.py",
+      "summary": "Function _parse_positive_int in backend/apps/ai_models/realtime_tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        164,
+        171
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "file:backend/apps/ai_models/serializers.py",
+      "type": "file",
+      "name": "serializers.py",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "backend/apps/ai_models/serializers.py (python); 1 functions; 30 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "python",
+      "lineRange": [
+        1,
+        959
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 31,
+        "functionCount": 1,
+        "classCount": 30
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/serializers.py:mask_knowledge_api_key",
+      "type": "function",
+      "name": "mask_knowledge_api_key",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Function mask_knowledge_api_key in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        33,
+        38
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:PlatformLLMProviderSerializer",
+      "type": "class",
+      "name": "PlatformLLMProviderSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type PlatformLLMProviderSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        41,
+        81
+      ],
+      "methods": [
+        "get_apiKeyMasked",
+        "get_apiKeyConfigured",
+        "get_avatarUrl",
+        "get_clearAvatar"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:PlatformLLMProviderWriteSerializer",
+      "type": "class",
+      "name": "PlatformLLMProviderWriteSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type PlatformLLMProviderWriteSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        84,
+        119
+      ],
+      "methods": [
+        "validate",
+        "create",
+        "update"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:PlatformLLMModelSerializer",
+      "type": "class",
+      "name": "PlatformLLMModelSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type PlatformLLMModelSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        122,
+        136
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:PlatformLLMModelWriteSerializer",
+      "type": "class",
+      "name": "PlatformLLMModelWriteSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type PlatformLLMModelWriteSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        139,
+        171
+      ],
+      "methods": [
+        "validate_name",
+        "validate"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:LLMTestSettingsSerializer",
+      "type": "class",
+      "name": "LLMTestSettingsSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type LLMTestSettingsSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        174,
+        198
+      ],
+      "methods": [
+        "validate"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:TenantLLMAuthorizationSerializer",
+      "type": "class",
+      "name": "TenantLLMAuthorizationSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type TenantLLMAuthorizationSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        201,
+        246
+      ],
+      "methods": [
+        "validate"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:KnowledgeModelSerializer",
+      "type": "class",
+      "name": "KnowledgeModelSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type KnowledgeModelSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        249,
+        259
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:KnowledgeModelSettingsSerializer",
+      "type": "class",
+      "name": "KnowledgeModelSettingsSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type KnowledgeModelSettingsSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        262,
+        264
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:KnowledgeModelSettingsWriteSerializer",
+      "type": "class",
+      "name": "KnowledgeModelSettingsWriteSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type KnowledgeModelSettingsWriteSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        267,
+        301
+      ],
+      "methods": [
+        "_validate_model_payload",
+        "validate"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:TenantKnowledgeModelSettingsSerializer",
+      "type": "class",
+      "name": "TenantKnowledgeModelSettingsSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type TenantKnowledgeModelSettingsSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        304,
+        321
+      ],
+      "methods": [
+        "validate"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:ASRConfigSerializer",
+      "type": "class",
+      "name": "ASRConfigSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type ASRConfigSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        324,
+        338
+      ],
+      "methods": [
+        "update"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:ASRReplacementRuleSerializer",
+      "type": "class",
+      "name": "ASRReplacementRuleSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type ASRReplacementRuleSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        341,
+        370
+      ],
+      "methods": [
+        "validate_sourceText",
+        "validate_replacementText"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:TTSVoiceSerializer",
+      "type": "class",
+      "name": "TTSVoiceSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type TTSVoiceSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        373,
+        408
+      ],
+      "methods": [
+        "get_isDefault",
+        "get_avatarPath"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:TTSVoiceWriteSerializer",
+      "type": "class",
+      "name": "TTSVoiceWriteSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type TTSVoiceWriteSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        411,
+        421
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:PlatformTTSProviderSummarySerializer",
+      "type": "class",
+      "name": "PlatformTTSProviderSummarySerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type PlatformTTSProviderSummarySerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        424,
+        459
+      ],
+      "methods": [
+        "get_defaultVoiceName",
+        "get_configured",
+        "get_voiceCount"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:PlatformTTSSettingsSerializer",
+      "type": "class",
+      "name": "PlatformTTSSettingsSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type PlatformTTSSettingsSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        462,
+        515
+      ],
+      "methods": [
+        "get_apiKeyMasked",
+        "get_apiKeyConfigured",
+        "get_configured",
+        "get_voices"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:PlatformTTSSettingsWriteSerializer",
+      "type": "class",
+      "name": "PlatformTTSSettingsWriteSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type PlatformTTSSettingsWriteSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        518,
+        565
+      ],
+      "methods": [
+        "validate_sampleRate",
+        "validate_defaultVoiceId",
+        "update",
+        "_update_voices"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:CompanyTTSVoiceSerializer",
+      "type": "class",
+      "name": "CompanyTTSVoiceSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type CompanyTTSVoiceSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        568,
+        570
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:AgentKnowledgeDocumentSerializer",
+      "type": "class",
+      "name": "AgentKnowledgeDocumentSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type AgentKnowledgeDocumentSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        573,
+        578
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:AgentKnowledgeBaseSerializer",
+      "type": "class",
+      "name": "AgentKnowledgeBaseSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type AgentKnowledgeBaseSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        581,
+        590
+      ],
+      "methods": [
+        "get_documentCount"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:AgentApplicationSerializer",
+      "type": "class",
+      "name": "AgentApplicationSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type AgentApplicationSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        593,
+        758
+      ],
+      "methods": [
+        "get_fields",
+        "get_llmModelName",
+        "get_llmModelDisplayName",
+        "get_llmProviderName",
+        "get_createdBy",
+        "validate_name",
+        "validate_temperature",
+        "validate_maxTokens",
+        "validate_openingMessage",
+        "validate_suggestedQuestions",
+        "validate_ttsFilterPunctuation",
+        "validate",
+        "create"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:AgentAnnotationSerializer",
+      "type": "class",
+      "name": "AgentAnnotationSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type AgentAnnotationSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        761,
+        810
+      ],
+      "methods": [
+        "get_createdBy",
+        "validate_question",
+        "validate_answer"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:AgentAnnotationCreateFromMessageSerializer",
+      "type": "class",
+      "name": "AgentAnnotationCreateFromMessageSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type AgentAnnotationCreateFromMessageSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        813,
+        828
+      ],
+      "methods": [
+        "validate_question",
+        "validate_answer"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:ChatMessageSerializer",
+      "type": "class",
+      "name": "ChatMessageSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type ChatMessageSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        831,
+        838
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:ChatConversationListSerializer",
+      "type": "class",
+      "name": "ChatConversationListSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type ChatConversationListSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        841,
+        878
+      ],
+      "methods": [
+        "get_messageCount",
+        "get_lastMessage",
+        "get_llmModelName",
+        "get_llmModelDisplayName",
+        "get_llmProviderName"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:ChatConversationDetailSerializer",
+      "type": "class",
+      "name": "ChatConversationDetailSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type ChatConversationDetailSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        881,
+        920
+      ],
+      "methods": [
+        "get_messages",
+        "get_llmModelName",
+        "get_llmModelDisplayName",
+        "get_llmProviderName"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:ChatConversationConfigSerializer",
+      "type": "class",
+      "name": "ChatConversationConfigSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type ChatConversationConfigSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        923,
+        945
+      ],
+      "methods": [
+        "validate"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:ChatConversationCreateSerializer",
+      "type": "class",
+      "name": "ChatConversationCreateSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type ChatConversationCreateSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        948,
+        949
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:ChatMessageFeedbackSerializer",
+      "type": "class",
+      "name": "ChatMessageFeedbackSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type ChatMessageFeedbackSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        952,
+        953
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/serializers.py:ChatSendSerializer",
+      "type": "class",
+      "name": "ChatSendSerializer",
+      "filePath": "backend/apps/ai_models/serializers.py",
+      "summary": "Class or type ChatSendSerializer in backend/apps/ai_models/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        956,
+        959
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/ai_models/services/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/ai_models/services/__init__.py",
+      "summary": "backend/apps/ai_models/services/__init__.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "type": "file",
+      "name": "agent_knowledge.py",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "backend/apps/ai_models/services/agent_knowledge.py (python); 25 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "python",
+      "lineRange": [
+        1,
+        581
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 26,
+        "functionCount": 25,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:chunk_text",
+      "type": "function",
+      "name": "chunk_text",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function chunk_text in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        25,
+        42
+      ],
+      "params": [
+        "text",
+        "max_chunk_len",
+        "overlap"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:extract_keywords",
+      "type": "function",
+      "name": "extract_keywords",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function extract_keywords in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        45,
+        69
+      ],
+      "params": [
+        "query"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:score_chunk",
+      "type": "function",
+      "name": "score_chunk",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function score_chunk in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        72,
+        81
+      ],
+      "params": [
+        "chunk",
+        "keywords",
+        "query"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_read_document_text",
+      "type": "function",
+      "name": "_read_document_text",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _read_document_text in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        84,
+        89
+      ],
+      "params": [
+        "doc"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_content_hash",
+      "type": "function",
+      "name": "_content_hash",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _content_hash in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        92,
+        93
+      ],
+      "params": [
+        "content"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_vector_norm",
+      "type": "function",
+      "name": "_vector_norm",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _vector_norm in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        96,
+        97
+      ],
+      "params": [
+        "vector"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_cosine_similarity",
+      "type": "function",
+      "name": "_cosine_similarity",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _cosine_similarity in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        100,
+        107
+      ],
+      "params": [
+        "left",
+        "right"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_dashscope_headers",
+      "type": "function",
+      "name": "_dashscope_headers",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _dashscope_headers in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        110,
+        114
+      ],
+      "params": [
+        "api_key"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_active_embedding_model",
+      "type": "function",
+      "name": "_active_embedding_model",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _active_embedding_model in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        117,
+        131
+      ],
+      "params": []
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_active_rerank_model",
+      "type": "function",
+      "name": "_active_rerank_model",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _active_rerank_model in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        134,
+        148
+      ],
+      "params": []
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_embedding_model_for_tenant",
+      "type": "function",
+      "name": "_embedding_model_for_tenant",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _embedding_model_for_tenant in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        151,
+        163
+      ],
+      "params": [
+        "tenant"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_rerank_model_for_tenant",
+      "type": "function",
+      "name": "_rerank_model_for_tenant",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _rerank_model_for_tenant in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        166,
+        178
+      ],
+      "params": [
+        "tenant"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_parse_embedding_response",
+      "type": "function",
+      "name": "_parse_embedding_response",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _parse_embedding_response in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        181,
+        198
+      ],
+      "params": [
+        "payload",
+        "expected_count"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_embed_texts",
+      "type": "function",
+      "name": "_embed_texts",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _embed_texts in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        201,
+        217
+      ],
+      "params": [
+        "client",
+        "model_config",
+        "texts"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_ensure_document_chunks",
+      "type": "function",
+      "name": "_ensure_document_chunks",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _ensure_document_chunks in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        220,
+        262
+      ],
+      "params": [
+        "client",
+        "doc",
+        "model_config"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_rerank_chunks",
+      "type": "function",
+      "name": "_rerank_chunks",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _rerank_chunks in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        265,
+        303
+      ],
+      "params": [
+        "client",
+        "model_config",
+        "query",
+        "chunks",
+        "top_n"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_format_context",
+      "type": "function",
+      "name": "_format_context",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _format_context in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        306,
+        327
+      ],
+      "params": [
+        "chunks",
+        "max_chars"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_bound_approved_text_documents",
+      "type": "function",
+      "name": "_bound_approved_text_documents",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _bound_approved_text_documents in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        330,
+        338
+      ],
+      "params": [
+        "application"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_approved_text_documents_for_knowledge_base",
+      "type": "function",
+      "name": "_approved_text_documents_for_knowledge_base",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _approved_text_documents_for_knowledge_base in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        341,
+        347
+      ],
+      "params": [
+        "knowledge_base"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_retrieve_keyword_chunks",
+      "type": "function",
+      "name": "_retrieve_keyword_chunks",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _retrieve_keyword_chunks in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        350,
+        368
+      ],
+      "params": [
+        "docs",
+        "query",
+        "top_n"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_retrieve_keyword_knowledge_context",
+      "type": "function",
+      "name": "_retrieve_keyword_knowledge_context",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _retrieve_keyword_knowledge_context in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        371,
+        372
+      ],
+      "params": [
+        "application",
+        "query",
+        "top_n",
+        "max_chars"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:_serialize_recall_result",
+      "type": "function",
+      "name": "_serialize_recall_result",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function _serialize_recall_result in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        375,
+        390
+      ],
+      "params": [
+        "chunks",
+        "mode",
+        "embedding_model",
+        "rerank_model"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:retrieve_knowledge_chunks",
+      "type": "function",
+      "name": "retrieve_knowledge_chunks",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function retrieve_knowledge_chunks in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        393,
+        480
+      ],
+      "params": [
+        "query",
+        "application",
+        "knowledge_base",
+        "tenant",
+        "top_n"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:retrieve_knowledge_context",
+      "type": "function",
+      "name": "retrieve_knowledge_context",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function retrieve_knowledge_context in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        483,
+        552
+      ],
+      "params": [
+        "application",
+        "query",
+        "top_n",
+        "max_chars"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/agent_knowledge.py:inject_knowledge_context",
+      "type": "function",
+      "name": "inject_knowledge_context",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Function inject_knowledge_context in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        555,
+        581
+      ],
+      "params": [
+        "conversation",
+        "api_messages",
+        "query"
+      ]
+    },
+    {
+      "id": "class:backend/apps/ai_models/services/agent_knowledge.py:RetrievedChunk",
+      "type": "class",
+      "name": "RetrievedChunk",
+      "filePath": "backend/apps/ai_models/services/agent_knowledge.py",
+      "summary": "Class or type RetrievedChunk in backend/apps/ai_models/services/agent_knowledge.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        17,
+        22
+      ],
+      "methods": [],
+      "properties": [
+        "document_id",
+        "doc_title",
+        "content",
+        "score",
+        "chunk_index"
+      ]
+    },
+    {
+      "id": "file:backend/apps/ai_models/services/asr.py",
+      "type": "file",
+      "name": "asr.py",
+      "filePath": "backend/apps/ai_models/services/asr.py",
+      "summary": "backend/apps/ai_models/services/asr.py (python); 13 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        262
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 14,
+        "functionCount": 13,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/asr.py:mask_secret",
+      "type": "function",
+      "name": "mask_secret",
+      "filePath": "backend/apps/ai_models/services/asr.py",
+      "summary": "Function mask_secret in backend/apps/ai_models/services/asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        36,
+        41
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/asr.py:get_effective_asr_config",
+      "type": "function",
+      "name": "get_effective_asr_config",
+      "filePath": "backend/apps/ai_models/services/asr.py",
+      "summary": "Function get_effective_asr_config in backend/apps/ai_models/services/asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        44,
+        53
+      ],
+      "params": []
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/asr.py:build_asr_ws_url",
+      "type": "function",
+      "name": "build_asr_ws_url",
+      "filePath": "backend/apps/ai_models/services/asr.py",
+      "summary": "Function build_asr_ws_url in backend/apps/ai_models/services/asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        56,
+        59
+      ],
+      "params": [
+        "config"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/asr.py:serialize_asr_settings",
+      "type": "function",
+      "name": "serialize_asr_settings",
+      "filePath": "backend/apps/ai_models/services/asr.py",
+      "summary": "Function serialize_asr_settings in backend/apps/ai_models/services/asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        62,
+        71
+      ],
+      "params": [
+        "config"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/asr.py:serialize_asr_status",
+      "type": "function",
+      "name": "serialize_asr_status",
+      "filePath": "backend/apps/ai_models/services/asr.py",
+      "summary": "Function serialize_asr_status in backend/apps/ai_models/services/asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        74,
+        83
+      ],
+      "params": [
+        "config"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/asr.py:is_asr_configured",
+      "type": "function",
+      "name": "is_asr_configured",
+      "filePath": "backend/apps/ai_models/services/asr.py",
+      "summary": "Function is_asr_configured in backend/apps/ai_models/services/asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        86,
+        87
+      ],
+      "params": [
+        "config"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/asr.py:transcribe_pcm_audio",
+      "type": "function",
+      "name": "transcribe_pcm_audio",
+      "filePath": "backend/apps/ai_models/services/asr.py",
+      "summary": "Function transcribe_pcm_audio in backend/apps/ai_models/services/asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        90,
+        146
+      ],
+      "params": [
+        "pcm",
+        "sample_rate",
+        "config"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/asr.py:_missing_config_message",
+      "type": "function",
+      "name": "_missing_config_message",
+      "filePath": "backend/apps/ai_models/services/asr.py",
+      "summary": "Function _missing_config_message in backend/apps/ai_models/services/asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        149,
+        159
+      ],
+      "params": [
+        "config"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/asr.py:_transcription_session_update_event",
+      "type": "function",
+      "name": "_transcription_session_update_event",
+      "filePath": "backend/apps/ai_models/services/asr.py",
+      "summary": "Function _transcription_session_update_event in backend/apps/ai_models/services/asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        162,
+        176
+      ],
+      "params": [
+        "sample_rate"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/asr.py:_audio_append_event",
+      "type": "function",
+      "name": "_audio_append_event",
+      "filePath": "backend/apps/ai_models/services/asr.py",
+      "summary": "Function _audio_append_event in backend/apps/ai_models/services/asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        179,
+        184
+      ],
+      "params": [
+        "audio"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/asr.py:_session_finish_event",
+      "type": "function",
+      "name": "_session_finish_event",
+      "filePath": "backend/apps/ai_models/services/asr.py",
+      "summary": "Function _session_finish_event in backend/apps/ai_models/services/asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        187,
+        191
+      ],
+      "params": []
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/asr.py:_extract_transcript_text",
+      "type": "function",
+      "name": "_extract_transcript_text",
+      "filePath": "backend/apps/ai_models/services/asr.py",
+      "summary": "Function _extract_transcript_text in backend/apps/ai_models/services/asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        194,
+        199
+      ],
+      "params": [
+        "event"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/asr.py:test_asr_connection",
+      "type": "function",
+      "name": "test_asr_connection",
+      "filePath": "backend/apps/ai_models/services/asr.py",
+      "summary": "Function test_asr_connection in backend/apps/ai_models/services/asr.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        202,
+        262
+      ],
+      "params": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/services/asr.py:EffectiveASRConfig",
+      "type": "class",
+      "name": "EffectiveASRConfig",
+      "filePath": "backend/apps/ai_models/services/asr.py",
+      "summary": "Class or type EffectiveASRConfig in backend/apps/ai_models/services/asr.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        27,
+        33
+      ],
+      "methods": [],
+      "properties": [
+        "workspace_id",
+        "api_key",
+        "base_url",
+        "model",
+        "is_active",
+        "updated_at"
+      ]
+    },
+    {
+      "id": "file:backend/apps/ai_models/services/tts.py",
+      "type": "file",
+      "name": "tts.py",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "backend/apps/ai_models/services/tts.py (python); 21 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        235
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 22,
+        "functionCount": 21,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:mask_api_key",
+      "type": "function",
+      "name": "mask_api_key",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function mask_api_key in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        33,
+        38
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:get_aliyun_tts_provider",
+      "type": "function",
+      "name": "get_aliyun_tts_provider",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function get_aliyun_tts_provider in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        41,
+        42
+      ],
+      "params": []
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:get_effective_tts_config",
+      "type": "function",
+      "name": "get_effective_tts_config",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function get_effective_tts_config in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        45,
+        56
+      ],
+      "params": [
+        "provider"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:is_tts_configured",
+      "type": "function",
+      "name": "is_tts_configured",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function is_tts_configured in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        59,
+        60
+      ],
+      "params": [
+        "config"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:get_tenant_tts_settings",
+      "type": "function",
+      "name": "get_tenant_tts_settings",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function get_tenant_tts_settings in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        63,
+        67
+      ],
+      "params": [
+        "tenant"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:get_available_tts_voices",
+      "type": "function",
+      "name": "get_available_tts_voices",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function get_available_tts_voices in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        70,
+        72
+      ],
+      "params": [
+        "provider"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:is_voice_available",
+      "type": "function",
+      "name": "is_voice_available",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function is_voice_available in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        75,
+        78
+      ],
+      "params": [
+        "voice"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:get_default_tts_voice",
+      "type": "function",
+      "name": "get_default_tts_voice",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function get_default_tts_voice in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        81,
+        85
+      ],
+      "params": [
+        "provider"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:get_effective_tts_voice_for_tenant",
+      "type": "function",
+      "name": "get_effective_tts_voice_for_tenant",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function get_effective_tts_voice_for_tenant in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        88,
+        92
+      ],
+      "params": [
+        "tenant",
+        "provider"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:normalize_tts_text",
+      "type": "function",
+      "name": "normalize_tts_text",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function normalize_tts_text in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        95,
+        97
+      ],
+      "params": [
+        "text",
+        "config"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:split_tts_text",
+      "type": "function",
+      "name": "split_tts_text",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function split_tts_text in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        100,
+        117
+      ],
+      "params": [
+        "text",
+        "chunk_size"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:pcm_to_wav",
+      "type": "function",
+      "name": "pcm_to_wav",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function pcm_to_wav in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        120,
+        127
+      ],
+      "params": [
+        "pcm",
+        "sample_rate"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:build_tts_ws_url",
+      "type": "function",
+      "name": "build_tts_ws_url",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function build_tts_ws_url in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        130,
+        133
+      ],
+      "params": [
+        "config"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:response_format_for_sample_rate",
+      "type": "function",
+      "name": "response_format_for_sample_rate",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function response_format_for_sample_rate in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        136,
+        137
+      ],
+      "params": [
+        "sample_rate"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:synthesize_tts_pcm",
+      "type": "function",
+      "name": "synthesize_tts_pcm",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function synthesize_tts_pcm in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        140,
+        142
+      ],
+      "params": [
+        "text",
+        "voice",
+        "config"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:_synthesize_tts_pcm_async",
+      "type": "function",
+      "name": "_synthesize_tts_pcm_async",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function _synthesize_tts_pcm_async in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        145,
+        190
+      ],
+      "params": [
+        "text",
+        "voice",
+        "config"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:_extract_upstream_error_message",
+      "type": "function",
+      "name": "_extract_upstream_error_message",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function _extract_upstream_error_message in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        193,
+        200
+      ],
+      "params": [
+        "event"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:_session_update_event",
+      "type": "function",
+      "name": "_session_update_event",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function _session_update_event in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        203,
+        213
+      ],
+      "params": [
+        "config",
+        "voice"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:_text_append_event",
+      "type": "function",
+      "name": "_text_append_event",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function _text_append_event in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        216,
+        221
+      ],
+      "params": [
+        "text"
+      ]
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:_text_commit_event",
+      "type": "function",
+      "name": "_text_commit_event",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function _text_commit_event in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        224,
+        228
+      ],
+      "params": []
+    },
+    {
+      "id": "function:backend/apps/ai_models/services/tts.py:_session_finish_event",
+      "type": "function",
+      "name": "_session_finish_event",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Function _session_finish_event in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        231,
+        235
+      ],
+      "params": []
+    },
+    {
+      "id": "class:backend/apps/ai_models/services/tts.py:EffectiveTTSConfig",
+      "type": "class",
+      "name": "EffectiveTTSConfig",
+      "filePath": "backend/apps/ai_models/services/tts.py",
+      "summary": "Class or type EffectiveTTSConfig in backend/apps/ai_models/services/tts.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        22,
+        30
+      ],
+      "methods": [],
+      "properties": [
+        "provider",
+        "api_key",
+        "base_url",
+        "model",
+        "sample_rate",
+        "default_test_text",
+        "is_active",
+        "updated_at"
+      ]
+    },
+    {
+      "id": "file:backend/apps/ai_models/tests/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/ai_models/tests/__init__.py",
+      "summary": "backend/apps/ai_models/tests/__init__.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "table:backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py",
+      "target": "class:backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "target": "function:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py:seed_agent_application_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "target": "function:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py:unseed_agent_application_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "target": "class:backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "target": "function:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py:seed_agent_application_tenant_access",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "target": "function:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py:unseed_agent_application_tenant_access",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "target": "class:backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0013_platform_llm_settings.py",
+      "target": "function:backend/apps/ai_models/migrations/0013_platform_llm_settings.py:clear_old_llm_bindings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0013_platform_llm_settings.py",
+      "target": "class:backend/apps/ai_models/migrations/0013_platform_llm_settings.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py",
+      "target": "function:backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py:remove_standalone_chat_room_menu",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py",
+      "target": "class:backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0015_tts_settings.py",
+      "target": "function:backend/apps/ai_models/migrations/0015_tts_settings.py:load_voice_rows",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0015_tts_settings.py",
+      "target": "function:backend/apps/ai_models/migrations/0015_tts_settings.py:seed_tts_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0015_tts_settings.py",
+      "target": "function:backend/apps/ai_models/migrations/0015_tts_settings.py:unseed_tts_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0015_tts_settings.py",
+      "target": "class:backend/apps/ai_models/migrations/0015_tts_settings.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0016_update_agent_application_menu.py",
+      "target": "function:backend/apps/ai_models/migrations/0016_update_agent_application_menu.py:update_agent_application_menu",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0016_update_agent_application_menu.py",
+      "target": "function:backend/apps/ai_models/migrations/0016_update_agent_application_menu.py:rollback_agent_application_menu",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0016_update_agent_application_menu.py",
+      "target": "class:backend/apps/ai_models/migrations/0016_update_agent_application_menu.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0017_agent_conversation_settings.py",
+      "target": "function:backend/apps/ai_models/migrations/0017_agent_conversation_settings.py:default_opening_message",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0017_agent_conversation_settings.py",
+      "target": "function:backend/apps/ai_models/migrations/0017_agent_conversation_settings.py:backfill_agent_conversation_settings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0017_agent_conversation_settings.py",
+      "target": "function:backend/apps/ai_models/migrations/0017_agent_conversation_settings.py:rollback_agent_conversation_settings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0017_agent_conversation_settings.py",
+      "target": "class:backend/apps/ai_models/migrations/0017_agent_conversation_settings.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0018_drop_stale_chatconversation_max_tokens_unlimited.py",
+      "target": "class:backend/apps/ai_models/migrations/0018_drop_stale_chatconversation_max_tokens_unlimited.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0019_drop_stale_agentapplication_max_tokens_unlimited.py",
+      "target": "class:backend/apps/ai_models/migrations/0019_drop_stale_agentapplication_max_tokens_unlimited.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0020_agent_annotation.py",
+      "target": "class:backend/apps/ai_models/migrations/0020_agent_annotation.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0021_agent_max_tokens_unlimited.py",
+      "target": "class:backend/apps/ai_models/migrations/0021_agent_max_tokens_unlimited.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0022_agent_tts_filter_rules.py",
+      "target": "class:backend/apps/ai_models/migrations/0022_agent_tts_filter_rules.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0023_llmmodel_enable_web_search.py",
+      "target": "class:backend/apps/ai_models/migrations/0023_llmmodel_enable_web_search.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0024_embeddingmodel_rerankmodel.py",
+      "target": "class:backend/apps/ai_models/migrations/0024_embeddingmodel_rerankmodel.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py",
+      "target": "function:backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py:seed_knowledge_model_settings_menu",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py",
+      "target": "function:backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py:unseed_knowledge_model_settings_menu",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py",
+      "target": "class:backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "function:backend/apps/ai_models/models.py:default_agent_opening_message",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:LLMProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:LLMModel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:TenantLLMModelGrant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:TenantLLMSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:LLMTestSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:EmbeddingModel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:RerankModel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:TenantKnowledgeModelSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:ASRConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:TTSProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:TTSVoice",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:TenantTTSSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:ASRReplacementRule",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:AgentApplication",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:AgentAnnotation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:ChatConversation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/models.py",
+      "target": "class:backend/apps/ai_models/models.py:ChatMessage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:resolve_asr_realtime_connection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:resolve_asr_device_connection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_extract_device_code",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_extract_superuser_tenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:load_asr_replacement_pairs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:apply_asr_replacement_rules",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:extract_transcript_payload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_session_update_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_session_finish_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_audio_append_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_asr.py",
+      "target": "function:backend/apps/ai_models/realtime_asr.py:_extract_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_tts.py",
+      "target": "function:backend/apps/ai_models/realtime_tts.py:resolve_tts_realtime_connection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_tts.py",
+      "target": "function:backend/apps/ai_models/realtime_tts.py:_resolve_device_connection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_tts.py",
+      "target": "function:backend/apps/ai_models/realtime_tts.py:resolve_tts_voice",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_tts.py",
+      "target": "function:backend/apps/ai_models/realtime_tts.py:resolve_tts_provider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_tts.py",
+      "target": "function:backend/apps/ai_models/realtime_tts.py:_stream_tts_audio",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_tts.py",
+      "target": "function:backend/apps/ai_models/realtime_tts.py:_extract_upstream_error_message",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_tts.py",
+      "target": "function:backend/apps/ai_models/realtime_tts.py:_extract_superuser_tenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/realtime_tts.py",
+      "target": "function:backend/apps/ai_models/realtime_tts.py:_parse_positive_int",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "function:backend/apps/ai_models/serializers.py:mask_knowledge_api_key",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:PlatformLLMProviderSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:PlatformLLMProviderWriteSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:PlatformLLMModelSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:PlatformLLMModelWriteSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:LLMTestSettingsSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:TenantLLMAuthorizationSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:KnowledgeModelSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:KnowledgeModelSettingsSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:KnowledgeModelSettingsWriteSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:TenantKnowledgeModelSettingsSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:ASRConfigSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:ASRReplacementRuleSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:TTSVoiceSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:TTSVoiceWriteSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:PlatformTTSProviderSummarySerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:PlatformTTSSettingsSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:PlatformTTSSettingsWriteSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:CompanyTTSVoiceSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:AgentKnowledgeDocumentSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:AgentKnowledgeBaseSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:AgentApplicationSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:AgentAnnotationSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:AgentAnnotationCreateFromMessageSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:ChatMessageSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:ChatConversationListSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:ChatConversationDetailSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:ChatConversationConfigSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:ChatConversationCreateSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:ChatMessageFeedbackSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/serializers.py",
+      "target": "class:backend/apps/ai_models/serializers.py:ChatSendSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:chunk_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:extract_keywords",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:score_chunk",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_read_document_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_content_hash",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_vector_norm",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_cosine_similarity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_dashscope_headers",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_active_embedding_model",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_active_rerank_model",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_embedding_model_for_tenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_rerank_model_for_tenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_parse_embedding_response",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_embed_texts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_ensure_document_chunks",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_rerank_chunks",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_format_context",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_bound_approved_text_documents",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_approved_text_documents_for_knowledge_base",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_retrieve_keyword_chunks",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_retrieve_keyword_knowledge_context",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:_serialize_recall_result",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:retrieve_knowledge_chunks",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:retrieve_knowledge_context",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "function:backend/apps/ai_models/services/agent_knowledge.py:inject_knowledge_context",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/agent_knowledge.py",
+      "target": "class:backend/apps/ai_models/services/agent_knowledge.py:RetrievedChunk",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/asr.py",
+      "target": "function:backend/apps/ai_models/services/asr.py:mask_secret",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/asr.py",
+      "target": "function:backend/apps/ai_models/services/asr.py:get_effective_asr_config",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/asr.py",
+      "target": "function:backend/apps/ai_models/services/asr.py:build_asr_ws_url",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/asr.py",
+      "target": "function:backend/apps/ai_models/services/asr.py:serialize_asr_settings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/asr.py",
+      "target": "function:backend/apps/ai_models/services/asr.py:serialize_asr_status",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/asr.py",
+      "target": "function:backend/apps/ai_models/services/asr.py:is_asr_configured",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/asr.py",
+      "target": "function:backend/apps/ai_models/services/asr.py:transcribe_pcm_audio",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/asr.py",
+      "target": "function:backend/apps/ai_models/services/asr.py:_missing_config_message",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/asr.py",
+      "target": "function:backend/apps/ai_models/services/asr.py:_transcription_session_update_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/asr.py",
+      "target": "function:backend/apps/ai_models/services/asr.py:_audio_append_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/asr.py",
+      "target": "function:backend/apps/ai_models/services/asr.py:_session_finish_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/asr.py",
+      "target": "function:backend/apps/ai_models/services/asr.py:_extract_transcript_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/asr.py",
+      "target": "function:backend/apps/ai_models/services/asr.py:test_asr_connection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/asr.py",
+      "target": "class:backend/apps/ai_models/services/asr.py:EffectiveASRConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:mask_api_key",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:get_aliyun_tts_provider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:get_effective_tts_config",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:is_tts_configured",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:get_tenant_tts_settings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:get_available_tts_voices",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:is_voice_available",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:get_default_tts_voice",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:get_effective_tts_voice_for_tenant",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:normalize_tts_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:split_tts_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:pcm_to_wav",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:build_tts_ws_url",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:response_format_for_sample_rate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:synthesize_tts_pcm",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:_synthesize_tts_pcm_async",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:_extract_upstream_error_message",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:_session_update_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:_text_append_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:_text_commit_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "function:backend/apps/ai_models/services/tts.py:_session_finish_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/ai_models/services/tts.py",
+      "target": "class:backend/apps/ai_models/services/tts.py:EffectiveTTSConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    }
+  ]
+}

@@ -1,0 +1,4128 @@
+{
+  "nodes": [
+    {
+      "id": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "type": "file",
+      "name": "fetch-codex-manual.mjs",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs (javascript); 32 functions; 1 classes",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        598
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 32,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:sha256",
+      "type": "function",
+      "name": "sha256",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function sha256 in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        34,
+        34
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:withTimeout",
+      "type": "function",
+      "name": "withTimeout",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function withTimeout in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        36,
+        44
+      ],
+      "params": [
+        "promiseFactory",
+        "timeoutMs"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:proxyConfigured",
+      "type": "function",
+      "name": "proxyConfigured",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function proxyConfigured in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        46,
+        50
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:responseHeaders",
+      "type": "function",
+      "name": "responseHeaders",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function responseHeaders in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        52,
+        56
+      ],
+      "params": [
+        "headers"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:makeResponse",
+      "type": "function",
+      "name": "makeResponse",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function makeResponse in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        58,
+        65
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:parseCurlHeaders",
+      "type": "function",
+      "name": "parseCurlHeaders",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function parseCurlHeaders in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        67,
+        99
+      ],
+      "params": [
+        "rawHeaders"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:tempFilePath",
+      "type": "function",
+      "name": "tempFilePath",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function tempFilePath in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        101,
+        107
+      ],
+      "params": [
+        "cacheDir",
+        "suffix"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:requestManualWithCurl",
+      "type": "function",
+      "name": "requestManualWithCurl",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function requestManualWithCurl in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        109,
+        164
+      ],
+      "params": [
+        "url"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:requestManualWithFetch",
+      "type": "function",
+      "name": "requestManualWithFetch",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function requestManualWithFetch in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        166,
+        182
+      ],
+      "params": [
+        "url"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:requestManual",
+      "type": "function",
+      "name": "requestManual",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function requestManual in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        184,
+        214
+      ],
+      "params": [
+        "url"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:readHeaderSha",
+      "type": "function",
+      "name": "readHeaderSha",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function readHeaderSha in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        216,
+        222
+      ],
+      "params": [
+        "response"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:nearestExistingParent",
+      "type": "function",
+      "name": "nearestExistingParent",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function nearestExistingParent in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        224,
+        238
+      ],
+      "params": [
+        "target"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:usableCacheDir",
+      "type": "function",
+      "name": "usableCacheDir",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function usableCacheDir in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        240,
+        261
+      ],
+      "params": [
+        "cacheDir"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:defaultCacheDirCandidates",
+      "type": "function",
+      "name": "defaultCacheDirCandidates",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function defaultCacheDirCandidates in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        263,
+        284
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:resolveCacheDir",
+      "type": "function",
+      "name": "resolveCacheDir",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function resolveCacheDir in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        286,
+        297
+      ],
+      "params": [
+        "cacheDir"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:cacheFilePath",
+      "type": "function",
+      "name": "cacheFilePath",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function cacheFilePath in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        299,
+        299
+      ],
+      "params": [
+        "cacheDir"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:outlineFilePath",
+      "type": "function",
+      "name": "outlineFilePath",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function outlineFilePath in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        301,
+        301
+      ],
+      "params": [
+        "cacheDir"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:manualLines",
+      "type": "function",
+      "name": "manualLines",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function manualLines in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        303,
+        307
+      ],
+      "params": [
+        "manual"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:sectionTitle",
+      "type": "function",
+      "name": "sectionTitle",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function sectionTitle in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        309,
+        310
+      ],
+      "params": [
+        "rawTitle"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:buildOutline",
+      "type": "function",
+      "name": "buildOutline",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function buildOutline in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        312,
+        367
+      ],
+      "params": [
+        "manual"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:outlineMarkdown",
+      "type": "function",
+      "name": "outlineMarkdown",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function outlineMarkdown in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        369,
+        369
+      ],
+      "params": [
+        "outline"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:manualStatusLine",
+      "type": "function",
+      "name": "manualStatusLine",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function manualStatusLine in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        371,
+        374
+      ],
+      "params": [
+        "status"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:formatResult",
+      "type": "function",
+      "name": "formatResult",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function formatResult in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        376,
+        383
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:readCachedManual",
+      "type": "function",
+      "name": "readCachedManual",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function readCachedManual in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        385,
+        392
+      ],
+      "params": [
+        "cacheDir",
+        "expectedSha256"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:writeCachedManual",
+      "type": "function",
+      "name": "writeCachedManual",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function writeCachedManual in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        394,
+        399
+      ],
+      "params": [
+        "cacheDir",
+        "manual"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:writeOutline",
+      "type": "function",
+      "name": "writeOutline",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function writeOutline in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        401,
+        406
+      ],
+      "params": [
+        "cacheDir",
+        "outlineText"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:fetchCodexManual",
+      "type": "function",
+      "name": "fetchCodexManual",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function fetchCodexManual in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        408,
+        497
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:parseArgs",
+      "type": "function",
+      "name": "parseArgs",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function parseArgs in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        499,
+        530
+      ],
+      "params": [
+        "argv"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:main",
+      "type": "function",
+      "name": "main",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function main in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        532,
+        541
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:envProxyHint",
+      "type": "function",
+      "name": "envProxyHint",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function envProxyHint in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        543,
+        554
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:formatErrorDetails",
+      "type": "function",
+      "name": "formatErrorDetails",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function formatErrorDetails in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        556,
+        573
+      ],
+      "params": [
+        "error"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:isCliEntrypoint",
+      "type": "function",
+      "name": "isCliEntrypoint",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Function isCliEntrypoint in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        575,
+        582
+      ],
+      "params": []
+    },
+    {
+      "id": "class:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:ManualFetchError",
+      "type": "class",
+      "name": "ManualFetchError",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "summary": "Class or type ManualFetchError in .codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "tags": [
+        "class",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        27,
+        32
+      ],
+      "methods": [
+        "constructor"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "type": "file",
+      "name": "resolve-latest-model-info.js",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "summary": ".codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js (javascript); 9 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        147
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 9,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:parseArgs",
+      "type": "function",
+      "name": "parseArgs",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "summary": "Function parseArgs in .codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        10,
+        28
+      ],
+      "params": [
+        "argv"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:readSource",
+      "type": "function",
+      "name": "readSource",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "summary": "Function readSource in .codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        30,
+        48
+      ],
+      "params": [
+        "source"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:parseIndentedInfo",
+      "type": "function",
+      "name": "parseIndentedInfo",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "summary": "Function parseIndentedInfo in .codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        50,
+        68
+      ],
+      "params": [
+        "lines",
+        "startIndex"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:parseFlatInfo",
+      "type": "function",
+      "name": "parseFlatInfo",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "summary": "Function parseFlatInfo in .codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        70,
+        81
+      ],
+      "params": [
+        "block"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:extractLatestModelInfo",
+      "type": "function",
+      "name": "extractLatestModelInfo",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "summary": "Function extractLatestModelInfo in .codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        83,
+        101
+      ],
+      "params": [
+        "markdown"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:modelToSkillSlug",
+      "type": "function",
+      "name": "modelToSkillSlug",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "summary": "Function modelToSkillSlug in .codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        103,
+        105
+      ],
+      "params": [
+        "model"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:absoluteUrl",
+      "type": "function",
+      "name": "absoluteUrl",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "summary": "Function absoluteUrl in .codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        107,
+        109
+      ],
+      "params": [
+        "baseUrl",
+        "value"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:normalizeInfo",
+      "type": "function",
+      "name": "normalizeInfo",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "summary": "Function normalizeInfo in .codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        111,
+        128
+      ],
+      "params": [
+        "info",
+        "baseUrl"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:main",
+      "type": "function",
+      "name": "main",
+      "filePath": ".codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "summary": "Function main in .codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        130,
+        142
+      ],
+      "params": []
+    },
+    {
+      "id": "document:.codex/skills/.system/openai-docs/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/.system/openai-docs/SKILL.md",
+      "summary": ".codex/skills/.system/openai-docs/SKILL.md (markdown); 14 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        167
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 14
+      }
+    },
+    {
+      "id": "config:.codex/skills/.system/plugin-creator/agents/openai.yaml",
+      "type": "config",
+      "name": "openai.yaml",
+      "filePath": ".codex/skills/.system/plugin-creator/agents/openai.yaml",
+      "summary": ".codex/skills/.system/plugin-creator/agents/openai.yaml (yaml); 1 document sections",
+      "tags": [
+        "yaml",
+        "config"
+      ],
+      "complexity": "simple",
+      "language": "yaml",
+      "lineRange": [
+        1,
+        6
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "id": "document:.codex/skills/.system/plugin-creator/references/installing-and-updating.md",
+      "type": "document",
+      "name": "installing-and-updating.md",
+      "filePath": ".codex/skills/.system/plugin-creator/references/installing-and-updating.md",
+      "summary": ".codex/skills/.system/plugin-creator/references/installing-and-updating.md (markdown); 6 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        143
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "id": "document:.codex/skills/.system/plugin-creator/references/plugin-json-spec.md",
+      "type": "document",
+      "name": "plugin-json-spec.md",
+      "filePath": ".codex/skills/.system/plugin-creator/references/plugin-json-spec.md",
+      "summary": ".codex/skills/.system/plugin-creator/references/plugin-json-spec.md (markdown); 12 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        194
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "id": "file:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "type": "file",
+      "name": "create_basic_plugin.py",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "summary": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py (python); 14 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        324
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 14,
+        "functionCount": 14,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:normalize_plugin_name",
+      "type": "function",
+      "name": "normalize_plugin_name",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "summary": "Function normalize_plugin_name in .codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        24,
+        30
+      ],
+      "params": [
+        "plugin_name"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:validate_plugin_name",
+      "type": "function",
+      "name": "validate_plugin_name",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "summary": "Function validate_plugin_name in .codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        33,
+        40
+      ],
+      "params": [
+        "plugin_name"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:validate_marketplace_name",
+      "type": "function",
+      "name": "validate_marketplace_name",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "summary": "Function validate_marketplace_name in .codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        43,
+        49
+      ],
+      "params": [
+        "marketplace_name"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:display_name_from_plugin_name",
+      "type": "function",
+      "name": "display_name_from_plugin_name",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "summary": "Function display_name_from_plugin_name in .codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        52,
+        53
+      ],
+      "params": [
+        "plugin_name"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:build_plugin_json",
+      "type": "function",
+      "name": "build_plugin_json",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "summary": "Function build_plugin_json in .codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        56,
+        80
+      ],
+      "params": [
+        "plugin_name",
+        "with_mcp",
+        "with_apps"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:build_marketplace_entry",
+      "type": "function",
+      "name": "build_marketplace_entry",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "summary": "Function build_marketplace_entry in .codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        83,
+        100
+      ],
+      "params": [
+        "plugin_name",
+        "install_policy",
+        "auth_policy",
+        "category"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:load_json",
+      "type": "function",
+      "name": "load_json",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "summary": "Function load_json in .codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        103,
+        105
+      ],
+      "params": [
+        "path"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:build_default_marketplace",
+      "type": "function",
+      "name": "build_default_marketplace",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "summary": "Function build_default_marketplace in .codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        108,
+        115
+      ],
+      "params": [
+        "marketplace_name"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:validate_marketplace_interface",
+      "type": "function",
+      "name": "validate_marketplace_interface",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "summary": "Function validate_marketplace_interface in .codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        118,
+        121
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:update_marketplace_json",
+      "type": "function",
+      "name": "update_marketplace_json",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "summary": "Function update_marketplace_json in .codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        124,
+        172
+      ],
+      "params": [
+        "marketplace_path",
+        "marketplace_name",
+        "plugin_name",
+        "install_policy",
+        "auth_policy",
+        "category",
+        "force"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:write_json",
+      "type": "function",
+      "name": "write_json",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "summary": "Function write_json in .codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        175,
+        181
+      ],
+      "params": [
+        "path",
+        "data",
+        "force"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:create_stub_file",
+      "type": "function",
+      "name": "create_stub_file",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "summary": "Function create_stub_file in .codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        184,
+        190
+      ],
+      "params": [
+        "path",
+        "payload",
+        "force"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:parse_args",
+      "type": "function",
+      "name": "parse_args",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "summary": "Function parse_args in .codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        193,
+        254
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "summary": "Function main in .codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        257,
+        320
+      ],
+      "params": []
+    },
+    {
+      "id": "file:.codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py",
+      "type": "file",
+      "name": "read_marketplace_name.py",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py",
+      "summary": ".codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py (python); 3 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        48
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py:default_marketplace_path",
+      "type": "function",
+      "name": "default_marketplace_path",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py",
+      "summary": "Function default_marketplace_path in .codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        12,
+        13
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py:parse_args",
+      "type": "function",
+      "name": "parse_args",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py",
+      "summary": "Function parse_args in .codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        16,
+        28
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py",
+      "summary": "Function main in .codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        31,
+        40
+      ],
+      "params": []
+    },
+    {
+      "id": "file:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "type": "file",
+      "name": "update_plugin_cachebuster.py",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "summary": ".codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py (python); 6 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        78
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 6,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py:parse_args",
+      "type": "function",
+      "name": "parse_args",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "summary": "Function parse_args in .codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        17,
+        29
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "summary": "Function main in .codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        32,
+        46
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py:load_manifest",
+      "type": "function",
+      "name": "load_manifest",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "summary": "Function load_manifest in .codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        49,
+        55
+      ],
+      "params": [
+        "manifest_path"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py:sanitize_cachebuster",
+      "type": "function",
+      "name": "sanitize_cachebuster",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "summary": "Function sanitize_cachebuster in .codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        56,
+        61
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py:default_cachebuster",
+      "type": "function",
+      "name": "default_cachebuster",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "summary": "Function default_cachebuster in .codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        64,
+        65
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py:with_cachebuster",
+      "type": "function",
+      "name": "with_cachebuster",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "summary": "Function with_cachebuster in .codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        68,
+        70
+      ],
+      "params": [
+        "version",
+        "cachebuster"
+      ]
+    },
+    {
+      "id": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "type": "file",
+      "name": "validate_plugin.py",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py (python); 23 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "python",
+      "lineRange": [
+        1,
+        593
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 23,
+        "functionCount": 23,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:parse_args",
+      "type": "function",
+      "name": "parse_args",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function parse_args in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        28,
+        31
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function main in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        34,
+        43
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_plugin",
+      "type": "function",
+      "name": "validate_plugin",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function validate_plugin in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        46,
+        55
+      ],
+      "params": [
+        "plugin_root"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:load_json_object",
+      "type": "function",
+      "name": "load_json_object",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function load_json_object in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        58,
+        73
+      ],
+      "params": [
+        "path",
+        "errors"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:reject_todo_markers",
+      "type": "function",
+      "name": "reject_todo_markers",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function reject_todo_markers in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        76,
+        87
+      ],
+      "params": [
+        "value",
+        "path",
+        "errors"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_manifest_shape",
+      "type": "function",
+      "name": "validate_manifest_shape",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function validate_manifest_shape in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        90,
+        205
+      ],
+      "params": [
+        "plugin_root",
+        "manifest",
+        "errors"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:require_object",
+      "type": "function",
+      "name": "require_object",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function require_object in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        208,
+        217
+      ],
+      "params": [
+        "payload",
+        "key",
+        "errors"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:require_non_empty_string",
+      "type": "function",
+      "name": "require_non_empty_string",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function require_non_empty_string in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        220,
+        232
+      ],
+      "params": [
+        "payload",
+        "key",
+        "errors",
+        "prefix"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_optional_non_empty_string",
+      "type": "function",
+      "name": "validate_optional_non_empty_string",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function validate_optional_non_empty_string in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        235,
+        247
+      ],
+      "params": [
+        "payload",
+        "key",
+        "errors",
+        "prefix"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:reject_unknown_fields",
+      "type": "function",
+      "name": "reject_unknown_fields",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function reject_unknown_fields in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        250,
+        257
+      ],
+      "params": [
+        "payload",
+        "allowed_keys",
+        "prefix",
+        "errors"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_optional_https_url",
+      "type": "function",
+      "name": "validate_optional_https_url",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function validate_optional_https_url in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        260,
+        272
+      ],
+      "params": [
+        "payload",
+        "key",
+        "errors",
+        "prefix"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_optional_contract_path",
+      "type": "function",
+      "name": "validate_optional_contract_path",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function validate_optional_contract_path in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        275,
+        286
+      ],
+      "params": [
+        "payload",
+        "key",
+        "expected",
+        "errors"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:normalize_contract_path",
+      "type": "function",
+      "name": "normalize_contract_path",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function normalize_contract_path in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        289,
+        294
+      ],
+      "params": [
+        "raw_path"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_app_manifest",
+      "type": "function",
+      "name": "validate_app_manifest",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function validate_app_manifest in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        297,
+        320
+      ],
+      "params": [
+        "path",
+        "errors"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_mcp_manifest",
+      "type": "function",
+      "name": "validate_mcp_manifest",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function validate_mcp_manifest in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        323,
+        336
+      ],
+      "params": [
+        "path",
+        "errors"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:load_companion_json_object",
+      "type": "function",
+      "name": "load_companion_json_object",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function load_companion_json_object in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        339,
+        355
+      ],
+      "params": [
+        "path",
+        "label",
+        "errors"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:reject_companion_unknown_fields",
+      "type": "function",
+      "name": "reject_companion_unknown_fields",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function reject_companion_unknown_fields in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        358,
+        365
+      ],
+      "params": [
+        "payload",
+        "allowed_keys",
+        "prefix",
+        "errors"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_skill_manifests",
+      "type": "function",
+      "name": "validate_skill_manifests",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function validate_skill_manifests in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        368,
+        375
+      ],
+      "params": [
+        "plugin_root",
+        "errors"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_skill_manifest",
+      "type": "function",
+      "name": "validate_skill_manifest",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function validate_skill_manifest in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        378,
+        425
+      ],
+      "params": [
+        "skill_root",
+        "errors"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_skill_agent_manifest",
+      "type": "function",
+      "name": "validate_skill_agent_manifest",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function validate_skill_agent_manifest in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        428,
+        536
+      ],
+      "params": [
+        "plugin_root",
+        "skill_root",
+        "agent_yaml_path",
+        "errors"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:reject_skill_agent_unknown_fields",
+      "type": "function",
+      "name": "reject_skill_agent_unknown_fields",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function reject_skill_agent_unknown_fields in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        539,
+        551
+      ],
+      "params": [
+        "payload",
+        "allowed_keys",
+        "skill_root",
+        "errors",
+        "prefix"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_optional_asset_path",
+      "type": "function",
+      "name": "validate_optional_asset_path",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function validate_optional_asset_path in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        554,
+        566
+      ],
+      "params": [
+        "base_dir",
+        "allowed_root",
+        "payload",
+        "key",
+        "errors",
+        "prefix"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_asset_path",
+      "type": "function",
+      "name": "validate_asset_path",
+      "filePath": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "summary": "Function validate_asset_path in .codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        569,
+        589
+      ],
+      "params": [
+        "base_dir",
+        "allowed_root",
+        "raw_path",
+        "field",
+        "errors"
+      ]
+    },
+    {
+      "id": "document:.codex/skills/.system/plugin-creator/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/.system/plugin-creator/SKILL.md",
+      "summary": ".codex/skills/.system/plugin-creator/SKILL.md (markdown); 7 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        243
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "id": "config:.codex/skills/.system/skill-creator/agents/openai.yaml",
+      "type": "config",
+      "name": "openai.yaml",
+      "filePath": ".codex/skills/.system/skill-creator/agents/openai.yaml",
+      "summary": ".codex/skills/.system/skill-creator/agents/openai.yaml (yaml); 1 document sections",
+      "tags": [
+        "yaml",
+        "config"
+      ],
+      "complexity": "simple",
+      "language": "yaml",
+      "lineRange": [
+        1,
+        5
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "id": "document:.codex/skills/.system/skill-creator/license.txt",
+      "type": "document",
+      "name": "license.txt",
+      "filePath": ".codex/skills/.system/skill-creator/license.txt",
+      "summary": ".codex/skills/.system/skill-creator/license.txt (txt)",
+      "tags": [
+        "txt",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "txt",
+      "lineRange": [
+        1,
+        202
+      ],
+      "metrics": {}
+    },
+    {
+      "id": "document:.codex/skills/.system/skill-creator/references/openai_yaml.md",
+      "type": "document",
+      "name": "openai_yaml.md",
+      "filePath": ".codex/skills/.system/skill-creator/references/openai_yaml.md",
+      "summary": ".codex/skills/.system/skill-creator/references/openai_yaml.md (markdown); 3 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        49
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "id": "file:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "type": "file",
+      "name": "generate_openai_yaml.py",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "summary": ".codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py (python); 7 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        226
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 7,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py:yaml_quote",
+      "type": "function",
+      "name": "yaml_quote",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "summary": "Function yaml_quote in .codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        50,
+        52
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py:format_display_name",
+      "type": "function",
+      "name": "format_display_name",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "summary": "Function format_display_name in .codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        55,
+        71
+      ],
+      "params": [
+        "skill_name"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py:generate_short_description",
+      "type": "function",
+      "name": "generate_short_description",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "summary": "Function generate_short_description in .codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        74,
+        101
+      ],
+      "params": [
+        "display_name"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py:read_frontmatter_name",
+      "type": "function",
+      "name": "read_frontmatter_name",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "summary": "Function read_frontmatter_name in .codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        104,
+        130
+      ],
+      "params": [
+        "skill_dir"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py:parse_interface_overrides",
+      "type": "function",
+      "name": "parse_interface_overrides",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "summary": "Function parse_interface_overrides in .codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        133,
+        153
+      ],
+      "params": [
+        "raw_overrides"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py:write_openai_yaml",
+      "type": "function",
+      "name": "write_openai_yaml",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "summary": "Function write_openai_yaml in .codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        156,
+        187
+      ],
+      "params": [
+        "skill_dir",
+        "skill_name",
+        "raw_overrides"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "summary": "Function main in .codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        190,
+        222
+      ],
+      "params": []
+    },
+    {
+      "id": "file:.codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "type": "file",
+      "name": "init_skill.py",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "summary": ".codex/skills/.system/skill-creator/scripts/init_skill.py (python); 6 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        400
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 6,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-creator/scripts/init_skill.py:normalize_skill_name",
+      "type": "function",
+      "name": "normalize_skill_name",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "summary": "Function normalize_skill_name in .codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        197,
+        203
+      ],
+      "params": [
+        "skill_name"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-creator/scripts/init_skill.py:title_case_skill_name",
+      "type": "function",
+      "name": "title_case_skill_name",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "summary": "Function title_case_skill_name in .codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        206,
+        208
+      ],
+      "params": [
+        "skill_name"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-creator/scripts/init_skill.py:parse_resources",
+      "type": "function",
+      "name": "parse_resources",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "summary": "Function parse_resources in .codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        211,
+        227
+      ],
+      "params": [
+        "raw_resources"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-creator/scripts/init_skill.py:create_resource_dirs",
+      "type": "function",
+      "name": "create_resource_dirs",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "summary": "Function create_resource_dirs in .codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        230,
+        255
+      ],
+      "params": [
+        "skill_dir",
+        "skill_name",
+        "skill_title",
+        "resources",
+        "include_examples"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-creator/scripts/init_skill.py:init_skill",
+      "type": "function",
+      "name": "init_skill",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "summary": "Function init_skill in .codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        258,
+        333
+      ],
+      "params": [
+        "skill_name",
+        "path",
+        "resources",
+        "include_examples",
+        "interface_overrides"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-creator/scripts/init_skill.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "summary": "Function main in .codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        336,
+        396
+      ],
+      "params": []
+    },
+    {
+      "id": "file:.codex/skills/.system/skill-creator/scripts/quick_validate.py",
+      "type": "file",
+      "name": "quick_validate.py",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/quick_validate.py",
+      "summary": ".codex/skills/.system/skill-creator/scripts/quick_validate.py (python); 1 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        101
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-creator/scripts/quick_validate.py:validate_skill",
+      "type": "function",
+      "name": "validate_skill",
+      "filePath": ".codex/skills/.system/skill-creator/scripts/quick_validate.py",
+      "summary": "Function validate_skill in .codex/skills/.system/skill-creator/scripts/quick_validate.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        15,
+        91
+      ],
+      "params": [
+        "skill_path"
+      ]
+    },
+    {
+      "id": "document:.codex/skills/.system/skill-creator/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/.system/skill-creator/SKILL.md",
+      "summary": ".codex/skills/.system/skill-creator/SKILL.md (markdown); 30 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "complex",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        416
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 30
+      }
+    },
+    {
+      "id": "config:.codex/skills/.system/skill-installer/agents/openai.yaml",
+      "type": "config",
+      "name": "openai.yaml",
+      "filePath": ".codex/skills/.system/skill-installer/agents/openai.yaml",
+      "summary": ".codex/skills/.system/skill-installer/agents/openai.yaml (yaml); 1 document sections",
+      "tags": [
+        "yaml",
+        "config"
+      ],
+      "complexity": "simple",
+      "language": "yaml",
+      "lineRange": [
+        1,
+        5
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "id": "document:.codex/skills/.system/skill-installer/LICENSE.txt",
+      "type": "document",
+      "name": "LICENSE.txt",
+      "filePath": ".codex/skills/.system/skill-installer/LICENSE.txt",
+      "summary": ".codex/skills/.system/skill-installer/LICENSE.txt (txt)",
+      "tags": [
+        "txt",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "txt",
+      "lineRange": [
+        1,
+        202
+      ],
+      "metrics": {}
+    },
+    {
+      "id": "file:.codex/skills/.system/skill-installer/scripts/github_utils.py",
+      "type": "file",
+      "name": "github_utils.py",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/github_utils.py",
+      "summary": ".codex/skills/.system/skill-installer/scripts/github_utils.py (python); 2 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        21
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/github_utils.py:github_request",
+      "type": "function",
+      "name": "github_request",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/github_utils.py",
+      "summary": "Function github_request in .codex/skills/.system/skill-installer/scripts/github_utils.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        10,
+        17
+      ],
+      "params": [
+        "url",
+        "user_agent"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/github_utils.py:github_api_contents_url",
+      "type": "function",
+      "name": "github_api_contents_url",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/github_utils.py",
+      "summary": "Function github_api_contents_url in .codex/skills/.system/skill-installer/scripts/github_utils.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        20,
+        21
+      ],
+      "params": [
+        "repo",
+        "path",
+        "ref"
+      ]
+    },
+    {
+      "id": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "type": "file",
+      "name": "install-skill-from-github.py",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py (python); 19 functions; 3 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        308
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 22,
+        "functionCount": 19,
+        "classCount": 3
+      }
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_codex_home",
+      "type": "function",
+      "name": "_codex_home",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _codex_home in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        45,
+        46
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_tmp_root",
+      "type": "function",
+      "name": "_tmp_root",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _tmp_root in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        49,
+        52
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_request",
+      "type": "function",
+      "name": "_request",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _request in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        55,
+        56
+      ],
+      "params": [
+        "url"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_parse_github_url",
+      "type": "function",
+      "name": "_parse_github_url",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _parse_github_url in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        59,
+        77
+      ],
+      "params": [
+        "url",
+        "default_ref"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_download_repo_zip",
+      "type": "function",
+      "name": "_download_repo_zip",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _download_repo_zip in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        80,
+        96
+      ],
+      "params": [
+        "owner",
+        "repo",
+        "ref",
+        "dest_dir"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_run_git",
+      "type": "function",
+      "name": "_run_git",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _run_git in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        99,
+        102
+      ],
+      "params": [
+        "args"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_safe_extract_zip",
+      "type": "function",
+      "name": "_safe_extract_zip",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _safe_extract_zip in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        105,
+        112
+      ],
+      "params": [
+        "zip_file",
+        "dest_dir"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_validate_relative_path",
+      "type": "function",
+      "name": "_validate_relative_path",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _validate_relative_path in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        115,
+        117
+      ],
+      "params": [
+        "path"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_validate_skill_name",
+      "type": "function",
+      "name": "_validate_skill_name",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _validate_skill_name in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        120,
+        125
+      ],
+      "params": [
+        "name"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_git_sparse_checkout",
+      "type": "function",
+      "name": "_git_sparse_checkout",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _git_sparse_checkout in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        128,
+        161
+      ],
+      "params": [
+        "repo_url",
+        "ref",
+        "paths",
+        "dest_dir"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_validate_skill",
+      "type": "function",
+      "name": "_validate_skill",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _validate_skill in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        164,
+        169
+      ],
+      "params": [
+        "path"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_copy_skill",
+      "type": "function",
+      "name": "_copy_skill",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _copy_skill in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        172,
+        176
+      ],
+      "params": [
+        "src",
+        "dest_dir"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_build_repo_url",
+      "type": "function",
+      "name": "_build_repo_url",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _build_repo_url in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        179,
+        180
+      ],
+      "params": [
+        "owner",
+        "repo"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_build_repo_ssh",
+      "type": "function",
+      "name": "_build_repo_ssh",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _build_repo_ssh in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        183,
+        184
+      ],
+      "params": [
+        "owner",
+        "repo"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_prepare_repo",
+      "type": "function",
+      "name": "_prepare_repo",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _prepare_repo in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        187,
+        206
+      ],
+      "params": [
+        "source",
+        "method",
+        "tmp_dir"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_resolve_source",
+      "type": "function",
+      "name": "_resolve_source",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _resolve_source in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        209,
+        240
+      ],
+      "params": [
+        "args"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_default_dest",
+      "type": "function",
+      "name": "_default_dest",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _default_dest in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        243,
+        244
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_parse_args",
+      "type": "function",
+      "name": "_parse_args",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function _parse_args in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        247,
+        266
+      ],
+      "params": [
+        "argv"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Function main in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        269,
+        304
+      ],
+      "params": [
+        "argv"
+      ]
+    },
+    {
+      "id": "class:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:Args",
+      "type": "class",
+      "name": "Args",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Class or type Args in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        22,
+        29
+      ],
+      "methods": [],
+      "properties": [
+        "url",
+        "repo",
+        "path",
+        "ref",
+        "dest",
+        "name",
+        "method"
+      ]
+    },
+    {
+      "id": "class:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:Source",
+      "type": "class",
+      "name": "Source",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Class or type Source in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        33,
+        38
+      ],
+      "methods": [],
+      "properties": [
+        "owner",
+        "repo",
+        "ref",
+        "paths",
+        "repo_url"
+      ]
+    },
+    {
+      "id": "class:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:InstallError",
+      "type": "class",
+      "name": "InstallError",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "summary": "Class or type InstallError in .codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        41,
+        42
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "file:.codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "type": "file",
+      "name": "list-skills.py",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "summary": ".codex/skills/.system/skill-installer/scripts/list-skills.py (python); 6 functions; 2 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        107
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 8,
+        "functionCount": 6,
+        "classCount": 2
+      }
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/list-skills.py:_request",
+      "type": "function",
+      "name": "_request",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "summary": "Function _request in .codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        30,
+        31
+      ],
+      "params": [
+        "url"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/list-skills.py:_codex_home",
+      "type": "function",
+      "name": "_codex_home",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "summary": "Function _codex_home in .codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        34,
+        35
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/list-skills.py:_installed_skills",
+      "type": "function",
+      "name": "_installed_skills",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "summary": "Function _installed_skills in .codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        38,
+        47
+      ],
+      "params": []
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/list-skills.py:_list_skills",
+      "type": "function",
+      "name": "_list_skills",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "summary": "Function _list_skills in .codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        50,
+        65
+      ],
+      "params": [
+        "repo",
+        "path",
+        "ref"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/list-skills.py:_parse_args",
+      "type": "function",
+      "name": "_parse_args",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "summary": "Function _parse_args in .codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        68,
+        83
+      ],
+      "params": [
+        "argv"
+      ]
+    },
+    {
+      "id": "function:.codex/skills/.system/skill-installer/scripts/list-skills.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "summary": "Function main in .codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        86,
+        103
+      ],
+      "params": [
+        "argv"
+      ]
+    },
+    {
+      "id": "class:.codex/skills/.system/skill-installer/scripts/list-skills.py:ListError",
+      "type": "class",
+      "name": "ListError",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "summary": "Class or type ListError in .codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        19,
+        20
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:.codex/skills/.system/skill-installer/scripts/list-skills.py:Args",
+      "type": "class",
+      "name": "Args",
+      "filePath": ".codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "summary": "Class or type Args in .codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        23,
+        27
+      ],
+      "methods": [],
+      "properties": [
+        "repo",
+        "path",
+        "ref",
+        "format"
+      ]
+    },
+    {
+      "id": "document:.codex/skills/.system/skill-installer/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/.system/skill-installer/SKILL.md",
+      "summary": ".codex/skills/.system/skill-installer/SKILL.md (markdown); 5 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        58
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "id": "document:.codex/skills/ai-slop-cleaner/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/ai-slop-cleaner/SKILL.md",
+      "summary": ".codex/skills/ai-slop-cleaner/SKILL.md (markdown); 7 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        148
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:sha256",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:withTimeout",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:proxyConfigured",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:responseHeaders",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:makeResponse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:parseCurlHeaders",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:tempFilePath",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:requestManualWithCurl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:requestManualWithFetch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:requestManual",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:readHeaderSha",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:nearestExistingParent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:usableCacheDir",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:defaultCacheDirCandidates",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:resolveCacheDir",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:cacheFilePath",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:outlineFilePath",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:manualLines",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:sectionTitle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:buildOutline",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:outlineMarkdown",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:manualStatusLine",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:formatResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:readCachedManual",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:writeCachedManual",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:writeOutline",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:fetchCodexManual",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:parseArgs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:envProxyHint",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:formatErrorDetails",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:isCliEntrypoint",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "target": "class:.codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs:ManualFetchError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:parseArgs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:readSource",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:parseIndentedInfo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:parseFlatInfo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:extractLatestModelInfo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:modelToSkillSlug",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:absoluteUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:normalizeInfo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "target": "function:.codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:normalize_plugin_name",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:validate_plugin_name",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:validate_marketplace_name",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:display_name_from_plugin_name",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:build_plugin_json",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:build_marketplace_entry",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:load_json",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:build_default_marketplace",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:validate_marketplace_interface",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:update_marketplace_json",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:write_json",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:create_stub_file",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:parse_args",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py:default_marketplace_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py:parse_args",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py:parse_args",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py:load_manifest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py:sanitize_cachebuster",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py:default_cachebuster",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py:with_cachebuster",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:parse_args",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_plugin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:load_json_object",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:reject_todo_markers",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_manifest_shape",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:require_object",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:require_non_empty_string",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_optional_non_empty_string",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:reject_unknown_fields",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_optional_https_url",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_optional_contract_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:normalize_contract_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_app_manifest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_mcp_manifest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:load_companion_json_object",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:reject_companion_unknown_fields",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_skill_manifests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_skill_manifest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_skill_agent_manifest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:reject_skill_agent_unknown_fields",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_optional_asset_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "target": "function:.codex/skills/.system/plugin-creator/scripts/validate_plugin.py:validate_asset_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "target": "function:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py:yaml_quote",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "target": "function:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py:format_display_name",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "target": "function:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py:generate_short_description",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "target": "function:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py:read_frontmatter_name",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "target": "function:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py:parse_interface_overrides",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "target": "function:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py:write_openai_yaml",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "target": "function:.codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "target": "function:.codex/skills/.system/skill-creator/scripts/init_skill.py:normalize_skill_name",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "target": "function:.codex/skills/.system/skill-creator/scripts/init_skill.py:title_case_skill_name",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "target": "function:.codex/skills/.system/skill-creator/scripts/init_skill.py:parse_resources",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "target": "function:.codex/skills/.system/skill-creator/scripts/init_skill.py:create_resource_dirs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "target": "function:.codex/skills/.system/skill-creator/scripts/init_skill.py:init_skill",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "target": "function:.codex/skills/.system/skill-creator/scripts/init_skill.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-creator/scripts/quick_validate.py",
+      "target": "function:.codex/skills/.system/skill-creator/scripts/quick_validate.py:validate_skill",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/github_utils.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/github_utils.py:github_request",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/github_utils.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/github_utils.py:github_api_contents_url",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_codex_home",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_tmp_root",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_request",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_parse_github_url",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_download_repo_zip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_run_git",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_safe_extract_zip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_validate_relative_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_validate_skill_name",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_git_sparse_checkout",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_validate_skill",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_copy_skill",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_build_repo_url",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_build_repo_ssh",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_prepare_repo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_resolve_source",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_default_dest",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:_parse_args",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "class:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:Args",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "class:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:Source",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "target": "class:.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py:InstallError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/list-skills.py:_request",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/list-skills.py:_codex_home",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/list-skills.py:_installed_skills",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/list-skills.py:_list_skills",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/list-skills.py:_parse_args",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "target": "function:.codex/skills/.system/skill-installer/scripts/list-skills.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "target": "class:.codex/skills/.system/skill-installer/scripts/list-skills.py:ListError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:.codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "target": "class:.codex/skills/.system/skill-installer/scripts/list-skills.py:Args",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    }
+  ]
+}

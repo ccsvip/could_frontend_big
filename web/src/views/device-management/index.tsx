@@ -4,7 +4,6 @@ import {
   DeleteOutlined,
   DesktopOutlined,
   EditOutlined,
-  LinkOutlined,
   PlusOutlined,
   ReloadOutlined,
   SearchOutlined,
@@ -67,6 +66,7 @@ import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
 
 type DeviceEditForm = {
+  name: string;
   applicationId?: number | null;
 };
 
@@ -380,6 +380,7 @@ export const DeviceManagementPage = () => {
   const openDeviceEdit = (record: DeviceRecord) => {
     setEditingDevice(record);
     deviceForm.setFieldsValue({
+      name: record.name,
       applicationId: record.applicationId ?? null,
     });
   };
@@ -390,7 +391,7 @@ export const DeviceManagementPage = () => {
     const nextDevice = await updateDevice(editingDevice.deviceCode, values);
     setDevices((current) => current.map((item) => (item.deviceCode === nextDevice.deviceCode ? nextDevice : item)));
     setEditingDevice(null);
-    message.success('设备绑定已更新');
+    message.success('设备信息已更新');
   };
 
   const handleDeviceDelete = async (record: DeviceRecord) => {
@@ -573,9 +574,9 @@ export const DeviceManagementPage = () => {
       render: (_, record) => (
         <Space size={6}>
           {canUpdateDevice ? (
-            <Tooltip title="绑定资源应用">
-              <Button size="small" icon={<LinkOutlined />} onClick={() => openDeviceEdit(record)}>
-                绑定
+            <Tooltip title="编辑设备名称和资源应用">
+              <Button size="small" icon={<EditOutlined />} onClick={() => openDeviceEdit(record)}>
+                编辑
               </Button>
             </Tooltip>
           ) : null}
@@ -908,7 +909,7 @@ export const DeviceManagementPage = () => {
       />
 
       <Modal
-        title="绑定设备"
+        title="编辑设备"
         open={!!editingDevice}
         onCancel={() => setEditingDevice(null)}
         onOk={handleDeviceSave}
@@ -917,6 +918,14 @@ export const DeviceManagementPage = () => {
         destroyOnHidden
       >
         <Form<DeviceEditForm> form={deviceForm} layout="vertical">
+          <Form.Item
+            label="设备名称"
+            name="name"
+            extra="保存后会同步到设备运行时配置 device.name。"
+            rules={[{ required: true, whitespace: true, message: '请输入设备名称' }]}
+          >
+            <Input placeholder="请输入设备名称" />
+          </Form.Item>
           <Form.Item label="资源应用" name="applicationId">
             <Select options={[...emptyApplicationOption, ...applicationOptions]} optionFilterProp="label" showSearch />
           </Form.Item>

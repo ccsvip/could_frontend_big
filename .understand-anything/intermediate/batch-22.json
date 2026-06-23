@@ -1,0 +1,485 @@
+{
+  "nodes": [
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-34.json",
+      "type": "config",
+      "name": "batch-34.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-34.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-34.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        1392
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-35.json",
+      "type": "config",
+      "name": "batch-35.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-35.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-35.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        1038
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-36-part-1.json",
+      "type": "config",
+      "name": "batch-36-part-1.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-36-part-1.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-36-part-1.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        758
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-36-part-2.json",
+      "type": "config",
+      "name": "batch-36-part-2.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-36-part-2.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-36-part-2.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        1014
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-37.json",
+      "type": "config",
+      "name": "batch-37.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-37.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-37.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        1368
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-38.json",
+      "type": "config",
+      "name": "batch-38.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-38.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-38.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        765
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-39.json",
+      "type": "config",
+      "name": "batch-39.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-39.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-39.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "moderate",
+      "language": "json",
+      "lineRange": [
+        1,
+        245
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-4-part-1.json",
+      "type": "config",
+      "name": "batch-4-part-1.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-4-part-1.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-4-part-1.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        1258
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-4-part-2.json",
+      "type": "config",
+      "name": "batch-4-part-2.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-4-part-2.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-4-part-2.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        1223
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-40.json",
+      "type": "config",
+      "name": "batch-40.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-40.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-40.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "simple",
+      "language": "json",
+      "lineRange": [
+        1,
+        96
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-5-part-1.json",
+      "type": "config",
+      "name": "batch-5-part-1.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-5-part-1.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-5-part-1.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        2765
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-5-part-2.json",
+      "type": "config",
+      "name": "batch-5-part-2.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-5-part-2.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-5-part-2.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        522
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-5-part-3.json",
+      "type": "config",
+      "name": "batch-5-part-3.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-5-part-3.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-5-part-3.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        515
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-5-part-4.json",
+      "type": "config",
+      "name": "batch-5-part-4.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-5-part-4.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-5-part-4.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        1054
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-6-part-1.json",
+      "type": "config",
+      "name": "batch-6-part-1.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-6-part-1.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-6-part-1.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        693
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-6-part-2.json",
+      "type": "config",
+      "name": "batch-6-part-2.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-6-part-2.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-6-part-2.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        1182
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-7-part-1.json",
+      "type": "config",
+      "name": "batch-7-part-1.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-7-part-1.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-7-part-1.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        1574
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-7-part-2.json",
+      "type": "config",
+      "name": "batch-7-part-2.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-7-part-2.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-7-part-2.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        1777
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-7-part-3.json",
+      "type": "config",
+      "name": "batch-7-part-3.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-7-part-3.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-7-part-3.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        566
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "config:.understand-anything/.trash-1781514098969/batch-7-part-4.json",
+      "type": "config",
+      "name": "batch-7-part-4.json",
+      "filePath": ".understand-anything/.trash-1781514098969/batch-7-part-4.json",
+      "summary": ".understand-anything/.trash-1781514098969/batch-7-part-4.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        1456
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    }
+  ],
+  "edges": []
+}

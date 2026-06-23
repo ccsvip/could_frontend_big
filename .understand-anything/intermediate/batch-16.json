@@ -1,0 +1,125 @@
+{
+  "nodes": [
+    {
+      "id": "document:.codex/skills/.system/imagegen/references/cli.md",
+      "type": "document",
+      "name": "cli.md",
+      "filePath": ".codex/skills/.system/imagegen/references/cli.md",
+      "summary": ".codex/skills/.system/imagegen/references/cli.md (markdown); 12 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        242
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "id": "document:.codex/skills/.system/imagegen/references/codex-network.md",
+      "type": "document",
+      "name": "codex-network.md",
+      "filePath": ".codex/skills/.system/imagegen/references/codex-network.md",
+      "summary": ".codex/skills/.system/imagegen/references/codex-network.md (markdown); 5 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        33
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "id": "document:.codex/skills/.system/imagegen/references/image-api.md",
+      "type": "document",
+      "name": "image-api.md",
+      "filePath": ".codex/skills/.system/imagegen/references/image-api.md",
+      "summary": ".codex/skills/.system/imagegen/references/image-api.md (markdown); 11 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        90
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "id": "document:.codex/skills/.system/imagegen/references/prompting.md",
+      "type": "document",
+      "name": "prompting.md",
+      "filePath": ".codex/skills/.system/imagegen/references/prompting.md",
+      "summary": ".codex/skills/.system/imagegen/references/prompting.md (markdown); 14 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        118
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 14
+      }
+    },
+    {
+      "id": "document:.codex/skills/.system/imagegen/references/sample-prompts.md",
+      "type": "document",
+      "name": "sample-prompts.md",
+      "filePath": ".codex/skills/.system/imagegen/references/sample-prompts.md",
+      "summary": ".codex/skills/.system/imagegen/references/sample-prompts.md (markdown); 41 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "complex",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        433
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 41
+      }
+    }
+  ],
+  "edges": []
+}

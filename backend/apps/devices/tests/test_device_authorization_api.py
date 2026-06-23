@@ -210,6 +210,30 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(context.exception.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(context.exception.message, '设备未绑定公司')
+        self.assertEqual(context.exception.code, 'DEVICE_TENANT_UNBOUND')
+        self.assertEqual(context.exception.business_status_code, 44011)
+
+    def test_runtime_config_expired_device_returns_stable_error_code(self):
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Expired Android',
+            code='ANDROID-EXPIRED-001',
+            is_enabled=True,
+            authorization_type=Device.AUTHORIZATION_TRIAL,
+            expires_at=timezone.now() - timedelta(days=1),
+        )
+
+        response = self.client.get(
+            '/api/v1/device-runtime/config/',
+            HTTP_X_DEVICE_CODE='ANDROID-EXPIRED-001',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data['code'], 'DEVICE_EXPIRED')
+        self.assertEqual(response.data['statusCode'], 44014)
+        self.assertEqual(response.data['message'], '设备授权已过期')
 
     def test_device_status_choices_match_android_runtime_states(self):
         self.assertEqual(
@@ -853,6 +877,34 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(device.authorization_type, Device.AUTHORIZATION_PERMANENT)
         self.assertIsNone(device.expires_at)
         self.assertTrue(device.is_enabled)
+
+    def test_device_name_update_is_reflected_in_runtime_config(self):
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Old Name',
+            code='ANDROID-CONFIG-NAME-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        update_response = self.client.patch(
+            f'/api/v1/devices/{device.code}/',
+            {'name': 'New Runtime Name'},
+            format='json',
+        )
+        self.assertEqual(update_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(update_response.data['name'], 'New Runtime Name')
+
+        config_response = self.client.get(
+            '/api/v1/device-runtime/config/',
+            HTTP_X_DEVICE_CODE='ANDROID-CONFIG-NAME-001',
+        )
+
+        self.assertEqual(config_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(config_response.data['device']['name'], 'New Runtime Name')
+        self.assertEqual(config_response.data['device']['deviceCode'], 'ANDROID-CONFIG-NAME-001')
 
     def test_device_group_can_be_deleted(self):
         self.grant_permissions('devices.view', 'devices.create', 'devices.update', 'devices.delete')

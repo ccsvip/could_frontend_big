@@ -1,0 +1,605 @@
+{
+  "nodes": [
+    {
+      "id": "document:.codex/skills/analyze/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/analyze/SKILL.md",
+      "summary": ".codex/skills/analyze/SKILL.md (markdown); 17 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        146
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 17
+      }
+    },
+    {
+      "id": "document:.codex/skills/ask/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/ask/SKILL.md",
+      "summary": ".codex/skills/ask/SKILL.md (markdown); 5 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        58
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "id": "document:.codex/skills/autopilot/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/autopilot/SKILL.md",
+      "summary": ".codex/skills/autopilot/SKILL.md (markdown)",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        215
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "document:.codex/skills/autoresearch-goal/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/autoresearch-goal/SKILL.md",
+      "summary": ".codex/skills/autoresearch-goal/SKILL.md (markdown); 5 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        36
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "id": "document:.codex/skills/autoresearch/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/autoresearch/SKILL.md",
+      "summary": ".codex/skills/autoresearch/SKILL.md (markdown); 10 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        72
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    },
+    {
+      "id": "document:.codex/skills/best-practice-research/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/best-practice-research/SKILL.md",
+      "summary": ".codex/skills/best-practice-research/SKILL.md (markdown); 10 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        88
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    },
+    {
+      "id": "document:.codex/skills/cancel/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/cancel/SKILL.md",
+      "summary": ".codex/skills/cancel/SKILL.md (markdown); 24 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        399
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 24
+      }
+    },
+    {
+      "id": "document:.codex/skills/code-review/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/code-review/SKILL.md",
+      "summary": ".codex/skills/code-review/SKILL.md (markdown); 20 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        292
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 20
+      }
+    },
+    {
+      "id": "document:.codex/skills/configure-notifications/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/configure-notifications/SKILL.md",
+      "summary": ".codex/skills/configure-notifications/SKILL.md (markdown); 17 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        287
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 17
+      }
+    },
+    {
+      "id": "document:.codex/skills/deep-interview/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/deep-interview/SKILL.md",
+      "summary": ".codex/skills/deep-interview/SKILL.md (markdown); 24 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "complex",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        579
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 24
+      }
+    },
+    {
+      "id": "document:.codex/skills/design/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/design/SKILL.md",
+      "summary": ".codex/skills/design/SKILL.md (markdown); 13 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        180
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 13
+      }
+    },
+    {
+      "id": "document:.codex/skills/doctor/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/doctor/SKILL.md",
+      "summary": ".codex/skills/doctor/SKILL.md (markdown); 18 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        239
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 18
+      }
+    },
+    {
+      "id": "document:.codex/skills/hud/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/hud/SKILL.md",
+      "summary": ".codex/skills/hud/SKILL.md (markdown); 12 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        98
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "id": "document:.codex/skills/omx-setup/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/omx-setup/SKILL.md",
+      "summary": ".codex/skills/omx-setup/SKILL.md (markdown); 9 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        135
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "id": "document:.codex/skills/performance-goal/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/performance-goal/SKILL.md",
+      "summary": ".codex/skills/performance-goal/SKILL.md (markdown); 5 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        65
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "id": "document:.codex/skills/pipeline/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/pipeline/SKILL.md",
+      "summary": ".codex/skills/pipeline/SKILL.md (markdown); 8 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        97
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "id": "document:.codex/skills/plan/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/plan/SKILL.md",
+      "summary": ".codex/skills/plan/SKILL.md (markdown); 11 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        277
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "id": "document:.codex/skills/prometheus-strict/README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": ".codex/skills/prometheus-strict/README.md",
+      "summary": ".codex/skills/prometheus-strict/README.md (markdown); 6 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        35
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "id": "document:.codex/skills/prometheus-strict/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/prometheus-strict/SKILL.md",
+      "summary": ".codex/skills/prometheus-strict/SKILL.md (markdown); 12 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        219
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "id": "document:.codex/skills/ralph/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/ralph/SKILL.md",
+      "summary": ".codex/skills/ralph/SKILL.md (markdown); 11 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        294
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "id": "document:.codex/skills/ralplan/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/ralplan/SKILL.md",
+      "summary": ".codex/skills/ralplan/SKILL.md (markdown); 18 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        203
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 18
+      }
+    },
+    {
+      "id": "document:.codex/skills/skill/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/skill/SKILL.md",
+      "summary": ".codex/skills/skill/SKILL.md (markdown); 32 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "complex",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        836
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 32
+      }
+    },
+    {
+      "id": "document:.codex/skills/team/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/team/SKILL.md",
+      "summary": ".codex/skills/team/SKILL.md (markdown); 40 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "complex",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        536
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 40
+      }
+    },
+    {
+      "id": "document:.codex/skills/ultragoal/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/ultragoal/SKILL.md",
+      "summary": ".codex/skills/ultragoal/SKILL.md (markdown); 8 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        139
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "id": "document:.codex/skills/ultraqa/SKILL.md",
+      "type": "document",
+      "name": "SKILL.md",
+      "filePath": ".codex/skills/ultraqa/SKILL.md",
+      "summary": ".codex/skills/ultraqa/SKILL.md (markdown); 18 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        263
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 18
+      }
+    }
+  ],
+  "edges": []
+}

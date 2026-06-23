@@ -1,0 +1,3337 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/apps/resources/point_serializers.py",
+      "type": "file",
+      "name": "point_serializers.py",
+      "filePath": "backend/apps/resources/point_serializers.py",
+      "summary": "backend/apps/resources/point_serializers.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        34
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/resources/point_serializers.py:PointSerializer",
+      "type": "class",
+      "name": "PointSerializer",
+      "filePath": "backend/apps/resources/point_serializers.py",
+      "summary": "Class or type PointSerializer in backend/apps/resources/point_serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        6,
+        34
+      ],
+      "methods": [
+        "validate_command"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/point_views.py",
+      "type": "file",
+      "name": "point_views.py",
+      "filePath": "backend/apps/resources/point_views.py",
+      "summary": "backend/apps/resources/point_views.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        135
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/resources/point_views.py:PointViewSet",
+      "type": "class",
+      "name": "PointViewSet",
+      "filePath": "backend/apps/resources/point_views.py",
+      "summary": "Class or type PointViewSet in backend/apps/resources/point_views.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        82,
+        135
+      ],
+      "methods": [
+        "get_permissions",
+        "paginate_queryset",
+        "get_queryset",
+        "perform_create"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/serializers.py",
+      "type": "file",
+      "name": "serializers.py",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "backend/apps/resources/serializers.py (python); 5 functions; 16 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "python",
+      "lineRange": [
+        1,
+        1012
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 21,
+        "functionCount": 5,
+        "classCount": 16
+      }
+    },
+    {
+      "id": "function:backend/apps/resources/serializers.py:build_absolute_file_url",
+      "type": "function",
+      "name": "build_absolute_file_url",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Function build_absolute_file_url in backend/apps/resources/serializers.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        32,
+        36
+      ],
+      "params": [
+        "request",
+        "file_field"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/serializers.py:build_resource_url",
+      "type": "function",
+      "name": "build_resource_url",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Function build_resource_url in backend/apps/resources/serializers.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        909,
+        910
+      ],
+      "params": [
+        "request",
+        "resource"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/serializers.py:build_task_step_content",
+      "type": "function",
+      "name": "build_task_step_content",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Function build_task_step_content in backend/apps/resources/serializers.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        913,
+        943
+      ],
+      "params": [
+        "request",
+        "step"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/serializers.py:build_task_step_runtime_data",
+      "type": "function",
+      "name": "build_task_step_runtime_data",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Function build_task_step_runtime_data in backend/apps/resources/serializers.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        946,
+        962
+      ],
+      "params": [
+        "request",
+        "step"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/serializers.py:build_task_command_list",
+      "type": "function",
+      "name": "build_task_command_list",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Function build_task_command_list in backend/apps/resources/serializers.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        965,
+        995
+      ],
+      "params": [
+        "steps"
+      ]
+    },
+    {
+      "id": "class:backend/apps/resources/serializers.py:ResourceSerializer",
+      "type": "class",
+      "name": "ResourceSerializer",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Class or type ResourceSerializer in backend/apps/resources/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        39,
+        165
+      ],
+      "methods": [
+        "get_fileUrl",
+        "get_fileName",
+        "get_fileSize",
+        "validate",
+        "create",
+        "update"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/serializers.py:MinioConfigSerializer",
+      "type": "class",
+      "name": "MinioConfigSerializer",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Class or type MinioConfigSerializer in backend/apps/resources/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        168,
+        192
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/serializers.py:TenantVideoQuotaSerializer",
+      "type": "class",
+      "name": "TenantVideoQuotaSerializer",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Class or type TenantVideoQuotaSerializer in backend/apps/resources/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        195,
+        251
+      ],
+      "methods": [
+        "get_quotaLimited",
+        "_summary",
+        "get_usedBytes",
+        "get_usedMB",
+        "get_remainingBytes",
+        "get_remainingMB"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/serializers.py:ScrollingTextItemSerializer",
+      "type": "class",
+      "name": "ScrollingTextItemSerializer",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Class or type ScrollingTextItemSerializer in backend/apps/resources/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        254,
+        261
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/serializers.py:LocalizedScrollingTextItemSerializer",
+      "type": "class",
+      "name": "LocalizedScrollingTextItemSerializer",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Class or type LocalizedScrollingTextItemSerializer in backend/apps/resources/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        264,
+        273
+      ],
+      "methods": [
+        "get_text"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/serializers.py:ScrollingTextSerializer",
+      "type": "class",
+      "name": "ScrollingTextSerializer",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Class or type ScrollingTextSerializer in backend/apps/resources/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        276,
+        364
+      ],
+      "methods": [
+        "get_localizedItems",
+        "validate_i18nScheme",
+        "validate_items",
+        "validate",
+        "create",
+        "update",
+        "_replace_items"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/serializers.py:VoiceToneSerializer",
+      "type": "class",
+      "name": "VoiceToneSerializer",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Class or type VoiceToneSerializer in backend/apps/resources/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        367,
+        482
+      ],
+      "methods": [
+        "get_iconUrl",
+        "get_iconName",
+        "get_iconSize",
+        "get_audioUrl",
+        "get_audioName",
+        "get_audioSize",
+        "validate",
+        "create",
+        "update"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/serializers.py:ModelAssetSerializer",
+      "type": "class",
+      "name": "ModelAssetSerializer",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Class or type ModelAssetSerializer in backend/apps/resources/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        485,
+        599
+      ],
+      "methods": [
+        "get_thumbnailUrl",
+        "get_thumbnailName",
+        "get_modelFileName",
+        "get_localUrl",
+        "get_effectiveUrl",
+        "validate",
+        "create",
+        "update"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/serializers.py:CommandGroupSerializer",
+      "type": "class",
+      "name": "CommandGroupSerializer",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Class or type CommandGroupSerializer in backend/apps/resources/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        602,
+        625
+      ],
+      "methods": [
+        "validate_groupType"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/serializers.py:ControlCommandSerializer",
+      "type": "class",
+      "name": "ControlCommandSerializer",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Class or type ControlCommandSerializer in backend/apps/resources/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        628,
+        682
+      ],
+      "methods": [
+        "validate"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/serializers.py:TaskCommandStepsField",
+      "type": "class",
+      "name": "TaskCommandStepsField",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Class or type TaskCommandStepsField in backend/apps/resources/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        685,
+        699
+      ],
+      "methods": [
+        "to_representation",
+        "to_internal_value"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/serializers.py:InnerTaskStepsField",
+      "type": "class",
+      "name": "InnerTaskStepsField",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Class or type InnerTaskStepsField in backend/apps/resources/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        702,
+        723
+      ],
+      "methods": [
+        "to_representation",
+        "to_internal_value"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/serializers.py:TaskCommandStepSerializer",
+      "type": "class",
+      "name": "TaskCommandStepSerializer",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Class or type TaskCommandStepSerializer in backend/apps/resources/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        726,
+        809
+      ],
+      "methods": [
+        "validate_type",
+        "validate",
+        "get_content"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/serializers.py:TaskCommandSerializer",
+      "type": "class",
+      "name": "TaskCommandSerializer",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Class or type TaskCommandSerializer in backend/apps/resources/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        812,
+        906
+      ],
+      "methods": [
+        "validate",
+        "create",
+        "update",
+        "_replace_tasks",
+        "_create_task_step",
+        "_validate_task_orders"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/serializers.py:CommandDataLookupSerializer",
+      "type": "class",
+      "name": "CommandDataLookupSerializer",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Class or type CommandDataLookupSerializer in backend/apps/resources/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        998,
+        1002
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/serializers.py:AliyunCommandItemSerializer",
+      "type": "class",
+      "name": "AliyunCommandItemSerializer",
+      "filePath": "backend/apps/resources/serializers.py",
+      "summary": "Class or type AliyunCommandItemSerializer in backend/apps/resources/serializers.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        1005,
+        1012
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/services/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/resources/services/__init__.py",
+      "summary": "backend/apps/resources/services/__init__.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:backend/apps/resources/services/aliyun_commands.py",
+      "type": "file",
+      "name": "aliyun_commands.py",
+      "filePath": "backend/apps/resources/services/aliyun_commands.py",
+      "summary": "backend/apps/resources/services/aliyun_commands.py (python); 8 functions; 4 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        271
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 12,
+        "functionCount": 8,
+        "classCount": 4
+      }
+    },
+    {
+      "id": "function:backend/apps/resources/services/aliyun_commands.py:fetch_aliyun_commands",
+      "type": "function",
+      "name": "fetch_aliyun_commands",
+      "filePath": "backend/apps/resources/services/aliyun_commands.py",
+      "summary": "Function fetch_aliyun_commands in backend/apps/resources/services/aliyun_commands.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        40,
+        74
+      ],
+      "params": []
+    },
+    {
+      "id": "function:backend/apps/resources/services/aliyun_commands.py:get_aliyun_command_config",
+      "type": "function",
+      "name": "get_aliyun_command_config",
+      "filePath": "backend/apps/resources/services/aliyun_commands.py",
+      "summary": "Function get_aliyun_command_config in backend/apps/resources/services/aliyun_commands.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        77,
+        120
+      ],
+      "params": []
+    },
+    {
+      "id": "function:backend/apps/resources/services/aliyun_commands.py:build_acs3_headers",
+      "type": "function",
+      "name": "build_acs3_headers",
+      "filePath": "backend/apps/resources/services/aliyun_commands.py",
+      "summary": "Function build_acs3_headers in backend/apps/resources/services/aliyun_commands.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        123,
+        169
+      ],
+      "params": [
+        "config",
+        "request_body"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/aliyun_commands.py:normalize_aliyun_command_items",
+      "type": "function",
+      "name": "normalize_aliyun_command_items",
+      "filePath": "backend/apps/resources/services/aliyun_commands.py",
+      "summary": "Function normalize_aliyun_command_items in backend/apps/resources/services/aliyun_commands.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        172,
+        193
+      ],
+      "params": [
+        "payload",
+        "default_domain_code"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/aliyun_commands.py:extract_aliyun_command_items",
+      "type": "function",
+      "name": "extract_aliyun_command_items",
+      "filePath": "backend/apps/resources/services/aliyun_commands.py",
+      "summary": "Function extract_aliyun_command_items in backend/apps/resources/services/aliyun_commands.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        196,
+        227
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/aliyun_commands.py:build_upstream_error_message",
+      "type": "function",
+      "name": "build_upstream_error_message",
+      "filePath": "backend/apps/resources/services/aliyun_commands.py",
+      "summary": "Function build_upstream_error_message in backend/apps/resources/services/aliyun_commands.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        230,
+        255
+      ],
+      "params": [
+        "response"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/aliyun_commands.py:first_present",
+      "type": "function",
+      "name": "first_present",
+      "filePath": "backend/apps/resources/services/aliyun_commands.py",
+      "summary": "Function first_present in backend/apps/resources/services/aliyun_commands.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        258,
+        263
+      ],
+      "params": [
+        "item"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/aliyun_commands.py:ensure_list",
+      "type": "function",
+      "name": "ensure_list",
+      "filePath": "backend/apps/resources/services/aliyun_commands.py",
+      "summary": "Function ensure_list in backend/apps/resources/services/aliyun_commands.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        266,
+        271
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "class:backend/apps/resources/services/aliyun_commands.py:AliyunCommandServiceError",
+      "type": "class",
+      "name": "AliyunCommandServiceError",
+      "filePath": "backend/apps/resources/services/aliyun_commands.py",
+      "summary": "Class or type AliyunCommandServiceError in backend/apps/resources/services/aliyun_commands.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        14,
+        15
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/services/aliyun_commands.py:AliyunCommandConfigError",
+      "type": "class",
+      "name": "AliyunCommandConfigError",
+      "filePath": "backend/apps/resources/services/aliyun_commands.py",
+      "summary": "Class or type AliyunCommandConfigError in backend/apps/resources/services/aliyun_commands.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        18,
+        19
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/services/aliyun_commands.py:AliyunCommandUpstreamError",
+      "type": "class",
+      "name": "AliyunCommandUpstreamError",
+      "filePath": "backend/apps/resources/services/aliyun_commands.py",
+      "summary": "Class or type AliyunCommandUpstreamError in backend/apps/resources/services/aliyun_commands.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        22,
+        23
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/services/aliyun_commands.py:AliyunCommandConfig",
+      "type": "class",
+      "name": "AliyunCommandConfig",
+      "filePath": "backend/apps/resources/services/aliyun_commands.py",
+      "summary": "Class or type AliyunCommandConfig in backend/apps/resources/services/aliyun_commands.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        27,
+        37
+      ],
+      "methods": [],
+      "properties": [
+        "app_id",
+        "domain_code",
+        "workspace_id",
+        "access_key_id",
+        "access_key_secret",
+        "region",
+        "endpoint",
+        "api_version",
+        "action",
+        "timeout_seconds"
+      ]
+    },
+    {
+      "id": "file:backend/apps/resources/services/feishu.py",
+      "type": "file",
+      "name": "feishu.py",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "backend/apps/resources/services/feishu.py (python); 17 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "python",
+      "lineRange": [
+        1,
+        549
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 17,
+        "functionCount": 17,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:_build_signature",
+      "type": "function",
+      "name": "_build_signature",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function _build_signature in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        37,
+        44
+      ],
+      "params": [
+        "timestamp",
+        "secret"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:_format_beijing_now",
+      "type": "function",
+      "name": "_format_beijing_now",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function _format_beijing_now in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        47,
+        49
+      ],
+      "params": []
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:_is_localhost",
+      "type": "function",
+      "name": "_is_localhost",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function _is_localhost in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        52,
+        54
+      ],
+      "params": [
+        "ip"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:_resolve_server_ip",
+      "type": "function",
+      "name": "_resolve_server_ip",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function _resolve_server_ip in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        57,
+        99
+      ],
+      "params": []
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:_append_server_ip",
+      "type": "function",
+      "name": "_append_server_ip",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function _append_server_ip in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        102,
+        105
+      ],
+      "params": [
+        "text"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:send_feishu_text",
+      "type": "function",
+      "name": "send_feishu_text",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function send_feishu_text in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        108,
+        156
+      ],
+      "params": [
+        "text"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:_resolve_username",
+      "type": "function",
+      "name": "_resolve_username",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function _resolve_username in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        159,
+        179
+      ],
+      "params": [
+        "user"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:_resolve_company_name",
+      "type": "function",
+      "name": "_resolve_company_name",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function _resolve_company_name in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        182,
+        190
+      ],
+      "params": [
+        "user"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:notify_business_event",
+      "type": "function",
+      "name": "notify_business_event",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function notify_business_event in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        193,
+        226
+      ],
+      "params": [
+        "title",
+        "action",
+        "user",
+        "target_label",
+        "target_name",
+        "extra_lines",
+        "company_name"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:notify_command_event",
+      "type": "function",
+      "name": "notify_command_event",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function notify_command_event in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        229,
+        251
+      ],
+      "params": [
+        "action",
+        "user",
+        "command_type",
+        "command_name",
+        "command_code",
+        "extra_lines",
+        "company_name"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:notify_control_command_event",
+      "type": "function",
+      "name": "notify_control_command_event",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function notify_control_command_event in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        254,
+        262
+      ],
+      "params": [
+        "action",
+        "user",
+        "command_name"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:send_feishu_card",
+      "type": "function",
+      "name": "send_feishu_card",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function send_feishu_card in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        288,
+        331
+      ],
+      "params": [
+        "card"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:build_business_event_card",
+      "type": "function",
+      "name": "build_business_event_card",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function build_business_event_card in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        334,
+        399
+      ],
+      "params": [
+        "title",
+        "action",
+        "user",
+        "target_label",
+        "target_name",
+        "extra_lines",
+        "company_name"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:notify_business_event_card",
+      "type": "function",
+      "name": "notify_business_event_card",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function notify_business_event_card in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        402,
+        421
+      ],
+      "params": [
+        "title",
+        "action",
+        "user",
+        "target_label",
+        "target_name",
+        "extra_lines",
+        "company_name"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:_diff_field_element",
+      "type": "function",
+      "name": "_diff_field_element",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function _diff_field_element in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        424,
+        441
+      ],
+      "params": [
+        "label",
+        "before",
+        "after"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:build_command_change_card",
+      "type": "function",
+      "name": "build_command_change_card",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function build_command_change_card in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        444,
+        522
+      ],
+      "params": [
+        "action",
+        "user_label",
+        "command_type",
+        "name_before",
+        "name_after",
+        "command_code_before",
+        "command_code_after",
+        "group_name",
+        "company_name"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/feishu.py:notify_command_change",
+      "type": "function",
+      "name": "notify_command_change",
+      "filePath": "backend/apps/resources/services/feishu.py",
+      "summary": "Function notify_command_change in backend/apps/resources/services/feishu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        525,
+        549
+      ],
+      "params": [
+        "action",
+        "user",
+        "command_type",
+        "name_before",
+        "name_after",
+        "command_code_before",
+        "command_code_after",
+        "group_name",
+        "company_name"
+      ]
+    },
+    {
+      "id": "file:backend/apps/resources/services/minio_client.py",
+      "type": "file",
+      "name": "minio_client.py",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "backend/apps/resources/services/minio_client.py (python); 16 functions; 2 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        322
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 18,
+        "functionCount": 16,
+        "classCount": 2
+      }
+    },
+    {
+      "id": "function:backend/apps/resources/services/minio_client.py:_strip",
+      "type": "function",
+      "name": "_strip",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Function _strip in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        43,
+        44
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/minio_client.py:_bool_from_env",
+      "type": "function",
+      "name": "_bool_from_env",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Function _bool_from_env in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        47,
+        55
+      ],
+      "params": [
+        "name",
+        "default"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/minio_client.py:_int_from_env",
+      "type": "function",
+      "name": "_int_from_env",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Function _int_from_env in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        58,
+        65
+      ],
+      "params": [
+        "name",
+        "default"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/minio_client.py:get_minio_settings",
+      "type": "function",
+      "name": "get_minio_settings",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Function get_minio_settings in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        68,
+        106
+      ],
+      "params": []
+    },
+    {
+      "id": "function:backend/apps/resources/services/minio_client.py:_require_complete",
+      "type": "function",
+      "name": "_require_complete",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Function _require_complete in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        109,
+        122
+      ],
+      "params": [
+        "settings"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/minio_client.py:_build_client",
+      "type": "function",
+      "name": "_build_client",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Function _build_client in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        125,
+        134
+      ],
+      "params": [
+        "settings",
+        "endpoint"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/minio_client.py:_ensure_bucket",
+      "type": "function",
+      "name": "_ensure_bucket",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Function _ensure_bucket in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        137,
+        163
+      ],
+      "params": [
+        "client",
+        "settings"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/minio_client.py:tenant_object_prefix",
+      "type": "function",
+      "name": "tenant_object_prefix",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Function tenant_object_prefix in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        166,
+        169
+      ],
+      "params": [
+        "tenant"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/minio_client.py:build_video_object_key",
+      "type": "function",
+      "name": "build_video_object_key",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Function build_video_object_key in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        172,
+        178
+      ],
+      "params": [
+        "filename",
+        "tenant"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/minio_client.py:validate_tenant_object_key",
+      "type": "function",
+      "name": "validate_tenant_object_key",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Function validate_tenant_object_key in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        181,
+        188
+      ],
+      "params": [
+        "object_key",
+        "tenant"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/minio_client.py:build_public_object_url",
+      "type": "function",
+      "name": "build_public_object_url",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Function build_public_object_url in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        191,
+        202
+      ],
+      "params": [
+        "object_key",
+        "settings"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/minio_client.py:get_tenant_video_usage_bytes",
+      "type": "function",
+      "name": "get_tenant_video_usage_bytes",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Function get_tenant_video_usage_bytes in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        205,
+        216
+      ],
+      "params": [
+        "tenant"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/minio_client.py:get_tenant_video_quota_summary",
+      "type": "function",
+      "name": "get_tenant_video_quota_summary",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Function get_tenant_video_quota_summary in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        219,
+        257
+      ],
+      "params": [
+        "tenant"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/minio_client.py:presign_video_put_url",
+      "type": "function",
+      "name": "presign_video_put_url",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Function presign_video_put_url in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        260,
+        295
+      ],
+      "params": [
+        "filename",
+        "content_type",
+        "file_size",
+        "tenant"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/minio_client.py:delete_object",
+      "type": "function",
+      "name": "delete_object",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Function delete_object in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        298,
+        309
+      ],
+      "params": [
+        "object_key"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/services/minio_client.py:get_video_upload_config",
+      "type": "function",
+      "name": "get_video_upload_config",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Function get_video_upload_config in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        312,
+        322
+      ],
+      "params": [
+        "tenant"
+      ]
+    },
+    {
+      "id": "class:backend/apps/resources/services/minio_client.py:MinioConfigError",
+      "type": "class",
+      "name": "MinioConfigError",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Class or type MinioConfigError in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        24,
+        25
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/services/minio_client.py:MinioSettings",
+      "type": "class",
+      "name": "MinioSettings",
+      "filePath": "backend/apps/resources/services/minio_client.py",
+      "summary": "Class or type MinioSettings in backend/apps/resources/services/minio_client.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        29,
+        40
+      ],
+      "methods": [],
+      "properties": [
+        "endpoint",
+        "internal_endpoint",
+        "access_key",
+        "secret_key",
+        "bucket_name",
+        "secure",
+        "region",
+        "public_base_url",
+        "video_max_size_bytes",
+        "allow_video_cloud_url",
+        "is_active"
+      ]
+    },
+    {
+      "id": "file:backend/apps/resources/tasks.py",
+      "type": "file",
+      "name": "tasks.py",
+      "filePath": "backend/apps/resources/tasks.py",
+      "summary": "backend/apps/resources/tasks.py (python); 6 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        137
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 6,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:backend/apps/resources/tasks.py:_resolve_notification_user",
+      "type": "function",
+      "name": "_resolve_notification_user",
+      "filePath": "backend/apps/resources/tasks.py",
+      "summary": "Function _resolve_notification_user in backend/apps/resources/tasks.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        13,
+        33
+      ],
+      "params": [
+        "user"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/tasks.py:_resolve_notification_company",
+      "type": "function",
+      "name": "_resolve_notification_company",
+      "filePath": "backend/apps/resources/tasks.py",
+      "summary": "Function _resolve_notification_company in backend/apps/resources/tasks.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        36,
+        45
+      ],
+      "params": [
+        "user"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/tasks.py:notify_command_event_task",
+      "type": "function",
+      "name": "notify_command_event_task",
+      "filePath": "backend/apps/resources/tasks.py",
+      "summary": "Function notify_command_event_task in backend/apps/resources/tasks.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        49,
+        59
+      ],
+      "params": [
+        "action",
+        "user_label",
+        "command_type",
+        "command_name",
+        "command_code",
+        "extra_lines",
+        "company_name"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/tasks.py:enqueue_command_notification",
+      "type": "function",
+      "name": "enqueue_command_notification",
+      "filePath": "backend/apps/resources/tasks.py",
+      "summary": "Function enqueue_command_notification in backend/apps/resources/tasks.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        62,
+        78
+      ],
+      "params": [
+        "action",
+        "user",
+        "command_type",
+        "command_name",
+        "command_code",
+        "extra_lines"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/tasks.py:notify_command_change_task",
+      "type": "function",
+      "name": "notify_command_change_task",
+      "filePath": "backend/apps/resources/tasks.py",
+      "summary": "Function notify_command_change_task in backend/apps/resources/tasks.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        82,
+        105
+      ],
+      "params": [
+        "action",
+        "user_label",
+        "command_type",
+        "name_before",
+        "name_after",
+        "command_code_before",
+        "command_code_after",
+        "group_name",
+        "company_name"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/tasks.py:enqueue_command_change_notification",
+      "type": "function",
+      "name": "enqueue_command_change_notification",
+      "filePath": "backend/apps/resources/tasks.py",
+      "summary": "Function enqueue_command_change_notification in backend/apps/resources/tasks.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        108,
+        137
+      ],
+      "params": [
+        "action",
+        "user",
+        "command_type",
+        "name_before",
+        "name_after",
+        "command_code_before",
+        "command_code_after",
+        "group_name"
+      ]
+    },
+    {
+      "id": "file:backend/apps/resources/tests/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/resources/tests/__init__.py",
+      "summary": "backend/apps/resources/tests/__init__.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_admin_control_command.py",
+      "type": "file",
+      "name": "test_admin_control_command.py",
+      "filePath": "backend/apps/resources/tests/test_admin_control_command.py",
+      "summary": "backend/apps/resources/tests/test_admin_control_command.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        48
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_admin_control_command.py:ControlCommandAdminTests",
+      "type": "class",
+      "name": "ControlCommandAdminTests",
+      "filePath": "backend/apps/resources/tests/test_admin_control_command.py",
+      "summary": "Class or type ControlCommandAdminTests in backend/apps/resources/tests/test_admin_control_command.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        9,
+        48
+      ],
+      "methods": [
+        "setUp",
+        "test_resources_app_list_contains_backend_management_entries",
+        "test_control_command_admin_page_renders_command_fields",
+        "test_task_command_admin_page_renders_task_fields"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_admin_model_asset.py",
+      "type": "file",
+      "name": "test_admin_model_asset.py",
+      "filePath": "backend/apps/resources/tests/test_admin_model_asset.py",
+      "summary": "backend/apps/resources/tests/test_admin_model_asset.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        36
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_admin_model_asset.py:ResourceAdminEntryTests",
+      "type": "class",
+      "name": "ResourceAdminEntryTests",
+      "filePath": "backend/apps/resources/tests/test_admin_model_asset.py",
+      "summary": "Class or type ResourceAdminEntryTests in backend/apps/resources/tests/test_admin_model_asset.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        9,
+        36
+      ],
+      "methods": [
+        "setUp",
+        "test_resources_app_list_points_model_management_to_model_asset_admin",
+        "test_model_management_admin_page_renders_model_fields"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_aliyun_command_access_data.py",
+      "type": "file",
+      "name": "test_aliyun_command_access_data.py",
+      "filePath": "backend/apps/resources/tests/test_aliyun_command_access_data.py",
+      "summary": "backend/apps/resources/tests/test_aliyun_command_access_data.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        42
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_aliyun_command_access_data.py:AliyunCommandAccessDataMigrationTests",
+      "type": "class",
+      "name": "AliyunCommandAccessDataMigrationTests",
+      "filePath": "backend/apps/resources/tests/test_aliyun_command_access_data.py",
+      "summary": "Class or type AliyunCommandAccessDataMigrationTests in backend/apps/resources/tests/test_aliyun_command_access_data.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        12,
+        42
+      ],
+      "methods": [
+        "test_seed_aliyun_command_access_data_assigns_readonly_permission_to_existing_roles",
+        "test_seed_aliyun_command_access_data_assigns_view_permission_to_admin_role",
+        "test_seed_aliyun_command_access_data_keeps_existing_commands_parent_menu"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_aliyun_command_api.py",
+      "type": "file",
+      "name": "test_aliyun_command_api.py",
+      "filePath": "backend/apps/resources/tests/test_aliyun_command_api.py",
+      "summary": "backend/apps/resources/tests/test_aliyun_command_api.py (python); 2 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        217
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_aliyun_command_api.py:_MockHttpxResponse",
+      "type": "class",
+      "name": "_MockHttpxResponse",
+      "filePath": "backend/apps/resources/tests/test_aliyun_command_api.py",
+      "summary": "Class or type _MockHttpxResponse in backend/apps/resources/tests/test_aliyun_command_api.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        16,
+        23
+      ],
+      "methods": [
+        "__init__",
+        "json"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_aliyun_command_api.py:AliyunCommandApiTests",
+      "type": "class",
+      "name": "AliyunCommandApiTests",
+      "filePath": "backend/apps/resources/tests/test_aliyun_command_api.py",
+      "summary": "Class or type AliyunCommandApiTests in backend/apps/resources/tests/test_aliyun_command_api.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        26,
+        217
+      ],
+      "methods": [
+        "setUp",
+        "grant_permissions",
+        "test_get_aliyun_commands_returns_normalized_items",
+        "test_get_aliyun_commands_requires_view_permission",
+        "test_aliyun_commands_endpoint_is_get_only",
+        "test_get_aliyun_commands_returns_controlled_error_when_config_missing",
+        "test_get_aliyun_commands_maps_upstream_timeout_to_bad_gateway",
+        "test_get_aliyun_commands_surfaces_signature_mismatch_as_config_hint",
+        "test_get_aliyun_commands_rejects_malformed_payload"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "type": "file",
+      "name": "test_backend_management_flow_api.py",
+      "filePath": "backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "summary": "backend/apps/resources/tests/test_backend_management_flow_api.py (python); 1 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "python",
+      "lineRange": [
+        1,
+        767
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/resources/tests/test_backend_management_flow_api.py:build_upload",
+      "type": "function",
+      "name": "build_upload",
+      "filePath": "backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "summary": "Function build_upload in backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        20,
+        21
+      ],
+      "params": [
+        "name",
+        "content",
+        "content_type"
+      ]
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_backend_management_flow_api.py:BackendManagementFlowApiTests",
+      "type": "class",
+      "name": "BackendManagementFlowApiTests",
+      "filePath": "backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "summary": "Class or type BackendManagementFlowApiTests in backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "complex",
+      "lineRange": [
+        24,
+        767
+      ],
+      "methods": [
+        "setUp",
+        "tearDown",
+        "grant_permissions",
+        "create_group",
+        "test_point_management_only_requires_name_command_and_enabled_state",
+        "test_point_management_allows_anonymous_access",
+        "test_control_command_uses_html_fields_under_control_group",
+        "test_control_command_notification_uses_authenticated_operator",
+        "test_group_and_task_command_mutations_send_feishu_notifications",
+        "test_command_group_create_does_not_wait_for_feishu_delivery",
+        "test_command_notification_task_delivers_feishu_message",
+        "test_command_notification_task_sends_feishu_card",
+        "test_feishu_text_appends_configured_server_ip",
+        "test_feishu_text_converts_localhost_ip_to_localhost",
+        "test_control_command_accepts_ascii_value_type_and_runtime_returns_ascii",
+        "test_runtime_lookup_uses_point_command_and_returns_scene_task_steps",
+        "test_image_task_step_returns_empty_image_text_when_omitted",
+        "test_runtime_lookup_can_return_task_steps_by_task_command_query",
+        "test_navigation_task_step_returns_inner_tasks_at_runtime",
+        "test_navigation_task_step_exposes_is_show_and_command_list",
+        "test_export_management_is_admin_only_even_with_export_permission"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_business_metadata_cache_api.py",
+      "type": "file",
+      "name": "test_business_metadata_cache_api.py",
+      "filePath": "backend/apps/resources/tests/test_business_metadata_cache_api.py",
+      "summary": "backend/apps/resources/tests/test_business_metadata_cache_api.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        141
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_business_metadata_cache_api.py:BusinessMetadataCacheApiTests",
+      "type": "class",
+      "name": "BusinessMetadataCacheApiTests",
+      "filePath": "backend/apps/resources/tests/test_business_metadata_cache_api.py",
+      "summary": "Class or type BusinessMetadataCacheApiTests in backend/apps/resources/tests/test_business_metadata_cache_api.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        29,
+        141
+      ],
+      "methods": [
+        "setUp",
+        "tearDown",
+        "grant_permissions",
+        "get_cache_key_count",
+        "test_resource_list_metadata_is_cached_and_invalidated_after_create",
+        "test_voice_tone_list_metadata_is_cached_and_invalidated_after_update",
+        "test_knowledge_document_metadata_cache_is_invalidated_after_download_count_changes"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_control_command_access_data.py",
+      "type": "file",
+      "name": "test_control_command_access_data.py",
+      "filePath": "backend/apps/resources/tests/test_control_command_access_data.py",
+      "summary": "backend/apps/resources/tests/test_control_command_access_data.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        40
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_control_command_access_data.py:ControlCommandAccessDataMigrationTests",
+      "type": "class",
+      "name": "ControlCommandAccessDataMigrationTests",
+      "filePath": "backend/apps/resources/tests/test_control_command_access_data.py",
+      "summary": "Class or type ControlCommandAccessDataMigrationTests in backend/apps/resources/tests/test_control_command_access_data.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        12,
+        40
+      ],
+      "methods": [
+        "test_seed_control_command_access_data_assigns_readonly_permissions_to_existing_roles",
+        "test_seed_control_command_access_data_assigns_full_permissions_to_admin_role"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_minio_client.py",
+      "type": "file",
+      "name": "test_minio_client.py",
+      "filePath": "backend/apps/resources/tests/test_minio_client.py",
+      "summary": "backend/apps/resources/tests/test_minio_client.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        171
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_minio_client.py:MinioClientTests",
+      "type": "class",
+      "name": "MinioClientTests",
+      "filePath": "backend/apps/resources/tests/test_minio_client.py",
+      "summary": "Class or type MinioClientTests in backend/apps/resources/tests/test_minio_client.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        16,
+        171
+      ],
+      "methods": [
+        "test_resource_has_file_when_object_key_exists",
+        "test_video_object_key_is_namespaced_by_tenant",
+        "test_validate_tenant_object_key_rejects_other_tenant_prefix",
+        "test_settings_fall_back_to_env",
+        "test_db_config_overrides_env_and_public_url_is_derived",
+        "test_presign_uses_internal_endpoint_for_bucket_check_only",
+        "test_presign_rejects_when_tenant_video_quota_is_exhausted",
+        "test_presign_allows_upload_when_tenant_video_quota_is_unlimited"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_minio_settings_api.py",
+      "type": "file",
+      "name": "test_minio_settings_api.py",
+      "filePath": "backend/apps/resources/tests/test_minio_settings_api.py",
+      "summary": "backend/apps/resources/tests/test_minio_settings_api.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        122
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_minio_settings_api.py:MinioSettingsApiTests",
+      "type": "class",
+      "name": "MinioSettingsApiTests",
+      "filePath": "backend/apps/resources/tests/test_minio_settings_api.py",
+      "summary": "Class or type MinioSettingsApiTests in backend/apps/resources/tests/test_minio_settings_api.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        12,
+        122
+      ],
+      "methods": [
+        "test_superuser_can_read_and_update_minio_settings",
+        "test_non_superuser_cannot_read_minio_settings",
+        "test_superuser_read_returns_effective_env_fallback_without_secret",
+        "test_superuser_can_configure_tenant_video_quota",
+        "test_superuser_can_set_tenant_video_quota_unlimited",
+        "test_quota_list_includes_tenant_usage"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_minio_video_api.py",
+      "type": "file",
+      "name": "test_minio_video_api.py",
+      "filePath": "backend/apps/resources/tests/test_minio_video_api.py",
+      "summary": "backend/apps/resources/tests/test_minio_video_api.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        164
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_minio_video_api.py:MinioVideoApiTests",
+      "type": "class",
+      "name": "MinioVideoApiTests",
+      "filePath": "backend/apps/resources/tests/test_minio_video_api.py",
+      "summary": "Class or type MinioVideoApiTests in backend/apps/resources/tests/test_minio_video_api.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        15,
+        164
+      ],
+      "methods": [
+        "setUp",
+        "grant_permissions",
+        "test_upload_config_requires_video_create_permission",
+        "test_presign_uses_request_tenant",
+        "test_create_video_resource_accepts_own_tenant_object_key",
+        "test_create_video_resource_rejects_object_key_and_cloud_url_together",
+        "test_create_video_resource_requires_source_when_cloud_url_enabled",
+        "test_create_video_resource_rejects_cloud_url_when_disabled",
+        "test_create_video_resource_requires_upload_when_cloud_url_disabled",
+        "test_create_video_resource_rejects_other_tenant_object_key"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_model_asset_access_data.py",
+      "type": "file",
+      "name": "test_model_asset_access_data.py",
+      "filePath": "backend/apps/resources/tests/test_model_asset_access_data.py",
+      "summary": "backend/apps/resources/tests/test_model_asset_access_data.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        27
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_model_asset_access_data.py:ModelAssetAccessDataMigrationTests",
+      "type": "class",
+      "name": "ModelAssetAccessDataMigrationTests",
+      "filePath": "backend/apps/resources/tests/test_model_asset_access_data.py",
+      "summary": "Class or type ModelAssetAccessDataMigrationTests in backend/apps/resources/tests/test_model_asset_access_data.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        12,
+        27
+      ],
+      "methods": [
+        "test_seed_model_access_data_assigns_menu_and_permissions_to_existing_roles"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_model_asset_api.py",
+      "type": "file",
+      "name": "test_model_asset_api.py",
+      "filePath": "backend/apps/resources/tests/test_model_asset_api.py",
+      "summary": "backend/apps/resources/tests/test_model_asset_api.py (python); 2 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        218
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/resources/tests/test_model_asset_api.py:build_test_png",
+      "type": "function",
+      "name": "build_test_png",
+      "filePath": "backend/apps/resources/tests/test_model_asset_api.py",
+      "summary": "Function build_test_png in backend/apps/resources/tests/test_model_asset_api.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        19,
+        24
+      ],
+      "params": [
+        "name"
+      ]
+    },
+    {
+      "id": "function:backend/apps/resources/tests/test_model_asset_api.py:build_test_model_file",
+      "type": "function",
+      "name": "build_test_model_file",
+      "filePath": "backend/apps/resources/tests/test_model_asset_api.py",
+      "summary": "Function build_test_model_file in backend/apps/resources/tests/test_model_asset_api.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        27,
+        28
+      ],
+      "params": [
+        "name",
+        "content"
+      ]
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_model_asset_api.py:ModelAssetApiTests",
+      "type": "class",
+      "name": "ModelAssetApiTests",
+      "filePath": "backend/apps/resources/tests/test_model_asset_api.py",
+      "summary": "Class or type ModelAssetApiTests in backend/apps/resources/tests/test_model_asset_api.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        31,
+        218
+      ],
+      "methods": [
+        "setUp",
+        "tearDown",
+        "grant_permissions",
+        "test_list_model_assets_requires_view_permission",
+        "test_create_model_asset_with_local_file_success",
+        "test_create_model_asset_allows_cloud_only",
+        "test_create_model_asset_rejects_duplicate_name",
+        "test_create_model_asset_requires_local_file_or_cloud_url",
+        "test_list_model_assets_supports_keyword_type_and_orientation_filters",
+        "test_update_model_asset_can_clear_local_file_when_cloud_url_exists"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_point_access_data.py",
+      "type": "file",
+      "name": "test_point_access_data.py",
+      "filePath": "backend/apps/resources/tests/test_point_access_data.py",
+      "summary": "backend/apps/resources/tests/test_point_access_data.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        65
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_point_access_data.py:BackendManagementFlowAccessMigrationTests",
+      "type": "class",
+      "name": "BackendManagementFlowAccessMigrationTests",
+      "filePath": "backend/apps/resources/tests/test_point_access_data.py",
+      "summary": "Class or type BackendManagementFlowAccessMigrationTests in backend/apps/resources/tests/test_point_access_data.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        12,
+        65
+      ],
+      "methods": [
+        "test_seed_assigns_readonly_permissions_to_existing_non_admin_roles",
+        "test_seed_assigns_full_permissions_to_admin_and_removes_legacy_access",
+        "test_unseed_removes_new_child_menus_but_keeps_commands_parent"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_resource_api.py",
+      "type": "file",
+      "name": "test_resource_api.py",
+      "filePath": "backend/apps/resources/tests/test_resource_api.py",
+      "summary": "backend/apps/resources/tests/test_resource_api.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        117
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_resource_api.py:ResourceApiTests",
+      "type": "class",
+      "name": "ResourceApiTests",
+      "filePath": "backend/apps/resources/tests/test_resource_api.py",
+      "summary": "Class or type ResourceApiTests in backend/apps/resources/tests/test_resource_api.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        20,
+        117
+      ],
+      "methods": [
+        "setUp",
+        "grant_permissions",
+        "test_create_video_resource_allows_cloud_url_without_file",
+        "test_create_video_resource_rejects_empty_cloud_url_and_empty_file",
+        "test_video_resource_list_accepts_page_size_query_param",
+        "test_update_video_resource_allows_long_oss_cloud_url"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_scrolling_text_access_data.py",
+      "type": "file",
+      "name": "test_scrolling_text_access_data.py",
+      "filePath": "backend/apps/resources/tests/test_scrolling_text_access_data.py",
+      "summary": "backend/apps/resources/tests/test_scrolling_text_access_data.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        38
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_scrolling_text_access_data.py:ScrollingTextAccessDataMigrationTests",
+      "type": "class",
+      "name": "ScrollingTextAccessDataMigrationTests",
+      "filePath": "backend/apps/resources/tests/test_scrolling_text_access_data.py",
+      "summary": "Class or type ScrollingTextAccessDataMigrationTests in backend/apps/resources/tests/test_scrolling_text_access_data.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        12,
+        38
+      ],
+      "methods": [
+        "test_seed_scrolling_text_access_data_assigns_view_to_regular_roles",
+        "test_seed_scrolling_text_access_data_assigns_all_permissions_to_admin_role"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/apps/resources/tests/test_scrolling_text_api.py",
+      "type": "file",
+      "name": "test_scrolling_text_api.py",
+      "filePath": "backend/apps/resources/tests/test_scrolling_text_api.py",
+      "summary": "backend/apps/resources/tests/test_scrolling_text_api.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        251
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/resources/tests/test_scrolling_text_api.py:ScrollingTextApiTests",
+      "type": "class",
+      "name": "ScrollingTextApiTests",
+      "filePath": "backend/apps/resources/tests/test_scrolling_text_api.py",
+      "summary": "Class or type ScrollingTextApiTests in backend/apps/resources/tests/test_scrolling_text_api.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        23,
+        251
+      ],
+      "methods": [
+        "setUp",
+        "grant_permissions",
+        "test_list_scrolling_texts_is_public",
+        "test_create_scrolling_text_success",
+        "test_create_scrolling_text_rejects_empty_items",
+        "test_create_scrolling_text_can_omit_title_and_active_state",
+        "test_create_scrolling_text_invalidates_cached_empty_list",
+        "test_list_scrolling_texts_returns_language_specific_texts",
+        "test_list_scrolling_texts_without_params_returns_pair_content_list",
+        "test_scrolling_text_content_action_supports_language_body",
+        "test_list_scrolling_texts_supports_exact_title_query",
+        "test_update_scrolling_text_replaces_items_in_order",
+        "get_cache_key_count"
+      ],
+      "properties": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/apps/resources/point_serializers.py",
+      "target": "class:backend/apps/resources/point_serializers.py:PointSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/point_views.py",
+      "target": "class:backend/apps/resources/point_views.py:PointViewSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "function:backend/apps/resources/serializers.py:build_absolute_file_url",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "function:backend/apps/resources/serializers.py:build_resource_url",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "function:backend/apps/resources/serializers.py:build_task_step_content",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "function:backend/apps/resources/serializers.py:build_task_step_runtime_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "function:backend/apps/resources/serializers.py:build_task_command_list",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "class:backend/apps/resources/serializers.py:ResourceSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "class:backend/apps/resources/serializers.py:MinioConfigSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "class:backend/apps/resources/serializers.py:TenantVideoQuotaSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "class:backend/apps/resources/serializers.py:ScrollingTextItemSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "class:backend/apps/resources/serializers.py:LocalizedScrollingTextItemSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "class:backend/apps/resources/serializers.py:ScrollingTextSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "class:backend/apps/resources/serializers.py:VoiceToneSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "class:backend/apps/resources/serializers.py:ModelAssetSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "class:backend/apps/resources/serializers.py:CommandGroupSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "class:backend/apps/resources/serializers.py:ControlCommandSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "class:backend/apps/resources/serializers.py:TaskCommandStepsField",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "class:backend/apps/resources/serializers.py:InnerTaskStepsField",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "class:backend/apps/resources/serializers.py:TaskCommandStepSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "class:backend/apps/resources/serializers.py:TaskCommandSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "class:backend/apps/resources/serializers.py:CommandDataLookupSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/serializers.py",
+      "target": "class:backend/apps/resources/serializers.py:AliyunCommandItemSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/aliyun_commands.py",
+      "target": "function:backend/apps/resources/services/aliyun_commands.py:fetch_aliyun_commands",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/aliyun_commands.py",
+      "target": "function:backend/apps/resources/services/aliyun_commands.py:get_aliyun_command_config",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/aliyun_commands.py",
+      "target": "function:backend/apps/resources/services/aliyun_commands.py:build_acs3_headers",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/aliyun_commands.py",
+      "target": "function:backend/apps/resources/services/aliyun_commands.py:normalize_aliyun_command_items",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/aliyun_commands.py",
+      "target": "function:backend/apps/resources/services/aliyun_commands.py:extract_aliyun_command_items",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/aliyun_commands.py",
+      "target": "function:backend/apps/resources/services/aliyun_commands.py:build_upstream_error_message",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/aliyun_commands.py",
+      "target": "function:backend/apps/resources/services/aliyun_commands.py:first_present",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/aliyun_commands.py",
+      "target": "function:backend/apps/resources/services/aliyun_commands.py:ensure_list",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/aliyun_commands.py",
+      "target": "class:backend/apps/resources/services/aliyun_commands.py:AliyunCommandServiceError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/aliyun_commands.py",
+      "target": "class:backend/apps/resources/services/aliyun_commands.py:AliyunCommandConfigError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/aliyun_commands.py",
+      "target": "class:backend/apps/resources/services/aliyun_commands.py:AliyunCommandUpstreamError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/aliyun_commands.py",
+      "target": "class:backend/apps/resources/services/aliyun_commands.py:AliyunCommandConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:_build_signature",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:_format_beijing_now",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:_is_localhost",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:_resolve_server_ip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:_append_server_ip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:send_feishu_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:_resolve_username",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:_resolve_company_name",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:notify_business_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:notify_command_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:notify_control_command_event",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:send_feishu_card",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:build_business_event_card",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:notify_business_event_card",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:_diff_field_element",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:build_command_change_card",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/feishu.py",
+      "target": "function:backend/apps/resources/services/feishu.py:notify_command_change",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "function:backend/apps/resources/services/minio_client.py:_strip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "function:backend/apps/resources/services/minio_client.py:_bool_from_env",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "function:backend/apps/resources/services/minio_client.py:_int_from_env",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "function:backend/apps/resources/services/minio_client.py:get_minio_settings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "function:backend/apps/resources/services/minio_client.py:_require_complete",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "function:backend/apps/resources/services/minio_client.py:_build_client",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "function:backend/apps/resources/services/minio_client.py:_ensure_bucket",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "function:backend/apps/resources/services/minio_client.py:tenant_object_prefix",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "function:backend/apps/resources/services/minio_client.py:build_video_object_key",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "function:backend/apps/resources/services/minio_client.py:validate_tenant_object_key",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "function:backend/apps/resources/services/minio_client.py:build_public_object_url",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "function:backend/apps/resources/services/minio_client.py:get_tenant_video_usage_bytes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "function:backend/apps/resources/services/minio_client.py:get_tenant_video_quota_summary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "function:backend/apps/resources/services/minio_client.py:presign_video_put_url",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "function:backend/apps/resources/services/minio_client.py:delete_object",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "function:backend/apps/resources/services/minio_client.py:get_video_upload_config",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "class:backend/apps/resources/services/minio_client.py:MinioConfigError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/services/minio_client.py",
+      "target": "class:backend/apps/resources/services/minio_client.py:MinioSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tasks.py",
+      "target": "function:backend/apps/resources/tasks.py:_resolve_notification_user",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tasks.py",
+      "target": "function:backend/apps/resources/tasks.py:_resolve_notification_company",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tasks.py",
+      "target": "function:backend/apps/resources/tasks.py:notify_command_event_task",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tasks.py",
+      "target": "function:backend/apps/resources/tasks.py:enqueue_command_notification",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tasks.py",
+      "target": "function:backend/apps/resources/tasks.py:notify_command_change_task",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tasks.py",
+      "target": "function:backend/apps/resources/tasks.py:enqueue_command_change_notification",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_admin_control_command.py",
+      "target": "class:backend/apps/resources/tests/test_admin_control_command.py:ControlCommandAdminTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_admin_model_asset.py",
+      "target": "class:backend/apps/resources/tests/test_admin_model_asset.py:ResourceAdminEntryTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_aliyun_command_access_data.py",
+      "target": "class:backend/apps/resources/tests/test_aliyun_command_access_data.py:AliyunCommandAccessDataMigrationTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_aliyun_command_api.py",
+      "target": "class:backend/apps/resources/tests/test_aliyun_command_api.py:_MockHttpxResponse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_aliyun_command_api.py",
+      "target": "class:backend/apps/resources/tests/test_aliyun_command_api.py:AliyunCommandApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "target": "function:backend/apps/resources/tests/test_backend_management_flow_api.py:build_upload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_backend_management_flow_api.py",
+      "target": "class:backend/apps/resources/tests/test_backend_management_flow_api.py:BackendManagementFlowApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_business_metadata_cache_api.py",
+      "target": "class:backend/apps/resources/tests/test_business_metadata_cache_api.py:BusinessMetadataCacheApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_control_command_access_data.py",
+      "target": "class:backend/apps/resources/tests/test_control_command_access_data.py:ControlCommandAccessDataMigrationTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_minio_client.py",
+      "target": "class:backend/apps/resources/tests/test_minio_client.py:MinioClientTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_minio_settings_api.py",
+      "target": "class:backend/apps/resources/tests/test_minio_settings_api.py:MinioSettingsApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_minio_video_api.py",
+      "target": "class:backend/apps/resources/tests/test_minio_video_api.py:MinioVideoApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_model_asset_access_data.py",
+      "target": "class:backend/apps/resources/tests/test_model_asset_access_data.py:ModelAssetAccessDataMigrationTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_model_asset_api.py",
+      "target": "function:backend/apps/resources/tests/test_model_asset_api.py:build_test_png",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_model_asset_api.py",
+      "target": "function:backend/apps/resources/tests/test_model_asset_api.py:build_test_model_file",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_model_asset_api.py",
+      "target": "class:backend/apps/resources/tests/test_model_asset_api.py:ModelAssetApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_point_access_data.py",
+      "target": "class:backend/apps/resources/tests/test_point_access_data.py:BackendManagementFlowAccessMigrationTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_resource_api.py",
+      "target": "class:backend/apps/resources/tests/test_resource_api.py:ResourceApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_scrolling_text_access_data.py",
+      "target": "class:backend/apps/resources/tests/test_scrolling_text_access_data.py:ScrollingTextAccessDataMigrationTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/resources/tests/test_scrolling_text_api.py",
+      "target": "class:backend/apps/resources/tests/test_scrolling_text_api.py:ScrollingTextApiTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    }
+  ]
+}

@@ -1,0 +1,2351 @@
+{
+  "nodes": [
+    {
+      "id": "file:web/src/views/device-authorization-center/utils.ts",
+      "type": "file",
+      "name": "utils.ts",
+      "filePath": "web/src/views/device-authorization-center/utils.ts",
+      "summary": "web/src/views/device-authorization-center/utils.ts (typescript); 3 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        16
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/device-authorization-center/utils.ts:buildBindPayload",
+      "type": "function",
+      "name": "buildBindPayload",
+      "filePath": "web/src/views/device-authorization-center/utils.ts",
+      "summary": "Function buildBindPayload in web/src/views/device-authorization-center/utils.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        9
+      ],
+      "params": [
+        "values"
+      ]
+    },
+    {
+      "id": "function:web/src/views/device-authorization-center/utils.ts:buildTenantOptions",
+      "type": "function",
+      "name": "buildTenantOptions",
+      "filePath": "web/src/views/device-authorization-center/utils.ts",
+      "summary": "Function buildTenantOptions in web/src/views/device-authorization-center/utils.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        11,
+        11
+      ],
+      "params": [
+        "tenants"
+      ]
+    },
+    {
+      "id": "function:web/src/views/device-authorization-center/utils.ts:getInfoText",
+      "type": "function",
+      "name": "getInfoText",
+      "filePath": "web/src/views/device-authorization-center/utils.ts",
+      "summary": "Function getInfoText in web/src/views/device-authorization-center/utils.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        13,
+        16
+      ],
+      "params": [
+        "info",
+        "key"
+      ]
+    },
+    {
+      "id": "file:web/src/views/device-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/device-management/index.tsx",
+      "summary": "web/src/views/device-management/index.tsx (typescript); 5 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        976
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 1,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/device-management/index.tsx:resolveDeviceRuntimeDiagnostic",
+      "type": "function",
+      "name": "resolveDeviceRuntimeDiagnostic",
+      "filePath": "web/src/views/device-management/index.tsx",
+      "summary": "Function resolveDeviceRuntimeDiagnostic in web/src/views/device-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        89,
+        137
+      ],
+      "params": [
+        "device"
+      ]
+    },
+    {
+      "id": "function:web/src/views/device-management/index.tsx:toSelectOptions",
+      "type": "function",
+      "name": "toSelectOptions",
+      "filePath": "web/src/views/device-management/index.tsx",
+      "summary": "Function toSelectOptions in web/src/views/device-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        149,
+        150
+      ],
+      "params": [
+        "items"
+      ]
+    },
+    {
+      "id": "function:web/src/views/device-management/index.tsx:buildGeneratedApplicationCode",
+      "type": "function",
+      "name": "buildGeneratedApplicationCode",
+      "filePath": "web/src/views/device-management/index.tsx",
+      "summary": "Function buildGeneratedApplicationCode in web/src/views/device-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        152,
+        152
+      ],
+      "params": []
+    },
+    {
+      "id": "function:web/src/views/device-management/index.tsx:isDeviceRealtimePayload",
+      "type": "function",
+      "name": "isDeviceRealtimePayload",
+      "filePath": "web/src/views/device-management/index.tsx",
+      "summary": "Function isDeviceRealtimePayload in web/src/views/device-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        154,
+        155
+      ],
+      "params": [
+        "payload"
+      ]
+    },
+    {
+      "id": "function:web/src/views/device-management/index.tsx:DeviceManagementPage",
+      "type": "function",
+      "name": "DeviceManagementPage",
+      "filePath": "web/src/views/device-management/index.tsx",
+      "summary": "Function DeviceManagementPage in web/src/views/device-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "complex",
+      "lineRange": [
+        160,
+        976
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/views/employee-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/employee-management/index.tsx",
+      "summary": "web/src/views/employee-management/index.tsx (typescript); 2 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        277
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/employee-management/index.tsx:EmployeesTab",
+      "type": "function",
+      "name": "EmployeesTab",
+      "filePath": "web/src/views/employee-management/index.tsx",
+      "summary": "Function EmployeesTab in web/src/views/employee-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        25,
+        268
+      ],
+      "params": []
+    },
+    {
+      "id": "function:web/src/views/employee-management/index.tsx:EmployeeManagementPage",
+      "type": "function",
+      "name": "EmployeeManagementPage",
+      "filePath": "web/src/views/employee-management/index.tsx",
+      "summary": "Function EmployeeManagementPage in web/src/views/employee-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        270,
+        277
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/views/force-password-change/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/force-password-change/index.tsx",
+      "summary": "web/src/views/force-password-change/index.tsx (typescript); 1 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        99
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/force-password-change/index.tsx:ForcePasswordChangePage",
+      "type": "function",
+      "name": "ForcePasswordChangePage",
+      "filePath": "web/src/views/force-password-change/index.tsx",
+      "summary": "Function ForcePasswordChangePage in web/src/views/force-password-change/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        19,
+        99
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/views/knowledge-base-settings/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/knowledge-base-settings/index.tsx",
+      "summary": "web/src/views/knowledge-base-settings/index.tsx (typescript); 2 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        354
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/knowledge-base-settings/index.tsx:toModelFormValues",
+      "type": "function",
+      "name": "toModelFormValues",
+      "filePath": "web/src/views/knowledge-base-settings/index.tsx",
+      "summary": "Function toModelFormValues in web/src/views/knowledge-base-settings/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        62,
+        74
+      ],
+      "params": [
+        "settings"
+      ]
+    },
+    {
+      "id": "function:web/src/views/knowledge-base-settings/index.tsx:KnowledgeBaseSettingsPage",
+      "type": "function",
+      "name": "KnowledgeBaseSettingsPage",
+      "filePath": "web/src/views/knowledge-base-settings/index.tsx",
+      "summary": "Function KnowledgeBaseSettingsPage in web/src/views/knowledge-base-settings/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        76,
+        354
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/views/knowledge-base/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/knowledge-base/index.tsx",
+      "summary": "web/src/views/knowledge-base/index.tsx (typescript); 2 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        638
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/knowledge-base/index.tsx:formatFileSize",
+      "type": "function",
+      "name": "formatFileSize",
+      "filePath": "web/src/views/knowledge-base/index.tsx",
+      "summary": "Function formatFileSize in web/src/views/knowledge-base/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        63,
+        69
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:web/src/views/knowledge-base/index.tsx:KnowledgeBasePage",
+      "type": "function",
+      "name": "KnowledgeBasePage",
+      "filePath": "web/src/views/knowledge-base/index.tsx",
+      "summary": "Function KnowledgeBasePage in web/src/views/knowledge-base/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "complex",
+      "lineRange": [
+        71,
+        638
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/views/llm-management.ts",
+      "type": "file",
+      "name": "llm-management.ts",
+      "filePath": "web/src/views/llm-management.ts",
+      "summary": "web/src/views/llm-management.ts (typescript)",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:web/src/views/llm-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/llm-management/index.tsx",
+      "summary": "web/src/views/llm-management/index.tsx (typescript); 1 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        632
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/llm-management/index.tsx:LlmManagementPage",
+      "type": "function",
+      "name": "LlmManagementPage",
+      "filePath": "web/src/views/llm-management/index.tsx",
+      "summary": "Function LlmManagementPage in web/src/views/llm-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "complex",
+      "lineRange": [
+        59,
+        632
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/views/llm-settings/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/llm-settings/index.tsx",
+      "summary": "web/src/views/llm-settings/index.tsx (typescript); 2 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        174
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/llm-settings/index.tsx:getModelAlias",
+      "type": "function",
+      "name": "getModelAlias",
+      "filePath": "web/src/views/llm-settings/index.tsx",
+      "summary": "Function getModelAlias in web/src/views/llm-settings/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        13,
+        13
+      ],
+      "params": [
+        "model"
+      ]
+    },
+    {
+      "id": "function:web/src/views/llm-settings/index.tsx:LlmSettingsPage",
+      "type": "function",
+      "name": "LlmSettingsPage",
+      "filePath": "web/src/views/llm-settings/index.tsx",
+      "summary": "Function LlmSettingsPage in web/src/views/llm-settings/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        15,
+        174
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/views/log-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/log-management/index.tsx",
+      "summary": "web/src/views/log-management/index.tsx (typescript); 1 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        213
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/log-management/index.tsx:LogManagementPage",
+      "type": "function",
+      "name": "LogManagementPage",
+      "filePath": "web/src/views/log-management/index.tsx",
+      "summary": "Function LogManagementPage in web/src/views/log-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        22,
+        213
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/views/login/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/login/index.tsx",
+      "summary": "web/src/views/login/index.tsx (typescript); 10 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        453
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 10,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/login/index.tsx:UserIcon",
+      "type": "function",
+      "name": "UserIcon",
+      "filePath": "web/src/views/login/index.tsx",
+      "summary": "Function UserIcon in web/src/views/login/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        26,
+        31
+      ],
+      "params": [
+        "props"
+      ]
+    },
+    {
+      "id": "function:web/src/views/login/index.tsx:LockIcon",
+      "type": "function",
+      "name": "LockIcon",
+      "filePath": "web/src/views/login/index.tsx",
+      "summary": "Function LockIcon in web/src/views/login/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        33,
+        38
+      ],
+      "params": [
+        "props"
+      ]
+    },
+    {
+      "id": "function:web/src/views/login/index.tsx:EyeIcon",
+      "type": "function",
+      "name": "EyeIcon",
+      "filePath": "web/src/views/login/index.tsx",
+      "summary": "Function EyeIcon in web/src/views/login/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        40,
+        45
+      ],
+      "params": [
+        "props"
+      ]
+    },
+    {
+      "id": "function:web/src/views/login/index.tsx:EyeOffIcon",
+      "type": "function",
+      "name": "EyeOffIcon",
+      "filePath": "web/src/views/login/index.tsx",
+      "summary": "Function EyeOffIcon in web/src/views/login/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        47,
+        54
+      ],
+      "params": [
+        "props"
+      ]
+    },
+    {
+      "id": "function:web/src/views/login/index.tsx:ArrowRightIcon",
+      "type": "function",
+      "name": "ArrowRightIcon",
+      "filePath": "web/src/views/login/index.tsx",
+      "summary": "Function ArrowRightIcon in web/src/views/login/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        56,
+        61
+      ],
+      "params": [
+        "props"
+      ]
+    },
+    {
+      "id": "function:web/src/views/login/index.tsx:CpuIcon",
+      "type": "function",
+      "name": "CpuIcon",
+      "filePath": "web/src/views/login/index.tsx",
+      "summary": "Function CpuIcon in web/src/views/login/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        63,
+        76
+      ],
+      "params": [
+        "props"
+      ]
+    },
+    {
+      "id": "function:web/src/views/login/index.tsx:SparklesIcon",
+      "type": "function",
+      "name": "SparklesIcon",
+      "filePath": "web/src/views/login/index.tsx",
+      "summary": "Function SparklesIcon in web/src/views/login/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        78,
+        82
+      ],
+      "params": [
+        "props"
+      ]
+    },
+    {
+      "id": "function:web/src/views/login/index.tsx:GlobeIcon",
+      "type": "function",
+      "name": "GlobeIcon",
+      "filePath": "web/src/views/login/index.tsx",
+      "summary": "Function GlobeIcon in web/src/views/login/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        84,
+        90
+      ],
+      "params": [
+        "props"
+      ]
+    },
+    {
+      "id": "function:web/src/views/login/index.tsx:FingerprintIcon",
+      "type": "function",
+      "name": "FingerprintIcon",
+      "filePath": "web/src/views/login/index.tsx",
+      "summary": "Function FingerprintIcon in web/src/views/login/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        92,
+        103
+      ],
+      "params": [
+        "props"
+      ]
+    },
+    {
+      "id": "function:web/src/views/login/index.tsx:LoginPage",
+      "type": "function",
+      "name": "LoginPage",
+      "filePath": "web/src/views/login/index.tsx",
+      "summary": "Function LoginPage in web/src/views/login/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        105,
+        453
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/views/media-devices.ts",
+      "type": "file",
+      "name": "media-devices.ts",
+      "filePath": "web/src/views/media-devices.ts",
+      "summary": "web/src/views/media-devices.ts (typescript); 1 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        8
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/media-devices.ts:requestMicrophoneStream",
+      "type": "function",
+      "name": "requestMicrophoneStream",
+      "filePath": "web/src/views/media-devices.ts",
+      "summary": "Function requestMicrophoneStream in web/src/views/media-devices.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        3,
+        8
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/views/minio-settings/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/minio-settings/index.tsx",
+      "summary": "web/src/views/minio-settings/index.tsx (typescript); 2 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        204
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/minio-settings/index.tsx:formatMB",
+      "type": "function",
+      "name": "formatMB",
+      "filePath": "web/src/views/minio-settings/index.tsx",
+      "summary": "Function formatMB in web/src/views/minio-settings/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        13,
+        18
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:web/src/views/minio-settings/index.tsx:MinioSettingsPage",
+      "type": "function",
+      "name": "MinioSettingsPage",
+      "filePath": "web/src/views/minio-settings/index.tsx",
+      "summary": "Function MinioSettingsPage in web/src/views/minio-settings/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        20,
+        204
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/views/model-management.ts",
+      "type": "file",
+      "name": "model-management.ts",
+      "filePath": "web/src/views/model-management.ts",
+      "summary": "web/src/views/model-management.ts (typescript)",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:web/src/views/model-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "summary": "web/src/views/model-management/index.tsx (typescript); 10 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        706
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 10,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/model-management/index.tsx:getUploadFileList",
+      "type": "function",
+      "name": "getUploadFileList",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "summary": "Function getUploadFileList in web/src/views/model-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        118,
+        123
+      ],
+      "params": [
+        "event"
+      ]
+    },
+    {
+      "id": "function:web/src/views/model-management/index.tsx:formatFileSize",
+      "type": "function",
+      "name": "formatFileSize",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "summary": "Function formatFileSize in web/src/views/model-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        125,
+        140
+      ],
+      "params": [
+        "size"
+      ]
+    },
+    {
+      "id": "function:web/src/views/model-management/index.tsx:getTypeTag",
+      "type": "function",
+      "name": "getTypeTag",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "summary": "Function getTypeTag in web/src/views/model-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        142,
+        145
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:web/src/views/model-management/index.tsx:getOrientationTag",
+      "type": "function",
+      "name": "getOrientationTag",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "summary": "Function getOrientationTag in web/src/views/model-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        147,
+        150
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:web/src/views/model-management/index.tsx:getVisibilityTag",
+      "type": "function",
+      "name": "getVisibilityTag",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "summary": "Function getVisibilityTag in web/src/views/model-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        152,
+        155
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:web/src/views/model-management/index.tsx:renderModelAvatar",
+      "type": "function",
+      "name": "renderModelAvatar",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "summary": "Function renderModelAvatar in web/src/views/model-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        157,
+        184
+      ],
+      "params": [
+        "item"
+      ]
+    },
+    {
+      "id": "function:web/src/views/model-management/index.tsx:renderDownloadLink",
+      "type": "function",
+      "name": "renderDownloadLink",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "summary": "Function renderDownloadLink in web/src/views/model-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        186,
+        202
+      ],
+      "params": [
+        "item"
+      ]
+    },
+    {
+      "id": "function:web/src/views/model-management/index.tsx:renderAddressLink",
+      "type": "function",
+      "name": "renderAddressLink",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "summary": "Function renderAddressLink in web/src/views/model-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        204,
+        214
+      ],
+      "params": [
+        "url",
+        "linkText",
+        "emptyText"
+      ]
+    },
+    {
+      "id": "function:web/src/views/model-management/index.tsx:renderModelPreviewImage",
+      "type": "function",
+      "name": "renderModelPreviewImage",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "summary": "Function renderModelPreviewImage in web/src/views/model-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        216,
+        237
+      ],
+      "params": [
+        "item"
+      ]
+    },
+    {
+      "id": "function:web/src/views/model-management/index.tsx:ModelManagementPage",
+      "type": "function",
+      "name": "ModelManagementPage",
+      "filePath": "web/src/views/model-management/index.tsx",
+      "summary": "Function ModelManagementPage in web/src/views/model-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "complex",
+      "lineRange": [
+        239,
+        706
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/views/resource-management.ts",
+      "type": "file",
+      "name": "resource-management.ts",
+      "filePath": "web/src/views/resource-management.ts",
+      "summary": "web/src/views/resource-management.ts (typescript)",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:web/src/views/resource-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "summary": "web/src/views/resource-management/index.tsx (typescript); 11 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        973
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 11,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/resource-management/index.tsx:formatFileMB",
+      "type": "function",
+      "name": "formatFileMB",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "summary": "Function formatFileMB in web/src/views/resource-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        109,
+        114
+      ],
+      "params": [
+        "bytes"
+      ]
+    },
+    {
+      "id": "function:web/src/views/resource-management/index.tsx:getResourceSourceUrl",
+      "type": "function",
+      "name": "getResourceSourceUrl",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "summary": "Function getResourceSourceUrl in web/src/views/resource-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        126,
+        126
+      ],
+      "params": [
+        "item"
+      ]
+    },
+    {
+      "id": "function:web/src/views/resource-management/index.tsx:hasResourceSource",
+      "type": "function",
+      "name": "hasResourceSource",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "summary": "Function hasResourceSource in web/src/views/resource-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        127,
+        127
+      ],
+      "params": [
+        "item"
+      ]
+    },
+    {
+      "id": "function:web/src/views/resource-management/index.tsx:getVideoPreviewTime",
+      "type": "function",
+      "name": "getVideoPreviewTime",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "summary": "Function getVideoPreviewTime in web/src/views/resource-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        129,
+        135
+      ],
+      "params": [
+        "duration"
+      ]
+    },
+    {
+      "id": "function:web/src/views/resource-management/index.tsx:runNextVideoThumbnailTask",
+      "type": "function",
+      "name": "runNextVideoThumbnailTask",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "summary": "Function runNextVideoThumbnailTask in web/src/views/resource-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        137,
+        142
+      ],
+      "params": []
+    },
+    {
+      "id": "function:web/src/views/resource-management/index.tsx:captureVideoThumbnail",
+      "type": "function",
+      "name": "captureVideoThumbnail",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "summary": "Function captureVideoThumbnail in web/src/views/resource-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        144,
+        257
+      ],
+      "params": [
+        "sourceUrl"
+      ]
+    },
+    {
+      "id": "function:web/src/views/resource-management/index.tsx:loadVideoThumbnail",
+      "type": "function",
+      "name": "loadVideoThumbnail",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "summary": "Function loadVideoThumbnail in web/src/views/resource-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        259,
+        295
+      ],
+      "params": [
+        "sourceUrl"
+      ]
+    },
+    {
+      "id": "function:web/src/views/resource-management/index.tsx:VideoFramePreview",
+      "type": "function",
+      "name": "VideoFramePreview",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "summary": "Function VideoFramePreview in web/src/views/resource-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        303,
+        382
+      ],
+      "params": [
+        "{ sourceUrl, itemName, onReady }"
+      ]
+    },
+    {
+      "id": "function:web/src/views/resource-management/index.tsx:VideoThumbnailPlaceholder",
+      "type": "function",
+      "name": "VideoThumbnailPlaceholder",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "summary": "Function VideoThumbnailPlaceholder in web/src/views/resource-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        388,
+        395
+      ],
+      "params": [
+        "{ status }"
+      ]
+    },
+    {
+      "id": "function:web/src/views/resource-management/index.tsx:VideoResourceCardCover",
+      "type": "function",
+      "name": "VideoResourceCardCover",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "summary": "Function VideoResourceCardCover in web/src/views/resource-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        397,
+        486
+      ],
+      "params": [
+        "{ item, sourceUrl }"
+      ]
+    },
+    {
+      "id": "function:web/src/views/resource-management/index.tsx:ResourceManagementPage",
+      "type": "function",
+      "name": "ResourceManagementPage",
+      "filePath": "web/src/views/resource-management/index.tsx",
+      "summary": "Function ResourceManagementPage in web/src/views/resource-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "complex",
+      "lineRange": [
+        488,
+        973
+      ],
+      "params": [
+        "{ resourceType }"
+      ]
+    },
+    {
+      "id": "file:web/src/views/scrolling-text-management.ts",
+      "type": "file",
+      "name": "scrolling-text-management.ts",
+      "filePath": "web/src/views/scrolling-text-management.ts",
+      "summary": "web/src/views/scrolling-text-management.ts (typescript)",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:web/src/views/scrolling-text-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/scrolling-text-management/index.tsx",
+      "summary": "web/src/views/scrolling-text-management/index.tsx (typescript); 2 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        443
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/scrolling-text-management/index.tsx:normalizeItems",
+      "type": "function",
+      "name": "normalizeItems",
+      "filePath": "web/src/views/scrolling-text-management/index.tsx",
+      "summary": "Function normalizeItems in web/src/views/scrolling-text-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        56,
+        62
+      ],
+      "params": [
+        "items"
+      ]
+    },
+    {
+      "id": "function:web/src/views/scrolling-text-management/index.tsx:ScrollingTextManagementPage",
+      "type": "function",
+      "name": "ScrollingTextManagementPage",
+      "filePath": "web/src/views/scrolling-text-management/index.tsx",
+      "summary": "Function ScrollingTextManagementPage in web/src/views/scrolling-text-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        64,
+        443
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/views/settings-llm/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/settings-llm/index.tsx",
+      "summary": "web/src/views/settings-llm/index.tsx (typescript); 2 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        764
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/settings-llm/index.tsx:effectiveGrantModelIds",
+      "type": "function",
+      "name": "effectiveGrantModelIds",
+      "filePath": "web/src/views/settings-llm/index.tsx",
+      "summary": "Function effectiveGrantModelIds in web/src/views/settings-llm/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        68,
+        75
+      ],
+      "params": [
+        "authorization"
+      ]
+    },
+    {
+      "id": "function:web/src/views/settings-llm/index.tsx:LlmSettingsAdminPage",
+      "type": "function",
+      "name": "LlmSettingsAdminPage",
+      "filePath": "web/src/views/settings-llm/index.tsx",
+      "summary": "Function LlmSettingsAdminPage in web/src/views/settings-llm/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "complex",
+      "lineRange": [
+        77,
+        764
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/views/tenant-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/tenant-management/index.tsx",
+      "summary": "web/src/views/tenant-management/index.tsx (typescript); 3 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        320
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/tenant-management/index.tsx:normalizeMenuKeyToModule",
+      "type": "function",
+      "name": "normalizeMenuKeyToModule",
+      "filePath": "web/src/views/tenant-management/index.tsx",
+      "summary": "Function normalizeMenuKeyToModule in web/src/views/tenant-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        35,
+        36
+      ],
+      "params": [
+        "key"
+      ]
+    },
+    {
+      "id": "function:web/src/views/tenant-management/index.tsx:buildMenuTree",
+      "type": "function",
+      "name": "buildMenuTree",
+      "filePath": "web/src/views/tenant-management/index.tsx",
+      "summary": "Function buildMenuTree in web/src/views/tenant-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        38,
+        49
+      ],
+      "params": [
+        "menus"
+      ]
+    },
+    {
+      "id": "function:web/src/views/tenant-management/index.tsx:TenantManagementPage",
+      "type": "function",
+      "name": "TenantManagementPage",
+      "filePath": "web/src/views/tenant-management/index.tsx",
+      "summary": "Function TenantManagementPage in web/src/views/tenant-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        51,
+        320
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/views/tts-management.ts",
+      "type": "file",
+      "name": "tts-management.ts",
+      "filePath": "web/src/views/tts-management.ts",
+      "summary": "web/src/views/tts-management.ts (typescript)",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:web/src/views/tts-management/index.tsx",
+      "type": "file",
+      "name": "index.tsx",
+      "filePath": "web/src/views/tts-management/index.tsx",
+      "summary": "web/src/views/tts-management/index.tsx (typescript); 1 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        247
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/tts-management/index.tsx:TtsManagementPage",
+      "type": "function",
+      "name": "TtsManagementPage",
+      "filePath": "web/src/views/tts-management/index.tsx",
+      "summary": "Function TtsManagementPage in web/src/views/tts-management/index.tsx",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        20,
+        247
+      ],
+      "params": []
+    },
+    {
+      "id": "file:web/src/views/tts-realtime-playback.ts",
+      "type": "file",
+      "name": "tts-realtime-playback.ts",
+      "filePath": "web/src/views/tts-realtime-playback.ts",
+      "summary": "web/src/views/tts-realtime-playback.ts (typescript); 8 functions",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        305
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 2,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:web/src/views/tts-realtime-playback.ts:playRealtimeTts",
+      "type": "function",
+      "name": "playRealtimeTts",
+      "filePath": "web/src/views/tts-realtime-playback.ts",
+      "summary": "Function playRealtimeTts in web/src/views/tts-realtime-playback.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        28,
+        182
+      ],
+      "params": [
+        "options"
+      ]
+    },
+    {
+      "id": "function:web/src/views/tts-realtime-playback.ts:sanitizeTtsText",
+      "type": "function",
+      "name": "sanitizeTtsText",
+      "filePath": "web/src/views/tts-realtime-playback.ts",
+      "summary": "Function sanitizeTtsText in web/src/views/tts-realtime-playback.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        184,
+        199
+      ],
+      "params": [
+        "value",
+        "filterPunctuation",
+        "filterEmoji"
+      ]
+    },
+    {
+      "id": "function:web/src/views/tts-realtime-playback.ts:stripMarkdownForTts",
+      "type": "function",
+      "name": "stripMarkdownForTts",
+      "filePath": "web/src/views/tts-realtime-playback.ts",
+      "summary": "Function stripMarkdownForTts in web/src/views/tts-realtime-playback.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        203,
+        235
+      ],
+      "params": [
+        "value"
+      ]
+    },
+    {
+      "id": "function:web/src/views/tts-realtime-playback.ts:schedulePcmChunk",
+      "type": "function",
+      "name": "schedulePcmChunk",
+      "filePath": "web/src/views/tts-realtime-playback.ts",
+      "summary": "Function schedulePcmChunk in web/src/views/tts-realtime-playback.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        237,
+        259
+      ],
+      "params": [
+        "audioContext",
+        "output",
+        "scheduledSources",
+        "pcm",
+        "sampleRate",
+        "getNextStartTime",
+        "setNextStartTime"
+      ]
+    },
+    {
+      "id": "function:web/src/views/tts-realtime-playback.ts:pcm16ToFloat32",
+      "type": "function",
+      "name": "pcm16ToFloat32",
+      "filePath": "web/src/views/tts-realtime-playback.ts",
+      "summary": "Function pcm16ToFloat32 in web/src/views/tts-realtime-playback.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        261,
+        268
+      ],
+      "params": [
+        "pcm"
+      ]
+    },
+    {
+      "id": "function:web/src/views/tts-realtime-playback.ts:pcmToWav",
+      "type": "function",
+      "name": "pcmToWav",
+      "filePath": "web/src/views/tts-realtime-playback.ts",
+      "summary": "Function pcmToWav in web/src/views/tts-realtime-playback.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        270,
+        288
+      ],
+      "params": [
+        "chunks",
+        "sampleRate"
+      ]
+    },
+    {
+      "id": "function:web/src/views/tts-realtime-playback.ts:concatChunks",
+      "type": "function",
+      "name": "concatChunks",
+      "filePath": "web/src/views/tts-realtime-playback.ts",
+      "summary": "Function concatChunks in web/src/views/tts-realtime-playback.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        290,
+        299
+      ],
+      "params": [
+        "chunks"
+      ]
+    },
+    {
+      "id": "function:web/src/views/tts-realtime-playback.ts:writeString",
+      "type": "function",
+      "name": "writeString",
+      "filePath": "web/src/views/tts-realtime-playback.ts",
+      "summary": "Function writeString in web/src/views/tts-realtime-playback.ts",
+      "tags": [
+        "function",
+        "typescript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        301,
+        305
+      ],
+      "params": [
+        "view",
+        "offset",
+        "value"
+      ]
+    },
+    {
+      "id": "file:web/src/views/tts-settings.ts",
+      "type": "file",
+      "name": "tts-settings.ts",
+      "filePath": "web/src/views/tts-settings.ts",
+      "summary": "web/src/views/tts-settings.ts (typescript)",
+      "tags": [
+        "typescript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "typescript",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:web/src/views/device-authorization-center/utils.ts",
+      "target": "function:web/src/views/device-authorization-center/utils.ts:buildBindPayload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/device-authorization-center/utils.ts",
+      "target": "function:web/src/views/device-authorization-center/utils.ts:buildTenantOptions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/device-authorization-center/utils.ts",
+      "target": "function:web/src/views/device-authorization-center/utils.ts:getInfoText",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "function:web/src/views/device-management/index.tsx:resolveDeviceRuntimeDiagnostic",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "function:web/src/views/device-management/index.tsx:toSelectOptions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "function:web/src/views/device-management/index.tsx:buildGeneratedApplicationCode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "function:web/src/views/device-management/index.tsx:isDeviceRealtimePayload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/device-management/index.tsx",
+      "target": "function:web/src/views/device-management/index.tsx:DeviceManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/employee-management/index.tsx",
+      "target": "function:web/src/views/employee-management/index.tsx:EmployeesTab",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/employee-management/index.tsx",
+      "target": "function:web/src/views/employee-management/index.tsx:EmployeeManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/force-password-change/index.tsx",
+      "target": "function:web/src/views/force-password-change/index.tsx:ForcePasswordChangePage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/knowledge-base-settings/index.tsx",
+      "target": "function:web/src/views/knowledge-base-settings/index.tsx:toModelFormValues",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/knowledge-base-settings/index.tsx",
+      "target": "function:web/src/views/knowledge-base-settings/index.tsx:KnowledgeBaseSettingsPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/knowledge-base/index.tsx",
+      "target": "function:web/src/views/knowledge-base/index.tsx:formatFileSize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/knowledge-base/index.tsx",
+      "target": "function:web/src/views/knowledge-base/index.tsx:KnowledgeBasePage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/llm-management/index.tsx",
+      "target": "function:web/src/views/llm-management/index.tsx:LlmManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/llm-settings/index.tsx",
+      "target": "function:web/src/views/llm-settings/index.tsx:getModelAlias",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/llm-settings/index.tsx",
+      "target": "function:web/src/views/llm-settings/index.tsx:LlmSettingsPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/log-management/index.tsx",
+      "target": "function:web/src/views/log-management/index.tsx:LogManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/login/index.tsx",
+      "target": "function:web/src/views/login/index.tsx:UserIcon",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/login/index.tsx",
+      "target": "function:web/src/views/login/index.tsx:LockIcon",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/login/index.tsx",
+      "target": "function:web/src/views/login/index.tsx:EyeIcon",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/login/index.tsx",
+      "target": "function:web/src/views/login/index.tsx:EyeOffIcon",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/login/index.tsx",
+      "target": "function:web/src/views/login/index.tsx:ArrowRightIcon",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/login/index.tsx",
+      "target": "function:web/src/views/login/index.tsx:CpuIcon",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/login/index.tsx",
+      "target": "function:web/src/views/login/index.tsx:SparklesIcon",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/login/index.tsx",
+      "target": "function:web/src/views/login/index.tsx:GlobeIcon",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/login/index.tsx",
+      "target": "function:web/src/views/login/index.tsx:FingerprintIcon",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/login/index.tsx",
+      "target": "function:web/src/views/login/index.tsx:LoginPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/media-devices.ts",
+      "target": "function:web/src/views/media-devices.ts:requestMicrophoneStream",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/minio-settings/index.tsx",
+      "target": "function:web/src/views/minio-settings/index.tsx:formatMB",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/minio-settings/index.tsx",
+      "target": "function:web/src/views/minio-settings/index.tsx:MinioSettingsPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:getUploadFileList",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:formatFileSize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:getTypeTag",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:getOrientationTag",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:getVisibilityTag",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:renderModelAvatar",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:renderDownloadLink",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:renderAddressLink",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:renderModelPreviewImage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/model-management/index.tsx",
+      "target": "function:web/src/views/model-management/index.tsx:ModelManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:formatFileMB",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:getResourceSourceUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:hasResourceSource",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:getVideoPreviewTime",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:runNextVideoThumbnailTask",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:captureVideoThumbnail",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:loadVideoThumbnail",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:VideoFramePreview",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:VideoThumbnailPlaceholder",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:VideoResourceCardCover",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/resource-management/index.tsx",
+      "target": "function:web/src/views/resource-management/index.tsx:ResourceManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/scrolling-text-management/index.tsx",
+      "target": "function:web/src/views/scrolling-text-management/index.tsx:normalizeItems",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/scrolling-text-management/index.tsx",
+      "target": "function:web/src/views/scrolling-text-management/index.tsx:ScrollingTextManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/settings-llm/index.tsx",
+      "target": "function:web/src/views/settings-llm/index.tsx:effectiveGrantModelIds",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/settings-llm/index.tsx",
+      "target": "function:web/src/views/settings-llm/index.tsx:LlmSettingsAdminPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/tenant-management/index.tsx",
+      "target": "function:web/src/views/tenant-management/index.tsx:normalizeMenuKeyToModule",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/tenant-management/index.tsx",
+      "target": "function:web/src/views/tenant-management/index.tsx:buildMenuTree",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/tenant-management/index.tsx",
+      "target": "function:web/src/views/tenant-management/index.tsx:TenantManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/tts-management/index.tsx",
+      "target": "function:web/src/views/tts-management/index.tsx:TtsManagementPage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/tts-realtime-playback.ts",
+      "target": "function:web/src/views/tts-realtime-playback.ts:playRealtimeTts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/tts-realtime-playback.ts",
+      "target": "function:web/src/views/tts-realtime-playback.ts:sanitizeTtsText",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/tts-realtime-playback.ts",
+      "target": "function:web/src/views/tts-realtime-playback.ts:stripMarkdownForTts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/tts-realtime-playback.ts",
+      "target": "function:web/src/views/tts-realtime-playback.ts:schedulePcmChunk",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/tts-realtime-playback.ts",
+      "target": "function:web/src/views/tts-realtime-playback.ts:pcm16ToFloat32",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/tts-realtime-playback.ts",
+      "target": "function:web/src/views/tts-realtime-playback.ts:pcmToWav",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/tts-realtime-playback.ts",
+      "target": "function:web/src/views/tts-realtime-playback.ts:concatChunks",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:web/src/views/tts-realtime-playback.ts",
+      "target": "function:web/src/views/tts-realtime-playback.ts:writeString",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    }
+  ]
+}

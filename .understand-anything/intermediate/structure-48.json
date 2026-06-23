@@ -1,0 +1,7071 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 21,
+      "nonEmptyLines": 16,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 6,
+          "endLine": 21,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 113,
+      "nonEmptyLines": 98,
+      "functions": [
+        {
+          "name": "seed_agent_application_access_data",
+          "startLine": 16,
+          "endLine": 57,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_agent_application_access_data",
+          "startLine": 60,
+          "endLine": 65,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 68,
+          "endLine": 113,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_agent_application_access_data",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_agent_application_access_data",
+          "line": 60,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 68,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 17
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 18
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 19
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 21
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 36
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "created_permissions.append",
+          "lineNumber": 45
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "Role.objects.all",
+          "lineNumber": 52
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "role.menus.add",
+          "lineNumber": 53
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 55
+        },
+        {
+          "caller": "seed_agent_application_access_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 57
+        },
+        {
+          "caller": "unseed_agent_application_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 61
+        },
+        {
+          "caller": "unseed_agent_application_access_data",
+          "callee": "apps.get_model",
+          "lineNumber": 62
+        },
+        {
+          "caller": "unseed_agent_application_access_data",
+          "callee": "PermissionPoint.objects.filter(code__startswith='agent_applications.').delete",
+          "lineNumber": 64
+        },
+        {
+          "caller": "unseed_agent_application_access_data",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 64
+        },
+        {
+          "caller": "unseed_agent_application_access_data",
+          "callee": "Menu.objects.filter(key='/applications').delete",
+          "lineNumber": 65
+        },
+        {
+          "caller": "unseed_agent_application_access_data",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 65
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 53,
+      "nonEmptyLines": 40,
+      "functions": [
+        {
+          "name": "seed_agent_application_tenant_access",
+          "startLine": 11,
+          "endLine": 26,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_agent_application_tenant_access",
+          "startLine": 29,
+          "endLine": 42,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 45,
+          "endLine": 53,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_agent_application_tenant_access",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_agent_application_tenant_access",
+          "line": 29,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 45,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "apps.get_model",
+          "lineNumber": 12
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "apps.get_model",
+          "lineNumber": 13
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "apps.get_model",
+          "lineNumber": 14
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "Menu.objects.filter(key='/applications').first",
+          "lineNumber": 16
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 16
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "list",
+          "lineNumber": 20
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 21
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "Tenant.objects.all",
+          "lineNumber": 23
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "tenant.menus.add",
+          "lineNumber": 24
+        },
+        {
+          "caller": "seed_agent_application_tenant_access",
+          "callee": "tenant.permission_points.add",
+          "lineNumber": 26
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "apps.get_model",
+          "lineNumber": 30
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "apps.get_model",
+          "lineNumber": 31
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "apps.get_model",
+          "lineNumber": 32
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "Menu.objects.filter(key='/applications').first",
+          "lineNumber": 34
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 34
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "list",
+          "lineNumber": 35
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 36
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "Tenant.objects.all",
+          "lineNumber": 38
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "tenant.menus.remove",
+          "lineNumber": 40
+        },
+        {
+          "caller": "unseed_agent_application_tenant_access",
+          "callee": "tenant.permission_points.remove",
+          "lineNumber": 42
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0013_platform_llm_settings.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 111,
+      "nonEmptyLines": 104,
+      "functions": [
+        {
+          "name": "clear_old_llm_bindings",
+          "startLine": 7,
+          "endLine": 20,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 23,
+          "endLine": 111,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "clear_old_llm_bindings",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 23,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "clear_old_llm_bindings",
+          "callee": "apps.get_model",
+          "lineNumber": 8
+        },
+        {
+          "caller": "clear_old_llm_bindings",
+          "callee": "apps.get_model",
+          "lineNumber": 9
+        },
+        {
+          "caller": "clear_old_llm_bindings",
+          "callee": "model.objects.all().update",
+          "lineNumber": 20
+        },
+        {
+          "caller": "clear_old_llm_bindings",
+          "callee": "model.objects.all",
+          "lineNumber": 20
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 18,
+      "nonEmptyLines": 12,
+      "functions": [
+        {
+          "name": "remove_standalone_chat_room_menu",
+          "startLine": 4,
+          "endLine": 7,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 10,
+          "endLine": 18,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "remove_standalone_chat_room_menu",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 10,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "remove_standalone_chat_room_menu",
+          "callee": "apps.get_model",
+          "lineNumber": 5
+        },
+        {
+          "caller": "remove_standalone_chat_room_menu",
+          "callee": "Menu.objects.filter(key='/ai-models/chat').delete",
+          "lineNumber": 6
+        },
+        {
+          "caller": "remove_standalone_chat_room_menu",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 6
+        },
+        {
+          "caller": "remove_standalone_chat_room_menu",
+          "callee": "Menu.objects.filter(path='/ai-models/chat').delete",
+          "lineNumber": 7
+        },
+        {
+          "caller": "remove_standalone_chat_room_menu",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 7
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0015_tts_settings.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 233,
+      "nonEmptyLines": 215,
+      "functions": [
+        {
+          "name": "load_voice_rows",
+          "startLine": 62,
+          "endLine": 79,
+          "params": []
+        },
+        {
+          "name": "seed_tts_data",
+          "startLine": 82,
+          "endLine": 154,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_tts_data",
+          "startLine": 157,
+          "endLine": 159,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 162,
+          "endLine": 233,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "load_voice_rows",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "seed_tts_data",
+          "line": 82,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_tts_data",
+          "line": 157,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 162,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "load_voice_rows",
+          "callee": "Path(__file__).resolve",
+          "lineNumber": 63
+        },
+        {
+          "caller": "load_voice_rows",
+          "callee": "Path",
+          "lineNumber": 63
+        },
+        {
+          "caller": "load_voice_rows",
+          "callee": "path.exists",
+          "lineNumber": 70
+        },
+        {
+          "caller": "load_voice_rows",
+          "callee": "json.loads",
+          "lineNumber": 73
+        },
+        {
+          "caller": "load_voice_rows",
+          "callee": "path.read_text",
+          "lineNumber": 73
+        },
+        {
+          "caller": "load_voice_rows",
+          "callee": "payload.get",
+          "lineNumber": 76
+        },
+        {
+          "caller": "load_voice_rows",
+          "callee": "isinstance",
+          "lineNumber": 76
+        },
+        {
+          "caller": "load_voice_rows",
+          "callee": "isinstance",
+          "lineNumber": 77
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "apps.get_model",
+          "lineNumber": 83
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "apps.get_model",
+          "lineNumber": 84
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "apps.get_model",
+          "lineNumber": 85
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "apps.get_model",
+          "lineNumber": 86
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "apps.get_model",
+          "lineNumber": 87
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "TTSProvider.objects.update_or_create",
+          "lineNumber": 89
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "getattr",
+          "lineNumber": 93
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "getattr",
+          "lineNumber": 94
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "getattr",
+          "lineNumber": 95
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "getattr",
+          "lineNumber": 96
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "getattr",
+          "lineNumber": 97
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "getattr",
+          "lineNumber": 102
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "enumerate",
+          "lineNumber": 104
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "load_voice_rows",
+          "lineNumber": 104
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "str(item.get('voice') or item.get('enName') or '').strip",
+          "lineNumber": 105
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "str",
+          "lineNumber": 105
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "item.get",
+          "lineNumber": 105
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "item.get",
+          "lineNumber": 105
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "str(item.get('avatar') or '').strip",
+          "lineNumber": 108
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "str",
+          "lineNumber": 108
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "item.get",
+          "lineNumber": 108
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "TTSVoice.objects.update_or_create",
+          "lineNumber": 109
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "str(item.get('enName') or voice_code).strip",
+          "lineNumber": 113
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "str",
+          "lineNumber": 113
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "item.get",
+          "lineNumber": 113
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "str(item.get('sex') or '').strip",
+          "lineNumber": 114
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "str",
+          "lineNumber": 114
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "item.get",
+          "lineNumber": 114
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "bool",
+          "lineNumber": 117
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "item.get",
+          "lineNumber": 117
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "TTSVoice.objects.filter(provider=provider, voice_code='Cherry').first",
+          "lineNumber": 125
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "TTSVoice.objects.filter",
+          "lineNumber": 125
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "provider.save",
+          "lineNumber": 128
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 148
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "permissions.append",
+          "lineNumber": 149
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "Tenant.objects.all",
+          "lineNumber": 151
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "tenant.permission_points.add",
+          "lineNumber": 152
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "Role.objects.filter",
+          "lineNumber": 153
+        },
+        {
+          "caller": "seed_tts_data",
+          "callee": "role.permission_points.add",
+          "lineNumber": 154
+        },
+        {
+          "caller": "unseed_tts_data",
+          "callee": "apps.get_model",
+          "lineNumber": 158
+        },
+        {
+          "caller": "unseed_tts_data",
+          "callee": "PermissionPoint.objects.filter(code__in=['ai_models.tts.view', 'ai_models.tts.update']).delete",
+          "lineNumber": 159
+        },
+        {
+          "caller": "unseed_tts_data",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 159
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 3,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0016_update_agent_application_menu.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 37,
+      "nonEmptyLines": 27,
+      "functions": [
+        {
+          "name": "update_agent_application_menu",
+          "startLine": 4,
+          "endLine": 14,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "rollback_agent_application_menu",
+          "startLine": 17,
+          "endLine": 26,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 29,
+          "endLine": 37,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "update_agent_application_menu",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "rollback_agent_application_menu",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 29,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "update_agent_application_menu",
+          "callee": "apps.get_model",
+          "lineNumber": 5
+        },
+        {
+          "caller": "update_agent_application_menu",
+          "callee": "Menu.objects.filter(key='/ai-models').first",
+          "lineNumber": 6
+        },
+        {
+          "caller": "update_agent_application_menu",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 6
+        },
+        {
+          "caller": "update_agent_application_menu",
+          "callee": "Menu.objects.filter(key='/applications').update",
+          "lineNumber": 8
+        },
+        {
+          "caller": "update_agent_application_menu",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 8
+        },
+        {
+          "caller": "rollback_agent_application_menu",
+          "callee": "apps.get_model",
+          "lineNumber": 18
+        },
+        {
+          "caller": "rollback_agent_application_menu",
+          "callee": "Menu.objects.filter(key='/ai-models/applications').update",
+          "lineNumber": 20
+        },
+        {
+          "caller": "rollback_agent_application_menu",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 20
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0017_agent_conversation_settings.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 105,
+      "nonEmptyLines": 89,
+      "functions": [
+        {
+          "name": "default_opening_message",
+          "startLine": 5,
+          "endLine": 7,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "backfill_agent_conversation_settings",
+          "startLine": 10,
+          "endLine": 42,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "rollback_agent_conversation_settings",
+          "startLine": 45,
+          "endLine": 57,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 60,
+          "endLine": 105,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "default_opening_message",
+          "line": 5,
+          "isDefault": false
+        },
+        {
+          "name": "backfill_agent_conversation_settings",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "rollback_agent_conversation_settings",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 60,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "default_opening_message",
+          "callee": "(name or '智能体').strip",
+          "lineNumber": 6
+        },
+        {
+          "caller": "backfill_agent_conversation_settings",
+          "callee": "apps.get_model",
+          "lineNumber": 11
+        },
+        {
+          "caller": "backfill_agent_conversation_settings",
+          "callee": "apps.get_model",
+          "lineNumber": 12
+        },
+        {
+          "caller": "backfill_agent_conversation_settings",
+          "callee": "apps.get_model",
+          "lineNumber": 13
+        },
+        {
+          "caller": "backfill_agent_conversation_settings",
+          "callee": "apps.get_model",
+          "lineNumber": 14
+        },
+        {
+          "caller": "backfill_agent_conversation_settings",
+          "callee": "PermissionPoint.objects.update_or_create",
+          "lineNumber": 16
+        },
+        {
+          "caller": "backfill_agent_conversation_settings",
+          "callee": "Tenant.objects.all",
+          "lineNumber": 26
+        },
+        {
+          "caller": "backfill_agent_conversation_settings",
+          "callee": "tenant.permission_points.add",
+          "lineNumber": 27
+        },
+        {
+          "caller": "backfill_agent_conversation_settings",
+          "callee": "Role.objects.all",
+          "lineNumber": 29
+        },
+        {
+          "caller": "backfill_agent_conversation_settings",
+          "callee": "role.permission_points.add",
+          "lineNumber": 31
+        },
+        {
+          "caller": "backfill_agent_conversation_settings",
+          "callee": "AgentApplication.objects.all",
+          "lineNumber": 33
+        },
+        {
+          "caller": "backfill_agent_conversation_settings",
+          "callee": "default_opening_message",
+          "lineNumber": 36
+        },
+        {
+          "caller": "backfill_agent_conversation_settings",
+          "callee": "update_fields.append",
+          "lineNumber": 37
+        },
+        {
+          "caller": "backfill_agent_conversation_settings",
+          "callee": "update_fields.append",
+          "lineNumber": 40
+        },
+        {
+          "caller": "backfill_agent_conversation_settings",
+          "callee": "application.save",
+          "lineNumber": 42
+        },
+        {
+          "caller": "rollback_agent_conversation_settings",
+          "callee": "apps.get_model",
+          "lineNumber": 46
+        },
+        {
+          "caller": "rollback_agent_conversation_settings",
+          "callee": "apps.get_model",
+          "lineNumber": 47
+        },
+        {
+          "caller": "rollback_agent_conversation_settings",
+          "callee": "apps.get_model",
+          "lineNumber": 48
+        },
+        {
+          "caller": "rollback_agent_conversation_settings",
+          "callee": "PermissionPoint.objects.filter(code='agent_applications.delete').first",
+          "lineNumber": 50
+        },
+        {
+          "caller": "rollback_agent_conversation_settings",
+          "callee": "PermissionPoint.objects.filter",
+          "lineNumber": 50
+        },
+        {
+          "caller": "rollback_agent_conversation_settings",
+          "callee": "Tenant.objects.all",
+          "lineNumber": 54
+        },
+        {
+          "caller": "rollback_agent_conversation_settings",
+          "callee": "tenant.permission_points.remove",
+          "lineNumber": 55
+        },
+        {
+          "caller": "rollback_agent_conversation_settings",
+          "callee": "Role.objects.all",
+          "lineNumber": 56
+        },
+        {
+          "caller": "rollback_agent_conversation_settings",
+          "callee": "role.permission_points.remove",
+          "lineNumber": 57
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 3,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0018_drop_stale_chatconversation_max_tokens_unlimited.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 15,
+      "nonEmptyLines": 11,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 4,
+          "endLine": 15,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0019_drop_stale_agentapplication_max_tokens_unlimited.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 15,
+      "nonEmptyLines": 11,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 4,
+          "endLine": 15,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0020_agent_annotation.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 41,
+      "nonEmptyLines": 37,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 6,
+          "endLine": 41,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0021_agent_max_tokens_unlimited.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 21,
+      "nonEmptyLines": 17,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 4,
+          "endLine": 21,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0022_agent_tts_filter_rules.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 21,
+      "nonEmptyLines": 17,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 4,
+          "endLine": 21,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0023_llmmodel_enable_web_search.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 16,
+      "nonEmptyLines": 12,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 4,
+          "endLine": 16,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0024_embeddingmodel_rerankmodel.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 50,
+      "nonEmptyLines": 45,
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 6,
+          "endLine": 50,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Migration",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 73,
+      "nonEmptyLines": 65,
+      "functions": [
+        {
+          "name": "seed_knowledge_model_settings_menu",
+          "startLine": 5,
+          "endLine": 35,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        },
+        {
+          "name": "unseed_knowledge_model_settings_menu",
+          "startLine": 38,
+          "endLine": 40,
+          "params": [
+            "apps",
+            "schema_editor"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Migration",
+          "startLine": 43,
+          "endLine": 73,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "seed_knowledge_model_settings_menu",
+          "line": 5,
+          "isDefault": false
+        },
+        {
+          "name": "unseed_knowledge_model_settings_menu",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "Migration",
+          "line": 43,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "seed_knowledge_model_settings_menu",
+          "callee": "apps.get_model",
+          "lineNumber": 6
+        },
+        {
+          "caller": "seed_knowledge_model_settings_menu",
+          "callee": "apps.get_model",
+          "lineNumber": 7
+        },
+        {
+          "caller": "seed_knowledge_model_settings_menu",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 9
+        },
+        {
+          "caller": "seed_knowledge_model_settings_menu",
+          "callee": "Menu.objects.update_or_create",
+          "lineNumber": 21
+        },
+        {
+          "caller": "seed_knowledge_model_settings_menu",
+          "callee": "Role.objects.filter",
+          "lineNumber": 33
+        },
+        {
+          "caller": "seed_knowledge_model_settings_menu",
+          "callee": "role.menus.add",
+          "lineNumber": 35
+        },
+        {
+          "caller": "unseed_knowledge_model_settings_menu",
+          "callee": "apps.get_model",
+          "lineNumber": 39
+        },
+        {
+          "caller": "unseed_knowledge_model_settings_menu",
+          "callee": "Menu.objects.filter(key='/settings/knowledge-base').delete",
+          "lineNumber": 40
+        },
+        {
+          "caller": "unseed_knowledge_model_settings_menu",
+          "callee": "Menu.objects.filter",
+          "lineNumber": 40
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/models.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 705,
+      "nonEmptyLines": 614,
+      "functions": [
+        {
+          "name": "default_agent_opening_message",
+          "startLine": 446,
+          "endLine": 448,
+          "params": [
+            "name"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "LLMProvider",
+          "startLine": 20,
+          "endLine": 37,
+          "methods": [
+            "__str__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "LLMModel",
+          "startLine": 40,
+          "endLine": 61,
+          "methods": [
+            "__str__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TenantLLMModelGrant",
+          "startLine": 64,
+          "endLine": 89,
+          "methods": [
+            "__str__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TenantLLMSettings",
+          "startLine": 92,
+          "endLine": 112,
+          "methods": [
+            "__str__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "LLMTestSettings",
+          "startLine": 115,
+          "endLine": 128,
+          "methods": [
+            "__str__",
+            "load"
+          ],
+          "properties": []
+        },
+        {
+          "name": "EmbeddingModel",
+          "startLine": 131,
+          "endLine": 187,
+          "methods": [
+            "__str__",
+            "load_aliyun"
+          ],
+          "properties": []
+        },
+        {
+          "name": "RerankModel",
+          "startLine": 190,
+          "endLine": 241,
+          "methods": [
+            "__str__",
+            "load_aliyun"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TenantKnowledgeModelSettings",
+          "startLine": 244,
+          "endLine": 277,
+          "methods": [
+            "__str__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ASRConfig",
+          "startLine": 280,
+          "endLine": 314,
+          "methods": [
+            "__str__",
+            "save",
+            "delete",
+            "load"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TTSProvider",
+          "startLine": 317,
+          "endLine": 361,
+          "methods": [
+            "__str__",
+            "load_aliyun"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TTSVoice",
+          "startLine": 364,
+          "endLine": 389,
+          "methods": [
+            "__str__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TenantTTSSettings",
+          "startLine": 392,
+          "endLine": 416,
+          "methods": [
+            "__str__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ASRReplacementRule",
+          "startLine": 419,
+          "endLine": 443,
+          "methods": [
+            "__str__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "AgentApplication",
+          "startLine": 451,
+          "endLine": 537,
+          "methods": [
+            "__str__",
+            "save"
+          ],
+          "properties": []
+        },
+        {
+          "name": "AgentAnnotation",
+          "startLine": 540,
+          "endLine": 594,
+          "methods": [
+            "__str__"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ChatConversation",
+          "startLine": 598,
+          "endLine": 665,
+          "methods": [
+            "__str__",
+            "save"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ChatMessage",
+          "startLine": 669,
+          "endLine": 705,
+          "methods": [
+            "__str__"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "LLMProvider",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "LLMModel",
+          "line": 40,
+          "isDefault": false
+        },
+        {
+          "name": "TenantLLMModelGrant",
+          "line": 64,
+          "isDefault": false
+        },
+        {
+          "name": "TenantLLMSettings",
+          "line": 92,
+          "isDefault": false
+        },
+        {
+          "name": "LLMTestSettings",
+          "line": 115,
+          "isDefault": false
+        },
+        {
+          "name": "EmbeddingModel",
+          "line": 131,
+          "isDefault": false
+        },
+        {
+          "name": "RerankModel",
+          "line": 190,
+          "isDefault": false
+        },
+        {
+          "name": "TenantKnowledgeModelSettings",
+          "line": 244,
+          "isDefault": false
+        },
+        {
+          "name": "ASRConfig",
+          "line": 280,
+          "isDefault": false
+        },
+        {
+          "name": "TTSProvider",
+          "line": 317,
+          "isDefault": false
+        },
+        {
+          "name": "TTSVoice",
+          "line": 364,
+          "isDefault": false
+        },
+        {
+          "name": "TenantTTSSettings",
+          "line": 392,
+          "isDefault": false
+        },
+        {
+          "name": "ASRReplacementRule",
+          "line": 419,
+          "isDefault": false
+        },
+        {
+          "name": "default_agent_opening_message",
+          "line": 446,
+          "isDefault": false
+        },
+        {
+          "name": "AgentApplication",
+          "line": 451,
+          "isDefault": false
+        },
+        {
+          "name": "AgentAnnotation",
+          "line": 540,
+          "isDefault": false
+        },
+        {
+          "name": "ChatConversation",
+          "line": 598,
+          "isDefault": false
+        },
+        {
+          "name": "ChatMessage",
+          "line": 669,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "__str__",
+          "callee": "self.get_provider_type_display",
+          "lineNumber": 37
+        },
+        {
+          "caller": "load",
+          "callee": "cls.objects.get_or_create",
+          "lineNumber": 127
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 158
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 161
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 161
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 163
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 168
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 169
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "cls.objects.get_or_create",
+          "lineNumber": 172
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 179
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "setattr",
+          "lineNumber": 180
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "update_fields.append",
+          "lineNumber": 181
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "update_fields.append",
+          "lineNumber": 184
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "provider.save",
+          "lineNumber": 186
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 216
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 219
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 219
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 221
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 226
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "cls.objects.get_or_create",
+          "lineNumber": 229
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 236
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "setattr",
+          "lineNumber": 237
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "update_fields.append",
+          "lineNumber": 238
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "provider.save",
+          "lineNumber": 240
+        },
+        {
+          "caller": "save",
+          "callee": "super().save",
+          "lineNumber": 297
+        },
+        {
+          "caller": "save",
+          "callee": "super",
+          "lineNumber": 297
+        },
+        {
+          "caller": "load",
+          "callee": "cls.objects.get_or_create",
+          "lineNumber": 304
+        },
+        {
+          "caller": "load",
+          "callee": "getattr",
+          "lineNumber": 307
+        },
+        {
+          "caller": "load",
+          "callee": "getattr",
+          "lineNumber": 308
+        },
+        {
+          "caller": "load",
+          "callee": "getattr",
+          "lineNumber": 309
+        },
+        {
+          "caller": "load",
+          "callee": "getattr",
+          "lineNumber": 310
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "cls.objects.get_or_create",
+          "lineNumber": 349
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 353
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 354
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 355
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 356
+        },
+        {
+          "caller": "load_aliyun",
+          "callee": "getattr",
+          "lineNumber": 357
+        },
+        {
+          "caller": "default_agent_opening_message",
+          "callee": "(name or '智能体').strip",
+          "lineNumber": 447
+        },
+        {
+          "caller": "save",
+          "callee": "default_agent_opening_message",
+          "lineNumber": 530
+        },
+        {
+          "caller": "save",
+          "callee": "super().save",
+          "lineNumber": 537
+        },
+        {
+          "caller": "save",
+          "callee": "super",
+          "lineNumber": 537
+        },
+        {
+          "caller": "save",
+          "callee": "super().save",
+          "lineNumber": 665
+        },
+        {
+          "caller": "save",
+          "callee": "super",
+          "lineNumber": 665
+        },
+        {
+          "caller": "__str__",
+          "callee": "self.get_role_display",
+          "lineNumber": 705
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 18,
+        "functionCount": 1,
+        "classCount": 17
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/realtime_asr.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 184,
+      "nonEmptyLines": 147,
+      "functions": [
+        {
+          "name": "resolve_asr_realtime_connection",
+          "startLine": 28,
+          "endLine": 57,
+          "params": [
+            "token",
+            "headers",
+            "query_params"
+          ]
+        },
+        {
+          "name": "resolve_asr_device_connection",
+          "startLine": 60,
+          "endLine": 74,
+          "params": [
+            "device_code"
+          ]
+        },
+        {
+          "name": "_extract_device_code",
+          "startLine": 77,
+          "endLine": 90,
+          "params": [
+            "headers",
+            "query_params"
+          ]
+        },
+        {
+          "name": "_extract_superuser_tenant",
+          "startLine": 93,
+          "endLine": 101,
+          "params": [
+            "query_params"
+          ]
+        },
+        {
+          "name": "load_asr_replacement_pairs",
+          "startLine": 104,
+          "endLine": 111,
+          "params": [
+            "tenant_id"
+          ]
+        },
+        {
+          "name": "apply_asr_replacement_rules",
+          "startLine": 114,
+          "endLine": 119,
+          "params": [
+            "text",
+            "replacement_pairs"
+          ]
+        },
+        {
+          "name": "extract_transcript_payload",
+          "startLine": 122,
+          "endLine": 144,
+          "params": [
+            "event",
+            "tenant_id",
+            "replacement_pairs"
+          ]
+        },
+        {
+          "name": "_session_update_event",
+          "startLine": 147,
+          "endLine": 161,
+          "params": []
+        },
+        {
+          "name": "_session_finish_event",
+          "startLine": 164,
+          "endLine": 168,
+          "params": []
+        },
+        {
+          "name": "_audio_append_event",
+          "startLine": 171,
+          "endLine": 176,
+          "params": [
+            "audio_bytes"
+          ]
+        },
+        {
+          "name": "_extract_text",
+          "startLine": 179,
+          "endLine": 184,
+          "params": [
+            "event"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "resolve_asr_realtime_connection",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "resolve_asr_device_connection",
+          "line": 60,
+          "isDefault": false
+        },
+        {
+          "name": "_extract_device_code",
+          "line": 77,
+          "isDefault": false
+        },
+        {
+          "name": "_extract_superuser_tenant",
+          "line": 93,
+          "isDefault": false
+        },
+        {
+          "name": "load_asr_replacement_pairs",
+          "line": 104,
+          "isDefault": false
+        },
+        {
+          "name": "apply_asr_replacement_rules",
+          "line": 114,
+          "isDefault": false
+        },
+        {
+          "name": "extract_transcript_payload",
+          "line": 122,
+          "isDefault": false
+        },
+        {
+          "name": "_session_update_event",
+          "line": 147,
+          "isDefault": false
+        },
+        {
+          "name": "_session_finish_event",
+          "line": 164,
+          "isDefault": false
+        },
+        {
+          "name": "_audio_append_event",
+          "line": 171,
+          "isDefault": false
+        },
+        {
+          "name": "_extract_text",
+          "line": 179,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "resolve_asr_realtime_connection",
+          "callee": "resolve_asr_device_connection",
+          "lineNumber": 35
+        },
+        {
+          "caller": "resolve_asr_realtime_connection",
+          "callee": "_extract_device_code",
+          "lineNumber": 35
+        },
+        {
+          "caller": "resolve_asr_realtime_connection",
+          "callee": "JWTAuthentication",
+          "lineNumber": 38
+        },
+        {
+          "caller": "resolve_asr_realtime_connection",
+          "callee": "authentication.get_validated_token",
+          "lineNumber": 39
+        },
+        {
+          "caller": "resolve_asr_realtime_connection",
+          "callee": "authentication.get_user",
+          "lineNumber": 40
+        },
+        {
+          "caller": "resolve_asr_realtime_connection",
+          "callee": "get_active_permission_codes_for_user",
+          "lineNumber": 46
+        },
+        {
+          "caller": "resolve_asr_realtime_connection",
+          "callee": "_extract_superuser_tenant",
+          "lineNumber": 52
+        },
+        {
+          "caller": "resolve_asr_realtime_connection",
+          "callee": "get_user_tenant",
+          "lineNumber": 54
+        },
+        {
+          "caller": "resolve_asr_device_connection",
+          "callee": "get_runtime_device_or_none",
+          "lineNumber": 64
+        },
+        {
+          "caller": "_extract_device_code",
+          "callee": "key.decode('latin1').lower",
+          "lineNumber": 82
+        },
+        {
+          "caller": "_extract_device_code",
+          "callee": "key.decode",
+          "lineNumber": 82
+        },
+        {
+          "caller": "_extract_device_code",
+          "callee": "value.decode('utf-8', errors='ignore').strip",
+          "lineNumber": 83
+        },
+        {
+          "caller": "_extract_device_code",
+          "callee": "value.decode",
+          "lineNumber": 83
+        },
+        {
+          "caller": "_extract_device_code",
+          "callee": "(params.get(name) or [''])[0].strip",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_extract_device_code",
+          "callee": "params.get",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_extract_superuser_tenant",
+          "callee": "(params.get('tenantId') or params.get('tenant') or [''])[0].strip",
+          "lineNumber": 95
+        },
+        {
+          "caller": "_extract_superuser_tenant",
+          "callee": "params.get",
+          "lineNumber": 95
+        },
+        {
+          "caller": "_extract_superuser_tenant",
+          "callee": "params.get",
+          "lineNumber": 95
+        },
+        {
+          "caller": "_extract_superuser_tenant",
+          "callee": "raw.isdigit",
+          "lineNumber": 96
+        },
+        {
+          "caller": "_extract_superuser_tenant",
+          "callee": "int",
+          "lineNumber": 98
+        },
+        {
+          "caller": "_extract_superuser_tenant",
+          "callee": "Tenant.objects.filter(id=tenant_id, is_active=True).first",
+          "lineNumber": 101
+        },
+        {
+          "caller": "_extract_superuser_tenant",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 101
+        },
+        {
+          "caller": "load_asr_replacement_pairs",
+          "callee": "list",
+          "lineNumber": 107
+        },
+        {
+          "caller": "load_asr_replacement_pairs",
+          "callee": "ASRReplacementRule.objects.filter(tenant_id=tenant_id, is_active=True)\n        .order_by('id')\n        .values_list",
+          "lineNumber": 108
+        },
+        {
+          "caller": "load_asr_replacement_pairs",
+          "callee": "ASRReplacementRule.objects.filter(tenant_id=tenant_id, is_active=True)\n        .order_by",
+          "lineNumber": 108
+        },
+        {
+          "caller": "load_asr_replacement_pairs",
+          "callee": "ASRReplacementRule.objects.filter",
+          "lineNumber": 108
+        },
+        {
+          "caller": "apply_asr_replacement_rules",
+          "callee": "result.replace",
+          "lineNumber": 118
+        },
+        {
+          "caller": "extract_transcript_payload",
+          "callee": "str",
+          "lineNumber": 128
+        },
+        {
+          "caller": "extract_transcript_payload",
+          "callee": "event.get",
+          "lineNumber": 128
+        },
+        {
+          "caller": "extract_transcript_payload",
+          "callee": "_extract_text",
+          "lineNumber": 132
+        },
+        {
+          "caller": "extract_transcript_payload",
+          "callee": "load_asr_replacement_pairs",
+          "lineNumber": 135
+        },
+        {
+          "caller": "extract_transcript_payload",
+          "callee": "apply_asr_replacement_rules",
+          "lineNumber": 137
+        },
+        {
+          "caller": "_audio_append_event",
+          "callee": "base64.b64encode(audio_bytes).decode",
+          "lineNumber": 175
+        },
+        {
+          "caller": "_audio_append_event",
+          "callee": "base64.b64encode",
+          "lineNumber": 175
+        },
+        {
+          "caller": "_extract_text",
+          "callee": "event.get",
+          "lineNumber": 181
+        },
+        {
+          "caller": "_extract_text",
+          "callee": "isinstance",
+          "lineNumber": 182
+        },
+        {
+          "caller": "_extract_text",
+          "callee": "value.strip",
+          "lineNumber": 182
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 11,
+        "functionCount": 11,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/realtime_tts.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 171,
+      "nonEmptyLines": 144,
+      "functions": [
+        {
+          "name": "resolve_tts_realtime_connection",
+          "startLine": 33,
+          "endLine": 60,
+          "params": [
+            "token",
+            "query_params"
+          ]
+        },
+        {
+          "name": "_resolve_device_connection",
+          "startLine": 63,
+          "endLine": 77,
+          "params": [
+            "query_params"
+          ]
+        },
+        {
+          "name": "resolve_tts_voice",
+          "startLine": 80,
+          "endLine": 90,
+          "params": [
+            "connection",
+            "raw_voice_id",
+            "provider"
+          ]
+        },
+        {
+          "name": "resolve_tts_provider",
+          "startLine": 93,
+          "endLine": 97,
+          "params": [
+            "raw_provider_code"
+          ]
+        },
+        {
+          "name": "_stream_tts_audio",
+          "startLine": 100,
+          "endLine": 142,
+          "params": [
+            "text",
+            "voice",
+            "config",
+            "send"
+          ]
+        },
+        {
+          "name": "_extract_upstream_error_message",
+          "startLine": 145,
+          "endLine": 152,
+          "params": [
+            "event"
+          ]
+        },
+        {
+          "name": "_extract_superuser_tenant",
+          "startLine": 155,
+          "endLine": 161,
+          "params": [
+            "query_params"
+          ]
+        },
+        {
+          "name": "_parse_positive_int",
+          "startLine": 164,
+          "endLine": 171,
+          "params": [
+            "value"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "resolve_tts_realtime_connection",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "_resolve_device_connection",
+          "line": 63,
+          "isDefault": false
+        },
+        {
+          "name": "resolve_tts_voice",
+          "line": 80,
+          "isDefault": false
+        },
+        {
+          "name": "resolve_tts_provider",
+          "line": 93,
+          "isDefault": false
+        },
+        {
+          "name": "_stream_tts_audio",
+          "line": 100,
+          "isDefault": false
+        },
+        {
+          "name": "_extract_upstream_error_message",
+          "line": 145,
+          "isDefault": false
+        },
+        {
+          "name": "_extract_superuser_tenant",
+          "line": 155,
+          "isDefault": false
+        },
+        {
+          "name": "_parse_positive_int",
+          "line": 164,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "resolve_tts_realtime_connection",
+          "callee": "_resolve_device_connection",
+          "lineNumber": 34
+        },
+        {
+          "caller": "resolve_tts_realtime_connection",
+          "callee": "JWTAuthentication",
+          "lineNumber": 42
+        },
+        {
+          "caller": "resolve_tts_realtime_connection",
+          "callee": "authentication.get_validated_token",
+          "lineNumber": 43
+        },
+        {
+          "caller": "resolve_tts_realtime_connection",
+          "callee": "authentication.get_user",
+          "lineNumber": 44
+        },
+        {
+          "caller": "resolve_tts_realtime_connection",
+          "callee": "_extract_superuser_tenant",
+          "lineNumber": 53
+        },
+        {
+          "caller": "resolve_tts_realtime_connection",
+          "callee": "get_active_permission_codes_for_user",
+          "lineNumber": 55
+        },
+        {
+          "caller": "resolve_tts_realtime_connection",
+          "callee": "get_user_tenant",
+          "lineNumber": 57
+        },
+        {
+          "caller": "_resolve_device_connection",
+          "callee": "(params.get('deviceCode') or params.get('device_code') or [''])[0].strip",
+          "lineNumber": 65
+        },
+        {
+          "caller": "_resolve_device_connection",
+          "callee": "params.get",
+          "lineNumber": 65
+        },
+        {
+          "caller": "_resolve_device_connection",
+          "callee": "params.get",
+          "lineNumber": 65
+        },
+        {
+          "caller": "_resolve_device_connection",
+          "callee": "get_runtime_device",
+          "lineNumber": 69
+        },
+        {
+          "caller": "resolve_tts_voice",
+          "callee": "_parse_positive_int",
+          "lineNumber": 81
+        },
+        {
+          "caller": "resolve_tts_voice",
+          "callee": "TTSVoice.objects.select_related('provider').filter(id=voice_id, provider=provider).first",
+          "lineNumber": 83
+        },
+        {
+          "caller": "resolve_tts_voice",
+          "callee": "TTSVoice.objects.select_related('provider').filter",
+          "lineNumber": 83
+        },
+        {
+          "caller": "resolve_tts_voice",
+          "callee": "TTSVoice.objects.select_related",
+          "lineNumber": 83
+        },
+        {
+          "caller": "resolve_tts_voice",
+          "callee": "connection.get",
+          "lineNumber": 84
+        },
+        {
+          "caller": "resolve_tts_voice",
+          "callee": "connection.get",
+          "lineNumber": 87
+        },
+        {
+          "caller": "resolve_tts_voice",
+          "callee": "Tenant.objects.filter(id=connection['tenant_id'], is_active=True).first",
+          "lineNumber": 88
+        },
+        {
+          "caller": "resolve_tts_voice",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 88
+        },
+        {
+          "caller": "resolve_tts_voice",
+          "callee": "get_effective_tts_voice_for_tenant",
+          "lineNumber": 89
+        },
+        {
+          "caller": "resolve_tts_voice",
+          "callee": "get_default_tts_voice",
+          "lineNumber": 90
+        },
+        {
+          "caller": "resolve_tts_provider",
+          "callee": "str(raw_provider_code or '').strip",
+          "lineNumber": 94
+        },
+        {
+          "caller": "resolve_tts_provider",
+          "callee": "str",
+          "lineNumber": 94
+        },
+        {
+          "caller": "resolve_tts_provider",
+          "callee": "get_aliyun_tts_provider",
+          "lineNumber": 96
+        },
+        {
+          "caller": "resolve_tts_provider",
+          "callee": "TTSProvider.objects.filter(code=provider_code).first",
+          "lineNumber": 97
+        },
+        {
+          "caller": "resolve_tts_provider",
+          "callee": "TTSProvider.objects.filter",
+          "lineNumber": 97
+        },
+        {
+          "caller": "resolve_tts_provider",
+          "callee": "get_aliyun_tts_provider",
+          "lineNumber": 97
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "send",
+          "lineNumber": 101
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "json.dumps",
+          "lineNumber": 103
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "websockets.connect",
+          "lineNumber": 105
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "build_tts_ws_url",
+          "lineNumber": 106
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "upstream.send",
+          "lineNumber": 117
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "json.dumps",
+          "lineNumber": 117
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "_session_update_event",
+          "lineNumber": 117
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "split_tts_text",
+          "lineNumber": 118
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "upstream.send",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "json.dumps",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "_text_append_event",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "asyncio.sleep",
+          "lineNumber": 120
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "upstream.send",
+          "lineNumber": 121
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "json.dumps",
+          "lineNumber": 121
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "_text_commit_event",
+          "lineNumber": 121
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "upstream.send",
+          "lineNumber": 122
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "json.dumps",
+          "lineNumber": 122
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "_session_finish_event",
+          "lineNumber": 122
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "json.loads",
+          "lineNumber": 126
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "isinstance",
+          "lineNumber": 129
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "str",
+          "lineNumber": 132
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "event.get",
+          "lineNumber": 132
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "event.get",
+          "lineNumber": 134
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "isinstance",
+          "lineNumber": 135
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "send",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "base64.b64decode",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "RuntimeError",
+          "lineNumber": 139
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "_extract_upstream_error_message",
+          "lineNumber": 139
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "send",
+          "lineNumber": 141
+        },
+        {
+          "caller": "_stream_tts_audio",
+          "callee": "json.dumps",
+          "lineNumber": 141
+        },
+        {
+          "caller": "_extract_upstream_error_message",
+          "callee": "event.get",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_extract_upstream_error_message",
+          "callee": "isinstance",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_extract_upstream_error_message",
+          "callee": "error.get",
+          "lineNumber": 148
+        },
+        {
+          "caller": "_extract_upstream_error_message",
+          "callee": "error.get",
+          "lineNumber": 148
+        },
+        {
+          "caller": "_extract_upstream_error_message",
+          "callee": "error.get",
+          "lineNumber": 148
+        },
+        {
+          "caller": "_extract_upstream_error_message",
+          "callee": "str",
+          "lineNumber": 150
+        },
+        {
+          "caller": "_extract_upstream_error_message",
+          "callee": "event.get",
+          "lineNumber": 151
+        },
+        {
+          "caller": "_extract_upstream_error_message",
+          "callee": "str",
+          "lineNumber": 152
+        },
+        {
+          "caller": "_extract_superuser_tenant",
+          "callee": "(params.get('tenantId') or params.get('tenant') or [''])[0].strip",
+          "lineNumber": 157
+        },
+        {
+          "caller": "_extract_superuser_tenant",
+          "callee": "params.get",
+          "lineNumber": 157
+        },
+        {
+          "caller": "_extract_superuser_tenant",
+          "callee": "params.get",
+          "lineNumber": 157
+        },
+        {
+          "caller": "_extract_superuser_tenant",
+          "callee": "_parse_positive_int",
+          "lineNumber": 158
+        },
+        {
+          "caller": "_extract_superuser_tenant",
+          "callee": "Tenant.objects.filter(id=tenant_id, is_active=True).first",
+          "lineNumber": 161
+        },
+        {
+          "caller": "_extract_superuser_tenant",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 161
+        },
+        {
+          "caller": "_parse_positive_int",
+          "callee": "str(value).strip",
+          "lineNumber": 167
+        },
+        {
+          "caller": "_parse_positive_int",
+          "callee": "str",
+          "lineNumber": 167
+        },
+        {
+          "caller": "_parse_positive_int",
+          "callee": "raw.isdigit",
+          "lineNumber": 168
+        },
+        {
+          "caller": "_parse_positive_int",
+          "callee": "int",
+          "lineNumber": 170
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 8,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/serializers.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 959,
+      "nonEmptyLines": 811,
+      "functions": [
+        {
+          "name": "mask_knowledge_api_key",
+          "startLine": 33,
+          "endLine": 38,
+          "params": [
+            "value"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "PlatformLLMProviderSerializer",
+          "startLine": 41,
+          "endLine": 81,
+          "methods": [
+            "get_apiKeyMasked",
+            "get_apiKeyConfigured",
+            "get_avatarUrl",
+            "get_clearAvatar"
+          ],
+          "properties": []
+        },
+        {
+          "name": "PlatformLLMProviderWriteSerializer",
+          "startLine": 84,
+          "endLine": 119,
+          "methods": [
+            "validate",
+            "create",
+            "update"
+          ],
+          "properties": []
+        },
+        {
+          "name": "PlatformLLMModelSerializer",
+          "startLine": 122,
+          "endLine": 136,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "PlatformLLMModelWriteSerializer",
+          "startLine": 139,
+          "endLine": 171,
+          "methods": [
+            "validate_name",
+            "validate"
+          ],
+          "properties": []
+        },
+        {
+          "name": "LLMTestSettingsSerializer",
+          "startLine": 174,
+          "endLine": 198,
+          "methods": [
+            "validate"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TenantLLMAuthorizationSerializer",
+          "startLine": 201,
+          "endLine": 246,
+          "methods": [
+            "validate"
+          ],
+          "properties": []
+        },
+        {
+          "name": "KnowledgeModelSerializer",
+          "startLine": 249,
+          "endLine": 259,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "KnowledgeModelSettingsSerializer",
+          "startLine": 262,
+          "endLine": 264,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "KnowledgeModelSettingsWriteSerializer",
+          "startLine": 267,
+          "endLine": 301,
+          "methods": [
+            "_validate_model_payload",
+            "validate"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TenantKnowledgeModelSettingsSerializer",
+          "startLine": 304,
+          "endLine": 321,
+          "methods": [
+            "validate"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ASRConfigSerializer",
+          "startLine": 324,
+          "endLine": 338,
+          "methods": [
+            "update"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ASRReplacementRuleSerializer",
+          "startLine": 341,
+          "endLine": 370,
+          "methods": [
+            "validate_sourceText",
+            "validate_replacementText"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TTSVoiceSerializer",
+          "startLine": 373,
+          "endLine": 408,
+          "methods": [
+            "get_isDefault",
+            "get_avatarPath"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TTSVoiceWriteSerializer",
+          "startLine": 411,
+          "endLine": 421,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "PlatformTTSProviderSummarySerializer",
+          "startLine": 424,
+          "endLine": 459,
+          "methods": [
+            "get_defaultVoiceName",
+            "get_configured",
+            "get_voiceCount"
+          ],
+          "properties": []
+        },
+        {
+          "name": "PlatformTTSSettingsSerializer",
+          "startLine": 462,
+          "endLine": 515,
+          "methods": [
+            "get_apiKeyMasked",
+            "get_apiKeyConfigured",
+            "get_configured",
+            "get_voices"
+          ],
+          "properties": []
+        },
+        {
+          "name": "PlatformTTSSettingsWriteSerializer",
+          "startLine": 518,
+          "endLine": 565,
+          "methods": [
+            "validate_sampleRate",
+            "validate_defaultVoiceId",
+            "update",
+            "_update_voices"
+          ],
+          "properties": []
+        },
+        {
+          "name": "CompanyTTSVoiceSerializer",
+          "startLine": 568,
+          "endLine": 570,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "AgentKnowledgeDocumentSerializer",
+          "startLine": 573,
+          "endLine": 578,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "AgentKnowledgeBaseSerializer",
+          "startLine": 581,
+          "endLine": 590,
+          "methods": [
+            "get_documentCount"
+          ],
+          "properties": []
+        },
+        {
+          "name": "AgentApplicationSerializer",
+          "startLine": 593,
+          "endLine": 758,
+          "methods": [
+            "get_fields",
+            "get_llmModelName",
+            "get_llmModelDisplayName",
+            "get_llmProviderName",
+            "get_createdBy",
+            "validate_name",
+            "validate_temperature",
+            "validate_maxTokens",
+            "validate_openingMessage",
+            "validate_suggestedQuestions",
+            "validate_ttsFilterPunctuation",
+            "validate",
+            "create"
+          ],
+          "properties": []
+        },
+        {
+          "name": "AgentAnnotationSerializer",
+          "startLine": 761,
+          "endLine": 810,
+          "methods": [
+            "get_createdBy",
+            "validate_question",
+            "validate_answer"
+          ],
+          "properties": []
+        },
+        {
+          "name": "AgentAnnotationCreateFromMessageSerializer",
+          "startLine": 813,
+          "endLine": 828,
+          "methods": [
+            "validate_question",
+            "validate_answer"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ChatMessageSerializer",
+          "startLine": 831,
+          "endLine": 838,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "ChatConversationListSerializer",
+          "startLine": 841,
+          "endLine": 878,
+          "methods": [
+            "get_messageCount",
+            "get_lastMessage",
+            "get_llmModelName",
+            "get_llmModelDisplayName",
+            "get_llmProviderName"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ChatConversationDetailSerializer",
+          "startLine": 881,
+          "endLine": 920,
+          "methods": [
+            "get_messages",
+            "get_llmModelName",
+            "get_llmModelDisplayName",
+            "get_llmProviderName"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ChatConversationConfigSerializer",
+          "startLine": 923,
+          "endLine": 945,
+          "methods": [
+            "validate"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ChatConversationCreateSerializer",
+          "startLine": 948,
+          "endLine": 949,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "ChatMessageFeedbackSerializer",
+          "startLine": 952,
+          "endLine": 953,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "ChatSendSerializer",
+          "startLine": 956,
+          "endLine": 959,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "mask_knowledge_api_key",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "PlatformLLMProviderSerializer",
+          "line": 41,
+          "isDefault": false
+        },
+        {
+          "name": "PlatformLLMProviderWriteSerializer",
+          "line": 84,
+          "isDefault": false
+        },
+        {
+          "name": "PlatformLLMModelSerializer",
+          "line": 122,
+          "isDefault": false
+        },
+        {
+          "name": "PlatformLLMModelWriteSerializer",
+          "line": 139,
+          "isDefault": false
+        },
+        {
+          "name": "LLMTestSettingsSerializer",
+          "line": 174,
+          "isDefault": false
+        },
+        {
+          "name": "TenantLLMAuthorizationSerializer",
+          "line": 201,
+          "isDefault": false
+        },
+        {
+          "name": "KnowledgeModelSerializer",
+          "line": 249,
+          "isDefault": false
+        },
+        {
+          "name": "KnowledgeModelSettingsSerializer",
+          "line": 262,
+          "isDefault": false
+        },
+        {
+          "name": "KnowledgeModelSettingsWriteSerializer",
+          "line": 267,
+          "isDefault": false
+        },
+        {
+          "name": "TenantKnowledgeModelSettingsSerializer",
+          "line": 304,
+          "isDefault": false
+        },
+        {
+          "name": "ASRConfigSerializer",
+          "line": 324,
+          "isDefault": false
+        },
+        {
+          "name": "ASRReplacementRuleSerializer",
+          "line": 341,
+          "isDefault": false
+        },
+        {
+          "name": "TTSVoiceSerializer",
+          "line": 373,
+          "isDefault": false
+        },
+        {
+          "name": "TTSVoiceWriteSerializer",
+          "line": 411,
+          "isDefault": false
+        },
+        {
+          "name": "PlatformTTSProviderSummarySerializer",
+          "line": 424,
+          "isDefault": false
+        },
+        {
+          "name": "PlatformTTSSettingsSerializer",
+          "line": 462,
+          "isDefault": false
+        },
+        {
+          "name": "PlatformTTSSettingsWriteSerializer",
+          "line": 518,
+          "isDefault": false
+        },
+        {
+          "name": "CompanyTTSVoiceSerializer",
+          "line": 568,
+          "isDefault": false
+        },
+        {
+          "name": "AgentKnowledgeDocumentSerializer",
+          "line": 573,
+          "isDefault": false
+        },
+        {
+          "name": "AgentKnowledgeBaseSerializer",
+          "line": 581,
+          "isDefault": false
+        },
+        {
+          "name": "AgentApplicationSerializer",
+          "line": 593,
+          "isDefault": false
+        },
+        {
+          "name": "AgentAnnotationSerializer",
+          "line": 761,
+          "isDefault": false
+        },
+        {
+          "name": "AgentAnnotationCreateFromMessageSerializer",
+          "line": 813,
+          "isDefault": false
+        },
+        {
+          "name": "ChatMessageSerializer",
+          "line": 831,
+          "isDefault": false
+        },
+        {
+          "name": "ChatConversationListSerializer",
+          "line": 841,
+          "isDefault": false
+        },
+        {
+          "name": "ChatConversationDetailSerializer",
+          "line": 881,
+          "isDefault": false
+        },
+        {
+          "name": "ChatConversationConfigSerializer",
+          "line": 923,
+          "isDefault": false
+        },
+        {
+          "name": "ChatConversationCreateSerializer",
+          "line": 948,
+          "isDefault": false
+        },
+        {
+          "name": "ChatMessageFeedbackSerializer",
+          "line": 952,
+          "isDefault": false
+        },
+        {
+          "name": "ChatSendSerializer",
+          "line": 956,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "mask_knowledge_api_key",
+          "callee": "len",
+          "lineNumber": 36
+        },
+        {
+          "caller": "mask_knowledge_api_key",
+          "callee": "len",
+          "lineNumber": 37
+        },
+        {
+          "caller": "get_apiKeyMasked",
+          "callee": "mask_api_key",
+          "lineNumber": 64
+        },
+        {
+          "caller": "get_apiKeyConfigured",
+          "callee": "bool",
+          "lineNumber": 68
+        },
+        {
+          "caller": "get_avatarUrl",
+          "callee": "self.context.get",
+          "lineNumber": 73
+        },
+        {
+          "caller": "get_avatarUrl",
+          "callee": "request.build_absolute_uri",
+          "lineNumber": 75
+        },
+        {
+          "caller": "validate",
+          "callee": "super().validate",
+          "lineNumber": 103
+        },
+        {
+          "caller": "validate",
+          "callee": "super",
+          "lineNumber": 103
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 104
+        },
+        {
+          "caller": "validate",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 105
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 106
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.pop",
+          "lineNumber": 107
+        },
+        {
+          "caller": "create",
+          "callee": "validated_data.pop",
+          "lineNumber": 111
+        },
+        {
+          "caller": "create",
+          "callee": "super().create",
+          "lineNumber": 112
+        },
+        {
+          "caller": "create",
+          "callee": "super",
+          "lineNumber": 112
+        },
+        {
+          "caller": "update",
+          "callee": "validated_data.pop",
+          "lineNumber": 115
+        },
+        {
+          "caller": "update",
+          "callee": "instance.avatar.delete",
+          "lineNumber": 117
+        },
+        {
+          "caller": "update",
+          "callee": "super().update",
+          "lineNumber": 119
+        },
+        {
+          "caller": "update",
+          "callee": "super",
+          "lineNumber": 119
+        },
+        {
+          "caller": "validate_name",
+          "callee": "value.strip",
+          "lineNumber": 155
+        },
+        {
+          "caller": "validate_name",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 157
+        },
+        {
+          "caller": "validate",
+          "callee": "super().validate",
+          "lineNumber": 161
+        },
+        {
+          "caller": "validate",
+          "callee": "super",
+          "lineNumber": 161
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 162
+        },
+        {
+          "caller": "validate",
+          "callee": "self.context.get",
+          "lineNumber": 162
+        },
+        {
+          "caller": "validate",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 163
+        },
+        {
+          "caller": "validate",
+          "callee": "llm_model_has_usage",
+          "lineNumber": 168
+        },
+        {
+          "caller": "validate",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 170
+        },
+        {
+          "caller": "validate",
+          "callee": "super().validate",
+          "lineNumber": 186
+        },
+        {
+          "caller": "validate",
+          "callee": "super",
+          "lineNumber": 186
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 188
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 189
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 190
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 191
+        },
+        {
+          "caller": "validate",
+          "callee": "validate_llm_test_settings_values",
+          "lineNumber": 192
+        },
+        {
+          "caller": "validate",
+          "callee": "self.context.get",
+          "lineNumber": 206
+        },
+        {
+          "caller": "validate",
+          "callee": "Tenant.objects.filter(id=tenant_id, is_active=True).first",
+          "lineNumber": 207
+        },
+        {
+          "caller": "validate",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 207
+        },
+        {
+          "caller": "validate",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 209
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 211
+        },
+        {
+          "caller": "validate",
+          "callee": "set",
+          "lineNumber": 213
+        },
+        {
+          "caller": "validate",
+          "callee": "int",
+          "lineNumber": 216
+        },
+        {
+          "caller": "validate",
+          "callee": "item.get",
+          "lineNumber": 216
+        },
+        {
+          "caller": "validate",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 218
+        },
+        {
+          "caller": "validate",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 220
+        },
+        {
+          "caller": "validate",
+          "callee": "model_ids.append",
+          "lineNumber": 221
+        },
+        {
+          "caller": "validate",
+          "callee": "bool",
+          "lineNumber": 222
+        },
+        {
+          "caller": "validate",
+          "callee": "item.get",
+          "lineNumber": 222
+        },
+        {
+          "caller": "validate",
+          "callee": "active_model_ids.add",
+          "lineNumber": 223
+        },
+        {
+          "caller": "validate",
+          "callee": "set",
+          "lineNumber": 225
+        },
+        {
+          "caller": "validate",
+          "callee": "LLMModel.objects.filter(id__in=model_ids).values_list",
+          "lineNumber": 225
+        },
+        {
+          "caller": "validate",
+          "callee": "LLMModel.objects.filter",
+          "lineNumber": 225
+        },
+        {
+          "caller": "validate",
+          "callee": "set",
+          "lineNumber": 226
+        },
+        {
+          "caller": "validate",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 228
+        },
+        {
+          "caller": "validate",
+          "callee": "min",
+          "lineNumber": 228
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 230
+        },
+        {
+          "caller": "validate",
+          "callee": "LLMModel.objects\n                .select_related('provider')\n                .filter(id=default_model_id)\n                .first",
+          "lineNumber": 233
+        },
+        {
+          "caller": "validate",
+          "callee": "LLMModel.objects\n                .select_related('provider')\n                .filter",
+          "lineNumber": 233
+        },
+        {
+          "caller": "validate",
+          "callee": "LLMModel.objects\n                .select_related",
+          "lineNumber": 233
+        },
+        {
+          "caller": "validate",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 239
+        },
+        {
+          "caller": "validate",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 241
+        },
+        {
+          "caller": "validate",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 243
+        },
+        {
+          "caller": "_validate_model_payload",
+          "callee": "set",
+          "lineNumber": 273
+        },
+        {
+          "caller": "_validate_model_payload",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 275
+        },
+        {
+          "caller": "_validate_model_payload",
+          "callee": "min",
+          "lineNumber": 275
+        },
+        {
+          "caller": "_validate_model_payload",
+          "callee": "str(value).strip",
+          "lineNumber": 281
+        },
+        {
+          "caller": "_validate_model_payload",
+          "callee": "str",
+          "lineNumber": 281
+        },
+        {
+          "caller": "_validate_model_payload",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 283
+        },
+        {
+          "caller": "_validate_model_payload",
+          "callee": "int",
+          "lineNumber": 287
+        },
+        {
+          "caller": "_validate_model_payload",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 289
+        },
+        {
+          "caller": "_validate_model_payload",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 291
+        },
+        {
+          "caller": "validate",
+          "callee": "super().validate",
+          "lineNumber": 296
+        },
+        {
+          "caller": "validate",
+          "callee": "super",
+          "lineNumber": 296
+        },
+        {
+          "caller": "validate",
+          "callee": "self._validate_model_payload",
+          "lineNumber": 300
+        },
+        {
+          "caller": "validate",
+          "callee": "self.context.get",
+          "lineNumber": 310
+        },
+        {
+          "caller": "validate",
+          "callee": "Tenant.objects.filter(id=tenant_id, is_active=True).first",
+          "lineNumber": 311
+        },
+        {
+          "caller": "validate",
+          "callee": "Tenant.objects.filter",
+          "lineNumber": 311
+        },
+        {
+          "caller": "validate",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 313
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 314
+        },
+        {
+          "caller": "validate",
+          "callee": "EmbeddingModel.objects.filter(id=embedding_model_id, is_active=True).exists",
+          "lineNumber": 315
+        },
+        {
+          "caller": "validate",
+          "callee": "EmbeddingModel.objects.filter",
+          "lineNumber": 315
+        },
+        {
+          "caller": "validate",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 316
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 317
+        },
+        {
+          "caller": "validate",
+          "callee": "RerankModel.objects.filter(id=rerank_model_id, is_active=True).exists",
+          "lineNumber": 318
+        },
+        {
+          "caller": "validate",
+          "callee": "RerankModel.objects.filter",
+          "lineNumber": 318
+        },
+        {
+          "caller": "validate",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 319
+        },
+        {
+          "caller": "update",
+          "callee": "validated_data.get",
+          "lineNumber": 336
+        },
+        {
+          "caller": "update",
+          "callee": "validated_data.pop",
+          "lineNumber": 337
+        },
+        {
+          "caller": "update",
+          "callee": "super().update",
+          "lineNumber": 338
+        },
+        {
+          "caller": "update",
+          "callee": "super",
+          "lineNumber": 338
+        },
+        {
+          "caller": "validate_sourceText",
+          "callee": "value.strip",
+          "lineNumber": 361
+        },
+        {
+          "caller": "validate_sourceText",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 363
+        },
+        {
+          "caller": "validate_replacementText",
+          "callee": "value.strip",
+          "lineNumber": 367
+        },
+        {
+          "caller": "validate_replacementText",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 369
+        },
+        {
+          "caller": "get_isDefault",
+          "callee": "self.context.get",
+          "lineNumber": 399
+        },
+        {
+          "caller": "get_isDefault",
+          "callee": "bool",
+          "lineNumber": 400
+        },
+        {
+          "caller": "get_avatarPath",
+          "callee": "self.context.get",
+          "lineNumber": 405
+        },
+        {
+          "caller": "get_avatarPath",
+          "callee": "value.startswith",
+          "lineNumber": 406
+        },
+        {
+          "caller": "get_avatarPath",
+          "callee": "request.build_absolute_uri",
+          "lineNumber": 407
+        },
+        {
+          "caller": "get_configured",
+          "callee": "get_effective_tts_config",
+          "lineNumber": 454
+        },
+        {
+          "caller": "get_configured",
+          "callee": "bool",
+          "lineNumber": 455
+        },
+        {
+          "caller": "get_voiceCount",
+          "callee": "obj.voices.count",
+          "lineNumber": 459
+        },
+        {
+          "caller": "get_apiKeyMasked",
+          "callee": "mask_tts_api_key",
+          "lineNumber": 495
+        },
+        {
+          "caller": "get_apiKeyMasked",
+          "callee": "get_effective_tts_config",
+          "lineNumber": 495
+        },
+        {
+          "caller": "get_apiKeyConfigured",
+          "callee": "bool",
+          "lineNumber": 499
+        },
+        {
+          "caller": "get_apiKeyConfigured",
+          "callee": "get_effective_tts_config",
+          "lineNumber": 499
+        },
+        {
+          "caller": "get_configured",
+          "callee": "get_effective_tts_config",
+          "lineNumber": 503
+        },
+        {
+          "caller": "get_configured",
+          "callee": "bool",
+          "lineNumber": 504
+        },
+        {
+          "caller": "get_voices",
+          "callee": "TTSVoiceSerializer",
+          "lineNumber": 508
+        },
+        {
+          "caller": "get_voices",
+          "callee": "obj.voices.order_by",
+          "lineNumber": 509
+        },
+        {
+          "caller": "get_voices",
+          "callee": "self.context.get",
+          "lineNumber": 513
+        },
+        {
+          "caller": "validate_sampleRate",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 538
+        },
+        {
+          "caller": "validate_defaultVoiceId",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 543
+        },
+        {
+          "caller": "update",
+          "callee": "validated_data.pop",
+          "lineNumber": 547
+        },
+        {
+          "caller": "update",
+          "callee": "validated_data.get",
+          "lineNumber": 548
+        },
+        {
+          "caller": "update",
+          "callee": "validated_data.pop",
+          "lineNumber": 549
+        },
+        {
+          "caller": "update",
+          "callee": "super().update",
+          "lineNumber": 550
+        },
+        {
+          "caller": "update",
+          "callee": "super",
+          "lineNumber": 550
+        },
+        {
+          "caller": "update",
+          "callee": "self._update_voices",
+          "lineNumber": 552
+        },
+        {
+          "caller": "_update_voices",
+          "callee": "item.get",
+          "lineNumber": 557
+        },
+        {
+          "caller": "_update_voices",
+          "callee": "provider.voices.filter(id=voice_id).first",
+          "lineNumber": 560
+        },
+        {
+          "caller": "_update_voices",
+          "callee": "provider.voices.filter",
+          "lineNumber": 560
+        },
+        {
+          "caller": "_update_voices",
+          "callee": "TTSVoiceWriteSerializer",
+          "lineNumber": 563
+        },
+        {
+          "caller": "_update_voices",
+          "callee": "serializer.is_valid",
+          "lineNumber": 564
+        },
+        {
+          "caller": "_update_voices",
+          "callee": "serializer.save",
+          "lineNumber": 565
+        },
+        {
+          "caller": "get_documentCount",
+          "callee": "obj.documents.count",
+          "lineNumber": 590
+        },
+        {
+          "caller": "get_fields",
+          "callee": "super().get_fields",
+          "lineNumber": 678
+        },
+        {
+          "caller": "get_fields",
+          "callee": "super",
+          "lineNumber": 678
+        },
+        {
+          "caller": "get_fields",
+          "callee": "self.context.get",
+          "lineNumber": 679
+        },
+        {
+          "caller": "get_fields",
+          "callee": "get_effective_llm_models_for_tenant",
+          "lineNumber": 681
+        },
+        {
+          "caller": "get_fields",
+          "callee": "KnowledgeDocument.objects.for_tenant",
+          "lineNumber": 682
+        },
+        {
+          "caller": "get_fields",
+          "callee": "KnowledgeBase.objects.for_tenant(tenant).filter",
+          "lineNumber": 683
+        },
+        {
+          "caller": "get_fields",
+          "callee": "KnowledgeBase.objects.for_tenant",
+          "lineNumber": 683
+        },
+        {
+          "caller": "get_createdBy",
+          "callee": "obj.created_by.get_full_name",
+          "lineNumber": 701
+        },
+        {
+          "caller": "validate_name",
+          "callee": "value.strip",
+          "lineNumber": 704
+        },
+        {
+          "caller": "validate_name",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 706
+        },
+        {
+          "caller": "validate_name",
+          "callee": "self.context.get",
+          "lineNumber": 707
+        },
+        {
+          "caller": "validate_name",
+          "callee": "AgentApplication.objects.filter",
+          "lineNumber": 709
+        },
+        {
+          "caller": "validate_name",
+          "callee": "queryset.exclude",
+          "lineNumber": 711
+        },
+        {
+          "caller": "validate_name",
+          "callee": "queryset.exists",
+          "lineNumber": 712
+        },
+        {
+          "caller": "validate_name",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 713
+        },
+        {
+          "caller": "validate_temperature",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 718
+        },
+        {
+          "caller": "validate_maxTokens",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 723
+        },
+        {
+          "caller": "validate_openingMessage",
+          "callee": "value.strip",
+          "lineNumber": 727
+        },
+        {
+          "caller": "validate_openingMessage",
+          "callee": "len",
+          "lineNumber": 728
+        },
+        {
+          "caller": "validate_openingMessage",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 729
+        },
+        {
+          "caller": "validate_suggestedQuestions",
+          "callee": "len",
+          "lineNumber": 733
+        },
+        {
+          "caller": "validate_suggestedQuestions",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 734
+        },
+        {
+          "caller": "validate_suggestedQuestions",
+          "callee": "str(item).strip",
+          "lineNumber": 737
+        },
+        {
+          "caller": "validate_suggestedQuestions",
+          "callee": "str",
+          "lineNumber": 737
+        },
+        {
+          "caller": "validate_suggestedQuestions",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 739
+        },
+        {
+          "caller": "validate_suggestedQuestions",
+          "callee": "len",
+          "lineNumber": 740
+        },
+        {
+          "caller": "validate_suggestedQuestions",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 741
+        },
+        {
+          "caller": "validate_suggestedQuestions",
+          "callee": "normalized.append",
+          "lineNumber": 742
+        },
+        {
+          "caller": "validate_ttsFilterPunctuation",
+          "callee": "''.join",
+          "lineNumber": 746
+        },
+        {
+          "caller": "validate_ttsFilterPunctuation",
+          "callee": "dict.fromkeys",
+          "lineNumber": 746
+        },
+        {
+          "caller": "validate_ttsFilterPunctuation",
+          "callee": "str(value).strip",
+          "lineNumber": 746
+        },
+        {
+          "caller": "validate_ttsFilterPunctuation",
+          "callee": "str",
+          "lineNumber": 746
+        },
+        {
+          "caller": "validate_ttsFilterPunctuation",
+          "callee": "len",
+          "lineNumber": 747
+        },
+        {
+          "caller": "validate_ttsFilterPunctuation",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 748
+        },
+        {
+          "caller": "validate",
+          "callee": "super().validate",
+          "lineNumber": 752
+        },
+        {
+          "caller": "validate",
+          "callee": "super",
+          "lineNumber": 752
+        },
+        {
+          "caller": "create",
+          "callee": "validated_data.get",
+          "lineNumber": 756
+        },
+        {
+          "caller": "create",
+          "callee": "default_agent_opening_message",
+          "lineNumber": 757
+        },
+        {
+          "caller": "create",
+          "callee": "validated_data.get",
+          "lineNumber": 757
+        },
+        {
+          "caller": "create",
+          "callee": "super().create",
+          "lineNumber": 758
+        },
+        {
+          "caller": "create",
+          "callee": "super",
+          "lineNumber": 758
+        },
+        {
+          "caller": "get_createdBy",
+          "callee": "obj.created_by.get_full_name",
+          "lineNumber": 798
+        },
+        {
+          "caller": "validate_question",
+          "callee": "value.strip",
+          "lineNumber": 801
+        },
+        {
+          "caller": "validate_question",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 803
+        },
+        {
+          "caller": "validate_answer",
+          "callee": "value.strip",
+          "lineNumber": 807
+        },
+        {
+          "caller": "validate_answer",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 809
+        },
+        {
+          "caller": "validate_question",
+          "callee": "value.strip",
+          "lineNumber": 819
+        },
+        {
+          "caller": "validate_question",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 821
+        },
+        {
+          "caller": "validate_answer",
+          "callee": "value.strip",
+          "lineNumber": 825
+        },
+        {
+          "caller": "validate_answer",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 827
+        },
+        {
+          "caller": "get_messageCount",
+          "callee": "obj.messages.count",
+          "lineNumber": 853
+        },
+        {
+          "caller": "get_lastMessage",
+          "callee": "obj.messages.order_by('-created_at').first",
+          "lineNumber": 857
+        },
+        {
+          "caller": "get_lastMessage",
+          "callee": "obj.messages.order_by",
+          "lineNumber": 857
+        },
+        {
+          "caller": "get_messages",
+          "callee": "ChatMessageSerializer",
+          "lineNumber": 897
+        },
+        {
+          "caller": "get_messages",
+          "callee": "obj.messages.order_by",
+          "lineNumber": 898
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 931
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 932
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 933
+        },
+        {
+          "caller": "validate",
+          "callee": "attrs.get",
+          "lineNumber": 934
+        },
+        {
+          "caller": "validate",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 937
+        },
+        {
+          "caller": "validate",
+          "callee": "serializers.ValidationError",
+          "lineNumber": 939
+        },
+        {
+          "caller": "validate",
+          "callee": "system_prompt.strip",
+          "lineNumber": 941
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 31,
+        "functionCount": 1,
+        "classCount": 30
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/services/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/services/agent_knowledge.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 581,
+      "nonEmptyLines": 490,
+      "functions": [
+        {
+          "name": "chunk_text",
+          "startLine": 25,
+          "endLine": 42,
+          "params": [
+            "text",
+            "max_chunk_len",
+            "overlap"
+          ]
+        },
+        {
+          "name": "extract_keywords",
+          "startLine": 45,
+          "endLine": 69,
+          "params": [
+            "query"
+          ]
+        },
+        {
+          "name": "score_chunk",
+          "startLine": 72,
+          "endLine": 81,
+          "params": [
+            "chunk",
+            "keywords",
+            "query"
+          ]
+        },
+        {
+          "name": "_read_document_text",
+          "startLine": 84,
+          "endLine": 89,
+          "params": [
+            "doc"
+          ]
+        },
+        {
+          "name": "_content_hash",
+          "startLine": 92,
+          "endLine": 93,
+          "params": [
+            "content"
+          ]
+        },
+        {
+          "name": "_vector_norm",
+          "startLine": 96,
+          "endLine": 97,
+          "params": [
+            "vector"
+          ]
+        },
+        {
+          "name": "_cosine_similarity",
+          "startLine": 100,
+          "endLine": 107,
+          "params": [
+            "left",
+            "right"
+          ]
+        },
+        {
+          "name": "_dashscope_headers",
+          "startLine": 110,
+          "endLine": 114,
+          "params": [
+            "api_key"
+          ]
+        },
+        {
+          "name": "_active_embedding_model",
+          "startLine": 117,
+          "endLine": 131,
+          "params": []
+        },
+        {
+          "name": "_active_rerank_model",
+          "startLine": 134,
+          "endLine": 148,
+          "params": []
+        },
+        {
+          "name": "_embedding_model_for_tenant",
+          "startLine": 151,
+          "endLine": 163,
+          "params": [
+            "tenant"
+          ]
+        },
+        {
+          "name": "_rerank_model_for_tenant",
+          "startLine": 166,
+          "endLine": 178,
+          "params": [
+            "tenant"
+          ]
+        },
+        {
+          "name": "_parse_embedding_response",
+          "startLine": 181,
+          "endLine": 198,
+          "params": [
+            "payload",
+            "expected_count"
+          ]
+        },
+        {
+          "name": "_embed_texts",
+          "startLine": 201,
+          "endLine": 217,
+          "params": [
+            "client",
+            "model_config",
+            "texts"
+          ]
+        },
+        {
+          "name": "_ensure_document_chunks",
+          "startLine": 220,
+          "endLine": 262,
+          "params": [
+            "client",
+            "doc",
+            "model_config"
+          ]
+        },
+        {
+          "name": "_rerank_chunks",
+          "startLine": 265,
+          "endLine": 303,
+          "params": [
+            "client",
+            "model_config",
+            "query",
+            "chunks",
+            "top_n"
+          ]
+        },
+        {
+          "name": "_format_context",
+          "startLine": 306,
+          "endLine": 327,
+          "params": [
+            "chunks",
+            "max_chars"
+          ]
+        },
+        {
+          "name": "_bound_approved_text_documents",
+          "startLine": 330,
+          "endLine": 338,
+          "params": [
+            "application"
+          ]
+        },
+        {
+          "name": "_approved_text_documents_for_knowledge_base",
+          "startLine": 341,
+          "endLine": 347,
+          "params": [
+            "knowledge_base"
+          ]
+        },
+        {
+          "name": "_retrieve_keyword_chunks",
+          "startLine": 350,
+          "endLine": 368,
+          "params": [
+            "docs",
+            "query",
+            "top_n"
+          ]
+        },
+        {
+          "name": "_retrieve_keyword_knowledge_context",
+          "startLine": 371,
+          "endLine": 372,
+          "params": [
+            "application",
+            "query",
+            "top_n",
+            "max_chars"
+          ]
+        },
+        {
+          "name": "_serialize_recall_result",
+          "startLine": 375,
+          "endLine": 390,
+          "params": [
+            "chunks",
+            "mode",
+            "embedding_model",
+            "rerank_model"
+          ]
+        },
+        {
+          "name": "retrieve_knowledge_chunks",
+          "startLine": 393,
+          "endLine": 480,
+          "params": [
+            "query",
+            "application",
+            "knowledge_base",
+            "tenant",
+            "top_n"
+          ]
+        },
+        {
+          "name": "retrieve_knowledge_context",
+          "startLine": 483,
+          "endLine": 552,
+          "params": [
+            "application",
+            "query",
+            "top_n",
+            "max_chars"
+          ]
+        },
+        {
+          "name": "inject_knowledge_context",
+          "startLine": 555,
+          "endLine": 581,
+          "params": [
+            "conversation",
+            "api_messages",
+            "query"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "RetrievedChunk",
+          "startLine": 17,
+          "endLine": 22,
+          "methods": [],
+          "properties": [
+            "document_id",
+            "doc_title",
+            "content",
+            "score",
+            "chunk_index"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "RetrievedChunk",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "chunk_text",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "extract_keywords",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "score_chunk",
+          "line": 72,
+          "isDefault": false
+        },
+        {
+          "name": "_read_document_text",
+          "line": 84,
+          "isDefault": false
+        },
+        {
+          "name": "_content_hash",
+          "line": 92,
+          "isDefault": false
+        },
+        {
+          "name": "_vector_norm",
+          "line": 96,
+          "isDefault": false
+        },
+        {
+          "name": "_cosine_similarity",
+          "line": 100,
+          "isDefault": false
+        },
+        {
+          "name": "_dashscope_headers",
+          "line": 110,
+          "isDefault": false
+        },
+        {
+          "name": "_active_embedding_model",
+          "line": 117,
+          "isDefault": false
+        },
+        {
+          "name": "_active_rerank_model",
+          "line": 134,
+          "isDefault": false
+        },
+        {
+          "name": "_embedding_model_for_tenant",
+          "line": 151,
+          "isDefault": false
+        },
+        {
+          "name": "_rerank_model_for_tenant",
+          "line": 166,
+          "isDefault": false
+        },
+        {
+          "name": "_parse_embedding_response",
+          "line": 181,
+          "isDefault": false
+        },
+        {
+          "name": "_embed_texts",
+          "line": 201,
+          "isDefault": false
+        },
+        {
+          "name": "_ensure_document_chunks",
+          "line": 220,
+          "isDefault": false
+        },
+        {
+          "name": "_rerank_chunks",
+          "line": 265,
+          "isDefault": false
+        },
+        {
+          "name": "_format_context",
+          "line": 306,
+          "isDefault": false
+        },
+        {
+          "name": "_bound_approved_text_documents",
+          "line": 330,
+          "isDefault": false
+        },
+        {
+          "name": "_approved_text_documents_for_knowledge_base",
+          "line": 341,
+          "isDefault": false
+        },
+        {
+          "name": "_retrieve_keyword_chunks",
+          "line": 350,
+          "isDefault": false
+        },
+        {
+          "name": "_retrieve_keyword_knowledge_context",
+          "line": 371,
+          "isDefault": false
+        },
+        {
+          "name": "_serialize_recall_result",
+          "line": 375,
+          "isDefault": false
+        },
+        {
+          "name": "retrieve_knowledge_chunks",
+          "line": 393,
+          "isDefault": false
+        },
+        {
+          "name": "retrieve_knowledge_context",
+          "line": 483,
+          "isDefault": false
+        },
+        {
+          "name": "inject_knowledge_context",
+          "line": 555,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "chunk_text",
+          "callee": "text.replace('\\r\\n', '\\n').split",
+          "lineNumber": 28
+        },
+        {
+          "caller": "chunk_text",
+          "callee": "text.replace",
+          "lineNumber": 28
+        },
+        {
+          "caller": "chunk_text",
+          "callee": "raw_p.strip",
+          "lineNumber": 30
+        },
+        {
+          "caller": "chunk_text",
+          "callee": "len",
+          "lineNumber": 33
+        },
+        {
+          "caller": "chunk_text",
+          "callee": "max",
+          "lineNumber": 35
+        },
+        {
+          "caller": "chunk_text",
+          "callee": "len",
+          "lineNumber": 36
+        },
+        {
+          "caller": "chunk_text",
+          "callee": "paragraphs.append",
+          "lineNumber": 38
+        },
+        {
+          "caller": "chunk_text",
+          "callee": "paragraphs.append",
+          "lineNumber": 41
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "query.lower",
+          "lineNumber": 47
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "re.sub",
+          "lineNumber": 48
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "set",
+          "lineNumber": 49
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "re.findall",
+          "lineNumber": 51
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "len",
+          "lineNumber": 52
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "terms.add",
+          "lineNumber": 53
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "re.findall",
+          "lineNumber": 55
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "len",
+          "lineNumber": 57
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "terms.add",
+          "lineNumber": 58
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "range",
+          "lineNumber": 60
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "len",
+          "lineNumber": 60
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "terms.add",
+          "lineNumber": 61
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "range",
+          "lineNumber": 62
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "len",
+          "lineNumber": 62
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "terms.add",
+          "lineNumber": 63
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "re.sub",
+          "lineNumber": 65
+        },
+        {
+          "caller": "extract_keywords",
+          "callee": "terms.add",
+          "lineNumber": 67
+        },
+        {
+          "caller": "score_chunk",
+          "callee": "chunk.lower",
+          "lineNumber": 74
+        },
+        {
+          "caller": "score_chunk",
+          "callee": "len",
+          "lineNumber": 78
+        },
+        {
+          "caller": "score_chunk",
+          "callee": "query.lower",
+          "lineNumber": 79
+        },
+        {
+          "caller": "score_chunk",
+          "callee": "len",
+          "lineNumber": 80
+        },
+        {
+          "caller": "_read_document_text",
+          "callee": "doc.file.open",
+          "lineNumber": 85
+        },
+        {
+          "caller": "_read_document_text",
+          "callee": "f.read",
+          "lineNumber": 86
+        },
+        {
+          "caller": "_read_document_text",
+          "callee": "isinstance",
+          "lineNumber": 87
+        },
+        {
+          "caller": "_read_document_text",
+          "callee": "raw_content.decode",
+          "lineNumber": 88
+        },
+        {
+          "caller": "_read_document_text",
+          "callee": "str",
+          "lineNumber": 89
+        },
+        {
+          "caller": "_content_hash",
+          "callee": "hashlib.sha256(content.encode('utf-8')).hexdigest",
+          "lineNumber": 93
+        },
+        {
+          "caller": "_content_hash",
+          "callee": "hashlib.sha256",
+          "lineNumber": 93
+        },
+        {
+          "caller": "_content_hash",
+          "callee": "content.encode",
+          "lineNumber": 93
+        },
+        {
+          "caller": "_vector_norm",
+          "callee": "math.sqrt",
+          "lineNumber": 97
+        },
+        {
+          "caller": "_vector_norm",
+          "callee": "sum",
+          "lineNumber": 97
+        },
+        {
+          "caller": "_vector_norm",
+          "callee": "float",
+          "lineNumber": 97
+        },
+        {
+          "caller": "_vector_norm",
+          "callee": "float",
+          "lineNumber": 97
+        },
+        {
+          "caller": "_cosine_similarity",
+          "callee": "len",
+          "lineNumber": 101
+        },
+        {
+          "caller": "_cosine_similarity",
+          "callee": "len",
+          "lineNumber": 101
+        },
+        {
+          "caller": "_cosine_similarity",
+          "callee": "_vector_norm",
+          "lineNumber": 103
+        },
+        {
+          "caller": "_cosine_similarity",
+          "callee": "_vector_norm",
+          "lineNumber": 103
+        },
+        {
+          "caller": "_cosine_similarity",
+          "callee": "sum",
+          "lineNumber": 106
+        },
+        {
+          "caller": "_cosine_similarity",
+          "callee": "float",
+          "lineNumber": 106
+        },
+        {
+          "caller": "_cosine_similarity",
+          "callee": "float",
+          "lineNumber": 106
+        },
+        {
+          "caller": "_cosine_similarity",
+          "callee": "zip",
+          "lineNumber": 106
+        },
+        {
+          "caller": "_active_embedding_model",
+          "callee": "EmbeddingModel.objects.filter(is_active=True)\n        .exclude(api_key='')\n        .exclude(base_url='')\n        .exclude(model='')\n        .order_by('id')\n        .first",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_active_embedding_model",
+          "callee": "EmbeddingModel.objects.filter(is_active=True)\n        .exclude(api_key='')\n        .exclude(base_url='')\n        .exclude(model='')\n        .order_by",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_active_embedding_model",
+          "callee": "EmbeddingModel.objects.filter(is_active=True)\n        .exclude(api_key='')\n        .exclude(base_url='')\n        .exclude",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_active_embedding_model",
+          "callee": "EmbeddingModel.objects.filter(is_active=True)\n        .exclude(api_key='')\n        .exclude",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_active_embedding_model",
+          "callee": "EmbeddingModel.objects.filter(is_active=True)\n        .exclude",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_active_embedding_model",
+          "callee": "EmbeddingModel.objects.filter",
+          "lineNumber": 119
+        },
+        {
+          "caller": "_active_embedding_model",
+          "callee": "EmbeddingModel.load_aliyun",
+          "lineNumber": 128
+        },
+        {
+          "caller": "_active_rerank_model",
+          "callee": "RerankModel.objects.filter(is_active=True)\n        .exclude(api_key='')\n        .exclude(base_url='')\n        .exclude(model='')\n        .order_by('id')\n        .first",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_active_rerank_model",
+          "callee": "RerankModel.objects.filter(is_active=True)\n        .exclude(api_key='')\n        .exclude(base_url='')\n        .exclude(model='')\n        .order_by",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_active_rerank_model",
+          "callee": "RerankModel.objects.filter(is_active=True)\n        .exclude(api_key='')\n        .exclude(base_url='')\n        .exclude",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_active_rerank_model",
+          "callee": "RerankModel.objects.filter(is_active=True)\n        .exclude(api_key='')\n        .exclude",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_active_rerank_model",
+          "callee": "RerankModel.objects.filter(is_active=True)\n        .exclude",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_active_rerank_model",
+          "callee": "RerankModel.objects.filter",
+          "lineNumber": 136
+        },
+        {
+          "caller": "_active_rerank_model",
+          "callee": "RerankModel.load_aliyun",
+          "lineNumber": 145
+        },
+        {
+          "caller": "_embedding_model_for_tenant",
+          "callee": "_active_embedding_model",
+          "lineNumber": 153
+        },
+        {
+          "caller": "_embedding_model_for_tenant",
+          "callee": "TenantKnowledgeModelSettings.objects\n        .select_related('embedding_model')\n        .filter(tenant=tenant, is_active=True)\n        .first",
+          "lineNumber": 155
+        },
+        {
+          "caller": "_embedding_model_for_tenant",
+          "callee": "TenantKnowledgeModelSettings.objects\n        .select_related('embedding_model')\n        .filter",
+          "lineNumber": 155
+        },
+        {
+          "caller": "_embedding_model_for_tenant",
+          "callee": "TenantKnowledgeModelSettings.objects\n        .select_related",
+          "lineNumber": 155
+        },
+        {
+          "caller": "_rerank_model_for_tenant",
+          "callee": "_active_rerank_model",
+          "lineNumber": 168
+        },
+        {
+          "caller": "_rerank_model_for_tenant",
+          "callee": "TenantKnowledgeModelSettings.objects\n        .select_related('rerank_model')\n        .filter(tenant=tenant, is_active=True)\n        .first",
+          "lineNumber": 170
+        },
+        {
+          "caller": "_rerank_model_for_tenant",
+          "callee": "TenantKnowledgeModelSettings.objects\n        .select_related('rerank_model')\n        .filter",
+          "lineNumber": 170
+        },
+        {
+          "caller": "_rerank_model_for_tenant",
+          "callee": "TenantKnowledgeModelSettings.objects\n        .select_related",
+          "lineNumber": 170
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "isinstance",
+          "lineNumber": 183
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "payload.get",
+          "lineNumber": 183
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "sorted",
+          "lineNumber": 184
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "item.get",
+          "lineNumber": 184
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "row.get",
+          "lineNumber": 185
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "payload.get",
+          "lineNumber": 187
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "sorted",
+          "lineNumber": 188
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "output.get",
+          "lineNumber": 188
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "item.get",
+          "lineNumber": 188
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "item.get",
+          "lineNumber": 188
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "row.get",
+          "lineNumber": 189
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "isinstance",
+          "lineNumber": 193
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "result.append",
+          "lineNumber": 194
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "float",
+          "lineNumber": 194
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "len",
+          "lineNumber": 196
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "ValueError",
+          "lineNumber": 197
+        },
+        {
+          "caller": "_parse_embedding_response",
+          "callee": "len",
+          "lineNumber": 197
+        },
+        {
+          "caller": "_embed_texts",
+          "callee": "client.post",
+          "lineNumber": 210
+        },
+        {
+          "caller": "_embed_texts",
+          "callee": "_dashscope_headers",
+          "lineNumber": 213
+        },
+        {
+          "caller": "_embed_texts",
+          "callee": "RuntimeError",
+          "lineNumber": 216
+        },
+        {
+          "caller": "_embed_texts",
+          "callee": "_parse_embedding_response",
+          "lineNumber": 217
+        },
+        {
+          "caller": "_embed_texts",
+          "callee": "response.json",
+          "lineNumber": 217
+        },
+        {
+          "caller": "_embed_texts",
+          "callee": "len",
+          "lineNumber": 217
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "_read_document_text",
+          "lineNumber": 225
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "chunk_text",
+          "lineNumber": 226
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "list",
+          "lineNumber": 227
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "KnowledgeDocumentChunk.objects.filter(document=doc, embedding_model=model_config.model).order_by",
+          "lineNumber": 228
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "KnowledgeDocumentChunk.objects.filter",
+          "lineNumber": 228
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "_content_hash",
+          "lineNumber": 230
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "len",
+          "lineNumber": 232
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "len",
+          "lineNumber": 232
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "all",
+          "lineNumber": 233
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "enumerate",
+          "lineNumber": 233
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "all",
+          "lineNumber": 234
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "KnowledgeDocumentChunk.objects.filter(document=doc, embedding_model=model_config.model).delete",
+          "lineNumber": 239
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "KnowledgeDocumentChunk.objects.filter",
+          "lineNumber": 239
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "range",
+          "lineNumber": 244
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "len",
+          "lineNumber": 244
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "embeddings.extend",
+          "lineNumber": 246
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "_embed_texts",
+          "lineNumber": 246
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "KnowledgeDocumentChunk",
+          "lineNumber": 249
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "enumerate",
+          "lineNumber": 258
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "KnowledgeDocumentChunk.objects.filter(document=doc, embedding_model=model_config.model).delete",
+          "lineNumber": 260
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "KnowledgeDocumentChunk.objects.filter",
+          "lineNumber": 260
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "KnowledgeDocumentChunk.objects.bulk_create",
+          "lineNumber": 261
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "list",
+          "lineNumber": 262
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "KnowledgeDocumentChunk.objects.filter(document=doc, embedding_model=model_config.model).order_by",
+          "lineNumber": 262
+        },
+        {
+          "caller": "_ensure_document_chunks",
+          "callee": "KnowledgeDocumentChunk.objects.filter",
+          "lineNumber": 262
+        },
+        {
+          "caller": "_rerank_chunks",
+          "callee": "min",
+          "lineNumber": 282
+        },
+        {
+          "caller": "_rerank_chunks",
+          "callee": "len",
+          "lineNumber": 282
+        },
+        {
+          "caller": "_rerank_chunks",
+          "callee": "client.post",
+          "lineNumber": 286
+        },
+        {
+          "caller": "_rerank_chunks",
+          "callee": "_dashscope_headers",
+          "lineNumber": 289
+        },
+        {
+          "caller": "_rerank_chunks",
+          "callee": "RuntimeError",
+          "lineNumber": 292
+        },
+        {
+          "caller": "_rerank_chunks",
+          "callee": "(response.json().get('output') or {}).get",
+          "lineNumber": 294
+        },
+        {
+          "caller": "_rerank_chunks",
+          "callee": "response.json().get",
+          "lineNumber": 294
+        },
+        {
+          "caller": "_rerank_chunks",
+          "callee": "response.json",
+          "lineNumber": 294
+        },
+        {
+          "caller": "_rerank_chunks",
+          "callee": "row.get",
+          "lineNumber": 297
+        },
+        {
+          "caller": "_rerank_chunks",
+          "callee": "isinstance",
+          "lineNumber": 298
+        },
+        {
+          "caller": "_rerank_chunks",
+          "callee": "len",
+          "lineNumber": 298
+        },
+        {
+          "caller": "_rerank_chunks",
+          "callee": "row.get",
+          "lineNumber": 300
+        },
+        {
+          "caller": "_rerank_chunks",
+          "callee": "row.get",
+          "lineNumber": 300
+        },
+        {
+          "caller": "_rerank_chunks",
+          "callee": "reranked.append",
+          "lineNumber": 301
+        },
+        {
+          "caller": "_rerank_chunks",
+          "callee": "RetrievedChunk",
+          "lineNumber": 301
+        },
+        {
+          "caller": "_rerank_chunks",
+          "callee": "float",
+          "lineNumber": 301
+        },
+        {
+          "caller": "_format_context",
+          "callee": "len",
+          "lineNumber": 312
+        },
+        {
+          "caller": "_format_context",
+          "callee": "context_parts.append",
+          "lineNumber": 314
+        },
+        {
+          "caller": "_format_context",
+          "callee": "len",
+          "lineNumber": 315
+        },
+        {
+          "caller": "_format_context",
+          "callee": "''.join",
+          "lineNumber": 327
+        },
+        {
+          "caller": "_bound_approved_text_documents",
+          "callee": "application.knowledge_documents.filter",
+          "lineNumber": 332
+        },
+        {
+          "caller": "_bound_approved_text_documents",
+          "callee": "hasattr",
+          "lineNumber": 333
+        },
+        {
+          "caller": "_bound_approved_text_documents",
+          "callee": "KnowledgeDocument.objects.filter",
+          "lineNumber": 334
+        },
+        {
+          "caller": "_bound_approved_text_documents",
+          "callee": "application.knowledge_bases.all",
+          "lineNumber": 334
+        },
+        {
+          "caller": "_bound_approved_text_documents",
+          "callee": "list",
+          "lineNumber": 336
+        },
+        {
+          "caller": "_bound_approved_text_documents",
+          "callee": "document_query.filter(\n        file_extension__in=['txt', 'md'],\n    ).distinct",
+          "lineNumber": 336
+        },
+        {
+          "caller": "_bound_approved_text_documents",
+          "callee": "document_query.filter",
+          "lineNumber": 336
+        },
+        {
+          "caller": "_approved_text_documents_for_knowledge_base",
+          "callee": "list",
+          "lineNumber": 342
+        },
+        {
+          "caller": "_approved_text_documents_for_knowledge_base",
+          "callee": "knowledge_base.documents.filter(\n            tenant=knowledge_base.tenant,\n            file_extension__in=['txt', 'md'],\n        ).distinct",
+          "lineNumber": 343
+        },
+        {
+          "caller": "_approved_text_documents_for_knowledge_base",
+          "callee": "knowledge_base.documents.filter",
+          "lineNumber": 343
+        },
+        {
+          "caller": "_retrieve_keyword_chunks",
+          "callee": "extract_keywords",
+          "lineNumber": 351
+        },
+        {
+          "caller": "_retrieve_keyword_chunks",
+          "callee": "_read_document_text",
+          "lineNumber": 358
+        },
+        {
+          "caller": "_retrieve_keyword_chunks",
+          "callee": "enumerate",
+          "lineNumber": 359
+        },
+        {
+          "caller": "_retrieve_keyword_chunks",
+          "callee": "chunk_text",
+          "lineNumber": 359
+        },
+        {
+          "caller": "_retrieve_keyword_chunks",
+          "callee": "score_chunk",
+          "lineNumber": 360
+        },
+        {
+          "caller": "_retrieve_keyword_chunks",
+          "callee": "all_scored_chunks.append",
+          "lineNumber": 362
+        },
+        {
+          "caller": "_retrieve_keyword_chunks",
+          "callee": "RetrievedChunk",
+          "lineNumber": 362
+        },
+        {
+          "caller": "_retrieve_keyword_chunks",
+          "callee": "logger.warning",
+          "lineNumber": 364
+        },
+        {
+          "caller": "_retrieve_keyword_chunks",
+          "callee": "all_scored_chunks.sort",
+          "lineNumber": 367
+        },
+        {
+          "caller": "_retrieve_keyword_knowledge_context",
+          "callee": "_format_context",
+          "lineNumber": 372
+        },
+        {
+          "caller": "_retrieve_keyword_knowledge_context",
+          "callee": "_retrieve_keyword_chunks",
+          "lineNumber": 372
+        },
+        {
+          "caller": "_retrieve_keyword_knowledge_context",
+          "callee": "_bound_approved_text_documents",
+          "lineNumber": 372
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_serialize_recall_result",
+          "lineNumber": 402
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_approved_text_documents_for_knowledge_base",
+          "lineNumber": 405
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_bound_approved_text_documents",
+          "lineNumber": 408
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_serialize_recall_result",
+          "lineNumber": 414
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_embedding_model_for_tenant",
+          "lineNumber": 416
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_serialize_recall_result",
+          "lineNumber": 418
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_retrieve_keyword_chunks",
+          "lineNumber": 419
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "httpx.Client",
+          "lineNumber": 426
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_ensure_document_chunks",
+          "lineNumber": 428
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_embed_texts",
+          "lineNumber": 430
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "list",
+          "lineNumber": 431
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "KnowledgeDocumentChunk.objects.filter(\n                    document__in=docs,\n                    embedding_model=embedding_model.model,\n                ).select_related",
+          "lineNumber": 432
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "KnowledgeDocumentChunk.objects.filter",
+          "lineNumber": 432
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "RetrievedChunk",
+          "lineNumber": 438
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_cosine_similarity",
+          "lineNumber": 442
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "scored_chunks.sort",
+          "lineNumber": 448
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "max",
+          "lineNumber": 449
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_serialize_recall_result",
+          "lineNumber": 451
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_retrieve_keyword_chunks",
+          "lineNumber": 452
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_rerank_model_for_tenant",
+          "lineNumber": 458
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_rerank_chunks",
+          "lineNumber": 461
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "logger.warning",
+          "lineNumber": 463
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_serialize_recall_result",
+          "lineNumber": 467
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "logger.exception",
+          "lineNumber": 474
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_serialize_recall_result",
+          "lineNumber": 475
+        },
+        {
+          "caller": "retrieve_knowledge_chunks",
+          "callee": "_retrieve_keyword_chunks",
+          "lineNumber": 476
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "_bound_approved_text_documents",
+          "lineNumber": 494
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "_embedding_model_for_tenant",
+          "lineNumber": 498
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "_retrieve_keyword_knowledge_context",
+          "lineNumber": 500
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "httpx.Client",
+          "lineNumber": 502
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "_ensure_document_chunks",
+          "lineNumber": 506
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "logger.warning",
+          "lineNumber": 509
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "_retrieve_keyword_knowledge_context",
+          "lineNumber": 512
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "_embed_texts",
+          "lineNumber": 514
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "list",
+          "lineNumber": 515
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "KnowledgeDocumentChunk.objects.filter(\n                    document__in=docs,\n                    embedding_model=embedding_model.model,\n                ).select_related",
+          "lineNumber": 516
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "KnowledgeDocumentChunk.objects.filter",
+          "lineNumber": 516
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "_retrieve_keyword_knowledge_context",
+          "lineNumber": 522
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "RetrievedChunk",
+          "lineNumber": 525
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "_cosine_similarity",
+          "lineNumber": 529
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "scored_chunks.sort",
+          "lineNumber": 535
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "max",
+          "lineNumber": 536
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "_retrieve_keyword_knowledge_context",
+          "lineNumber": 538
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "_rerank_model_for_tenant",
+          "lineNumber": 540
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "_rerank_chunks",
+          "lineNumber": 543
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "logger.warning",
+          "lineNumber": 545
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "_format_context",
+          "lineNumber": 549
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "logger.exception",
+          "lineNumber": 551
+        },
+        {
+          "caller": "retrieve_knowledge_context",
+          "callee": "_retrieve_keyword_knowledge_context",
+          "lineNumber": 552
+        },
+        {
+          "caller": "inject_knowledge_context",
+          "callee": "retrieve_knowledge_context",
+          "lineNumber": 563
+        },
+        {
+          "caller": "inject_knowledge_context",
+          "callee": "new_messages.append",
+          "lineNumber": 574
+        },
+        {
+          "caller": "inject_knowledge_context",
+          "callee": "new_messages.append",
+          "lineNumber": 575
+        },
+        {
+          "caller": "inject_knowledge_context",
+          "callee": "new_messages.extend",
+          "lineNumber": 576
+        },
+        {
+          "caller": "inject_knowledge_context",
+          "callee": "new_messages.append",
+          "lineNumber": 578
+        },
+        {
+          "caller": "inject_knowledge_context",
+          "callee": "new_messages.extend",
+          "lineNumber": 579
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 26,
+        "functionCount": 25,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/services/asr.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 262,
+      "nonEmptyLines": 224,
+      "functions": [
+        {
+          "name": "mask_secret",
+          "startLine": 36,
+          "endLine": 41,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "get_effective_asr_config",
+          "startLine": 44,
+          "endLine": 53,
+          "params": []
+        },
+        {
+          "name": "build_asr_ws_url",
+          "startLine": 56,
+          "endLine": 59,
+          "params": [
+            "config"
+          ]
+        },
+        {
+          "name": "serialize_asr_settings",
+          "startLine": 62,
+          "endLine": 71,
+          "params": [
+            "config"
+          ]
+        },
+        {
+          "name": "serialize_asr_status",
+          "startLine": 74,
+          "endLine": 83,
+          "params": [
+            "config"
+          ]
+        },
+        {
+          "name": "is_asr_configured",
+          "startLine": 86,
+          "endLine": 87,
+          "params": [
+            "config"
+          ]
+        },
+        {
+          "name": "transcribe_pcm_audio",
+          "startLine": 90,
+          "endLine": 146,
+          "params": [
+            "pcm",
+            "sample_rate",
+            "config"
+          ]
+        },
+        {
+          "name": "_missing_config_message",
+          "startLine": 149,
+          "endLine": 159,
+          "params": [
+            "config"
+          ]
+        },
+        {
+          "name": "_transcription_session_update_event",
+          "startLine": 162,
+          "endLine": 176,
+          "params": [
+            "sample_rate"
+          ]
+        },
+        {
+          "name": "_audio_append_event",
+          "startLine": 179,
+          "endLine": 184,
+          "params": [
+            "audio"
+          ]
+        },
+        {
+          "name": "_session_finish_event",
+          "startLine": 187,
+          "endLine": 191,
+          "params": []
+        },
+        {
+          "name": "_extract_transcript_text",
+          "startLine": 194,
+          "endLine": 199,
+          "params": [
+            "event"
+          ]
+        },
+        {
+          "name": "test_asr_connection",
+          "startLine": 202,
+          "endLine": 262,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "EffectiveASRConfig",
+          "startLine": 27,
+          "endLine": 33,
+          "methods": [],
+          "properties": [
+            "workspace_id",
+            "api_key",
+            "base_url",
+            "model",
+            "is_active",
+            "updated_at"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "EffectiveASRConfig",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "mask_secret",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "get_effective_asr_config",
+          "line": 44,
+          "isDefault": false
+        },
+        {
+          "name": "build_asr_ws_url",
+          "line": 56,
+          "isDefault": false
+        },
+        {
+          "name": "serialize_asr_settings",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "serialize_asr_status",
+          "line": 74,
+          "isDefault": false
+        },
+        {
+          "name": "is_asr_configured",
+          "line": 86,
+          "isDefault": false
+        },
+        {
+          "name": "transcribe_pcm_audio",
+          "line": 90,
+          "isDefault": false
+        },
+        {
+          "name": "_missing_config_message",
+          "line": 149,
+          "isDefault": false
+        },
+        {
+          "name": "_transcription_session_update_event",
+          "line": 162,
+          "isDefault": false
+        },
+        {
+          "name": "_audio_append_event",
+          "line": 179,
+          "isDefault": false
+        },
+        {
+          "name": "_session_finish_event",
+          "line": 187,
+          "isDefault": false
+        },
+        {
+          "name": "_extract_transcript_text",
+          "line": 194,
+          "isDefault": false
+        },
+        {
+          "name": "test_asr_connection",
+          "line": 202,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create_connection",
+          "callee": "RuntimeError",
+          "lineNumber": 21
+        },
+        {
+          "caller": "mask_secret",
+          "callee": "len",
+          "lineNumber": 39
+        },
+        {
+          "caller": "mask_secret",
+          "callee": "len",
+          "lineNumber": 40
+        },
+        {
+          "caller": "get_effective_asr_config",
+          "callee": "ASRConfig.load",
+          "lineNumber": 45
+        },
+        {
+          "caller": "get_effective_asr_config",
+          "callee": "EffectiveASRConfig",
+          "lineNumber": 46
+        },
+        {
+          "caller": "get_effective_asr_config",
+          "callee": "(cfg.workspace_id or getattr(settings, 'MULTIMODAL_WORKSPACE_ID', '')).strip",
+          "lineNumber": 47
+        },
+        {
+          "caller": "get_effective_asr_config",
+          "callee": "getattr",
+          "lineNumber": 47
+        },
+        {
+          "caller": "get_effective_asr_config",
+          "callee": "(cfg.api_key or getattr(settings, 'MULTIMODAL_API_KEY', '')).strip",
+          "lineNumber": 48
+        },
+        {
+          "caller": "get_effective_asr_config",
+          "callee": "getattr",
+          "lineNumber": 48
+        },
+        {
+          "caller": "get_effective_asr_config",
+          "callee": "(cfg.base_url or getattr(settings, 'ASR_BASE_URL', '')).strip",
+          "lineNumber": 49
+        },
+        {
+          "caller": "get_effective_asr_config",
+          "callee": "getattr",
+          "lineNumber": 49
+        },
+        {
+          "caller": "get_effective_asr_config",
+          "callee": "(cfg.model or getattr(settings, 'ASR_MODEL', '')).strip",
+          "lineNumber": 50
+        },
+        {
+          "caller": "get_effective_asr_config",
+          "callee": "getattr",
+          "lineNumber": 50
+        },
+        {
+          "caller": "get_effective_asr_config",
+          "callee": "bool",
+          "lineNumber": 51
+        },
+        {
+          "caller": "build_asr_ws_url",
+          "callee": "config.base_url.rstrip",
+          "lineNumber": 57
+        },
+        {
+          "caller": "build_asr_ws_url",
+          "callee": "urlencode",
+          "lineNumber": 59
+        },
+        {
+          "caller": "serialize_asr_settings",
+          "callee": "mask_secret",
+          "lineNumber": 65
+        },
+        {
+          "caller": "serialize_asr_settings",
+          "callee": "is_asr_configured",
+          "lineNumber": 69
+        },
+        {
+          "caller": "serialize_asr_status",
+          "callee": "get_effective_asr_config",
+          "lineNumber": 75
+        },
+        {
+          "caller": "serialize_asr_status",
+          "callee": "is_asr_configured",
+          "lineNumber": 77
+        },
+        {
+          "caller": "is_asr_configured",
+          "callee": "bool",
+          "lineNumber": 87
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "get_effective_asr_config",
+          "lineNumber": 91
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "RuntimeError",
+          "lineNumber": 93
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "is_asr_configured",
+          "lineNumber": 94
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "RuntimeError",
+          "lineNumber": 95
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "_missing_config_message",
+          "lineNumber": 95
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "RuntimeError",
+          "lineNumber": 97
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "websocket.create_connection",
+          "lineNumber": 102
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "build_asr_ws_url",
+          "lineNumber": 103
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "ws.send",
+          "lineNumber": 112
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "json.dumps",
+          "lineNumber": 112
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "_transcription_session_update_event",
+          "lineNumber": 112
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "range",
+          "lineNumber": 113
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "len",
+          "lineNumber": 113
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "ws.send",
+          "lineNumber": 115
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "json.dumps",
+          "lineNumber": 115
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "_audio_append_event",
+          "lineNumber": 115
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "ws.send",
+          "lineNumber": 116
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "json.dumps",
+          "lineNumber": 116
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "_session_finish_event",
+          "lineNumber": 116
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "time.monotonic",
+          "lineNumber": 118
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "time.monotonic",
+          "lineNumber": 119
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "ws.recv",
+          "lineNumber": 120
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "json.loads",
+          "lineNumber": 121
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "isinstance",
+          "lineNumber": 121
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "isinstance",
+          "lineNumber": 122
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "str",
+          "lineNumber": 124
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "event.get",
+          "lineNumber": 124
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "event.get",
+          "lineNumber": 126
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "event.get",
+          "lineNumber": 126
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "RuntimeError",
+          "lineNumber": 127
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "str",
+          "lineNumber": 127
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "_extract_transcript_text",
+          "lineNumber": 128
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "event_type.endswith",
+          "lineNumber": 130
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "transcript.strip",
+          "lineNumber": 138
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "transcript.strip",
+          "lineNumber": 140
+        },
+        {
+          "caller": "transcribe_pcm_audio",
+          "callee": "ws.close",
+          "lineNumber": 144
+        },
+        {
+          "caller": "_missing_config_message",
+          "callee": "missing.append",
+          "lineNumber": 152
+        },
+        {
+          "caller": "_missing_config_message",
+          "callee": "missing.append",
+          "lineNumber": 154
+        },
+        {
+          "caller": "_missing_config_message",
+          "callee": "missing.append",
+          "lineNumber": 156
+        },
+        {
+          "caller": "_missing_config_message",
+          "callee": "missing.append",
+          "lineNumber": 158
+        },
+        {
+          "caller": "_missing_config_message",
+          "callee": "\", \".join",
+          "lineNumber": 159
+        },
+        {
+          "caller": "_audio_append_event",
+          "callee": "base64.b64encode(audio).decode",
+          "lineNumber": 183
+        },
+        {
+          "caller": "_audio_append_event",
+          "callee": "base64.b64encode",
+          "lineNumber": 183
+        },
+        {
+          "caller": "_extract_transcript_text",
+          "callee": "event.get",
+          "lineNumber": 196
+        },
+        {
+          "caller": "_extract_transcript_text",
+          "callee": "isinstance",
+          "lineNumber": 197
+        },
+        {
+          "caller": "_extract_transcript_text",
+          "callee": "value.strip",
+          "lineNumber": 197
+        },
+        {
+          "caller": "_extract_transcript_text",
+          "callee": "value.strip",
+          "lineNumber": 198
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "get_effective_asr_config",
+          "lineNumber": 203
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "time.time",
+          "lineNumber": 204
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "is_asr_configured",
+          "lineNumber": 208
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "_missing_config_message",
+          "lineNumber": 209
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "websocket.create_connection",
+          "lineNumber": 213
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "build_asr_ws_url",
+          "lineNumber": 214
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "ws.send",
+          "lineNumber": 223
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "json.dumps",
+          "lineNumber": 223
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "ws.send",
+          "lineNumber": 237
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "json.dumps",
+          "lineNumber": 237
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "ws.recv",
+          "lineNumber": 241
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "json.loads",
+          "lineNumber": 242
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "isinstance",
+          "lineNumber": 242
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "int",
+          "lineNumber": 243
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "time.time",
+          "lineNumber": 243
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "event.get",
+          "lineNumber": 244
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "isinstance",
+          "lineNumber": 244
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "int",
+          "lineNumber": 251
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "time.time",
+          "lineNumber": 251
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "str",
+          "lineNumber": 254
+        },
+        {
+          "caller": "test_asr_connection",
+          "callee": "ws.close",
+          "lineNumber": 260
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 14,
+        "functionCount": 13,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/services/tts.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 235,
+      "nonEmptyLines": 182,
+      "functions": [
+        {
+          "name": "mask_api_key",
+          "startLine": 33,
+          "endLine": 38,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "get_aliyun_tts_provider",
+          "startLine": 41,
+          "endLine": 42,
+          "params": []
+        },
+        {
+          "name": "get_effective_tts_config",
+          "startLine": 45,
+          "endLine": 56,
+          "params": [
+            "provider"
+          ]
+        },
+        {
+          "name": "is_tts_configured",
+          "startLine": 59,
+          "endLine": 60,
+          "params": [
+            "config"
+          ]
+        },
+        {
+          "name": "get_tenant_tts_settings",
+          "startLine": 63,
+          "endLine": 67,
+          "params": [
+            "tenant"
+          ]
+        },
+        {
+          "name": "get_available_tts_voices",
+          "startLine": 70,
+          "endLine": 72,
+          "params": [
+            "provider"
+          ]
+        },
+        {
+          "name": "is_voice_available",
+          "startLine": 75,
+          "endLine": 78,
+          "params": [
+            "voice"
+          ]
+        },
+        {
+          "name": "get_default_tts_voice",
+          "startLine": 81,
+          "endLine": 85,
+          "params": [
+            "provider"
+          ]
+        },
+        {
+          "name": "get_effective_tts_voice_for_tenant",
+          "startLine": 88,
+          "endLine": 92,
+          "params": [
+            "tenant",
+            "provider"
+          ]
+        },
+        {
+          "name": "normalize_tts_text",
+          "startLine": 95,
+          "endLine": 97,
+          "params": [
+            "text",
+            "config"
+          ]
+        },
+        {
+          "name": "split_tts_text",
+          "startLine": 100,
+          "endLine": 117,
+          "params": [
+            "text",
+            "chunk_size"
+          ]
+        },
+        {
+          "name": "pcm_to_wav",
+          "startLine": 120,
+          "endLine": 127,
+          "params": [
+            "pcm",
+            "sample_rate"
+          ]
+        },
+        {
+          "name": "build_tts_ws_url",
+          "startLine": 130,
+          "endLine": 133,
+          "params": [
+            "config"
+          ]
+        },
+        {
+          "name": "response_format_for_sample_rate",
+          "startLine": 136,
+          "endLine": 137,
+          "params": [
+            "sample_rate"
+          ]
+        },
+        {
+          "name": "synthesize_tts_pcm",
+          "startLine": 140,
+          "endLine": 142,
+          "params": [
+            "text",
+            "voice",
+            "config"
+          ]
+        },
+        {
+          "name": "_synthesize_tts_pcm_async",
+          "startLine": 145,
+          "endLine": 190,
+          "params": [
+            "text",
+            "voice",
+            "config"
+          ]
+        },
+        {
+          "name": "_extract_upstream_error_message",
+          "startLine": 193,
+          "endLine": 200,
+          "params": [
+            "event"
+          ]
+        },
+        {
+          "name": "_session_update_event",
+          "startLine": 203,
+          "endLine": 213,
+          "params": [
+            "config",
+            "voice"
+          ]
+        },
+        {
+          "name": "_text_append_event",
+          "startLine": 216,
+          "endLine": 221,
+          "params": [
+            "text"
+          ]
+        },
+        {
+          "name": "_text_commit_event",
+          "startLine": 224,
+          "endLine": 228,
+          "params": []
+        },
+        {
+          "name": "_session_finish_event",
+          "startLine": 231,
+          "endLine": 235,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "EffectiveTTSConfig",
+          "startLine": 22,
+          "endLine": 30,
+          "methods": [],
+          "properties": [
+            "provider",
+            "api_key",
+            "base_url",
+            "model",
+            "sample_rate",
+            "default_test_text",
+            "is_active",
+            "updated_at"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "EffectiveTTSConfig",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "mask_api_key",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "get_aliyun_tts_provider",
+          "line": 41,
+          "isDefault": false
+        },
+        {
+          "name": "get_effective_tts_config",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "is_tts_configured",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "get_tenant_tts_settings",
+          "line": 63,
+          "isDefault": false
+        },
+        {
+          "name": "get_available_tts_voices",
+          "line": 70,
+          "isDefault": false
+        },
+        {
+          "name": "is_voice_available",
+          "line": 75,
+          "isDefault": false
+        },
+        {
+          "name": "get_default_tts_voice",
+          "line": 81,
+          "isDefault": false
+        },
+        {
+          "name": "get_effective_tts_voice_for_tenant",
+          "line": 88,
+          "isDefault": false
+        },
+        {
+          "name": "normalize_tts_text",
+          "line": 95,
+          "isDefault": false
+        },
+        {
+          "name": "split_tts_text",
+          "line": 100,
+          "isDefault": false
+        },
+        {
+          "name": "pcm_to_wav",
+          "line": 120,
+          "isDefault": false
+        },
+        {
+          "name": "build_tts_ws_url",
+          "line": 130,
+          "isDefault": false
+        },
+        {
+          "name": "response_format_for_sample_rate",
+          "line": 136,
+          "isDefault": false
+        },
+        {
+          "name": "synthesize_tts_pcm",
+          "line": 140,
+          "isDefault": false
+        },
+        {
+          "name": "_synthesize_tts_pcm_async",
+          "line": 145,
+          "isDefault": false
+        },
+        {
+          "name": "_extract_upstream_error_message",
+          "line": 193,
+          "isDefault": false
+        },
+        {
+          "name": "_session_update_event",
+          "line": 203,
+          "isDefault": false
+        },
+        {
+          "name": "_text_append_event",
+          "line": 216,
+          "isDefault": false
+        },
+        {
+          "name": "_text_commit_event",
+          "line": 224,
+          "isDefault": false
+        },
+        {
+          "name": "_session_finish_event",
+          "line": 231,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "mask_api_key",
+          "callee": "len",
+          "lineNumber": 36
+        },
+        {
+          "caller": "get_aliyun_tts_provider",
+          "callee": "TTSProvider.load_aliyun",
+          "lineNumber": 42
+        },
+        {
+          "caller": "get_effective_tts_config",
+          "callee": "get_aliyun_tts_provider",
+          "lineNumber": 46
+        },
+        {
+          "caller": "get_effective_tts_config",
+          "callee": "EffectiveTTSConfig",
+          "lineNumber": 47
+        },
+        {
+          "caller": "get_effective_tts_config",
+          "callee": "(cfg.api_key or getattr(settings, 'ALIYUN_TTS_API_KEY', '')).strip",
+          "lineNumber": 49
+        },
+        {
+          "caller": "get_effective_tts_config",
+          "callee": "getattr",
+          "lineNumber": 49
+        },
+        {
+          "caller": "get_effective_tts_config",
+          "callee": "(cfg.base_url or getattr(settings, 'ALIYUN_TTS_BASE_URL', '')).strip",
+          "lineNumber": 50
+        },
+        {
+          "caller": "get_effective_tts_config",
+          "callee": "getattr",
+          "lineNumber": 50
+        },
+        {
+          "caller": "get_effective_tts_config",
+          "callee": "(cfg.model or getattr(settings, 'ALIYUN_TTS_MODEL', '')).strip",
+          "lineNumber": 51
+        },
+        {
+          "caller": "get_effective_tts_config",
+          "callee": "getattr",
+          "lineNumber": 51
+        },
+        {
+          "caller": "get_effective_tts_config",
+          "callee": "int",
+          "lineNumber": 52
+        },
+        {
+          "caller": "get_effective_tts_config",
+          "callee": "getattr",
+          "lineNumber": 52
+        },
+        {
+          "caller": "get_effective_tts_config",
+          "callee": "(cfg.default_test_text or getattr(settings, 'ALIYUN_TTS_DEFAULT_TEST_TEXT', '') or DEFAULT_TEST_TEXT).strip",
+          "lineNumber": 53
+        },
+        {
+          "caller": "get_effective_tts_config",
+          "callee": "getattr",
+          "lineNumber": 53
+        },
+        {
+          "caller": "get_effective_tts_config",
+          "callee": "bool",
+          "lineNumber": 54
+        },
+        {
+          "caller": "is_tts_configured",
+          "callee": "bool",
+          "lineNumber": 60
+        },
+        {
+          "caller": "get_tenant_tts_settings",
+          "callee": "TenantTTSSettings.objects.get_or_create",
+          "lineNumber": 66
+        },
+        {
+          "caller": "get_available_tts_voices",
+          "callee": "get_aliyun_tts_provider",
+          "lineNumber": 71
+        },
+        {
+          "caller": "get_available_tts_voices",
+          "callee": "cfg.voices.filter(is_active=True, is_visible=True).order_by",
+          "lineNumber": 72
+        },
+        {
+          "caller": "get_available_tts_voices",
+          "callee": "cfg.voices.filter",
+          "lineNumber": 72
+        },
+        {
+          "caller": "is_voice_available",
+          "callee": "bool",
+          "lineNumber": 78
+        },
+        {
+          "caller": "get_default_tts_voice",
+          "callee": "get_aliyun_tts_provider",
+          "lineNumber": 82
+        },
+        {
+          "caller": "get_default_tts_voice",
+          "callee": "is_voice_available",
+          "lineNumber": 83
+        },
+        {
+          "caller": "get_default_tts_voice",
+          "callee": "get_available_tts_voices(cfg).first",
+          "lineNumber": 85
+        },
+        {
+          "caller": "get_default_tts_voice",
+          "callee": "get_available_tts_voices",
+          "lineNumber": 85
+        },
+        {
+          "caller": "get_effective_tts_voice_for_tenant",
+          "callee": "get_tenant_tts_settings",
+          "lineNumber": 89
+        },
+        {
+          "caller": "get_effective_tts_voice_for_tenant",
+          "callee": "is_voice_available",
+          "lineNumber": 90
+        },
+        {
+          "caller": "get_effective_tts_voice_for_tenant",
+          "callee": "get_default_tts_voice",
+          "lineNumber": 92
+        },
+        {
+          "caller": "normalize_tts_text",
+          "callee": "(text or '').strip",
+          "lineNumber": 96
+        },
+        {
+          "caller": "split_tts_text",
+          "callee": "text.strip",
+          "lineNumber": 101
+        },
+        {
+          "caller": "split_tts_text",
+          "callee": "set",
+          "lineNumber": 106
+        },
+        {
+          "caller": "split_tts_text",
+          "callee": "len",
+          "lineNumber": 109
+        },
+        {
+          "caller": "split_tts_text",
+          "callee": "current.strip",
+          "lineNumber": 110
+        },
+        {
+          "caller": "split_tts_text",
+          "callee": "chunks.append",
+          "lineNumber": 112
+        },
+        {
+          "caller": "split_tts_text",
+          "callee": "current.strip",
+          "lineNumber": 114
+        },
+        {
+          "caller": "split_tts_text",
+          "callee": "chunks.append",
+          "lineNumber": 116
+        },
+        {
+          "caller": "pcm_to_wav",
+          "callee": "io.BytesIO",
+          "lineNumber": 121
+        },
+        {
+          "caller": "pcm_to_wav",
+          "callee": "wave.open",
+          "lineNumber": 122
+        },
+        {
+          "caller": "pcm_to_wav",
+          "callee": "wav_file.setnchannels",
+          "lineNumber": 123
+        },
+        {
+          "caller": "pcm_to_wav",
+          "callee": "wav_file.setsampwidth",
+          "lineNumber": 124
+        },
+        {
+          "caller": "pcm_to_wav",
+          "callee": "wav_file.setframerate",
+          "lineNumber": 125
+        },
+        {
+          "caller": "pcm_to_wav",
+          "callee": "wav_file.writeframes",
+          "lineNumber": 126
+        },
+        {
+          "caller": "pcm_to_wav",
+          "callee": "buffer.getvalue",
+          "lineNumber": 127
+        },
+        {
+          "caller": "build_tts_ws_url",
+          "callee": "config.base_url.rstrip",
+          "lineNumber": 131
+        },
+        {
+          "caller": "build_tts_ws_url",
+          "callee": "urlencode",
+          "lineNumber": 133
+        },
+        {
+          "caller": "synthesize_tts_pcm",
+          "callee": "get_effective_tts_config",
+          "lineNumber": 141
+        },
+        {
+          "caller": "synthesize_tts_pcm",
+          "callee": "asyncio.run",
+          "lineNumber": 142
+        },
+        {
+          "caller": "synthesize_tts_pcm",
+          "callee": "_synthesize_tts_pcm_async",
+          "lineNumber": 142
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "is_tts_configured",
+          "lineNumber": 146
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "RuntimeError",
+          "lineNumber": 147
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "RuntimeError",
+          "lineNumber": 149
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "websockets.connect",
+          "lineNumber": 152
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "build_tts_ws_url",
+          "lineNumber": 153
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "upstream.send",
+          "lineNumber": 164
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "json.dumps",
+          "lineNumber": 164
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "_session_update_event",
+          "lineNumber": 164
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "split_tts_text",
+          "lineNumber": 165
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "upstream.send",
+          "lineNumber": 166
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "json.dumps",
+          "lineNumber": 166
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "_text_append_event",
+          "lineNumber": 166
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "asyncio.sleep",
+          "lineNumber": 167
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "upstream.send",
+          "lineNumber": 168
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "json.dumps",
+          "lineNumber": 168
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "_text_commit_event",
+          "lineNumber": 168
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "upstream.send",
+          "lineNumber": 169
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "json.dumps",
+          "lineNumber": 169
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "_session_finish_event",
+          "lineNumber": 169
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "json.loads",
+          "lineNumber": 173
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "isinstance",
+          "lineNumber": 176
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "str",
+          "lineNumber": 179
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "event.get",
+          "lineNumber": 179
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "event.get",
+          "lineNumber": 181
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "isinstance",
+          "lineNumber": 182
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "audio_parts.append",
+          "lineNumber": 183
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "base64.b64decode",
+          "lineNumber": 183
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "RuntimeError",
+          "lineNumber": 186
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "_extract_upstream_error_message",
+          "lineNumber": 186
+        },
+        {
+          "caller": "_synthesize_tts_pcm_async",
+          "callee": "b''.join",
+          "lineNumber": 190
+        },
+        {
+          "caller": "_extract_upstream_error_message",
+          "callee": "event.get",
+          "lineNumber": 194
+        },
+        {
+          "caller": "_extract_upstream_error_message",
+          "callee": "isinstance",
+          "lineNumber": 195
+        },
+        {
+          "caller": "_extract_upstream_error_message",
+          "callee": "error.get",
+          "lineNumber": 196
+        },
+        {
+          "caller": "_extract_upstream_error_message",
+          "callee": "error.get",
+          "lineNumber": 196
+        },
+        {
+          "caller": "_extract_upstream_error_message",
+          "callee": "error.get",
+          "lineNumber": 196
+        },
+        {
+          "caller": "_extract_upstream_error_message",
+          "callee": "str",
+          "lineNumber": 198
+        },
+        {
+          "caller": "_extract_upstream_error_message",
+          "callee": "event.get",
+          "lineNumber": 199
+        },
+        {
+          "caller": "_extract_upstream_error_message",
+          "callee": "str",
+          "lineNumber": 200
+        },
+        {
+          "caller": "_session_update_event",
+          "callee": "response_format_for_sample_rate",
+          "lineNumber": 210
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 22,
+        "functionCount": 21,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/apps/ai_models/tests/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 0,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

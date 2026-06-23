@@ -1,0 +1,146 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 6,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "device-chat/README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 211,
+      "nonEmptyLines": 153,
+      "sections": [
+        {
+          "heading": "数字人语音问答测试页",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "打开方式",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "运行时接口控制台",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "TTS HTTP 音频格式说明",
+          "level": 3,
+          "line": 39
+        },
+        {
+          "heading": "页面能力",
+          "level": 2,
+          "line": 61
+        },
+        {
+          "heading": "默认接口",
+          "level": 2,
+          "line": 71
+        },
+        {
+          "heading": "语音问答响应格式",
+          "level": 2,
+          "line": 135
+        },
+        {
+          "heading": "跨域处理",
+          "level": 2,
+          "line": 156
+        },
+        {
+          "heading": "常见问题",
+          "level": 2,
+          "line": 196
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "device-chat/android-api-simulator.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 1760,
+      "nonEmptyLines": 1626,
+      "metrics": {}
+    },
+    {
+      "path": "device-chat/index.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 136,
+      "nonEmptyLines": 124,
+      "metrics": {}
+    },
+    {
+      "path": "device-chat/runtime-api-console.apifox.openapi.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 1408,
+      "nonEmptyLines": 1408,
+      "sections": [
+        {
+          "heading": "openapi",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "info",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "servers",
+          "level": 1,
+          "line": 8
+        },
+        {
+          "heading": "tags",
+          "level": 1,
+          "line": 14
+        },
+        {
+          "heading": "paths",
+          "level": 1,
+          "line": 31
+        },
+        {
+          "heading": "components",
+          "level": 1,
+          "line": 718
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "device-chat/runtime-api-console.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 1824,
+      "nonEmptyLines": 1750,
+      "metrics": {}
+    },
+    {
+      "path": "device-chat/style.css",
+      "language": "css",
+      "fileCategory": "markup",
+      "totalLines": 467,
+      "nonEmptyLines": 397,
+      "metrics": {}
+    }
+  ]
+}

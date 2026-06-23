@@ -1,0 +1,485 @@
+{
+  "nodes": [
+    {
+      "id": "document:.codex/prompts/analyst.md",
+      "type": "document",
+      "name": "analyst.md",
+      "filePath": ".codex/prompts/analyst.md",
+      "summary": ".codex/prompts/analyst.md (markdown); 9 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        135
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "id": "document:.codex/prompts/api-reviewer.md",
+      "type": "document",
+      "name": "api-reviewer.md",
+      "filePath": ".codex/prompts/api-reviewer.md",
+      "summary": ".codex/prompts/api-reviewer.md (markdown); 6 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        113
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "id": "document:.codex/prompts/architect.md",
+      "type": "document",
+      "name": "architect.md",
+      "filePath": ".codex/prompts/architect.md",
+      "summary": ".codex/prompts/architect.md (markdown); 8 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        111
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "id": "document:.codex/prompts/build-fixer.md",
+      "type": "document",
+      "name": "build-fixer.md",
+      "filePath": ".codex/prompts/build-fixer.md",
+      "summary": ".codex/prompts/build-fixer.md (markdown); 3 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        115
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "id": "document:.codex/prompts/code-reviewer.md",
+      "type": "document",
+      "name": "code-reviewer.md",
+      "filePath": ".codex/prompts/code-reviewer.md",
+      "summary": ".codex/prompts/code-reviewer.md (markdown); 4 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        139
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "document:.codex/prompts/code-simplifier.md",
+      "type": "document",
+      "name": "code-simplifier.md",
+      "filePath": ".codex/prompts/code-simplifier.md",
+      "summary": ".codex/prompts/code-simplifier.md (markdown); 4 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        134
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "document:.codex/prompts/critic.md",
+      "type": "document",
+      "name": "critic.md",
+      "filePath": ".codex/prompts/critic.md",
+      "summary": ".codex/prompts/critic.md (markdown)",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        80
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "document:.codex/prompts/debugger.md",
+      "type": "document",
+      "name": "debugger.md",
+      "filePath": ".codex/prompts/debugger.md",
+      "summary": ".codex/prompts/debugger.md (markdown); 2 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        117
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "document:.codex/prompts/dependency-expert.md",
+      "type": "document",
+      "name": "dependency-expert.md",
+      "filePath": ".codex/prompts/dependency-expert.md",
+      "summary": ".codex/prompts/dependency-expert.md (markdown); 6 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        129
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "id": "document:.codex/prompts/designer.md",
+      "type": "document",
+      "name": "designer.md",
+      "filePath": ".codex/prompts/designer.md",
+      "summary": ".codex/prompts/designer.md (markdown); 4 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        126
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "document:.codex/prompts/executor.md",
+      "type": "document",
+      "name": "executor.md",
+      "filePath": ".codex/prompts/executor.md",
+      "summary": ".codex/prompts/executor.md (markdown); 4 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        108
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "document:.codex/prompts/explore-harness.md",
+      "type": "document",
+      "name": "explore-harness.md",
+      "filePath": ".codex/prompts/explore-harness.md",
+      "summary": ".codex/prompts/explore-harness.md (markdown); 4 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        64
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "document:.codex/prompts/explore.md",
+      "type": "document",
+      "name": "explore.md",
+      "filePath": ".codex/prompts/explore.md",
+      "summary": ".codex/prompts/explore.md (markdown)",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        85
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "document:.codex/prompts/git-master.md",
+      "type": "document",
+      "name": "git-master.md",
+      "filePath": ".codex/prompts/git-master.md",
+      "summary": ".codex/prompts/git-master.md (markdown); 4 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        114
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "id": "document:.codex/prompts/information-architect.md",
+      "type": "document",
+      "name": "information-architect.md",
+      "filePath": ".codex/prompts/information-architect.md",
+      "summary": ".codex/prompts/information-architect.md (markdown); 16 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        226
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 16
+      }
+    },
+    {
+      "id": "document:.codex/prompts/performance-reviewer.md",
+      "type": "document",
+      "name": "performance-reviewer.md",
+      "filePath": ".codex/prompts/performance-reviewer.md",
+      "summary": ".codex/prompts/performance-reviewer.md (markdown); 6 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        109
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "id": "document:.codex/prompts/planner.md",
+      "type": "document",
+      "name": "planner.md",
+      "filePath": ".codex/prompts/planner.md",
+      "summary": ".codex/prompts/planner.md (markdown); 1 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        110
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "id": "document:.codex/prompts/product-analyst.md",
+      "type": "document",
+      "name": "product-analyst.md",
+      "filePath": ".codex/prompts/product-analyst.md",
+      "summary": ".codex/prompts/product-analyst.md (markdown); 11 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        304
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "id": "document:.codex/prompts/product-manager.md",
+      "type": "document",
+      "name": "product-manager.md",
+      "filePath": ".codex/prompts/product-manager.md",
+      "summary": ".codex/prompts/product-manager.md (markdown); 9 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        245
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "id": "document:.codex/prompts/prometheus-strict-metis.md",
+      "type": "document",
+      "name": "prometheus-strict-metis.md",
+      "filePath": ".codex/prompts/prometheus-strict-metis.md",
+      "summary": ".codex/prompts/prometheus-strict-metis.md (markdown); 8 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "moderate",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        274
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    }
+  ],
+  "edges": []
+}

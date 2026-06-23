@@ -1,0 +1,1010 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/config/tests/test_realtime_websocket.py",
+      "type": "file",
+      "name": "test_realtime_websocket.py",
+      "filePath": "backend/config/tests/test_realtime_websocket.py",
+      "summary": "backend/config/tests/test_realtime_websocket.py (python); 7 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "python",
+      "lineRange": [
+        1,
+        1112
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 7,
+        "functionCount": 0,
+        "classCount": 7
+      }
+    },
+    {
+      "id": "class:backend/config/tests/test_realtime_websocket.py:UnifiedASRUpstream",
+      "type": "class",
+      "name": "UnifiedASRUpstream",
+      "filePath": "backend/config/tests/test_realtime_websocket.py",
+      "summary": "Class or type UnifiedASRUpstream in backend/config/tests/test_realtime_websocket.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        25,
+        61
+      ],
+      "methods": [
+        "__init__",
+        "__aenter__",
+        "__aexit__",
+        "send",
+        "__aiter__",
+        "__anext__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/config/tests/test_realtime_websocket.py:UnifiedTTSUpstream",
+      "type": "class",
+      "name": "UnifiedTTSUpstream",
+      "filePath": "backend/config/tests/test_realtime_websocket.py",
+      "summary": "Class or type UnifiedTTSUpstream in backend/config/tests/test_realtime_websocket.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        64,
+        88
+      ],
+      "methods": [
+        "__init__",
+        "__aenter__",
+        "__aexit__",
+        "send",
+        "__aiter__",
+        "__anext__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/config/tests/test_realtime_websocket.py:HangingUnifiedTTSUpstream",
+      "type": "class",
+      "name": "HangingUnifiedTTSUpstream",
+      "filePath": "backend/config/tests/test_realtime_websocket.py",
+      "summary": "Class or type HangingUnifiedTTSUpstream in backend/config/tests/test_realtime_websocket.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        91,
+        112
+      ],
+      "methods": [
+        "__init__",
+        "__aenter__",
+        "__aexit__",
+        "send",
+        "__aiter__",
+        "__anext__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/config/tests/test_realtime_websocket.py:FailingUnifiedASRUpstream",
+      "type": "class",
+      "name": "FailingUnifiedASRUpstream",
+      "filePath": "backend/config/tests/test_realtime_websocket.py",
+      "summary": "Class or type FailingUnifiedASRUpstream in backend/config/tests/test_realtime_websocket.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        115,
+        120
+      ],
+      "methods": [
+        "__aenter__",
+        "__aexit__"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/config/tests/test_realtime_websocket.py:RealtimeWebSocketTests",
+      "type": "class",
+      "name": "RealtimeWebSocketTests",
+      "filePath": "backend/config/tests/test_realtime_websocket.py",
+      "summary": "Class or type RealtimeWebSocketTests in backend/config/tests/test_realtime_websocket.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "complex",
+      "lineRange": [
+        123,
+        582
+      ],
+      "methods": [
+        "test_unified_realtime_websocket_responds_to_ping_command",
+        "test_unified_realtime_websocket_reports_unknown_command",
+        "test_unified_realtime_websocket_runs_asr_session_commands_and_binary_audio",
+        "test_unified_realtime_asr_error_paths_echo_trace_context",
+        "test_unified_realtime_websocket_runs_tts_session_command_and_binary_audio",
+        "test_unified_realtime_websocket_cancels_asr_session",
+        "test_unified_realtime_websocket_cancels_tts_session"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/config/tests/test_realtime_websocket.py:RealtimeDeviceEventsTests",
+      "type": "class",
+      "name": "RealtimeDeviceEventsTests",
+      "filePath": "backend/config/tests/test_realtime_websocket.py",
+      "summary": "Class or type RealtimeDeviceEventsTests in backend/config/tests/test_realtime_websocket.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        585,
+        900
+      ],
+      "methods": [
+        "setUp",
+        "grant_permissions",
+        "test_unified_realtime_websocket_subscribes_to_device_events",
+        "test_unified_realtime_websocket_runs_device_llm_session_command",
+        "test_unified_realtime_websocket_unsubscribes_from_device_events",
+        "test_device_events_subscription_does_not_stop_device_status_session"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/config/tests/test_realtime_websocket.py:RealtimeDeviceStatusTests",
+      "type": "class",
+      "name": "RealtimeDeviceStatusTests",
+      "filePath": "backend/config/tests/test_realtime_websocket.py",
+      "summary": "Class or type RealtimeDeviceStatusTests in backend/config/tests/test_realtime_websocket.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "moderate",
+      "lineRange": [
+        903,
+        1112
+      ],
+      "methods": [
+        "setUp",
+        "test_unified_realtime_websocket_marks_device_online_until_disconnect",
+        "test_unified_realtime_websocket_device_status_ping_requires_started_session",
+        "test_unified_realtime_websocket_filters_other_tenant_device_events",
+        "test_unified_realtime_websocket_requires_command_type"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/config/urls.py",
+      "type": "file",
+      "name": "urls.py",
+      "filePath": "backend/config/urls.py",
+      "summary": "backend/config/urls.py (python); 1 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        114
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/config/urls.py:backend_not_found_view",
+      "type": "function",
+      "name": "backend_not_found_view",
+      "filePath": "backend/config/urls.py",
+      "summary": "Function backend_not_found_view in backend/config/urls.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        14,
+        15
+      ],
+      "params": [
+        "request"
+      ]
+    },
+    {
+      "id": "class:backend/config/urls.py:ApiV1RootView",
+      "type": "class",
+      "name": "ApiV1RootView",
+      "filePath": "backend/config/urls.py",
+      "summary": "Class or type ApiV1RootView in backend/config/urls.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        18,
+        67
+      ],
+      "methods": [
+        "get"
+      ],
+      "properties": []
+    },
+    {
+      "id": "file:backend/config/wsgi.py",
+      "type": "file",
+      "name": "wsgi.py",
+      "filePath": "backend/config/wsgi.py",
+      "summary": "backend/config/wsgi.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        7
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:backend/manage.py",
+      "type": "file",
+      "name": "manage.py",
+      "filePath": "backend/manage.py",
+      "summary": "backend/manage.py (python); 1 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        14
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:backend/manage.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "backend/manage.py",
+      "summary": "Function main in backend/manage.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        6,
+        10
+      ],
+      "params": []
+    },
+    {
+      "id": "file:backend/templates/404.html",
+      "type": "file",
+      "name": "404.html",
+      "filePath": "backend/templates/404.html",
+      "summary": "backend/templates/404.html (html)",
+      "tags": [
+        "html",
+        "markup"
+      ],
+      "complexity": "moderate",
+      "language": "html",
+      "lineRange": [
+        1,
+        234
+      ],
+      "metrics": {}
+    },
+    {
+      "id": "file:build_graph.py",
+      "type": "file",
+      "name": "build_graph.py",
+      "filePath": "build_graph.py",
+      "summary": "build_graph.py (python); 2 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        247
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:build_graph.py:get_complexity",
+      "type": "function",
+      "name": "get_complexity",
+      "filePath": "build_graph.py",
+      "summary": "Function get_complexity in build_graph.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        55,
+        58
+      ],
+      "params": [
+        "lines"
+      ]
+    },
+    {
+      "id": "function:build_graph.py:get_part_for_file",
+      "type": "function",
+      "name": "get_part_for_file",
+      "filePath": "build_graph.py",
+      "summary": "Function get_part_for_file in build_graph.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        221,
+        224
+      ],
+      "params": [
+        "p"
+      ]
+    },
+    {
+      "id": "file:device-chat/app.js",
+      "type": "file",
+      "name": "app.js",
+      "filePath": "device-chat/app.js",
+      "summary": "device-chat/app.js (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "complex",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        909
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:flow-web/index.html",
+      "type": "file",
+      "name": "index.html",
+      "filePath": "flow-web/index.html",
+      "summary": "flow-web/index.html (html)",
+      "tags": [
+        "html",
+        "markup"
+      ],
+      "complexity": "complex",
+      "language": "html",
+      "lineRange": [
+        1,
+        488
+      ],
+      "metrics": {}
+    },
+    {
+      "id": "config:flow-web/my-video/renders/my-video_2026-05-31_00-51-48.meta.json",
+      "type": "config",
+      "name": "my-video_2026-05-31_00-51-48.meta.json",
+      "filePath": "flow-web/my-video/renders/my-video_2026-05-31_00-51-48.meta.json",
+      "summary": "flow-web/my-video/renders/my-video_2026-05-31_00-51-48.meta.json (json); 2 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "simple",
+      "language": "json",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "id": "document:flow-web/TERMINAL-ENCODING.md",
+      "type": "document",
+      "name": "TERMINAL-ENCODING.md",
+      "filePath": "flow-web/TERMINAL-ENCODING.md",
+      "summary": "flow-web/TERMINAL-ENCODING.md (markdown); 8 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        88
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "id": "file:generate-graph-5.js",
+      "type": "file",
+      "name": "generate-graph-5.js",
+      "filePath": "generate-graph-5.js",
+      "summary": "generate-graph-5.js (javascript); 2 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        193
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:generate-graph-5.js:getSummaryAndTags",
+      "type": "function",
+      "name": "getSummaryAndTags",
+      "filePath": "generate-graph-5.js",
+      "summary": "Function getSummaryAndTags in generate-graph-5.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        23,
+        54
+      ],
+      "params": [
+        "path",
+        "type",
+        "name"
+      ]
+    },
+    {
+      "id": "function:generate-graph-5.js:getComplexity",
+      "type": "function",
+      "name": "getComplexity",
+      "filePath": "generate-graph-5.js",
+      "summary": "Function getComplexity in generate-graph-5.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        56,
+        60
+      ],
+      "params": [
+        "lines"
+      ]
+    },
+    {
+      "id": "file:generate-graphs.js",
+      "type": "file",
+      "name": "generate-graphs.js",
+      "filePath": "generate-graphs.js",
+      "summary": "generate-graphs.js (javascript); 1 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        154
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:generate-graphs.js:processBatch",
+      "type": "function",
+      "name": "processBatch",
+      "filePath": "generate-graphs.js",
+      "summary": "Function processBatch in generate-graphs.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        50,
+        149
+      ],
+      "params": [
+        "input",
+        "result",
+        "batchIndex"
+      ]
+    },
+    {
+      "id": "file:generate.js",
+      "type": "file",
+      "name": "generate.js",
+      "filePath": "generate.js",
+      "summary": "generate.js (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        294
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:process_batches.js",
+      "type": "file",
+      "name": "process_batches.js",
+      "filePath": "process_batches.js",
+      "summary": "process_batches.js (javascript); 1 functions",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        135
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:process_batches.js:processBatch",
+      "type": "function",
+      "name": "processBatch",
+      "filePath": "process_batches.js",
+      "summary": "Function processBatch in process_batches.js",
+      "tags": [
+        "function",
+        "javascript"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        91,
+        133
+      ],
+      "params": [
+        "batchIndex"
+      ]
+    },
+    {
+      "id": "file:script.py",
+      "type": "file",
+      "name": "script.py",
+      "filePath": "script.py",
+      "summary": "script.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        9
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:scripts/asr-replacement-test.html",
+      "type": "file",
+      "name": "asr-replacement-test.html",
+      "filePath": "scripts/asr-replacement-test.html",
+      "summary": "scripts/asr-replacement-test.html (html)",
+      "tags": [
+        "html",
+        "markup"
+      ],
+      "complexity": "complex",
+      "language": "html",
+      "lineRange": [
+        1,
+        1166
+      ],
+      "metrics": {}
+    },
+    {
+      "id": "file:scripts/check-runtime-api-console.mjs",
+      "type": "file",
+      "name": "check-runtime-api-console.mjs",
+      "filePath": "scripts/check-runtime-api-console.mjs",
+      "summary": "scripts/check-runtime-api-console.mjs (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        81
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:scripts/multi-tenant-design.html",
+      "type": "file",
+      "name": "multi-tenant-design.html",
+      "filePath": "scripts/multi-tenant-design.html",
+      "summary": "scripts/multi-tenant-design.html (html)",
+      "tags": [
+        "html",
+        "markup"
+      ],
+      "complexity": "complex",
+      "language": "html",
+      "lineRange": [
+        1,
+        593
+      ],
+      "metrics": {}
+    },
+    {
+      "id": "file:scripts/test-device-chat-realtime-static.mjs",
+      "type": "file",
+      "name": "test-device-chat-realtime-static.mjs",
+      "filePath": "scripts/test-device-chat-realtime-static.mjs",
+      "summary": "scripts/test-device-chat-realtime-static.mjs (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        80
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:test.py",
+      "type": "file",
+      "name": "test.py",
+      "filePath": "test.py",
+      "summary": "test.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        20
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:update-batch12.js",
+      "type": "file",
+      "name": "update-batch12.js",
+      "filePath": "update-batch12.js",
+      "summary": "update-batch12.js (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        27
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:web/postcss.config.js",
+      "type": "file",
+      "name": "postcss.config.js",
+      "filePath": "web/postcss.config.js",
+      "summary": "web/postcss.config.js (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        6
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:web/public/asr-replacement-test.html",
+      "type": "file",
+      "name": "asr-replacement-test.html",
+      "filePath": "web/public/asr-replacement-test.html",
+      "summary": "web/public/asr-replacement-test.html (html)",
+      "tags": [
+        "html",
+        "markup"
+      ],
+      "complexity": "complex",
+      "language": "html",
+      "lineRange": [
+        1,
+        1166
+      ],
+      "metrics": {}
+    },
+    {
+      "id": "file:web/public/multi-tenant-design.html",
+      "type": "file",
+      "name": "multi-tenant-design.html",
+      "filePath": "web/public/multi-tenant-design.html",
+      "summary": "web/public/multi-tenant-design.html (html)",
+      "tags": [
+        "html",
+        "markup"
+      ],
+      "complexity": "complex",
+      "language": "html",
+      "lineRange": [
+        1,
+        593
+      ],
+      "metrics": {}
+    },
+    {
+      "id": "file:web/scripts/agent-audio-playback-guard.test.mjs",
+      "type": "file",
+      "name": "agent-audio-playback-guard.test.mjs",
+      "filePath": "web/scripts/agent-audio-playback-guard.test.mjs",
+      "summary": "web/scripts/agent-audio-playback-guard.test.mjs (javascript)",
+      "tags": [
+        "javascript",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "javascript",
+      "lineRange": [
+        1,
+        39
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/config/tests/test_realtime_websocket.py",
+      "target": "class:backend/config/tests/test_realtime_websocket.py:UnifiedASRUpstream",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/config/tests/test_realtime_websocket.py",
+      "target": "class:backend/config/tests/test_realtime_websocket.py:UnifiedTTSUpstream",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/config/tests/test_realtime_websocket.py",
+      "target": "class:backend/config/tests/test_realtime_websocket.py:HangingUnifiedTTSUpstream",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/config/tests/test_realtime_websocket.py",
+      "target": "class:backend/config/tests/test_realtime_websocket.py:FailingUnifiedASRUpstream",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/config/tests/test_realtime_websocket.py",
+      "target": "class:backend/config/tests/test_realtime_websocket.py:RealtimeWebSocketTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/config/tests/test_realtime_websocket.py",
+      "target": "class:backend/config/tests/test_realtime_websocket.py:RealtimeDeviceEventsTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/config/tests/test_realtime_websocket.py",
+      "target": "class:backend/config/tests/test_realtime_websocket.py:RealtimeDeviceStatusTests",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/config/urls.py",
+      "target": "function:backend/config/urls.py:backend_not_found_view",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/config/urls.py",
+      "target": "class:backend/config/urls.py:ApiV1RootView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/manage.py",
+      "target": "function:backend/manage.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:build_graph.py",
+      "target": "function:build_graph.py:get_complexity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:build_graph.py",
+      "target": "function:build_graph.py:get_part_for_file",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:generate-graph-5.js",
+      "target": "function:generate-graph-5.js:getSummaryAndTags",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:generate-graph-5.js",
+      "target": "function:generate-graph-5.js:getComplexity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:generate-graphs.js",
+      "target": "function:generate-graphs.js:processBatch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:process_batches.js",
+      "target": "function:process_batches.js:processBatch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    }
+  ]
+}

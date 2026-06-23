@@ -1,34 +1,12 @@
 {
-  "name": "could_frontend",
-  "description": "数字人后台管理平台（solin）：基于 React 18 + Vite 的单页应用与 Django 5.2 + DRF + Celery 架构，通过 docker-compose 编排部署的多容器全栈项目。 注意：此项目包含超过 100 个源文件；建议将分析范围缩小到特定子目录以获得更快的分析结果。",
-  "languages": [
-    "css",
-    "dockerfile",
-    "html",
-    "javascript",
-    "json",
-    "makefile",
-    "markdown",
-    "python",
-    "shell",
-    "toml",
-    "txt",
-    "typescript",
-    "yaml"
-  ],
-  "frameworks": [
-    "celery",
-    "django",
-    "djangorestframework",
-    "Docker",
-    "Docker Compose",
-    "react",
-    "tailwindcss",
-    "uvicorn",
-    "vite",
-    "zustand"
-  ],
+  "scriptCompleted": true,
   "files": [
+    {
+      "path": ".AGENTS.md.bkup",
+      "language": "bkup",
+      "sizeLines": 221,
+      "fileCategory": "code"
+    },
     {
       "path": ".claude/skills/caveman/SKILL.md",
       "language": "markdown",
@@ -894,6 +872,822 @@
       "fileCategory": "docs"
     },
     {
+      "path": ".codex/agents/analyst.toml",
+      "language": "toml",
+      "sizeLines": 171,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/architect.toml",
+      "language": "toml",
+      "sizeLines": 157,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/code-reviewer.toml",
+      "language": "toml",
+      "sizeLines": 175,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/code-simplifier.toml",
+      "language": "toml",
+      "sizeLines": 167,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/critic.toml",
+      "language": "toml",
+      "sizeLines": 116,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/debugger.toml",
+      "language": "toml",
+      "sizeLines": 152,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/dependency-expert.toml",
+      "language": "toml",
+      "sizeLines": 165,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/designer.toml",
+      "language": "toml",
+      "sizeLines": 161,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/executor.toml",
+      "language": "toml",
+      "sizeLines": 143,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/explore.toml",
+      "language": "toml",
+      "sizeLines": 120,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/git-master.toml",
+      "language": "toml",
+      "sizeLines": 149,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/planner.toml",
+      "language": "toml",
+      "sizeLines": 156,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/prometheus-strict-metis.toml",
+      "language": "toml",
+      "sizeLines": 304,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/prometheus-strict-momus.toml",
+      "language": "toml",
+      "sizeLines": 118,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/prometheus-strict-oracle.toml",
+      "language": "toml",
+      "sizeLines": 143,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/researcher.toml",
+      "language": "toml",
+      "sizeLines": 167,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/scholastic.toml",
+      "language": "toml",
+      "sizeLines": 47,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/team-executor.toml",
+      "language": "toml",
+      "sizeLines": 92,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/test-engineer.toml",
+      "language": "toml",
+      "sizeLines": 165,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/verifier.toml",
+      "language": "toml",
+      "sizeLines": 121,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/vision.toml",
+      "language": "toml",
+      "sizeLines": 133,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/writer.toml",
+      "language": "toml",
+      "sizeLines": 144,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/config.toml",
+      "language": "toml",
+      "sizeLines": 58,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/goals_1.sqlite",
+      "language": "sqlite",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/hooks.json",
+      "language": "json",
+      "sizeLines": 99,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/hooks/omx-native-hook-windows-shim.ps1",
+      "language": "powershell",
+      "sizeLines": 20,
+      "fileCategory": "script"
+    },
+    {
+      "path": ".codex/logs_2.sqlite",
+      "language": "sqlite",
+      "sizeLines": 271,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/memories_1.sqlite",
+      "language": "sqlite",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/prompts/analyst.md",
+      "language": "markdown",
+      "sizeLines": 135,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/api-reviewer.md",
+      "language": "markdown",
+      "sizeLines": 113,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/architect.md",
+      "language": "markdown",
+      "sizeLines": 111,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/build-fixer.md",
+      "language": "markdown",
+      "sizeLines": 115,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/code-reviewer.md",
+      "language": "markdown",
+      "sizeLines": 139,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/code-simplifier.md",
+      "language": "markdown",
+      "sizeLines": 134,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/critic.md",
+      "language": "markdown",
+      "sizeLines": 80,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/debugger.md",
+      "language": "markdown",
+      "sizeLines": 117,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/dependency-expert.md",
+      "language": "markdown",
+      "sizeLines": 129,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/designer.md",
+      "language": "markdown",
+      "sizeLines": 126,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/executor.md",
+      "language": "markdown",
+      "sizeLines": 108,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/explore-harness.md",
+      "language": "markdown",
+      "sizeLines": 64,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/explore.md",
+      "language": "markdown",
+      "sizeLines": 85,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/git-master.md",
+      "language": "markdown",
+      "sizeLines": 114,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/information-architect.md",
+      "language": "markdown",
+      "sizeLines": 225,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/performance-reviewer.md",
+      "language": "markdown",
+      "sizeLines": 109,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/planner.md",
+      "language": "markdown",
+      "sizeLines": 110,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/product-analyst.md",
+      "language": "markdown",
+      "sizeLines": 304,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/product-manager.md",
+      "language": "markdown",
+      "sizeLines": 245,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/prometheus-strict-metis.md",
+      "language": "markdown",
+      "sizeLines": 274,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/prometheus-strict-momus.md",
+      "language": "markdown",
+      "sizeLines": 82,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/prometheus-strict-oracle.md",
+      "language": "markdown",
+      "sizeLines": 107,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/qa-tester.md",
+      "language": "markdown",
+      "sizeLines": 124,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/quality-reviewer.md",
+      "language": "markdown",
+      "sizeLines": 123,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/quality-strategist.md",
+      "language": "markdown",
+      "sizeLines": 274,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/researcher.md",
+      "language": "markdown",
+      "sizeLines": 122,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/scholastic.md",
+      "language": "markdown",
+      "sizeLines": 11,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/security-reviewer.md",
+      "language": "markdown",
+      "sizeLines": 143,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/sisyphus-lite.md",
+      "language": "markdown",
+      "sizeLines": 111,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/style-reviewer.md",
+      "language": "markdown",
+      "sizeLines": 102,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/team-executor.md",
+      "language": "markdown",
+      "sizeLines": 57,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/team-orchestrator.md",
+      "language": "markdown",
+      "sizeLines": 8,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/test-engineer.md",
+      "language": "markdown",
+      "sizeLines": 130,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/ux-researcher.md",
+      "language": "markdown",
+      "sizeLines": 327,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/verifier.md",
+      "language": "markdown",
+      "sizeLines": 85,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/vision.md",
+      "language": "markdown",
+      "sizeLines": 98,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/prompts/writer.md",
+      "language": "markdown",
+      "sizeLines": 109,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/.codex-system-skills.marker",
+      "language": "marker",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/agents/openai.yaml",
+      "language": "yaml",
+      "sizeLines": 6,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/LICENSE.txt",
+      "language": "txt",
+      "sizeLines": 201,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/references/cli.md",
+      "language": "markdown",
+      "sizeLines": 242,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/references/codex-network.md",
+      "language": "markdown",
+      "sizeLines": 33,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/references/image-api.md",
+      "language": "markdown",
+      "sizeLines": 90,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/references/prompting.md",
+      "language": "markdown",
+      "sizeLines": 118,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/references/sample-prompts.md",
+      "language": "markdown",
+      "sizeLines": 433,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/scripts/image_gen.py",
+      "language": "python",
+      "sizeLines": 995,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/scripts/remove_chroma_key.py",
+      "language": "python",
+      "sizeLines": 440,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 356,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/agents/openai.yaml",
+      "language": "yaml",
+      "sizeLines": 14,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/LICENSE.txt",
+      "language": "txt",
+      "sizeLines": 201,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/references/latest-model.md",
+      "language": "markdown",
+      "sizeLines": 37,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/references/prompting-guide.md",
+      "language": "markdown",
+      "sizeLines": 244,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/references/upgrade-guide.md",
+      "language": "markdown",
+      "sizeLines": 181,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "language": "javascript",
+      "sizeLines": 598,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "language": "javascript",
+      "sizeLines": 147,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 167,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/plugin-creator/agents/openai.yaml",
+      "language": "yaml",
+      "sizeLines": 6,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/skills/.system/plugin-creator/references/installing-and-updating.md",
+      "language": "markdown",
+      "sizeLines": 143,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/plugin-creator/references/plugin-json-spec.md",
+      "language": "markdown",
+      "sizeLines": 194,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "language": "python",
+      "sizeLines": 324,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py",
+      "language": "python",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "language": "python",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "language": "python",
+      "sizeLines": 593,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/plugin-creator/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 243,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/skill-creator/agents/openai.yaml",
+      "language": "yaml",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/skills/.system/skill-creator/license.txt",
+      "language": "txt",
+      "sizeLines": 202,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/skill-creator/references/openai_yaml.md",
+      "language": "markdown",
+      "sizeLines": 49,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "language": "python",
+      "sizeLines": 226,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "language": "python",
+      "sizeLines": 400,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/skill-creator/scripts/quick_validate.py",
+      "language": "python",
+      "sizeLines": 101,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/skill-creator/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 416,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/skill-installer/agents/openai.yaml",
+      "language": "yaml",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/skills/.system/skill-installer/LICENSE.txt",
+      "language": "txt",
+      "sizeLines": 202,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/skill-installer/scripts/github_utils.py",
+      "language": "python",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "language": "python",
+      "sizeLines": 308,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "language": "python",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/skill-installer/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 58,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/ai-slop-cleaner/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 148,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/analyze/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 146,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/ask/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 58,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/autopilot/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 215,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/autoresearch-goal/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 36,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/autoresearch/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 72,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/best-practice-research/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 88,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/cancel/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 399,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/code-review/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 292,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/configure-notifications/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 287,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/deep-interview/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 579,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/design/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 180,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/doctor/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 239,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/hud/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 98,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/omx-setup/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 135,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/performance-goal/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 65,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/pipeline/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 97,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/plan/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 277,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/prometheus-strict/README.md",
+      "language": "markdown",
+      "sizeLines": 35,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/prometheus-strict/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 219,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/ralph/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 294,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/ralplan/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 203,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/skill/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 836,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/team/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 536,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/ultragoal/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 139,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/ultraqa/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 263,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/ultrawork/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 190,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/visual-ralph/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 161,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/wiki/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 57,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/worker/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 120,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/state_5.sqlite",
+      "language": "sqlite",
+      "sizeLines": 958,
+      "fileCategory": "code"
+    },
+    {
       "path": ".env",
       "language": "config",
       "sizeLines": 4,
@@ -904,6 +1698,1632 @@
       "language": "unknown",
       "sizeLines": 56,
       "fileCategory": "code"
+    },
+    {
+      "path": ".impeccable/critique/2026-06-16T03-06-58Z__web-src-views-application-management-index-tsx.md",
+      "language": "markdown",
+      "sizeLines": 84,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/assemble-review.json",
+      "language": "json",
+      "sizeLines": 11,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/assembled-graph.json",
+      "language": "json",
+      "sizeLines": 58920,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-1.json",
+      "language": "json",
+      "sizeLines": 1262,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-10.json",
+      "language": "json",
+      "sizeLines": 197,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-11.json",
+      "language": "json",
+      "sizeLines": 55,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-12.json",
+      "language": "json",
+      "sizeLines": 804,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-13.json",
+      "language": "json",
+      "sizeLines": 2480,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-14.json",
+      "language": "json",
+      "sizeLines": 70,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-15.json",
+      "language": "json",
+      "sizeLines": 90,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-16.json",
+      "language": "json",
+      "sizeLines": 715,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-17.json",
+      "language": "json",
+      "sizeLines": 159,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-18.json",
+      "language": "json",
+      "sizeLines": 56,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-19.json",
+      "language": "json",
+      "sizeLines": 507,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-2.json",
+      "language": "json",
+      "sizeLines": 1596,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-20.json",
+      "language": "json",
+      "sizeLines": 77,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-21.json",
+      "language": "json",
+      "sizeLines": 216,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-22.json",
+      "language": "json",
+      "sizeLines": 63,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-3.json",
+      "language": "json",
+      "sizeLines": 2233,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-4.json",
+      "language": "json",
+      "sizeLines": 1021,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-5.json",
+      "language": "json",
+      "sizeLines": 750,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-6.json",
+      "language": "json",
+      "sizeLines": 156,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-7.json",
+      "language": "json",
+      "sizeLines": 449,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-8.json",
+      "language": "json",
+      "sizeLines": 808,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1-part-9.json",
+      "language": "json",
+      "sizeLines": 399,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-1.json",
+      "language": "json",
+      "sizeLines": 28785,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-10.json",
+      "language": "json",
+      "sizeLines": 359,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-11.json",
+      "language": "json",
+      "sizeLines": 123,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-12.json",
+      "language": "json",
+      "sizeLines": 337,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-13.json",
+      "language": "json",
+      "sizeLines": 26,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-14.json",
+      "language": "json",
+      "sizeLines": 26,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-15.json",
+      "language": "json",
+      "sizeLines": 43,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-16.json",
+      "language": "json",
+      "sizeLines": 43,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-17.json",
+      "language": "json",
+      "sizeLines": 264,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-18.json",
+      "language": "json",
+      "sizeLines": 102,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-19.json",
+      "language": "json",
+      "sizeLines": 74,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-2-part-1.json",
+      "language": "json",
+      "sizeLines": 1610,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-2-part-2.json",
+      "language": "json",
+      "sizeLines": 2011,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-2-part-3.json",
+      "language": "json",
+      "sizeLines": 1384,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-2-part-4.json",
+      "language": "json",
+      "sizeLines": 1185,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-2-part-5.json",
+      "language": "json",
+      "sizeLines": 803,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-2-part-6.json",
+      "language": "json",
+      "sizeLines": 1885,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-2-part-7.json",
+      "language": "json",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-20.json",
+      "language": "json",
+      "sizeLines": 46,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-21.json",
+      "language": "json",
+      "sizeLines": 88,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-22.json",
+      "language": "json",
+      "sizeLines": 59,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-23.json",
+      "language": "json",
+      "sizeLines": 50,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-24.json",
+      "language": "json",
+      "sizeLines": 32,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-25.json",
+      "language": "json",
+      "sizeLines": 141,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-26.json",
+      "language": "json",
+      "sizeLines": 43,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-27.json",
+      "language": "json",
+      "sizeLines": 85,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-28.json",
+      "language": "json",
+      "sizeLines": 59,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-29.json",
+      "language": "json",
+      "sizeLines": 104,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-3-part-1.json",
+      "language": "json",
+      "sizeLines": 1395,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-3-part-2.json",
+      "language": "json",
+      "sizeLines": 2250,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-3-part-3.json",
+      "language": "json",
+      "sizeLines": 1149,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-3-part-4.json",
+      "language": "json",
+      "sizeLines": 955,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-30.json",
+      "language": "json",
+      "sizeLines": 150,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-31.json",
+      "language": "json",
+      "sizeLines": 139,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-32.json",
+      "language": "json",
+      "sizeLines": 664,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-33.json",
+      "language": "json",
+      "sizeLines": 461,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-34.json",
+      "language": "json",
+      "sizeLines": 1391,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-35.json",
+      "language": "json",
+      "sizeLines": 1037,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-36-part-1.json",
+      "language": "json",
+      "sizeLines": 757,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-36-part-2.json",
+      "language": "json",
+      "sizeLines": 1013,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-37.json",
+      "language": "json",
+      "sizeLines": 1367,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-38.json",
+      "language": "json",
+      "sizeLines": 764,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-39.json",
+      "language": "json",
+      "sizeLines": 245,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-4-part-1.json",
+      "language": "json",
+      "sizeLines": 1257,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-4-part-2.json",
+      "language": "json",
+      "sizeLines": 1222,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-40.json",
+      "language": "json",
+      "sizeLines": 96,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-5-part-1.json",
+      "language": "json",
+      "sizeLines": 2764,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-5-part-2.json",
+      "language": "json",
+      "sizeLines": 521,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-5-part-3.json",
+      "language": "json",
+      "sizeLines": 514,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-5-part-4.json",
+      "language": "json",
+      "sizeLines": 1053,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-6-part-1.json",
+      "language": "json",
+      "sizeLines": 692,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-6-part-2.json",
+      "language": "json",
+      "sizeLines": 1181,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-7-part-1.json",
+      "language": "json",
+      "sizeLines": 1573,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-7-part-2.json",
+      "language": "json",
+      "sizeLines": 1776,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-7-part-3.json",
+      "language": "json",
+      "sizeLines": 565,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-7-part-4.json",
+      "language": "json",
+      "sizeLines": 1455,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-8-part-1.json",
+      "language": "json",
+      "sizeLines": 1484,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-8-part-2.json",
+      "language": "json",
+      "sizeLines": 861,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-8-part-3.json",
+      "language": "json",
+      "sizeLines": 3036,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-9.json",
+      "language": "json",
+      "sizeLines": 553,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batches.json",
+      "language": "json",
+      "sizeLines": 10813,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/fingerprint-input.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/layers.json",
+      "language": "json",
+      "sizeLines": 573,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/merge-report.txt",
+      "language": "txt",
+      "sizeLines": 5420,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/review.json",
+      "language": "json",
+      "sizeLines": 9,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/arch-invoke-prompt.txt",
+      "language": "txt",
+      "sizeLines": 19,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/arch-system-prompt.txt",
+      "language": "txt",
+      "sizeLines": 1051,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/assemble.js",
+      "language": "javascript",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-0.json",
+      "language": "json",
+      "sizeLines": 1161,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-1.json",
+      "language": "json",
+      "sizeLines": 300,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-10.json",
+      "language": "json",
+      "sizeLines": 208,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-11.json",
+      "language": "json",
+      "sizeLines": 237,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-12.json",
+      "language": "json",
+      "sizeLines": 262,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-13.json",
+      "language": "json",
+      "sizeLines": 184,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-14.json",
+      "language": "json",
+      "sizeLines": 184,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-15.json",
+      "language": "json",
+      "sizeLines": 184,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-16.json",
+      "language": "json",
+      "sizeLines": 184,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-17.json",
+      "language": "json",
+      "sizeLines": 184,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-18.json",
+      "language": "json",
+      "sizeLines": 184,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-19.json",
+      "language": "json",
+      "sizeLines": 192,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-2.json",
+      "language": "json",
+      "sizeLines": 767,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-20.json",
+      "language": "json",
+      "sizeLines": 79,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-3.json",
+      "language": "json",
+      "sizeLines": 1069,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-4.json",
+      "language": "json",
+      "sizeLines": 852,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-5.json",
+      "language": "json",
+      "sizeLines": 1092,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-6.json",
+      "language": "json",
+      "sizeLines": 712,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-7.json",
+      "language": "json",
+      "sizeLines": 357,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-8.json",
+      "language": "json",
+      "sizeLines": 207,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/batch-input-9.json",
+      "language": "json",
+      "sizeLines": 180,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/convert-batch.py",
+      "language": "python",
+      "sizeLines": 108,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/gen_prompts.py",
+      "language": "python",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/gen.js",
+      "language": "javascript",
+      "sizeLines": 261,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/gen.py",
+      "language": "python",
+      "sizeLines": 403,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/generate_batches.js",
+      "language": "javascript",
+      "sizeLines": 348,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/generate_graph_33.mjs",
+      "language": "javascript",
+      "sizeLines": 130,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/generate_graph.py",
+      "language": "python",
+      "sizeLines": 324,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/generate_prompts.js",
+      "language": "javascript",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/generate-arch-prompts.js",
+      "language": "javascript",
+      "sizeLines": 61,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/generate-batch-3.js",
+      "language": "javascript",
+      "sizeLines": 229,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/generate-batch-37.js",
+      "language": "javascript",
+      "sizeLines": 190,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/generate-batches.js",
+      "language": "javascript",
+      "sizeLines": 271,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/generate.js",
+      "language": "javascript",
+      "sizeLines": 3,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/generate.py",
+      "language": "python",
+      "sizeLines": 243,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/manifest.txt",
+      "language": "txt",
+      "sizeLines": 1,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/process_batch_34.py",
+      "language": "python",
+      "sizeLines": 271,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/process.js",
+      "language": "javascript",
+      "sizeLines": 219,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/process2.js",
+      "language": "javascript",
+      "sizeLines": 213,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/project-scanner-prompt.txt",
+      "language": "txt",
+      "sizeLines": 234,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/prompt_group_0.txt",
+      "language": "txt",
+      "sizeLines": 294,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/prompt_group_1.txt",
+      "language": "txt",
+      "sizeLines": 142,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/prompt_group_2.txt",
+      "language": "txt",
+      "sizeLines": 144,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/prompt_group_3.txt",
+      "language": "txt",
+      "sizeLines": 183,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/prompt_group_4.txt",
+      "language": "txt",
+      "sizeLines": 247,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/prompts.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/readme.txt",
+      "language": "txt",
+      "sizeLines": 1,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/simulate-analyzer.py",
+      "language": "python",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/tree.txt",
+      "language": "txt",
+      "sizeLines": 64,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-arch-input.json",
+      "language": "json",
+      "sizeLines": 34829,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-1.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-10.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-11.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-12.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-13.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-14.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-15.json",
+      "language": "json",
+      "sizeLines": 12,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-16.json",
+      "language": "json",
+      "sizeLines": 12,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-17.json",
+      "language": "json",
+      "sizeLines": 46,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-18.json",
+      "language": "json",
+      "sizeLines": 69,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-19.json",
+      "language": "json",
+      "sizeLines": 51,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-2.json",
+      "language": "json",
+      "sizeLines": 319,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-20.json",
+      "language": "json",
+      "sizeLines": 33,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-21.json",
+      "language": "json",
+      "sizeLines": 60,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-22.json",
+      "language": "json",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-23.json",
+      "language": "json",
+      "sizeLines": 16,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-24.json",
+      "language": "json",
+      "sizeLines": 12,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-25.json",
+      "language": "json",
+      "sizeLines": 28,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-26.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-27.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-28.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-29.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-3.json",
+      "language": "json",
+      "sizeLines": 765,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-30.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-31.json",
+      "language": "json",
+      "sizeLines": 96,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-32.json",
+      "language": "json",
+      "sizeLines": 231,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-33.json",
+      "language": "json",
+      "sizeLines": 231,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-34.json",
+      "language": "json",
+      "sizeLines": 57,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-35.json",
+      "language": "json",
+      "sizeLines": 181,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-36.json",
+      "language": "json",
+      "sizeLines": 181,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-37.json",
+      "language": "json",
+      "sizeLines": 181,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-38.json",
+      "language": "json",
+      "sizeLines": 181,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-39.json",
+      "language": "json",
+      "sizeLines": 181,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-4.json",
+      "language": "json",
+      "sizeLines": 285,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-40.json",
+      "language": "json",
+      "sizeLines": 76,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-5.json",
+      "language": "json",
+      "sizeLines": 233,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-6.json",
+      "language": "json",
+      "sizeLines": 248,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-7.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-8.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-input-9.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-1.json",
+      "language": "json",
+      "sizeLines": 26020,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-10.json",
+      "language": "json",
+      "sizeLines": 466,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-11.json",
+      "language": "json",
+      "sizeLines": 106,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-12.json",
+      "language": "json",
+      "sizeLines": 87,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-13.json",
+      "language": "json",
+      "sizeLines": 62,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-14.json",
+      "language": "json",
+      "sizeLines": 149,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-15.json",
+      "language": "json",
+      "sizeLines": 55,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-16.json",
+      "language": "json",
+      "sizeLines": 2336,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-17.json",
+      "language": "json",
+      "sizeLines": 683,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-18.json",
+      "language": "json",
+      "sizeLines": 271,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-19.json",
+      "language": "json",
+      "sizeLines": 194,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-2.json",
+      "language": "json",
+      "sizeLines": 12216,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-20.json",
+      "language": "json",
+      "sizeLines": 227,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-21.json",
+      "language": "json",
+      "sizeLines": 187,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-22.json",
+      "language": "json",
+      "sizeLines": 216,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-23.json",
+      "language": "json",
+      "sizeLines": 194,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-24.json",
+      "language": "json",
+      "sizeLines": 503,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-25.json",
+      "language": "json",
+      "sizeLines": 156,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-26.json",
+      "language": "json",
+      "sizeLines": 301,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-27.json",
+      "language": "json",
+      "sizeLines": 219,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-28.json",
+      "language": "json",
+      "sizeLines": 214,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-29.json",
+      "language": "json",
+      "sizeLines": 281,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-3.json",
+      "language": "json",
+      "sizeLines": 7041,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-30.json",
+      "language": "json",
+      "sizeLines": 299,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-31.json",
+      "language": "json",
+      "sizeLines": 32265,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-32.json",
+      "language": "json",
+      "sizeLines": 950,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-33.json",
+      "language": "json",
+      "sizeLines": 1429,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-34.json",
+      "language": "json",
+      "sizeLines": 787,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-35.json",
+      "language": "json",
+      "sizeLines": 2366,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-36.json",
+      "language": "json",
+      "sizeLines": 1587,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-37.json",
+      "language": "json",
+      "sizeLines": 1126,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-38.json",
+      "language": "json",
+      "sizeLines": 737,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-39.json",
+      "language": "json",
+      "sizeLines": 210,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-4.json",
+      "language": "json",
+      "sizeLines": 14856,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-5.json",
+      "language": "json",
+      "sizeLines": 12828,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-6.json",
+      "language": "json",
+      "sizeLines": 7685,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-7.json",
+      "language": "json",
+      "sizeLines": 12138,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-8.json",
+      "language": "json",
+      "sizeLines": 3818,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-analyzer-output-9.json",
+      "language": "json",
+      "sizeLines": 1162,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-1.json",
+      "language": "json",
+      "sizeLines": 13710,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-10.json",
+      "language": "json",
+      "sizeLines": 466,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-11.json",
+      "language": "json",
+      "sizeLines": 106,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-12.json",
+      "language": "json",
+      "sizeLines": 800,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-13.json",
+      "language": "json",
+      "sizeLines": 87,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-14.json",
+      "language": "json",
+      "sizeLines": 62,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-15.json",
+      "language": "json",
+      "sizeLines": 149,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-16.json",
+      "language": "json",
+      "sizeLines": 55,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-17.json",
+      "language": "json",
+      "sizeLines": 2336,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-18.json",
+      "language": "json",
+      "sizeLines": 683,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-19.json",
+      "language": "json",
+      "sizeLines": 271,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-2.json",
+      "language": "json",
+      "sizeLines": 26020,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-20.json",
+      "language": "json",
+      "sizeLines": 194,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-21.json",
+      "language": "json",
+      "sizeLines": 227,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-22.json",
+      "language": "json",
+      "sizeLines": 187,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-23.json",
+      "language": "json",
+      "sizeLines": 216,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-24.json",
+      "language": "json",
+      "sizeLines": 194,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-25.json",
+      "language": "json",
+      "sizeLines": 529,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-26.json",
+      "language": "json",
+      "sizeLines": 156,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-27.json",
+      "language": "json",
+      "sizeLines": 352,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-28.json",
+      "language": "json",
+      "sizeLines": 290,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-29.json",
+      "language": "json",
+      "sizeLines": 214,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-3.json",
+      "language": "json",
+      "sizeLines": 6971,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-3.txt",
+      "language": "txt",
+      "sizeLines": 13732,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-30.json",
+      "language": "json",
+      "sizeLines": 281,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-31.json",
+      "language": "json",
+      "sizeLines": 322,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-32.json",
+      "language": "json",
+      "sizeLines": 32265,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-33.json",
+      "language": "json",
+      "sizeLines": 950,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-34.json",
+      "language": "json",
+      "sizeLines": 1429,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-35.json",
+      "language": "json",
+      "sizeLines": 1139,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-36.json",
+      "language": "json",
+      "sizeLines": 2164,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-37.json",
+      "language": "json",
+      "sizeLines": 1713,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-38.json",
+      "language": "json",
+      "sizeLines": 1223,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-39.json",
+      "language": "json",
+      "sizeLines": 745,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-4.json",
+      "language": "json",
+      "sizeLines": 13731,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-40.json",
+      "language": "json",
+      "sizeLines": 223,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-5-pretty.json",
+      "language": "json",
+      "sizeLines": 7513,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-5.json",
+      "language": "json",
+      "sizeLines": 7512,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-6.json",
+      "language": "json",
+      "sizeLines": 7419,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-7.json",
+      "language": "json",
+      "sizeLines": 10492,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-8.json",
+      "language": "json",
+      "sizeLines": 12138,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-file-extract-results-9.json",
+      "language": "json",
+      "sizeLines": 1162,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-import-map-input.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-import-map-output.json",
+      "language": "json",
+      "sizeLines": 1167,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/ua-scan-files.json",
+      "language": "json",
+      "sizeLines": 3257,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/validate_graph_78.py",
+      "language": "python",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/validate_graph.py",
+      "language": "python",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tmp/validate.py",
+      "language": "python",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tour.json",
+      "language": "json",
+      "sizeLines": 26,
+      "fileCategory": "config"
     },
     {
       "path": ".understand-anything/.understandignore",
@@ -926,7 +3346,7 @@
     {
       "path": "AGENTS.md",
       "language": "markdown",
-      "sizeLines": 213,
+      "sizeLines": 256,
       "fileCategory": "docs"
     },
     {
@@ -1058,7 +3478,7 @@
     {
       "path": "backend/apps/accounts/permissions.py",
       "language": "python",
-      "sizeLines": 349,
+      "sizeLines": 375,
       "fileCategory": "code"
     },
     {
@@ -1118,13 +3538,13 @@
     {
       "path": "backend/apps/ai_models/admin.py",
       "language": "python",
-      "sizeLines": 54,
+      "sizeLines": 94,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/ai_models/AGENTS.md",
       "language": "markdown",
-      "sizeLines": 48,
+      "sizeLines": 49,
       "fileCategory": "docs"
     },
     {
@@ -1136,7 +3556,7 @@
     {
       "path": "backend/apps/ai_models/llm_services.py",
       "language": "python",
-      "sizeLines": 159,
+      "sizeLines": 372,
       "fileCategory": "code"
     },
     {
@@ -1236,21 +3656,87 @@
       "fileCategory": "code"
     },
     {
+      "path": "backend/apps/ai_models/migrations/0016_update_agent_application_menu.py",
+      "language": "python",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0017_agent_conversation_settings.py",
+      "language": "python",
+      "sizeLines": 105,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0018_drop_stale_chatconversation_max_tokens_unlimited.py",
+      "language": "python",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0019_drop_stale_agentapplication_max_tokens_unlimited.py",
+      "language": "python",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0020_agent_annotation.py",
+      "language": "python",
+      "sizeLines": 41,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0021_agent_max_tokens_unlimited.py",
+      "language": "python",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0022_agent_tts_filter_rules.py",
+      "language": "python",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0023_llmmodel_enable_web_search.py",
+      "language": "python",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0024_embeddingmodel_rerankmodel.py",
+      "language": "python",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/ai_models/migrations/0025_knowledge_base_models_and_settings_menu.py",
+      "language": "python",
+      "sizeLines": 73,
+      "fileCategory": "code"
+    },
+    {
       "path": "backend/apps/ai_models/models.py",
       "language": "python",
-      "sizeLines": 456,
+      "sizeLines": 705,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/ai_models/realtime_asr.py",
       "language": "python",
-      "sizeLines": 315,
+      "sizeLines": 184,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/ai_models/realtime_tts.py",
+      "language": "python",
+      "sizeLines": 171,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/ai_models/serializers.py",
       "language": "python",
-      "sizeLines": 715,
+      "sizeLines": 959,
       "fileCategory": "code"
     },
     {
@@ -1260,15 +3746,21 @@
       "fileCategory": "code"
     },
     {
+      "path": "backend/apps/ai_models/services/agent_knowledge.py",
+      "language": "python",
+      "sizeLines": 581,
+      "fileCategory": "code"
+    },
+    {
       "path": "backend/apps/ai_models/services/asr.py",
       "language": "python",
-      "sizeLines": 162,
+      "sizeLines": 262,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/ai_models/services/tts.py",
       "language": "python",
-      "sizeLines": 226,
+      "sizeLines": 235,
       "fileCategory": "code"
     },
     {
@@ -1280,43 +3772,55 @@
     {
       "path": "backend/apps/ai_models/tests/test_agent_application_api.py",
       "language": "python",
-      "sizeLines": 182,
+      "sizeLines": 578,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/ai_models/tests/test_agent_knowledge_service.py",
+      "language": "python",
+      "sizeLines": 229,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/ai_models/tests/test_asr_api.py",
       "language": "python",
-      "sizeLines": 266,
+      "sizeLines": 272,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/ai_models/tests/test_asr_realtime.py",
       "language": "python",
-      "sizeLines": 253,
+      "sizeLines": 302,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/ai_models/tests/test_chat_api.py",
       "language": "python",
-      "sizeLines": 486,
+      "sizeLines": 584,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/ai_models/tests/test_knowledge_model_settings_api.py",
+      "language": "python",
+      "sizeLines": 117,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/ai_models/tests/test_llm_company_settings_api.py",
       "language": "python",
-      "sizeLines": 288,
+      "sizeLines": 297,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/ai_models/tests/test_llm_model_usage.py",
       "language": "python",
-      "sizeLines": 380,
+      "sizeLines": 412,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/ai_models/tests/test_llm_platform_settings_api.py",
       "language": "python",
-      "sizeLines": 286,
+      "sizeLines": 290,
       "fileCategory": "code"
     },
     {
@@ -1328,19 +3832,19 @@
     {
       "path": "backend/apps/ai_models/tests/test_tts_api.py",
       "language": "python",
-      "sizeLines": 164,
+      "sizeLines": 417,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/ai_models/urls.py",
       "language": "python",
-      "sizeLines": 58,
+      "sizeLines": 62,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/ai_models/views.py",
       "language": "python",
-      "sizeLines": 1505,
+      "sizeLines": 1896,
       "fileCategory": "code"
     },
     {
@@ -1454,13 +3958,13 @@
     {
       "path": "backend/apps/devices/admin.py",
       "language": "python",
-      "sizeLines": 53,
+      "sizeLines": 54,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/devices/AGENTS.md",
       "language": "markdown",
-      "sizeLines": 104,
+      "sizeLines": 105,
       "fileCategory": "docs"
     },
     {
@@ -1536,27 +4040,81 @@
       "fileCategory": "code"
     },
     {
+      "path": "backend/apps/devices/migrations/0007_device_agent_application.py",
+      "language": "python",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0008_deviceauthlog_agent_application.py",
+      "language": "python",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0009_device_code_global_unique.py",
+      "language": "python",
+      "sizeLines": 93,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0010_deviceapplication_agent_application.py",
+      "language": "python",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0011_deviceapplication_tts_voices.py",
+      "language": "python",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
       "path": "backend/apps/devices/models.py",
       "language": "python",
-      "sizeLines": 267,
+      "sizeLines": 301,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/devices/realtime.py",
       "language": "python",
-      "sizeLines": 148,
+      "sizeLines": 117,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/devices/serializers.py",
       "language": "python",
-      "sizeLines": 420,
+      "sizeLines": 448,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/services/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/services/authorization.py",
+      "language": "python",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/services/queries.py",
+      "language": "python",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/services/runtime.py",
+      "language": "python",
+      "sizeLines": 77,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/devices/tests/test_device_authorization_api.py",
       "language": "python",
-      "sizeLines": 727,
+      "sizeLines": 1386,
       "fileCategory": "code"
     },
     {
@@ -1568,19 +4126,19 @@
     {
       "path": "backend/apps/devices/urls.py",
       "language": "python",
-      "sizeLines": 27,
+      "sizeLines": 32,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/devices/views.py",
       "language": "python",
-      "sizeLines": 613,
+      "sizeLines": 848,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/devices/websocket.py",
       "language": "python",
-      "sizeLines": 87,
+      "sizeLines": 52,
       "fileCategory": "code"
     },
     {
@@ -1592,7 +4150,7 @@
     {
       "path": "backend/apps/knowledge_base/admin.py",
       "language": "python",
-      "sizeLines": 53,
+      "sizeLines": 69,
       "fileCategory": "code"
     },
     {
@@ -1632,21 +4190,51 @@
       "fileCategory": "code"
     },
     {
-      "path": "backend/apps/knowledge_base/models.py",
+      "path": "backend/apps/knowledge_base/migrations/0004_knowledgedocumentchunk.py",
       "language": "python",
-      "sizeLines": 75,
+      "sizeLines": 37,
       "fileCategory": "code"
     },
     {
-      "path": "backend/apps/knowledge_base/serializers.py",
+      "path": "backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py",
       "language": "python",
       "sizeLines": 101,
       "fileCategory": "code"
     },
     {
+      "path": "backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py",
+      "language": "python",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py",
+      "language": "python",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/knowledge_base/migrations/0008_remove_knowledge_document_processing_status.py",
+      "language": "python",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/knowledge_base/models.py",
+      "language": "python",
+      "sizeLines": 157,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/knowledge_base/serializers.py",
+      "language": "python",
+      "sizeLines": 148,
+      "fileCategory": "code"
+    },
+    {
       "path": "backend/apps/knowledge_base/services.py",
       "language": "python",
-      "sizeLines": 79,
+      "sizeLines": 62,
       "fileCategory": "code"
     },
     {
@@ -1658,31 +4246,31 @@
     {
       "path": "backend/apps/knowledge_base/tests/_helpers.py",
       "language": "python",
-      "sizeLines": 160,
+      "sizeLines": 144,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/knowledge_base/tests/test_access_data.py",
       "language": "python",
-      "sizeLines": 28,
+      "sizeLines": 49,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/knowledge_base/tests/test_api.py",
       "language": "python",
-      "sizeLines": 314,
+      "sizeLines": 251,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/knowledge_base/urls.py",
       "language": "python",
-      "sizeLines": 9,
+      "sizeLines": 10,
       "fileCategory": "code"
     },
     {
       "path": "backend/apps/knowledge_base/views.py",
       "language": "python",
-      "sizeLines": 252,
+      "sizeLines": 358,
       "fileCategory": "code"
     },
     {
@@ -1902,6 +4490,12 @@
       "fileCategory": "code"
     },
     {
+      "path": "backend/apps/resources/migrations/0032_remove_voice_tone_management_access.py",
+      "language": "python",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
       "path": "backend/apps/resources/models.py",
       "language": "python",
       "sizeLines": 448,
@@ -2060,7 +4654,7 @@
     {
       "path": "backend/apps/resources/tests/test_resource_api.py",
       "language": "python",
-      "sizeLines": 118,
+      "sizeLines": 117,
       "fileCategory": "code"
     },
     {
@@ -2216,7 +4810,7 @@
     {
       "path": "backend/apps/tenants/tests/test_cross_tenant_isolation.py",
       "language": "python",
-      "sizeLines": 128,
+      "sizeLines": 131,
       "fileCategory": "code"
     },
     {
@@ -2282,7 +4876,7 @@
     {
       "path": "backend/config/asgi.py",
       "language": "python",
-      "sizeLines": 27,
+      "sizeLines": 17,
       "fileCategory": "code"
     },
     {
@@ -2310,6 +4904,18 @@
       "fileCategory": "code"
     },
     {
+      "path": "backend/config/realtime.py",
+      "language": "python",
+      "sizeLines": 746,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/config/request_id.py",
+      "language": "python",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
       "path": "backend/config/sentry.py",
       "language": "python",
       "sizeLines": 90,
@@ -2324,7 +4930,7 @@
     {
       "path": "backend/config/settings/base.py",
       "language": "python",
-      "sizeLines": 329,
+      "sizeLines": 354,
       "fileCategory": "code"
     },
     {
@@ -2370,6 +4976,12 @@
       "fileCategory": "code"
     },
     {
+      "path": "backend/config/tests/test_realtime_websocket.py",
+      "language": "python",
+      "sizeLines": 1112,
+      "fileCategory": "code"
+    },
+    {
       "path": "backend/config/urls.py",
       "language": "python",
       "sizeLines": 114,
@@ -2406,6 +5018,12 @@
       "fileCategory": "markup"
     },
     {
+      "path": "build_graph.py",
+      "language": "python",
+      "sizeLines": 247,
+      "fileCategory": "code"
+    },
+    {
       "path": "CLAUDE.md",
       "language": "markdown",
       "sizeLines": 154,
@@ -2414,7 +5032,7 @@
     {
       "path": "CONTEXT.md",
       "language": "markdown",
-      "sizeLines": 37,
+      "sizeLines": 69,
       "fileCategory": "docs"
     },
     {
@@ -2422,6 +5040,48 @@
       "language": "markdown",
       "sizeLines": 139,
       "fileCategory": "docs"
+    },
+    {
+      "path": "device-chat/android-api-simulator.html",
+      "language": "html",
+      "sizeLines": 1759,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "device-chat/app.js",
+      "language": "javascript",
+      "sizeLines": 909,
+      "fileCategory": "code"
+    },
+    {
+      "path": "device-chat/index.html",
+      "language": "html",
+      "sizeLines": 136,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "device-chat/README.md",
+      "language": "markdown",
+      "sizeLines": 211,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "device-chat/runtime-api-console.apifox.openapi.json",
+      "language": "json",
+      "sizeLines": 1408,
+      "fileCategory": "config"
+    },
+    {
+      "path": "device-chat/runtime-api-console.html",
+      "language": "html",
+      "sizeLines": 1824,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "device-chat/style.css",
+      "language": "css",
+      "sizeLines": 467,
+      "fileCategory": "markup"
     },
     {
       "path": "docker-compose.yaml",
@@ -2466,6 +5126,12 @@
       "fileCategory": "docs"
     },
     {
+      "path": "docs/superpowers/plans/2026-06-16-agent-conversation-settings.md",
+      "language": "markdown",
+      "sizeLines": 1403,
+      "fileCategory": "docs"
+    },
+    {
       "path": "docs/superpowers/specs/2026-06-05-asr-settings-design.md",
       "language": "markdown",
       "sizeLines": 90,
@@ -2487,6 +5153,18 @@
       "path": "docs/superpowers/specs/2026-06-11-default-employee-access-design.md",
       "language": "markdown",
       "sizeLines": 60,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-16-agent-application-studio-design.md",
+      "language": "markdown",
+      "sizeLines": 243,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-16-agent-conversation-settings-design.md",
+      "language": "markdown",
+      "sizeLines": 294,
       "fileCategory": "docs"
     },
     {
@@ -2544,10 +5222,34 @@
       "fileCategory": "docs"
     },
     {
+      "path": "generate-graph-5.js",
+      "language": "javascript",
+      "sizeLines": 193,
+      "fileCategory": "code"
+    },
+    {
+      "path": "generate-graphs.js",
+      "language": "javascript",
+      "sizeLines": 154,
+      "fileCategory": "code"
+    },
+    {
+      "path": "generate.js",
+      "language": "javascript",
+      "sizeLines": 293,
+      "fileCategory": "code"
+    },
+    {
       "path": "Makefile",
       "language": "makefile",
       "sizeLines": 1,
       "fileCategory": "infra"
+    },
+    {
+      "path": "process_batches.js",
+      "language": "javascript",
+      "sizeLines": 134,
+      "fileCategory": "code"
     },
     {
       "path": "PRODUCT.md",
@@ -2556,10 +5258,22 @@
       "fileCategory": "docs"
     },
     {
+      "path": "script.py",
+      "language": "python",
+      "sizeLines": 9,
+      "fileCategory": "code"
+    },
+    {
       "path": "scripts/asr-replacement-test.html",
       "language": "html",
-      "sizeLines": 1152,
+      "sizeLines": 1166,
       "fileCategory": "markup"
+    },
+    {
+      "path": "scripts/check-runtime-api-console.mjs",
+      "language": "javascript",
+      "sizeLines": 81,
+      "fileCategory": "code"
     },
     {
       "path": "scripts/multi-tenant-design.html",
@@ -2568,10 +5282,22 @@
       "fileCategory": "markup"
     },
     {
+      "path": "scripts/test-device-chat-realtime-static.mjs",
+      "language": "javascript",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
       "path": "skills-lock.json",
       "language": "json",
       "sizeLines": 185,
       "fileCategory": "config"
+    },
+    {
+      "path": "test.py",
+      "language": "python",
+      "sizeLines": 20,
+      "fileCategory": "code"
     },
     {
       "path": "understand-anything-guide.html",
@@ -2580,15 +5306,21 @@
       "fileCategory": "markup"
     },
     {
+      "path": "update-batch12.js",
+      "language": "javascript",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
       "path": "web/AGENTS.md",
       "language": "markdown",
-      "sizeLines": 70,
+      "sizeLines": 75,
       "fileCategory": "docs"
     },
     {
       "path": "web/asr-replacement-test.html",
       "language": "html",
-      "sizeLines": 1152,
+      "sizeLines": 1166,
       "fileCategory": "markup"
     },
     {
@@ -2618,7 +5350,7 @@
     {
       "path": "web/package.json",
       "language": "json",
-      "sizeLines": 32,
+      "sizeLines": 35,
       "fileCategory": "config"
     },
     {
@@ -2630,7 +5362,7 @@
     {
       "path": "web/public/asr-replacement-test.html",
       "language": "html",
-      "sizeLines": 1152,
+      "sizeLines": 1166,
       "fileCategory": "markup"
     },
     {
@@ -2638,6 +5370,18 @@
       "language": "html",
       "sizeLines": 593,
       "fileCategory": "markup"
+    },
+    {
+      "path": "web/scripts/agent-audio-playback-guard.test.mjs",
+      "language": "javascript",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/scripts/test-agent-application-delete-dialog-static.mjs",
+      "language": "javascript",
+      "sizeLines": 54,
+      "fileCategory": "code"
     },
     {
       "path": "web/scripts/test-audit-log-management-static.mjs",
@@ -2676,9 +5420,15 @@
       "fileCategory": "code"
     },
     {
+      "path": "web/scripts/test-device-management-pagination-static.mjs",
+      "language": "javascript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
       "path": "web/scripts/test-llm-settings-static.mjs",
       "language": "javascript",
-      "sizeLines": 37,
+      "sizeLines": 41,
       "fileCategory": "code"
     },
     {
@@ -2708,7 +5458,7 @@
     {
       "path": "web/scripts/test-super-admin-tenant-menu-static.mjs",
       "language": "javascript",
-      "sizeLines": 86,
+      "sizeLines": 85,
       "fileCategory": "code"
     },
     {
@@ -2726,19 +5476,19 @@
     {
       "path": "web/src/api/client.ts",
       "language": "typescript",
-      "sizeLines": 151,
+      "sizeLines": 152,
       "fileCategory": "code"
     },
     {
       "path": "web/src/api/modules/applications.ts",
       "language": "typescript",
-      "sizeLines": 88,
+      "sizeLines": 204,
       "fileCategory": "code"
     },
     {
       "path": "web/src/api/modules/asr.ts",
       "language": "typescript",
-      "sizeLines": 110,
+      "sizeLines": 99,
       "fileCategory": "code"
     },
     {
@@ -2756,7 +5506,7 @@
     {
       "path": "web/src/api/modules/chat.ts",
       "language": "typescript",
-      "sizeLines": 170,
+      "sizeLines": 215,
       "fileCategory": "code"
     },
     {
@@ -2768,7 +5518,7 @@
     {
       "path": "web/src/api/modules/devices.ts",
       "language": "typescript",
-      "sizeLines": 291,
+      "sizeLines": 303,
       "fileCategory": "code"
     },
     {
@@ -2780,7 +5530,7 @@
     {
       "path": "web/src/api/modules/knowledge-base.ts",
       "language": "typescript",
-      "sizeLines": 216,
+      "sizeLines": 368,
       "fileCategory": "code"
     },
     {
@@ -2792,7 +5542,7 @@
     {
       "path": "web/src/api/modules/llm-settings.ts",
       "language": "typescript",
-      "sizeLines": 233,
+      "sizeLines": 235,
       "fileCategory": "code"
     },
     {
@@ -2834,13 +5584,19 @@
     {
       "path": "web/src/api/modules/tts.ts",
       "language": "typescript",
-      "sizeLines": 117,
+      "sizeLines": 127,
       "fileCategory": "code"
     },
     {
       "path": "web/src/api/modules/voice-tones.ts",
       "language": "typescript",
       "sizeLines": 97,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/api/realtime.ts",
+      "language": "typescript",
+      "sizeLines": 106,
       "fileCategory": "code"
     },
     {
@@ -2858,19 +5614,19 @@
     {
       "path": "web/src/layouts/dashboard-layout.tsx",
       "language": "typescript",
-      "sizeLines": 755,
+      "sizeLines": 765,
       "fileCategory": "code"
     },
     {
       "path": "web/src/main.tsx",
       "language": "typescript",
-      "sizeLines": 161,
+      "sizeLines": 162,
       "fileCategory": "code"
     },
     {
       "path": "web/src/router/index.tsx",
       "language": "typescript",
-      "sizeLines": 560,
+      "sizeLines": 594,
       "fileCategory": "code"
     },
     {
@@ -2888,7 +5644,7 @@
     {
       "path": "web/src/styles/index.css",
       "language": "css",
-      "sizeLines": 614,
+      "sizeLines": 628,
       "fileCategory": "markup"
     },
     {
@@ -2904,9 +5660,27 @@
       "fileCategory": "docs"
     },
     {
+      "path": "web/src/views/application-management/audio-utils.ts",
+      "language": "typescript",
+      "sizeLines": 85,
+      "fileCategory": "code"
+    },
+    {
       "path": "web/src/views/application-management/index.tsx",
       "language": "typescript",
-      "sizeLines": 749,
+      "sizeLines": 2665,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/application-management/playback-request-guard.ts",
+      "language": "typescript",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/application-management/use-agent-audio.ts",
+      "language": "typescript",
+      "sizeLines": 430,
       "fileCategory": "code"
     },
     {
@@ -2918,7 +5692,7 @@
     {
       "path": "web/src/views/asr-management/index.tsx",
       "language": "typescript",
-      "sizeLines": 947,
+      "sizeLines": 959,
       "fileCategory": "code"
     },
     {
@@ -3000,15 +5774,69 @@
       "fileCategory": "code"
     },
     {
+      "path": "web/src/views/device-authorization-center/columns.tsx",
+      "language": "typescript",
+      "sizeLines": 215,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/device-authorization-center/components/AuthorizationTableCard.tsx",
+      "language": "typescript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/device-authorization-center/components/DeviceAuthorizationModal.tsx",
+      "language": "typescript",
+      "sizeLines": 72,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/device-authorization-center/components/DeviceAuthorizationTabs.tsx",
+      "language": "typescript",
+      "sizeLines": 125,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/device-authorization-center/components/DeviceAuthorizationToolbar.tsx",
+      "language": "typescript",
+      "sizeLines": 76,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/device-authorization-center/components/EditableDeviceNameCell.tsx",
+      "language": "typescript",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/device-authorization-center/constants.ts",
+      "language": "typescript",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
       "path": "web/src/views/device-authorization-center/index.tsx",
       "language": "typescript",
-      "sizeLines": 785,
+      "sizeLines": 330,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/device-authorization-center/types.ts",
+      "language": "typescript",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/device-authorization-center/utils.ts",
+      "language": "typescript",
+      "sizeLines": 16,
       "fileCategory": "code"
     },
     {
       "path": "web/src/views/device-management/index.tsx",
       "language": "typescript",
-      "sizeLines": 861,
+      "sizeLines": 976,
       "fileCategory": "code"
     },
     {
@@ -3024,9 +5852,15 @@
       "fileCategory": "code"
     },
     {
+      "path": "web/src/views/knowledge-base-settings/index.tsx",
+      "language": "typescript",
+      "sizeLines": 354,
+      "fileCategory": "code"
+    },
+    {
       "path": "web/src/views/knowledge-base/index.tsx",
       "language": "typescript",
-      "sizeLines": 563,
+      "sizeLines": 638,
       "fileCategory": "code"
     },
     {
@@ -3038,7 +5872,7 @@
     {
       "path": "web/src/views/llm-management/index.tsx",
       "language": "typescript",
-      "sizeLines": 625,
+      "sizeLines": 632,
       "fileCategory": "code"
     },
     {
@@ -3057,6 +5891,12 @@
       "path": "web/src/views/login/index.tsx",
       "language": "typescript",
       "sizeLines": 453,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/media-devices.ts",
+      "language": "typescript",
+      "sizeLines": 8,
       "fileCategory": "code"
     },
     {
@@ -3104,7 +5944,7 @@
     {
       "path": "web/src/views/settings-llm/index.tsx",
       "language": "typescript",
-      "sizeLines": 744,
+      "sizeLines": 764,
       "fileCategory": "code"
     },
     {
@@ -3122,7 +5962,13 @@
     {
       "path": "web/src/views/tts-management/index.tsx",
       "language": "typescript",
-      "sizeLines": 209,
+      "sizeLines": 247,
+      "fileCategory": "code"
+    },
+    {
+      "path": "web/src/views/tts-realtime-playback.ts",
+      "language": "typescript",
+      "sizeLines": 305,
       "fileCategory": "code"
     },
     {
@@ -3134,19 +5980,7 @@
     {
       "path": "web/src/views/tts-settings/index.tsx",
       "language": "typescript",
-      "sizeLines": 454,
-      "fileCategory": "code"
-    },
-    {
-      "path": "web/src/views/voice-tone-management.ts",
-      "language": "typescript",
-      "sizeLines": 1,
-      "fileCategory": "code"
-    },
-    {
-      "path": "web/src/views/voice-tone-management/index.tsx",
-      "language": "typescript",
-      "sizeLines": 624,
+      "sizeLines": 486,
       "fileCategory": "code"
     },
     {
@@ -3182,7 +6016,7 @@
     {
       "path": "web/vite.config.ts",
       "language": "typescript",
-      "sizeLines": 63,
+      "sizeLines": 78,
       "fileCategory": "code"
     },
     {
@@ -3192,9 +6026,15 @@
       "fileCategory": "markup"
     },
     {
+      "path": "wiki/前端demo.md",
+      "language": "markdown",
+      "sizeLines": 837,
+      "fileCategory": "docs"
+    },
+    {
       "path": "wiki/android-device-runtime-simulator.html",
       "language": "html",
-      "sizeLines": 984,
+      "sizeLines": 999,
       "fileCategory": "markup"
     },
     {
@@ -3218,7 +6058,7 @@
     {
       "path": "wiki/device-api-latest.html",
       "language": "html",
-      "sizeLines": 511,
+      "sizeLines": 541,
       "fileCategory": "markup"
     },
     {
@@ -3232,6 +6072,12 @@
       "language": "markdown",
       "sizeLines": 202,
       "fileCategory": "docs"
+    },
+    {
+      "path": "wiki/server-client-interaction-api.html",
+      "language": "html",
+      "sizeLines": 1443,
+      "fileCategory": "markup"
     },
     {
       "path": "wiki/TTS教程.md",
@@ -3250,1169 +6096,47 @@
       "language": "json",
       "sizeLines": 340,
       "fileCategory": "config"
+    },
+    {
+      "path": "wiki/websocket-unification-progress.html",
+      "language": "html",
+      "sizeLines": 285,
+      "fileCategory": "markup"
     }
   ],
-  "totalFiles": 537,
-  "filteredByIgnore": 514,
+  "totalFiles": 1017,
+  "filteredByIgnore": 419,
   "estimatedComplexity": "very-large",
-  "importMap": {
-    ".claude/skills/caveman/SKILL.md": [],
-    ".claude/skills/design-an-interface/SKILL.md": [],
-    ".claude/skills/diagnose/scripts/hitl-loop.template.sh": [],
-    ".claude/skills/diagnose/SKILL.md": [],
-    ".claude/skills/edit-article/SKILL.md": [],
-    ".claude/skills/git-guardrails-claude-code/scripts/block-dangerous-git.sh": [],
-    ".claude/skills/git-guardrails-claude-code/SKILL.md": [],
-    ".claude/skills/grill-me/SKILL.md": [],
-    ".claude/skills/grill-with-docs/ADR-FORMAT.md": [],
-    ".claude/skills/grill-with-docs/CONTEXT-FORMAT.md": [],
-    ".claude/skills/grill-with-docs/SKILL.md": [],
-    ".claude/skills/handoff/SKILL.md": [],
-    ".claude/skills/impeccable/agents/impeccable_asset_producer.toml": [],
-    ".claude/skills/impeccable/agents/impeccable_manual_edit_applier.toml": [],
-    ".claude/skills/impeccable/agents/openai.yaml": [],
-    ".claude/skills/impeccable/reference/adapt.md": [],
-    ".claude/skills/impeccable/reference/animate.md": [],
-    ".claude/skills/impeccable/reference/audit.md": [],
-    ".claude/skills/impeccable/reference/bolder.md": [],
-    ".claude/skills/impeccable/reference/brand.md": [],
-    ".claude/skills/impeccable/reference/clarify.md": [],
-    ".claude/skills/impeccable/reference/codex.md": [],
-    ".claude/skills/impeccable/reference/colorize.md": [],
-    ".claude/skills/impeccable/reference/craft.md": [],
-    ".claude/skills/impeccable/reference/critique.md": [],
-    ".claude/skills/impeccable/reference/delight.md": [],
-    ".claude/skills/impeccable/reference/distill.md": [],
-    ".claude/skills/impeccable/reference/document.md": [],
-    ".claude/skills/impeccable/reference/extract.md": [],
-    ".claude/skills/impeccable/reference/harden.md": [],
-    ".claude/skills/impeccable/reference/init.md": [],
-    ".claude/skills/impeccable/reference/interaction-design.md": [],
-    ".claude/skills/impeccable/reference/layout.md": [],
-    ".claude/skills/impeccable/reference/live.md": [],
-    ".claude/skills/impeccable/reference/onboard.md": [],
-    ".claude/skills/impeccable/reference/optimize.md": [],
-    ".claude/skills/impeccable/reference/overdrive.md": [],
-    ".claude/skills/impeccable/reference/polish.md": [],
-    ".claude/skills/impeccable/reference/product.md": [],
-    ".claude/skills/impeccable/reference/quieter.md": [],
-    ".claude/skills/impeccable/reference/shape.md": [],
-    ".claude/skills/impeccable/reference/typeset.md": [],
-    ".claude/skills/impeccable/scripts/command-metadata.json": [],
-    ".claude/skills/impeccable/scripts/context-signals.mjs": [
-      ".claude/skills/impeccable/scripts/context.mjs",
-      ".claude/skills/impeccable/scripts/lib/impeccable-paths.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/context.mjs": [],
-    ".claude/skills/impeccable/scripts/critique-storage.mjs": [
-      ".claude/skills/impeccable/scripts/lib/impeccable-paths.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/detect-csp.mjs": [],
-    ".claude/skills/impeccable/scripts/detect.mjs": [],
-    ".claude/skills/impeccable/scripts/detector/browser/injected/index.mjs": [],
-    ".claude/skills/impeccable/scripts/detector/cli/main.mjs": [
-      ".claude/skills/impeccable/scripts/detector/engines/browser/detect-url.mjs",
-      ".claude/skills/impeccable/scripts/detector/engines/regex/detect-text.mjs",
-      ".claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
-      ".claude/skills/impeccable/scripts/detector/node/file-system.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/detector/detect-antipatterns-browser.js": [],
-    ".claude/skills/impeccable/scripts/detector/detect-antipatterns.mjs": [
-      ".claude/skills/impeccable/scripts/detector/cli/main.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/detector/engines/browser/detect-url.mjs": [
-      ".claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs",
-      ".claude/skills/impeccable/scripts/detector/findings.mjs",
-      ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
-      ".claude/skills/impeccable/scripts/detector/registry/antipatterns.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/detector/engines/regex/detect-text.mjs": [
-      ".claude/skills/impeccable/scripts/detector/findings.mjs",
-      ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
-      ".claude/skills/impeccable/scripts/detector/registry/antipatterns.mjs",
-      ".claude/skills/impeccable/scripts/detector/shared/constants.mjs",
-      ".claude/skills/impeccable/scripts/detector/shared/page.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/detector/engines/static-html/css-cascade.mjs": [
-      ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
-      ".claude/skills/impeccable/scripts/detector/rules/checks.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs": [
-      ".claude/skills/impeccable/scripts/detector/engines/regex/detect-text.mjs",
-      ".claude/skills/impeccable/scripts/detector/engines/static-html/css-cascade.mjs",
-      ".claude/skills/impeccable/scripts/detector/findings.mjs",
-      ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
-      ".claude/skills/impeccable/scripts/detector/registry/antipatterns.mjs",
-      ".claude/skills/impeccable/scripts/detector/rules/checks.mjs",
-      ".claude/skills/impeccable/scripts/detector/shared/constants.mjs",
-      ".claude/skills/impeccable/scripts/detector/shared/page.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs": [],
-    ".claude/skills/impeccable/scripts/detector/findings.mjs": [
-      ".claude/skills/impeccable/scripts/detector/registry/antipatterns.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/detector/node/file-system.mjs": [],
-    ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs": [],
-    ".claude/skills/impeccable/scripts/detector/registry/antipatterns.mjs": [],
-    ".claude/skills/impeccable/scripts/detector/rules/checks.mjs": [
-      ".claude/skills/impeccable/scripts/detector/shared/color.mjs",
-      ".claude/skills/impeccable/scripts/detector/shared/constants.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/detector/shared/color.mjs": [],
-    ".claude/skills/impeccable/scripts/detector/shared/constants.mjs": [],
-    ".claude/skills/impeccable/scripts/detector/shared/page.mjs": [],
-    ".claude/skills/impeccable/scripts/lib/design-parser.mjs": [],
-    ".claude/skills/impeccable/scripts/lib/impeccable-paths.mjs": [],
-    ".claude/skills/impeccable/scripts/lib/is-generated.mjs": [],
-    ".claude/skills/impeccable/scripts/live-accept.mjs": [
-      ".claude/skills/impeccable/scripts/lib/is-generated.mjs",
-      ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
-      ".claude/skills/impeccable/scripts/live/svelte-component.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live-browser-dom.js": [],
-    ".claude/skills/impeccable/scripts/live-browser-session.js": [],
-    ".claude/skills/impeccable/scripts/live-browser.js": [],
-    ".claude/skills/impeccable/scripts/live-commit-manual-edits.mjs": [
-      ".claude/skills/impeccable/scripts/lib/is-generated.mjs",
-      ".claude/skills/impeccable/scripts/live-copy-edit-agent.mjs",
-      ".claude/skills/impeccable/scripts/live-manual-edit-evidence.mjs",
-      ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live-complete.mjs": [
-      ".claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
-      ".claude/skills/impeccable/scripts/live/session-store.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live-copy-edit-agent.mjs": [],
-    ".claude/skills/impeccable/scripts/live-discard-manual-edits.mjs": [
-      ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live-inject.mjs": [
-      ".claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
-      ".claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live-insert.mjs": [
-      ".claude/skills/impeccable/scripts/lib/is-generated.mjs",
-      ".claude/skills/impeccable/scripts/live-wrap.mjs",
-      ".claude/skills/impeccable/scripts/live/svelte-component.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live-manual-edit-evidence.mjs": [
-      ".claude/skills/impeccable/scripts/lib/is-generated.mjs",
-      ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live-poll.mjs": [
-      ".claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
-      ".claude/skills/impeccable/scripts/live/completion.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live-resume.mjs": [
-      ".claude/skills/impeccable/scripts/live/session-store.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live-server.mjs": [
-      ".claude/skills/impeccable/scripts/context.mjs",
-      ".claude/skills/impeccable/scripts/lib/design-parser.mjs",
-      ".claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
-      ".claude/skills/impeccable/scripts/live/browser-script-parts.mjs",
-      ".claude/skills/impeccable/scripts/live/event-validation.mjs",
-      ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
-      ".claude/skills/impeccable/scripts/live/manual-edit-routes.mjs",
-      ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
-      ".claude/skills/impeccable/scripts/live/session-store.mjs",
-      ".claude/skills/impeccable/scripts/live/svelte-component.mjs",
-      ".claude/skills/impeccable/scripts/live/vocabulary.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live-status.mjs": [
-      ".claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
-      ".claude/skills/impeccable/scripts/live-resume.mjs",
-      ".claude/skills/impeccable/scripts/live/session-store.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live-wrap.mjs": [
-      ".claude/skills/impeccable/scripts/lib/is-generated.mjs",
-      ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs",
-      ".claude/skills/impeccable/scripts/live/svelte-component.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live.mjs": [
-      ".claude/skills/impeccable/scripts/context.mjs",
-      ".claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
-      ".claude/skills/impeccable/scripts/live-inject.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live/browser-script-parts.mjs": [],
-    ".claude/skills/impeccable/scripts/live/completion.mjs": [],
-    ".claude/skills/impeccable/scripts/live/event-validation.mjs": [
-      ".claude/skills/impeccable/scripts/live/insert-ui.mjs",
-      ".claude/skills/impeccable/scripts/live/vocabulary.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live/insert-ui.mjs": [],
-    ".claude/skills/impeccable/scripts/live/manual-apply.mjs": [
-      ".claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
-      ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live/manual-edit-routes.mjs": [
-      ".claude/skills/impeccable/scripts/live-commit-manual-edits.mjs",
-      ".claude/skills/impeccable/scripts/live-manual-edit-evidence.mjs",
-      ".claude/skills/impeccable/scripts/live/event-validation.mjs",
-      ".claude/skills/impeccable/scripts/live/manual-apply.mjs",
-      ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live/manual-edits-buffer.mjs": [
-      ".claude/skills/impeccable/scripts/lib/impeccable-paths.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live/session-store.mjs": [
-      ".claude/skills/impeccable/scripts/lib/impeccable-paths.mjs"
-    ],
-    ".claude/skills/impeccable/scripts/live/svelte-component.mjs": [],
-    ".claude/skills/impeccable/scripts/live/sveltekit-adapter.mjs": [],
-    ".claude/skills/impeccable/scripts/live/ui-core.mjs": [],
-    ".claude/skills/impeccable/scripts/live/vocabulary.mjs": [],
-    ".claude/skills/impeccable/scripts/modern-screenshot.umd.js": [],
-    ".claude/skills/impeccable/scripts/palette.mjs": [],
-    ".claude/skills/impeccable/scripts/pin.mjs": [],
-    ".claude/skills/impeccable/SKILL.md": [],
-    ".claude/skills/improve-codebase-architecture/DEEPENING.md": [],
-    ".claude/skills/improve-codebase-architecture/HTML-REPORT.md": [],
-    ".claude/skills/improve-codebase-architecture/INTERFACE-DESIGN.md": [],
-    ".claude/skills/improve-codebase-architecture/LANGUAGE.md": [],
-    ".claude/skills/improve-codebase-architecture/SKILL.md": [],
-    ".claude/skills/migrate-to-shoehorn/SKILL.md": [],
-    ".claude/skills/obsidian-vault/SKILL.md": [],
-    ".claude/skills/prototype/LOGIC.md": [],
-    ".claude/skills/prototype/SKILL.md": [],
-    ".claude/skills/prototype/UI.md": [],
-    ".claude/skills/qa/SKILL.md": [],
-    ".claude/skills/request-refactor-plan/SKILL.md": [],
-    ".claude/skills/review/SKILL.md": [],
-    ".claude/skills/scaffold-exercises/SKILL.md": [],
-    ".claude/skills/setup-matt-pocock-skills/domain.md": [],
-    ".claude/skills/setup-matt-pocock-skills/issue-tracker-github.md": [],
-    ".claude/skills/setup-matt-pocock-skills/issue-tracker-gitlab.md": [],
-    ".claude/skills/setup-matt-pocock-skills/issue-tracker-local.md": [],
-    ".claude/skills/setup-matt-pocock-skills/SKILL.md": [],
-    ".claude/skills/setup-matt-pocock-skills/triage-labels.md": [],
-    ".claude/skills/setup-pre-commit/SKILL.md": [],
-    ".claude/skills/tdd/deep-modules.md": [],
-    ".claude/skills/tdd/interface-design.md": [],
-    ".claude/skills/tdd/mocking.md": [],
-    ".claude/skills/tdd/refactoring.md": [],
-    ".claude/skills/tdd/SKILL.md": [],
-    ".claude/skills/tdd/tests.md": [],
-    ".claude/skills/teach/GLOSSARY-FORMAT.md": [],
-    ".claude/skills/teach/LEARNING-RECORD-FORMAT.md": [],
-    ".claude/skills/teach/MISSION-FORMAT.md": [],
-    ".claude/skills/teach/RESOURCES-FORMAT.md": [],
-    ".claude/skills/teach/SKILL.md": [],
-    ".claude/skills/to-issues/SKILL.md": [],
-    ".claude/skills/to-prd/SKILL.md": [],
-    ".claude/skills/triage/AGENT-BRIEF.md": [],
-    ".claude/skills/triage/OUT-OF-SCOPE.md": [],
-    ".claude/skills/triage/SKILL.md": [],
-    ".claude/skills/ubiquitous-language/SKILL.md": [],
-    ".claude/skills/write-a-skill/SKILL.md": [],
-    ".claude/skills/writing-beats/SKILL.md": [],
-    ".claude/skills/writing-fragments/SKILL.md": [],
-    ".claude/skills/writing-shape/SKILL.md": [],
-    ".claude/skills/zoom-out/SKILL.md": [],
-    ".env": [],
-    ".gitattributes": [],
-    ".understand-anything/.understandignore": [],
-    ".understand-anything/config.json": [],
-    ".understand-anything/domain-graph.json": [],
-    "AGENTS.md": [],
-    "audit-report-could_frontend-2026-06-11.html": [],
-    "backend/AGENTS.md": [],
-    "backend/apps/__init__.py": [],
-    "backend/apps/accounts/__init__.py": [],
-    "backend/apps/accounts/admin.py": [
-      "backend/apps/accounts/models.py"
-    ],
-    "backend/apps/accounts/AGENTS.md": [],
-    "backend/apps/accounts/apps.py": [],
-    "backend/apps/accounts/migrations/__init__.py": [],
-    "backend/apps/accounts/migrations/0001_initial.py": [],
-    "backend/apps/accounts/migrations/0002_alter_accountapplication_phone.py": [],
-    "backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py": [],
-    "backend/apps/accounts/migrations/0004_menu_parent.py": [],
-    "backend/apps/accounts/migrations/0005_accountapplication_username.py": [],
-    "backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py": [],
-    "backend/apps/accounts/migrations/0007_accountuser.py": [],
-    "backend/apps/accounts/migrations/0008_accountapplication_tenant.py": [],
-    "backend/apps/accounts/migrations/0009_menu_audience.py": [],
-    "backend/apps/accounts/migrations/0010_seed_tenant_menus.py": [],
-    "backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py": [],
-    "backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py": [],
-    "backend/apps/accounts/models.py": [],
-    "backend/apps/accounts/permissions.py": [
-      "backend/apps/accounts/services/permissions.py"
-    ],
-    "backend/apps/accounts/serializers.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/accounts/services/permissions.py"
-    ],
-    "backend/apps/accounts/services/__init__.py": [],
-    "backend/apps/accounts/services/notifications.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/resources/services/feishu.py"
-    ],
-    "backend/apps/accounts/services/permissions.py": [
-      "backend/apps/accounts/models.py"
-    ],
-    "backend/apps/accounts/tasks.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/accounts/services/notifications.py"
-    ],
-    "backend/apps/accounts/tests.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/accounts/tasks.py"
-    ],
-    "backend/apps/accounts/urls.py": [
-      "backend/apps/accounts/views.py"
-    ],
-    "backend/apps/accounts/views.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/accounts/permissions.py",
-      "backend/apps/accounts/serializers.py",
-      "backend/apps/accounts/services/notifications.py",
-      "backend/apps/accounts/tasks.py",
-      "backend/apps/tenants/services.py"
-    ],
-    "backend/apps/ai_models/__init__.py": [],
-    "backend/apps/ai_models/admin.py": [
-      "backend/apps/ai_models/models.py"
-    ],
-    "backend/apps/ai_models/AGENTS.md": [],
-    "backend/apps/ai_models/apps.py": [],
-    "backend/apps/ai_models/llm_services.py": [
-      "backend/apps/ai_models/models.py"
-    ],
-    "backend/apps/ai_models/migrations/__init__.py": [],
-    "backend/apps/ai_models/migrations/0001_initial.py": [],
-    "backend/apps/ai_models/migrations/0002_chatconversation_chatmessage.py": [],
-    "backend/apps/ai_models/migrations/0003_chatconversation_system_prompt.py": [],
-    "backend/apps/ai_models/migrations/0004_chatconversation_temperature_and_more.py": [],
-    "backend/apps/ai_models/migrations/0005_chat_summary_message_feedback.py": [],
-    "backend/apps/ai_models/migrations/0006_chatconversation_tenant_llmprovider_tenant.py": [],
-    "backend/apps/ai_models/migrations/0007_asr_config.py": [],
-    "backend/apps/ai_models/migrations/0008_alter_asrconfig_options_alter_asrconfig_is_active_and_more.py": [],
-    "backend/apps/ai_models/migrations/0009_asr_replacement_rule.py": [],
-    "backend/apps/ai_models/migrations/0010_remove_asr_replacement_sort_order.py": [],
-    "backend/apps/ai_models/migrations/0011_agentapplication_chatconversation_application_and_more.py": [],
-    "backend/apps/ai_models/migrations/0012_seed_agent_application_tenant_access.py": [],
-    "backend/apps/ai_models/migrations/0013_platform_llm_settings.py": [],
-    "backend/apps/ai_models/migrations/0014_remove_standalone_chat_room_menu.py": [],
-    "backend/apps/ai_models/migrations/0015_tts_settings.py": [],
-    "backend/apps/ai_models/models.py": [
-      "backend/apps/tenants/managers.py"
-    ],
-    "backend/apps/ai_models/realtime_asr.py": [
-      "backend/apps/accounts/services/permissions.py",
-      "backend/apps/ai_models/models.py",
-      "backend/apps/ai_models/services/asr.py",
-      "backend/apps/devices/models.py",
-      "backend/apps/tenants/models.py",
-      "backend/apps/tenants/services.py"
-    ],
-    "backend/apps/ai_models/serializers.py": [
-      "backend/apps/ai_models/llm_services.py",
-      "backend/apps/ai_models/models.py",
-      "backend/apps/ai_models/services/tts.py",
-      "backend/apps/knowledge_base/models.py",
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/ai_models/services/__init__.py": [],
-    "backend/apps/ai_models/services/asr.py": [
-      "backend/apps/ai_models/models.py"
-    ],
-    "backend/apps/ai_models/services/tts.py": [
-      "backend/apps/ai_models/models.py"
-    ],
-    "backend/apps/ai_models/tests/__init__.py": [],
-    "backend/apps/ai_models/tests/test_agent_application_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/ai_models/models.py",
-      "backend/apps/knowledge_base/models.py",
-      "backend/apps/tenants/models.py",
-      "backend/apps/tenants/test_utils.py"
-    ],
-    "backend/apps/ai_models/tests/test_asr_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/ai_models/models.py",
-      "backend/apps/devices/models.py",
-      "backend/apps/tenants/models.py",
-      "backend/apps/tenants/test_utils.py"
-    ],
-    "backend/apps/ai_models/tests/test_asr_realtime.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/ai_models/models.py",
-      "backend/apps/devices/models.py",
-      "backend/apps/tenants/test_utils.py"
-    ],
-    "backend/apps/ai_models/tests/test_chat_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/ai_models/models.py",
-      "backend/apps/ai_models/views.py",
-      "backend/apps/tenants/test_utils.py"
-    ],
-    "backend/apps/ai_models/tests/test_llm_company_settings_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/tenants/test_utils.py"
-    ],
-    "backend/apps/ai_models/tests/test_llm_model_usage.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/ai_models/llm_services.py",
-      "backend/apps/ai_models/models.py",
-      "backend/apps/tenants/test_utils.py"
-    ],
-    "backend/apps/ai_models/tests/test_llm_platform_settings_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/ai_models/models.py",
-      "backend/apps/tenants/test_utils.py"
-    ],
-    "backend/apps/ai_models/tests/test_llm_provider_api.py": [],
-    "backend/apps/ai_models/tests/test_tts_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/ai_models/models.py",
-      "backend/apps/ai_models/services/__init__.py",
-      "backend/apps/devices/models.py",
-      "backend/apps/tenants/test_utils.py"
-    ],
-    "backend/apps/ai_models/urls.py": [
-      "backend/apps/ai_models/views.py"
-    ],
-    "backend/apps/ai_models/views.py": [
-      "backend/apps/accounts/permissions.py",
-      "backend/apps/ai_models/llm_services.py",
-      "backend/apps/ai_models/models.py",
-      "backend/apps/ai_models/realtime_asr.py",
-      "backend/apps/ai_models/serializers.py",
-      "backend/apps/ai_models/services/__init__.py",
-      "backend/apps/ai_models/services/asr.py",
-      "backend/apps/devices/models.py",
-      "backend/apps/resources/views.py",
-      "backend/apps/tenants/mixins.py",
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/audit/__init__.py": [],
-    "backend/apps/audit/admin.py": [
-      "backend/apps/audit/models.py"
-    ],
-    "backend/apps/audit/apps.py": [],
-    "backend/apps/audit/descriptions.py": [],
-    "backend/apps/audit/middleware.py": [
-      "backend/apps/tenants/services.py"
-    ],
-    "backend/apps/audit/migrations/__init__.py": [],
-    "backend/apps/audit/migrations/0001_initial.py": [],
-    "backend/apps/audit/migrations/0002_operationlog_description.py": [],
-    "backend/apps/audit/migrations/0003_operationlog_actor_role_name.py": [],
-    "backend/apps/audit/migrations/0004_operationlog_actor_display_name.py": [],
-    "backend/apps/audit/migrations/0005_detach_superuser_logs_and_fix_review_descriptions.py": [],
-    "backend/apps/audit/models.py": [],
-    "backend/apps/audit/serializers.py": [
-      "backend/apps/audit/models.py"
-    ],
-    "backend/apps/audit/tests/__init__.py": [],
-    "backend/apps/audit/tests/test_operation_log_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/audit/descriptions.py",
-      "backend/apps/audit/models.py",
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/audit/urls.py": [
-      "backend/apps/audit/views.py"
-    ],
-    "backend/apps/audit/views.py": [
-      "backend/apps/accounts/permissions.py",
-      "backend/apps/audit/models.py",
-      "backend/apps/audit/serializers.py",
-      "backend/apps/tenants/services.py"
-    ],
-    "backend/apps/devices/__init__.py": [],
-    "backend/apps/devices/admin.py": [
-      "backend/apps/devices/models.py"
-    ],
-    "backend/apps/devices/AGENTS.md": [],
-    "backend/apps/devices/apps.py": [],
-    "backend/apps/devices/management/__init__.py": [],
-    "backend/apps/devices/management/commands/__init__.py": [],
-    "backend/apps/devices/management/commands/seed_devices.py": [
-      "backend/apps/devices/models.py",
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/devices/management/commands/seed_operations_periodic_tasks.py": [],
-    "backend/apps/devices/migrations/__init__.py": [],
-    "backend/apps/devices/migrations/0001_initial.py": [],
-    "backend/apps/devices/migrations/0002_device_tenant_alter_device_code_and_more.py": [],
-    "backend/apps/devices/migrations/0003_device_authorization_type_device_device_info_and_more.py": [],
-    "backend/apps/devices/migrations/0004_device_status_online_offline_only.py": [],
-    "backend/apps/devices/migrations/0005_deviceapplication_scrolling_texts.py": [],
-    "backend/apps/devices/migrations/0006_device_authorization_ignored_at_and_log_actions.py": [],
-    "backend/apps/devices/models.py": [
-      "backend/apps/tenants/managers.py"
-    ],
-    "backend/apps/devices/realtime.py": [
-      "backend/apps/accounts/services/permissions.py",
-      "backend/apps/tenants/services.py"
-    ],
-    "backend/apps/devices/serializers.py": [
-      "backend/apps/devices/models.py",
-      "backend/apps/resources/models.py",
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/devices/tests/test_device_authorization_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/devices/models.py",
-      "backend/apps/resources/models.py",
-      "backend/apps/tenants/models.py",
-      "backend/apps/tenants/test_utils.py"
-    ],
-    "backend/apps/devices/tokens.py": [
-      "backend/apps/devices/models.py"
-    ],
-    "backend/apps/devices/urls.py": [
-      "backend/apps/devices/views.py"
-    ],
-    "backend/apps/devices/views.py": [
-      "backend/apps/accounts/permissions.py",
-      "backend/apps/devices/models.py",
-      "backend/apps/devices/realtime.py",
-      "backend/apps/devices/serializers.py",
-      "backend/apps/tenants/mixins.py",
-      "backend/apps/tenants/services.py"
-    ],
-    "backend/apps/devices/websocket.py": [
-      "backend/apps/devices/models.py",
-      "backend/apps/devices/realtime.py"
-    ],
-    "backend/apps/knowledge_base/__init__.py": [],
-    "backend/apps/knowledge_base/admin.py": [
-      "backend/apps/knowledge_base/models.py",
-      "backend/config/business_cache.py"
-    ],
-    "backend/apps/knowledge_base/AGENTS.md": [],
-    "backend/apps/knowledge_base/apps.py": [],
-    "backend/apps/knowledge_base/migrations/__init__.py": [],
-    "backend/apps/knowledge_base/migrations/0001_initial.py": [],
-    "backend/apps/knowledge_base/migrations/0002_access_data.py": [],
-    "backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py": [],
-    "backend/apps/knowledge_base/models.py": [
-      "backend/apps/tenants/managers.py"
-    ],
-    "backend/apps/knowledge_base/serializers.py": [
-      "backend/apps/knowledge_base/models.py"
-    ],
-    "backend/apps/knowledge_base/services.py": [
-      "backend/apps/knowledge_base/models.py",
-      "backend/apps/resources/services/feishu.py"
-    ],
-    "backend/apps/knowledge_base/tests/__init__.py": [],
-    "backend/apps/knowledge_base/tests/_helpers.py": [],
-    "backend/apps/knowledge_base/tests/test_access_data.py": [
-      "backend/apps/accounts/models.py"
-    ],
-    "backend/apps/knowledge_base/tests/test_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/knowledge_base/admin.py",
-      "backend/apps/knowledge_base/models.py",
-      "backend/apps/tenants/test_utils.py"
-    ],
-    "backend/apps/knowledge_base/urls.py": [
-      "backend/apps/knowledge_base/views.py"
-    ],
-    "backend/apps/knowledge_base/views.py": [
-      "backend/apps/accounts/permissions.py",
-      "backend/apps/knowledge_base/models.py",
-      "backend/apps/knowledge_base/serializers.py",
-      "backend/apps/knowledge_base/services.py",
-      "backend/apps/tenants/mixins.py",
-      "backend/config/business_cache.py"
-    ],
-    "backend/apps/resources/__init__.py": [],
-    "backend/apps/resources/admin.py": [
-      "backend/apps/resources/models.py",
-      "backend/apps/resources/point_models.py"
-    ],
-    "backend/apps/resources/AGENTS.md": [],
-    "backend/apps/resources/apps.py": [],
-    "backend/apps/resources/migrations/__init__.py": [],
-    "backend/apps/resources/migrations/0001_initial.py": [],
-    "backend/apps/resources/migrations/0002_seed_access_data.py": [],
-    "backend/apps/resources/migrations/0003_voicetone_and_access_data.py": [],
-    "backend/apps/resources/migrations/0004_voicetone_remove_nickname_add_audio.py": [],
-    "backend/apps/resources/migrations/0005_voicetone_icon_is_visible.py": [],
-    "backend/apps/resources/migrations/0006_modelasset_and_access_data.py": [],
-    "backend/apps/resources/migrations/0007_update_admin_labels.py": [],
-    "backend/apps/resources/migrations/0008_controlcommand_and_access_data.py": [],
-    "backend/apps/resources/migrations/0009_aliyun_command_access_data.py": [],
-    "backend/apps/resources/migrations/0010_point_resources_and_points.py": [],
-    "backend/apps/resources/migrations/0011_navigationcommand_and_access_data.py": [],
-    "backend/apps/resources/migrations/0012_point_workflow_steps.py": [],
-    "backend/apps/resources/migrations/0013_remove_aliyun_command_menu.py": [],
-    "backend/apps/resources/migrations/0014_command_types_menu_tree.py": [],
-    "backend/apps/resources/migrations/0015_backend_management_flow_schema.py": [],
-    "backend/apps/resources/migrations/0016_backend_management_flow_access.py": [],
-    "backend/apps/resources/migrations/0017_taskcommandstep_delay_seconds.py": [],
-    "backend/apps/resources/migrations/0018_resource_cloud_url.py": [],
-    "backend/apps/resources/migrations/0019_resource_cloud_url_length.py": [],
-    "backend/apps/resources/migrations/0020_scrolling_text_and_access_data.py": [],
-    "backend/apps/resources/migrations/0021_taskcommandstep_image_text.py": [],
-    "backend/apps/resources/migrations/0022_control_command_value_type.py": [],
-    "backend/apps/resources/migrations/0023_control_command_value_type_ascii.py": [],
-    "backend/apps/resources/migrations/0024_taskcommandstep_inner_tasks.py": [],
-    "backend/apps/resources/migrations/0025_taskcommandstep_wait_for_inner_tasks.py": [],
-    "backend/apps/resources/migrations/0026_taskcommandstep_is_show.py": [],
-    "backend/apps/resources/migrations/0027_point_is_show.py": [],
-    "backend/apps/resources/migrations/0028_commandgroup_tenant_controlcommand_tenant_and_more.py": [],
-    "backend/apps/resources/migrations/0029_minio_config_and_resource_object_key.py": [],
-    "backend/apps/resources/migrations/0030_resource_object_size_tenantvideoquota.py": [],
-    "backend/apps/resources/migrations/0031_minioconfig_allow_video_cloud_url.py": [],
-    "backend/apps/resources/models.py": [
-      "backend/apps/resources/point_models.py",
-      "backend/apps/tenants/managers.py"
-    ],
-    "backend/apps/resources/point_admin.py": [],
-    "backend/apps/resources/point_models.py": [
-      "backend/apps/tenants/managers.py"
-    ],
-    "backend/apps/resources/point_runtime.py": [
-      "backend/apps/resources/models.py",
-      "backend/apps/resources/serializers.py"
-    ],
-    "backend/apps/resources/point_serializers.py": [
-      "backend/apps/resources/point_models.py"
-    ],
-    "backend/apps/resources/point_views.py": [
-      "backend/apps/resources/point_models.py",
-      "backend/apps/resources/point_serializers.py",
-      "backend/apps/resources/views.py",
-      "backend/apps/tenants/services.py"
-    ],
-    "backend/apps/resources/serializers.py": [
-      "backend/apps/resources/models.py",
-      "backend/apps/resources/point_models.py",
-      "backend/apps/resources/services/minio_client.py"
-    ],
-    "backend/apps/resources/services/__init__.py": [],
-    "backend/apps/resources/services/aliyun_commands.py": [],
-    "backend/apps/resources/services/feishu.py": [],
-    "backend/apps/resources/services/minio_client.py": [],
-    "backend/apps/resources/tasks.py": [
-      "backend/apps/resources/services/feishu.py"
-    ],
-    "backend/apps/resources/tests/__init__.py": [],
-    "backend/apps/resources/tests/test_admin_control_command.py": [],
-    "backend/apps/resources/tests/test_admin_model_asset.py": [],
-    "backend/apps/resources/tests/test_aliyun_command_access_data.py": [
-      "backend/apps/accounts/models.py"
-    ],
-    "backend/apps/resources/tests/test_aliyun_command_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/tenants/test_utils.py"
-    ],
-    "backend/apps/resources/tests/test_backend_management_flow_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/resources/models.py",
-      "backend/apps/resources/services/feishu.py",
-      "backend/apps/resources/tasks.py",
-      "backend/apps/tenants/test_utils.py"
-    ],
-    "backend/apps/resources/tests/test_business_metadata_cache_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/knowledge_base/models.py",
-      "backend/apps/resources/models.py",
-      "backend/apps/tenants/test_utils.py",
-      "backend/config/business_cache.py"
-    ],
-    "backend/apps/resources/tests/test_control_command_access_data.py": [
-      "backend/apps/accounts/models.py"
-    ],
-    "backend/apps/resources/tests/test_minio_client.py": [
-      "backend/apps/resources/models.py",
-      "backend/apps/resources/services/minio_client.py",
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/resources/tests/test_minio_settings_api.py": [
-      "backend/apps/resources/models.py",
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/resources/tests/test_minio_video_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/resources/models.py",
-      "backend/apps/tenants/models.py",
-      "backend/apps/tenants/test_utils.py"
-    ],
-    "backend/apps/resources/tests/test_model_asset_access_data.py": [
-      "backend/apps/accounts/models.py"
-    ],
-    "backend/apps/resources/tests/test_model_asset_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/resources/models.py",
-      "backend/apps/tenants/test_utils.py"
-    ],
-    "backend/apps/resources/tests/test_point_access_data.py": [
-      "backend/apps/accounts/models.py"
-    ],
-    "backend/apps/resources/tests/test_resource_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/resources/models.py",
-      "backend/apps/tenants/test_utils.py"
-    ],
-    "backend/apps/resources/tests/test_scrolling_text_access_data.py": [
-      "backend/apps/accounts/models.py"
-    ],
-    "backend/apps/resources/tests/test_scrolling_text_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/resources/models.py",
-      "backend/apps/tenants/test_utils.py",
-      "backend/config/business_cache.py"
-    ],
-    "backend/apps/resources/tests/test_voice_tone_access_data.py": [
-      "backend/apps/accounts/models.py"
-    ],
-    "backend/apps/resources/tests/test_voice_tone_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/resources/models.py",
-      "backend/apps/tenants/test_utils.py"
-    ],
-    "backend/apps/resources/urls.py": [
-      "backend/apps/resources/point_views.py",
-      "backend/apps/resources/views.py"
-    ],
-    "backend/apps/resources/views.py": [
-      "backend/apps/accounts/permissions.py",
-      "backend/apps/resources/models.py",
-      "backend/apps/resources/serializers.py",
-      "backend/apps/resources/services/aliyun_commands.py",
-      "backend/apps/resources/services/minio_client.py",
-      "backend/apps/resources/tasks.py",
-      "backend/apps/tenants/mixins.py",
-      "backend/apps/tenants/models.py",
-      "backend/apps/tenants/services.py",
-      "backend/config/business_cache.py"
-    ],
-    "backend/apps/tenants/__init__.py": [],
-    "backend/apps/tenants/admin.py": [
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/tenants/AGENTS.md": [],
-    "backend/apps/tenants/apps.py": [],
-    "backend/apps/tenants/employee_serializers.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/tenants/employee_views.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/accounts/permissions.py",
-      "backend/apps/tenants/employee_serializers.py",
-      "backend/apps/tenants/models.py",
-      "backend/apps/tenants/serializers.py",
-      "backend/apps/tenants/services.py"
-    ],
-    "backend/apps/tenants/managers.py": [],
-    "backend/apps/tenants/migrations/__init__.py": [],
-    "backend/apps/tenants/migrations/0001_initial.py": [],
-    "backend/apps/tenants/migrations/0002_default_company.py": [],
-    "backend/apps/tenants/migrations/0003_backfill_business_tenants.py": [],
-    "backend/apps/tenants/migrations/0004_membership_role_name.py": [],
-    "backend/apps/tenants/mixins.py": [
-      "backend/apps/tenants/services.py"
-    ],
-    "backend/apps/tenants/models.py": [
-      "backend/apps/tenants/managers.py"
-    ],
-    "backend/apps/tenants/serializers.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/tenants/services.py": [
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/tenants/test_utils.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/tenants/tests/__init__.py": [],
-    "backend/apps/tenants/tests/test_approval_provisioning.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/accounts/serializers.py",
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/tenants/tests/test_cross_tenant_isolation.py": [
-      "backend/apps/devices/models.py",
-      "backend/apps/resources/models.py",
-      "backend/apps/resources/point_models.py",
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/tenants/tests/test_employee_management_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/devices/models.py",
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/tenants/tests/test_isolation_contract.py": [
-      "backend/apps/tenants/managers.py"
-    ],
-    "backend/apps/tenants/tests/test_llm_isolation.py": [
-      "backend/apps/ai_models/models.py",
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/tenants/tests/test_tenant_management_api.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/tenants/tests/test_three_tier_access.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/accounts/services/permissions.py",
-      "backend/apps/tenants/models.py"
-    ],
-    "backend/apps/tenants/urls.py": [
-      "backend/apps/tenants/employee_views.py",
-      "backend/apps/tenants/views.py"
-    ],
-    "backend/apps/tenants/views.py": [
-      "backend/apps/accounts/models.py",
-      "backend/apps/accounts/permissions.py",
-      "backend/apps/tenants/models.py",
-      "backend/apps/tenants/serializers.py"
-    ],
-    "backend/CLAUDE.md": [],
-    "backend/config/__init__.py": [
-      "backend/config/celery.py"
-    ],
-    "backend/config/AGENTS.md": [],
-    "backend/config/asgi.py": [],
-    "backend/config/business_cache.py": [],
-    "backend/config/celery.py": [
-      "backend/config/celery.py"
-    ],
-    "backend/config/exceptions.py": [],
-    "backend/config/pagination.py": [],
-    "backend/config/sentry.py": [],
-    "backend/config/settings/__init__.py": [],
-    "backend/config/settings/base.py": [
-      "backend/config/sentry.py"
-    ],
-    "backend/config/settings/dev.py": [
-      "backend/config/settings/base.py"
-    ],
-    "backend/config/settings/prod.py": [
-      "backend/config/settings/base.py"
-    ],
-    "backend/config/tasks.py": [
-      "backend/config/celery.py"
-    ],
-    "backend/config/test_sentry_filters.py": [
-      "backend/config/sentry.py"
-    ],
-    "backend/config/tests/__init__.py": [],
-    "backend/config/tests/test_business_cache.py": [
-      "backend/config/business_cache.py"
-    ],
-    "backend/config/tests/test_cache_settings.py": [],
-    "backend/config/urls.py": [],
-    "backend/config/wsgi.py": [],
-    "backend/Dockerfile": [],
-    "backend/manage.py": [],
-    "backend/requirements.txt": [],
-    "backend/templates/404.html": [],
-    "CLAUDE.md": [],
-    "CONTEXT.md": [],
-    "DESIGN.md": [],
-    "docker-compose.yaml": [],
-    "docs/superpowers/plans/2026-06-04-minio-settings.md": [],
-    "docs/superpowers/plans/2026-06-05-asr-settings.md": [],
-    "docs/superpowers/plans/2026-06-05-audit-log-management.md": [],
-    "docs/superpowers/plans/2026-06-06-login-command-center.md": [],
-    "docs/superpowers/plans/2026-06-10-llm-settings.md": [],
-    "docs/superpowers/plans/2026-06-15-tts-settings.md": [],
-    "docs/superpowers/specs/2026-06-05-asr-settings-design.md": [],
-    "docs/superpowers/specs/2026-06-05-audit-log-management-design.md": [],
-    "docs/superpowers/specs/2026-06-06-login-command-center-design.md": [],
-    "docs/superpowers/specs/2026-06-11-default-employee-access-design.md": [],
-    "flow-web/index.html": [],
-    "flow-web/my-video/AGENTS.md": [],
-    "flow-web/my-video/CLAUDE.md": [],
-    "flow-web/my-video/hyperframes.json": [],
-    "flow-web/my-video/index.html": [],
-    "flow-web/my-video/meta.json": [],
-    "flow-web/my-video/package.json": [],
-    "flow-web/my-video/renders/my-video_2026-05-31_00-51-48.meta.json": [],
-    "flow-web/TERMINAL-ENCODING.md": [],
-    "Makefile": [],
-    "PRODUCT.md": [],
-    "scripts/asr-replacement-test.html": [],
-    "scripts/multi-tenant-design.html": [],
-    "skills-lock.json": [],
-    "understand-anything-guide.html": [],
-    "web/AGENTS.md": [],
-    "web/asr-replacement-test.html": [],
-    "web/CLAUDE.md": [],
-    "web/Dockerfile": [],
-    "web/index.html": [],
-    "web/multi-tenant-design.html": [],
-    "web/package.json": [],
-    "web/postcss.config.js": [],
-    "web/public/asr-replacement-test.html": [],
-    "web/public/multi-tenant-design.html": [],
-    "web/scripts/test-audit-log-management-static.mjs": [],
-    "web/scripts/test-auth-client-unauthorized-static.mjs": [],
-    "web/scripts/test-command-export-format.mjs": [],
-    "web/scripts/test-command-export-management-state.mjs": [],
-    "web/scripts/test-command-workspace-card-layout.mjs": [],
-    "web/scripts/test-command-workspace-pagination.mjs": [],
-    "web/scripts/test-llm-settings-static.mjs": [],
-    "web/scripts/test-login-command-center-static.mjs": [],
-    "web/scripts/test-minio-settings-static.mjs": [],
-    "web/scripts/test-scrolling-text-management-static.mjs": [],
-    "web/scripts/test-sidebar-open-keys-static.mjs": [],
-    "web/scripts/test-super-admin-tenant-menu-static.mjs": [],
-    "web/scripts/test-task-step-form-list-static.mjs": [],
-    "web/src/api/AGENTS.md": [],
-    "web/src/api/client.ts": [
-      "web/src/store/auth.ts",
-      "web/src/store/tenant-scope.ts"
-    ],
-    "web/src/api/modules/applications.ts": [
-      "web/src/api/client.ts",
-      "web/src/api/modules/chat.ts"
-    ],
-    "web/src/api/modules/asr.ts": [
-      "web/src/api/client.ts"
-    ],
-    "web/src/api/modules/audit.ts": [
-      "web/src/api/client.ts"
-    ],
-    "web/src/api/modules/auth.ts": [
-      "web/src/api/client.ts",
-      "web/src/store/auth.ts"
-    ],
-    "web/src/api/modules/chat.ts": [
-      "web/src/api/client.ts"
-    ],
-    "web/src/api/modules/commands.ts": [
-      "web/src/api/client.ts"
-    ],
-    "web/src/api/modules/devices.ts": [
-      "web/src/api/client.ts"
-    ],
-    "web/src/api/modules/employees.ts": [
-      "web/src/api/client.ts",
-      "web/src/api/modules/tenants.ts"
-    ],
-    "web/src/api/modules/knowledge-base.ts": [
-      "web/src/api/client.ts"
-    ],
-    "web/src/api/modules/llm-providers.ts": [
-      "web/src/api/client.ts"
-    ],
-    "web/src/api/modules/llm-settings.ts": [
-      "web/src/api/client.ts",
-      "web/src/api/modules/llm-providers.ts"
-    ],
-    "web/src/api/modules/models.ts": [
-      "web/src/api/client.ts"
-    ],
-    "web/src/api/modules/point-management.ts": [
-      "web/src/api/client.ts"
-    ],
-    "web/src/api/modules/resources.ts": [
-      "web/src/api/client.ts"
-    ],
-    "web/src/api/modules/scrolling-texts.ts": [
-      "web/src/api/client.ts"
-    ],
-    "web/src/api/modules/settings.ts": [
-      "web/src/api/client.ts"
-    ],
-    "web/src/api/modules/tenants.ts": [
-      "web/src/api/client.ts"
-    ],
-    "web/src/api/modules/tts.ts": [
-      "web/src/api/client.ts"
-    ],
-    "web/src/api/modules/voice-tones.ts": [
-      "web/src/api/client.ts"
-    ],
-    "web/src/components/brand-mark.tsx": [],
-    "web/src/components/chat-markdown.tsx": [],
-    "web/src/layouts/dashboard-layout.tsx": [
-      "web/src/api/modules/auth.ts",
-      "web/src/api/modules/tenants.ts",
-      "web/src/components/brand-mark.tsx",
-      "web/src/store/auth.ts",
-      "web/src/store/tenant-scope.ts"
-    ],
-    "web/src/main.tsx": [
-      "web/src/router/index.tsx",
-      "web/src/styles/index.css"
-    ],
-    "web/src/router/index.tsx": [
-      "web/src/api/modules/auth.ts",
-      "web/src/layouts/dashboard-layout.tsx",
-      "web/src/store/auth.ts",
-      "web/src/store/tenant-scope.ts"
-    ],
-    "web/src/store/auth.ts": [],
-    "web/src/store/tenant-scope.ts": [],
-    "web/src/styles/index.css": [],
-    "web/src/views/account-applications/index.tsx": [
-      "web/src/api/modules/auth.ts",
-      "web/src/store/auth.ts"
-    ],
-    "web/src/views/AGENTS.md": [],
-    "web/src/views/application-management/index.tsx": [
-      "web/src/api/modules/applications.ts",
-      "web/src/api/modules/chat.ts",
-      "web/src/api/modules/knowledge-base.ts",
-      "web/src/api/modules/llm-settings.ts",
-      "web/src/components/chat-markdown.tsx",
-      "web/src/store/auth.ts"
-    ],
-    "web/src/views/asr-management.ts": [],
-    "web/src/views/asr-management/index.tsx": [
-      "web/src/api/modules/asr.ts",
-      "web/src/store/auth.ts",
-      "web/src/store/tenant-scope.ts"
-    ],
-    "web/src/views/asr-settings.ts": [],
-    "web/src/views/asr-settings/index.tsx": [
-      "web/src/api/modules/asr.ts"
-    ],
-    "web/src/views/command-management.ts": [],
-    "web/src/views/command-management/AGENTS.md": [],
-    "web/src/views/command-management/command-export-format.ts": [
-      "web/src/api/modules/commands.ts"
-    ],
-    "web/src/views/command-management/command-export-state.ts": [],
-    "web/src/views/command-management/export.tsx": [
-      "web/src/api/modules/commands.ts",
-      "web/src/store/auth.ts",
-      "web/src/views/command-management/command-export-format.ts",
-      "web/src/views/command-management/command-export-state.ts"
-    ],
-    "web/src/views/command-management/groups.tsx": [
-      "web/src/api/modules/commands.ts",
-      "web/src/store/auth.ts"
-    ],
-    "web/src/views/command-management/index.tsx": [
-      "web/src/api/modules/commands.ts",
-      "web/src/store/auth.ts"
-    ],
-    "web/src/views/command-management/points.tsx": [
-      "web/src/api/modules/point-management.ts",
-      "web/src/store/auth.ts"
-    ],
-    "web/src/views/command-management/task-step-form-list.tsx": [
-      "web/src/api/modules/commands.ts"
-    ],
-    "web/src/views/command-management/tasks.tsx": [
-      "web/src/api/modules/commands.ts",
-      "web/src/api/modules/point-management.ts",
-      "web/src/api/modules/resources.ts",
-      "web/src/store/auth.ts",
-      "web/src/views/command-management/task-step-form-list.tsx"
-    ],
-    "web/src/views/command-management/workspace.tsx": [
-      "web/src/api/modules/commands.ts",
-      "web/src/api/modules/point-management.ts",
-      "web/src/api/modules/resources.ts",
-      "web/src/store/auth.ts",
-      "web/src/views/command-management/task-step-form-list.tsx"
-    ],
-    "web/src/views/device-authorization-center/index.tsx": [
-      "web/src/api/modules/devices.ts",
-      "web/src/api/modules/tenants.ts"
-    ],
-    "web/src/views/device-management/index.tsx": [
-      "web/src/api/client.ts",
-      "web/src/api/modules/commands.ts",
-      "web/src/api/modules/devices.ts",
-      "web/src/api/modules/models.ts",
-      "web/src/api/modules/resources.ts",
-      "web/src/api/modules/scrolling-texts.ts",
-      "web/src/api/modules/voice-tones.ts",
-      "web/src/store/auth.ts",
-      "web/src/store/tenant-scope.ts"
-    ],
-    "web/src/views/employee-management/index.tsx": [
-      "web/src/api/modules/employees.ts"
-    ],
-    "web/src/views/force-password-change/index.tsx": [
-      "web/src/api/modules/auth.ts",
-      "web/src/store/auth.ts"
-    ],
-    "web/src/views/knowledge-base/index.tsx": [
-      "web/src/api/modules/knowledge-base.ts",
-      "web/src/store/auth.ts"
-    ],
-    "web/src/views/llm-management.ts": [],
-    "web/src/views/llm-management/index.tsx": [
-      "web/src/api/modules/llm-providers.ts",
-      "web/src/store/auth.ts"
-    ],
-    "web/src/views/llm-settings/index.tsx": [
-      "web/src/api/modules/llm-settings.ts",
-      "web/src/store/auth.ts"
-    ],
-    "web/src/views/log-management/index.tsx": [
-      "web/src/api/modules/audit.ts",
-      "web/src/api/modules/tenants.ts",
-      "web/src/store/auth.ts"
-    ],
-    "web/src/views/login/index.tsx": [
-      "web/src/api/modules/auth.ts",
-      "web/src/store/auth.ts"
-    ],
-    "web/src/views/minio-settings/index.tsx": [
-      "web/src/api/modules/settings.ts"
-    ],
-    "web/src/views/model-management.ts": [],
-    "web/src/views/model-management/index.tsx": [
-      "web/src/api/modules/models.ts",
-      "web/src/store/auth.ts"
-    ],
-    "web/src/views/resource-management.ts": [],
-    "web/src/views/resource-management/index.tsx": [
-      "web/src/api/modules/resources.ts",
-      "web/src/store/auth.ts"
-    ],
-    "web/src/views/scrolling-text-management.ts": [],
-    "web/src/views/scrolling-text-management/index.tsx": [
-      "web/src/api/modules/scrolling-texts.ts",
-      "web/src/store/auth.ts"
-    ],
-    "web/src/views/settings-llm/index.tsx": [
-      "web/src/api/modules/llm-settings.ts",
-      "web/src/api/modules/tenants.ts"
-    ],
-    "web/src/views/tenant-management/index.tsx": [
-      "web/src/api/modules/tenants.ts",
-      "web/src/store/tenant-scope.ts"
-    ],
-    "web/src/views/tts-management.ts": [],
-    "web/src/views/tts-management/index.tsx": [
-      "web/src/api/modules/tts.ts"
-    ],
-    "web/src/views/tts-settings.ts": [],
-    "web/src/views/tts-settings/index.tsx": [
-      "web/src/api/modules/tts.ts"
-    ],
-    "web/src/views/voice-tone-management.ts": [],
-    "web/src/views/voice-tone-management/index.tsx": [
-      "web/src/api/modules/voice-tones.ts",
-      "web/src/store/auth.ts"
-    ],
-    "web/src/vite-env.d.ts": [],
-    "web/tailwind.config.ts": [],
-    "web/tsconfig.app.json": [],
-    "web/tsconfig.json": [],
-    "web/tsconfig.node.json": [],
-    "web/vite.config.ts": [],
-    "wiki/404.html": [],
-    "wiki/android-device-runtime-simulator.html": [],
-    "wiki/asr-websocket-tutorial.md": [],
-    "wiki/container-dependencies.md": [],
-    "wiki/design-audit.html": [],
-    "wiki/device-api-latest.html": [],
-    "wiki/sentry-mcp-codex-guide.html": [],
-    "wiki/sentry-mcp-codex-guide.md": [],
-    "wiki/TTS教程.md": [],
-    "wiki/voices_qwen3.json": [],
-    "wiki/voices/voices_qwen3.json": []
+  "stats": {
+    "filesScanned": 1017,
+    "byCategory": {
+      "code": 479,
+      "docs": 224,
+      "script": 3,
+      "config": 283,
+      "markup": 24,
+      "infra": 4
+    },
+    "byLanguage": {
+      "bkup": 1,
+      "markdown": 206,
+      "shell": 2,
+      "toml": 25,
+      "yaml": 7,
+      "json": 251,
+      "javascript": 96,
+      "sqlite": 4,
+      "powershell": 1,
+      "marker": 1,
+      "txt": 18,
+      "python": 290,
+      "config": 1,
+      "unknown": 2,
+      "html": 22,
+      "dockerfile": 2,
+      "css": 2,
+      "makefile": 1,
+      "typescript": 85
+    }
   }
 }

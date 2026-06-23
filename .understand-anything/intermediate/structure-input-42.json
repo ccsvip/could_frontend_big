@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": ".claude/skills/setup-pre-commit/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 91,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/to-issues/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 83,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/to-prd/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 74,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/ubiquitous-language/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 93,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/write-a-skill/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 117,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/writing-beats/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 52,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/writing-fragments/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 75,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/writing-shape/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 64,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/zoom-out/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 7,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/agents/vision.toml",
+      "language": "toml",
+      "sizeLines": 133,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/agents/writer.toml",
+      "language": "toml",
+      "sizeLines": 144,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/config.toml",
+      "language": "toml",
+      "sizeLines": 58,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/goals_1.sqlite",
+      "language": "sqlite",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/hooks.json",
+      "language": "json",
+      "sizeLines": 99,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/hooks/omx-native-hook-windows-shim.ps1",
+      "language": "powershell",
+      "sizeLines": 20,
+      "fileCategory": "script"
+    },
+    {
+      "path": ".codex/logs_2.sqlite",
+      "language": "sqlite",
+      "sizeLines": 271,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/memories_1.sqlite",
+      "language": "sqlite",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/.codex-system-skills.marker",
+      "language": "marker",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/agents/openai.yaml",
+      "language": "yaml",
+      "sizeLines": 6,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/LICENSE.txt",
+      "language": "txt",
+      "sizeLines": 201,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/scripts/image_gen.py",
+      "language": "python",
+      "sizeLines": 995,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/scripts/remove_chroma_key.py",
+      "language": "python",
+      "sizeLines": 440,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/imagegen/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 356,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/agents/openai.yaml",
+      "language": "yaml",
+      "sizeLines": 14,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/LICENSE.txt",
+      "language": "txt",
+      "sizeLines": 201,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    ".claude/skills/setup-pre-commit/SKILL.md": [],
+    ".claude/skills/to-issues/SKILL.md": [],
+    ".claude/skills/to-prd/SKILL.md": [],
+    ".claude/skills/ubiquitous-language/SKILL.md": [],
+    ".claude/skills/write-a-skill/SKILL.md": [],
+    ".claude/skills/writing-beats/SKILL.md": [],
+    ".claude/skills/writing-fragments/SKILL.md": [],
+    ".claude/skills/writing-shape/SKILL.md": [],
+    ".claude/skills/zoom-out/SKILL.md": [],
+    ".codex/agents/vision.toml": [],
+    ".codex/agents/writer.toml": [],
+    ".codex/config.toml": [],
+    ".codex/goals_1.sqlite": [],
+    ".codex/hooks.json": [],
+    ".codex/hooks/omx-native-hook-windows-shim.ps1": [],
+    ".codex/logs_2.sqlite": [],
+    ".codex/memories_1.sqlite": [],
+    ".codex/skills/.system/.codex-system-skills.marker": [],
+    ".codex/skills/.system/imagegen/agents/openai.yaml": [],
+    ".codex/skills/.system/imagegen/LICENSE.txt": [],
+    ".codex/skills/.system/imagegen/scripts/image_gen.py": [],
+    ".codex/skills/.system/imagegen/scripts/remove_chroma_key.py": [],
+    ".codex/skills/.system/imagegen/SKILL.md": [],
+    ".codex/skills/.system/openai-docs/agents/openai.yaml": [],
+    ".codex/skills/.system/openai-docs/LICENSE.txt": []
+  }
+}

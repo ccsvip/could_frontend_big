@@ -42,7 +42,14 @@ from .services.queries import (
     device_authorization_requests_queryset,
     device_authorizations_queryset,
 )
-from .services.runtime import RuntimeDeviceError, get_runtime_device
+from .services.runtime import (
+    RUNTIME_ERROR_AGENT_UNBOUND,
+    RUNTIME_ERROR_DUPLICATE_DEVICE_CODE,
+    RUNTIME_ERROR_EMPTY_DEVICE_CODE,
+    RuntimeDeviceError,
+    get_runtime_device,
+    runtime_device_error,
+)
 from .serializers import (
     DeviceApplicationSerializer,
     DeviceActivationLogSerializer,
@@ -319,7 +326,8 @@ class DeviceActivationView(APIView):
         ).strip()
         if not device_code:
             self._log_activation(None, '', False, '设备码不能为空', request)
-            return Response({'message': '设备码不能为空'}, status=status.HTTP_400_BAD_REQUEST)
+            error = runtime_device_error('设备码不能为空', status.HTTP_400_BAD_REQUEST, RUNTIME_ERROR_EMPTY_DEVICE_CODE)
+            return Response(error.as_payload(), status=error.status_code)
         existing_devices = list(
             Device.objects.select_for_update()
             .filter(code=device_code)
@@ -327,7 +335,8 @@ class DeviceActivationView(APIView):
         )
         if len(existing_devices) > 1:
             self._log_activation(None, device_code, False, '设备码存在重复绑定，请联系后台处理', request)
-            return Response({'message': '设备码存在重复绑定，请联系后台处理'}, status=status.HTTP_409_CONFLICT)
+            error = runtime_device_error('设备码存在重复绑定，请联系后台处理', status.HTTP_409_CONFLICT, RUNTIME_ERROR_DUPLICATE_DEVICE_CODE)
+            return Response(error.as_payload(), status=error.status_code)
 
         now = timezone.now()
         device_info = request.data.get('deviceInfo') or request.data.get('device_info') or {}
@@ -432,7 +441,7 @@ class DeviceRuntimeView(APIView):
         try:
             return get_runtime_device(self.get_device_code(request)), None
         except RuntimeDeviceError as exc:
-            return None, Response({'message': exc.message}, status=exc.status_code)
+            return None, Response(exc.as_payload(), status=exc.status_code)
 
 
 class DeviceRuntimeConfigView(DeviceRuntimeView):
@@ -444,7 +453,8 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
         application = device.application
         agent_application = device.effective_agent_application
         if agent_application is None or not agent_application.is_active:
-            return Response({'message': '设备未绑定可用智能体'}, status=status.HTTP_403_FORBIDDEN)
+            error = runtime_device_error('设备未绑定可用智能体', status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_AGENT_UNBOUND)
+            return Response(error.as_payload(), status=error.status_code)
         DeviceAuthLog.objects.create(
             tenant=device.tenant,
             application=application,
@@ -706,7 +716,8 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         if error is not None:
             return error
         if device.effective_agent_application is None or not device.effective_agent_application.is_active:
-            return Response({'message': '设备未绑定可用智能体'}, status=status.HTTP_403_FORBIDDEN)
+            error = runtime_device_error('设备未绑定可用智能体', status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_AGENT_UNBOUND)
+            return Response(error.as_payload(), status=error.status_code)
 
         question_text = self._request_question_text(request)
         if not question_text:

@@ -1,0 +1,77 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-8-part-1.json",
+      "language": "json",
+      "sizeLines": 1484,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-8-part-2.json",
+      "language": "json",
+      "sizeLines": 861,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-8-part-3.json",
+      "language": "json",
+      "sizeLines": 3036,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batch-9.json",
+      "language": "json",
+      "sizeLines": 553,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/batches.json",
+      "language": "json",
+      "sizeLines": 10813,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/fingerprint-input.json",
+      "language": "json",
+      "sizeLines": 0,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/layers.json",
+      "language": "json",
+      "sizeLines": 573,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/merge-report.txt",
+      "language": "txt",
+      "sizeLines": 5420,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/review.json",
+      "language": "json",
+      "sizeLines": 9,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".understand-anything/.trash-1781514098969/tour.json",
+      "language": "json",
+      "sizeLines": 26,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    ".understand-anything/.trash-1781514098969/batch-8-part-1.json": [],
+    ".understand-anything/.trash-1781514098969/batch-8-part-2.json": [],
+    ".understand-anything/.trash-1781514098969/batch-8-part-3.json": [],
+    ".understand-anything/.trash-1781514098969/batch-9.json": [],
+    ".understand-anything/.trash-1781514098969/batches.json": [],
+    ".understand-anything/.trash-1781514098969/fingerprint-input.json": [],
+    ".understand-anything/.trash-1781514098969/layers.json": [],
+    ".understand-anything/.trash-1781514098969/merge-report.txt": [],
+    ".understand-anything/.trash-1781514098969/review.json": [],
+    ".understand-anything/.trash-1781514098969/tour.json": []
+  }
+}

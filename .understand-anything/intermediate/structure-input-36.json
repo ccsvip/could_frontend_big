@@ -1,0 +1,49 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": "flow-web/my-video/AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 62,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "flow-web/my-video/CLAUDE.md",
+      "language": "markdown",
+      "sizeLines": 85,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "flow-web/my-video/hyperframes.json",
+      "language": "json",
+      "sizeLines": 9,
+      "fileCategory": "config"
+    },
+    {
+      "path": "flow-web/my-video/index.html",
+      "language": "html",
+      "sizeLines": 579,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "flow-web/my-video/meta.json",
+      "language": "json",
+      "sizeLines": 4,
+      "fileCategory": "config"
+    },
+    {
+      "path": "flow-web/my-video/package.json",
+      "language": "json",
+      "sizeLines": 11,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "flow-web/my-video/AGENTS.md": [],
+    "flow-web/my-video/CLAUDE.md": [],
+    "flow-web/my-video/hyperframes.json": [],
+    "flow-web/my-video/index.html": [],
+    "flow-web/my-video/meta.json": [],
+    "flow-web/my-video/package.json": []
+  }
+}

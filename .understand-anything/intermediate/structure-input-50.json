@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": "backend/apps/audit/serializers.py",
+      "language": "python",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/audit/tests/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/audit/tests/test_operation_log_api.py",
+      "language": "python",
+      "sizeLines": 260,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/audit/urls.py",
+      "language": "python",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/audit/views.py",
+      "language": "python",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/admin.py",
+      "language": "python",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 105,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "backend/apps/devices/apps.py",
+      "language": "python",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/management/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/management/commands/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/management/commands/seed_devices.py",
+      "language": "python",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/management/commands/seed_operations_periodic_tasks.py",
+      "language": "python",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0001_initial.py",
+      "language": "python",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0002_device_tenant_alter_device_code_and_more.py",
+      "language": "python",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0003_device_authorization_type_device_device_info_and_more.py",
+      "language": "python",
+      "sizeLines": 184,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0004_device_status_online_offline_only.py",
+      "language": "python",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0005_deviceapplication_scrolling_texts.py",
+      "language": "python",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0006_device_authorization_ignored_at_and_log_actions.py",
+      "language": "python",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0007_device_agent_application.py",
+      "language": "python",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0008_deviceauthlog_agent_application.py",
+      "language": "python",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0009_device_code_global_unique.py",
+      "language": "python",
+      "sizeLines": 93,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0010_deviceapplication_agent_application.py",
+      "language": "python",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/migrations/0011_deviceapplication_tts_voices.py",
+      "language": "python",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "backend/apps/audit/serializers.py": [],
+    "backend/apps/audit/tests/__init__.py": [],
+    "backend/apps/audit/tests/test_operation_log_api.py": [],
+    "backend/apps/audit/urls.py": [],
+    "backend/apps/audit/views.py": [],
+    "backend/apps/devices/__init__.py": [],
+    "backend/apps/devices/admin.py": [],
+    "backend/apps/devices/AGENTS.md": [],
+    "backend/apps/devices/apps.py": [],
+    "backend/apps/devices/management/__init__.py": [],
+    "backend/apps/devices/management/commands/__init__.py": [],
+    "backend/apps/devices/management/commands/seed_devices.py": [],
+    "backend/apps/devices/management/commands/seed_operations_periodic_tasks.py": [],
+    "backend/apps/devices/migrations/__init__.py": [],
+    "backend/apps/devices/migrations/0001_initial.py": [],
+    "backend/apps/devices/migrations/0002_device_tenant_alter_device_code_and_more.py": [],
+    "backend/apps/devices/migrations/0003_device_authorization_type_device_device_info_and_more.py": [],
+    "backend/apps/devices/migrations/0004_device_status_online_offline_only.py": [],
+    "backend/apps/devices/migrations/0005_deviceapplication_scrolling_texts.py": [],
+    "backend/apps/devices/migrations/0006_device_authorization_ignored_at_and_log_actions.py": [],
+    "backend/apps/devices/migrations/0007_device_agent_application.py": [],
+    "backend/apps/devices/migrations/0008_deviceauthlog_agent_application.py": [],
+    "backend/apps/devices/migrations/0009_device_code_global_unique.py": [],
+    "backend/apps/devices/migrations/0010_deviceapplication_agent_application.py": [],
+    "backend/apps/devices/migrations/0011_deviceapplication_tts_voices.py": []
+  }
+}

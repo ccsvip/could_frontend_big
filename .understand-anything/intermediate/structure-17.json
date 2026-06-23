@@ -1,0 +1,180 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": ".codex/skills/.system/openai-docs/references/latest-model.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 37,
+      "nonEmptyLines": 32,
+      "sections": [
+        {
+          "heading": "Latest model guide",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Current model map",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Maintenance notes",
+          "level": 2,
+          "line": 34
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/references/prompting-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 244,
+      "nonEmptyLines": 159,
+      "sections": [
+        {
+          "heading": "Personality and behavior",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "Improve time to first visible token with a preamble",
+          "level": 2,
+          "line": 46
+        },
+        {
+          "heading": "Outcome-first prompts and stopping conditions",
+          "level": 2,
+          "line": 64
+        },
+        {
+          "heading": "Formatting",
+          "level": 2,
+          "line": 106
+        },
+        {
+          "heading": "Grounding, citations, and retrieval budgets",
+          "level": 2,
+          "line": 134
+        },
+        {
+          "heading": "Add an explicit retrieval budget",
+          "level": 3,
+          "line": 138
+        },
+        {
+          "heading": "Creative drafting guardrails",
+          "level": 2,
+          "line": 155
+        },
+        {
+          "heading": "Frontend engineering and visual taste",
+          "level": 2,
+          "line": 167
+        },
+        {
+          "heading": "Prompt the model to check its work",
+          "level": 2,
+          "line": 171
+        },
+        {
+          "heading": "Phase parameter",
+          "level": 2,
+          "line": 206
+        },
+        {
+          "heading": "Suggested prompt structure",
+          "level": 2,
+          "line": 220
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/references/upgrade-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 181,
+      "nonEmptyLines": 139,
+      "sections": [
+        {
+          "heading": "Upgrading to GPT-5.5",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Freshness check",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "Upgrade posture",
+          "level": 2,
+          "line": 14
+        },
+        {
+          "heading": "Upgrade workflow",
+          "level": 2,
+          "line": 24
+        },
+        {
+          "heading": "Upgrade outcomes",
+          "level": 2,
+          "line": 67
+        },
+        {
+          "heading": "`model string only`",
+          "level": 3,
+          "line": 69
+        },
+        {
+          "heading": "`model string + light prompt rewrite`",
+          "level": 3,
+          "line": 85
+        },
+        {
+          "heading": "`blocked`",
+          "level": 3,
+          "line": 109
+        },
+        {
+          "heading": "Compatibility checklist",
+          "level": 2,
+          "line": 126
+        },
+        {
+          "heading": "Scope boundaries",
+          "level": 2,
+          "line": 150
+        },
+        {
+          "heading": "Validation plan",
+          "level": 2,
+          "line": 174
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 11
+      }
+    }
+  ]
+}

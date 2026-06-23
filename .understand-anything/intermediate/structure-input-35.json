@@ -1,0 +1,49 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": "docs/superpowers/specs/2026-06-05-asr-settings-design.md",
+      "language": "markdown",
+      "sizeLines": 90,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-05-audit-log-management-design.md",
+      "language": "markdown",
+      "sizeLines": 205,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-06-login-command-center-design.md",
+      "language": "markdown",
+      "sizeLines": 125,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-11-default-employee-access-design.md",
+      "language": "markdown",
+      "sizeLines": 60,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-16-agent-application-studio-design.md",
+      "language": "markdown",
+      "sizeLines": 243,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-16-agent-conversation-settings-design.md",
+      "language": "markdown",
+      "sizeLines": 294,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "docs/superpowers/specs/2026-06-05-asr-settings-design.md": [],
+    "docs/superpowers/specs/2026-06-05-audit-log-management-design.md": [],
+    "docs/superpowers/specs/2026-06-06-login-command-center-design.md": [],
+    "docs/superpowers/specs/2026-06-11-default-employee-access-design.md": [],
+    "docs/superpowers/specs/2026-06-16-agent-application-studio-design.md": [],
+    "docs/superpowers/specs/2026-06-16-agent-conversation-settings-design.md": []
+  }
+}

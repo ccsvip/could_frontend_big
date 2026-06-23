@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": ".AGENTS.md.bkup",
+      "language": "bkup",
+      "sizeLines": 221,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/caveman/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 49,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/design-an-interface/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 94,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/diagnose/scripts/hitl-loop.template.sh",
+      "language": "shell",
+      "sizeLines": 41,
+      "fileCategory": "script"
+    },
+    {
+      "path": ".claude/skills/diagnose/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 117,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/edit-article/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 14,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/git-guardrails-claude-code/scripts/block-dangerous-git.sh",
+      "language": "shell",
+      "sizeLines": 25,
+      "fileCategory": "script"
+    },
+    {
+      "path": ".claude/skills/git-guardrails-claude-code/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 95,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/grill-me/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 10,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/handoff/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 15,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/command-metadata.json",
+      "language": "json",
+      "sizeLines": 94,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/context-signals.mjs",
+      "language": "javascript",
+      "sizeLines": 225,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/context.mjs",
+      "language": "javascript",
+      "sizeLines": 266,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/critique-storage.mjs",
+      "language": "javascript",
+      "sizeLines": 242,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detect-csp.mjs",
+      "language": "javascript",
+      "sizeLines": 198,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detect.mjs",
+      "language": "javascript",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/browser/injected/index.mjs",
+      "language": "javascript",
+      "sizeLines": 1735,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/cli/main.mjs",
+      "language": "javascript",
+      "sizeLines": 244,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/detect-antipatterns-browser.js",
+      "language": "javascript",
+      "sizeLines": 4903,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/detect-antipatterns.mjs",
+      "language": "javascript",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/engines/browser/detect-url.mjs",
+      "language": "javascript",
+      "sizeLines": 252,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/engines/regex/detect-text.mjs",
+      "language": "javascript",
+      "sizeLines": 535,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/engines/static-html/css-cascade.mjs",
+      "language": "javascript",
+      "sizeLines": 1013,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs",
+      "language": "javascript",
+      "sizeLines": 208,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs",
+      "language": "javascript",
+      "sizeLines": 189,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    ".AGENTS.md.bkup": [],
+    ".claude/skills/caveman/SKILL.md": [],
+    ".claude/skills/design-an-interface/SKILL.md": [],
+    ".claude/skills/diagnose/scripts/hitl-loop.template.sh": [],
+    ".claude/skills/diagnose/SKILL.md": [],
+    ".claude/skills/edit-article/SKILL.md": [],
+    ".claude/skills/git-guardrails-claude-code/scripts/block-dangerous-git.sh": [],
+    ".claude/skills/git-guardrails-claude-code/SKILL.md": [],
+    ".claude/skills/grill-me/SKILL.md": [],
+    ".claude/skills/handoff/SKILL.md": [],
+    ".claude/skills/impeccable/scripts/command-metadata.json": [],
+    ".claude/skills/impeccable/scripts/context-signals.mjs": [],
+    ".claude/skills/impeccable/scripts/context.mjs": [],
+    ".claude/skills/impeccable/scripts/critique-storage.mjs": [],
+    ".claude/skills/impeccable/scripts/detect-csp.mjs": [],
+    ".claude/skills/impeccable/scripts/detect.mjs": [],
+    ".claude/skills/impeccable/scripts/detector/browser/injected/index.mjs": [],
+    ".claude/skills/impeccable/scripts/detector/cli/main.mjs": [],
+    ".claude/skills/impeccable/scripts/detector/detect-antipatterns-browser.js": [],
+    ".claude/skills/impeccable/scripts/detector/detect-antipatterns.mjs": [],
+    ".claude/skills/impeccable/scripts/detector/engines/browser/detect-url.mjs": [],
+    ".claude/skills/impeccable/scripts/detector/engines/regex/detect-text.mjs": [],
+    ".claude/skills/impeccable/scripts/detector/engines/static-html/css-cascade.mjs": [],
+    ".claude/skills/impeccable/scripts/detector/engines/static-html/detect-html.mjs": [],
+    ".claude/skills/impeccable/scripts/detector/engines/visual/screenshot-contrast.mjs": []
+  }
+}

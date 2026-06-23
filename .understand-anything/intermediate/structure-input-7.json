@@ -1,0 +1,42 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": ".claude/skills/improve-codebase-architecture/DEEPENING.md",
+      "language": "markdown",
+      "sizeLines": 37,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/improve-codebase-architecture/HTML-REPORT.md",
+      "language": "markdown",
+      "sizeLines": 123,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/improve-codebase-architecture/INTERFACE-DESIGN.md",
+      "language": "markdown",
+      "sizeLines": 44,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/improve-codebase-architecture/LANGUAGE.md",
+      "language": "markdown",
+      "sizeLines": 53,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".claude/skills/improve-codebase-architecture/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 81,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    ".claude/skills/improve-codebase-architecture/DEEPENING.md": [],
+    ".claude/skills/improve-codebase-architecture/HTML-REPORT.md": [],
+    ".claude/skills/improve-codebase-architecture/INTERFACE-DESIGN.md": [],
+    ".claude/skills/improve-codebase-architecture/LANGUAGE.md": [],
+    ".claude/skills/improve-codebase-architecture/SKILL.md": []
+  }
+}

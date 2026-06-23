@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": "backend/apps/devices/models.py",
+      "language": "python",
+      "sizeLines": 301,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/realtime.py",
+      "language": "python",
+      "sizeLines": 117,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/serializers.py",
+      "language": "python",
+      "sizeLines": 448,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/services/__init__.py",
+      "language": "python",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/services/authorization.py",
+      "language": "python",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/services/queries.py",
+      "language": "python",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/services/runtime.py",
+      "language": "python",
+      "sizeLines": 77,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/tests/test_device_authorization_api.py",
+      "language": "python",
+      "sizeLines": 1386,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/tokens.py",
+      "language": "python",
+      "sizeLines": 34,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/urls.py",
+      "language": "python",
+      "sizeLines": 32,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/views.py",
+      "language": "python",
+      "sizeLines": 848,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/devices/websocket.py",
+      "language": "python",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/knowledge_base/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/knowledge_base/admin.py",
+      "language": "python",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/knowledge_base/AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 54,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "backend/apps/knowledge_base/apps.py",
+      "language": "python",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/knowledge_base/migrations/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/knowledge_base/migrations/0001_initial.py",
+      "language": "python",
+      "sizeLines": 87,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/knowledge_base/migrations/0002_access_data.py",
+      "language": "python",
+      "sizeLines": 61,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py",
+      "language": "python",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/knowledge_base/migrations/0004_knowledgedocumentchunk.py",
+      "language": "python",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py",
+      "language": "python",
+      "sizeLines": 101,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py",
+      "language": "python",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py",
+      "language": "python",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/apps/knowledge_base/migrations/0008_remove_knowledge_document_processing_status.py",
+      "language": "python",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "backend/apps/devices/models.py": [],
+    "backend/apps/devices/realtime.py": [],
+    "backend/apps/devices/serializers.py": [],
+    "backend/apps/devices/services/__init__.py": [],
+    "backend/apps/devices/services/authorization.py": [],
+    "backend/apps/devices/services/queries.py": [],
+    "backend/apps/devices/services/runtime.py": [],
+    "backend/apps/devices/tests/test_device_authorization_api.py": [],
+    "backend/apps/devices/tokens.py": [],
+    "backend/apps/devices/urls.py": [],
+    "backend/apps/devices/views.py": [],
+    "backend/apps/devices/websocket.py": [],
+    "backend/apps/knowledge_base/__init__.py": [],
+    "backend/apps/knowledge_base/admin.py": [],
+    "backend/apps/knowledge_base/AGENTS.md": [],
+    "backend/apps/knowledge_base/apps.py": [],
+    "backend/apps/knowledge_base/migrations/__init__.py": [],
+    "backend/apps/knowledge_base/migrations/0001_initial.py": [],
+    "backend/apps/knowledge_base/migrations/0002_access_data.py": [],
+    "backend/apps/knowledge_base/migrations/0003_knowledgedocument_tenant.py": [],
+    "backend/apps/knowledge_base/migrations/0004_knowledgedocumentchunk.py": [],
+    "backend/apps/knowledge_base/migrations/0005_knowledgebase_document_relation_and_menu.py": [],
+    "backend/apps/knowledge_base/migrations/0006_assign_knowledge_base_menu_to_tenants.py": [],
+    "backend/apps/knowledge_base/migrations/0007_auto_approve_knowledge_documents.py": [],
+    "backend/apps/knowledge_base/migrations/0008_remove_knowledge_document_processing_status.py": []
+  }
+}

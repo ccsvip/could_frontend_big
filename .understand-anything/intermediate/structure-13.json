@@ -1,0 +1,337 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 20,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": ".codex/agents/analyst.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 171,
+      "nonEmptyLines": 133,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/agents/architect.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 157,
+      "nonEmptyLines": 123,
+      "sections": [
+        {
+          "heading": "2-3 sentences: what you found and main recommendation",
+          "level": 1,
+          "line": 64
+        },
+        {
+          "heading": "Detailed findings with file:line references",
+          "level": 1,
+          "line": 67
+        },
+        {
+          "heading": "The fundamental issue, not symptoms",
+          "level": 1,
+          "line": 70
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": ".codex/agents/code-reviewer.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 175,
+      "nonEmptyLines": 142,
+      "sections": [
+        {
+          "heading": "CRITICAL",
+          "level": 1,
+          "line": 105
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": ".codex/agents/code-simplifier.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 167,
+      "nonEmptyLines": 137,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/agents/critic.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 116,
+      "nonEmptyLines": 94,
+      "sections": [
+        {
+          "heading": "If REJECT: Top 3-5 critical improvements with specific suggestions",
+          "level": 1,
+          "line": 70
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": ".codex/agents/debugger.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 152,
+      "nonEmptyLines": 123,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/agents/dependency-expert.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 165,
+      "nonEmptyLines": 133,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/agents/designer.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 161,
+      "nonEmptyLines": 130,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/agents/executor.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 143,
+      "nonEmptyLines": 115,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/agents/explore.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 120,
+      "nonEmptyLines": 96,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/agents/git-master.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 149,
+      "nonEmptyLines": 119,
+      "sections": [
+        {
+          "heading": "git log --oneline output",
+          "level": 1,
+          "line": 86
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": ".codex/agents/planner.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 156,
+      "nonEmptyLines": 127,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/agents/prometheus-strict-metis.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 304,
+      "nonEmptyLines": 238,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/agents/prometheus-strict-momus.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 118,
+      "nonEmptyLines": 93,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/agents/prometheus-strict-oracle.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 143,
+      "nonEmptyLines": 114,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/agents/researcher.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 167,
+      "nonEmptyLines": 130,
+      "sections": [
+        {
+          "heading": "Conceptual docs question | Implementation reference lookup | Context/history lookup | Current best-practice research | Comprehensive research",
+          "level": 1,
+          "line": 86
+        },
+        {
+          "heading": "Actionable answer",
+          "level": 1,
+          "line": 89
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": ".codex/agents/scholastic.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 47,
+      "nonEmptyLines": 36,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/agents/team-executor.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 92,
+      "nonEmptyLines": 73,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/agents/test-engineer.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 165,
+      "nonEmptyLines": 133,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "path": ".codex/agents/verifier.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 121,
+      "nonEmptyLines": 98,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    }
+  ]
+}

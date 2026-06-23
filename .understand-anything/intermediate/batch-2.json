@@ -1,0 +1,52 @@
+{
+  "nodes": [
+    {
+      "id": "service:web/Dockerfile",
+      "type": "service",
+      "name": "Dockerfile",
+      "filePath": "web/Dockerfile",
+      "summary": "web/Dockerfile (dockerfile); 1 services",
+      "tags": [
+        "dockerfile",
+        "infra"
+      ],
+      "complexity": "simple",
+      "language": "dockerfile",
+      "lineRange": [
+        1,
+        10
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "serviceCount": 1,
+        "stepCount": 6
+      }
+    },
+    {
+      "id": "service:web/Dockerfile:node",
+      "type": "service",
+      "name": "node",
+      "filePath": "web/Dockerfile",
+      "summary": "Service node configured in web/Dockerfile",
+      "tags": [
+        "service",
+        "dockerfile"
+      ],
+      "complexity": "simple",
+      "image": "node:20-alpine",
+      "ports": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "service:web/Dockerfile",
+      "target": "service:web/Dockerfile:node",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

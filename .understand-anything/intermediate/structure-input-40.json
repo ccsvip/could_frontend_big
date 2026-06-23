@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/findings.mjs",
+      "language": "javascript",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/node/file-system.mjs",
+      "language": "javascript",
+      "sizeLines": 198,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs",
+      "language": "javascript",
+      "sizeLines": 166,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/registry/antipatterns.mjs",
+      "language": "javascript",
+      "sizeLines": 419,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/rules/checks.mjs",
+      "language": "javascript",
+      "sizeLines": 2667,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/shared/color.mjs",
+      "language": "javascript",
+      "sizeLines": 124,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/shared/constants.mjs",
+      "language": "javascript",
+      "sizeLines": 101,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/detector/shared/page.mjs",
+      "language": "javascript",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/lib/design-parser.mjs",
+      "language": "javascript",
+      "sizeLines": 835,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/lib/impeccable-paths.mjs",
+      "language": "javascript",
+      "sizeLines": 126,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/lib/is-generated.mjs",
+      "language": "javascript",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/live-accept.mjs",
+      "language": "javascript",
+      "sizeLines": 812,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/live-browser-dom.js",
+      "language": "javascript",
+      "sizeLines": 146,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/live-browser-session.js",
+      "language": "javascript",
+      "sizeLines": 123,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/live-browser.js",
+      "language": "javascript",
+      "sizeLines": 10261,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/live-commit-manual-edits.mjs",
+      "language": "javascript",
+      "sizeLines": 1241,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/live-complete.mjs",
+      "language": "javascript",
+      "sizeLines": 75,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/live-copy-edit-agent.mjs",
+      "language": "javascript",
+      "sizeLines": 683,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/live-discard-manual-edits.mjs",
+      "language": "javascript",
+      "sizeLines": 51,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/live-inject.mjs",
+      "language": "javascript",
+      "sizeLines": 581,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/live-insert.mjs",
+      "language": "javascript",
+      "sizeLines": 272,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/live-manual-edit-evidence.mjs",
+      "language": "javascript",
+      "sizeLines": 363,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/live-poll.mjs",
+      "language": "javascript",
+      "sizeLines": 379,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/live-resume.mjs",
+      "language": "javascript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".claude/skills/impeccable/scripts/live-server.mjs",
+      "language": "javascript",
+      "sizeLines": 1134,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    ".claude/skills/impeccable/scripts/detector/findings.mjs": [],
+    ".claude/skills/impeccable/scripts/detector/node/file-system.mjs": [],
+    ".claude/skills/impeccable/scripts/detector/profile/profiler.mjs": [],
+    ".claude/skills/impeccable/scripts/detector/registry/antipatterns.mjs": [],
+    ".claude/skills/impeccable/scripts/detector/rules/checks.mjs": [],
+    ".claude/skills/impeccable/scripts/detector/shared/color.mjs": [],
+    ".claude/skills/impeccable/scripts/detector/shared/constants.mjs": [],
+    ".claude/skills/impeccable/scripts/detector/shared/page.mjs": [],
+    ".claude/skills/impeccable/scripts/lib/design-parser.mjs": [],
+    ".claude/skills/impeccable/scripts/lib/impeccable-paths.mjs": [],
+    ".claude/skills/impeccable/scripts/lib/is-generated.mjs": [],
+    ".claude/skills/impeccable/scripts/live-accept.mjs": [],
+    ".claude/skills/impeccable/scripts/live-browser-dom.js": [],
+    ".claude/skills/impeccable/scripts/live-browser-session.js": [],
+    ".claude/skills/impeccable/scripts/live-browser.js": [],
+    ".claude/skills/impeccable/scripts/live-commit-manual-edits.mjs": [],
+    ".claude/skills/impeccable/scripts/live-complete.mjs": [],
+    ".claude/skills/impeccable/scripts/live-copy-edit-agent.mjs": [],
+    ".claude/skills/impeccable/scripts/live-discard-manual-edits.mjs": [],
+    ".claude/skills/impeccable/scripts/live-inject.mjs": [],
+    ".claude/skills/impeccable/scripts/live-insert.mjs": [],
+    ".claude/skills/impeccable/scripts/live-manual-edit-evidence.mjs": [],
+    ".claude/skills/impeccable/scripts/live-poll.mjs": [],
+    ".claude/skills/impeccable/scripts/live-resume.mjs": [],
+    ".claude/skills/impeccable/scripts/live-server.mjs": []
+  }
+}

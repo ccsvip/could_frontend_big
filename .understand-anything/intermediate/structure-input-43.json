@@ -1,0 +1,182 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs",
+      "language": "javascript",
+      "sizeLines": 598,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js",
+      "language": "javascript",
+      "sizeLines": 147,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 167,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/plugin-creator/agents/openai.yaml",
+      "language": "yaml",
+      "sizeLines": 6,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/skills/.system/plugin-creator/references/installing-and-updating.md",
+      "language": "markdown",
+      "sizeLines": 143,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/plugin-creator/references/plugin-json-spec.md",
+      "language": "markdown",
+      "sizeLines": 194,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py",
+      "language": "python",
+      "sizeLines": 324,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py",
+      "language": "python",
+      "sizeLines": 48,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py",
+      "language": "python",
+      "sizeLines": 78,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py",
+      "language": "python",
+      "sizeLines": 593,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/plugin-creator/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 243,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/skill-creator/agents/openai.yaml",
+      "language": "yaml",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/skills/.system/skill-creator/license.txt",
+      "language": "txt",
+      "sizeLines": 202,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/skill-creator/references/openai_yaml.md",
+      "language": "markdown",
+      "sizeLines": 49,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py",
+      "language": "python",
+      "sizeLines": 226,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/skill-creator/scripts/init_skill.py",
+      "language": "python",
+      "sizeLines": 400,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/skill-creator/scripts/quick_validate.py",
+      "language": "python",
+      "sizeLines": 101,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/skill-creator/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 416,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/skill-installer/agents/openai.yaml",
+      "language": "yaml",
+      "sizeLines": 5,
+      "fileCategory": "config"
+    },
+    {
+      "path": ".codex/skills/.system/skill-installer/LICENSE.txt",
+      "language": "txt",
+      "sizeLines": 202,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/skill-installer/scripts/github_utils.py",
+      "language": "python",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py",
+      "language": "python",
+      "sizeLines": 308,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/skill-installer/scripts/list-skills.py",
+      "language": "python",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".codex/skills/.system/skill-installer/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 58,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/ai-slop-cleaner/SKILL.md",
+      "language": "markdown",
+      "sizeLines": 148,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    ".codex/skills/.system/openai-docs/scripts/fetch-codex-manual.mjs": [],
+    ".codex/skills/.system/openai-docs/scripts/resolve-latest-model-info.js": [],
+    ".codex/skills/.system/openai-docs/SKILL.md": [],
+    ".codex/skills/.system/plugin-creator/agents/openai.yaml": [],
+    ".codex/skills/.system/plugin-creator/references/installing-and-updating.md": [],
+    ".codex/skills/.system/plugin-creator/references/plugin-json-spec.md": [],
+    ".codex/skills/.system/plugin-creator/scripts/create_basic_plugin.py": [],
+    ".codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py": [],
+    ".codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py": [],
+    ".codex/skills/.system/plugin-creator/scripts/validate_plugin.py": [],
+    ".codex/skills/.system/plugin-creator/SKILL.md": [],
+    ".codex/skills/.system/skill-creator/agents/openai.yaml": [],
+    ".codex/skills/.system/skill-creator/license.txt": [],
+    ".codex/skills/.system/skill-creator/references/openai_yaml.md": [],
+    ".codex/skills/.system/skill-creator/scripts/generate_openai_yaml.py": [],
+    ".codex/skills/.system/skill-creator/scripts/init_skill.py": [],
+    ".codex/skills/.system/skill-creator/scripts/quick_validate.py": [],
+    ".codex/skills/.system/skill-creator/SKILL.md": [],
+    ".codex/skills/.system/skill-installer/agents/openai.yaml": [],
+    ".codex/skills/.system/skill-installer/LICENSE.txt": [],
+    ".codex/skills/.system/skill-installer/scripts/github_utils.py": [],
+    ".codex/skills/.system/skill-installer/scripts/install-skill-from-github.py": [],
+    ".codex/skills/.system/skill-installer/scripts/list-skills.py": [],
+    ".codex/skills/.system/skill-installer/SKILL.md": [],
+    ".codex/skills/ai-slop-cleaner/SKILL.md": []
+  }
+}

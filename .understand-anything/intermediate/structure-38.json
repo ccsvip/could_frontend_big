@@ -1,0 +1,799 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 13,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "wiki/404.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 234,
+      "nonEmptyLines": 207,
+      "metrics": {}
+    },
+    {
+      "path": "wiki/TTS教程.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 121,
+      "nonEmptyLines": 98,
+      "sections": [
+        {
+          "heading": "下面是阿里云TTS教程",
+          "level": 2,
+          "line": 1
+        },
+        {
+          "heading": "需求",
+          "level": 3,
+          "line": 3
+        },
+        {
+          "heading": "注意点",
+          "level": 3,
+          "line": 7
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 3
+      }
+    },
+    {
+      "path": "wiki/android-device-runtime-simulator.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 999,
+      "nonEmptyLines": 900,
+      "metrics": {}
+    },
+    {
+      "path": "wiki/asr-websocket-tutorial.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 266,
+      "nonEmptyLines": 200,
+      "sections": [
+        {
+          "heading": "ASR WebSocket 最小接入教程",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. `.env` 需要写什么",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "2. WebSocket 地址",
+          "level": 2,
+          "line": 39
+        },
+        {
+          "heading": "3. WebSocket 请求头",
+          "level": 2,
+          "line": 59
+        },
+        {
+          "heading": "4. 最小请求流程",
+          "level": 2,
+          "line": 74
+        },
+        {
+          "heading": "4.1 初始化会话：`session.update`",
+          "level": 3,
+          "line": 82
+        },
+        {
+          "heading": "4.2 追加音频：`input_audio_buffer.append`",
+          "level": 3,
+          "line": 112
+        },
+        {
+          "heading": "4.3 结束会话：`session.finish`",
+          "level": 3,
+          "line": 132
+        },
+        {
+          "heading": "5. 最小响应流程",
+          "level": 2,
+          "line": 143
+        },
+        {
+          "heading": "5.1 实时文本",
+          "level": 3,
+          "line": 158
+        },
+        {
+          "heading": "5.2 最终文本",
+          "level": 3,
+          "line": 167
+        },
+        {
+          "heading": "6. 最小代码骨架",
+          "level": 2,
+          "line": 182
+        },
+        {
+          "heading": "7. 401 排查",
+          "level": 2,
+          "line": 248
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 13
+      }
+    },
+    {
+      "path": "wiki/container-dependencies.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 235,
+      "nonEmptyLines": 178,
+      "sections": [
+        {
+          "heading": "Solin 容器依赖与启动流程",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. 依赖图（depends_on + condition）",
+          "level": 2,
+          "line": 9
+        },
+        {
+          "heading": "2. 启动波次（按时间轴）",
+          "level": 2,
+          "line": 45
+        },
+        {
+          "heading": "3. backend 容器 inline shell 启动序列（Wave 1 内部）",
+          "level": 2,
+          "line": 89
+        },
+        {
+          "heading": "4. 运行时数据流",
+          "level": 2,
+          "line": 115
+        },
+        {
+          "heading": "5. 操作命令速查",
+          "level": 2,
+          "line": 176
+        },
+        {
+          "heading": "6. 故障定位决策树",
+          "level": 2,
+          "line": 202
+        },
+        {
+          "heading": "关联文档",
+          "level": 2,
+          "line": 230
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": "wiki/design-audit.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 694,
+      "nonEmptyLines": 655,
+      "metrics": {}
+    },
+    {
+      "path": "wiki/device-api-latest.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 541,
+      "nonEmptyLines": 521,
+      "metrics": {}
+    },
+    {
+      "path": "wiki/sentry-mcp-codex-guide.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 556,
+      "nonEmptyLines": 489,
+      "metrics": {}
+    },
+    {
+      "path": "wiki/sentry-mcp-codex-guide.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 202,
+      "nonEmptyLines": 135,
+      "sections": [
+        {
+          "heading": "Sentry MCP + Codex 集成教程",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. 先分清三种凭证/配置",
+          "level": 2,
+          "line": 5
+        },
+        {
+          "heading": "2. 安装 Sentry MCP",
+          "level": 2,
+          "line": 15
+        },
+        {
+          "heading": "3. 在 Codex 里怎么用 Sentry MCP",
+          "level": 2,
+          "line": 35
+        },
+        {
+          "heading": "4. 获取 `SENTRY_AUTH_TOKEN`",
+          "level": 2,
+          "line": 57
+        },
+        {
+          "heading": "5. Windows PowerShell 使用方式",
+          "level": 2,
+          "line": 77
+        },
+        {
+          "heading": "临时设置，推荐",
+          "level": 3,
+          "line": 79
+        },
+        {
+          "heading": "用户环境变量，长期使用",
+          "level": 3,
+          "line": 89
+        },
+        {
+          "heading": "不建议系统环境变量",
+          "level": 3,
+          "line": 99
+        },
+        {
+          "heading": "6. 用 API 修改 issue 状态",
+          "level": 2,
+          "line": 103
+        },
+        {
+          "heading": "7. 常见工作流",
+          "level": 2,
+          "line": 137
+        },
+        {
+          "heading": "修复生产 issue",
+          "level": 3,
+          "line": 139
+        },
+        {
+          "heading": "提交信息自动关闭 issue",
+          "level": 3,
+          "line": 149
+        },
+        {
+          "heading": "8. 安全注意事项",
+          "level": 2,
+          "line": 159
+        },
+        {
+          "heading": "9. 排错",
+          "level": 2,
+          "line": 168
+        },
+        {
+          "heading": "Codex 看不到 Sentry 工具",
+          "level": 3,
+          "line": 170
+        },
+        {
+          "heading": "OAuth 授权失败",
+          "level": 3,
+          "line": 182
+        },
+        {
+          "heading": "API 返回 401",
+          "level": 3,
+          "line": 188
+        },
+        {
+          "heading": "API 返回 403",
+          "level": 3,
+          "line": 194
+        },
+        {
+          "heading": "issue 状态改了但又重新打开",
+          "level": 3,
+          "line": 199
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 20
+      }
+    },
+    {
+      "path": "wiki/server-client-interaction-api.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 1443,
+      "nonEmptyLines": 1336,
+      "metrics": {}
+    },
+    {
+      "path": "wiki/voices_qwen3.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 340,
+      "nonEmptyLines": 340,
+      "sections": [
+        {
+          "heading": "data",
+          "level": 1,
+          "line": 2
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "wiki/websocket-unification-progress.html",
+      "language": "html",
+      "fileCategory": "markup",
+      "totalLines": 285,
+      "nonEmptyLines": 256,
+      "metrics": {}
+    },
+    {
+      "path": "wiki/前端demo.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 837,
+      "nonEmptyLines": 589,
+      "sections": [
+        {
+          "heading": "PRD：基于唯一设备码的语音问答 HTML 页面",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "1. 项目背景",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "2. 产品目标",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "2.1 核心目标",
+          "level": 3,
+          "line": 15
+        },
+        {
+          "heading": "2.2 业务目标",
+          "level": 3,
+          "line": 41
+        },
+        {
+          "heading": "3. 用户角色",
+          "level": 2,
+          "line": 50
+        },
+        {
+          "heading": "3.1 测试人员",
+          "level": 3,
+          "line": 52
+        },
+        {
+          "heading": "3.2 运维人员",
+          "level": 3,
+          "line": 56
+        },
+        {
+          "heading": "3.3 演示人员",
+          "level": 3,
+          "line": 60
+        },
+        {
+          "heading": "3.4 设备端开发人员",
+          "level": 3,
+          "line": 64
+        },
+        {
+          "heading": "4. 使用场景",
+          "level": 2,
+          "line": 70
+        },
+        {
+          "heading": "场景一：通过 URL 携带设备码打开页面",
+          "level": 3,
+          "line": 72
+        },
+        {
+          "heading": "场景二：手动输入设备码",
+          "level": 3,
+          "line": 82
+        },
+        {
+          "heading": "场景三：用户语音提问",
+          "level": 3,
+          "line": 88
+        },
+        {
+          "heading": "5. 产品范围",
+          "level": 2,
+          "line": 106
+        },
+        {
+          "heading": "5.1 本期包含",
+          "level": 3,
+          "line": 108
+        },
+        {
+          "heading": "5.2 本期不包含",
+          "level": 3,
+          "line": 121
+        },
+        {
+          "heading": "6. 页面功能需求",
+          "level": 2,
+          "line": 133
+        },
+        {
+          "heading": "6.1 页面初始化",
+          "level": 2,
+          "line": 135
+        },
+        {
+          "heading": "页面状态",
+          "level": 3,
+          "line": 145
+        },
+        {
+          "heading": "6.2 设备码输入与校验",
+          "level": 2,
+          "line": 160
+        },
+        {
+          "heading": "功能说明",
+          "level": 3,
+          "line": 162
+        },
+        {
+          "heading": "交互要求",
+          "level": 3,
+          "line": 173
+        },
+        {
+          "heading": "6.3 麦克风授权",
+          "level": 2,
+          "line": 198
+        },
+        {
+          "heading": "功能说明",
+          "level": 3,
+          "line": 200
+        },
+        {
+          "heading": "交互要求",
+          "level": 3,
+          "line": 204
+        },
+        {
+          "heading": "6.4 录音功能",
+          "level": 2,
+          "line": 222
+        },
+        {
+          "heading": "功能说明",
+          "level": 3,
+          "line": 224
+        },
+        {
+          "heading": "交互设计",
+          "level": 3,
+          "line": 228
+        },
+        {
+          "heading": "录音格式",
+          "level": 3,
+          "line": 248
+        },
+        {
+          "heading": "6.5 语音上传与处理",
+          "level": 2,
+          "line": 262
+        },
+        {
+          "heading": "功能说明",
+          "level": 3,
+          "line": 264
+        },
+        {
+          "heading": "前端请求要求",
+          "level": 3,
+          "line": 284
+        },
+        {
+          "heading": "6.6 文本展示",
+          "level": 2,
+          "line": 304
+        },
+        {
+          "heading": "展示要求",
+          "level": 3,
+          "line": 316
+        },
+        {
+          "heading": "6.7 语音播放",
+          "level": 2,
+          "line": 325
+        },
+        {
+          "heading": "功能说明",
+          "level": 3,
+          "line": 327
+        },
+        {
+          "heading": "交互要求",
+          "level": 3,
+          "line": 340
+        },
+        {
+          "heading": "6.8 重新提问",
+          "level": 2,
+          "line": 349
+        },
+        {
+          "heading": "7. 页面结构设计",
+          "level": 2,
+          "line": 357
+        },
+        {
+          "heading": "页面示意",
+          "level": 3,
+          "line": 371
+        },
+        {
+          "heading": "8. 接口需求",
+          "level": 2,
+          "line": 396
+        },
+        {
+          "heading": "8.1 设备校验接口",
+          "level": 2,
+          "line": 402
+        },
+        {
+          "heading": "接口用途",
+          "level": 3,
+          "line": 404
+        },
+        {
+          "heading": "请求方式",
+          "level": 3,
+          "line": 408
+        },
+        {
+          "heading": "请求参数",
+          "level": 3,
+          "line": 414
+        },
+        {
+          "heading": "示例请求",
+          "level": 3,
+          "line": 420
+        },
+        {
+          "heading": "成功响应",
+          "level": 3,
+          "line": 426
+        },
+        {
+          "heading": "失败响应",
+          "level": 3,
+          "line": 444
+        },
+        {
+          "heading": "8.2 语音问答接口",
+          "level": 2,
+          "line": 456
+        },
+        {
+          "heading": "接口用途",
+          "level": 3,
+          "line": 458
+        },
+        {
+          "heading": "请求方式",
+          "level": 3,
+          "line": 462
+        },
+        {
+          "heading": "请求头",
+          "level": 3,
+          "line": 468
+        },
+        {
+          "heading": "请求格式",
+          "level": 3,
+          "line": 474
+        },
+        {
+          "heading": "请求参数",
+          "level": 3,
+          "line": 480
+        },
+        {
+          "heading": "成功响应",
+          "level": 3,
+          "line": 489
+        },
+        {
+          "heading": "失败响应",
+          "level": 3,
+          "line": 507
+        },
+        {
+          "heading": "9. 错误处理",
+          "level": 2,
+          "line": 521
+        },
+        {
+          "heading": "10. 加载与状态反馈",
+          "level": 2,
+          "line": 541
+        },
+        {
+          "heading": "设备连接中",
+          "level": 3,
+          "line": 545
+        },
+        {
+          "heading": "录音中",
+          "level": 3,
+          "line": 551
+        },
+        {
+          "heading": "上传处理中",
+          "level": 3,
+          "line": 557
+        },
+        {
+          "heading": "语音合成中",
+          "level": 3,
+          "line": 563
+        },
+        {
+          "heading": "完成",
+          "level": 3,
+          "line": 569
+        },
+        {
+          "heading": "11. 前端技术要求",
+          "level": 2,
+          "line": 577
+        },
+        {
+          "heading": "11.1 页面形式",
+          "level": 3,
+          "line": 579
+        },
+        {
+          "heading": "11.2 浏览器能力",
+          "level": 3,
+          "line": 599
+        },
+        {
+          "heading": "11.3 兼容性要求",
+          "level": 3,
+          "line": 611
+        },
+        {
+          "heading": "12. 安全要求",
+          "level": 2,
+          "line": 627
+        },
+        {
+          "heading": "13. 性能要求",
+          "level": 2,
+          "line": 641
+        },
+        {
+          "heading": "14. 日志与排查",
+          "level": 2,
+          "line": 652
+        },
+        {
+          "heading": "15. 文档需求",
+          "level": 2,
+          "line": 692
+        },
+        {
+          "heading": "15.1 页面使用说明",
+          "level": 3,
+          "line": 696
+        },
+        {
+          "heading": "15.2 接口说明",
+          "level": 3,
+          "line": 709
+        },
+        {
+          "heading": "15.3 部署说明",
+          "level": 3,
+          "line": 721
+        },
+        {
+          "heading": "15.4 常见问题",
+          "level": 3,
+          "line": 732
+        },
+        {
+          "heading": "16. 验收标准",
+          "level": 2,
+          "line": 746
+        },
+        {
+          "heading": "16.1 基础功能验收",
+          "level": 3,
+          "line": 748
+        },
+        {
+          "heading": "16.2 异常场景验收",
+          "level": 3,
+          "line": 763
+        },
+        {
+          "heading": "17. 推荐错误码",
+          "level": 2,
+          "line": 775
+        },
+        {
+          "heading": "18. 推荐配置项",
+          "level": 2,
+          "line": 796
+        },
+        {
+          "heading": "19. 后续扩展方向",
+          "level": 2,
+          "line": 813
+        },
+        {
+          "heading": "20. 一句话总结",
+          "level": 2,
+          "line": 835
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 83
+      }
+    }
+  ]
+}

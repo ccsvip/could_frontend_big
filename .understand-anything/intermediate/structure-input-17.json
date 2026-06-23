@@ -1,0 +1,28 @@
+{
+  "projectRoot": "C:\\SVN_CODE\\branches\\real\\could_frontend",
+  "batchFiles": [
+    {
+      "path": ".codex/skills/.system/openai-docs/references/latest-model.md",
+      "language": "markdown",
+      "sizeLines": 37,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/references/prompting-guide.md",
+      "language": "markdown",
+      "sizeLines": 244,
+      "fileCategory": "docs"
+    },
+    {
+      "path": ".codex/skills/.system/openai-docs/references/upgrade-guide.md",
+      "language": "markdown",
+      "sizeLines": 181,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    ".codex/skills/.system/openai-docs/references/latest-model.md": [],
+    ".codex/skills/.system/openai-docs/references/prompting-guide.md": [],
+    ".codex/skills/.system/openai-docs/references/upgrade-guide.md": []
+  }
+}

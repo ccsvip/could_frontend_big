@@ -1,0 +1,1218 @@
+{
+  "nodes": [
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/simulate-analyzer.py",
+      "type": "file",
+      "name": "simulate-analyzer.py",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/simulate-analyzer.py",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/simulate-analyzer.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        33
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/validate_graph_78.py",
+      "type": "file",
+      "name": "validate_graph_78.py",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/validate_graph_78.py",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/validate_graph_78.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        22
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/validate_graph.py",
+      "type": "file",
+      "name": "validate_graph.py",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/validate_graph.py",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/validate_graph.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        18
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:.understand-anything/.trash-1781514098969/tmp/validate.py",
+      "type": "file",
+      "name": "validate.py",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/validate.py",
+      "summary": ".understand-anything/.trash-1781514098969/tmp/validate.py (python); 1 functions",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        43
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "function:.understand-anything/.trash-1781514098969/tmp/validate.py:validate_part",
+      "type": "function",
+      "name": "validate_part",
+      "filePath": ".understand-anything/.trash-1781514098969/tmp/validate.py",
+      "summary": "Function validate_part in .understand-anything/.trash-1781514098969/tmp/validate.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        9,
+        40
+      ],
+      "params": [
+        "path"
+      ]
+    },
+    {
+      "id": "file:.understand-anything/.understandignore",
+      "type": "file",
+      "name": ".understandignore",
+      "filePath": ".understand-anything/.understandignore",
+      "summary": ".understand-anything/.understandignore (unknown)",
+      "tags": [
+        "unknown",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "unknown",
+      "lineRange": [
+        1,
+        41
+      ],
+      "metrics": {}
+    },
+    {
+      "id": "config:.understand-anything/config.json",
+      "type": "config",
+      "name": "config.json",
+      "filePath": ".understand-anything/config.json",
+      "summary": ".understand-anything/config.json (json)",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "simple",
+      "language": "json",
+      "lineRange": [
+        1,
+        3
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 0
+      }
+    },
+    {
+      "id": "config:.understand-anything/domain-graph.json",
+      "type": "config",
+      "name": "domain-graph.json",
+      "filePath": ".understand-anything/domain-graph.json",
+      "summary": ".understand-anything/domain-graph.json (json); 6 document sections",
+      "tags": [
+        "json",
+        "config"
+      ],
+      "complexity": "complex",
+      "language": "json",
+      "lineRange": [
+        1,
+        1639
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "id": "file:backend/apps/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/__init__.py",
+      "summary": "backend/apps/__init__.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:backend/apps/accounts/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "backend/apps/accounts/__init__.py",
+      "summary": "backend/apps/accounts/__init__.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "file:backend/apps/accounts/admin.py",
+      "type": "file",
+      "name": "admin.py",
+      "filePath": "backend/apps/accounts/admin.py",
+      "summary": "backend/apps/accounts/admin.py (python); 6 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        89
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 6,
+        "functionCount": 0,
+        "classCount": 6
+      }
+    },
+    {
+      "id": "class:backend/apps/accounts/admin.py:AccountUserAdmin",
+      "type": "class",
+      "name": "AccountUserAdmin",
+      "filePath": "backend/apps/accounts/admin.py",
+      "summary": "Class or type AccountUserAdmin in backend/apps/accounts/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        14,
+        45
+      ],
+      "methods": [
+        "get_urls",
+        "reset_password_button"
+      ],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/admin.py:AccountApplicationAdmin",
+      "type": "class",
+      "name": "AccountApplicationAdmin",
+      "filePath": "backend/apps/accounts/admin.py",
+      "summary": "Class or type AccountApplicationAdmin in backend/apps/accounts/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        49,
+        53
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/admin.py:MenuAdmin",
+      "type": "class",
+      "name": "MenuAdmin",
+      "filePath": "backend/apps/accounts/admin.py",
+      "summary": "Class or type MenuAdmin in backend/apps/accounts/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        57,
+        62
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/admin.py:PermissionPointAdmin",
+      "type": "class",
+      "name": "PermissionPointAdmin",
+      "filePath": "backend/apps/accounts/admin.py",
+      "summary": "Class or type PermissionPointAdmin in backend/apps/accounts/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        66,
+        71
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/admin.py:RoleAdmin",
+      "type": "class",
+      "name": "RoleAdmin",
+      "filePath": "backend/apps/accounts/admin.py",
+      "summary": "Class or type RoleAdmin in backend/apps/accounts/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        75,
+        80
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "class:backend/apps/accounts/admin.py:UserRoleAdmin",
+      "type": "class",
+      "name": "UserRoleAdmin",
+      "filePath": "backend/apps/accounts/admin.py",
+      "summary": "Class or type UserRoleAdmin in backend/apps/accounts/admin.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        84,
+        89
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "document:backend/apps/accounts/AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "backend/apps/accounts/AGENTS.md",
+      "summary": "backend/apps/accounts/AGENTS.md (markdown); 7 document sections",
+      "tags": [
+        "markdown",
+        "docs"
+      ],
+      "complexity": "simple",
+      "language": "markdown",
+      "lineRange": [
+        1,
+        56
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 7
+      }
+    },
+    {
+      "id": "file:backend/apps/accounts/apps.py",
+      "type": "file",
+      "name": "apps.py",
+      "filePath": "backend/apps/accounts/apps.py",
+      "summary": "backend/apps/accounts/apps.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        7
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/accounts/apps.py:AccountsConfig",
+      "type": "class",
+      "name": "AccountsConfig",
+      "filePath": "backend/apps/accounts/apps.py",
+      "summary": "Class or type AccountsConfig in backend/apps/accounts/apps.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        7
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/accounts/migrations/__init__.py",
+      "type": "table",
+      "name": "__init__.py",
+      "filePath": "backend/apps/accounts/migrations/__init__.py",
+      "summary": "backend/apps/accounts/migrations/__init__.py (python)",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        1
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "id": "table:backend/apps/accounts/migrations/0001_initial.py",
+      "type": "table",
+      "name": "0001_initial.py",
+      "filePath": "backend/apps/accounts/migrations/0001_initial.py",
+      "summary": "backend/apps/accounts/migrations/0001_initial.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        32
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0001_initial.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0001_initial.py",
+      "summary": "Class or type Migration in backend/apps/accounts/migrations/0001_initial.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        6,
+        32
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/accounts/migrations/0002_alter_accountapplication_phone.py",
+      "type": "table",
+      "name": "0002_alter_accountapplication_phone.py",
+      "filePath": "backend/apps/accounts/migrations/0002_alter_accountapplication_phone.py",
+      "summary": "backend/apps/accounts/migrations/0002_alter_accountapplication_phone.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        18
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0002_alter_accountapplication_phone.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0002_alter_accountapplication_phone.py",
+      "summary": "Class or type Migration in backend/apps/accounts/migrations/0002_alter_accountapplication_phone.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        6,
+        18
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py",
+      "type": "table",
+      "name": "0003_role_menu_permissionpoint_userrole.py",
+      "filePath": "backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py",
+      "summary": "backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py (python); 1 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "moderate",
+      "language": "python",
+      "lineRange": [
+        1,
+        166
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py:seed_initial_access_data",
+      "type": "function",
+      "name": "seed_initial_access_data",
+      "filePath": "backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py",
+      "summary": "Function seed_initial_access_data in backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        5,
+        83
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py",
+      "summary": "Class or type Migration in backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        86,
+        166
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/accounts/migrations/0004_menu_parent.py",
+      "type": "table",
+      "name": "0004_menu_parent.py",
+      "filePath": "backend/apps/accounts/migrations/0004_menu_parent.py",
+      "summary": "backend/apps/accounts/migrations/0004_menu_parent.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        19
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0004_menu_parent.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0004_menu_parent.py",
+      "summary": "Class or type Migration in backend/apps/accounts/migrations/0004_menu_parent.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        7,
+        19
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/accounts/migrations/0005_accountapplication_username.py",
+      "type": "table",
+      "name": "0005_accountapplication_username.py",
+      "filePath": "backend/apps/accounts/migrations/0005_accountapplication_username.py",
+      "summary": "backend/apps/accounts/migrations/0005_accountapplication_username.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        18
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0005_accountapplication_username.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0005_accountapplication_username.py",
+      "summary": "Class or type Migration in backend/apps/accounts/migrations/0005_accountapplication_username.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        6,
+        18
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py",
+      "type": "table",
+      "name": "0006_remove_accountapplication_email_and_more.py",
+      "filePath": "backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py",
+      "summary": "backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        27
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py",
+      "summary": "Class or type Migration in backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        6,
+        27
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/accounts/migrations/0007_accountuser.py",
+      "type": "table",
+      "name": "0007_accountuser.py",
+      "filePath": "backend/apps/accounts/migrations/0007_accountuser.py",
+      "summary": "backend/apps/accounts/migrations/0007_accountuser.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        31
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0007_accountuser.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0007_accountuser.py",
+      "summary": "Class or type Migration in backend/apps/accounts/migrations/0007_accountuser.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        7,
+        31
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/accounts/migrations/0008_accountapplication_tenant.py",
+      "type": "table",
+      "name": "0008_accountapplication_tenant.py",
+      "filePath": "backend/apps/accounts/migrations/0008_accountapplication_tenant.py",
+      "summary": "backend/apps/accounts/migrations/0008_accountapplication_tenant.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        20
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0008_accountapplication_tenant.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0008_accountapplication_tenant.py",
+      "summary": "Class or type Migration in backend/apps/accounts/migrations/0008_accountapplication_tenant.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        7,
+        20
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/accounts/migrations/0009_menu_audience.py",
+      "type": "table",
+      "name": "0009_menu_audience.py",
+      "filePath": "backend/apps/accounts/migrations/0009_menu_audience.py",
+      "summary": "backend/apps/accounts/migrations/0009_menu_audience.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        18
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0009_menu_audience.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0009_menu_audience.py",
+      "summary": "Class or type Migration in backend/apps/accounts/migrations/0009_menu_audience.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        6,
+        18
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "type": "table",
+      "name": "0010_seed_tenant_menus.py",
+      "filePath": "backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "summary": "backend/apps/accounts/migrations/0010_seed_tenant_menus.py (python); 2 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        68
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/accounts/migrations/0010_seed_tenant_menus.py:seed_tenant_menus",
+      "type": "function",
+      "name": "seed_tenant_menus",
+      "filePath": "backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "summary": "Function seed_tenant_menus in backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        50
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "function:backend/apps/accounts/migrations/0010_seed_tenant_menus.py:unseed_tenant_menus",
+      "type": "function",
+      "name": "unseed_tenant_menus",
+      "filePath": "backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "summary": "Function unseed_tenant_menus in backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        53,
+        57
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0010_seed_tenant_menus.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "summary": "Class or type Migration in backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        60,
+        68
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py",
+      "type": "table",
+      "name": "0011_role_is_template_role_tenant_alter_role_code_and_more.py",
+      "filePath": "backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py",
+      "summary": "backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py (python); 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        34
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py",
+      "summary": "Class or type Migration in backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        7,
+        34
+      ],
+      "methods": [],
+      "properties": []
+    },
+    {
+      "id": "table:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "type": "table",
+      "name": "0012_seed_audit_logs_menu.py",
+      "filePath": "backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "summary": "backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py (python); 2 functions; 1 classes",
+      "tags": [
+        "python",
+        "code"
+      ],
+      "complexity": "simple",
+      "language": "python",
+      "lineRange": [
+        1,
+        45
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "id": "function:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py:seed_audit_logs_menu",
+      "type": "function",
+      "name": "seed_audit_logs_menu",
+      "filePath": "backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "summary": "Function seed_audit_logs_menu in backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        4,
+        27
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "function:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py:unseed_audit_logs_menu",
+      "type": "function",
+      "name": "unseed_audit_logs_menu",
+      "filePath": "backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "summary": "Function unseed_audit_logs_menu in backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "tags": [
+        "function",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        30,
+        34
+      ],
+      "params": [
+        "apps",
+        "schema_editor"
+      ]
+    },
+    {
+      "id": "class:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py:Migration",
+      "type": "class",
+      "name": "Migration",
+      "filePath": "backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "summary": "Class or type Migration in backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "tags": [
+        "class",
+        "python"
+      ],
+      "complexity": "simple",
+      "lineRange": [
+        37,
+        45
+      ],
+      "methods": [],
+      "properties": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:.understand-anything/.trash-1781514098969/tmp/validate.py",
+      "target": "function:.understand-anything/.trash-1781514098969/tmp/validate.py:validate_part",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/admin.py",
+      "target": "class:backend/apps/accounts/admin.py:AccountUserAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/admin.py",
+      "target": "class:backend/apps/accounts/admin.py:AccountApplicationAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/admin.py",
+      "target": "class:backend/apps/accounts/admin.py:MenuAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/admin.py",
+      "target": "class:backend/apps/accounts/admin.py:PermissionPointAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/admin.py",
+      "target": "class:backend/apps/accounts/admin.py:RoleAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/admin.py",
+      "target": "class:backend/apps/accounts/admin.py:UserRoleAdmin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/apps/accounts/apps.py",
+      "target": "class:backend/apps/accounts/apps.py:AccountsConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0001_initial.py",
+      "target": "class:backend/apps/accounts/migrations/0001_initial.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0002_alter_accountapplication_phone.py",
+      "target": "class:backend/apps/accounts/migrations/0002_alter_accountapplication_phone.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py",
+      "target": "function:backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py:seed_initial_access_data",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py",
+      "target": "class:backend/apps/accounts/migrations/0003_role_menu_permissionpoint_userrole.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0004_menu_parent.py",
+      "target": "class:backend/apps/accounts/migrations/0004_menu_parent.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0005_accountapplication_username.py",
+      "target": "class:backend/apps/accounts/migrations/0005_accountapplication_username.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py",
+      "target": "class:backend/apps/accounts/migrations/0006_remove_accountapplication_email_and_more.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0007_accountuser.py",
+      "target": "class:backend/apps/accounts/migrations/0007_accountuser.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0008_accountapplication_tenant.py",
+      "target": "class:backend/apps/accounts/migrations/0008_accountapplication_tenant.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0009_menu_audience.py",
+      "target": "class:backend/apps/accounts/migrations/0009_menu_audience.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "target": "function:backend/apps/accounts/migrations/0010_seed_tenant_menus.py:seed_tenant_menus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "target": "function:backend/apps/accounts/migrations/0010_seed_tenant_menus.py:unseed_tenant_menus",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0010_seed_tenant_menus.py",
+      "target": "class:backend/apps/accounts/migrations/0010_seed_tenant_menus.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py",
+      "target": "class:backend/apps/accounts/migrations/0011_role_is_template_role_tenant_alter_role_code_and_more.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "target": "function:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py:seed_audit_logs_menu",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "target": "function:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py:unseed_audit_logs_menu",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "table:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py",
+      "target": "class:backend/apps/accounts/migrations/0012_seed_audit_logs_menu.py:Migration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    }
+  ]
+}
