@@ -15,6 +15,7 @@ from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.models import TTSProvider, TTSVoice, TenantTTSSettings
 from apps.ai_models.services import tts as tts_services
 from apps.devices.models import Device
+from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
@@ -169,6 +170,22 @@ class TTSRealtimeTests(TenantTestMixin, TestCase):
 
         self.assertEqual(connection['device_id'], device.id)
         self.assertEqual(connection['device_code'], 'ANDROID-TTS-WS-001')
+        self.assertEqual(connection['tenant_id'], self.tenant.id)
+
+    def test_tts_realtime_resolver_ignores_foreign_tenant_for_company_user(self):
+        from apps.ai_models.realtime_tts import resolve_tts_realtime_connection
+
+        self.grant_permissions('ai_models.tts.view')
+        other_tenant = Tenant.objects.create(name='Foreign TTS Tenant', code='foreign-tts-tenant')
+        token = str(RefreshToken.for_user(self.user).access_token)
+
+        connection = resolve_tts_realtime_connection(
+            token,
+            query_params={'tenantId': [str(other_tenant.id)]},
+        )
+
+        self.assertIsNotNone(connection)
+        self.assertFalse(connection['is_superuser'])
         self.assertEqual(connection['tenant_id'], self.tenant.id)
 
 

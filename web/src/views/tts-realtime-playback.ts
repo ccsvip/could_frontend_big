@@ -14,6 +14,7 @@ type PlayRealtimeTtsOptions = TtsTestPayload & {
   filterPunctuation?: string;
   filterEmoji?: boolean;
   signal?: AbortSignal;
+  interruptSignal?: AbortSignal;
 };
 
 type PlayRealtimeTtsResult = {
@@ -44,8 +45,13 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
   let nextStartTime = audioContext.currentTime + 0.05;
   const chunks: ArrayBuffer[] = [];
   const scheduledSources: AudioBufferSourceNode[] = [];
+  let audioClosed = false;
 
   const closeAudio = () => {
+    if (audioClosed) {
+      return;
+    }
+    audioClosed = true;
     scheduledSources.forEach((source) => {
       try {
         source.stop();
@@ -61,6 +67,7 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
   return new Promise((resolve, reject) => {
     let settled = false;
     let completing = false;
+    let interrupted = false;
     let completionTimer: number | null = null;
     const socket = new WebSocket(buildRealtimeWebSocketUrl());
     socket.binaryType = 'arraybuffer';
@@ -103,11 +110,27 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
       fail(new DOMException('TTS playback was cancelled', 'AbortError'));
     };
 
+    const interruptPlayback = () => {
+      if (settled || interrupted) {
+        return;
+      }
+      interrupted = true;
+      if (completionTimer !== null) {
+        window.clearTimeout(completionTimer);
+        completionTimer = null;
+      }
+      closeAudio();
+    };
+
     if (options.signal?.aborted) {
       abort();
       return;
     }
     options.signal?.addEventListener('abort', abort, { once: true });
+    if (options.interruptSignal?.aborted) {
+      interruptPlayback();
+    }
+    options.interruptSignal?.addEventListener('abort', interruptPlayback, { once: true });
 
     socket.onopen = () => {
       if (audioContext.state === 'suspended') {
@@ -124,6 +147,9 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
 
     socket.onmessage = (event: MessageEvent<string | ArrayBuffer>) => {
       if (typeof event.data !== 'string') {
+        if (interrupted) {
+          return;
+        }
         const pcm = event.data.slice(0);
         chunks.push(pcm);
         schedulePcmChunk(
@@ -152,6 +178,10 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
       }
       if (payload.type === 'tts.done') {
         socket.close();
+        if (interrupted) {
+          fail(new DOMException('TTS playback was interrupted', 'AbortError'));
+          return;
+        }
         finish();
         return;
       }
@@ -172,6 +202,11 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
 
     socket.onclose = () => {
       options.signal?.removeEventListener('abort', abort);
+      options.interruptSignal?.removeEventListener('abort', interruptPlayback);
+      if (interrupted && !settled) {
+        fail(new DOMException('TTS playback was interrupted', 'AbortError'));
+        return;
+      }
       if (!settled && !completing && chunks.length > 0) {
         finish();
       } else if (!settled && !completing) {

@@ -121,6 +121,52 @@ class FailingUnifiedASRUpstream:
 
 
 class RealtimeWebSocketTests(SimpleTestCase):
+    def test_llm_tts_segments_skip_markdown_tokens_and_list_numbers(self):
+        from apps.ai_models.services.tts import pop_tts_text_segments
+
+        chunks = [
+            '您好！\n',
+            '关于“大地为什么是蓝色的”这个问题，其实更准确的说法是：**地球从太空中看去呈现蓝色，主要是因为地球表面大部分被海洋覆盖。\n**\n',
+            '具体原因如下：\n',
+            '1.\n',
+            '**海洋占主导地位**：地球表面约71%被海洋覆盖，而陆地仅占29%。\n',
+            '2.\n',
+            '**水对光的反射与散射**：海水会吸收太阳光中波长较长的红、橙、黄光，而将波长较短的蓝光和紫光反射和散射出来。\n',
+            '景区总面积21.8平方公里，主峰摩星岭海拔382米。\n',
+        ]
+        buffer = ''
+        tts_texts = []
+        for chunk in chunks:
+            buffer += chunk
+            segments, buffer = pop_tts_text_segments(
+                buffer,
+                filter_punctuation='。！？!?；;、',
+                filter_emoji=True,
+            )
+            tts_texts.extend(segments)
+        segments, buffer = pop_tts_text_segments(
+            buffer,
+            filter_punctuation='。！？!?；;、',
+            filter_emoji=True,
+            flush=True,
+        )
+        tts_texts.extend(segments)
+
+        self.assertEqual(
+            tts_texts,
+            [
+                '您好',
+                '关于“大地为什么是蓝色的”这个问题，其实更准确的说法是：地球从太空中看去呈现蓝色，主要是因为地球表面大部分被海洋覆盖',
+                '具体原因如下： 海洋占主导地位：地球表面约71%被海洋覆盖，而陆地仅占29%',
+                '水对光的反射与散射：海水会吸收太阳光中波长较长的红橙黄光，而将波长较短的蓝光和紫光反射和散射出来',
+                '景区总面积21.8平方公里，主峰摩星岭海拔382米',
+            ],
+        )
+        self.assertNotIn('**', tts_texts)
+        self.assertNotIn('1.', tts_texts)
+        self.assertNotIn('2.', tts_texts)
+        self.assertIn('景区总面积21.8平方公里，主峰摩星岭海拔382米', tts_texts)
+
     def test_unified_realtime_websocket_responds_to_ping_command(self):
         async def run_websocket():
             from config.asgi import application
@@ -800,6 +846,17 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                         'requestId': 'req-llm-1',
                         'traceId': 'trace-llm-1',
                         'payload': {'text': '实时回答。'},
+                    },
+                )
+                tts_segment = await communicator.receive_output(timeout=1)
+                self.assertEqual(
+                    json.loads(tts_segment['text']),
+                    {
+                        'type': 'llm.tts_segment',
+                        'id': 'llm-session-1',
+                        'requestId': 'req-llm-1',
+                        'traceId': 'trace-llm-1',
+                        'payload': {'text': '这是实时回答'},
                     },
                 )
                 done = await communicator.receive_output(timeout=1)

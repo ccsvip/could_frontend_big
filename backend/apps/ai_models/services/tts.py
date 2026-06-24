@@ -4,6 +4,7 @@ import asyncio
 import base64
 import io
 import json
+import re
 import wave
 from dataclasses import dataclass
 from urllib.parse import urlencode
@@ -16,6 +17,7 @@ from apps.ai_models.models import TTSProvider, TTSVoice, TenantTTSSettings
 
 PCM_SOURCE_FORMAT = 'pcm_s16le'
 DEFAULT_TEST_TEXT = '对吧~我就特别喜欢这种超市，尤其是过年的时候去逛超市就会觉得超级超级开心！想买好多好多的东西呢！'
+DEFAULT_TTS_SEGMENT_BOUNDARIES = '。！？!?；;'
 
 
 @dataclass(frozen=True)
@@ -97,24 +99,144 @@ def normalize_tts_text(text: str | None, config: EffectiveTTSConfig) -> str:
     return value or config.default_test_text
 
 
-def split_tts_text(text: str, *, chunk_size: int = 80) -> list[str]:
-    stripped = text.strip()
+def split_tts_text(
+    text: str,
+    *,
+    chunk_size: int = 80,
+    filter_punctuation: str | None = None,
+    filter_emoji: bool = False,
+    flush: bool = True,
+) -> list[str]:
+    stripped = sanitize_tts_text(
+        text,
+        filter_punctuation=filter_punctuation,
+        filter_emoji=filter_emoji,
+        preserve_sentence_boundaries=True,
+    )
     if not stripped:
         return []
     chunks = []
     current = ''
-    separators = set('，。！？!?；;、\n')
-    for char in stripped:
+    separators = set(DEFAULT_TTS_SEGMENT_BOUNDARIES)
+    for index, char in enumerate(stripped):
         current += char
-        if len(current) >= chunk_size or char in separators:
+        if len(current) >= chunk_size or (char in separators and _is_tts_boundary(stripped, index)):
             chunk = current.strip()
+            if chunk:
+                chunks.append(_finalize_tts_chunk(chunk, filter_punctuation=filter_punctuation))
+            current = ''
+    tail = current.strip()
+    if tail and flush:
+        chunks.append(_finalize_tts_chunk(tail, filter_punctuation=filter_punctuation))
+    return chunks or [stripped]
+
+
+def pop_tts_text_segments(
+    buffer: str,
+    *,
+    chunk_size: int = 80,
+    filter_punctuation: str | None = None,
+    filter_emoji: bool = False,
+    flush: bool = False,
+) -> tuple[list[str], str]:
+    stripped = sanitize_tts_text(
+        buffer,
+        filter_punctuation=filter_punctuation,
+        filter_emoji=filter_emoji,
+        preserve_sentence_boundaries=True,
+    )
+    if not stripped:
+        return [], ''
+    chunks = []
+    current = ''
+    last_boundary = 0
+    separators = set(DEFAULT_TTS_SEGMENT_BOUNDARIES)
+    for index, char in enumerate(stripped):
+        current += char
+        if len(current) >= chunk_size or (char in separators and _is_tts_boundary(stripped, index)):
+            chunk = _finalize_tts_chunk(current, filter_punctuation=filter_punctuation)
             if chunk:
                 chunks.append(chunk)
             current = ''
-    tail = current.strip()
-    if tail:
-        chunks.append(tail)
-    return chunks or [stripped]
+            last_boundary = index + 1
+    rest = stripped[last_boundary:]
+    if flush and rest:
+        chunk = _finalize_tts_chunk(rest.strip(), filter_punctuation=filter_punctuation)
+        if chunk:
+            chunks.append(chunk)
+        rest = ''
+    return chunks, rest
+
+
+def sanitize_tts_text(
+    text: str,
+    *,
+    filter_punctuation: str | None = None,
+    filter_emoji: bool = False,
+    preserve_sentence_boundaries: bool = False,
+) -> str:
+    value = strip_markdown_for_tts(text)
+    if filter_emoji:
+        value = re.sub(r'[\U0001F000-\U0001FAFF\u2600-\u27BF\ufe0f]', '', value)
+    value = value.replace('\r\n', '\n')
+    value = re.sub(r'[*_`>#~|\[\]{}]', ' ', value)
+    value = re.sub(r'[ \t]+', ' ', value)
+    if not preserve_sentence_boundaries:
+        value = re.sub(r'\s*\n\s*', ' ', value)
+    value = re.sub(r'\n{2,}', '\n', value)
+    value = re.sub(r' {2,}', ' ', value)
+    if preserve_sentence_boundaries:
+        return value.strip(' \t')
+    return value.strip()
+
+
+def strip_markdown_for_tts(text: str) -> str:
+    value = str(text or '').replace('\r\n', '\n')
+    value = re.sub(r'```[\s\S]*?```', ' ', value)
+    value = re.sub(r'`([^`]+)`', r'\1', value)
+    lines = []
+    for line in value.split('\n'):
+        stripped = line.strip()
+        if not stripped:
+            lines.append('')
+            continue
+        if re.fullmatch(r'\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?', stripped):
+            lines.append('')
+            continue
+        if re.fullmatch(r'\d+[.)、]?', stripped):
+            lines.append(' ')
+            continue
+        if '|' in stripped:
+            stripped = '，'.join(cell.strip() for cell in stripped.strip('|').split('|') if cell.strip())
+        stripped = re.sub(r'^#{1,6}\s+', '', stripped)
+        stripped = re.sub(r'^[-*+]\s+', '', stripped)
+        stripped = re.sub(r'^\d+[.)]\s+', '', stripped)
+        stripped = re.sub(r'^>\s?', '', stripped)
+        lines.append(stripped)
+    value = '\n'.join(lines)
+    value = re.sub(r'!\[[^\]]*]\([^)]*\)', ' ', value)
+    value = re.sub(r'\[([^\]]+)]\([^)]*\)', r'\1', value)
+    value = re.sub(r'(\*\*|__)(.*?)\1', r'\2', value)
+    value = re.sub(r'(\*|_)(.*?)\1', r'\2', value)
+    return value
+
+
+def _is_tts_boundary(text: str, index: int) -> bool:
+    char = text[index]
+    previous_char = text[index - 1] if index > 0 else ''
+    next_char = text[index + 1] if index + 1 < len(text) else ''
+    if char == '.' and previous_char.isdigit() and next_char.isdigit():
+        return False
+    if char in '.)' and re.search(r'(?:^|\s)\d+[.)]$', text[:index + 1]):
+        return False
+    return True
+
+
+def _finalize_tts_chunk(chunk: str, *, filter_punctuation: str | None = None) -> str:
+    value = chunk.strip()
+    if filter_punctuation:
+        value = value.translate(str.maketrans('', '', filter_punctuation))
+    return re.sub(r'\s+', ' ', value).strip()
 
 
 def pcm_to_wav(pcm: bytes, *, sample_rate: int) -> bytes:

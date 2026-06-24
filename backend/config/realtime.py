@@ -9,6 +9,7 @@ from django.db.models import F
 from django.utils import timezone
 
 from apps.ai_models import llm_services, realtime_asr, realtime_tts
+from apps.ai_models.services import tts as tts_services
 from apps.devices.services.runtime import RuntimeDeviceError
 from apps.devices.views import DeviceVoiceChatView
 from apps.devices.realtime import (
@@ -478,7 +479,10 @@ async def _run_llm_session_body(send, command_id, message: dict[str, Any]) -> No
                 'payload': {'text': answer_text},
             },
         )
+        for segment in _split_llm_tts_segments(answer_text, session):
+            await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
     else:
+        tts_buffer = ''
         try:
             async for delta in llm_services.stream_llm_chat_completion(
                 model_config=session['modelConfig'],
@@ -497,9 +501,16 @@ async def _run_llm_session_body(send, command_id, message: dict[str, Any]) -> No
                         'payload': {'text': delta},
                     },
                 )
+                tts_buffer += delta
+                segments, tts_buffer = _pop_llm_tts_segments(tts_buffer, session)
+                for segment in segments:
+                    await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
         except Exception as exc:
             await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message=str(exc)[:200]))
             return
+        final_segments, _ = _pop_llm_tts_segments(tts_buffer, session, flush=True)
+        for segment in final_segments:
+            await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
 
     if not answer_text:
         await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message='LLM 没有返回有效回复'))
@@ -525,6 +536,36 @@ async def _run_llm_session_body(send, command_id, message: dict[str, Any]) -> No
     )
 
 
+async def _send_llm_tts_segment(send, command_id, request_id: str, trace_id: str, text: str) -> None:
+    segment = str(text or '').strip()
+    if not segment:
+        return
+    await _send_json(
+        send,
+        {
+            'type': 'llm.tts_segment',
+            'id': command_id,
+            'requestId': request_id,
+            'traceId': trace_id,
+            'payload': {'text': segment},
+        },
+    )
+
+
+def _pop_llm_tts_segments(buffer: str, session: dict[str, Any], *, flush: bool = False) -> tuple[list[str], str]:
+    return tts_services.pop_tts_text_segments(
+        buffer,
+        filter_punctuation=str(session.get('ttsFilterPunctuation') or ''),
+        filter_emoji=bool(session.get('ttsFilterEmoji')),
+        flush=flush,
+    )
+
+
+def _split_llm_tts_segments(text: str, session: dict[str, Any]) -> list[str]:
+    segments, _ = _pop_llm_tts_segments(text, session, flush=True)
+    return segments
+
+
 def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[str, Any]:
     from apps.devices.services.runtime import get_runtime_device
 
@@ -547,6 +588,8 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
             'agentApplicationName': agent_application.name,
             'applicationId': device.application_id,
             'applicationName': device.application.name if device.application else '',
+            'ttsFilterPunctuation': agent_application.tts_filter_punctuation,
+            'ttsFilterEmoji': agent_application.tts_filter_emoji,
         }
 
     model = agent_application.llm_model
@@ -584,6 +627,8 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
         'agentApplicationName': agent_application.name,
         'applicationId': device.application_id,
         'applicationName': device.application.name if device.application else '',
+        'ttsFilterPunctuation': agent_application.tts_filter_punctuation,
+        'ttsFilterEmoji': agent_application.tts_filter_emoji,
     }
 
 

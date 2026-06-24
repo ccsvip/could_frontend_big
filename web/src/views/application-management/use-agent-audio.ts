@@ -75,6 +75,8 @@ export const useAgentAudio = () => {
   const streamPlaybackBufferRef = useRef('');
   const streamPlaybackActiveRef = useRef(false);
   const streamPlaybackSessionRef = useRef(0);
+  const streamPlaybackInterruptedRef = useRef(false);
+  const playbackInterruptRef = useRef<AbortController | null>(null);
 
   const stopRecording = useCallback((options?: StopRecordingOptions) => {
     suppressAsrDoneRef.current = Boolean(options?.suppressDone);
@@ -266,6 +268,8 @@ export const useAgentAudio = () => {
 
   const stopPlayback = useCallback(() => {
     playbackRequestGuardRef.current.cancel();
+    playbackInterruptRef.current?.abort();
+    playbackInterruptRef.current = null;
     playbackAbortRef.current?.abort();
     playbackAbortRef.current = null;
     streamPlaybackSessionRef.current += 1;
@@ -295,7 +299,9 @@ export const useAgentAudio = () => {
         continue;
       }
       const abortController = new AbortController();
+      const interruptController = new AbortController();
       playbackAbortRef.current = abortController;
+      playbackInterruptRef.current = interruptController;
       try {
         await playRealtimeTts({
           text: segment,
@@ -304,6 +310,7 @@ export const useAgentAudio = () => {
           filterPunctuation: filterRules?.punctuation,
           filterEmoji: filterRules?.emoji,
           signal: abortController.signal,
+          interruptSignal: interruptController.signal,
         });
       } catch (error) {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
@@ -313,6 +320,9 @@ export const useAgentAudio = () => {
       } finally {
         if (playbackAbortRef.current === abortController) {
           playbackAbortRef.current = null;
+        }
+        if (playbackInterruptRef.current === interruptController) {
+          playbackInterruptRef.current = null;
         }
       }
     }
@@ -325,6 +335,9 @@ export const useAgentAudio = () => {
   }, [tenant?.id, tenantScopeId, token]);
 
   const enqueueStreamPlaybackText = useCallback((text: string, force = false, filterRules?: TtsFilterRules) => {
+    if (streamPlaybackInterruptedRef.current) {
+      return;
+    }
     const content = text.trim();
     if (!token || (!content && !force)) {
       return;
@@ -342,6 +355,7 @@ export const useAgentAudio = () => {
 
   const startStreamPlayback = useCallback(() => {
     stopPlayback();
+    streamPlaybackInterruptedRef.current = false;
     streamPlaybackSessionRef.current += 1;
     streamPlaybackQueueRef.current = [];
     streamPlaybackBufferRef.current = '';
@@ -356,6 +370,24 @@ export const useAgentAudio = () => {
   const finishStreamPlayback = useCallback((filterRules?: TtsFilterRules) => {
     enqueueStreamPlaybackText('', true, filterRules);
   }, [enqueueStreamPlaybackText]);
+
+  const interruptStreamPlayback = useCallback(() => {
+    streamPlaybackInterruptedRef.current = true;
+    playbackRequestGuardRef.current.cancel();
+    playbackInterruptRef.current?.abort();
+    playbackInterruptRef.current = null;
+    streamPlaybackSessionRef.current += 1;
+    streamPlaybackQueueRef.current = [];
+    streamPlaybackBufferRef.current = '';
+    streamPlaybackActiveRef.current = false;
+    audioRef.current?.pause();
+    audioRef.current = null;
+    playbackKeyRef.current = null;
+    revokeObjectUrl();
+    setPlayingKey(null);
+    setPendingPlaybackKey(null);
+    setPaused(false);
+  }, [revokeObjectUrl]);
 
   const playText = useCallback(async (key: string, text: string, filterRules?: TtsFilterRules) => {
     const content = text.trim();
@@ -390,7 +422,9 @@ export const useAgentAudio = () => {
     setPaused(false);
     playbackKeyRef.current = key;
     const abortController = new AbortController();
+    const interruptController = new AbortController();
     playbackAbortRef.current = abortController;
+    playbackInterruptRef.current = interruptController;
 
     try {
       if (!token) {
@@ -405,6 +439,7 @@ export const useAgentAudio = () => {
         filterPunctuation: filterRules?.punctuation,
         filterEmoji: filterRules?.emoji,
         signal: abortController.signal,
+        interruptSignal: interruptController.signal,
       });
       if (!playbackRequestGuard.isCurrent(playbackRequest)) {
         return;
@@ -413,6 +448,7 @@ export const useAgentAudio = () => {
       playbackRequestGuard.complete(playbackRequest);
       setPendingPlaybackKey(null);
       playbackAbortRef.current = null;
+      playbackInterruptRef.current = null;
       playbackKeyRef.current = null;
       setPlayingKey(null);
     } catch (error) {
@@ -442,6 +478,7 @@ export const useAgentAudio = () => {
     stopRecording,
     playText,
     stopPlayback,
+    interruptStreamPlayback,
     startStreamPlayback,
     appendStreamPlaybackText,
     finishStreamPlayback,

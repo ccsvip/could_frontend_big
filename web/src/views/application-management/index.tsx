@@ -623,6 +623,10 @@ export const ApplicationManagementPage = () => {
   const hasAvailableLlmModels = llmModelOptions.length > 1;
   const isOpeningPlaybackPending = agentAudio.pendingPlaybackKey === 'opening-message';
   const isOpeningPlaybackPlaying = agentAudio.playingKey === 'opening-message' && !agentAudio.paused;
+  const isStreamingReplyPlaybackActive = (
+    agentAudio.pendingPlaybackKey === 'streaming-reply' ||
+    agentAudio.playingKey === 'streaming-reply'
+  );
 
   // Reset states when switching applications
   useEffect(() => {
@@ -1790,7 +1794,7 @@ export const ApplicationManagementPage = () => {
           </div>
 
           {/* Input area */}
-          <div className="flex gap-2 mt-3 pt-2 shrink-0">
+          <div className="flex items-end gap-2 mt-3 pt-2 shrink-0">
             {voiceInputEnabled && (
               <Button 
                 type="default" 
@@ -1820,14 +1824,25 @@ export const ApplicationManagementPage = () => {
                 {agentAudio.recording ? <MicOff size={16} /> : <Mic size={16} />}
               </Button>
             )}
-            <Input 
+            <Input.TextArea
               value={inputValue}
               placeholder="发送调试消息..."
               disabled={!canChat || streaming || !selectedApplication}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && void handleSend()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  void handleSend();
+                }
+              }}
+              autoSize={{ minRows: 1, maxRows: 8 }}
               style={{ flex: 1 }}
             />
+            {isStreamingReplyPlaybackActive && (
+              <Button danger onClick={agentAudio.interruptStreamPlayback} className="flex items-center gap-1">
+                <Square size={14} /> 打断播报
+              </Button>
+            )}
             {streaming ? (
               <Button type="primary" danger onClick={handleStopStreaming} className="flex items-center gap-1">
                 <Square size={14} /> 停止
@@ -2069,7 +2084,7 @@ export const ApplicationManagementPage = () => {
             )}
           </div>
 
-          <div className="flex gap-2 mt-3 pt-2 shrink-0">
+          <div className="flex items-end gap-2 mt-3 pt-2 shrink-0">
             {voiceInputEnabled && (
               <Button 
                 type="default" 
@@ -2099,14 +2114,25 @@ export const ApplicationManagementPage = () => {
                 {agentAudio.recording ? <MicOff size={16} /> : <Mic size={16} />}
               </Button>
             )}
-            <Input 
+            <Input.TextArea
               value={inputValue}
               placeholder="预览文本发送消息..."
               disabled={!canChat || streaming || !selectedApplication}
               onChange={(event) => setInputValue(event.target.value)}
-              onKeyDown={(event) => event.key === 'Enter' && void handleSend()}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault();
+                  void handleSend();
+                }
+              }}
+              autoSize={{ minRows: 1, maxRows: 8 }}
               style={{ flex: 1 }}
             />
+            {isStreamingReplyPlaybackActive && (
+              <Button danger onClick={agentAudio.interruptStreamPlayback} className="flex items-center gap-1">
+                <Square size={14} /> 打断播报
+              </Button>
+            )}
             <Button type="primary" disabled={!inputValue.trim() || !canChat || streaming} onClick={() => void handleSend()} className="flex items-center justify-center">
               <Send size={16} />
             </Button>

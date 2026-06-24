@@ -1224,6 +1224,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
                 started = json.loads((await communicator.receive_output(timeout=1))['text'])
                 first_delta = json.loads((await communicator.receive_output(timeout=1))['text'])
                 second_delta = json.loads((await communicator.receive_output(timeout=1))['text'])
+                tts_segment = json.loads((await communicator.receive_output(timeout=1))['text'])
                 done = json.loads((await communicator.receive_output(timeout=1))['text'])
 
             self.assertEqual(started['type'], 'llm.started')
@@ -1231,6 +1232,8 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             self.assertEqual(first_delta['payload']['text'], '欢迎')
             self.assertEqual(second_delta['type'], 'llm.delta')
             self.assertEqual(second_delta['payload']['text'], '来到展厅')
+            self.assertEqual(tts_segment['type'], 'llm.tts_segment')
+            self.assertEqual(tts_segment['payload']['text'], '欢迎来到展厅')
             self.assertEqual(done['type'], 'llm.done')
             self.assertEqual(done['payload']['answerText'], '欢迎来到展厅')
 
