@@ -1,0 +1,472 @@
+{
+  "outDir": "C:/SVN_CODE/branches/real/could_frontend/output/playwright-smoke-2026-06-24",
+  "checks": [
+    {
+      "step": "open login",
+      "url": "http://localhost:5175/login",
+      "title": "数字人管理平台",
+      "loginHeading": true,
+      "screenshot": "C:\\SVN_CODE\\branches\\real\\could_frontend\\output\\playwright-smoke-2026-06-24\\01-login.png"
+    },
+    {
+      "step": "submit login",
+      "loginStatus": 200,
+      "loginBody": {
+        "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzgyMjg4Nzc5LCJpYXQiOjE3ODIyODUxNzksImp0aSI6ImQxOWEyYTljOWMyYzQyMGI5YjliYTg1YjFlMzAwODUwIiwidXNlcl9pZCI6IjIiLCJ0ZW5hbnRfaWQiOjJ9.KehSMg0URBzDU7MJtULqNTsNPGJ_4A2KxlXg4THPrZI",
+        "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc4Mjg4OTk3OSwiaWF0IjoxNzgyMjg1MTc5LCJqdGkiOiIxNmU2YTA5YWZhZjk0ODE0OGM5NDA4NTE2YmE2YzFhMSIsInVzZXJfaWQiOiIyIiwidGVuYW50X2lkIjoyfQ.uy1uZoJ_KgjzG9M5SJZ850I1_DCOQRUapN7isSTvPv0",
+        "user": {
+          "id": 2,
+          "username": "yrl",
+          "display_name": "小杨同学",
+          "role": {
+            "code": "tenant_admin",
+            "name": "公司管理员"
+          },
+          "permissions": [
+            "agent_applications.create",
+            "agent_applications.delete",
+            "agent_applications.update",
+            "agent_applications.view",
+            "ai_models.asr.view",
+            "ai_models.chat.create",
+            "ai_models.chat.delete",
+            "ai_models.chat.view",
+            "ai_models.llm.create",
+            "ai_models.llm.delete",
+            "ai_models.llm.update",
+            "ai_models.llm.view",
+            "ai_models.tts.update",
+            "ai_models.tts.view",
+            "audit.logs.view",
+            "commands.control.create",
+            "commands.control.delete",
+            "commands.control.update",
+            "commands.control.view",
+            "commands.export.download",
+            "commands.export.view",
+            "commands.groups.create",
+            "commands.groups.delete",
+            "commands.groups.update",
+            "commands.groups.view",
+            "commands.points.create",
+            "commands.points.delete",
+            "commands.points.update",
+            "commands.points.view",
+            "commands.tasks.create",
+            "commands.tasks.delete",
+            "commands.tasks.update",
+            "commands.tasks.view",
+            "devices.create",
+            "devices.delete",
+            "devices.update",
+            "devices.view",
+            "knowledge_base.bulk_download",
+            "knowledge_base.download",
+            "knowledge_base.upload",
+            "knowledge_base.view",
+            "resources.images.create",
+            "resources.images.delete",
+            "resources.images.update",
+            "resources.images.view",
+            "resources.models.create",
+            "resources.models.delete",
+            "resources.models.update",
+            "resources.models.view",
+            "resources.scrolling_texts.create",
+            "resources.scrolling_texts.delete",
+            "resources.scrolling_texts.update",
+            "resources.scrolling_texts.view",
+            "resources.videos.create",
+            "resources.videos.delete",
+            "resources.videos.update",
+            "resources.videos.view",
+            "resources.voice_tones.create",
+            "resources.voice_tones.delete",
+            "resources.voice_tones.update",
+            "resources.voice_tones.view",
+            "tenant.employees.manage"
+          ],
+          "menus": [
+            {
+              "key": "/employees",
+              "label": "员工管理",
+              "path": "/employees",
+              "icon": "TeamOutlined"
+            },
+            {
+              "key": "/devices",
+              "label": "设备管理",
+              "path": "/devices",
+              "icon": "DesktopOutlined"
+            },
+            {
+              "key": "/resources",
+              "label": "资源管理",
+              "path": "/resources",
+              "icon": "PictureOutlined",
+              "children": [
+                {
+                  "key": "/resources/images",
+                  "label": "背景图片管理",
+                  "path": "/resources/images",
+                  "icon": "PictureOutlined"
+                },
+                {
+                  "key": "/resources/videos",
+                  "label": "视频管理",
+                  "path": "/resources/videos",
+                  "icon": "VideoCameraOutlined"
+                },
+                {
+                  "key": "/resources/models",
+                  "label": "模型管理",
+                  "path": "/resources/models",
+                  "icon": "RobotOutlined"
+                },
+                {
+                  "key": "/resources/scrolling-texts",
+                  "label": "滚动文本",
+                  "path": "/resources/scrolling-texts",
+                  "icon": "NotificationOutlined"
+                }
+              ]
+            },
+            {
+              "key": "/commands",
+              "label": "指令管理",
+              "path": "/commands",
+              "icon": "ThunderboltOutlined",
+              "children": [
+                {
+                  "key": "/commands/groups",
+                  "label": "指令管理",
+                  "path": "/commands/groups",
+                  "icon": "ThunderboltOutlined"
+                },
+                {
+                  "key": "/commands/control",
+                  "label": "控制指令",
+                  "path": "/commands/control",
+                  "icon": "CloudOutlined"
+                },
+                {
+                  "key": "/commands/tasks",
+                  "label": "任务指令",
+                  "path": "/commands/tasks",
+                  "icon": "ThunderboltOutlined"
+                },
+                {
+                  "key": "/commands/points",
+                  "label": "点位管理",
+                  "path": "/commands/points",
+                  "icon": "EnvironmentOutlined"
+                },
+                {
+                  "key": "/commands/export",
+                  "label": "导出管理",
+                  "path": "/commands/export",
+                  "icon": "ExportOutlined"
+                }
+              ]
+            },
+            {
+              "key": "/ai-models",
+              "label": "AI大模型",
+              "path": "/ai-models",
+              "icon": "RobotOutlined",
+              "children": [
+                {
+                  "key": "/ai-models/asr",
+                  "label": "ASR管理",
+                  "path": "/ai-models/asr",
+                  "icon": "AudioOutlined"
+                },
+                {
+                  "key": "/ai-models/llm",
+                  "label": "LLM管理",
+                  "path": "/ai-models/llm",
+                  "icon": "CloudOutlined"
+                },
+                {
+                  "key": "/ai-models/tts",
+                  "label": "TTS管理",
+                  "path": "/ai-models/tts",
+                  "icon": "SoundOutlined"
+                },
+                {
+                  "key": "/ai-models/applications",
+                  "label": "智能体",
+                  "path": "/ai-models/applications",
+                  "icon": "AppstoreOutlined"
+                },
+                {
+                  "key": "/ai-models/knowledge-base",
+                  "label": "知识库",
+                  "path": "/ai-models/knowledge-base",
+                  "icon": "FileTextOutlined"
+                }
+              ]
+            },
+            {
+              "key": "/logs",
+              "label": "日志管理",
+              "path": "/logs",
+              "icon": "FileSearchOutlined"
+            }
+          ],
+          "tenant": {
+            "id": 2,
+            "name": "杨老板的公司",
+            "code": "company",
+            "isTenantAdmin": true
+          },
+          "is_superuser": false,
+          "must_change_password": false
+        },
+        "message": "登录成功"
+      },
+      "urlAfterSubmit": "http://localhost:5175/employees",
+      "screenshot": "C:\\SVN_CODE\\branches\\real\\could_frontend\\output\\playwright-smoke-2026-06-24\\02-after-login.png"
+    },
+    {
+      "step": "after login visible text sample",
+      "sample": "正在同步权限信息\n登录成功"
+    },
+    {
+      "step": "route /",
+      "finalUrl": "http://localhost:5175/employees",
+      "textSample": "数字人管理平台\nOPERATIONS CONSOLE\n服务运行中\n权限与菜单已同步\n员工管理\n设备管理\n资源管理\n指令管理\nAI大模型\n日志管理\n收起侧边栏\n后台总览\n员工管理\n15:13\n2026-06-24\n运行正常\n小\n小杨同学\n公司管理员\n员工管理\n新建员工\n用户名\t姓名\t角色名称\t状态\t操作\nyrr\t杨荣亮\t开发2\t\n启用\n\t\n编辑\n重置密码\n停用\n删除\n\nyrlll\t杨荣亮\t开发\t\n启用\n\t\n编辑\n重置密码\n停用\n删除\n\nyrll\t杨荣亮1\t开发1\t\n启用\n\t\n编辑\n重置密码\n停用\n删除\n1",
+      "screenshot": "C:\\SVN_CODE\\branches\\real\\could_frontend\\output\\playwright-smoke-2026-06-24\\route-root.png"
+    },
+    {
+      "step": "route /devices",
+      "finalUrl": "http://localhost:5175/devices",
+      "textSample": "数字人管理平台\nOPERATIONS CONSOLE\n服务运行中\n权限与菜单已同步\n员工管理\n设备管理\n资源管理\n指令管理\nAI大模型\n日志管理\n收起侧边栏\n后台总览\n设备管理\n15:13\n2026-06-24\n运行正常\n小\n小杨同学\n公司管理员\nDEVICE CODE RUNTIME\n设备与应用\n安卓端只上报设备码；后台负责设备归属、应用绑定和资源包配置。\n实时同步中\n刷新\n设备总数\n6\n在线\n0\n待绑定\n1\n应用数\n2\n运行链路诊断\n先看授权与智能体绑定，再看在线心跳与资源包；异常联调时让安卓端带回 requestId / traceId。\n实时通道正常\n就绪 0\n阻塞 1\n离线 5\n无资源包 0\n设备\n应用\n分组\n全部状态\n全部授权\n全部资源应用\n全部分组\n查询\n设备名称\t设备码\t运行\t授权状态\t绑定智能体\t运行诊断\t资源应用\t分组\t授权\t到期时间\t软件版本\t系统版本\t主板信息\t最近心跳\t操作\nyrl\tDEVICE_009\n\t离线\t正常\t智能客服助理\t离线待心跳\t科技馆\t-\t永久\t永久\tcodex-check\tWindows check\tcodex\t2026-06-24 14:22:33\t\n编辑\n删除\n\n待修改\tapifox\n\t离线\t正常\t杨容量超级智能体\t离线待心跳\t演示安卓数字人应用\t-\t永久\t永久\truntime-api-console-html\tMozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0\tbrowser\t2026-06-24 14:57:21\t\n编辑\n删除\n\n待修改\tdba5a44814be247bb91f787c0bf85af4e0a878add410f19347ad65bdd78c33e9\n\t离线\t正常\t杨容量超级智能体\t离线待心跳\t演示安卓数字人应用\t-\t永久\t永久\tsolin_debug_v1.0.1_2026-06-23_14-46\tAndr",
+      "screenshot": "C:\\SVN_CODE\\branches\\real\\could_frontend\\output\\playwright-smoke-2026-06-24\\route-devices.png"
+    },
+    {
+      "step": "route /device-authorizations",
+      "finalUrl": "http://localhost:5175/employees",
+      "textSample": "数字人管理平台\nOPERATIONS CONSOLE\n服务运行中\n权限与菜单已同步\n员工管理\n设备管理\n资源管理\n指令管理\nAI大模型\n日志管理\n收起侧边栏\n后台总览\n员工管理\n15:13\n2026-06-24\n运行正常\n小\n小杨同学\n公司管理员\n员工管理\n新建员工\n用户名\t姓名\t角色名称\t状态\t操作\nyrr\t杨荣亮\t开发2\t\n启用\n\t\n编辑\n重置密码\n停用\n删除\n\nyrlll\t杨荣亮\t开发\t\n启用\n\t\n编辑\n重置密码\n停用\n删除\n\nyrll\t杨荣亮1\t开发1\t\n启用\n\t\n编辑\n重置密码\n停用\n删除\n1",
+      "screenshot": "C:\\SVN_CODE\\branches\\real\\could_frontend\\output\\playwright-smoke-2026-06-24\\route-device-authorizations.png"
+    },
+    {
+      "step": "route /resources/images",
+      "finalUrl": "http://localhost:5175/resources/images",
+      "textSample": "数字人管理平台\nOPERATIONS CONSOLE\n服务运行中\n权限与菜单已同步\n员工管理\n设备管理\n资源管理\n背景图片管理\n视频管理\n模型管理\n滚动文本\n指令管理\nAI大模型\n日志管理\n收起侧边栏\n资源管理 / 背景图片管理\n背景图片管理\n15:13\n2026-06-24\n运行正常\n小\n小杨同学\n公司管理员\n背景图片管理\n集中维护背景图片资源，支持分类、分页、空态提示与大图预览。\n全部分类\n刷新\n新建资源\n测试图片\n已上传\n横屏\n背景图片\n暂无资源说明\n更新时间：2026-06-01 14:28:35\n预览\n编辑\n删除\n1",
+      "screenshot": "C:\\SVN_CODE\\branches\\real\\could_frontend\\output\\playwright-smoke-2026-06-24\\route-resources-images.png"
+    },
+    {
+      "step": "route /ai-models/llm",
+      "finalUrl": "http://localhost:5175/ai-models/llm",
+      "textSample": "数字人管理平台\nOPERATIONS CONSOLE\n服务运行中\n权限与菜单已同步\n员工管理\n设备管理\n资源管理\n指令管理\nAI大模型\nASR管理\nLLM管理\nTTS管理\n智能体\n知识库\n日志管理\n收起侧边栏\nAI大模型 / LLM管理\nLLM管理\n15:13\n2026-06-24\n运行正常\n小\n小杨同学\n公司管理员\nLLM设置\n查看公司可用模型、测试连通性，并维护默认模型。\n刷新\n可用模型\n5 个可用模型\nsolin-32B\n测试\n设为默认\nsolin-120B\n默认\n测试\n当前默认\nqwen3.6-flash\n测试\n设为默认\nqwen3.7-plus\n测试\n设为默认\nqwen-flash\n测试\n设为默认\n当前默认模型\nsolin-120B\n测试设置\n请用一句中文回复：连接测试成功。\n10\n冷却秒\n15\n超时秒\n64\nTokens",
+      "screenshot": "C:\\SVN_CODE\\branches\\real\\could_frontend\\output\\playwright-smoke-2026-06-24\\route-ai-models-llm.png"
+    },
+    {
+      "step": "mobile root",
+      "finalUrl": "http://localhost:5175/employees",
+      "textSample": "员工管理\n小\n员工管理\n新建员工\n用户名\t姓名\t角色名称\t状态\t操作\nyrr\t杨荣亮\t开发2\t\n启用\n\t\n编辑\n重置密码\n停用\n删除\n\nyrlll\t杨荣亮\t开发\t\n启用\n\t\n编辑\n重置密码\n停用\n删除\n\nyrll\t杨荣亮1\t开发1\t\n启用\n\t\n编辑\n重置密码\n停用\n删除\n1",
+      "screenshot": "C:\\SVN_CODE\\branches\\real\\could_frontend\\output\\playwright-smoke-2026-06-24\\03-mobile-root.png",
+      "console": [
+        {
+          "type": "debug",
+          "text": "[vite] connecting..."
+        },
+        {
+          "type": "debug",
+          "text": "[vite] connected."
+        },
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold"
+        }
+      ],
+      "failedRequests": []
+    }
+  ],
+  "consoleMessages": [
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "location": {
+        "url": "http://localhost:5175/@vite/client",
+        "lineNumber": 494,
+        "columnNumber": 8
+      }
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "location": {
+        "url": "http://localhost:5175/@vite/client",
+        "lineNumber": 617,
+        "columnNumber": 14
+      }
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+      "location": {
+        "url": "http://localhost:5175/node_modules/.vite/deps/chunk-NUMECXU6.js?v=272432d6",
+        "lineNumber": 21550,
+        "columnNumber": 24
+      }
+    },
+    {
+      "type": "verbose",
+      "text": "[DOM] Input elements should have autocomplete attributes (suggested: \"current-password\"): (More info: https://goo.gl/9p2vKq) %o",
+      "location": {
+        "url": "http://localhost:5175/login",
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "location": {
+        "url": "http://localhost:5175/@vite/client",
+        "lineNumber": 494,
+        "columnNumber": 8
+      }
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+      "location": {
+        "url": "http://localhost:5175/node_modules/.vite/deps/chunk-NUMECXU6.js?v=272432d6",
+        "lineNumber": 21550,
+        "columnNumber": 24
+      }
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "location": {
+        "url": "http://localhost:5175/@vite/client",
+        "lineNumber": 617,
+        "columnNumber": 14
+      }
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "location": {
+        "url": "http://localhost:5175/@vite/client",
+        "lineNumber": 494,
+        "columnNumber": 8
+      }
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "location": {
+        "url": "http://localhost:5175/@vite/client",
+        "lineNumber": 617,
+        "columnNumber": 14
+      }
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+      "location": {
+        "url": "http://localhost:5175/node_modules/.vite/deps/chunk-NUMECXU6.js?v=272432d6",
+        "lineNumber": 21550,
+        "columnNumber": 24
+      }
+    },
+    {
+      "type": "warning",
+      "text": "WebSocket connection to 'ws://192.168.2.90:8880/ws/realtime/' failed: WebSocket is closed before the connection is established.",
+      "location": {
+        "url": "http://localhost:5175/src/views/device-management/index.tsx",
+        "lineNumber": 324,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "location": {
+        "url": "http://localhost:5175/@vite/client",
+        "lineNumber": 494,
+        "columnNumber": 8
+      }
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "location": {
+        "url": "http://localhost:5175/@vite/client",
+        "lineNumber": 617,
+        "columnNumber": 14
+      }
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+      "location": {
+        "url": "http://localhost:5175/node_modules/.vite/deps/chunk-NUMECXU6.js?v=272432d6",
+        "lineNumber": 21550,
+        "columnNumber": 24
+      }
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "location": {
+        "url": "http://localhost:5175/@vite/client",
+        "lineNumber": 494,
+        "columnNumber": 8
+      }
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "location": {
+        "url": "http://localhost:5175/@vite/client",
+        "lineNumber": 617,
+        "columnNumber": 14
+      }
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+      "location": {
+        "url": "http://localhost:5175/node_modules/.vite/deps/chunk-NUMECXU6.js?v=272432d6",
+        "lineNumber": 21550,
+        "columnNumber": 24
+      }
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connecting...",
+      "location": {
+        "url": "http://localhost:5175/@vite/client",
+        "lineNumber": 494,
+        "columnNumber": 8
+      }
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected.",
+      "location": {
+        "url": "http://localhost:5175/@vite/client",
+        "lineNumber": 617,
+        "columnNumber": 14
+      }
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+      "location": {
+        "url": "http://localhost:5175/node_modules/.vite/deps/chunk-NUMECXU6.js?v=272432d6",
+        "lineNumber": 21550,
+        "columnNumber": 24
+      }
+    }
+  ],
+  "pageErrors": [],
+  "failedRequests": [],
+  "httpErrors": []
+}

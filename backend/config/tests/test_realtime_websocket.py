@@ -121,6 +121,33 @@ class FailingUnifiedASRUpstream:
 
 
 class RealtimeWebSocketTests(SimpleTestCase):
+    def test_agent_asr_upstream_ignores_client_disconnect(self):
+        async def run_task():
+            from uvicorn.protocols.utils import ClientDisconnected
+            from config.realtime import RealtimeConnection, _agent_asr_upstream_to_client
+
+            class TranscriptUpstream:
+                def __aiter__(self):
+                    return self
+
+                async def __anext__(self):
+                    return json.dumps({
+                        'type': 'conversation.item.input_audio_transcription.text',
+                        'text': '断开前文本',
+                    })
+
+            async def disconnected_send(event):
+                raise ClientDisconnected()
+
+            connection = RealtimeConnection()
+            connection.agent_session_id = 'agent-disconnect-1'
+            connection.agent_request_id = 'req-disconnect-1'
+            connection.agent_trace_id = 'trace-disconnect-1'
+
+            await _agent_asr_upstream_to_client(TranscriptUpstream(), disconnected_send, connection, [])
+
+        async_to_sync(run_task)()
+
     def test_llm_tts_segments_skip_markdown_tokens_and_list_numbers(self):
         from apps.ai_models.services.tts import pop_tts_text_segments
 
@@ -646,6 +673,9 @@ class RealtimeWebSocketTests(SimpleTestCase):
 
 class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
     def setUp(self):
+        from config import realtime
+
+        realtime._AGENT_MEMORY.clear()
         self.user = User.objects.create_user(username='realtime-device-user', password='test123456')
         self.setup_tenant(self.user)
         self.role = Role.objects.create(name='Realtime Device Role', code='realtime_device_role')
@@ -885,6 +915,280 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 self.assertEqual(call_kwargs['messages'][0]['role'], 'system')
                 self.assertIn('Runtime Agent', call_kwargs['messages'][0]['content'])
                 self.assertEqual(call_kwargs['messages'][1], {'role': 'user', 'content': '介绍一下展厅'})
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
+    def test_unified_realtime_websocket_runs_agent_text_session_with_tts(self):
+        provider = LLMProvider.objects.create(
+            name='Runtime Agent Text Provider',
+            provider_type='openai',
+            api_base_url='https://llm.example/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='agent-text-model', is_active=True)
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        agent_application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime Agent Text',
+            llm_model=model,
+            system_prompt='你是设备助手。',
+            temperature=0.2,
+            max_tokens=256,
+        )
+        device_application = DeviceApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime Agent Text App',
+            code='runtime-agent-text-app',
+            agent_application=agent_application,
+        )
+        Device.objects.create(
+            tenant=self.tenant,
+            application=device_application,
+            name='Runtime Agent Text Device',
+            code='ANDROID-AGENT-TEXT-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+
+        async def run_websocket():
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            response = await communicator.receive_output(timeout=1)
+            self.assertEqual(response['type'], 'websocket.accept')
+
+            async def stream_answer(**kwargs):
+                yield '这是'
+                yield '自动播报。'
+
+            tts_provider = SimpleNamespace(code='aliyun')
+            voice = SimpleNamespace(id=7, voice_code='Cherry')
+            config = SimpleNamespace(
+                is_active=True,
+                api_key='test-api-key',
+                base_url='wss://tts.example/realtime',
+                model='qwen3-tts-flash-realtime',
+                sample_rate=24000,
+                default_test_text='默认测试文本',
+            )
+            upstream = UnifiedTTSUpstream()
+            with (
+                patch('apps.ai_models.llm_services.stream_llm_chat_completion', side_effect=stream_answer),
+                patch(
+                    'apps.ai_models.realtime_tts.resolve_tts_realtime_connection',
+                    return_value={'device_id': 1, 'tenant_id': self.tenant.id, 'is_superuser': False},
+                ),
+                patch('apps.ai_models.realtime_tts.resolve_tts_provider', return_value=tts_provider),
+                patch('apps.ai_models.realtime_tts.get_effective_tts_config', return_value=config),
+                patch('apps.ai_models.realtime_tts.is_tts_configured', return_value=True),
+                patch('apps.ai_models.realtime_tts.resolve_tts_voice', return_value=voice),
+                patch('apps.ai_models.realtime_tts.build_tts_ws_url', return_value='wss://tts.example/realtime?model=test'),
+                patch('apps.ai_models.realtime_tts.websockets.connect', return_value=upstream),
+            ):
+                await communicator.send_input({
+                    'type': 'websocket.receive',
+                    'text': json.dumps({
+                        'type': 'agent.session.start',
+                        'id': 'agent-session-1',
+                        'payload': {
+                            'deviceCode': 'ANDROID-AGENT-TEXT-001',
+                            'text': '介绍一下展厅',
+                            'requestId': 'req-agent-1',
+                            'traceId': 'trace-agent-1',
+                        },
+                    }),
+                })
+
+                event_types = []
+                for _ in range(10):
+                    message = await communicator.receive_output(timeout=1)
+                    if 'text' in message:
+                        payload = json.loads(message['text'])
+                        event_types.append(payload['type'])
+                    else:
+                        event_types.append('binary')
+                    if event_types[-1] == 'agent.done':
+                        break
+
+                self.assertEqual(event_types[0], 'agent.started')
+                self.assertIn('llm.tts_segment', event_types)
+                self.assertIn('tts.ready', event_types)
+                self.assertIn('binary', event_types)
+                self.assertIn('tts.done', event_types)
+                self.assertIn('llm.done', event_types)
+                self.assertEqual(event_types[-1], 'agent.done')
+                self.assertLess(event_types.index('llm.tts_segment'), event_types.index('tts.ready'))
+                self.assertLess(event_types.index('tts.done'), event_types.index('agent.done'))
+                self.assertIn('input_text_buffer.append', [message.get('type') for message in upstream.messages])
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
+        from config import realtime
+
+        next_session = realtime._prepare_device_llm_session('ANDROID-AGENT-TEXT-001', '我刚才问了什么？')
+        self.assertIn({'role': 'user', 'content': '介绍一下展厅'}, next_session['messages'])
+        self.assertIn({'role': 'assistant', 'content': '这是自动播报。'}, next_session['messages'])
+        self.assertEqual(next_session['messages'][-1], {'role': 'user', 'content': '我刚才问了什么？'})
+
+    def test_unified_realtime_websocket_runs_agent_voice_session_with_tts(self):
+        provider = LLMProvider.objects.create(
+            name='Runtime Agent Voice Provider',
+            provider_type='openai',
+            api_base_url='https://llm.example/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='agent-voice-model', is_active=True)
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        agent_application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime Agent Voice',
+            llm_model=model,
+            system_prompt='你是设备助手。',
+            temperature=0.2,
+            max_tokens=256,
+        )
+        device_application = DeviceApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime Agent Voice App',
+            code='runtime-agent-voice-app',
+            agent_application=agent_application,
+        )
+        Device.objects.create(
+            tenant=self.tenant,
+            application=device_application,
+            name='Runtime Agent Voice Device',
+            code='ANDROID-AGENT-VOICE-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+
+        async def run_websocket():
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            response = await communicator.receive_output(timeout=1)
+            self.assertEqual(response['type'], 'websocket.accept')
+
+            async def stream_answer(**kwargs):
+                yield '语音'
+                yield '自动回答。'
+
+            tts_provider = SimpleNamespace(code='aliyun')
+            voice = SimpleNamespace(id=7, voice_code='Cherry')
+            config = SimpleNamespace(
+                is_active=True,
+                api_key='test-api-key',
+                base_url='wss://tts.example/realtime',
+                model='qwen3-tts-flash-realtime',
+                sample_rate=24000,
+                default_test_text='默认测试文本',
+            )
+            tts_upstream = UnifiedTTSUpstream()
+
+            async def fake_start_agent_asr_session(send, connection, message):
+                from config import realtime
+
+                command_id = connection.agent_session_id
+                request_id = connection.agent_request_id
+                trace_id = connection.agent_trace_id
+                await realtime._send_json(send, realtime._trace_payload('asr.ready', command_id, request_id, trace_id))
+                await realtime._send_json(
+                    send,
+                    {
+                        'type': 'asr.transcript',
+                        'id': command_id,
+                        'requestId': request_id,
+                        'traceId': trace_id,
+                        'text': '统一 ASR',
+                        'originalText': '统一 ASR',
+                        'replacementApplied': False,
+                        'final': True,
+                    },
+                )
+                await realtime._send_json(send, {'type': 'asr.done', 'id': command_id, 'requestId': request_id, 'traceId': trace_id})
+                await realtime._run_agent_llm_and_finish(send, connection, '统一 ASR')
+
+            with (
+                patch('config.realtime._start_agent_asr_session', side_effect=fake_start_agent_asr_session),
+                patch('apps.ai_models.llm_services.stream_llm_chat_completion', side_effect=stream_answer),
+                patch(
+                    'apps.ai_models.realtime_tts.resolve_tts_realtime_connection',
+                    return_value={'device_id': 1, 'tenant_id': self.tenant.id, 'is_superuser': False},
+                ),
+                patch('apps.ai_models.realtime_tts.resolve_tts_provider', return_value=tts_provider),
+                patch('apps.ai_models.realtime_tts.get_effective_tts_config', return_value=config),
+                patch('apps.ai_models.realtime_tts.is_tts_configured', return_value=True),
+                patch('apps.ai_models.realtime_tts.resolve_tts_voice', return_value=voice),
+                patch('apps.ai_models.realtime_tts.build_tts_ws_url', return_value='wss://tts.example/realtime?model=test'),
+                patch('apps.ai_models.realtime_tts.websockets.connect', return_value=tts_upstream),
+            ):
+                await communicator.send_input({
+                    'type': 'websocket.receive',
+                    'text': json.dumps({
+                        'type': 'agent.session.start',
+                        'id': 'agent-session-voice-1',
+                        'payload': {
+                            'deviceCode': 'ANDROID-AGENT-VOICE-001',
+                            'requestId': 'req-agent-voice-1',
+                            'traceId': 'trace-agent-voice-1',
+                        },
+                    }),
+                })
+                self.assertEqual(json.loads((await communicator.receive_output(timeout=1))['text'])['type'], 'agent.started')
+                self.assertEqual(json.loads((await communicator.receive_output(timeout=1))['text'])['type'], 'asr.ready')
+
+                event_types = []
+                event_payloads = []
+                for _ in range(12):
+                    try:
+                        message = await communicator.receive_output(timeout=1)
+                    except asyncio.TimeoutError:
+                        break
+                    if 'text' in message:
+                        payload = json.loads(message['text'])
+                        event_payloads.append(payload)
+                        event_types.append(payload['type'])
+                    else:
+                        event_payloads.append({'type': 'binary'})
+                        event_types.append('binary')
+                    if event_types[-1] == 'agent.done':
+                        break
+
+                self.assertIn('asr.transcript', event_types, event_payloads)
+                self.assertIn('asr.done', event_types)
+                self.assertIn('llm.started', event_types)
+                self.assertIn('llm.tts_segment', event_types)
+                self.assertIn('tts.ready', event_types)
+                self.assertIn('binary', event_types)
+                self.assertIn('tts.done', event_types)
+                self.assertIn('llm.done', event_types)
+                self.assertEqual(event_types[-1], 'agent.done')
+                self.assertLess(event_types.index('asr.done'), event_types.index('llm.started'))
+                self.assertLess(event_types.index('llm.tts_segment'), event_types.index('tts.ready'))
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)

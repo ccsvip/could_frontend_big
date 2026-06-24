@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import json
-from typing import Any
+from typing import Any, Awaitable, Callable
 
 from asgiref.sync import sync_to_async
 from django.db.models import F
 from django.utils import timezone
+from websockets.exceptions import ConnectionClosed
 
 from apps.ai_models import llm_services, realtime_asr, realtime_tts
 from apps.ai_models.services import tts as tts_services
@@ -25,6 +26,9 @@ from apps.devices.websocket import (
 )
 from config.request_id import clean_trace_value, make_request_id
 
+_AGENT_MEMORY_MAX_MESSAGES = 12
+_AGENT_MEMORY: dict[str, list[dict[str, str]]] = {}
+
 
 class RealtimeConnection:
     def __init__(self):
@@ -41,8 +45,17 @@ class RealtimeConnection:
         self.llm_task = None
         self.tts_session_id = None
         self.tts_task = None
+        self.agent_session_id = None
+        self.agent_mode = None
+        self.agent_device_code = None
+        self.agent_request_id = None
+        self.agent_trace_id = None
+        self.agent_latest_text = ''
+        self.agent_tts_queue = None
+        self.agent_tts_worker = None
 
     async def close(self) -> None:
+        await self.close_agent_session()
         await self.close_asr_session()
         await self.close_llm_session()
         await self.close_tts_session()
@@ -87,8 +100,23 @@ class RealtimeConnection:
             if not self.tts_task.done():
                 self.tts_task.cancel()
             await asyncio.gather(self.tts_task, return_exceptions=True)
-            self.tts_task = None
+        self.tts_task = None
         self.tts_session_id = None
+
+    async def close_agent_session(self) -> None:
+        if self.agent_tts_worker is not None:
+            if not self.agent_tts_worker.done():
+                self.agent_tts_worker.cancel()
+            await asyncio.gather(self.agent_tts_worker, return_exceptions=True)
+        self.agent_tts_worker = None
+        self.agent_session_id = None
+        self.agent_mode = None
+        self.agent_device_code = None
+        self.agent_request_id = None
+        self.agent_trace_id = None
+        self.agent_latest_text = ''
+        self.agent_tts_queue = None
+        self.agent_tts_worker = None
 
 
 async def realtime_websocket_application(scope, receive, send):
@@ -192,6 +220,15 @@ async def _handle_client_event(event, send, connection: RealtimeConnection) -> b
         return False
     if command_type == 'llm.session.cancel':
         await _handle_llm_session_cancel(send, connection, message)
+        return False
+    if command_type == 'agent.session.start':
+        await _handle_agent_session_start(send, connection, message)
+        return False
+    if command_type == 'agent.session.finish':
+        await _handle_agent_session_finish(send, connection, message)
+        return False
+    if command_type == 'agent.session.cancel':
+        await _handle_agent_session_cancel(send, connection, message)
         return False
 
     await _send_error(
@@ -419,6 +456,80 @@ async def _handle_llm_session_cancel(send, connection: RealtimeConnection, messa
     )
 
 
+async def _handle_agent_session_start(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:
+    await connection.close_agent_session()
+    await connection.close_asr_session()
+    await connection.close_llm_session()
+    await connection.close_tts_session()
+
+    command_id = message.get('id')
+    payload = message.get('payload') if isinstance(message.get('payload'), dict) else {}
+    device_code = str(payload.get('deviceCode') or payload.get('device_code') or '').strip()
+    input_text = str(payload.get('text') or payload.get('questionText') or payload.get('question') or '').strip()
+    request_id = _request_id_from_payload(payload)
+    trace_id = _trace_id_from_payload(payload, request_id)
+    mode = 'text' if input_text else 'voice'
+    if not device_code:
+        await _send_json(send, _trace_payload('agent.error', command_id, request_id, trace_id, message='Device code is required'))
+        return
+
+    connection.agent_session_id = command_id
+    connection.agent_mode = mode
+    connection.agent_device_code = device_code
+    connection.agent_request_id = request_id
+    connection.agent_trace_id = trace_id
+    connection.agent_latest_text = input_text
+    connection.agent_tts_queue = asyncio.Queue()
+    connection.agent_tts_worker = asyncio.create_task(
+        _agent_tts_worker(send, connection, command_id, device_code, request_id, trace_id, payload),
+    )
+    await _send_json(
+        send,
+        _trace_payload(
+            'agent.started',
+            command_id,
+            request_id,
+            trace_id,
+            payload={'deviceCode': device_code, 'mode': mode},
+        ),
+    )
+    if input_text:
+        await _run_agent_llm_and_finish(send, connection, input_text)
+        return
+
+    await _start_agent_asr_session(send, connection, message)
+
+
+async def _handle_agent_session_finish(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:
+    if connection.agent_session_id is None:
+        await _send_json(send, {'type': 'agent.error', 'id': message.get('id'), 'message': 'Agent session is not started'})
+        return
+    if connection.asr_upstream is None:
+        text = connection.agent_latest_text.strip()
+        if text:
+            await _run_agent_llm_and_finish(send, connection, text)
+            return
+        await _send_json(send, {'type': 'agent.error', 'id': connection.agent_session_id, 'message': 'ASR session is not started'})
+        return
+    await connection.asr_upstream.send(json.dumps(realtime_asr._session_finish_event()))
+
+
+async def _handle_agent_session_cancel(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:
+    session_id = connection.agent_session_id
+    await connection.close_asr_session()
+    await connection.close_llm_session()
+    await connection.close_tts_session()
+    await connection.close_agent_session()
+    await _send_json(
+        send,
+        {
+            'type': 'agent.cancelled',
+            'id': message.get('id'),
+            'payload': {'sessionId': session_id},
+        },
+    )
+
+
 async def _run_llm_session(send, connection: RealtimeConnection, command_id, message: dict[str, Any]) -> None:
     try:
         await _run_llm_session_body(send, command_id, message)
@@ -430,7 +541,12 @@ async def _run_llm_session(send, connection: RealtimeConnection, command_id, mes
             connection.llm_session_id = None
 
 
-async def _run_llm_session_body(send, command_id, message: dict[str, Any]) -> None:
+async def _run_llm_session_body(
+    send,
+    command_id,
+    message: dict[str, Any],
+    on_tts_segment: Callable[[str], Awaitable[None]] | None = None,
+) -> str | None:
     command_id = message.get('id')
     payload = message.get('payload') if isinstance(message.get('payload'), dict) else {}
     device_code = str(payload.get('deviceCode') or payload.get('device_code') or '').strip()
@@ -439,16 +555,16 @@ async def _run_llm_session_body(send, command_id, message: dict[str, Any]) -> No
     trace_id = _trace_id_from_payload(payload, request_id)
     if not device_code:
         await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message='Device code is required'))
-        return
+        return None
     if not question_text:
         await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message='Question text is required'))
-        return
+        return None
 
     try:
         session = await sync_to_async(_prepare_device_llm_session, thread_sensitive=True)(device_code, question_text)
     except Exception as exc:
         await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, **_realtime_error_payload(exc)))
-        return
+        return None
 
     started_payload = {
         'type': 'llm.started',
@@ -481,6 +597,8 @@ async def _run_llm_session_body(send, command_id, message: dict[str, Any]) -> No
         )
         for segment in _split_llm_tts_segments(answer_text, session):
             await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
+            if on_tts_segment is not None:
+                await on_tts_segment(segment)
     else:
         tts_buffer = ''
         try:
@@ -505,16 +623,22 @@ async def _run_llm_session_body(send, command_id, message: dict[str, Any]) -> No
                 segments, tts_buffer = _pop_llm_tts_segments(tts_buffer, session)
                 for segment in segments:
                     await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
+                    if on_tts_segment is not None:
+                        await on_tts_segment(segment)
         except Exception as exc:
             await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message=str(exc)[:200]))
-            return
+            return None
         final_segments, _ = _pop_llm_tts_segments(tts_buffer, session, flush=True)
         for segment in final_segments:
             await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
+            if on_tts_segment is not None:
+                await on_tts_segment(segment)
 
     if not answer_text:
         await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message='LLM 没有返回有效回复'))
-        return
+        return None
+
+    _remember_agent_exchange(session.get('memoryKey'), question_text, answer_text)
 
     await _send_json(
         send,
@@ -534,6 +658,7 @@ async def _run_llm_session_body(send, command_id, message: dict[str, Any]) -> No
             },
         },
     )
+    return answer_text
 
 
 async def _send_llm_tts_segment(send, command_id, request_id: str, trace_id: str, text: str) -> None:
@@ -550,6 +675,204 @@ async def _send_llm_tts_segment(send, command_id, request_id: str, trace_id: str
             'payload': {'text': segment},
         },
     )
+
+
+def _agent_memory_key(device) -> str:
+    return f'{device.tenant_id}:{device.code}'
+
+
+def _get_agent_memory(memory_key: str) -> list[dict[str, str]]:
+    return [dict(item) for item in _AGENT_MEMORY.get(memory_key, [])]
+
+
+def _remember_agent_exchange(memory_key: str | None, question_text: str, answer_text: str) -> None:
+    if not memory_key:
+        return
+    question = str(question_text or '').strip()
+    answer = str(answer_text or '').strip()
+    if not question or not answer:
+        return
+    history = _AGENT_MEMORY.setdefault(memory_key, [])
+    history.extend([
+        {'role': 'user', 'content': question},
+        {'role': 'assistant', 'content': answer},
+    ])
+    if len(history) > _AGENT_MEMORY_MAX_MESSAGES:
+        del history[:-_AGENT_MEMORY_MAX_MESSAGES]
+
+
+def _is_client_disconnected(exc: BaseException) -> bool:
+    if isinstance(exc, ConnectionClosed):
+        return True
+    return exc.__class__.__name__ == 'ClientDisconnected'
+
+
+async def _start_agent_asr_session(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:
+    command_id = connection.agent_session_id
+    request_id = connection.agent_request_id or make_request_id()
+    trace_id = connection.agent_trace_id or request_id
+    payload = message.get('payload') if isinstance(message.get('payload'), dict) else {}
+    token = str(payload.get('token') or '').strip()
+    query_params = _payload_query_params(payload, 'tenantId', 'tenant', 'deviceCode', 'device_code')
+
+    resolved_connection = await sync_to_async(realtime_asr.resolve_asr_realtime_connection, thread_sensitive=True)(
+        token,
+        headers=[],
+        query_params=query_params,
+    )
+    if resolved_connection is None:
+        await _send_json(send, _trace_payload('agent.error', command_id, request_id, trace_id, message='ASR session is not authorized'))
+        return
+
+    config = await sync_to_async(realtime_asr.get_effective_asr_config, thread_sensitive=True)()
+    if not config.is_active or not realtime_asr.is_asr_configured(config):
+        await _send_json(send, _trace_payload('agent.error', command_id, request_id, trace_id, message='ASR 服务未就绪'))
+        return
+
+    replacement_pairs = await sync_to_async(realtime_asr.load_asr_replacement_pairs, thread_sensitive=True)(
+        resolved_connection.get('tenant_id'),
+    )
+
+    try:
+        upstream_context = realtime_asr.websockets.connect(
+            realtime_asr.build_asr_ws_url(config),
+            additional_headers=[
+                ('Authorization', f'Bearer {config.api_key}'),
+                ('OpenAI-Beta', 'realtime=v1'),
+                ('X-DashScope-WorkSpace', config.workspace_id),
+            ],
+            user_agent_header='solin-admin/1.0',
+            open_timeout=10,
+            ping_interval=20,
+            ping_timeout=20,
+            max_size=2 * 1024 * 1024,
+        )
+        upstream = await upstream_context.__aenter__()
+        await upstream.send(json.dumps(realtime_asr._session_update_event(
+            vad_threshold=getattr(config, 'vad_threshold', 0.0),
+            vad_silence_duration_ms=getattr(config, 'vad_silence_duration_ms', 400),
+        )))
+    except Exception as exc:
+        await _send_json(send, _trace_payload('agent.error', command_id, request_id, trace_id, message=str(exc)[:200]))
+        return
+
+    connection.asr_session_id = command_id
+    connection.asr_upstream = upstream
+    connection.asr_upstream_context = upstream_context
+    connection.asr_upstream_task = asyncio.create_task(
+        _agent_asr_upstream_to_client(upstream, send, connection, replacement_pairs),
+    )
+    await _send_json(send, _trace_payload('asr.ready', command_id, request_id, trace_id))
+
+
+async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConnection, replacement_pairs: list[tuple[str, str]]) -> None:
+    command_id = connection.agent_session_id
+    request_id = connection.agent_request_id or make_request_id()
+    trace_id = connection.agent_trace_id or request_id
+    try:
+        async for raw_message in upstream:
+            try:
+                event = json.loads(raw_message)
+            except (TypeError, json.JSONDecodeError):
+                continue
+            if not isinstance(event, dict):
+                continue
+
+            transcript_payload = realtime_asr.extract_transcript_payload(event, replacement_pairs=replacement_pairs)
+            if transcript_payload is not None:
+                transcript_payload['id'] = command_id
+                transcript_payload['requestId'] = request_id
+                transcript_payload['traceId'] = trace_id
+                await _send_json(send, transcript_payload)
+                text = str(transcript_payload.get('text') or '').strip()
+                if text:
+                    connection.agent_latest_text = text
+                continue
+
+            if event.get('type') == 'session.finished':
+                await _send_json(send, {'type': 'asr.done', 'id': command_id, 'requestId': request_id, 'traceId': trace_id})
+                text = connection.agent_latest_text.strip()
+                await _clear_finished_asr_session(connection)
+                if text:
+                    await _run_agent_llm_and_finish(send, connection, text)
+                else:
+                    await _send_json(send, _trace_payload('agent.error', command_id, request_id, trace_id, message='ASR 没有返回有效文本'))
+                return
+    except asyncio.CancelledError:
+        raise
+    except Exception as exc:
+        if _is_client_disconnected(exc):
+            return
+        raise
+
+
+async def _clear_finished_asr_session(connection: RealtimeConnection) -> None:
+    if connection.asr_upstream_context is not None:
+        await connection.asr_upstream_context.__aexit__(None, None, None)
+    connection.asr_upstream = None
+    connection.asr_upstream_context = None
+    connection.asr_upstream_task = None
+    connection.asr_session_id = None
+
+
+async def _run_agent_llm_and_finish(send, connection: RealtimeConnection, question_text: str) -> None:
+    command_id = connection.agent_session_id
+    request_id = connection.agent_request_id or make_request_id()
+    trace_id = connection.agent_trace_id or request_id
+    device_code = connection.agent_device_code or ''
+    message = {
+        'id': command_id,
+        'payload': {
+            'deviceCode': device_code,
+            'text': question_text,
+            'requestId': request_id,
+            'traceId': trace_id,
+        },
+    }
+
+    try:
+        await _run_llm_session_body(send, command_id, message, on_tts_segment=lambda segment: _queue_agent_tts_segment(connection, segment))
+        if connection.agent_tts_queue is not None:
+            await connection.agent_tts_queue.put(None)
+            if connection.agent_tts_worker is not None:
+                await asyncio.gather(connection.agent_tts_worker, return_exceptions=True)
+                connection.agent_tts_worker = None
+        await _send_json(send, _trace_payload('agent.done', command_id, request_id, trace_id, payload={'deviceCode': device_code, 'questionText': question_text}))
+    except asyncio.CancelledError:
+        raise
+    except Exception as exc:
+        if not _is_client_disconnected(exc):
+            raise
+    finally:
+        await connection.close_agent_session()
+
+
+async def _queue_agent_tts_segment(connection: RealtimeConnection, segment: str) -> None:
+    if connection.agent_tts_queue is not None and segment:
+        await connection.agent_tts_queue.put(segment)
+        await asyncio.sleep(0)
+
+
+async def _agent_tts_worker(send, connection: RealtimeConnection, command_id, device_code: str, request_id: str, trace_id: str, payload: dict[str, Any]) -> None:
+    queue = connection.agent_tts_queue
+    if queue is None:
+        return
+    while True:
+        segment = await queue.get()
+        if segment is None:
+            return
+        tts_message = {
+            'id': command_id,
+            'payload': {
+                'deviceCode': device_code,
+                'text': segment,
+                'voiceId': payload.get('voiceId'),
+                'providerCode': payload.get('providerCode'),
+                'requestId': request_id,
+                'traceId': trace_id,
+            },
+        }
+        await _run_tts_session_body(send, command_id, tts_message)
 
 
 def _pop_llm_tts_segments(buffer: str, session: dict[str, Any], *, flush: bool = False) -> tuple[list[str], str]:
@@ -584,6 +907,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
         return {
             'deviceCode': device.code,
             'annotationAnswer': annotation.answer,
+            'memoryKey': _agent_memory_key(device),
             'agentApplicationId': agent_application.id,
             'agentApplicationName': agent_application.name,
             'applicationId': device.application_id,
@@ -607,6 +931,10 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
     system_prompt += f' 当前设备智能体：{agent_application.name}。'
     if device.application is not None:
         system_prompt += f' 当前设备资源应用：{device.application.name}。'
+    memory_key = _agent_memory_key(device)
+    messages = [{'role': 'system', 'content': system_prompt}]
+    messages.extend(_get_agent_memory(memory_key))
+    messages.append({'role': 'user', 'content': question_text})
 
     return {
         'deviceCode': device.code,
@@ -616,10 +944,8 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
             'apiKey': model.provider.api_key,
             'enableWebSearch': model.enable_web_search,
         },
-        'messages': [
-            {'role': 'system', 'content': system_prompt},
-            {'role': 'user', 'content': question_text},
-        ],
+        'messages': messages,
+        'memoryKey': memory_key,
         'temperature': agent_application.temperature,
         'maxTokens': None if agent_application.max_tokens_unlimited else agent_application.max_tokens,
         'annotationAnswer': None,
@@ -653,40 +979,7 @@ def _run_device_llm_answer(device_code: str, question_text: str) -> dict[str, An
 async def _run_tts_session(send, connection: RealtimeConnection, command_id, message: dict[str, Any]) -> None:
     command_id = message.get('id')
     try:
-        payload = message.get('payload') if isinstance(message.get('payload'), dict) else {}
-        token = str(payload.get('token') or '').strip()
-        query_params = _payload_query_params(payload, 'tenantId', 'tenant', 'deviceCode', 'device_code')
-
-        resolved_connection = await sync_to_async(realtime_tts.resolve_tts_realtime_connection, thread_sensitive=True)(
-            token,
-            query_params=query_params,
-        )
-        if resolved_connection is None:
-            await _send_json(send, {'type': 'tts.error', 'id': command_id, 'message': 'TTS session is not authorized'})
-            return
-
-        provider = await sync_to_async(realtime_tts.resolve_tts_provider, thread_sensitive=True)(
-            payload.get('providerCode'),
-        )
-        config = await sync_to_async(realtime_tts.get_effective_tts_config, thread_sensitive=True)(provider)
-        if not realtime_tts.is_tts_configured(config):
-            raise RuntimeError('TTS 服务未配置或未启用')
-
-        voice = await sync_to_async(realtime_tts.resolve_tts_voice, thread_sensitive=True)(
-            resolved_connection,
-            payload.get('voiceId'),
-            provider,
-        )
-        if voice is None:
-            raise RuntimeError('TTS 音色未配置')
-
-        text = realtime_tts.normalize_tts_text(str(payload.get('text') or ''), config)
-        await realtime_tts._stream_tts_audio(
-            text=text,
-            voice=voice,
-            config=config,
-            send=_with_command_id(send, command_id),
-        )
+        await _run_tts_session_body(send, command_id, message)
     except asyncio.CancelledError:
         raise
     except Exception as exc:
@@ -695,6 +988,43 @@ async def _run_tts_session(send, connection: RealtimeConnection, command_id, mes
         if connection.tts_task is asyncio.current_task():
             connection.tts_task = None
             connection.tts_session_id = None
+
+
+async def _run_tts_session_body(send, command_id, message: dict[str, Any]) -> None:
+    payload = message.get('payload') if isinstance(message.get('payload'), dict) else {}
+    token = str(payload.get('token') or '').strip()
+    query_params = _payload_query_params(payload, 'tenantId', 'tenant', 'deviceCode', 'device_code')
+
+    resolved_connection = await sync_to_async(realtime_tts.resolve_tts_realtime_connection, thread_sensitive=True)(
+        token,
+        query_params=query_params,
+    )
+    if resolved_connection is None:
+        await _send_json(send, {'type': 'tts.error', 'id': command_id, 'message': 'TTS session is not authorized'})
+        return
+
+    provider = await sync_to_async(realtime_tts.resolve_tts_provider, thread_sensitive=True)(
+        payload.get('providerCode'),
+    )
+    config = await sync_to_async(realtime_tts.get_effective_tts_config, thread_sensitive=True)(provider)
+    if not realtime_tts.is_tts_configured(config):
+        raise RuntimeError('TTS 服务未配置或未启用')
+
+    voice = await sync_to_async(realtime_tts.resolve_tts_voice, thread_sensitive=True)(
+        resolved_connection,
+        payload.get('voiceId'),
+        provider,
+    )
+    if voice is None:
+        raise RuntimeError('TTS 音色未配置')
+
+    text = realtime_tts.normalize_tts_text(str(payload.get('text') or ''), config)
+    await realtime_tts._stream_tts_audio(
+        text=text,
+        voice=voice,
+        config=config,
+        send=_with_command_id(send, command_id),
+    )
 
 
 async def _asr_upstream_to_client(upstream, send, command_id, replacement_pairs: list[tuple[str, str]]) -> None:
