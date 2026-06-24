@@ -804,6 +804,7 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
     command_id = connection.agent_session_id
     request_id = connection.agent_request_id or make_request_id()
     trace_id = connection.agent_trace_id or request_id
+    finish_sent = False
     try:
         async for raw_message in upstream:
             try:
@@ -822,6 +823,9 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
                 text = str(transcript_payload.get('text') or '').strip()
                 if text:
                     connection.agent_latest_text = text
+                if transcript_payload.get('final') and not finish_sent:
+                    finish_sent = True
+                    await upstream.send(json.dumps(realtime_asr._session_finish_event()))
                 continue
 
             if event.get('type') == 'session.finished':
@@ -1065,6 +1069,7 @@ async def _run_tts_session_body(send, command_id, message: dict[str, Any]) -> No
 
 
 async def _asr_upstream_to_client(upstream, send, command_id, replacement_pairs: list[tuple[str, str]]) -> None:
+    finish_sent = False
     async for raw_message in upstream:
         try:
             event = json.loads(raw_message)
@@ -1077,6 +1082,9 @@ async def _asr_upstream_to_client(upstream, send, command_id, replacement_pairs:
         if transcript_payload is not None:
             transcript_payload['id'] = command_id
             await _send_json(send, transcript_payload)
+            if transcript_payload.get('final') and not finish_sent:
+                finish_sent = True
+                await upstream.send(json.dumps(realtime_asr._session_finish_event()))
             continue
 
         if event.get('type') == 'session.finished':

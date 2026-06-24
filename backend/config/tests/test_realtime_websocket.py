@@ -61,6 +61,46 @@ class UnifiedASRUpstream:
         raise StopAsyncIteration
 
 
+class AutoFinishASRUpstream:
+    def __init__(self, text='统一 ASR'):
+        self.messages = []
+        self.text = text
+        self._audio_seen = asyncio.Event()
+        self._finish_seen = asyncio.Event()
+        self._stage = 0
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+    async def send(self, message):
+        payload = json.loads(message)
+        self.messages.append(payload)
+        if payload.get('type') == 'input_audio_buffer.append':
+            self._audio_seen.set()
+        if payload.get('type') == 'session.finish':
+            self._finish_seen.set()
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        if self._stage == 0:
+            await self._audio_seen.wait()
+            self._stage += 1
+            return json.dumps({
+                'type': 'conversation.item.input_audio_transcription.completed',
+                'transcript': self.text,
+            })
+        if self._stage == 1:
+            await self._finish_seen.wait()
+            self._stage += 1
+            return json.dumps({'type': 'session.finished'})
+        raise StopAsyncIteration
+
+
 class UnifiedTTSUpstream:
     def __init__(self):
         self.messages = []
@@ -145,6 +185,55 @@ class RealtimeWebSocketTests(SimpleTestCase):
             connection.agent_trace_id = 'trace-disconnect-1'
 
             await _agent_asr_upstream_to_client(TranscriptUpstream(), disconnected_send, connection, [])
+
+        async_to_sync(run_task)()
+
+    def test_agent_asr_upstream_auto_finishes_and_continues_to_llm_after_final_transcript(self):
+        async def run_task():
+            from config.realtime import RealtimeConnection, _agent_asr_upstream_to_client
+
+            sent_payloads = []
+            llm_questions = []
+
+            async def send(event):
+                sent_payloads.append(json.loads(event['text']))
+
+            async def fake_run_agent_llm(send, connection, question_text):
+                llm_questions.append(question_text)
+
+            connection = RealtimeConnection()
+            connection.agent_session_id = 'agent-auto-finish-1'
+            connection.agent_request_id = 'req-agent-auto-finish-1'
+            connection.agent_trace_id = 'trace-agent-auto-finish-1'
+
+            upstream = AutoFinishASRUpstream('自动结束问题')
+            upstream._audio_seen.set()
+            with patch('config.realtime._run_agent_llm_and_finish', side_effect=fake_run_agent_llm):
+                await _agent_asr_upstream_to_client(upstream, send, connection, [])
+
+            self.assertEqual(
+                sent_payloads,
+                [
+                    {
+                        'type': 'asr.transcript',
+                        'text': '自动结束问题',
+                        'originalText': '自动结束问题',
+                        'replacementApplied': False,
+                        'final': True,
+                        'id': 'agent-auto-finish-1',
+                        'requestId': 'req-agent-auto-finish-1',
+                        'traceId': 'trace-agent-auto-finish-1',
+                    },
+                    {
+                        'type': 'asr.done',
+                        'id': 'agent-auto-finish-1',
+                        'requestId': 'req-agent-auto-finish-1',
+                        'traceId': 'trace-agent-auto-finish-1',
+                    },
+                ],
+            )
+            self.assertEqual(llm_questions, ['自动结束问题'])
+            self.assertIn('session.finish', [message.get('type') for message in upstream.messages])
 
         async_to_sync(run_task)()
 
@@ -355,6 +444,80 @@ class RealtimeWebSocketTests(SimpleTestCase):
             session_update = next(message for message in upstream.messages if message.get('type') == 'session.update')
             self.assertEqual(session_update['session']['turn_detection']['threshold'], -0.4)
             self.assertEqual(session_update['session']['turn_detection']['silence_duration_ms'], 700)
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
+    def test_unified_realtime_websocket_auto_finishes_asr_after_final_transcript(self):
+        async def run_websocket():
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            response = await communicator.receive_output(timeout=1)
+            self.assertEqual(response['type'], 'websocket.accept')
+
+            config = SimpleNamespace(
+                is_active=True,
+                api_key='test-api-key',
+                workspace_id='test-workspace',
+                vad_threshold=-0.4,
+                vad_silence_duration_ms=700,
+            )
+            upstream = AutoFinishASRUpstream()
+            with (
+                patch(
+                    'apps.ai_models.realtime_asr.resolve_asr_realtime_connection',
+                    return_value={'user_id': 1, 'tenant_id': 2},
+                ),
+                patch('apps.ai_models.realtime_asr.get_effective_asr_config', return_value=config),
+                patch('apps.ai_models.realtime_asr.is_asr_configured', return_value=True),
+                patch('apps.ai_models.realtime_asr.build_asr_ws_url', return_value='ws://asr.example/realtime'),
+                patch('apps.ai_models.realtime_asr.load_asr_replacement_pairs', return_value=[]),
+                patch('apps.ai_models.realtime_asr.websockets.connect', return_value=upstream),
+            ):
+                await communicator.send_input({
+                    'type': 'websocket.receive',
+                    'text': json.dumps({
+                        'type': 'asr.session.start',
+                        'id': 'asr-auto-finish-session',
+                        'payload': {
+                            'token': 'test-token',
+                            'tenantId': 2,
+                            'requestId': 'req-asr-auto-finish-1',
+                            'traceId': 'trace-asr-auto-finish-1',
+                        },
+                    }),
+                })
+                self.assertEqual(json.loads((await communicator.receive_output(timeout=1))['text'])['type'], 'asr.ready')
+
+                await communicator.send_input({'type': 'websocket.receive', 'bytes': b'\x01\x02'})
+                transcript = await communicator.receive_output(timeout=1)
+                self.assertEqual(
+                    json.loads(transcript['text']),
+                    {
+                        'type': 'asr.transcript',
+                        'id': 'asr-auto-finish-session',
+                        'text': '统一 ASR',
+                        'originalText': '统一 ASR',
+                        'replacementApplied': False,
+                        'final': True,
+                    },
+                )
+                done = await communicator.receive_output(timeout=1)
+                self.assertEqual(json.loads(done['text']), {'type': 'asr.done', 'id': 'asr-auto-finish-session'})
+
+            self.assertIn('session.finish', [message.get('type') for message in upstream.messages])
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)
