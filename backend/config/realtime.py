@@ -54,6 +54,7 @@ class RealtimeConnection:
         self.asr_upstream = None
         self.asr_upstream_context = None
         self.asr_upstream_task = None
+        self.asr_accepting_audio = False
         self.llm_session_id = None
         self.llm_task = None
         self.tts_session_id = None
@@ -99,6 +100,7 @@ class RealtimeConnection:
             self.asr_upstream_context = None
         self.asr_upstream = None
         self.asr_session_id = None
+        self.asr_accepting_audio = False
 
     async def close_llm_session(self) -> None:
         if self.llm_task is not None:
@@ -256,8 +258,7 @@ async def _handle_client_event(event, send, connection: RealtimeConnection) -> b
 async def _handle_binary_frame(send, connection: RealtimeConnection, audio_bytes: bytes) -> None:
     if not audio_bytes:
         return
-    if connection.asr_upstream is None:
-        await _send_error(send, None, 'media_session_not_started', 'Binary frames require an active media session')
+    if connection.asr_upstream is None or not connection.asr_accepting_audio:
         return
     await connection.asr_upstream.send(json.dumps(realtime_asr._audio_append_event(audio_bytes)))
 
@@ -394,8 +395,9 @@ async def _handle_asr_session_start(send, connection: RealtimeConnection, messag
     connection.asr_session_id = command_id
     connection.asr_upstream = upstream
     connection.asr_upstream_context = upstream_context
+    connection.asr_accepting_audio = True
     connection.asr_upstream_task = asyncio.create_task(
-        _asr_upstream_to_client(upstream, send, command_id, replacement_pairs),
+        _asr_upstream_to_client(upstream, send, connection, command_id, replacement_pairs),
     )
     await _send_json(send, _trace_payload('asr.ready', command_id, request_id, trace_id))
 
@@ -404,6 +406,7 @@ async def _handle_asr_session_finish(send, connection: RealtimeConnection, messa
     if connection.asr_upstream is None:
         await _send_json(send, {'type': 'asr.error', 'id': message.get('id'), 'message': 'ASR session is not started'})
         return
+    connection.asr_accepting_audio = False
     await connection.asr_upstream.send(json.dumps(realtime_asr._session_finish_event()))
 
 
@@ -524,6 +527,7 @@ async def _handle_agent_session_finish(send, connection: RealtimeConnection, mes
             return
         await _send_json(send, {'type': 'agent.error', 'id': connection.agent_session_id, 'message': 'ASR session is not started'})
         return
+    connection.asr_accepting_audio = False
     await connection.asr_upstream.send(json.dumps(realtime_asr._session_finish_event()))
 
 
@@ -805,6 +809,7 @@ async def _start_agent_asr_session(send, connection: RealtimeConnection, message
     connection.asr_session_id = command_id
     connection.asr_upstream = upstream
     connection.asr_upstream_context = upstream_context
+    connection.asr_accepting_audio = True
     connection.asr_upstream_task = asyncio.create_task(
         _agent_asr_upstream_to_client(upstream, send, connection, replacement_pairs),
     )
@@ -836,6 +841,7 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
                     connection.agent_latest_text = text
                 if transcript_payload.get('final') and not finish_sent:
                     finish_sent = True
+                    connection.asr_accepting_audio = False
                     await upstream.send(json.dumps(realtime_asr._session_finish_event()))
                 continue
 
@@ -862,6 +868,7 @@ async def _clear_finished_asr_session(connection: RealtimeConnection) -> None:
     connection.asr_upstream_context = None
     connection.asr_upstream_task = None
     connection.asr_session_id = None
+    connection.asr_accepting_audio = False
     if upstream_context is not None:
         _close_asr_upstream_context_later(upstream_context)
 
@@ -908,22 +915,62 @@ async def _agent_tts_worker(send, connection: RealtimeConnection, command_id, de
     queue = connection.agent_tts_queue
     if queue is None:
         return
+    try:
+        first_segment = await queue.get()
+        if first_segment is None:
+            return
+        await _run_agent_tts_stream(send, command_id, queue, device_code, first_segment, payload)
+    except asyncio.CancelledError:
+        raise
+    except Exception as exc:
+        await _send_json(
+            send,
+            _trace_payload('tts.error', command_id, request_id, trace_id, message=str(exc)[:200]),
+        )
+
+
+async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_code: str, first_segment: str, payload: dict[str, Any]) -> None:
+    query_params = _payload_query_params({'deviceCode': device_code}, 'deviceCode')
+    resolved_connection = await sync_to_async(realtime_tts.resolve_tts_realtime_connection, thread_sensitive=True)(
+        '',
+        query_params=query_params,
+    )
+    if resolved_connection is None:
+        await _send_json(send, {'type': 'tts.error', 'id': command_id, 'message': 'TTS session is not authorized'})
+        return
+
+    provider = await sync_to_async(realtime_tts.resolve_tts_provider, thread_sensitive=True)(
+        payload.get('providerCode'),
+    )
+    config = await sync_to_async(realtime_tts.get_effective_tts_config, thread_sensitive=True)(provider)
+    if not realtime_tts.is_tts_configured(config):
+        raise RuntimeError('TTS 服务未配置或未启用')
+
+    voice = await sync_to_async(realtime_tts.resolve_tts_voice, thread_sensitive=True)(
+        resolved_connection,
+        payload.get('voiceId'),
+        provider,
+    )
+    if voice is None:
+        raise RuntimeError('TTS 音色未配置')
+
+    await realtime_tts._stream_tts_segments_audio(
+        segments=_agent_tts_segments(first_segment, queue),
+        voice=voice,
+        config=config,
+        send=_with_command_id(send, command_id),
+    )
+
+
+async def _agent_tts_segments(first_segment: str, queue: asyncio.Queue):
+    if first_segment:
+        yield first_segment
     while True:
         segment = await queue.get()
         if segment is None:
             return
-        tts_message = {
-            'id': command_id,
-            'payload': {
-                'deviceCode': device_code,
-                'text': segment,
-                'voiceId': payload.get('voiceId'),
-                'providerCode': payload.get('providerCode'),
-                'requestId': request_id,
-                'traceId': trace_id,
-            },
-        }
-        await _run_tts_session_body(send, command_id, tts_message)
+        if segment:
+            yield segment
 
 
 def _pop_llm_tts_segments(buffer: str, session: dict[str, Any], *, flush: bool = False) -> tuple[list[str], str]:
@@ -1080,7 +1127,7 @@ async def _run_tts_session_body(send, command_id, message: dict[str, Any]) -> No
     )
 
 
-async def _asr_upstream_to_client(upstream, send, command_id, replacement_pairs: list[tuple[str, str]]) -> None:
+async def _asr_upstream_to_client(upstream, send, connection: RealtimeConnection, command_id, replacement_pairs: list[tuple[str, str]]) -> None:
     finish_sent = False
     async for raw_message in upstream:
         try:
@@ -1096,10 +1143,12 @@ async def _asr_upstream_to_client(upstream, send, command_id, replacement_pairs:
             await _send_json(send, transcript_payload)
             if transcript_payload.get('final') and not finish_sent:
                 finish_sent = True
+                connection.asr_accepting_audio = False
                 await upstream.send(json.dumps(realtime_asr._session_finish_event()))
             continue
 
         if event.get('type') == 'session.finished':
+            connection.asr_accepting_audio = False
             await _send_json(send, {'type': 'asr.done', 'id': command_id})
             return
 

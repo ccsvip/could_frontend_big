@@ -330,6 +330,21 @@
         deviceStatusSocket: null,
         deviceStatusPingTimer: null,
       };
+      const RUNTIME_DEBUG_PREFIX = '[runtime-api-console]';
+      function debugRuntime(label, detail) {
+        const payload = Object.assign({ at: new Date().toISOString() }, detail || {});
+        if (console && console.log) {
+          console.log(RUNTIME_DEBUG_PREFIX, label, payload);
+        }
+      }
+      function websocketStateName(socket) {
+        if (!socket) return 'none';
+        if (socket.readyState === WebSocket.CONNECTING) return 'CONNECTING';
+        if (socket.readyState === WebSocket.OPEN) return 'OPEN';
+        if (socket.readyState === WebSocket.CLOSING) return 'CLOSING';
+        if (socket.readyState === WebSocket.CLOSED) return 'CLOSED';
+        return String(socket.readyState);
+      }
 
       const els = {
         apiBaseInput: document.getElementById('apiBaseInput'),
@@ -365,7 +380,7 @@
         videos: { title: '获取视频', description: '通过固定设备码读取当前公司在资源管理/视频管理维护的数据。' },
         deviceStatus: { title: '在线状态 WebSocket', description: '设备在线 / 离线由统一 /ws/realtime/ 的 device.status.start、device.status.ping 和连接断开决定。' },
         heartbeat: { title: '兼容心跳', description: 'POST /device-runtime/heartbeat/ 只兼容旧端刷新 lastHeartbeat 和版本信息，不决定设备 online / offline。' },
-        asr: { title: 'ASR 单步调试', description: '只用于单独验证 ASR 阶段：发送 asr.session.start 和 PCM，后端实时读取 VAD 断句参数并返回纠错文本。' },
+        asr: { title: 'ASR 单步调试', description: '只用于单独验证 ASR 阶段：发送 asr.session.start 和 PCM，实时预览使用上游 text + stash，最终结果使用 completed/transcript。' },
         llmWs: { title: 'LLM 单步调试', description: '只用于单独验证 LLM 阶段：llm.session.start 流式返回 llm.started、llm.delta、llm.done；llm.session.cancel 只打断当前会话。' },
         ttsWs: { title: 'TTS 单步调试', description: '只用于单独验证 TTS 阶段：tts.session.start 返回 ready、audio/pcm、done，tts.session.cancel 返回 cancelled。' },
         agentChat: { title: '智能体回答', description: '一个 RuntimeAgentRealtimeManager 负责完整回答：ASR、LLM、TTS 只是同一会话的内部阶段，不是三个独立业务模块。' },
@@ -804,7 +819,7 @@
       }
 
       function renderAsr() {
-        els.contentBody.innerHTML = '<div class="toolbar"><button class="button" id="asrStatusBtn" type="button">检查 ASR 状态</button><button class="button secondary" id="asrMicStartBtn" type="button">开始麦克风测试</button><button class="button secondary" id="asrMicStopBtn" type="button" disabled>停止并提交</button></div><div class="grid"><article class="card"><h3>原始识别</h3><div id="asrOriginalText" class="code-chip">等待识别</div></article><article class="card"><h3>替换词纠错后</h3><div id="asrCorrectedText" class="code-chip">等待识别</div></article><article class="card"><h3>纠错状态</h3><div id="asrReplacementState" class="code-chip">未命中</div></article></div><div class="detail-block"><strong>事件输出</strong><pre id="asrOutput">等待请求</pre></div><div class="note">特殊说明：本页 ASR WebSocket 测试会申请浏览器麦克风权限，把输入音频重采样为 16k mono pcm_s16le，并以二进制分片发送；后端会实时读取 AI 大模型/ASR 的 vadThreshold、vadSilenceDurationMs 断句参数，并按设备所属公司的 ASR 替换词规则返回 text、originalText、replacementApplied，安卓端应使用 text 作为纠错后的最终文本。</div>';
+        els.contentBody.innerHTML = '<div class="toolbar"><button class="button" id="asrStatusBtn" type="button">检查 ASR 状态</button><button class="button secondary" id="asrMicStartBtn" type="button">开始麦克风测试</button><button class="button secondary" id="asrMicStopBtn" type="button" disabled>停止并提交</button></div><div class="grid"><article class="card"><h3>实时预览</h3><div id="asrPreviewText" class="code-chip">等待识别</div></article><article class="card"><h3>原始识别</h3><div id="asrOriginalText" class="code-chip">等待识别</div></article><article class="card"><h3>替换词纠错后</h3><div id="asrCorrectedText" class="code-chip">等待识别</div></article><article class="card"><h3>纠错状态</h3><div id="asrReplacementState" class="code-chip">未命中</div></article></div><div class="detail-block"><strong>事件输出</strong><pre id="asrOutput">等待请求</pre></div><div class="note">特殊说明：本页 ASR WebSocket 测试会申请浏览器麦克风权限，把输入音频重采样为 16k mono pcm_s16le，并以二进制分片发送；上游实时事件 conversation.item.input_audio_transcription.text 的展示值是 text + stash，最终事件 conversation.item.input_audio_transcription.completed 的 transcript 才是定稿。后端按设备所属公司的 ASR 替换词规则返回 text、originalText、replacementApplied，安卓端最终问题应使用 final=true 时的 text。</div>';
         document.getElementById('asrStatusBtn').addEventListener('click', fetchAsrStatus);
         document.getElementById('asrMicStartBtn').addEventListener('click', startAsrMicTest);
         document.getElementById('asrMicStopBtn').addEventListener('click', stopAsrMicTest);
@@ -812,7 +827,7 @@
           label: 'ASR WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/',
           headers: {},
           body: { type: 'asr.session.start', id: 'asr-session-<timestamp>', payload: { deviceCode: state.deviceCode || '<deviceCode>', requestId: '<requestId>', traceId: '<traceId>' }, binary: '16k mono pcm_s16le chunks', finish: { type: 'asr.session.finish', id: 'asr-session-<timestamp>' }, cancel: { type: 'asr.session.cancel', id: 'asr-cancel-<timestamp>' } },
-          note: 'ASR 通过统一 WebSocket 命令 asr.session.start 按 deviceCode 解析公司上下文；收到 asr.ready 后发送 16k PCM 二进制分片。停止提交用 asr.session.finish；放弃本轮识别用 asr.session.cancel，cancel 只结束当前 ASR session。',
+          note: 'ASR 通过统一 WebSocket 命令 asr.session.start 按 deviceCode 解析公司上下文；收到 asr.ready 后发送 16k PCM 二进制分片。实时展示使用上游 text + stash；最终结果使用 completed/transcript。停止提交用 asr.session.finish；放弃本轮识别用 asr.session.cancel。',
         });
       }
 
@@ -842,19 +857,45 @@
           const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
           const socket = new WebSocket(realtimeWsUrl());
           state.sockets.push(socket);
-          state.asrRecorder = { socket, stream, sessionId, output, events, started: false, chunks: 0, audioContext: null, source: null, processor: null };
+          state.asrRecorder = { socket, stream, sessionId, output, events, started: false, chunks: 0, audioContext: null, source: null, processor: null, asrText: '', asrOriginalText: '', asrFinalText: '', asrFinalOriginalText: '' };
           startButton.disabled = true;
           stopButton.disabled = false;
-          writeRequestDetail({ label: 'ASR WebSocket 麦克风流式测试', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: command, note: '收到 asr.ready 后开始推送麦克风 16k mono pcm_s16le 二进制分片；点击停止会发送 asr.session.finish。VAD 断句参数由后台配置下发到上游 session.update，设备端不需要在 command 里传。' });
+          writeRequestDetail({ label: 'ASR WebSocket 麦克风流式测试', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: command, note: '收到 asr.ready 后开始推送麦克风 16k mono pcm_s16le 二进制分片；实时预览来自 conversation.item.input_audio_transcription.text 的 text + stash；点击停止会发送 asr.session.finish，最终文本来自 completed/transcript。VAD 断句参数由后台配置下发到上游 session.update。' });
 
           socket.addEventListener('open', () => {
+            debugRuntime('asr.socket.open', {
+              sessionId,
+              socketState: websocketStateName(socket),
+              command,
+            });
             socket.send(JSON.stringify(command));
+            debugRuntime('client.command.send', {
+              sessionId,
+              type: command.type,
+              payload: command.payload,
+              socketState: websocketStateName(socket),
+            });
             events.push({ type: 'client.sent', command: command.type, id: sessionId });
             output.textContent = pretty(events);
           });
           socket.addEventListener('message', (event) => {
             const payload = parseJson(event.data) || event.data;
             events.push(payload);
+            debugRuntime('asr.server.text.receive', {
+              sessionId,
+              type: payload && payload.type,
+              id: payload && payload.id,
+              requestId: payload && payload.requestId,
+              traceId: payload && payload.traceId,
+              text: payload && payload.text,
+              originalText: payload && payload.originalText,
+              stash: payload && payload.stash,
+              originalStash: payload && payload.originalStash,
+              final: payload && payload.final,
+              delta: payload && payload.delta,
+              sourceEventType: payload && payload.sourceEventType,
+              chunksSent: state.asrRecorder && state.asrRecorder.chunks,
+            });
             output.textContent = pretty(events);
             writeResponse({ ok: true, status: 'WS', body: events });
             const eventType = payload && payload.type;
@@ -866,11 +907,20 @@
           });
           socket.addEventListener('error', () => {
             events.push({ type: 'client.error', message: 'WebSocket 连接失败' });
+            debugRuntime('asr.socket.error', {
+              sessionId,
+              socketState: websocketStateName(socket),
+              chunksSent: state.asrRecorder && state.asrRecorder.chunks,
+            });
             output.textContent = pretty(events);
             stopAsrMicTest({ closeSocket: true, silent: true });
           });
           socket.addEventListener('close', () => {
             events.push({ type: 'client.close' });
+            debugRuntime('asr.socket.close', {
+              sessionId,
+              chunksSent: state.asrRecorder && state.asrRecorder.chunks,
+            });
             output.textContent = pretty(events);
             stopAsrMicTest({ silent: true });
           });
@@ -887,12 +937,28 @@
         recorder.audioContext = new AudioContextCtor();
         recorder.source = recorder.audioContext.createMediaStreamSource(recorder.stream);
         recorder.processor = recorder.audioContext.createScriptProcessor(4096, 1, 1);
+        debugRuntime('microphone.pump.starting', {
+          sessionId: recorder.sessionId,
+          socketState: websocketStateName(recorder.socket),
+          activeAgentSession: Boolean(state.agentSession),
+        });
         recorder.processor.onaudioprocess = (event) => {
           if (!recorder.started || !recorder.socket || recorder.socket.readyState !== WebSocket.OPEN) return;
           const channelData = event.inputBuffer.getChannelData(0);
           if (recorder.onAudioFrame) recorder.onAudioFrame(channelData);
           const pcm = floatTo16kPcm(channelData, recorder.audioContext.sampleRate);
           if (!pcm.byteLength) return;
+          if (!recorder.firstPcmLogged || recorder.chunks < 3 || recorder.chunks % 25 === 0) {
+            debugRuntime('client.binary.send', {
+              sessionId: recorder.sessionId,
+              chunkIndex: recorder.chunks + 1,
+              bytes: pcm.byteLength,
+              socketState: websocketStateName(recorder.socket),
+              recorderStarted: recorder.started,
+              agentSessionId: recorder.session && recorder.session.command && recorder.session.command.id,
+            });
+            recorder.firstPcmLogged = true;
+          }
           recorder.socket.send(pcm);
           markAgentTiming(recorder.session || state.agentSession, 'firstAudioSentAt');
           recorder.chunks += 1;
@@ -902,6 +968,12 @@
         recorder.started = true;
         markAgentTiming(recorder.session || state.agentSession, 'audioPumpStartedAt');
         recorder.events.push({ type: 'client.microphone.started', inputSampleRate: recorder.audioContext.sampleRate, outputSampleRate: 16000, format: 'pcm_s16le' });
+        debugRuntime('microphone.pump.started', {
+          sessionId: recorder.sessionId,
+          inputSampleRate: recorder.audioContext.sampleRate,
+          outputSampleRate: 16000,
+          socketState: websocketStateName(recorder.socket),
+        });
         recorder.output.textContent = pretty(recorder.events);
       }
 
@@ -992,12 +1064,69 @@
       }
 
       function updateAsrTranscriptSummary(payload) {
+        const preview = document.getElementById('asrPreviewText');
         const original = document.getElementById('asrOriginalText');
         const corrected = document.getElementById('asrCorrectedText');
         const stateLabel = document.getElementById('asrReplacementState');
-        if (original) original.textContent = payload.originalText || payload.text || '-';
-        if (corrected) corrected.textContent = payload.text || '-';
-        if (stateLabel) stateLabel.textContent = payload.replacementApplied ? '已命中替换词' : '未命中';
+        appendAsrRealtimeText(state.asrRecorder, payload, { previewNode: preview, originalNode: original, correctedNode: corrected, stateNode: stateLabel });
+      }
+
+      function appendAsrRealtimeText(recorder, payload, nodes) {
+        const text = String(payload.text || '').trim();
+        const stash = String(payload.stash || '').trim();
+        const previewText = String(payload.previewText || payload.displayText || (stash ? text + stash : text) || '').trim();
+        const originalText = String(payload.originalText || text || '').trim();
+        const originalStash = String(payload.originalStash || '').trim();
+        const originalPreviewText = String(payload.originalPreviewText || payload.displayOriginal || (originalStash ? originalText + originalStash : originalText) || previewText || '').trim();
+        if (!previewText && !text) return '';
+        const isDelta = payload.delta === true || String(payload.sourceEventType || '').endsWith('.delta');
+        const isFinal = payload.final === true;
+        if (recorder) {
+          if (isFinal) {
+            recorder.asrFinalText = text;
+            recorder.asrFinalOriginalText = originalText;
+            recorder.asrText = text;
+            recorder.asrOriginalText = originalText;
+            recorder.asrPreviewText = text;
+            recorder.asrOriginalPreviewText = originalText;
+          } else if (isDelta) {
+            recorder.asrText = (recorder.asrText || '') + text;
+            recorder.asrOriginalText = (recorder.asrOriginalText || '') + originalText;
+            recorder.asrPreviewText = (recorder.asrPreviewText || '') + previewText;
+            recorder.asrOriginalPreviewText = (recorder.asrOriginalPreviewText || '') + originalPreviewText;
+          } else {
+            recorder.asrText = text;
+            recorder.asrOriginalText = originalText;
+            recorder.asrPreviewText = previewText || text;
+            recorder.asrOriginalPreviewText = originalPreviewText || originalText;
+          }
+        }
+        const displayText = recorder ? (recorder.asrFinalText || recorder.asrText || text) : text;
+        const displayOriginal = recorder ? (recorder.asrFinalOriginalText || recorder.asrOriginalText || originalText) : originalText;
+        const displayPreview = recorder ? (recorder.asrFinalText || recorder.asrPreviewText || previewText || text) : (previewText || text);
+        if (nodes && nodes.originalNode) nodes.originalNode.textContent = displayOriginal || '-';
+        if (nodes && nodes.correctedNode) nodes.correctedNode.textContent = displayText || '-';
+        if (nodes && nodes.previewNode) nodes.previewNode.textContent = displayPreview || '-';
+        if (nodes && nodes.stateNode) {
+          const hasStash = Boolean(stash || originalStash);
+          const phase = isFinal ? '最终' : (isDelta ? '实时增量' : (hasStash ? '实时预览 text+stash' : '实时识别'));
+          nodes.stateNode.textContent = payload.replacementApplied ? phase + '，已命中替换词' : phase + '，未命中';
+        }
+        debugRuntime('asr.transcript.render', {
+          sessionId: recorder && recorder.sessionId,
+          text,
+          stash,
+          originalText,
+          originalStash,
+          displayPreview,
+          displayText,
+          displayOriginal,
+          delta: isDelta,
+          final: isFinal,
+          replacementApplied: Boolean(payload.replacementApplied),
+          sourceEventType: payload.sourceEventType,
+        });
+        return displayPreview;
       }
 
       function floatTo16kPcm(input, inputSampleRate) {
@@ -1091,6 +1220,12 @@
         const sessionId = command.id;
         const events = session.events;
         events.push({ type: 'client.microphone.requesting' });
+        debugRuntime('agent.voice.start', {
+          sessionId,
+          deviceCode: state.deviceCode,
+          autoPlay,
+          command,
+        });
         output.textContent = pretty(events);
         if (asrState) asrState.textContent = '请求麦克风';
         try {
@@ -1129,15 +1264,35 @@
               if (asrState) asrState.textContent = '识别失败';
               stopAgentVoiceQuestion({ closeSocket: true, silent: true });
             }
+            if (eventType === 'error') {
+              debugRuntime('agent.voice.error', {
+                sessionId,
+                payload,
+                socketState: websocketStateName(socket),
+                recorderStarted: recorder.started,
+                chunksSent: recorder.chunks,
+              });
+            }
           });
           socket.addEventListener('error', () => {
             events.push({ type: 'client.error', message: 'WebSocket 连接失败' });
+            debugRuntime('agent.voice.socket.error', {
+              sessionId,
+              socketState: websocketStateName(socket),
+              recorderStarted: recorder.started,
+              chunksSent: recorder.chunks,
+            });
             output.textContent = pretty(events);
             if (asrState) asrState.textContent = '连接失败';
             stopAgentVoiceQuestion({ closeSocket: true, silent: true });
           });
           socket.addEventListener('close', () => {
             events.push({ type: 'client.close' });
+            debugRuntime('agent.voice.socket.close', {
+              sessionId,
+              recorderStarted: recorder.started,
+              chunksSent: recorder.chunks,
+            });
             output.textContent = pretty(events);
             stopAgentVoiceQuestion({ silent: true });
           });
@@ -1152,11 +1307,10 @@
       }
 
       function updateAgentQuestionFromAsr(payload) {
-        const text = String(payload.text || '').trim();
-        const original = String(payload.originalText || text || '').trim();
+        const recorder = state.agentRecorder;
+        const text = appendAsrRealtimeText(recorder, payload, { previewNode: null, originalNode: null, correctedNode: null, stateNode: document.getElementById('llmAsrState') });
         const textarea = document.getElementById('llmText');
         const asrState = document.getElementById('llmAsrState');
-        const recorder = state.agentRecorder;
         if (text && textarea) {
           textarea.value = text;
           fitTextareaContent(textarea);
@@ -1165,7 +1319,7 @@
           recorder.latestText = text;
           scheduleAgentTextAutoFinish(recorder);
         }
-        if (asrState) asrState.textContent = payload.replacementApplied ? '已纠错：' + original : '实时识别中';
+        if (asrState && payload.replacementApplied && payload.originalText) asrState.textContent = '已纠错：' + payload.originalText;
       }
 
       function stopAgentVoiceQuestion(options) {
@@ -1180,10 +1334,21 @@
         if (recorder.audioContext) recorder.audioContext.close().catch(function () {});
         if (recorder.stream) recorder.stream.getTracks().forEach((track) => track.stop());
         if (recorder.socket && recorder.socket.readyState === WebSocket.OPEN && !opts.closeSocket && !opts.skipFinish) {
+          debugRuntime('client.command.send', {
+            sessionId: recorder.sessionId,
+            type: 'agent.session.finish',
+            chunksSent: recorder.chunks,
+            socketState: websocketStateName(recorder.socket),
+          });
           recorder.socket.send(JSON.stringify({ type: 'agent.session.finish', id: recorder.sessionId }));
           markAgentTiming(recorder.session || state.agentSession, 'finishSentAt');
           recorder.events.push({ type: 'client.sent', command: 'agent.session.finish', chunks: recorder.chunks });
         } else if (recorder.socket && opts.closeSocket) {
+          debugRuntime('agent.voice.socket.close.requested', {
+            sessionId: recorder.sessionId,
+            chunksSent: recorder.chunks,
+            socketState: websocketStateName(recorder.socket),
+          });
           recorder.socket.close();
         }
         const startButton = document.getElementById('llmVoiceStartBtn');
@@ -1342,6 +1507,14 @@
           audio: opts.audio,
           segmentsNode: opts.segmentsNode,
         };
+        debugRuntime('agent.session.create', {
+          sessionId,
+          mode: opts.text ? 'text' : 'voice',
+          autoPlay: session.autoPlay,
+          deviceCode: state.deviceCode,
+          requestId: requestIds.requestId,
+          traceId: requestIds.traceId,
+        });
         session.cancel = function (reason) {
           session.cancelled = true;
           session.ttsSegments.forEach((item) => {
@@ -1349,6 +1522,12 @@
           });
           renderTtsSegmentDebugList(session);
           if (socket.readyState === WebSocket.OPEN) {
+            debugRuntime('client.command.send', {
+              sessionId,
+              type: 'agent.session.cancel',
+              reason: reason || 'cancelled',
+              socketState: websocketStateName(socket),
+            });
             socket.send(JSON.stringify({ type: 'agent.session.cancel', id: createCommandId('agent-cancel'), payload: { reason: reason || 'cancelled' } }));
           }
           socket.close();
@@ -1376,6 +1555,12 @@
         const sendStart = () => {
           if (session.startSent || session.socket.readyState !== WebSocket.OPEN) return;
           session.startSent = true;
+          debugRuntime('client.command.send', {
+            sessionId: session.command.id,
+            type: session.command.type,
+            payload: session.command.payload,
+            socketState: websocketStateName(session.socket),
+          });
           session.socket.send(JSON.stringify(session.command));
           markAgentTiming(session, 'startSentAt');
           session.events.push({ type: 'client.sent', command: session.command.type, id: session.command.id });
@@ -1385,7 +1570,13 @@
           sendStart();
           return;
         }
-        session.socket.addEventListener('open', sendStart, { once: true });
+        session.socket.addEventListener('open', () => {
+          debugRuntime('agent.socket.open', {
+            sessionId: session.command.id,
+            socketState: websocketStateName(session.socket),
+          });
+          sendStart();
+        }, { once: true });
       }
 
       function runAgentTextWebSocket(session) {
@@ -1444,6 +1635,14 @@
           session.bytes += chunk.byteLength;
           session.events.push({ type: 'tts.audio', bytes: chunk.byteLength });
           const current = session.ttsSegments[session.ttsSegments.length - 1];
+          debugRuntime('server.binary.receive', {
+            sessionId: session.command && session.command.id,
+            bytes: chunk.byteLength,
+            totalBytes: session.bytes,
+            chunkCount: session.chunkCount,
+            currentSegmentIndex: current && current.index,
+            currentSegmentText: current && current.text,
+          });
           if (current) {
             current.chunks = (current.chunks || 0) + 1;
             current.bytes = (current.bytes || 0) + chunk.byteLength;
@@ -1458,6 +1657,19 @@
 
         const payload = parseJson(event.data) || {};
         session.events.push(payload);
+        debugRuntime('server.text.receive', {
+          sessionId: session.command && session.command.id,
+          type: payload.type,
+          id: payload.id,
+          requestId: payload.requestId,
+          traceId: payload.traceId,
+          payload: payload.payload,
+          message: payload.message,
+          error: payload.error,
+          ttsSegments: session.ttsSegments.length,
+          audioChunks: session.chunkCount,
+          audioBytes: session.bytes,
+        });
         if (payload.type === 'asr.ready') markAgentTiming(session, 'asrReadyAt');
         if (payload.type === 'asr.transcript') markAgentTiming(session, 'asrTranscriptAt');
         if (payload.type === 'asr.done') markAgentTiming(session, 'asrDoneAt');
@@ -2336,21 +2548,23 @@
           body: [
             ['manager', '<code>RuntimeAgentRealtimeManager</code>；负责完整智能体回答。'],
             ['phases.sendAsr', '发送 <code>asr.session.start</code>，然后发送 16k mono pcm_s16le 二进制音频。'],
-            ['phases.asrDone', '接收 <code>asr.transcript</code>/<code>asr.done</code>，使用纠错后的 <code>text</code> 作为问题。'],
+            ['phases.asrPreview', '接收 <code>asr.transcript</code> 的实时预览；上游原始事件是 <code>conversation.item.input_audio_transcription.text</code>，预览语义为 <code>text + stash</code>。'],
+            ['phases.asrDone', '接收 <code>asr.transcript final=true</code>/<code>asr.done</code>，使用纠错后的最终 <code>text</code> 作为问题；上游最终事件是 <code>conversation.item.input_audio_transcription.completed</code> 的 <code>transcript</code>。'],
             ['phases.llmReply', '发送 <code>llm.session.start</code>，处理 <code>llm.started</code>/<code>llm.delta</code>/<code>llm.tts_segment</code>/<code>llm.done</code>；<code>llm.delta</code> 用于文字展示，<code>llm.tts_segment</code> 是后端维护好的可播报句子。'],
-            ['phases.ttsSpeak', '收到每个 <code>llm.tts_segment</code> 后立即排队发送 <code>tts.session.start</code>，接收 binary PCM 后用 Web Audio 顺序播报。'],
+            ['phases.ttsSpeak', '后端在同一 agent 会话内维护一个上游 TTS WebSocket，持续写入多个 <code>llm.tts_segment</code>，接收 binary PCM 后用 Web Audio 顺序播报。'],
             ['callbacks', '对外继续映射现有 <code>OnAiDialogueListener</code> 或本页实时播报/最终回放。'],
             ['dtoPackage', '安卓端建议将 command、payload、event DTO 统一放在 <code>bean/runtime/agent</code>。'],
           ],
           response: [
-            ['ASR 阶段', '<code>asr.ready</code>、<code>asr.transcript</code>、<code>asr.done</code>。'],
+            ['ASR 阶段', '<code>asr.ready</code>、<code>asr.transcript</code>、<code>asr.done</code>。实时预览看 <code>final=false</code>，最终问题看 <code>final=true</code>。'],
             ['LLM 阶段', '<code>llm.started</code>、<code>llm.delta</code>、<code>llm.tts_segment</code>、<code>llm.done</code>。'],
-            ['TTS 阶段', '<code>tts.ready</code>、binary PCM、<code>tts.done</code>；按后端给出的可播报句子顺序出现。'],
-            ['打断播报', '停止本地 Web Audio 队列，关闭当前 TTS WebSocket，并丢弃后续待播片段。'],
+            ['TTS 阶段', '<code>tts.ready</code>、binary PCM、<code>tts.done</code>；一个 agent 会话内只应出现一次 ready/done，中间可有多个可播报片段对应的 PCM。'],
+            ['打断播报', '停止本地 Web Audio 队列，并发送 <code>agent.session.cancel</code> 取消当前 agent 会话。'],
             ['停止', '才 cancel/abort 当前 LLM/TTS 或关闭当前流。'],
           ],
           responseExample: [
-            { manager: 'RuntimeAgentRealtimeManager', phase: 'asrDone', event: 'asr.transcript', text: '介绍一下展厅' },
+            { manager: 'RuntimeAgentRealtimeManager', phase: 'asrPreview', event: 'asr.transcript', final: false, text: '介绍一下', sourceEventType: 'conversation.item.input_audio_transcription.text' },
+            { manager: 'RuntimeAgentRealtimeManager', phase: 'asrDone', event: 'asr.transcript', final: true, text: '介绍一下展厅', sourceEventType: 'conversation.item.input_audio_transcription.completed' },
             { manager: 'RuntimeAgentRealtimeManager', phase: 'llmReply', event: 'llm.tts_segment', text: '这是展厅介绍。' },
             { manager: 'RuntimeAgentRealtimeManager', phase: 'ttsPlayback', event: 'binary PCM', segment: 1, callback: 'OnAiDialogueListener' },
           ],
@@ -2370,7 +2584,11 @@
             ['payload.requestId / traceId', '可选；链路追踪。'],
           ],
           response: [
-            ['asr.ready / asr.transcript / asr.done', 'ASR 就绪、实时识别文本和完成事件。asr.transcript 包含 text、originalText、replacementApplied、final。'],
+            ['asr.ready', 'ASR 会话已建立；客户端收到后开始发送 16k mono pcm_s16le 二进制音频。'],
+            ['asr.transcript final=false', '实时识别预览。对应上游 <code>conversation.item.input_audio_transcription.text</code>，上游 UI 语义是 <code>text + stash</code>；后端会尽量返回可直接展示的 <code>text</code>。'],
+            ['asr.transcript final=true', '最终识别结果。对应上游 <code>conversation.item.input_audio_transcription.completed</code> 的 <code>transcript</code>；安卓端应使用这个最终 <code>text</code> 进入 LLM。'],
+            ['asr.transcript 字段', '<code>text</code> 为替换词处理后的文本，<code>originalText</code> 为原始识别文本，<code>replacementApplied</code> 表示是否命中替换词，<code>sourceEventType</code> 标明上游原始事件。若返回 <code>stash</code>，实时展示请拼 <code>text + stash</code>。'],
+            ['asr.done', 'ASR 会话结束；通常在最终 transcript 之后出现。'],
             ['llm.started / llm.delta / llm.tts_segment / llm.done', 'LLM 开始、文字增量、可播报句子和完成事件；llm.done.payload.answerText 是完整回复。'],
             ['tts.ready / audio/pcm / tts.done', 'TTS 就绪、二进制 PCM 分片和完成事件；tts.ready 带 sampleRate/voice。'],
             ['*.cancelled', '会话取消事件，只表示当前 ASR/LLM/TTS session 被取消；WebSocket 不应因为 cancel 被动断开，可继续发下一轮命令。'],
@@ -2378,11 +2596,10 @@
             ['*.error', '失败事件，包含 message。'],
           ],
           responseExample: [
-            { type: 'llm.started', id: '<sessionId>', payload: { deviceCode: '<deviceCode>', questionText: '你好' } },
-            { type: 'llm.delta', id: '<sessionId>', payload: { text: '你好' } },
-            { type: 'llm.tts_segment', id: '<sessionId>', payload: { text: '你好，欢迎使用。' } },
-            { type: 'llm.done', id: '<sessionId>', payload: { answerText: '你好，我是数字人。' } },
-            { type: 'tts.cancelled', id: '<cancelId>', payload: { sessionId: '<sessionId>' } },
+            { type: 'asr.ready', id: '<sessionId>' },
+            { type: 'asr.transcript', id: '<sessionId>', text: '介绍一下', originalText: '介绍一下', final: false, sourceEventType: 'conversation.item.input_audio_transcription.text' },
+            { type: 'asr.transcript', id: '<sessionId>', text: '介绍一下展厅', originalText: '介绍一下展厅', final: true, sourceEventType: 'conversation.item.input_audio_transcription.completed' },
+            { type: 'asr.done', id: '<sessionId>' },
           ],
           errors: runtimeDeviceErrors([['WS error / 440xx', '设备码不可解析、未绑定公司/智能体，或对应能力服务未配置；跨公司数据不会透出。']]),
         };

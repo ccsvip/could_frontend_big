@@ -117,28 +117,37 @@ class SlowExitASRContext:
 class UnifiedTTSUpstream:
     def __init__(self):
         self.messages = []
-        self._events = iter([
-            json.dumps({'type': 'response.audio.delta', 'delta': base64.b64encode(b'\x03\x04').decode('ascii')}),
-            json.dumps({'type': 'session.finished'}),
-        ])
+        self.enter_count = 0
+        self.exit_count = 0
+        self._events = asyncio.Queue()
 
     async def __aenter__(self):
+        self.enter_count += 1
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
+        self.exit_count += 1
         return False
 
     async def send(self, message):
-        self.messages.append(json.loads(message))
+        payload = json.loads(message)
+        self.messages.append(payload)
+        if payload.get('type') == 'input_text_buffer.commit':
+            await self._events.put(json.dumps({
+                'type': 'response.audio.delta',
+                'delta': base64.b64encode(b'\x03\x04').decode('ascii'),
+            }))
+        if payload.get('type') == 'session.finish':
+            await self._events.put(json.dumps({'type': 'session.finished'}))
 
     def __aiter__(self):
         return self
 
     async def __anext__(self):
-        try:
-            return next(self._events)
-        except StopIteration:
+        event = await self._events.get()
+        if event is None:
             raise StopAsyncIteration
+        return event
 
 
 class HangingUnifiedTTSUpstream:
@@ -174,6 +183,21 @@ class FailingUnifiedASRUpstream:
 
 
 class RealtimeWebSocketTests(SimpleTestCase):
+    def test_binary_audio_without_active_asr_session_is_ignored(self):
+        async def run_task():
+            from config.realtime import RealtimeConnection, _handle_binary_frame
+
+            sent = []
+
+            async def send(event):
+                sent.append(event)
+
+            await _handle_binary_frame(send, RealtimeConnection(), b'\x01\x02')
+
+            self.assertEqual(sent, [])
+
+        async_to_sync(run_task)()
+
     def test_agent_asr_upstream_ignores_client_disconnect(self):
         async def run_task():
             from uvicorn.protocols.utils import ClientDisconnected
@@ -232,7 +256,9 @@ class RealtimeWebSocketTests(SimpleTestCase):
                         'text': '自动结束问题',
                         'originalText': '自动结束问题',
                         'replacementApplied': False,
+                        'delta': False,
                         'final': True,
+                        'sourceEventType': 'conversation.item.input_audio_transcription.completed',
                         'id': 'agent-auto-finish-1',
                         'requestId': 'req-agent-auto-finish-1',
                         'traceId': 'trace-agent-auto-finish-1',
@@ -279,6 +305,30 @@ class RealtimeWebSocketTests(SimpleTestCase):
             self.assertFalse(slow_context.exit_finished.is_set())
             slow_context.allow_exit.set()
             await asyncio.wait_for(slow_context.exit_finished.wait(), timeout=0.1)
+
+        async_to_sync(run_task)()
+
+    def test_binary_audio_frames_are_ignored_after_asr_stops_accepting_audio(self):
+        async def run_task():
+            from config.realtime import RealtimeConnection, _handle_binary_frame
+
+            sent_events = []
+            upstream = UnifiedASRUpstream()
+            connection = RealtimeConnection()
+            connection.asr_upstream = upstream
+            connection.asr_accepting_audio = False
+
+            async def send(event):
+                sent_events.append(event)
+
+            await _handle_binary_frame(send, connection, b'late-pcm')
+
+            self.assertEqual(sent_events, [])
+            self.assertNotIn('input_audio_buffer.append', [message.get('type') for message in upstream.messages])
+
+            connection.asr_upstream = None
+            await _handle_binary_frame(send, connection, b'orphan-pcm')
+            self.assertEqual(sent_events, [])
 
         async_to_sync(run_task)()
 
@@ -471,7 +521,9 @@ class RealtimeWebSocketTests(SimpleTestCase):
                         'text': '统一 ASR',
                         'originalText': '统一 ASR',
                         'replacementApplied': False,
+                        'delta': False,
                         'final': False,
+                        'sourceEventType': 'conversation.item.input_audio_transcription.text',
                     },
                 )
 
@@ -556,16 +608,19 @@ class RealtimeWebSocketTests(SimpleTestCase):
                         'text': '统一 ASR',
                         'originalText': '统一 ASR',
                         'replacementApplied': False,
+                        'delta': False,
                         'final': True,
+                        'sourceEventType': 'conversation.item.input_audio_transcription.completed',
                     },
                 )
                 done = await communicator.receive_output(timeout=1)
                 self.assertEqual(json.loads(done['text']), {'type': 'asr.done', 'id': 'asr-auto-finish-session'})
 
-            self.assertIn('session.finish', [message.get('type') for message in upstream.messages])
+                await communicator.send_input({'type': 'websocket.receive', 'bytes': b'\x03\x04'})
+                with self.assertRaises(asyncio.TimeoutError):
+                    await communicator.receive_output(timeout=0.05)
 
-            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
-            await communicator.wait(timeout=1)
+            self.assertIn('session.finish', [message.get('type') for message in upstream.messages])
 
         async_to_sync(run_websocket)()
 
@@ -1189,8 +1244,8 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
             self.assertEqual(response['type'], 'websocket.accept')
 
             async def stream_answer(**kwargs):
-                yield '这是'
-                yield '自动播报。'
+                yield '这是第一段。'
+                yield '这是第二段。'
 
             tts_provider = SimpleNamespace(code='aliyun')
             voice = SimpleNamespace(id=7, voice_code='Cherry')
@@ -1231,7 +1286,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 })
 
                 event_types = []
-                for _ in range(10):
+                for _ in range(20):
                     message = await communicator.receive_output(timeout=1)
                     if 'text' in message:
                         payload = json.loads(message['text'])
@@ -1250,7 +1305,14 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 self.assertEqual(event_types[-1], 'agent.done')
                 self.assertLess(event_types.index('llm.tts_segment'), event_types.index('tts.ready'))
                 self.assertLess(event_types.index('tts.done'), event_types.index('agent.done'))
-                self.assertIn('input_text_buffer.append', [message.get('type') for message in upstream.messages])
+                sent_types = [message.get('type') for message in upstream.messages]
+                self.assertEqual(upstream.enter_count, 1)
+                self.assertEqual(upstream.exit_count, 1)
+                self.assertEqual(event_types.count('tts.ready'), 1)
+                self.assertEqual(event_types.count('tts.done'), 1)
+                self.assertEqual(sent_types.count('input_text_buffer.append'), 2)
+                self.assertEqual(sent_types.count('input_text_buffer.commit'), 2)
+                self.assertEqual(sent_types.count('session.finish'), 1)
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)
@@ -1261,7 +1323,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
 
         next_session = realtime._prepare_device_llm_session('ANDROID-AGENT-TEXT-001', '我刚才问了什么？')
         self.assertIn({'role': 'user', 'content': '介绍一下展厅'}, next_session['messages'])
-        self.assertIn({'role': 'assistant', 'content': '这是自动播报。'}, next_session['messages'])
+        self.assertIn({'role': 'assistant', 'content': '这是第一段。这是第二段。'}, next_session['messages'])
         self.assertEqual(next_session['messages'][-1], {'role': 'user', 'content': '我刚才问了什么？'})
 
         chat_log = DeviceChatLog.objects.get(code='ANDROID-AGENT-TEXT-001')
@@ -1270,7 +1332,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         self.assertEqual(chat_log.application, device_application)
         self.assertEqual(chat_log.agent_application, agent_application)
         self.assertEqual(chat_log.question_text, '介绍一下展厅')
-        self.assertEqual(chat_log.answer_text, '这是自动播报。')
+        self.assertEqual(chat_log.answer_text, '这是第一段。这是第二段。')
         self.assertEqual(chat_log.request_id, 'req-agent-1')
         self.assertEqual(chat_log.trace_id, 'trace-agent-1')
         self.assertEqual(chat_log.model_name, 'agent-text-model')
@@ -1356,7 +1418,9 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                         'text': '统一 ASR',
                         'originalText': '统一 ASR',
                         'replacementApplied': False,
+                        'delta': False,
                         'final': True,
+                        'sourceEventType': 'conversation.item.input_audio_transcription.completed',
                     },
                 )
                 await realtime._send_json(send, {'type': 'asr.done', 'id': command_id, 'requestId': request_id, 'traceId': trace_id})
@@ -1393,6 +1457,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
 
                 event_types = []
                 event_payloads = []
+                tail_audio_sent = False
                 for _ in range(12):
                     try:
                         message = await communicator.receive_output(timeout=1)
@@ -1405,11 +1470,16 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                     else:
                         event_payloads.append({'type': 'binary'})
                         event_types.append('binary')
+                    if event_types[-1] == 'asr.done' and not tail_audio_sent:
+                        tail_audio_sent = True
+                        await communicator.send_input({'type': 'websocket.receive', 'bytes': b'\x05\x06'})
                     if event_types[-1] == 'agent.done':
                         break
 
                 self.assertIn('asr.transcript', event_types, event_payloads)
                 self.assertIn('asr.done', event_types)
+                self.assertNotIn('error', event_types)
+                self.assertNotIn('agent.error', event_types)
                 self.assertIn('llm.started', event_types)
                 self.assertIn('llm.tts_segment', event_types)
                 self.assertIn('tts.ready', event_types)

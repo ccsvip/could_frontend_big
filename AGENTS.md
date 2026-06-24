@@ -67,6 +67,24 @@ codebase-memory-mcp cli detect_changes '{"project":"C-SVN_CODE-branches-real-cou
 
 5. 图谱结论只能作为导航。关键路径必须继续用 `rg`、文件读取和测试验证。
 
+### 自动索引
+
+本地开发时可以启动文件监听脚本，让仓库文件变化后自动刷新 `codebase-memory-mcp` 索引：
+
+```powershell
+.\scripts\watch-codebase-memory.ps1
+```
+
+默认使用 `full` 模式，并在最后一次相关文件变更后等待 12 秒再索引，避免保存多个文件时频繁重建。
+
+需要更轻量的持续监听时可以使用：
+
+```powershell
+.\scripts\watch-codebase-memory.ps1 -Mode fast -DebounceSeconds 20
+```
+
+该脚本会忽略 `.git`、`.svn`、`node_modules`、`dist`、缓存、媒体和构建输出等目录。它只是本地辅助流程；实际修改仍必须回到真实源码核验，并在修改后运行对应测试或构建。
+
 ### 使用边界
 
 - `codebase-memory-mcp` 用于找入口、调用链、架构概览、影响面和死代码线索。

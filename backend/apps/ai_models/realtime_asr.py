@@ -140,7 +140,9 @@ def extract_transcript_payload(
         'text': replaced_text,
         'originalText': text,
         'replacementApplied': replaced_text != text,
+        'delta': event_type == 'conversation.item.input_audio_transcription.delta',
         'final': event_type in FINAL_EVENT_TYPES,
+        'sourceEventType': event_type,
     }
 
 

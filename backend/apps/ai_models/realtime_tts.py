@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import json
-from typing import Any
+from typing import Any, AsyncIterable
 
 import websockets
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -140,6 +140,71 @@ async def _stream_tts_audio(*, text: str, voice: TTSVoice, config, send) -> None
             if event_type == 'session.finished':
                 await send({'type': 'websocket.send', 'text': json.dumps({'type': 'tts.done'})})
                 return
+
+
+async def _stream_tts_segments_audio(*, segments: AsyncIterable[str], voice: TTSVoice, config, send) -> None:
+    async with websockets.connect(
+        build_tts_ws_url(config),
+        additional_headers=[
+            ('Authorization', f'Bearer {config.api_key}'),
+            ('OpenAI-Beta', 'realtime=v1'),
+        ],
+        user_agent_header='solin-admin/1.0',
+        open_timeout=10,
+        ping_interval=20,
+        ping_timeout=20,
+        max_size=8 * 1024 * 1024,
+    ) as upstream:
+        await upstream.send(json.dumps(_session_update_event(config, voice)))
+        await send({
+            'type': 'websocket.send',
+            'text': json.dumps({'type': 'tts.ready', 'sampleRate': config.sample_rate, 'voice': voice.voice_code}),
+        })
+
+        reader_task = asyncio.create_task(_forward_tts_upstream_audio(upstream, send))
+        try:
+            async for segment in segments:
+                text = normalize_tts_text(segment, config)
+                if not text:
+                    continue
+                for chunk in split_tts_text(text):
+                    await upstream.send(json.dumps(_text_append_event(chunk)))
+                    await asyncio.sleep(0)
+                await upstream.send(json.dumps(_text_commit_event()))
+                await asyncio.sleep(0)
+
+            await upstream.send(json.dumps(_session_finish_event()))
+            await reader_task
+        except asyncio.CancelledError:
+            reader_task.cancel()
+            await asyncio.gather(reader_task, return_exceptions=True)
+            raise
+        except Exception:
+            reader_task.cancel()
+            await asyncio.gather(reader_task, return_exceptions=True)
+            raise
+
+
+async def _forward_tts_upstream_audio(upstream, send) -> None:
+    async for raw_message in upstream:
+        try:
+            event = json.loads(raw_message)
+        except (TypeError, json.JSONDecodeError):
+            continue
+        if not isinstance(event, dict):
+            continue
+
+        event_type = str(event.get('type') or '')
+        if event_type == 'response.audio.delta':
+            delta = event.get('delta')
+            if isinstance(delta, str) and delta:
+                await send({'type': 'websocket.send', 'bytes': base64.b64decode(delta)})
+            continue
+        if event_type in {'error', 'session.error'}:
+            raise RuntimeError(_extract_upstream_error_message(event))
+        if event_type == 'session.finished':
+            await send({'type': 'websocket.send', 'text': json.dumps({'type': 'tts.done'})})
+            return
 
 
 def _extract_upstream_error_message(event: dict[str, Any]) -> str:

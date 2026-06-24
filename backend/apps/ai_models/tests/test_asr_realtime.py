@@ -87,7 +87,30 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
                 'text': '你好',
                 'originalText': '你好',
                 'replacementApplied': False,
+                'delta': False,
                 'final': False,
+                'sourceEventType': 'conversation.item.input_audio_transcription.text',
+            },
+        )
+
+    def test_extract_transcript_payload_marks_delta_event(self):
+        from apps.ai_models.realtime_asr import extract_transcript_payload
+
+        payload = extract_transcript_payload({
+            'type': 'conversation.item.input_audio_transcription.delta',
+            'delta': '你',
+        })
+
+        self.assertEqual(
+            payload,
+            {
+                'type': 'asr.transcript',
+                'text': '你',
+                'originalText': '你',
+                'replacementApplied': False,
+                'delta': True,
+                'final': False,
+                'sourceEventType': 'conversation.item.input_audio_transcription.delta',
             },
         )
 
@@ -106,7 +129,9 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
                 'text': '你好，欢迎使用',
                 'originalText': '你好，欢迎使用',
                 'replacementApplied': False,
+                'delta': False,
                 'final': True,
+                'sourceEventType': 'conversation.item.input_audio_transcription.completed',
             },
         )
 
@@ -140,7 +165,9 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
                 'text': '请小张关闭展厅灯光',
                 'originalText': '请小明关闭展厅灯光',
                 'replacementApplied': True,
+                'delta': False,
                 'final': True,
+                'sourceEventType': 'conversation.item.input_audio_transcription.completed',
             },
         )
 
