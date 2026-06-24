@@ -158,6 +158,8 @@
     .kv-row { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 10px; align-items: start; }
     .kv-row span:first-child { color: var(--muted); }
     .code-chip { display: inline-block; max-width: 100%; overflow-wrap: anywhere; padding: 2px 6px; border-radius: 6px; background: #f1f5f9; color: #0f172a; font-family: var(--mono); font-size: 12px; }
+    .timing-list { display: grid; gap: 4px; max-height: 280px; overflow: auto; padding: 8px; border-radius: 8px; background: #f1f5f9; color: #0f172a; font-family: var(--mono); font-size: 12px; }
+    .timing-row { display: grid; grid-template-columns: minmax(110px, 1fr) auto; gap: 8px; align-items: center; }
     .tts-debug-list { display: grid; gap: 8px; max-height: 280px; overflow: auto; padding: 8px; border-radius: 8px; background: #f1f5f9; color: #0f172a; font-family: var(--mono); font-size: 12px; }
     .tts-debug-empty { color: var(--muted); }
     .tts-debug-item { display: grid; gap: 4px; padding-bottom: 8px; border-bottom: 1px solid var(--line-strong); }
@@ -305,7 +307,7 @@
         requestIdHeader: 'X-Request-ID',
         traceIdHeader: 'X-Trace-ID',
         agentVoiceRmsThreshold: 0.012,
-        agentVoiceSilenceMs: 1200,
+        agentVoiceSilenceMs: 650,
         agentVoiceAskDelayMs: 700,
       };
       const query = new URLSearchParams(location.search);
@@ -892,11 +894,13 @@
           const pcm = floatTo16kPcm(channelData, recorder.audioContext.sampleRate);
           if (!pcm.byteLength) return;
           recorder.socket.send(pcm);
+          markAgentTiming(recorder.session || state.agentSession, 'firstAudioSentAt');
           recorder.chunks += 1;
         };
         recorder.source.connect(recorder.processor);
         recorder.processor.connect(recorder.audioContext.destination);
         recorder.started = true;
+        markAgentTiming(recorder.session || state.agentSession, 'audioPumpStartedAt');
         recorder.events.push({ type: 'client.microphone.started', inputSampleRate: recorder.audioContext.sampleRate, outputSampleRate: 16000, format: 'pcm_s16le' });
         recorder.output.textContent = pretty(recorder.events);
       }
@@ -919,6 +923,7 @@
         const rms = calculateAudioRms(samples);
         if (rms >= CONFIG.agentVoiceRmsThreshold) {
           recorder.voiceStarted = true;
+          markAgentTiming(recorder.session || state.agentSession, 'voiceDetectedAt');
           recorder.lastVoiceAt = now;
           if (recorder.autoFinishTimer) {
             window.clearTimeout(recorder.autoFinishTimer);
@@ -946,6 +951,7 @@
       function finishAgentVoiceFromSilence(recorder) {
         if (!recorder || recorder !== state.agentRecorder || recorder.finishing) return;
         recorder.finishing = true;
+        markAgentTiming(recorder.session || state.agentSession, 'localSilenceAt');
         recorder.events.push({ type: 'client.auto_finish', reason: 'local_silence', silenceMs: CONFIG.agentVoiceSilenceMs });
         if (recorder.output) recorder.output.textContent = pretty(recorder.events);
         const asrState = document.getElementById('llmAsrState');
@@ -972,8 +978,8 @@
         if (recorder.audioContext) recorder.audioContext.close().catch(function () {});
         if (recorder.stream) recorder.stream.getTracks().forEach((track) => track.stop());
         if (recorder.socket && recorder.socket.readyState === WebSocket.OPEN && !opts.closeSocket && !opts.skipFinish) {
-          recorder.socket.send(JSON.stringify({ type: 'agent.session.finish', id: recorder.sessionId }));
-          recorder.events.push({ type: 'client.sent', command: 'agent.session.finish', chunks: recorder.chunks });
+          recorder.socket.send(JSON.stringify({ type: 'asr.session.finish', id: recorder.sessionId }));
+          recorder.events.push({ type: 'client.sent', command: 'asr.session.finish', chunks: recorder.chunks });
         } else if (recorder.socket && opts.closeSocket) {
           recorder.socket.close();
         }
@@ -1038,7 +1044,7 @@
 
       function renderAgentChat() {
         const suggested = (((state.runtimeConfig || {}).agentApplication || {}).suggestedQuestions || [])[0] || '你好，请介绍一下你自己。';
-        els.contentBody.innerHTML = '<div class="note warn">主链路是一个 RuntimeAgentRealtimeManager 负责完整智能体回答；ASR、LLM、TTS 是 manager 内部阶段。左侧 ASR/LLM/TTS 菜单只用于单步调试，不代表设备端需要拆成三个独立业务模块。</div><div class="table-wrap"><table><thead><tr><th>阶段</th><th>manager 内部动作</th></tr></thead><tbody><tr><td>开始会话</td><td>前端只发送 <code>agent.session.start</code>；文字问题放在 payload.text，语音问题随后推送 16k mono PCM。</td></tr><tr><td>ASR 完成</td><td>前端发送 <code>agent.session.finish</code> 后，后端自动使用最终纠错文本续接 LLM。</td></tr><tr><td>LLM 回复</td><td>同一连接返回 <code>llm.started</code>、<code>llm.delta</code>、<code>llm.tts_segment</code>、<code>llm.done</code>。</td></tr><tr><td>TTS 合成</td><td>后端收到可播报片段后自动排队调用 TTS，并在同一连接返回 <code>tts.ready</code>、binary PCM、<code>tts.done</code>。</td></tr><tr><td>TTS 播放</td><td>前端只播放同一 agent 会话返回的 PCM；实时播报期间禁用底部 audio，结束后生成完整回放。</td></tr><tr><td>DTO</td><td>命令、payload、event 可统一放在 bean/runtime/agent 这一类包下。</td></tr></tbody></table></div><div class="field"><label for="llmText">实时问题</label><textarea id="llmText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmVoiceStartBtn" type="button">开始问答</button><button class="button secondary" id="llmVoiceStopBtn" type="button" disabled>停止识别</button><button class="button secondary" id="llmBtn" type="button">用当前问题发送</button><button class="button secondary" id="llmTtsInterruptBtn" type="button" disabled>打断播报</button><label class="code-chip"><input id="llmAutoPlay" type="checkbox" checked> 自动播放</label></div><div class="grid"><article class="card"><h3>问题识别</h3><div id="llmAsrState" class="code-chip">等待录音</div></article><article class="card"><h3>完整回答</h3><div id="llmAnswerText" class="code-chip">等待回复</div></article><article class="card"><h3>回答播报</h3><div id="llmTtsState" class="code-chip">等待合成</div></article><article class="card"><h3>TTS 发送文本</h3><div id="llmTtsSegments" class="tts-debug-list"><span class="tts-debug-empty">等待片段</span></div></article></div><audio id="llmAudio" controls preload="none" hidden></audio><div class="detail-block"><strong>链路结果</strong><pre id="llmOutput">等待请求</pre></div><div class="note">特殊说明：智能体回答主链路统一使用 /ws/realtime/ 的 <code>agent.session.start</code>/<code>agent.session.finish</code>/<code>agent.session.cancel</code>；前端不拆分或清洗 TTS 文本，不再为每段 TTS 单独开 WebSocket；打断播报会停止本地 Web Audio 并取消当前 agent 会话。</div>';
+        els.contentBody.innerHTML = '<div class="note warn">主链路是一个 RuntimeAgentRealtimeManager 负责完整智能体回答；ASR、LLM、TTS 是 manager 内部阶段。左侧 ASR/LLM/TTS 菜单只用于单步调试，不代表设备端需要拆成三个独立业务模块。</div><div class="table-wrap"><table><thead><tr><th>阶段</th><th>manager 内部动作</th></tr></thead><tbody><tr><td>开始会话</td><td>前端只发送 <code>agent.session.start</code>；文字问题放在 payload.text，语音问题随后推送 16k mono PCM。</td></tr><tr><td>ASR 完成</td><td>前端发送 <code>agent.session.finish</code> 后，后端自动使用最终纠错文本续接 LLM。</td></tr><tr><td>LLM 回复</td><td>同一连接返回 <code>llm.started</code>、<code>llm.delta</code>、<code>llm.tts_segment</code>、<code>llm.done</code>。</td></tr><tr><td>TTS 合成</td><td>后端收到可播报片段后自动排队调用 TTS，并在同一连接返回 <code>tts.ready</code>、binary PCM、<code>tts.done</code>。</td></tr><tr><td>TTS 播放</td><td>前端只播放同一 agent 会话返回的 PCM；实时播报期间禁用底部 audio，结束后生成完整回放。</td></tr><tr><td>DTO</td><td>命令、payload、event 可统一放在 bean/runtime/agent 这一类包下。</td></tr></tbody></table></div><div class="field"><label for="llmText">实时问题</label><textarea id="llmText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmVoiceStartBtn" type="button">开始问答</button><button class="button secondary" id="llmVoiceStopBtn" type="button" disabled>停止识别</button><button class="button secondary" id="llmBtn" type="button">用当前问题发送</button><button class="button secondary" id="llmTtsInterruptBtn" type="button" disabled>打断播报</button><label class="code-chip"><input id="llmAutoPlay" type="checkbox" checked> 自动播放</label></div><div class="grid"><article class="card"><h3>问题识别</h3><div id="llmAsrState" class="code-chip">等待录音</div></article><article class="card"><h3>完整回答</h3><div id="llmAnswerText" class="code-chip">等待回复</div></article><article class="card"><h3>回答播报</h3><div id="llmTtsState" class="code-chip">等待合成</div></article><article class="card"><h3>阶段首包耗时</h3><div id="llmTimingStats" class="timing-list">等待计时</div></article><article class="card"><h3>TTS 发送文本</h3><div id="llmTtsSegments" class="tts-debug-list"><span class="tts-debug-empty">等待片段</span></div></article></div><audio id="llmAudio" controls preload="none" hidden></audio><div class="detail-block"><strong>链路结果</strong><pre id="llmOutput">等待请求</pre></div><div class="note">特殊说明：智能体回答主链路统一使用 /ws/realtime/ 的 <code>agent.session.start</code>/<code>agent.session.finish</code>/<code>agent.session.cancel</code>；前端不拆分或清洗 TTS 文本，不再为每段 TTS 单独开 WebSocket；打断播报会停止本地 Web Audio 并取消当前 agent 会话。</div>';
         const questionInput = document.getElementById('llmText');
         if (questionInput) {
           fitTextareaContent(questionInput);
@@ -1078,6 +1084,7 @@
           asrState,
           audio: document.getElementById('llmAudio'),
           segmentsNode: document.getElementById('llmTtsSegments'),
+          timingNode: document.getElementById('llmTimingStats'),
           autoPlay,
         });
         const command = session.command;
@@ -1090,7 +1097,7 @@
           const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
           const socket = session.socket;
           state.sockets.push(socket);
-          const recorder = { socket, stream, sessionId, output, events, started: false, chunks: 0, audioContext: null, source: null, processor: null, latestText: '', asked: false, finishing: false, voiceStarted: false, lastVoiceAt: 0, autoFinishTimer: null, textFinishTimer: null, onAudioFrame: null };
+          const recorder = { socket, stream, session, sessionId, output, events, started: false, chunks: 0, audioContext: null, source: null, processor: null, latestText: '', asked: false, finishing: false, voiceStarted: false, lastVoiceAt: 0, autoFinishTimer: null, textFinishTimer: null, onAudioFrame: null };
           recorder.onAudioFrame = (samples) => trackAgentVoiceActivity(recorder, samples);
           state.agentRecorder = recorder;
           startButton.disabled = true;
@@ -1173,8 +1180,9 @@
         if (recorder.audioContext) recorder.audioContext.close().catch(function () {});
         if (recorder.stream) recorder.stream.getTracks().forEach((track) => track.stop());
         if (recorder.socket && recorder.socket.readyState === WebSocket.OPEN && !opts.closeSocket && !opts.skipFinish) {
-          recorder.socket.send(JSON.stringify({ type: 'asr.session.finish', id: recorder.sessionId }));
-          recorder.events.push({ type: 'client.sent', command: 'asr.session.finish', chunks: recorder.chunks });
+          recorder.socket.send(JSON.stringify({ type: 'agent.session.finish', id: recorder.sessionId }));
+          markAgentTiming(recorder.session || state.agentSession, 'finishSentAt');
+          recorder.events.push({ type: 'client.sent', command: 'agent.session.finish', chunks: recorder.chunks });
         } else if (recorder.socket && opts.closeSocket) {
           recorder.socket.close();
         }
@@ -1209,6 +1217,7 @@
           ttsNode,
           asrState: document.getElementById('llmAsrState'),
           segmentsNode,
+          timingNode: document.getElementById('llmTimingStats'),
           autoPlay,
           text,
         });
@@ -1246,6 +1255,60 @@
         }
       }
 
+      function agentTimingNow() {
+        return window.performance && typeof window.performance.now === 'function' ? window.performance.now() : Date.now();
+      }
+
+      function createAgentTimingState() {
+        return { createdAt: agentTimingNow() };
+      }
+
+      function markAgentTiming(session, key) {
+        if (!session || !session.timings || Object.prototype.hasOwnProperty.call(session.timings, key)) return;
+        session.timings[key] = agentTimingNow();
+        renderAgentTimingStats(session);
+      }
+
+      function agentTimingDuration(session, fromKey, toKey) {
+        if (!session || !session.timings) return null;
+        const from = session.timings[fromKey];
+        const to = session.timings[toKey];
+        if (!Number.isFinite(from) || !Number.isFinite(to)) return null;
+        return Math.max(0, to - from);
+      }
+
+      function formatAgentTiming(ms) {
+        if (!Number.isFinite(ms)) return '-';
+        if (ms < 1000) return Math.round(ms) + 'ms';
+        return (ms / 1000).toFixed(2) + 's';
+      }
+
+      function renderAgentTimingStats(session) {
+        if (!session || !session.timingNode) return;
+        const rows = [
+          ['WS打开', 'createdAt', 'socketOpenAt'],
+          ['开始->ASR ready', 'startSentAt', 'asrReadyAt'],
+          ['ASR ready->音频泵', 'asrReadyAt', 'audioPumpStartedAt'],
+          ['音频泵->首音频发送', 'audioPumpStartedAt', 'firstAudioSentAt'],
+          ['首音频->ASR首包', 'firstAudioSentAt', 'asrTranscriptAt'],
+          ['语音开始->本地停顿', 'voiceDetectedAt', 'localSilenceAt'],
+          ['本地停顿->停止发送', 'localSilenceAt', 'finishSentAt'],
+          ['开始->ASR首包', 'startSentAt', 'asrTranscriptAt'],
+          ['停止->ASR完成', 'finishSentAt', 'asrDoneAt'],
+          ['开始->LLM开始', 'startSentAt', 'llmStartedAt'],
+          ['ASR完成->LLM开始', 'asrDoneAt', 'llmStartedAt'],
+          ['LLM开始->首字', 'llmStartedAt', 'llmDeltaAt'],
+          ['LLM开始->播报片段', 'llmStartedAt', 'llmTtsSegmentAt'],
+          ['播报片段->TTS ready', 'llmTtsSegmentAt', 'ttsReadyAt'],
+          ['TTS ready->音频首包', 'ttsReadyAt', 'ttsAudioAt'],
+          ['开始->全链路完成', 'startSentAt', 'agentDoneAt'],
+        ];
+        session.timingNode.innerHTML = rows.map((row) => {
+          const value = formatAgentTiming(agentTimingDuration(session, row[1], row[2]));
+          return '<div class="timing-row"><span>' + escapeHtml(row[0]) + '</span><strong>' + escapeHtml(value) + '</strong></div>';
+        }).join('');
+      }
+
       function createAgentRealtimeSession(options) {
         const opts = options || {};
         const requestIds = makeRequestIds();
@@ -1270,6 +1333,8 @@
           sources: [],
           cancelled: false,
           autoPlay: opts.autoPlay !== false,
+          timings: createAgentTimingState(),
+          timingNode: opts.timingNode,
           output: opts.output,
           answerNode: opts.answerNode,
           ttsNode: opts.ttsNode,
@@ -1299,6 +1364,9 @@
         prepareAgentAudioElement(session.audio, session.autoPlay, true);
         if (session.autoPlay) unlockTtsPlayback();
         setAgentTtsInterruptEnabled(session.autoPlay);
+        if (socket.readyState === WebSocket.OPEN) markAgentTiming(session, 'socketOpenAt');
+        socket.addEventListener('open', () => markAgentTiming(session, 'socketOpenAt'), { once: true });
+        renderAgentTimingStats(session);
         renderTtsSegmentDebugList(session);
         return session;
       }
@@ -1309,6 +1377,7 @@
           if (session.startSent || session.socket.readyState !== WebSocket.OPEN) return;
           session.startSent = true;
           session.socket.send(JSON.stringify(session.command));
+          markAgentTiming(session, 'startSentAt');
           session.events.push({ type: 'client.sent', command: session.command.type, id: session.command.id });
           if (session.output) session.output.textContent = pretty(session.events);
         };
@@ -1369,6 +1438,7 @@
         if (typeof event.data !== 'string') {
           const buffer = event.data instanceof ArrayBuffer ? event.data : await event.data.arrayBuffer();
           const chunk = new Uint8Array(buffer);
+          markAgentTiming(session, 'ttsAudioAt');
           session.chunks.push(chunk);
           session.chunkCount += 1;
           session.bytes += chunk.byteLength;
@@ -1388,6 +1458,14 @@
 
         const payload = parseJson(event.data) || {};
         session.events.push(payload);
+        if (payload.type === 'asr.ready') markAgentTiming(session, 'asrReadyAt');
+        if (payload.type === 'asr.transcript') markAgentTiming(session, 'asrTranscriptAt');
+        if (payload.type === 'asr.done') markAgentTiming(session, 'asrDoneAt');
+        if (payload.type === 'llm.started') markAgentTiming(session, 'llmStartedAt');
+        if (payload.type === 'llm.delta') markAgentTiming(session, 'llmDeltaAt');
+        if (payload.type === 'llm.tts_segment') markAgentTiming(session, 'llmTtsSegmentAt');
+        if (payload.type === 'tts.ready') markAgentTiming(session, 'ttsReadyAt');
+        if (payload.type === 'agent.done') markAgentTiming(session, 'agentDoneAt');
         if (payload.type === 'asr.transcript') updateAgentQuestionFromAsr(payload);
         if (payload.type === 'llm.started' && session.answerNode) session.answerNode.textContent = '';
         if (payload.type === 'llm.delta') {

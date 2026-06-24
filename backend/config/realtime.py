@@ -32,6 +32,17 @@ _AGENT_MEMORY: dict[str, list[dict[str, str]]] = {}
 logger = logging.getLogger(__name__)
 
 
+async def _close_asr_upstream_context(context) -> None:
+    try:
+        await context.__aexit__(None, None, None)
+    except Exception:
+        logger.exception('realtime.asr.close_upstream_failed')
+
+
+def _close_asr_upstream_context_later(context) -> None:
+    asyncio.create_task(_close_asr_upstream_context(context))
+
+
 class RealtimeConnection:
     def __init__(self):
         self.device_events_subscriber = None
@@ -846,12 +857,13 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
 
 
 async def _clear_finished_asr_session(connection: RealtimeConnection) -> None:
-    if connection.asr_upstream_context is not None:
-        await connection.asr_upstream_context.__aexit__(None, None, None)
+    upstream_context = connection.asr_upstream_context
     connection.asr_upstream = None
     connection.asr_upstream_context = None
     connection.asr_upstream_task = None
     connection.asr_session_id = None
+    if upstream_context is not None:
+        _close_asr_upstream_context_later(upstream_context)
 
 
 async def _run_agent_llm_and_finish(send, connection: RealtimeConnection, question_text: str) -> None:

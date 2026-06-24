@@ -101,6 +101,19 @@ class AutoFinishASRUpstream:
         raise StopAsyncIteration
 
 
+class SlowExitASRContext:
+    def __init__(self):
+        self.exit_started = asyncio.Event()
+        self.allow_exit = asyncio.Event()
+        self.exit_finished = asyncio.Event()
+
+    async def __aexit__(self, exc_type, exc, tb):
+        self.exit_started.set()
+        await self.allow_exit.wait()
+        self.exit_finished.set()
+        return False
+
+
 class UnifiedTTSUpstream:
     def __init__(self):
         self.messages = []
@@ -234,6 +247,38 @@ class RealtimeWebSocketTests(SimpleTestCase):
             )
             self.assertEqual(llm_questions, ['自动结束问题'])
             self.assertIn('session.finish', [message.get('type') for message in upstream.messages])
+
+        async_to_sync(run_task)()
+
+    def test_agent_asr_starts_llm_without_waiting_for_slow_upstream_close(self):
+        async def run_task():
+            from config.realtime import RealtimeConnection, _agent_asr_upstream_to_client
+
+            llm_questions = []
+
+            async def send(event):
+                pass
+
+            async def fake_run_agent_llm(send, connection, question_text):
+                llm_questions.append(question_text)
+
+            connection = RealtimeConnection()
+            connection.agent_session_id = 'agent-fast-llm-1'
+            connection.agent_request_id = 'req-agent-fast-llm-1'
+            connection.agent_trace_id = 'trace-agent-fast-llm-1'
+            slow_context = SlowExitASRContext()
+            connection.asr_upstream_context = slow_context
+
+            upstream = AutoFinishASRUpstream('不要等关闭')
+            upstream._audio_seen.set()
+            with patch('config.realtime._run_agent_llm_and_finish', side_effect=fake_run_agent_llm):
+                await _agent_asr_upstream_to_client(upstream, send, connection, [])
+
+            self.assertEqual(llm_questions, ['不要等关闭'])
+            await asyncio.wait_for(slow_context.exit_started.wait(), timeout=0.1)
+            self.assertFalse(slow_context.exit_finished.is_set())
+            slow_context.allow_exit.set()
+            await asyncio.wait_for(slow_context.exit_finished.wait(), timeout=0.1)
 
         async_to_sync(run_task)()
 

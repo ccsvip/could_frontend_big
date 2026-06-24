@@ -1,5 +1,6 @@
 import json
 import time
+import asyncio
 
 import httpx
 from django.db import models
@@ -7,6 +8,8 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from .models import LLMModel, LLMTestSettings, TenantLLMSettings
+
+_STREAM_LLM_CLIENTS: dict[int, httpx.AsyncClient] = {}
 
 
 def mask_api_key(value: str) -> str:
@@ -168,6 +171,17 @@ def run_llm_chat_completion(
     return text
 
 
+def _get_stream_llm_client() -> httpx.AsyncClient:
+    loop_id = id(asyncio.get_running_loop())
+    client = _STREAM_LLM_CLIENTS.get(loop_id)
+    if client is None or client.is_closed:
+        client = httpx.AsyncClient(
+            limits=httpx.Limits(max_connections=100, max_keepalive_connections=20, keepalive_expiry=30),
+        )
+        _STREAM_LLM_CLIENTS[loop_id] = client
+    return client
+
+
 async def stream_llm_chat_completion(
     *,
     model: LLMModel | None = None,
@@ -198,59 +212,60 @@ async def stream_llm_chat_completion(
     if model_config.get('enableWebSearch'):
         payload['enable_search'] = True
     try:
-        async with httpx.AsyncClient(timeout=timeout) as client:
-            async with client.stream(
-                'POST',
-                api_url,
-                json=payload,
-                headers={
-                    'Authorization': f"Bearer {model_config['apiKey']}",
-                    'Accept': 'text/event-stream',
-                    'Content-Type': 'application/json',
-                },
-            ) as response:
-                if response.status_code != 200:
-                    raise RuntimeError(f'LLM 请求失败 (HTTP {response.status_code})')
+        client = _get_stream_llm_client()
+        async with client.stream(
+            'POST',
+            api_url,
+            json=payload,
+            headers={
+                'Authorization': f"Bearer {model_config['apiKey']}",
+                'Accept': 'text/event-stream',
+                'Content-Type': 'application/json',
+            },
+            timeout=timeout,
+        ) as response:
+            if response.status_code != 200:
+                raise RuntimeError(f'LLM 请求失败 (HTTP {response.status_code})')
 
-                saw_sse_data = False
-                buffered_plain_lines: list[str] = []
-                async for line in response.aiter_lines():
-                    if not line:
-                        continue
-                    data_str = _parse_sse_data_line(line)
-                    if data_str is None:
-                        if not saw_sse_data:
-                            buffered_plain_lines.append(line)
-                        continue
+            saw_sse_data = False
+            buffered_plain_lines: list[str] = []
+            async for line in response.aiter_lines():
+                if not line:
+                    continue
+                data_str = _parse_sse_data_line(line)
+                if data_str is None:
+                    if not saw_sse_data:
+                        buffered_plain_lines.append(line)
+                    continue
 
-                    saw_sse_data = True
-                    buffered_plain_lines.clear()
-                    if data_str.strip() == '[DONE]':
-                        break
-                    try:
-                        chunk = json.loads(data_str)
-                    except json.JSONDecodeError:
-                        continue
-                    error_message = _extract_openai_error_message(chunk)
+                saw_sse_data = True
+                buffered_plain_lines.clear()
+                if data_str.strip() == '[DONE]':
+                    break
+                try:
+                    chunk = json.loads(data_str)
+                except json.JSONDecodeError:
+                    continue
+                error_message = _extract_openai_error_message(chunk)
+                if error_message:
+                    raise RuntimeError(error_message[:200])
+                text = _extract_openai_completion_delta(chunk)
+                if text:
+                    yield text
+
+            if not saw_sse_data and buffered_plain_lines:
+                raw_text = ''.join(buffered_plain_lines).strip()
+                try:
+                    body = json.loads(raw_text)
+                except json.JSONDecodeError:
+                    body = None
+                if isinstance(body, dict):
+                    error_message = _extract_openai_error_message(body)
                     if error_message:
                         raise RuntimeError(error_message[:200])
-                    text = _extract_openai_completion_delta(chunk)
+                    text = _extract_openai_completion_text(body)
                     if text:
                         yield text
-
-                if not saw_sse_data and buffered_plain_lines:
-                    raw_text = ''.join(buffered_plain_lines).strip()
-                    try:
-                        body = json.loads(raw_text)
-                    except json.JSONDecodeError:
-                        body = None
-                    if isinstance(body, dict):
-                        error_message = _extract_openai_error_message(body)
-                        if error_message:
-                            raise RuntimeError(error_message[:200])
-                        text = _extract_openai_completion_text(body)
-                        if text:
-                            yield text
     except httpx.TimeoutException as exc:
         raise RuntimeError('LLM 请求超时') from exc
     except httpx.HTTPError as exc:

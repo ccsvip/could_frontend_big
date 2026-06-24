@@ -1,5 +1,8 @@
+import asyncio
+import json
 from unittest.mock import MagicMock, patch
 
+from asgiref.sync import async_to_sync
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from rest_framework import status
@@ -20,10 +23,42 @@ from apps.ai_models.llm_services import (
     run_llm_model_test,
     validate_llm_test_settings_values,
 )
+from apps.ai_models import llm_services
 from apps.ai_models.models import ChatConversation, LLMTestSettings
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
+
+
+class FakeStreamLLMResponse:
+    status_code = 200
+
+    def __init__(self, lines):
+        self.lines = lines
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+    async def aiter_lines(self):
+        for line in self.lines:
+            yield line
+
+
+class FakeStreamLLMClient:
+    is_closed = False
+
+    def __init__(self):
+        self.stream_calls = []
+
+    def stream(self, *args, **kwargs):
+        self.stream_calls.append((args, kwargs))
+        return FakeStreamLLMResponse([
+            'data: ' + json.dumps({'choices': [{'delta': {'content': '你好'}}]}),
+            'data: [DONE]',
+        ])
 
 
 class LLMModelUsageTests(TenantTestMixin, APITestCase):
@@ -286,6 +321,44 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
             {'role': 'user', 'content': '全局连接测试'},
         ])
         self.assertEqual(client.post.call_args.kwargs['json']['max_tokens'], 8)
+
+    def test_stream_llm_chat_completion_reuses_loop_client(self):
+        async def run_streams():
+            fake_client = FakeStreamLLMClient()
+            llm_services._STREAM_LLM_CLIENTS.clear()
+            llm_services._STREAM_LLM_CLIENTS[id(asyncio.get_running_loop())] = fake_client
+            try:
+                model_config = {
+                    'name': 'gpt-test',
+                    'apiBaseUrl': 'https://api.openai.com/v1',
+                    'apiKey': 'sk-secret',
+                    'enableWebSearch': False,
+                }
+                first = [
+                    delta async for delta in llm_services.stream_llm_chat_completion(
+                        model_config=model_config,
+                        messages=[{'role': 'user', 'content': '你好'}],
+                        timeout=7,
+                    )
+                ]
+                second = [
+                    delta async for delta in llm_services.stream_llm_chat_completion(
+                        model_config=model_config,
+                        messages=[{'role': 'user', 'content': '再说一次'}],
+                        timeout=9,
+                    )
+                ]
+            finally:
+                llm_services._STREAM_LLM_CLIENTS.clear()
+            return fake_client, first, second
+
+        fake_client, first, second = async_to_sync(run_streams)()
+
+        self.assertEqual(first, ['你好'])
+        self.assertEqual(second, ['你好'])
+        self.assertEqual(len(fake_client.stream_calls), 2)
+        self.assertEqual(fake_client.stream_calls[0][1]['timeout'], 7)
+        self.assertEqual(fake_client.stream_calls[1][1]['timeout'], 9)
 
     def test_chat_creation_supports_unlimited_max_tokens_snapshot(self):
         self.grant_permissions('ai_models.chat.create')

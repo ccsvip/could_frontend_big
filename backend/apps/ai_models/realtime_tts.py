@@ -98,10 +98,6 @@ def resolve_tts_provider(raw_provider_code) -> TTSProvider:
 
 
 async def _stream_tts_audio(*, text: str, voice: TTSVoice, config, send) -> None:
-    await send({
-        'type': 'websocket.send',
-        'text': json.dumps({'type': 'tts.ready', 'sampleRate': config.sample_rate, 'voice': voice.voice_code}),
-    })
     async with websockets.connect(
         build_tts_ws_url(config),
         additional_headers=[
@@ -115,9 +111,13 @@ async def _stream_tts_audio(*, text: str, voice: TTSVoice, config, send) -> None
         max_size=8 * 1024 * 1024,
     ) as upstream:
         await upstream.send(json.dumps(_session_update_event(config, voice)))
+        await send({
+            'type': 'websocket.send',
+            'text': json.dumps({'type': 'tts.ready', 'sampleRate': config.sample_rate, 'voice': voice.voice_code}),
+        })
         for chunk in split_tts_text(text):
             await upstream.send(json.dumps(_text_append_event(chunk)))
-            await asyncio.sleep(0.05)
+            await asyncio.sleep(0)
         await upstream.send(json.dumps(_text_commit_event()))
         await upstream.send(json.dumps(_session_finish_event()))
 
