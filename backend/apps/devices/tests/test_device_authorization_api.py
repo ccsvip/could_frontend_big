@@ -16,7 +16,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.models import AgentApplication, LLMModel, LLMProvider, TenantLLMModelGrant, TenantLLMSettings, TTSProvider, TTSVoice
-from apps.devices.models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceGroup
+from apps.devices.models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup
 from apps.devices.services.authorization import record_device_authorization_action
 from apps.devices.services.queries import device_authorization_requests_queryset
 from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device
@@ -650,6 +650,60 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['questionText'], '介绍一下展厅')
         self.assertEqual(response.data['answerText'], '欢迎来到数字人展厅。')
         self.assertTrue(response.data['audioBase64'])
+        chat_log = DeviceChatLog.objects.get(code='ANDROID-VOICE-002')
+        self.assertEqual(chat_log.source, DeviceChatLog.SOURCE_HTTP)
+        self.assertEqual(chat_log.tenant, self.tenant)
+        self.assertEqual(chat_log.application, self.application)
+        self.assertEqual(chat_log.agent_application, self.agent_application)
+        self.assertEqual(chat_log.question_text, '介绍一下展厅')
+        self.assertEqual(chat_log.answer_text, '欢迎来到数字人展厅。')
+        self.assertEqual(chat_log.model_name, 'qwen/qwen3-32b')
+
+    def test_device_chat_logs_endpoint_filters_by_agent_application(self):
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Chat Log Device',
+            code='ANDROID-CHAT-LOG-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+        other_agent = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Other Agent',
+            system_prompt='其它智能体。',
+        )
+        DeviceChatLog.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            device=device,
+            code=device.code,
+            source=DeviceChatLog.SOURCE_WEBSOCKET,
+            question_text='运行时问题',
+            answer_text='运行时回答',
+            request_id='req-chat-log',
+            trace_id='trace-chat-log',
+            model_name='runtime-model',
+        )
+        DeviceChatLog.objects.create(
+            tenant=self.tenant,
+            agent_application=other_agent,
+            code='ANDROID-OTHER-CHAT-LOG-001',
+            source=DeviceChatLog.SOURCE_WEBSOCKET,
+            question_text='其它问题',
+            answer_text='其它回答',
+        )
+
+        response = self.client.get('/api/v1/devices/chat-logs/', {'agentApplicationId': self.agent_application.id})
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['code'], 'ANDROID-CHAT-LOG-001')
+        self.assertEqual(response.data['results'][0]['questionText'], '运行时问题')
+        self.assertEqual(response.data['results'][0]['answerText'], '运行时回答')
+        self.assertEqual(response.data['results'][0]['agentApplicationId'], self.agent_application.id)
 
     def test_activate_updates_bound_device_by_device_code(self):
         Device.objects.create(

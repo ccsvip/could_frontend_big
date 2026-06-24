@@ -19,6 +19,7 @@ Desktop.ini
 *.swp
 *.swo
 *~
+.playwright-cli
 
 # --- Secrets (env files; allowlist .env.example) ---
 .env

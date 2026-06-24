@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceGroup
+from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup
 
 
 @admin.register(DeviceGroup)
@@ -51,4 +51,12 @@ class DeviceAuthLogAdmin(admin.ModelAdmin):
     list_display = ('created_at', 'action', 'code', 'result', 'message', 'tenant', 'application', 'agent_application', 'device')
     list_filter = ('action', 'result', 'tenant', 'application', 'agent_application', 'created_at')
     search_fields = ('code', 'message', 'device__name', 'device__code')
+    readonly_fields = ('created_at',)
+
+
+@admin.register(DeviceChatLog)
+class DeviceChatLogAdmin(admin.ModelAdmin):
+    list_display = ('created_at', 'source', 'code', 'tenant', 'application', 'agent_application', 'model_name')
+    list_filter = ('source', 'tenant', 'application', 'agent_application', 'created_at')
+    search_fields = ('code', 'device__name', 'device__code', 'question_text', 'answer_text', 'request_id', 'trace_id')
     readonly_fields = ('created_at',)

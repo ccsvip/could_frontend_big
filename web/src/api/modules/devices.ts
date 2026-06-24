@@ -143,6 +143,25 @@ export type DeviceActivationLogRecord = {
   createdAt: string;
 };
 
+export type DeviceChatLogRecord = {
+  id: number;
+  code: string;
+  source: 'http' | 'websocket';
+  tenantId: number | null;
+  tenantName: string;
+  applicationId: number | null;
+  applicationName: string;
+  agentApplicationId: number | null;
+  agentApplicationName: string;
+  deviceName: string;
+  questionText: string;
+  answerText: string;
+  requestId: string;
+  traceId: string;
+  modelName: string;
+  createdAt: string;
+};
+
 export type DeviceAuthorizationRequestQuery = {
   page?: number;
   bindingStatus?: 'pending' | 'bound' | 'ignored' | 'all';
@@ -230,6 +249,25 @@ export const fetchDeviceActivationLogs = async (query?: { page?: number; keyword
     '/device-authorization-requests/logs/',
     { params: query },
   );
+  return response.data;
+};
+
+export const fetchDeviceChatLogs = async (query?: {
+  page?: number;
+  pageSize?: number;
+  keyword?: string;
+  tenantId?: number;
+  agentApplicationId?: number;
+}) => {
+  const response = await httpClient.get<PaginatedResponse<DeviceChatLogRecord>>('/devices/chat-logs/', {
+    params: {
+      page: query?.page,
+      page_size: query?.pageSize,
+      keyword: query?.keyword || undefined,
+      tenantId: query?.tenantId,
+      agentApplicationId: query?.agentApplicationId,
+    },
+  });
   return response.data;
 };
 

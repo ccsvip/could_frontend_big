@@ -31,6 +31,7 @@ import { fetchKnowledgeBases, type KnowledgeBaseRecord } from '../../api/modules
 import { fetchCompanyLLMOptions, type CompanyLLMOptions } from '../../api/modules/llm-settings';
 import { fetchAsrStatus, type AsrStatusRecord } from '../../api/modules/asr';
 import { fetchCompanyTtsOptions, type CompanyTtsOptions } from '../../api/modules/tts';
+import { fetchDeviceChatLogs, type DeviceChatLogRecord } from '../../api/modules/devices';
 import { ChatMarkdown } from '../../components/chat-markdown';
 import { useAuthStore } from '../../store/auth';
 import { useAgentAudio } from './use-agent-audio';
@@ -98,11 +99,89 @@ import {
   Copy,
 } from 'lucide-react';
 
+type LogConversationItem = {
+  key: string;
+  source: 'chat' | 'device';
+  id: number;
+  title: string;
+  summary: string;
+  lastMessage: string | null;
+  messageCount: number;
+  llmModelName: string;
+  llmModelDisplayName: string;
+  created_at: string;
+  updated_at: string;
+  detail?: ChatConversationDetail;
+};
+
 const PAGE_SIZE = 10;
 const LOG_CONVERSATION_PAGE_SIZE = 100;
 const DEFAULT_TEMPERATURE = 0.7;
 const DEFAULT_MAX_TOKENS = 1000;
 const DEFAULT_TTS_FILTER_PUNCTUATION = '。！？!?；;、';
+
+const toDeviceChatConversationDetail = (log: DeviceChatLogRecord): ChatConversationDetail => {
+  const conversationId = -log.id;
+  const title = `${log.deviceName || log.code || '设备'}运行时问答`;
+  return {
+    id: conversationId,
+    title,
+    applicationId: log.agentApplicationId,
+    llmModelId: null,
+    llmModelName: log.modelName,
+    llmModelDisplayName: log.modelName,
+    llmProviderName: null,
+    summary: log.questionText,
+    systemPrompt: '',
+    temperature: 0,
+    maxTokens: 0,
+    maxTokensUnlimited: false,
+    messages: [
+      {
+        id: log.id * 2,
+        conversationId,
+        role: 'user',
+        content: log.questionText,
+        feedback: 'none',
+        created_at: log.createdAt,
+      },
+      {
+        id: log.id * 2 + 1,
+        conversationId,
+        role: 'assistant',
+        content: log.answerText,
+        feedback: 'none',
+        created_at: log.createdAt,
+      },
+    ],
+    created_at: log.createdAt,
+    updated_at: log.createdAt,
+  };
+};
+
+const toDeviceChatLogItem = (log: DeviceChatLogRecord): LogConversationItem => {
+  const detail = toDeviceChatConversationDetail(log);
+  return {
+    key: `device-${log.id}`,
+    source: 'device',
+    id: log.id,
+    title: detail.title,
+    summary: log.questionText,
+    lastMessage: log.answerText,
+    messageCount: 2,
+    llmModelName: log.modelName,
+    llmModelDisplayName: log.modelName || '运行时设备',
+    created_at: log.createdAt,
+    updated_at: log.createdAt,
+    detail,
+  };
+};
+
+const toChatConversationItem = (conversation: ChatConversationRecord): LogConversationItem => ({
+  ...conversation,
+  key: `chat-${conversation.id}`,
+  source: 'chat',
+});
 
 echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer]);
 
@@ -371,7 +450,7 @@ export const ApplicationManagementPage = () => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   // History & Log state (Logs Tab)
-  const [logConversations, setLogConversations] = useState<ChatConversationRecord[]>([]);
+  const [logConversations, setLogConversations] = useState<LogConversationItem[]>([]);
   const [logConversationsLoading, setLogConversationsLoading] = useState(false);
   const [logConversationTotal, setLogConversationTotal] = useState(0);
   const [selectedLogConversation, setSelectedLogConversation] = useState<ChatConversationDetail | null>(null);
@@ -645,14 +724,24 @@ export const ApplicationManagementPage = () => {
     if (!selectedApplicationId) return;
     setLogConversationsLoading(true);
     try {
-      const data = await fetchConversations({
-        application: selectedApplicationId,
-        pageSize: LOG_CONVERSATION_PAGE_SIZE,
-      });
-      setLogConversations(data.results);
-      setLogConversationTotal(data.count);
-      if (data.results.length > 0 && !selectedLogConversation) {
-        void loadSelectedLogConversation(data.results[0].id);
+      const [chatData, deviceLogData] = await Promise.all([
+        fetchConversations({
+          application: selectedApplicationId,
+          pageSize: LOG_CONVERSATION_PAGE_SIZE,
+        }),
+        fetchDeviceChatLogs({
+          agentApplicationId: selectedApplicationId,
+          pageSize: LOG_CONVERSATION_PAGE_SIZE,
+        }),
+      ]);
+      const items = [
+        ...chatData.results.map(toChatConversationItem),
+        ...deviceLogData.results.map(toDeviceChatLogItem),
+      ].sort((a, b) => dayjs(b.updated_at).valueOf() - dayjs(a.updated_at).valueOf());
+      setLogConversations(items);
+      setLogConversationTotal(chatData.count + deviceLogData.count);
+      if (items.length > 0 && !selectedLogConversation) {
+        void loadSelectedLogConversation(items[0]);
       }
     } catch {
       message.error('日志会话加载失败');
@@ -661,10 +750,14 @@ export const ApplicationManagementPage = () => {
     }
   }, [selectedApplicationId, selectedLogConversation]);
 
-  const loadSelectedLogConversation = async (conversationId: number) => {
+  const loadSelectedLogConversation = async (conversation: LogConversationItem) => {
     setSelectedLogConversationLoading(true);
     try {
-      const detail = await fetchConversation(conversationId);
+      if (conversation.source === 'device' && conversation.detail) {
+        setSelectedLogConversation(conversation.detail);
+        return;
+      }
+      const detail = await fetchConversation(conversation.id);
       setSelectedLogConversation(detail);
     } catch {
       message.error('日志详情加载失败');
@@ -2283,10 +2376,10 @@ export const ApplicationManagementPage = () => {
             {logConversations.length > 0 ? (
               logConversations.map((conv) => (
                 <div
-                  key={conv.id}
-                  onClick={() => void loadSelectedLogConversation(conv.id)}
+                  key={conv.key}
+                  onClick={() => void loadSelectedLogConversation(conv)}
                   className={`py-3 px-3 cursor-pointer rounded-xl transition-all duration-200 border ${
-                    selectedLogConversation?.id === conv.id
+                    selectedLogConversation?.id === (conv.source === 'device' ? -conv.id : conv.id)
                       ? 'bg-teal-50/50 border-teal-200 shadow-sm'
                       : 'border-transparent hover:bg-slate-50'
                   }`}
@@ -2306,6 +2399,9 @@ export const ApplicationManagementPage = () => {
                     <Tag color="cyan" className="m-0 scale-90 origin-left">
                       {conv.llmModelDisplayName || conv.llmModelName || '未分配模型'}
                     </Tag>
+                    {conv.source === 'device' && (
+                      <Tag color="gold" className="m-0 scale-90 origin-left">设备运行时</Tag>
+                    )}
                     <span className="flex items-center gap-1 text-slate-400">
                       <MessageSquare size={11} /> {conv.messageCount} 消息
                     </span>

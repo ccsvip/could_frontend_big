@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 from typing import Any, Awaitable, Callable
 
 from asgiref.sync import sync_to_async
@@ -28,6 +29,7 @@ from config.request_id import clean_trace_value, make_request_id
 
 _AGENT_MEMORY_MAX_MESSAGES = 12
 _AGENT_MEMORY: dict[str, list[dict[str, str]]] = {}
+logger = logging.getLogger(__name__)
 
 
 class RealtimeConnection:
@@ -639,6 +641,16 @@ async def _run_llm_session_body(
         return None
 
     _remember_agent_exchange(session.get('memoryKey'), question_text, answer_text)
+    try:
+        await sync_to_async(_record_realtime_device_chat_log, thread_sensitive=True)(
+            session,
+            question_text,
+            answer_text,
+            request_id,
+            trace_id,
+        )
+    except Exception:
+        logger.exception('realtime.agent_chat.log_failed device_code=%s request_id=%s', session.get('deviceCode'), request_id)
 
     await _send_json(
         send,
@@ -699,6 +711,29 @@ def _remember_agent_exchange(memory_key: str | None, question_text: str, answer_
     ])
     if len(history) > _AGENT_MEMORY_MAX_MESSAGES:
         del history[:-_AGENT_MEMORY_MAX_MESSAGES]
+
+
+def _record_realtime_device_chat_log(
+    session: dict[str, Any],
+    question_text: str,
+    answer_text: str,
+    request_id: str,
+    trace_id: str,
+) -> None:
+    from apps.devices.models import DeviceChatLog
+    from apps.devices.services.chat_logs import record_device_chat_log
+    from apps.devices.services.runtime import get_runtime_device
+
+    device = get_runtime_device(str(session.get('deviceCode') or ''))
+    record_device_chat_log(
+        device,
+        question_text,
+        answer_text,
+        source=DeviceChatLog.SOURCE_WEBSOCKET,
+        request_id=request_id,
+        trace_id=trace_id,
+        model_name=str(session.get('modelName') or ''),
+    )
 
 
 def _is_client_disconnected(exc: BaseException) -> bool:
@@ -912,6 +947,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
             'agentApplicationName': agent_application.name,
             'applicationId': device.application_id,
             'applicationName': device.application.name if device.application else '',
+            'modelName': agent_application.llm_model.name if agent_application.llm_model else '',
             'ttsFilterPunctuation': agent_application.tts_filter_punctuation,
             'ttsFilterEmoji': agent_application.tts_filter_emoji,
         }
@@ -953,6 +989,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
         'agentApplicationName': agent_application.name,
         'applicationId': device.application_id,
         'applicationName': device.application.name if device.application else '',
+        'modelName': model.name,
         'ttsFilterPunctuation': agent_application.tts_filter_punctuation,
         'ttsFilterEmoji': agent_application.tts_filter_emoji,
     }

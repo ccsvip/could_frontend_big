@@ -15,7 +15,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.models import AgentApplication, LLMModel, LLMProvider, TenantLLMModelGrant
-from apps.devices.models import Device, DeviceApplication
+from apps.devices.models import Device, DeviceApplication, DeviceChatLog
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
 
@@ -921,6 +921,17 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
 
         async_to_sync(run_websocket)()
 
+        chat_log = DeviceChatLog.objects.get(code='ANDROID-LLM-WS-001')
+        self.assertEqual(chat_log.source, DeviceChatLog.SOURCE_WEBSOCKET)
+        self.assertEqual(chat_log.tenant, self.tenant)
+        self.assertEqual(chat_log.application, device_application)
+        self.assertEqual(chat_log.agent_application, agent_application)
+        self.assertEqual(chat_log.question_text, '介绍一下展厅')
+        self.assertEqual(chat_log.answer_text, '这是实时回答。')
+        self.assertEqual(chat_log.request_id, 'req-llm-1')
+        self.assertEqual(chat_log.trace_id, 'trace-llm-1')
+        self.assertEqual(chat_log.model_name, 'runtime-model')
+
     def test_unified_realtime_websocket_runs_agent_text_session_with_tts(self):
         provider = LLMProvider.objects.create(
             name='Runtime Agent Text Provider',
@@ -1044,6 +1055,17 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         self.assertIn({'role': 'user', 'content': '介绍一下展厅'}, next_session['messages'])
         self.assertIn({'role': 'assistant', 'content': '这是自动播报。'}, next_session['messages'])
         self.assertEqual(next_session['messages'][-1], {'role': 'user', 'content': '我刚才问了什么？'})
+
+        chat_log = DeviceChatLog.objects.get(code='ANDROID-AGENT-TEXT-001')
+        self.assertEqual(chat_log.source, DeviceChatLog.SOURCE_WEBSOCKET)
+        self.assertEqual(chat_log.tenant, self.tenant)
+        self.assertEqual(chat_log.application, device_application)
+        self.assertEqual(chat_log.agent_application, agent_application)
+        self.assertEqual(chat_log.question_text, '介绍一下展厅')
+        self.assertEqual(chat_log.answer_text, '这是自动播报。')
+        self.assertEqual(chat_log.request_id, 'req-agent-1')
+        self.assertEqual(chat_log.trace_id, 'trace-agent-1')
+        self.assertEqual(chat_log.model_name, 'agent-text-model')
 
     def test_unified_realtime_websocket_runs_agent_voice_session_with_tts(self):
         provider = LLMProvider.objects.create(

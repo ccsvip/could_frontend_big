@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import logging
 import uuid
 
 from django.core.cache import cache
@@ -28,7 +29,8 @@ from apps.tenants.mixins import TenantScopedQuerysetMixin
 from apps.tenants.services import get_request_tenant
 from config.request_id import get_request_id, get_trace_id
 
-from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceGroup
+from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup
+from .services.chat_logs import record_device_chat_log
 from .services.authorization import (
     bind_device_authorization,
     ignore_device_authorization_request,
@@ -41,6 +43,7 @@ from .services.queries import (
     device_authorization_logs_queryset,
     device_authorization_requests_queryset,
     device_authorizations_queryset,
+    device_chat_logs_queryset,
 )
 from .services.runtime import (
     RUNTIME_ERROR_AGENT_UNBOUND,
@@ -56,6 +59,7 @@ from .serializers import (
     DeviceAuthorizationCodeSerializer,
     DeviceAuthorizationRequestSerializer,
     DeviceBindSerializer,
+    DeviceChatLogSerializer,
     DeviceDetailSerializer,
     DeviceGroupSerializer,
     DeviceSerializer,
@@ -63,6 +67,7 @@ from .serializers import (
 )
 
 DEFAULT_DEVICE_NAME = '待修改'
+logger = logging.getLogger(__name__)
 
 def _client_ip(request) -> str | None:
     forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -177,6 +182,16 @@ class DeviceViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin, viewsets.M
                     stats['permanent'] = item['total']
             cache.set(cache_key, stats, timeout=300)
         return Response(stats)
+
+    @action(detail=False, methods=['get'], url_path='chat-logs')
+    def chat_logs(self, request):
+        queryset = self.apply_tenant_scope(device_chat_logs_queryset(request.query_params))
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = DeviceChatLogSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = DeviceChatLogSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class DeviceGroupViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin, viewsets.ModelViewSet):
@@ -744,6 +759,19 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             answer_text = self._generate_answer(device, question_text)
         except Exception as exc:
             return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            record_device_chat_log(
+                device,
+                question_text,
+                answer_text,
+                source=DeviceChatLog.SOURCE_HTTP,
+                request_id=get_request_id(request),
+                trace_id=get_trace_id(request),
+                model_name=device.effective_agent_application.llm_model.name if device.effective_agent_application and device.effective_agent_application.llm_model else '',
+            )
+        except Exception:
+            logger.exception('device.voice_chat.log_failed device_code=%s', device.code)
 
         payload = {
             'sessionId': str(request.data.get('sessionId') or uuid.uuid4()),

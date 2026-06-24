@@ -4,7 +4,7 @@ from collections.abc import Mapping
 
 from django.db.models import Prefetch, Q, QuerySet
 
-from apps.devices.models import Device, DeviceAuthLog
+from apps.devices.models import Device, DeviceAuthLog, DeviceChatLog
 
 
 AUTHORIZATION_LOG_ACTIONS = {
@@ -65,6 +65,30 @@ def device_authorization_logs_queryset(params: Mapping | None = None) -> QuerySe
     keyword = _param(params, 'keyword')
     if keyword:
         queryset = queryset.filter(Q(code__icontains=keyword) | Q(device__name__icontains=keyword))
+    return queryset
+
+
+def device_chat_logs_queryset(params: Mapping | None = None) -> QuerySet[DeviceChatLog]:
+    queryset = DeviceChatLog.objects.select_related(
+        'tenant',
+        'application',
+        'agent_application',
+        'device',
+    ).order_by('-created_at', '-id')
+    tenant_id = _param(params, 'tenantId')
+    if tenant_id.isdigit():
+        queryset = queryset.filter(tenant_id=int(tenant_id))
+    agent_application_id = _param(params, 'agentApplicationId') or _param(params, 'application')
+    if agent_application_id.isdigit():
+        queryset = queryset.filter(agent_application_id=int(agent_application_id))
+    keyword = _param(params, 'keyword')
+    if keyword:
+        queryset = queryset.filter(
+            Q(code__icontains=keyword)
+            | Q(device__name__icontains=keyword)
+            | Q(question_text__icontains=keyword)
+            | Q(answer_text__icontains=keyword)
+        )
     return queryset
 
 

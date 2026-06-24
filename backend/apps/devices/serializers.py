@@ -7,7 +7,7 @@ from apps.ai_models.models import AgentApplication, TTSVoice
 from apps.resources.models import CommandGroup, ModelAsset, Resource, ScrollingText
 from apps.tenants.models import Tenant
 
-from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceGroup
+from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup
 
 
 def _tenant_from_context(serializer: serializers.Serializer):
@@ -392,6 +392,43 @@ class DeviceActivationLogSerializer(serializers.ModelSerializer):
             'deviceName',
             'ipAddress',
             'deviceInfo',
+            'createdAt',
+        )
+
+
+class DeviceChatLogSerializer(serializers.ModelSerializer):
+    tenantId = serializers.IntegerField(source='tenant_id', read_only=True)
+    tenantName = serializers.CharField(source='tenant.name', read_only=True, default='')
+    applicationId = serializers.IntegerField(source='application_id', read_only=True)
+    applicationName = serializers.CharField(source='application.name', read_only=True, default='')
+    agentApplicationId = serializers.IntegerField(source='agent_application_id', read_only=True)
+    agentApplicationName = serializers.CharField(source='agent_application.name', read_only=True, default='')
+    deviceName = serializers.CharField(source='device.name', read_only=True, default='')
+    questionText = serializers.CharField(source='question_text', read_only=True)
+    answerText = serializers.CharField(source='answer_text', read_only=True)
+    requestId = serializers.CharField(source='request_id', read_only=True)
+    traceId = serializers.CharField(source='trace_id', read_only=True)
+    modelName = serializers.CharField(source='model_name', read_only=True)
+    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+
+    class Meta:
+        model = DeviceChatLog
+        fields = (
+            'id',
+            'code',
+            'source',
+            'tenantId',
+            'tenantName',
+            'applicationId',
+            'applicationName',
+            'agentApplicationId',
+            'agentApplicationName',
+            'deviceName',
+            'questionText',
+            'answerText',
+            'requestId',
+            'traceId',
+            'modelName',
             'createdAt',
         )
 

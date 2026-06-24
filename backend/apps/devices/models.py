@@ -299,3 +299,42 @@ class DeviceAuthLog(models.Model):
 
     def __str__(self) -> str:
         return f'{self.action}:{self.code}:{self.result}'
+
+
+class DeviceChatLog(models.Model):
+    SOURCE_HTTP = 'http'
+    SOURCE_WEBSOCKET = 'websocket'
+    SOURCE_CHOICES = [
+        (SOURCE_HTTP, 'HTTP'),
+        (SOURCE_WEBSOCKET, 'WebSocket'),
+    ]
+
+    tenant = models.ForeignKey('tenants.Tenant', on_delete=models.CASCADE, related_name='+', null=True, blank=True)
+    application = models.ForeignKey(DeviceApplication, on_delete=models.SET_NULL, related_name='+', null=True, blank=True)
+    agent_application = models.ForeignKey(
+        'ai_models.AgentApplication',
+        on_delete=models.SET_NULL,
+        related_name='+',
+        null=True,
+        blank=True,
+        verbose_name='绑定智能体快照',
+    )
+    device = models.ForeignKey(Device, on_delete=models.SET_NULL, related_name='chat_logs', null=True, blank=True)
+    code = models.CharField('设备码', max_length=128, blank=True, default='')
+    source = models.CharField('来源', max_length=32, choices=SOURCE_CHOICES)
+    question_text = models.TextField('问题')
+    answer_text = models.TextField('回答')
+    request_id = models.CharField('请求 ID', max_length=64, blank=True, default='')
+    trace_id = models.CharField('链路 ID', max_length=64, blank=True, default='')
+    model_name = models.CharField('模型名称', max_length=128, blank=True, default='')
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        ordering = ['-created_at', '-id']
+        verbose_name = '设备对话日志'
+        verbose_name_plural = '设备对话日志'
+
+    def __str__(self) -> str:
+        return f'{self.source}:{self.code}:{self.question_text[:30]}'
