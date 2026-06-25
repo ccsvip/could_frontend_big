@@ -93,6 +93,61 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
             },
         )
 
+    def test_extract_transcript_payload_combines_realtime_text_and_stash(self):
+        from apps.ai_models.realtime_asr import extract_transcript_payload
+
+        payload = extract_transcript_payload({
+            'type': 'conversation.item.input_audio_transcription.text',
+            'text': '今天',
+            'stash': '天气不错',
+        })
+
+        self.assertEqual(
+            payload,
+            {
+                'type': 'asr.transcript',
+                'text': '今天天气不错',
+                'originalText': '今天天气不错',
+                'replacementApplied': False,
+                'delta': False,
+                'final': False,
+                'sourceEventType': 'conversation.item.input_audio_transcription.text',
+            },
+        )
+
+    def test_extract_transcript_payload_keeps_stash_only_preview(self):
+        from apps.ai_models.realtime_asr import extract_transcript_payload
+
+        payload = extract_transcript_payload({
+            'type': 'conversation.item.input_audio_transcription.text',
+            'text': '',
+            'stash': '北京的',
+        })
+
+        self.assertEqual(
+            payload,
+            {
+                'type': 'asr.transcript',
+                'text': '北京的',
+                'originalText': '北京的',
+                'replacementApplied': False,
+                'delta': False,
+                'final': False,
+                'sourceEventType': 'conversation.item.input_audio_transcription.text',
+            },
+        )
+
+    def test_sync_transcript_text_combines_text_and_stash(self):
+        from apps.ai_models.services.asr import _extract_transcript_text
+
+        text = _extract_transcript_text({
+            'type': 'conversation.item.input_audio_transcription.text',
+            'text': '今天',
+            'stash': '天气不错',
+        })
+
+        self.assertEqual(text, '今天天气不错')
+
     def test_extract_transcript_payload_marks_delta_event(self):
         from apps.ai_models.realtime_asr import extract_transcript_payload
 

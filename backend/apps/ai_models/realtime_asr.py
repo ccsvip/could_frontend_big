@@ -179,6 +179,13 @@ def _audio_append_event(audio_bytes: bytes) -> dict[str, str]:
 
 
 def _extract_text(event: dict[str, Any]) -> str:
+    text = event.get('text')
+    stash = event.get('stash')
+    if isinstance(text, str) or isinstance(stash, str):
+        preview = f'{text if isinstance(text, str) else ""}{stash if isinstance(stash, str) else ""}'.strip()
+        if preview:
+            return preview
+
     for key in ('text', 'delta', 'transcript', 'content'):
         value = event.get(key)
         if isinstance(value, str) and value.strip():

@@ -200,6 +200,13 @@ def _session_finish_event() -> dict:
 
 
 def _extract_transcript_text(event: dict) -> str:
+    text = event.get('text')
+    stash = event.get('stash')
+    if isinstance(text, str) or isinstance(stash, str):
+        preview = f'{text if isinstance(text, str) else ""}{stash if isinstance(stash, str) else ""}'.strip()
+        if preview:
+            return preview
+
     for key in ('text', 'delta', 'transcript', 'content'):
         value = event.get(key)
         if isinstance(value, str) and value.strip():
