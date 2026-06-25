@@ -10,11 +10,12 @@ from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
+from kombu.exceptions import OperationalError
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.knowledge_base.models import KnowledgeDocument
+from apps.knowledge_base.models import KnowledgeBase, KnowledgeDocument, KnowledgeDocumentChunk
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
@@ -74,6 +75,14 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
             tenant=self.tenant,
         )
 
+    def create_base(self, *, name: str = '售后知识库') -> KnowledgeBase:
+        return KnowledgeBase.objects.create(
+            name=name,
+            description='测试知识库',
+            created_by=self.user,
+            tenant=self.tenant,
+        )
+
     def test_list_requires_view_permission(self):
         self.tenant.permission_points.clear()
 
@@ -102,8 +111,37 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
         self.assertNotIn('processingStatus', response.data)
         self.assertNotIn('processingStatusLabel', response.data)
         self.assertNotIn('processingResult', response.data)
+        self.assertIn(response.data['indexingStatus'], {'pending', 'ready'})
+        self.assertIn('chunkCount', response.data)
         self.assertEqual(response.data['uploadedBy'], '知识库用户')
         self.assertEqual(response.data['downloadCount'], 0)
+
+    def test_create_document_sync_fallback_builds_keyword_index(self):
+        self.grant_permissions('knowledge_base.view', 'knowledge_base.upload')
+
+        with patch(
+            'apps.knowledge_base.views.build_knowledge_document_index.delay',
+            side_effect=OperationalError('broker unavailable'),
+        ):
+            response = self.client.post(
+                '/api/v1/knowledge-base/',
+                {
+                    'file': build_document_upload(name='索引文档.txt', content='退款政策\n七天内可退款'.encode()),
+                },
+                format='multipart',
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['indexingStatus'], 'ready')
+        self.assertEqual(response.data['indexModel'], 'keyword')
+        self.assertGreaterEqual(response.data['chunkCount'], 1)
+        self.assertTrue(
+            KnowledgeDocumentChunk.objects.filter(
+                document_id=response.data['id'],
+                embedding_model='keyword',
+                content__contains='七天内可退款',
+            ).exists()
+        )
 
     def test_create_document_sends_feishu_notification(self):
         self.grant_permissions('knowledge_base.upload')
@@ -249,3 +287,42 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
         self.assertNotIn('processingStatus', response.data)
         self.assertNotIn('processingStatusLabel', response.data)
         self.assertNotIn('processingResult', response.data)
+
+    def test_rebuild_document_index_requires_upload_permission(self):
+        self.grant_permissions('knowledge_base.view')
+        document = self.create_document(name='待重建.txt', content=b'rebuild-me')
+
+        response = self.client.post(f'/api/v1/knowledge-base/{document.id}/index/')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_rebuild_document_index_queues_task(self):
+        self.grant_permissions('knowledge_base.upload')
+        document = self.create_document(name='待重建.txt', content=b'rebuild-me')
+
+        with patch('apps.knowledge_base.views.build_knowledge_document_index.delay') as delay:
+            response = self.client.post(f'/api/v1/knowledge-base/{document.id}/index/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['documentId'], document.id)
+        self.assertTrue(response.data['queued'])
+        delay.assert_called_once_with(document.id, force=True)
+        document.refresh_from_db()
+        self.assertEqual(document.index_status, KnowledgeDocument.IndexStatus.PENDING)
+
+    def test_rebuild_knowledge_base_index_queues_all_documents(self):
+        self.grant_permissions('knowledge_base.upload')
+        knowledge_base = self.create_base()
+        first = self.create_document(name='第一份.txt', content=b'first')
+        second = self.create_document(name='第二份.txt', content=b'second')
+        first.knowledge_base = knowledge_base
+        first.save(update_fields=['knowledge_base'])
+        second.knowledge_base = knowledge_base
+        second.save(update_fields=['knowledge_base'])
+
+        with patch('apps.knowledge_base.views.build_knowledge_document_index.delay') as delay:
+            response = self.client.post(f'/api/v1/knowledge-bases/{knowledge_base.id}/index/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['queuedCount'], 2)
+        self.assertEqual(delay.call_count, 2)

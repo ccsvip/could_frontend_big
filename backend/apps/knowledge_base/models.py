@@ -46,6 +46,12 @@ class KnowledgeBase(models.Model):
 
 
 class KnowledgeDocument(models.Model):
+    class IndexStatus(models.TextChoices):
+        PENDING = 'pending', '待索引'
+        INDEXING = 'indexing', '索引中'
+        READY = 'ready', '已就绪'
+        FAILED = 'failed', '索引失败'
+
     title = models.CharField('文档标题', max_length=255)
     file = models.FileField('文档文件', upload_to='knowledge-base/%Y/%m/%d')
     file_name = models.CharField('原始文件名', max_length=255, blank=True, default='')
@@ -69,6 +75,16 @@ class KnowledgeDocument(models.Model):
         null=True,
     )
     download_count = models.PositiveIntegerField('下载次数', default=0)
+    index_status = models.CharField(
+        '索引状态',
+        max_length=16,
+        choices=IndexStatus.choices,
+        default=IndexStatus.PENDING,
+    )
+    index_error = models.TextField('索引错误', blank=True, default='')
+    indexed_at = models.DateTimeField('索引完成时间', blank=True, null=True)
+    chunk_count = models.PositiveIntegerField('分块数量', default=0)
+    index_model = models.CharField('索引模型', max_length=128, blank=True, default='')
     tenant = models.ForeignKey(
         'tenants.Tenant',
         on_delete=models.CASCADE,

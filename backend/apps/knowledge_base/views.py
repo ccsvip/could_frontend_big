@@ -10,6 +10,7 @@ from django.db.models import Count, F, Q
 from django.http import FileResponse
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, extend_schema_view
+from kombu.exceptions import OperationalError
 from rest_framework import mixins, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
@@ -35,6 +36,7 @@ from .services import (
     notify_knowledge_document_deleted,
     notify_knowledge_document_event,
 )
+from .tasks import build_knowledge_document_index
 
 MAX_BULK_DOWNLOAD_COUNT = 20
 MAX_BULK_DOWNLOAD_SIZE = 200 * 1024 * 1024
@@ -75,6 +77,26 @@ def build_content_disposition(filename: str) -> str:
     return f"attachment; filename*=UTF-8''{encoded}"
 
 
+def enqueue_document_index(document: KnowledgeDocument, *, force: bool = False) -> dict:
+    KnowledgeDocument.objects.filter(pk=document.pk).update(
+        index_status=KnowledgeDocument.IndexStatus.PENDING,
+        index_error='',
+        indexed_at=None,
+    )
+    document.index_status = KnowledgeDocument.IndexStatus.PENDING
+    document.index_error = ''
+    document.indexed_at = None
+    try:
+        build_knowledge_document_index.delay(document.pk, force=force)
+        return {'documentId': document.pk, 'queued': True}
+    except (OperationalError, OSError):
+        from apps.ai_models.services.agent_knowledge import build_document_index_by_id
+
+        result = build_document_index_by_id(document.pk, force=force)
+        document.refresh_from_db()
+        return {'documentId': document.pk, 'queued': False, **result}
+
+
 @extend_schema_view(
     list=extend_schema(tags=['KnowledgeBase']),
     retrieve=extend_schema(tags=['KnowledgeBase']),
@@ -84,6 +106,7 @@ def build_content_disposition(filename: str) -> str:
     destroy=extend_schema(tags=['KnowledgeBase']),
     documents=extend_schema(tags=['KnowledgeBase']),
     recall_test=extend_schema(tags=['KnowledgeBase']),
+    index=extend_schema(tags=['KnowledgeBase']),
 )
 class KnowledgeBaseViewSet(
     CachedBusinessResponseMixin,
@@ -107,6 +130,7 @@ class KnowledgeBaseViewSet(
         'destroy': [CanUploadKnowledgeBase],
         'documents': [CanViewKnowledgeBase],
         'recall_test': [CanViewKnowledgeBase],
+        'index': [CanUploadKnowledgeBase],
     }
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
@@ -173,6 +197,7 @@ class KnowledgeBaseViewSet(
         )
         self.clear_cached_business_responses()
         notify_knowledge_document_event('create', getattr(self.request, 'user', None), document)
+        enqueue_document_index(document)
         return Response(
             KnowledgeDocumentSerializer(
                 document,
@@ -196,6 +221,14 @@ class KnowledgeBaseViewSet(
         )
         return Response(result)
 
+    @action(detail=True, methods=['post'], url_path='index')
+    def index(self, request, pk=None):
+        knowledge_base = self.get_object()
+        documents = list(knowledge_base.documents.filter(tenant=knowledge_base.tenant).order_by('id'))
+        results = [enqueue_document_index(document, force=True) for document in documents]
+        self.clear_cached_business_responses()
+        return Response({'queuedCount': len(results), 'documents': results})
+
 
 @extend_schema_view(
     list=extend_schema(
@@ -207,6 +240,7 @@ class KnowledgeBaseViewSet(
     retrieve=extend_schema(tags=['KnowledgeBase']),
     create=extend_schema(tags=['KnowledgeBase']),
     destroy=extend_schema(tags=['KnowledgeBase']),
+    index=extend_schema(tags=['KnowledgeBase']),
 )
 class KnowledgeDocumentViewSet(
     CachedBusinessResponseMixin,
@@ -227,6 +261,7 @@ class KnowledgeDocumentViewSet(
         'destroy': [CanUploadKnowledgeBase],
         'download': [CanDownloadKnowledgeBase],
         'bulk_download': [CanBulkDownloadKnowledgeBase],
+        'index': [CanUploadKnowledgeBase],
     }
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
@@ -250,6 +285,7 @@ class KnowledgeDocumentViewSet(
         document = serializer.save(**self.tenant_create_kwargs())
         self.clear_cached_business_responses()
         notify_knowledge_document_event('create', getattr(self.request, 'user', None), document)
+        enqueue_document_index(document)
 
     def perform_destroy(self, instance: KnowledgeDocument):
         document_id = instance.pk
@@ -356,3 +392,14 @@ class KnowledgeDocumentViewSet(
         response['Content-Disposition'] = build_content_disposition(zip_name)
         response._resource_closers.append(lambda path=temp_file_path: os.path.exists(path) and os.remove(path))
         return response
+
+    @extend_schema(
+        tags=['KnowledgeBase'],
+        responses={200: OpenApiResponse(description='文档索引重建已触发')},
+    )
+    @action(detail=True, methods=['post'], url_path='index')
+    def index(self, request, pk=None):
+        document = self.get_object()
+        result = enqueue_document_index(document, force=True)
+        self.clear_cached_business_responses()
+        return Response(result)

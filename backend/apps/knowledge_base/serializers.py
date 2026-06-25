@@ -78,6 +78,12 @@ class KnowledgeDocumentSerializer(serializers.ModelSerializer):
     fileSize = serializers.IntegerField(source='file_size', read_only=True, allow_null=True)
     uploadedBy = serializers.SerializerMethodField()
     downloadCount = serializers.IntegerField(source='download_count', read_only=True)
+    indexingStatus = serializers.CharField(source='index_status', read_only=True)
+    indexingStatusLabel = serializers.CharField(source='get_index_status_display', read_only=True)
+    indexingError = serializers.CharField(source='index_error', read_only=True)
+    indexedAt = serializers.DateTimeField(source='indexed_at', read_only=True, allow_null=True)
+    chunkCount = serializers.IntegerField(source='chunk_count', read_only=True)
+    indexModel = serializers.CharField(source='index_model', read_only=True)
 
     class Meta:
         model = KnowledgeDocument
@@ -93,6 +99,12 @@ class KnowledgeDocumentSerializer(serializers.ModelSerializer):
             'fileSize',
             'uploadedBy',
             'downloadCount',
+            'indexingStatus',
+            'indexingStatusLabel',
+            'indexingError',
+            'indexedAt',
+            'chunkCount',
+            'indexModel',
             'created_at',
             'updated_at',
         )
@@ -103,6 +115,12 @@ class KnowledgeDocumentSerializer(serializers.ModelSerializer):
             'fileSize',
             'uploadedBy',
             'downloadCount',
+            'indexingStatus',
+            'indexingStatusLabel',
+            'indexingError',
+            'indexedAt',
+            'chunkCount',
+            'indexModel',
             'created_at',
             'updated_at',
         )

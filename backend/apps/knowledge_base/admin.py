@@ -22,18 +22,25 @@ class KnowledgeDocumentAdmin(admin.ModelAdmin):
         'file_name',
         'file_extension',
         'knowledge_base',
+        'index_status',
+        'chunk_count',
         'uploaded_by',
         'download_count',
         'updated_at',
     )
     search_fields = ('title', 'file_name', 'description')
-    list_filter = ('file_extension', 'knowledge_base', 'updated_at')
+    list_filter = ('file_extension', 'knowledge_base', 'index_status', 'updated_at')
     readonly_fields = (
         'created_at',
         'updated_at',
         'file_name',
         'file_extension',
         'file_size',
+        'index_status',
+        'index_error',
+        'indexed_at',
+        'chunk_count',
+        'index_model',
         'uploaded_by',
         'download_count',
         'file_link',
@@ -42,6 +49,7 @@ class KnowledgeDocumentAdmin(admin.ModelAdmin):
     fieldsets = (
         ('基础信息', {'fields': ('title', 'description', 'knowledge_base', 'uploaded_by', 'download_count')}),
         ('文件信息', {'fields': ('file', 'file_link', 'file_name', 'file_extension', 'file_size')}),
+        ('索引信息', {'fields': ('index_status', 'index_error', 'indexed_at', 'chunk_count', 'index_model')}),
         ('时间信息', {'fields': ('created_at', 'updated_at')}),
     )
 

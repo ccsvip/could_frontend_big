@@ -13,6 +13,12 @@ export type KnowledgeDocumentRecord = {
   fileSize: number | null;
   uploadedBy: string;
   downloadCount: number;
+  indexingStatus: 'pending' | 'indexing' | 'ready' | 'failed';
+  indexingStatusLabel: string;
+  indexingError: string;
+  indexedAt: string | null;
+  chunkCount: number;
+  indexModel: string;
   created_at: string;
   updated_at: string;
 };
@@ -308,6 +314,18 @@ export const uploadKnowledgeBaseDocument = async (
 
 export const recallTestKnowledgeBase = async (knowledgeBaseId: number, payload: { query: string; topN?: number }) => {
   const response = await httpClient.post<KnowledgeRecallResult>(`/knowledge-bases/${knowledgeBaseId}/recall-test/`, payload);
+  return response.data;
+};
+
+export const indexKnowledgeBase = async (knowledgeBaseId: number) => {
+  const response = await httpClient.post<{ queuedCount: number; documents: Array<{ documentId: number; queued: boolean }> }>(
+    `/knowledge-bases/${knowledgeBaseId}/index/`,
+  );
+  return response.data;
+};
+
+export const indexKnowledgeDocument = async (documentId: number) => {
+  const response = await httpClient.post<{ documentId: number; queued: boolean }>(`/knowledge-base/${documentId}/index/`);
   return response.data;
 };
 

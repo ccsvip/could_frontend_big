@@ -2,15 +2,23 @@ import hashlib
 import logging
 import math
 import re
+import zipfile
 from dataclasses import dataclass
+from io import BytesIO
 from typing import Iterable
+from xml.etree import ElementTree
 
 import httpx
+from django.utils import timezone
 
 from apps.knowledge_base.models import KnowledgeBase, KnowledgeDocument, KnowledgeDocumentChunk
 from apps.ai_models.models import EmbeddingModel, RerankModel, TenantKnowledgeModelSettings
 
 logger = logging.getLogger(__name__)
+
+KEYWORD_INDEX_MODEL = 'keyword'
+TEXT_EXTENSIONS = {'txt', 'md'}
+LEGACY_OFFICE_EXTENSIONS = {'doc', 'xls', 'ppt'}
 
 
 @dataclass
@@ -81,12 +89,72 @@ def score_chunk(chunk: str, keywords: set[str], query: str) -> float:
     return score
 
 
-def _read_document_text(doc: KnowledgeDocument) -> str:
+def _decode_text(raw_content: bytes) -> str:
+    for encoding in ('utf-8-sig', 'utf-8', 'gb18030', 'latin-1'):
+        try:
+            return raw_content.decode(encoding)
+        except UnicodeDecodeError:
+            continue
+    return raw_content.decode('utf-8', errors='ignore')
+
+
+def _xml_text(xml_content: bytes) -> str:
+    try:
+        root = ElementTree.fromstring(xml_content)
+    except ElementTree.ParseError:
+        fallback = re.sub(r'<[^>]+>', ' ', _decode_text(xml_content))
+        return re.sub(r'\s+', ' ', fallback).strip()
+
+    parts: list[str] = []
+    for element in root.iter():
+        if element.text and element.text.strip():
+            parts.append(element.text.strip())
+    return '\n'.join(parts)
+
+
+def _zip_xml_text(raw_content: bytes, name_patterns: tuple[str, ...]) -> str:
+    parts: list[str] = []
+    with zipfile.ZipFile(BytesIO(raw_content)) as archive:
+        for name in sorted(archive.namelist()):
+            if any(name.startswith(pattern) and name.endswith('.xml') for pattern in name_patterns):
+                parts.append(_xml_text(archive.read(name)))
+    return '\n'.join(part for part in parts if part.strip())
+
+
+def _extract_pdf_text(raw_content: bytes) -> str:
+    decoded = raw_content.decode('latin-1', errors='ignore')
+    literal_strings = re.findall(r'\((.*?)\)', decoded, flags=re.DOTALL)
+    if literal_strings:
+        text = '\n'.join(item.replace('\\n', '\n').replace('\\r', '\n').replace('\\t', ' ') for item in literal_strings)
+        text = re.sub(r'\\([()\\])', r'\1', text)
+        cleaned = re.sub(r'\s+', ' ', text).strip()
+        if cleaned:
+            return cleaned
+    return _decode_text(raw_content)
+
+
+def extract_document_text(doc: KnowledgeDocument) -> str:
     with doc.file.open('rb') as f:
         raw_content = f.read()
-    if isinstance(raw_content, bytes):
-        return raw_content.decode('utf-8', errors='ignore')
-    return str(raw_content)
+
+    extension = (doc.file_extension or '').lower().lstrip('.')
+    if extension in TEXT_EXTENSIONS:
+        return _decode_text(raw_content)
+    if extension == 'pdf':
+        return _extract_pdf_text(raw_content)
+    if extension == 'docx':
+        return _zip_xml_text(raw_content, ('word/document', 'word/header', 'word/footer', 'word/footnotes'))
+    if extension == 'pptx':
+        return _zip_xml_text(raw_content, ('ppt/slides/slide', 'ppt/notesSlides/notesSlide'))
+    if extension == 'xlsx':
+        return _zip_xml_text(raw_content, ('xl/sharedStrings', 'xl/worksheets/sheet'))
+    if extension in LEGACY_OFFICE_EXTENSIONS:
+        raise ValueError('暂不支持旧版二进制 Office 文档解析，请转为 docx/xlsx/pptx 或 txt/md 后重新上传')
+    return _decode_text(raw_content)
+
+
+def _read_document_text(doc: KnowledgeDocument) -> str:
+    return extract_document_text(doc)
 
 
 def _content_hash(content: str) -> str:
@@ -262,6 +330,120 @@ def _ensure_document_chunks(
     return list(KnowledgeDocumentChunk.objects.filter(document=doc, embedding_model=model_config.model).order_by('chunk_index'))
 
 
+def _ensure_keyword_chunks(doc: KnowledgeDocument) -> list[KnowledgeDocumentChunk]:
+    content = _read_document_text(doc)
+    chunks = chunk_text(content)
+    existing = list(
+        KnowledgeDocumentChunk.objects.filter(document=doc, embedding_model=KEYWORD_INDEX_MODEL).order_by('chunk_index')
+    )
+    current_hashes = [_content_hash(chunk) for chunk in chunks]
+    if len(existing) == len(chunks) and all(item.content_hash == current_hashes[index] for index, item in enumerate(existing)):
+        return existing
+
+    if not chunks:
+        KnowledgeDocumentChunk.objects.filter(document=doc, embedding_model=KEYWORD_INDEX_MODEL).delete()
+        return []
+
+    records = [
+        KnowledgeDocumentChunk(
+            document=doc,
+            tenant=doc.tenant,
+            chunk_index=index,
+            content=chunk,
+            content_hash=current_hashes[index],
+            embedding=[],
+            embedding_model=KEYWORD_INDEX_MODEL,
+        )
+        for index, chunk in enumerate(chunks)
+    ]
+    KnowledgeDocumentChunk.objects.filter(document=doc, embedding_model=KEYWORD_INDEX_MODEL).delete()
+    KnowledgeDocumentChunk.objects.bulk_create(records)
+    return list(KnowledgeDocumentChunk.objects.filter(document=doc, embedding_model=KEYWORD_INDEX_MODEL).order_by('chunk_index'))
+
+
+def build_document_index(document: KnowledgeDocument, *, force: bool = False) -> dict:
+    if not document.file:
+        KnowledgeDocument.objects.filter(pk=document.pk).update(
+            index_status=KnowledgeDocument.IndexStatus.FAILED,
+            index_error='当前文档文件不存在',
+            indexed_at=None,
+            chunk_count=0,
+            index_model='',
+        )
+        return {'documentId': document.pk, 'status': KnowledgeDocument.IndexStatus.FAILED, 'chunkCount': 0}
+
+    embedding_model = _embedding_model_for_tenant(document.tenant)
+    expected_model = embedding_model.model if embedding_model else KEYWORD_INDEX_MODEL
+
+    if (
+        not force
+        and document.index_status == KnowledgeDocument.IndexStatus.READY
+        and document.index_model == expected_model
+    ):
+        return {
+            'documentId': document.pk,
+            'status': document.index_status,
+            'chunkCount': document.chunk_count,
+            'indexModel': document.index_model,
+        }
+
+    KnowledgeDocument.objects.filter(pk=document.pk).update(
+        index_status=KnowledgeDocument.IndexStatus.INDEXING,
+        index_error='',
+        indexed_at=None,
+    )
+    document.index_status = KnowledgeDocument.IndexStatus.INDEXING
+    document.index_error = ''
+    document.indexed_at = None
+
+    try:
+        if embedding_model:
+            with httpx.Client(timeout=30.0) as client:
+                chunks = _ensure_document_chunks(client, document, embedding_model)
+            index_model = embedding_model.model
+            mode = 'vector'
+        else:
+            chunks = _ensure_keyword_chunks(document)
+            index_model = KEYWORD_INDEX_MODEL
+            mode = 'keyword'
+
+        KnowledgeDocument.objects.filter(pk=document.pk).update(
+            index_status=KnowledgeDocument.IndexStatus.READY,
+            index_error='',
+            indexed_at=timezone.now(),
+            chunk_count=len(chunks),
+            index_model=index_model,
+        )
+        return {
+            'documentId': document.pk,
+            'status': KnowledgeDocument.IndexStatus.READY,
+            'chunkCount': len(chunks),
+            'indexModel': index_model,
+            'mode': mode,
+        }
+    except Exception as e:
+        logger.exception('Failed to build knowledge document index id=%s error=%s', document.pk, e)
+        KnowledgeDocument.objects.filter(pk=document.pk).update(
+            index_status=KnowledgeDocument.IndexStatus.FAILED,
+            index_error=str(e)[:1000],
+            indexed_at=None,
+            chunk_count=0,
+            index_model=embedding_model.model if embedding_model else KEYWORD_INDEX_MODEL,
+        )
+        return {
+            'documentId': document.pk,
+            'status': KnowledgeDocument.IndexStatus.FAILED,
+            'chunkCount': 0,
+            'indexModel': embedding_model.model if embedding_model else KEYWORD_INDEX_MODEL,
+            'error': str(e),
+        }
+
+
+def build_document_index_by_id(document_id: int, *, force: bool = False) -> dict:
+    document = KnowledgeDocument.objects.select_related('tenant').get(pk=document_id)
+    return build_document_index(document, force=force)
+
+
 def _rerank_chunks(
     client: httpx.Client,
     model_config: RerankModel,
@@ -333,16 +515,13 @@ def _bound_approved_text_documents(application) -> list[KnowledgeDocument]:
     if hasattr(application, 'knowledge_bases'):
         base_docs = KnowledgeDocument.objects.filter(knowledge_base__in=application.knowledge_bases.all(), **tenant_filter)
         document_query = document_query | base_docs
-    return list(document_query.filter(
-        file_extension__in=['txt', 'md'],
-    ).distinct())
+    return list(document_query.distinct())
 
 
 def _approved_text_documents_for_knowledge_base(knowledge_base: KnowledgeBase) -> list[KnowledgeDocument]:
     return list(
         knowledge_base.documents.filter(
             tenant=knowledge_base.tenant,
-            file_extension__in=['txt', 'md'],
         ).distinct()
     )
 
@@ -353,6 +532,29 @@ def _retrieve_keyword_chunks(docs: list[KnowledgeDocument], query: str, top_n: i
         return []
 
     all_scored_chunks: list[RetrievedChunk] = []
+    stored_chunks = list(
+        KnowledgeDocumentChunk.objects.filter(
+            document__in=docs,
+            embedding_model=KEYWORD_INDEX_MODEL,
+        ).select_related('document')
+    )
+    for stored_chunk in stored_chunks:
+        score = score_chunk(stored_chunk.content, keywords, query)
+        if score > 0:
+            all_scored_chunks.append(
+                RetrievedChunk(
+                    stored_chunk.document_id,
+                    stored_chunk.document.title,
+                    stored_chunk.content,
+                    score,
+                    stored_chunk.chunk_index,
+                )
+            )
+
+    if all_scored_chunks:
+        all_scored_chunks.sort(key=lambda item: item.score, reverse=True)
+        return all_scored_chunks[:top_n]
+
     for doc in docs:
         try:
             content = _read_document_text(doc)
@@ -425,7 +627,7 @@ def retrieve_knowledge_chunks(
     try:
         with httpx.Client(timeout=30.0) as client:
             for doc in docs:
-                _ensure_document_chunks(client, doc, embedding_model)
+                build_document_index(doc)
 
             query_embedding = _embed_texts(client, embedding_model, [query])[0]
             stored_chunks = list(
@@ -502,11 +704,10 @@ def retrieve_knowledge_context(application, query: str, top_n: int = 5, max_char
         with httpx.Client(timeout=30.0) as client:
             embedding_preparation_failed = False
             for doc in docs:
-                try:
-                    _ensure_document_chunks(client, doc, embedding_model)
-                except Exception as e:
+                result = build_document_index(doc)
+                if result.get('status') == KnowledgeDocument.IndexStatus.FAILED:
                     embedding_preparation_failed = True
-                    logger.warning('Failed to prepare knowledge document embeddings id=%s error=%s', doc.id, e)
+                    logger.warning('Failed to prepare knowledge document embeddings id=%s error=%s', doc.id, result.get('error'))
 
             if embedding_preparation_failed:
                 return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars)
