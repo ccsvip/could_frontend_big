@@ -332,6 +332,7 @@ class ASRConfigSerializer(serializers.ModelSerializer):
         min_value=200,
         max_value=6000,
     )
+    filterFillerWords = serializers.BooleanField(source='filter_filler_words', required=False)
     isActive = serializers.BooleanField(source='is_active', required=False)
 
     class Meta:
@@ -343,6 +344,7 @@ class ASRConfigSerializer(serializers.ModelSerializer):
             'model',
             'vadThreshold',
             'vadSilenceDurationMs',
+            'filterFillerWords',
             'isActive',
             'updated_at',
         )

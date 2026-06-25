@@ -284,6 +284,7 @@ class ASRConfig(models.Model):
     model = models.CharField('模型名称', max_length=128, blank=True, default='')
     vad_threshold = models.FloatField('VAD检测阈值', default=0.0)
     vad_silence_duration_ms = models.PositiveIntegerField('VAD断句检测阈值(ms)', default=400)
+    filter_filler_words = models.BooleanField('过滤语气词', default=True)
     is_active = models.BooleanField('是否启用', default=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
 
@@ -312,6 +313,7 @@ class ASRConfig(models.Model):
                 'model': getattr(settings, 'ASR_MODEL', ''),
                 'vad_threshold': 0.0,
                 'vad_silence_duration_ms': 400,
+                'filter_filler_words': True,
                 'is_active': True,
             },
         )

@@ -56,6 +56,7 @@ class ASRApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(read_response.data['apiKey'], '********cret')
         self.assertEqual(read_response.data['vadThreshold'], 0.0)
         self.assertEqual(read_response.data['vadSilenceDurationMs'], 400)
+        self.assertTrue(read_response.data['filterFillerWords'])
 
         update_response = self.client.patch(
             '/api/v1/settings/asr/',
@@ -66,6 +67,7 @@ class ASRApiTests(TenantTestMixin, APITestCase):
                 'model': 'qwen3-asr-flash-realtime',
                 'vadThreshold': 0.35,
                 'vadSilenceDurationMs': 1200,
+                'filterFillerWords': False,
                 'isActive': False,
             },
             format='json',
@@ -76,6 +78,7 @@ class ASRApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(update_response.data['apiKey'], '********cret')
         self.assertEqual(update_response.data['vadThreshold'], 0.35)
         self.assertEqual(update_response.data['vadSilenceDurationMs'], 1200)
+        self.assertFalse(update_response.data['filterFillerWords'])
         self.assertFalse(update_response.data['isActive'])
 
     def test_asr_settings_validate_vad_range(self):
@@ -148,6 +151,7 @@ class ASRApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['model'], 'qwen3-asr-flash-realtime')
         self.assertEqual(response.data['vadThreshold'], 0.0)
         self.assertEqual(response.data['vadSilenceDurationMs'], 400)
+        self.assertTrue(response.data['filterFillerWords'])
         self.assertNotIn('apiKey', response.data)
         self.assertNotIn('env-secret', str(response.data))
 

@@ -55,6 +55,7 @@ class RealtimeConnection:
         self.asr_upstream_context = None
         self.asr_upstream_task = None
         self.asr_accepting_audio = False
+        self.asr_filter_filler_words = True
         self.llm_session_id = None
         self.llm_task = None
         self.tts_session_id = None
@@ -101,6 +102,7 @@ class RealtimeConnection:
         self.asr_upstream = None
         self.asr_session_id = None
         self.asr_accepting_audio = False
+        self.asr_filter_filler_words = True
 
     async def close_llm_session(self) -> None:
         if self.llm_task is not None:
@@ -396,6 +398,7 @@ async def _handle_asr_session_start(send, connection: RealtimeConnection, messag
     connection.asr_upstream = upstream
     connection.asr_upstream_context = upstream_context
     connection.asr_accepting_audio = True
+    connection.asr_filter_filler_words = getattr(config, 'filter_filler_words', True)
     connection.asr_upstream_task = asyncio.create_task(
         _asr_upstream_to_client(upstream, send, connection, command_id, replacement_pairs),
     )
@@ -810,6 +813,7 @@ async def _start_agent_asr_session(send, connection: RealtimeConnection, message
     connection.asr_upstream = upstream
     connection.asr_upstream_context = upstream_context
     connection.asr_accepting_audio = True
+    connection.asr_filter_filler_words = getattr(config, 'filter_filler_words', True)
     connection.asr_upstream_task = asyncio.create_task(
         _agent_asr_upstream_to_client(upstream, send, connection, replacement_pairs),
     )
@@ -830,7 +834,11 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
             if not isinstance(event, dict):
                 continue
 
-            transcript_payload = realtime_asr.extract_transcript_payload(event, replacement_pairs=replacement_pairs)
+            transcript_payload = realtime_asr.extract_transcript_payload(
+                event,
+                replacement_pairs=replacement_pairs,
+                filter_filler_words=connection.asr_filter_filler_words,
+            )
             if transcript_payload is not None:
                 transcript_payload['id'] = command_id
                 transcript_payload['requestId'] = request_id
@@ -845,6 +853,12 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
                     await upstream.send(json.dumps(realtime_asr._session_finish_event()))
                 continue
 
+            if realtime_asr.is_final_transcript_event(event) and not finish_sent:
+                finish_sent = True
+                connection.asr_accepting_audio = False
+                await upstream.send(json.dumps(realtime_asr._session_finish_event()))
+                continue
+
             if event.get('type') == 'session.finished':
                 await _send_json(send, {'type': 'asr.done', 'id': command_id, 'requestId': request_id, 'traceId': trace_id})
                 text = connection.agent_latest_text.strip()
@@ -852,7 +866,7 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
                 if text:
                     await _run_agent_llm_and_finish(send, connection, text)
                 else:
-                    await _send_json(send, _trace_payload('agent.error', command_id, request_id, trace_id, message='ASR 没有返回有效文本'))
+                    await connection.close_agent_session()
                 return
     except asyncio.CancelledError:
         raise
@@ -1137,7 +1151,11 @@ async def _asr_upstream_to_client(upstream, send, connection: RealtimeConnection
         if not isinstance(event, dict):
             continue
 
-        transcript_payload = realtime_asr.extract_transcript_payload(event, replacement_pairs=replacement_pairs)
+        transcript_payload = realtime_asr.extract_transcript_payload(
+            event,
+            replacement_pairs=replacement_pairs,
+            filter_filler_words=getattr(connection, 'asr_filter_filler_words', True),
+        )
         if transcript_payload is not None:
             transcript_payload['id'] = command_id
             await _send_json(send, transcript_payload)
@@ -1145,6 +1163,12 @@ async def _asr_upstream_to_client(upstream, send, connection: RealtimeConnection
                 finish_sent = True
                 connection.asr_accepting_audio = False
                 await upstream.send(json.dumps(realtime_asr._session_finish_event()))
+            continue
+
+        if realtime_asr.is_final_transcript_event(event) and not finish_sent:
+            finish_sent = True
+            connection.asr_accepting_audio = False
+            await upstream.send(json.dumps(realtime_asr._session_finish_event()))
             continue
 
         if event.get('type') == 'session.finished':

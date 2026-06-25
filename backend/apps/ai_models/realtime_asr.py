@@ -23,6 +23,9 @@ FINAL_EVENT_TYPES = {
     'conversation.item.input_audio_transcription.completed',
     'conversation.item.input_audio_transcription.finished',
 }
+FILLER_CHARS = frozenset('嗯唔啊呃额哦喔噢诶欸哎呀')
+FILLER_WORDS = frozenset({'um', 'uh', 'er', 'ah', 'oh', 'em'})
+IGNORABLE_PUNCTUATION = frozenset('.,!?;:，。！？；：、~…·"\'`“”‘’（）()[]{}<>《》-—_+=|/\\')
 
 
 def resolve_asr_realtime_connection(
@@ -124,6 +127,7 @@ def extract_transcript_payload(
     *,
     tenant_id: int | None = None,
     replacement_pairs: list[tuple[str, str]] | None = None,
+    filter_filler_words: bool = False,
 ) -> dict[str, Any] | None:
     event_type = str(event.get('type') or '')
     if event_type not in TEXT_EVENT_TYPES and event_type not in FINAL_EVENT_TYPES:
@@ -135,6 +139,8 @@ def extract_transcript_payload(
     pairs = replacement_pairs if replacement_pairs is not None else load_asr_replacement_pairs(tenant_id)
 
     replaced_text = apply_asr_replacement_rules(text, pairs)
+    if filter_filler_words and is_filler_transcript_text(replaced_text):
+        return None
     return {
         'type': 'asr.transcript',
         'text': replaced_text,
@@ -144,6 +150,23 @@ def extract_transcript_payload(
         'final': event_type in FINAL_EVENT_TYPES,
         'sourceEventType': event_type,
     }
+
+
+def is_final_transcript_event(event: dict[str, Any]) -> bool:
+    return str(event.get('type') or '') in FINAL_EVENT_TYPES
+
+
+def is_filler_transcript_text(text: str) -> bool:
+    compact = ''.join(char for char in str(text or '').strip().lower() if not char.isspace())
+    if not compact:
+        return False
+
+    meaningful = ''.join(char for char in compact if char not in IGNORABLE_PUNCTUATION)
+    if not meaningful:
+        return True
+    if meaningful in FILLER_WORDS:
+        return True
+    return all(char in FILLER_CHARS for char in meaningful)
 
 
 def _session_update_event(*, vad_threshold: float = 0.0, vad_silence_duration_ms: int = 400) -> dict[str, Any]:

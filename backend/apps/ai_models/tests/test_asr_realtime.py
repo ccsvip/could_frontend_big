@@ -148,6 +148,32 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
 
         self.assertEqual(text, '今天天气不错')
 
+    def test_extract_transcript_payload_filters_filler_words_when_enabled(self):
+        from apps.ai_models.realtime_asr import extract_transcript_payload
+
+        self.assertIsNone(
+            extract_transcript_payload(
+                {
+                    'type': 'conversation.item.input_audio_transcription.completed',
+                    'transcript': '嗯。',
+                },
+                filter_filler_words=True,
+            )
+        )
+
+    def test_extract_transcript_payload_keeps_meaningful_text_when_filter_enabled(self):
+        from apps.ai_models.realtime_asr import extract_transcript_payload
+
+        payload = extract_transcript_payload(
+            {
+                'type': 'conversation.item.input_audio_transcription.completed',
+                'transcript': '嗯好的',
+            },
+            filter_filler_words=True,
+        )
+
+        self.assertEqual(payload['text'], '嗯好的')
+
     def test_extract_transcript_payload_marks_delta_event(self):
         from apps.ai_models.realtime_asr import extract_transcript_payload
 

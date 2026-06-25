@@ -8,6 +8,7 @@ export type AsrSettingsRecord = {
   model: string;
   vadThreshold: number;
   vadSilenceDurationMs: number;
+  filterFillerWords: boolean;
   isActive: boolean;
   configured: boolean;
   updated_at: string | null;
@@ -22,6 +23,7 @@ export type AsrSettingsPayload = Partial<{
   model: string;
   vadThreshold: number;
   vadSilenceDurationMs: number;
+  filterFillerWords: boolean;
   isActive: boolean;
 }>;
 
