@@ -1,25 +1,25 @@
 import type { Key } from 'react';
 import {
-  ArrowLeftOutlined,
-  ArrowRightOutlined,
-  BookOutlined,
-  BranchesOutlined,
-  CloudUploadOutlined,
-  DeleteOutlined,
-  DownloadOutlined,
-  ExperimentOutlined,
-  FileAddOutlined,
-  FileSearchOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-  SafetyCertificateOutlined,
-  EditOutlined,
-  PartitionOutlined,
-  KeyOutlined,
-  SlidersOutlined,
-  CompassOutlined,
-  DatabaseOutlined,
-} from '@ant-design/icons';
+  ArrowLeft,
+  ArrowRight,
+  Book,
+  CloudUpload,
+  Compass,
+  Database,
+  Download,
+  FilePlus,
+  FileSearch,
+  FlaskConical,
+  GitBranch,
+  Key as KeyIcon,
+  Pencil,
+  Plus,
+  RefreshCw,
+  ShieldCheck,
+  SlidersHorizontal,
+  Split,
+  Trash2,
+} from 'lucide-react';
 import {
   Alert,
   Button,
@@ -99,17 +99,17 @@ const createGuideCards = [
   {
     title: '创建业务知识库',
     description: '按业务域、产品线或部门拆分知识库，方便权限隔离和后续维护。',
-    icon: <BookOutlined />,
+    icon: <Book />,
   },
   {
     title: '上传并维护文档',
     description: `当前支持 ${KNOWLEDGE_BASE_ACCEPT.replace(/\./g, '').toUpperCase()}，建议文件名保留版本和适用范围。`,
-    icon: <FileAddOutlined />,
+    icon: <FilePlus />,
   },
   {
     title: '测试召回效果',
     description: '用真实用户问题检查命中内容，再把知识库绑定到智能体应用。',
-    icon: <ExperimentOutlined />,
+    icon: <FlaskConical />,
   },
 ];
 
@@ -123,17 +123,17 @@ const retrievalPolicies = [
   {
     title: '高质量索引',
     description: '上传后走解析、切分、Embedding 入库，召回时优先按向量相似度排序。',
-    icon: <PartitionOutlined />,
+    icon: <Split />,
   },
   {
     title: '关键词降级',
     description: 'Embedding 模型不可用时自动退回关键词匹配，保证知识库仍可用。',
-    icon: <KeyOutlined />,
+    icon: <KeyIcon />,
   },
   {
     title: 'Rerank 精排',
     description: '配置 Rerank 模型后，对 Top N 候选片段二次排序，提升答案来源可信度。',
-    icon: <SlidersOutlined />,
+    icon: <SlidersHorizontal />,
   },
 ];
 
@@ -655,7 +655,7 @@ export const KnowledgeBasePage = () => {
 
   const documentManagementTab = (
     <Space direction="vertical" size={16} className="w-full">
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
         <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
           <Space direction="vertical" size={16} className="w-full">
             <div className="flex flex-col gap-4">
@@ -675,7 +675,7 @@ export const KnowledgeBasePage = () => {
                 className="!w-full !border-dashed !border-slate-200 hover:!border-teal-400 !bg-slate-50/50 hover:!bg-teal-50/10 !transition-colors !rounded-xl"
               >
                 <div className="py-4">
-                  <p className="ant-upload-drag-icon !mb-2 !text-teal-600"><CloudUploadOutlined className="text-2xl" /></p>
+                  <p className="ant-upload-drag-icon !mb-2 !text-teal-600"><CloudUpload className="text-2xl" /></p>
                   <p className="ant-upload-text !text-sm !font-medium !text-slate-700">拖拽文件到此处，或 <span className="text-teal-600">点击上传</span></p>
                   <p className="ant-upload-hint !text-xs !text-slate-400 mt-1">支持并发上传最多 3 个文件。支持格式：{KNOWLEDGE_BASE_ACCEPT.replace(/\./g, '').toUpperCase()}</p>
                 </div>
@@ -736,18 +736,18 @@ export const KnowledgeBasePage = () => {
           rowSelection={canBulkDownload ? { selectedRowKeys, onChange: setSelectedRowKeys } : undefined}
           pagination={false}
           locale={{ emptyText: '当前知识库暂无文档' }}
-          scroll={{ x: 1120 }}
+          scroll={{ x: 900 }}
         />
       </Card>
     </Space>
   );
 
   const recallTestTab = (
-    <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
         <Space direction="vertical" size={16} className="w-full">
           <div className="flex items-center gap-2">
-            <FileSearchOutlined className="text-teal-600 text-lg" />
+            <FileSearch className="text-teal-600 text-lg" />
             <Typography.Title level={5} className="!mb-0">召回测试</Typography.Title>
           </div>
           <Typography.Text className="!text-sm !text-slate-500">先用真实业务问题验证命中片段，再绑定给智能体。</Typography.Text>
@@ -757,7 +757,7 @@ export const KnowledgeBasePage = () => {
               <Typography.Text className="!text-sm !text-slate-500">Top N</Typography.Text>
               <InputNumber min={1} max={20} value={recallTopN} onChange={(value) => setRecallTopN(Number(value || 5))} />
             </Space>
-            <Button type="primary" icon={<CloudUploadOutlined />} loading={recallLoading} onClick={() => void handleRecallTest()}>测试召回</Button>
+            <Button type="primary" icon={<CloudUpload />} loading={recallLoading} onClick={() => void handleRecallTest()}>测试召回</Button>
           </div>
           {recallMode ? (
             <Tag color="success" className="!border-teal-100 !bg-teal-50 !text-teal-700">
@@ -819,7 +819,7 @@ export const KnowledgeBasePage = () => {
   );
 
   const indexPolicyTab = (
-    <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       {retrievalPolicies.map((item) => (
         <Card key={item.title} variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card hover:!border-teal-100 hover:!shadow-md transition-all duration-300">
           <div className="flex gap-4">
@@ -840,10 +840,10 @@ export const KnowledgeBasePage = () => {
     return (
       <Space direction="vertical" size={20} className="w-full">
         {/* Hero Section */}
-        <section className="space-y-3 relative overflow-hidden rounded-2xl p-8 bg-gradient-to-br from-teal-600/5 to-teal-500/5 border border-teal-600/10">
+        <section className="space-y-3 relative overflow-hidden rounded-2xl p-5 sm:p-6 md:p-8 bg-gradient-to-br from-teal-600/5 to-teal-500/5 border border-teal-600/10">
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-teal-50 text-teal-700 rounded-full mb-4 border border-teal-100">
-              <SafetyCertificateOutlined className="text-[14px]" />
+              <ShieldCheck className="text-[14px]" />
               <span className="text-xs font-semibold">企业知识沉淀与智能体召回中心</span>
             </div>
             <Typography.Title level={2} className="!mb-2 !text-slate-900">知识库</Typography.Title>
@@ -852,12 +852,12 @@ export const KnowledgeBasePage = () => {
             </p>
           </div>
           <div className="absolute right-0 top-0 w-1/3 h-full opacity-[0.03] pointer-events-none flex items-center justify-end pr-8">
-            <ExperimentOutlined className="text-[180px] rotate-12 text-teal-800" />
+            <FlaskConical className="text-[180px] rotate-12 text-teal-800" />
           </div>
         </section>
 
         {/* Summary Cards Row */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-[0px_4px_20px_rgba(0,0,0,0.015)] hover:shadow-md hover:border-slate-300/60 transition-all duration-300 flex items-center justify-between h-24">
             <div className="flex flex-col justify-between h-full py-0.5">
               <span className="text-xs text-slate-400 font-medium">知识库总数</span>
@@ -867,7 +867,7 @@ export const KnowledgeBasePage = () => {
               </div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-teal-50/50 text-teal-600 flex items-center justify-center text-base border border-teal-100/30 shrink-0">
-              <DatabaseOutlined />
+              <Database />
             </div>
           </div>
           <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-[0px_4px_20px_rgba(0,0,0,0.015)] hover:shadow-md hover:border-slate-300/60 transition-all duration-300 flex items-center justify-between h-24">
@@ -879,7 +879,7 @@ export const KnowledgeBasePage = () => {
               </div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-teal-50/50 text-teal-600 flex items-center justify-center text-base border border-teal-100/30 shrink-0">
-              <SafetyCertificateOutlined />
+              <ShieldCheck />
             </div>
           </div>
           <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-[0px_4px_20px_rgba(0,0,0,0.015)] hover:shadow-md hover:border-slate-300/60 transition-all duration-300 flex items-center justify-between h-24">
@@ -891,7 +891,7 @@ export const KnowledgeBasePage = () => {
               </div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-teal-50/50 text-teal-600 flex items-center justify-center text-base border border-teal-100/30 shrink-0">
-              <FileAddOutlined />
+              <FilePlus />
             </div>
           </div>
           <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-[0px_4px_20px_rgba(0,0,0,0.015)] hover:shadow-md hover:border-slate-300/60 transition-all duration-300 flex items-center justify-between h-24">
@@ -903,15 +903,15 @@ export const KnowledgeBasePage = () => {
               </div>
             </div>
             <div className="w-9 h-9 rounded-xl bg-teal-50/50 text-teal-600 flex items-center justify-center text-base border border-teal-100/30 shrink-0">
-              <ReloadOutlined />
+              <RefreshCw />
             </div>
           </div>
         </section>
 
         {/* Main Grid Layout */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <section className="grid grid-cols-1 gap-5 xl:grid-cols-12 items-start">
           {/* Left Column: Knowledge Base List */}
-          <div className="col-span-12 lg:col-span-9">
+          <div className="col-span-12 xl:col-span-9">
             <Card variant="borderless" className="!rounded-xl !border !border-slate-100 !shadow-[0px_4px_20px_rgba(0,0,0,0.02)] overflow-hidden [&_.ant-card-body]:!p-0">
               {/* Toolbar */}
               <div className="p-4 border-b border-slate-100/80 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between bg-slate-50/50">
@@ -919,37 +919,35 @@ export const KnowledgeBasePage = () => {
                   <Input.Search
                     allowClear
                     placeholder="搜索知识库"
-                    className="!w-72"
+                    className="!w-44 sm:!w-52 md:!w-64"
                     onSearch={(value) => {
                       setBaseKeyword(value.trim());
                       setBasePage(1);
                     }}
                   />
-                  <Button icon={<ReloadOutlined />} onClick={() => void loadBases()}>刷新</Button>
+                  <Button icon={<RefreshCw />} onClick={() => void loadBases()}>刷新</Button>
                 </div>
-                <Button type="primary" icon={<PlusOutlined />} disabled={!canUpload} onClick={() => setCreateOpen(true)}>
+                <Button type="primary" icon={<Plus />} disabled={!canUpload} onClick={() => setCreateOpen(true)}>
                   创建知识库
                 </Button>
               </div>
 
               {/* Card List / Grid */}
               <Spin spinning={baseLoading}>
-                <div className="p-5">
+                <div className="p-4 sm:p-5">
                   {bases.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
                       {bases.map((item) => {
                         // Select icon based on keywords in name
-                        let cardIcon = <DatabaseOutlined />;
-                        
-                        const name = item.name;
+                        let cardIcon = <Database />;
                         if (name.includes('医') || name.includes('健康') || name.includes('药')) {
-                          cardIcon = <SafetyCertificateOutlined />;
+                          cardIcon = <ShieldCheck />;
                         } else if (name.includes('科') || name.includes('数') || name.includes('网') || name.includes('算') || name.includes('智能') || name.includes('系统')) {
-                          cardIcon = <PartitionOutlined />;
+                          cardIcon = <Split />;
                         } else if (name.includes('城') || name.includes('游') || name.includes('古') || name.includes('馆') || name.includes('历史') || name.includes('景')) {
-                          cardIcon = <CompassOutlined />;
+                          cardIcon = <Compass />;
                         } else if (name.includes('文档') || name.includes('书') || name.includes('学') || name.includes('策略') || name.includes('政策')) {
-                          cardIcon = <BookOutlined />;
+                          cardIcon = <Book />;
                         }
 
                         const iconBg = item.isActive
@@ -959,7 +957,7 @@ export const KnowledgeBasePage = () => {
                         return (
                           <div
                             key={item.id}
-                            className="bg-white rounded-xl border border-slate-200/60 hover:border-teal-500/30 p-5 shadow-[0px_4px_20px_rgba(0,0,0,0.015)] hover:shadow-[0px_8px_30px_rgba(20,184,166,0.06)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between group"
+                            className="bg-white rounded-xl border border-slate-200/60 hover:border-teal-500/30 p-4 sm:p-5 shadow-[0px_4px_20px_rgba(0,0,0,0.015)] hover:shadow-[0px_8px_30px_rgba(20,184,166,0.06)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between group"
                           >
                             <div>
                               {/* Header Row */}
@@ -967,17 +965,17 @@ export const KnowledgeBasePage = () => {
                                 <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center text-lg shrink-0 shadow-sm transition-transform group-hover:scale-105 duration-300`}>
                                   {cardIcon}
                                 </div>
-                                <div className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[10px] font-medium font-sans ${item.isActive ? 'bg-emerald-50/70 border-emerald-100 text-emerald-700' : 'bg-slate-50 border-slate-200/60 text-slate-500'}`}>
+                                <div className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-xs font-medium font-sans ${item.isActive ? 'bg-emerald-50/70 border-emerald-100 text-emerald-700' : 'bg-slate-50 border-slate-200/60 text-slate-500'}`}>
                                   <span className={`w-1.5 h-1.5 rounded-full ${item.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
                                   {item.isActive ? '启用' : '停用'}
                                 </div>
                               </div>
 
                               {/* Title & Description */}
-                              <h4 className="text-sm font-bold text-slate-800 line-clamp-1 mb-1 group-hover:text-teal-600 transition-colors duration-200" title={item.name}>
+                              <h4 className="text-sm sm:text-base font-bold text-slate-800 line-clamp-1 mb-1 group-hover:text-teal-600 transition-colors duration-200" title={item.name}>
                                 {item.name}
                               </h4>
-                              <p className="text-xs text-slate-400 line-clamp-2 h-8 mb-4 leading-relaxed" title={item.description || '暂无描述'}>
+                              <p className="text-xs sm:text-sm text-slate-400 line-clamp-2 mb-4 leading-relaxed" title={item.description || '暂无描述'}>
                                 {item.description || '暂无描述'}
                               </p>
                             </div>
@@ -986,19 +984,19 @@ export const KnowledgeBasePage = () => {
                               {/* Stats & Meta */}
                               <div className="grid grid-cols-2 gap-4 py-3.5 border-y border-slate-100/80">
                                 <div>
-                                  <span className="text-[10px] font-bold font-mono text-slate-400 uppercase tracking-wider block">包含文档</span>
-                                  <span className="text-xs font-semibold text-slate-700 font-mono mt-0.5 inline-block">
-                                    {item.documentCount} <span className="font-sans font-normal text-[10px] text-slate-400">份</span>
+                                  <span className="text-xs font-bold font-mono text-slate-400 uppercase tracking-wider block">包含文档</span>
+                                  <span className="text-sm font-semibold text-slate-700 font-mono mt-0.5 inline-block">
+                                    {item.documentCount} <span className="font-sans font-normal text-xs text-slate-400">份</span>
                                   </span>
                                 </div>
                                 <div>
-                                  <span className="text-[10px] font-bold font-mono text-slate-400 uppercase tracking-wider block">分块配置</span>
-                                  <span className="text-xs font-semibold text-slate-700 font-mono mt-0.5 inline-block">
+                                  <span className="text-xs font-bold font-mono text-slate-400 uppercase tracking-wider block">分块配置</span>
+                                  <span className="text-sm font-semibold text-slate-700 font-mono mt-0.5 inline-block">
                                     {item.chunkSize}/{item.chunkOverlap}
                                   </span>
                                 </div>
                               </div>
-                              <div className="flex items-center justify-between text-[10px] text-slate-400 mt-2 font-mono">
+                              <div className="flex items-center justify-between text-xs text-slate-400 mt-2 font-mono">
                                 <span>更新时间</span>
                                 <span>{item.updated_at}</span>
                               </div>
@@ -1010,7 +1008,7 @@ export const KnowledgeBasePage = () => {
                                     type="text"
                                     size="small"
                                     className="text-slate-400 hover:text-teal-600 hover:bg-teal-50/50 rounded-lg flex items-center justify-center p-1.5"
-                                    icon={<EditOutlined className="text-xs" />}
+                                    icon={<Pencil className="text-xs" />}
                                     disabled={!canUpload}
                                     onClick={() => openEditBase(item)}
                                   />
@@ -1028,7 +1026,7 @@ export const KnowledgeBasePage = () => {
                                       size="small"
                                       danger
                                       className="text-slate-400 hover:text-red-600 hover:bg-red-50/50 rounded-lg flex items-center justify-center p-1.5"
-                                      icon={<DeleteOutlined className="text-xs" />}
+                                       icon={<Trash2 className="text-xs" />}
                                       disabled={!canDelete}
                                       loading={deletingBaseId === item.id}
                                     />
@@ -1042,7 +1040,7 @@ export const KnowledgeBasePage = () => {
                                   onClick={() => setSelectedBase(item)}
                                 >
                                   进入管理
-                                  <ArrowRightOutlined className="text-[10px] group-hover/btn:translate-x-0.5 transition-transform duration-200" />
+                                   <ArrowRight className="text-[10px] group-hover/btn:translate-x-0.5 transition-transform duration-200" />
                                 </Button>
                               </div>
                             </div>
@@ -1079,7 +1077,7 @@ export const KnowledgeBasePage = () => {
           </div>
 
           {/* Right Column: Recommended Process */}
-          <div className="col-span-12 lg:col-span-3">
+          <div className="col-span-12 xl:col-span-3">
             <Card variant="borderless" className="!rounded-xl !border border-slate-200/60 !shadow-[0px_4px_20px_rgba(0,0,0,0.015)]">
               <Space direction="vertical" size={20} className="w-full">
                 <h3 className="text-sm font-bold text-slate-800 mb-0 flex items-center gap-2">
@@ -1186,9 +1184,9 @@ export const KnowledgeBasePage = () => {
   return (
     <Space direction="vertical" size={20} className="w-full">
       <Card variant="borderless" className="!rounded-xl !border !border-slate-100 !shadow-[0px_4px_20px_rgba(0,0,0,0.02)]">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <Space size={12} align="start">
-            <Button icon={<ArrowLeftOutlined />} onClick={() => setSelectedBase(null)} />
+            <Button icon={<ArrowLeft />} onClick={() => setSelectedBase(null)} />
             <div>
               <Typography.Title level={3} className="!mb-1 !text-slate-900">{selectedBase.name}</Typography.Title>
               <Typography.Text className="!text-slate-500">{selectedBase.description || '暂无描述'}</Typography.Text>
@@ -1212,12 +1210,12 @@ export const KnowledgeBasePage = () => {
             <Input.Search
               allowClear
               placeholder="搜索标题 / 文件名"
-              className="!w-72"
+              className="!w-44 sm:!w-52 md:!w-64"
               onSearch={(value) => setDocumentKeyword(value.trim())}
             />
-            <Button icon={<ReloadOutlined />} onClick={() => void loadDocuments()}>刷新</Button>
+            <Button icon={<RefreshCw />} onClick={() => void loadDocuments()}>刷新</Button>
             <Button
-              icon={<BranchesOutlined />}
+              icon={<GitBranch />}
               disabled={!canUpload}
               loading={indexingBase}
               onClick={() => void handleIndexBase()}
@@ -1226,7 +1224,7 @@ export const KnowledgeBasePage = () => {
             </Button>
             <Button
               type="primary"
-              icon={<DownloadOutlined />}
+              icon={<Download />}
               disabled={!canBulkDownload || selectedRowKeys.length === 0}
               loading={bulkDownloading}
               onClick={() => void handleBulkDownload()}
@@ -1237,30 +1235,30 @@ export const KnowledgeBasePage = () => {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.8fr)]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]">
         <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 sm:p-4">
               <div className="text-xs text-slate-500 font-medium">当前文档</div>
-              <div className="mt-1 text-2xl font-semibold text-slate-900 font-mono">
+              <div className="mt-1 text-xl sm:text-2xl font-semibold text-slate-900 font-mono">
                 {selectedBase.documentCount} <span className="text-xs font-normal text-slate-400 font-sans">份</span>
               </div>
             </div>
-            <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+            <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 sm:p-4">
               <div className="text-xs text-slate-500 font-medium">已选文档</div>
-              <div className="mt-1 text-2xl font-semibold text-slate-900 font-mono">
+              <div className="mt-1 text-xl sm:text-2xl font-semibold text-slate-900 font-mono">
                 {selectedRowKeys.length} <span className="text-xs font-normal text-slate-400 font-sans">份</span>
               </div>
             </div>
-            <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+            <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 sm:p-4">
               <div className="text-xs text-slate-500 font-medium">召回 Top N</div>
-              <div className="mt-1 text-2xl font-semibold text-slate-900 font-mono">
+              <div className="mt-1 text-xl sm:text-2xl font-semibold text-slate-900 font-mono">
                 {recallTopN} <span className="text-xs font-normal text-slate-400 font-sans">段</span>
               </div>
             </div>
-            <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+            <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 sm:p-4">
               <div className="text-xs text-slate-500 font-medium">测试记录</div>
-              <div className="mt-1 text-2xl font-semibold text-slate-900 font-mono">
+              <div className="mt-1 text-xl sm:text-2xl font-semibold text-slate-900 font-mono">
                 {recallHistory.length} <span className="text-xs font-normal text-slate-400 font-sans">次</span>
               </div>
             </div>
