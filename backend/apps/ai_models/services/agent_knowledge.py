@@ -17,6 +17,7 @@ from apps.ai_models.models import EmbeddingModel, RerankModel, TenantKnowledgeMo
 logger = logging.getLogger(__name__)
 
 KEYWORD_INDEX_MODEL = 'keyword'
+EMBEDDING_BATCH_SIZE = 10
 TEXT_EXTENSIONS = {'txt', 'md'}
 LEGACY_OFFICE_EXTENSIONS = {'doc', 'xls', 'ppt'}
 
@@ -48,6 +49,20 @@ def chunk_text(text: str, max_chunk_len: int = 500, overlap: int = 50) -> list[s
         else:
             paragraphs.append(p)
     return paragraphs
+
+
+def _chunk_settings_for_document(doc: KnowledgeDocument) -> tuple[int, int]:
+    knowledge_base = getattr(doc, 'knowledge_base', None)
+    chunk_size = getattr(knowledge_base, 'chunk_size', 500) or 500
+    chunk_overlap = getattr(knowledge_base, 'chunk_overlap', 50) or 0
+    chunk_size = max(100, min(int(chunk_size), 4000))
+    chunk_overlap = max(0, min(int(chunk_overlap), chunk_size - 1))
+    return chunk_size, chunk_overlap
+
+
+def _chunk_document_text(doc: KnowledgeDocument, content: str) -> list[str]:
+    chunk_size, chunk_overlap = _chunk_settings_for_document(doc)
+    return chunk_text(content, max_chunk_len=chunk_size, overlap=chunk_overlap)
 
 
 def extract_keywords(query: str) -> set[str]:
@@ -266,6 +281,23 @@ def _parse_embedding_response(payload: dict, expected_count: int) -> list[list[f
     return result
 
 
+def _response_error_message(response: httpx.Response) -> str:
+    try:
+        payload = response.json()
+    except ValueError:
+        return response.text[:500]
+    if isinstance(payload, dict):
+        error = payload.get('error')
+        if isinstance(error, dict):
+            message = error.get('message') or error.get('code')
+            if message:
+                return str(message)[:500]
+        for key in ('message', 'code', 'request_id'):
+            if payload.get(key):
+                return str(payload[key])[:500]
+    return response.text[:500]
+
+
 def _embed_texts(client: httpx.Client, model_config: EmbeddingModel, texts: list[str]) -> list[list[float]]:
     if not texts:
         return []
@@ -281,7 +313,7 @@ def _embed_texts(client: httpx.Client, model_config: EmbeddingModel, texts: list
         headers=_dashscope_headers(model_config.api_key),
     )
     if response.status_code >= 400:
-        raise RuntimeError(f'Embedding API failed: status={response.status_code}, body={response.text[:500]}')
+        raise RuntimeError(f'Embedding API failed: status={response.status_code}, reason={_response_error_message(response)}')
     return _parse_embedding_response(response.json(), len(texts))
 
 
@@ -291,7 +323,7 @@ def _ensure_document_chunks(
     model_config: EmbeddingModel,
 ) -> list[KnowledgeDocumentChunk]:
     content = _read_document_text(doc)
-    chunks = chunk_text(content)
+    chunks = _chunk_document_text(doc, content)
     existing = list(
         KnowledgeDocumentChunk.objects.filter(document=doc, embedding_model=model_config.model).order_by('chunk_index')
     )
@@ -308,7 +340,7 @@ def _ensure_document_chunks(
         return []
 
     embeddings: list[list[float]] = []
-    batch_size = 16
+    batch_size = EMBEDDING_BATCH_SIZE
     for start in range(0, len(chunks), batch_size):
         batch = chunks[start : start + batch_size]
         embeddings.extend(_embed_texts(client, model_config, batch))
@@ -332,7 +364,7 @@ def _ensure_document_chunks(
 
 def _ensure_keyword_chunks(doc: KnowledgeDocument) -> list[KnowledgeDocumentChunk]:
     content = _read_document_text(doc)
-    chunks = chunk_text(content)
+    chunks = _chunk_document_text(doc, content)
     existing = list(
         KnowledgeDocumentChunk.objects.filter(document=doc, embedding_model=KEYWORD_INDEX_MODEL).order_by('chunk_index')
     )
@@ -471,7 +503,7 @@ def _rerank_chunks(
         headers=_dashscope_headers(model_config.api_key),
     )
     if response.status_code >= 400:
-        raise RuntimeError(f'Rerank API failed: status={response.status_code}, body={response.text[:500]}')
+        raise RuntimeError(f'Rerank API failed: status={response.status_code}, reason={_response_error_message(response)}')
 
     results = ((response.json().get('output') or {}).get('results') or [])
     reranked: list[RetrievedChunk] = []
@@ -558,7 +590,7 @@ def _retrieve_keyword_chunks(docs: list[KnowledgeDocument], query: str, top_n: i
     for doc in docs:
         try:
             content = _read_document_text(doc)
-            for chunk_index, chunk in enumerate(chunk_text(content)):
+            for chunk_index, chunk in enumerate(_chunk_document_text(doc, content)):
                 score = score_chunk(chunk, keywords, query)
                 if score > 0:
                     all_scored_chunks.append(RetrievedChunk(doc.id, doc.title, chunk, score, chunk_index))

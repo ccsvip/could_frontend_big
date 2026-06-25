@@ -143,6 +143,75 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
             ).exists()
         )
 
+    def test_create_knowledge_base_returns_index_config(self):
+        self.grant_permissions('knowledge_base.view', 'knowledge_base.upload')
+
+        response = self.client.post(
+            '/api/v1/knowledge-bases/',
+            {
+                'name': '索引配置知识库',
+                'description': '可调切片',
+                'chunkSize': 300,
+                'chunkOverlap': 30,
+                'retrievalTopN': 8,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['chunkSize'], 300)
+        self.assertEqual(response.data['chunkOverlap'], 30)
+        self.assertEqual(response.data['retrievalTopN'], 8)
+
+    def test_create_knowledge_base_rejects_invalid_chunk_overlap(self):
+        self.grant_permissions('knowledge_base.upload')
+
+        response = self.client.post(
+            '/api/v1/knowledge-bases/',
+            {
+                'name': '错误切片配置',
+                'chunkSize': 200,
+                'chunkOverlap': 200,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('分块重叠必须小于分块长度', response.data['message'])
+
+    def test_knowledge_base_chunk_config_controls_index_segments(self):
+        self.grant_permissions('knowledge_base.upload')
+        knowledge_base = KnowledgeBase.objects.create(
+            name='短分块知识库',
+            chunk_size=100,
+            chunk_overlap=20,
+            retrieval_top_n=4,
+            created_by=self.user,
+            tenant=self.tenant,
+        )
+
+        with patch(
+            'apps.knowledge_base.views.build_knowledge_document_index.delay',
+            side_effect=OperationalError('broker unavailable'),
+        ):
+            response = self.client.post(
+                f'/api/v1/knowledge-bases/{knowledge_base.id}/documents/',
+                {
+                    'file': build_document_upload(name='长文本.txt', content=b'abcdefghijklmnopqrstuvwxyz' * 10),
+                },
+                format='multipart',
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['indexingStatus'], 'ready')
+        self.assertEqual(response.data['chunkCount'], 4)
+        chunks = list(
+            KnowledgeDocumentChunk.objects.filter(document_id=response.data['id'])
+            .order_by('chunk_index')
+            .values_list('content', flat=True)
+        )
+        self.assertEqual([len(chunk) for chunk in chunks], [100, 100, 100, 20])
+
     def test_create_document_sends_feishu_notification(self):
         self.grant_permissions('knowledge_base.upload')
 

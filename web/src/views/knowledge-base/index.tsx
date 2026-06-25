@@ -72,6 +72,9 @@ type UploadTask = {
 type KnowledgeBaseFormValues = {
   name: string;
   description?: string;
+  chunkSize?: number;
+  chunkOverlap?: number;
+  retrievalTopN?: number;
 };
 
 type RecallHistoryItem = {
@@ -125,6 +128,12 @@ const indexStatusColor: Record<KnowledgeDocumentRecord['indexingStatus'], string
   indexing: 'processing',
   ready: 'success',
   failed: 'error',
+};
+
+const defaultIndexConfig = {
+  chunkSize: 500,
+  chunkOverlap: 50,
+  retrievalTopN: 5,
 };
 
 const formatFileSize = (value: number | null) => {
@@ -226,6 +235,12 @@ export const KnowledgeBasePage = () => {
     void loadDocuments();
   }, [loadDocuments]);
 
+  useEffect(() => {
+    if (selectedBase) {
+      setRecallTopN(selectedBase.retrievalTopN || defaultIndexConfig.retrievalTopN);
+    }
+  }, [selectedBase?.id, selectedBase?.retrievalTopN]);
+
   const handleCreateBase = async () => {
     const values = await createForm.validateFields();
     setCreateSaving(true);
@@ -233,6 +248,9 @@ export const KnowledgeBasePage = () => {
       const created = await createKnowledgeBase({
         name: values.name.trim(),
         description: values.description?.trim(),
+        chunkSize: values.chunkSize ?? defaultIndexConfig.chunkSize,
+        chunkOverlap: values.chunkOverlap ?? defaultIndexConfig.chunkOverlap,
+        retrievalTopN: values.retrievalTopN ?? defaultIndexConfig.retrievalTopN,
       });
       message.success('知识库已创建');
       setCreateOpen(false);
@@ -315,7 +333,13 @@ export const KnowledgeBasePage = () => {
 
   const openEditBase = useCallback((item: KnowledgeBaseRecord) => {
     setEditingBase(item);
-    editForm.setFieldsValue({ name: item.name, description: item.description });
+    editForm.setFieldsValue({
+      name: item.name,
+      description: item.description,
+      chunkSize: item.chunkSize,
+      chunkOverlap: item.chunkOverlap,
+      retrievalTopN: item.retrievalTopN,
+    });
     setEditOpen(true);
   }, [editForm]);
 
@@ -327,6 +351,9 @@ export const KnowledgeBasePage = () => {
       const updated = await updateKnowledgeBase(editingBase.id, {
         name: values.name.trim(),
         description: values.description?.trim() || '',
+        chunkSize: values.chunkSize ?? defaultIndexConfig.chunkSize,
+        chunkOverlap: values.chunkOverlap ?? defaultIndexConfig.chunkOverlap,
+        retrievalTopN: values.retrievalTopN ?? defaultIndexConfig.retrievalTopN,
       });
       message.success('知识库已更新');
       setEditOpen(false);
@@ -540,6 +567,11 @@ export const KnowledgeBasePage = () => {
         <Space direction="vertical" size={2}>
           <Tag color={indexStatusColor[item.indexingStatus]}>{item.indexingStatusLabel || item.indexingStatus}</Tag>
           <Typography.Text className="!text-xs !text-slate-500">{item.chunkCount} 块</Typography.Text>
+          {item.indexingStatus === 'failed' && item.indexingError ? (
+            <Typography.Text className="!max-w-[180px] !text-xs" type="danger" ellipsis={{ tooltip: item.indexingError }}>
+              {item.indexingError}
+            </Typography.Text>
+          ) : null}
         </Space>
       ),
     },
@@ -620,6 +652,33 @@ export const KnowledgeBasePage = () => {
         <Form.Item name="description" label="说明">
           <Input.TextArea maxLength={255} rows={3} placeholder="说明资料范围、维护责任人或适用业务场景" />
         </Form.Item>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          <Form.Item name="chunkSize" label="分块长度" rules={[{ required: true, message: '请输入分块长度' }]}>
+            <InputNumber min={100} max={4000} className="!w-full" />
+          </Form.Item>
+          <Form.Item
+            name="chunkOverlap"
+            label="分块重叠"
+            dependencies={['chunkSize']}
+            rules={[
+              { required: true, message: '请输入分块重叠' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  const chunkSize = Number(getFieldValue('chunkSize') || defaultIndexConfig.chunkSize);
+                  if (Number(value || 0) >= chunkSize) {
+                    return Promise.reject(new Error('重叠必须小于分块长度'));
+                  }
+                  return Promise.resolve();
+                },
+              }),
+            ]}
+          >
+            <InputNumber min={0} max={1000} className="!w-full" />
+          </Form.Item>
+          <Form.Item name="retrievalTopN" label="默认召回段数" rules={[{ required: true, message: '请输入召回段数' }]}>
+            <InputNumber min={1} max={20} className="!w-full" />
+          </Form.Item>
+        </div>
       </Form>
     </Modal>
   );
@@ -900,6 +959,44 @@ export const KnowledgeBasePage = () => {
             <Form.Item name="description" label="说明">
               <Input.TextArea maxLength={255} rows={3} placeholder="用于区分业务场景、资料范围或维护责任人" />
             </Form.Item>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <Form.Item
+                name="chunkSize"
+                label="分块长度"
+                initialValue={defaultIndexConfig.chunkSize}
+                rules={[{ required: true, message: '请输入分块长度' }]}
+              >
+                <InputNumber min={100} max={4000} className="!w-full" />
+              </Form.Item>
+              <Form.Item
+                name="chunkOverlap"
+                label="分块重叠"
+                initialValue={defaultIndexConfig.chunkOverlap}
+                dependencies={['chunkSize']}
+                rules={[
+                  { required: true, message: '请输入分块重叠' },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      const chunkSize = Number(getFieldValue('chunkSize') || defaultIndexConfig.chunkSize);
+                      if (Number(value || 0) >= chunkSize) {
+                        return Promise.reject(new Error('重叠必须小于分块长度'));
+                      }
+                      return Promise.resolve();
+                    },
+                  }),
+                ]}
+              >
+                <InputNumber min={0} max={1000} className="!w-full" />
+              </Form.Item>
+              <Form.Item
+                name="retrievalTopN"
+                label="默认召回段数"
+                initialValue={defaultIndexConfig.retrievalTopN}
+                rules={[{ required: true, message: '请输入召回段数' }]}
+              >
+                <InputNumber min={1} max={20} className="!w-full" />
+              </Form.Item>
+            </div>
           </Form>
         </Modal>
 
@@ -920,6 +1017,8 @@ export const KnowledgeBasePage = () => {
               <div className="mt-2 flex gap-2">
                 <Tag color="blue">文档 {selectedBase.documentCount}</Tag>
                 <Tag color={selectedBase.isActive ? 'success' : 'default'}>{selectedBase.isActive ? '可用于智能体' : '已停用'}</Tag>
+                <Tag>分块 {selectedBase.chunkSize}/{selectedBase.chunkOverlap}</Tag>
+                <Tag>默认召回 {selectedBase.retrievalTopN}</Tag>
               </div>
             </div>
           </Space>

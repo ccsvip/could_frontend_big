@@ -24,6 +24,9 @@ class KnowledgeBaseSerializer(serializers.ModelSerializer):
     documentCount = serializers.SerializerMethodField()
     createdBy = serializers.SerializerMethodField()
     isActive = serializers.BooleanField(source='is_active', required=False)
+    chunkSize = serializers.IntegerField(source='chunk_size', required=False, min_value=100, max_value=4000)
+    chunkOverlap = serializers.IntegerField(source='chunk_overlap', required=False, min_value=0, max_value=1000)
+    retrievalTopN = serializers.IntegerField(source='retrieval_top_n', required=False, min_value=1, max_value=20)
 
     class Meta:
         model = KnowledgeBase
@@ -34,6 +37,9 @@ class KnowledgeBaseSerializer(serializers.ModelSerializer):
             'documentCount',
             'createdBy',
             'isActive',
+            'chunkSize',
+            'chunkOverlap',
+            'retrievalTopN',
             'created_at',
             'updated_at',
         )
@@ -62,6 +68,14 @@ class KnowledgeBaseSerializer(serializers.ModelSerializer):
             if queryset.exists():
                 raise serializers.ValidationError('同名知识库已存在')
         return value
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        chunk_size = attrs.get('chunk_size', self.instance.chunk_size if self.instance else 500)
+        chunk_overlap = attrs.get('chunk_overlap', self.instance.chunk_overlap if self.instance else 50)
+        if chunk_overlap >= chunk_size:
+            raise serializers.ValidationError({'chunkOverlap': '分块重叠必须小于分块长度'})
+        return attrs
 
 
 class KnowledgeDocumentSerializer(serializers.ModelSerializer):
@@ -163,4 +177,4 @@ class KnowledgeDocumentSerializer(serializers.ModelSerializer):
 
 class KnowledgeRecallTestSerializer(serializers.Serializer):
     query = serializers.CharField(max_length=500)
-    topN = serializers.IntegerField(required=False, min_value=1, max_value=20, default=5)
+    topN = serializers.IntegerField(required=False, min_value=1, max_value=20)

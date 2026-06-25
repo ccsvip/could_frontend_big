@@ -158,7 +158,14 @@ class KnowledgeBaseViewSet(
         self.clear_cached_business_responses()
 
     def perform_update(self, serializer):
-        serializer.save()
+        index_config_changed = any(
+            field in serializer.validated_data
+            for field in ('chunk_size', 'chunk_overlap')
+        )
+        instance = serializer.save()
+        if index_config_changed:
+            for document in instance.documents.filter(tenant=instance.tenant).order_by('id'):
+                enqueue_document_index(document, force=True)
         self.clear_cached_business_responses()
 
     def perform_destroy(self, instance: KnowledgeBase):
@@ -217,7 +224,7 @@ class KnowledgeBaseViewSet(
             query=serializer.validated_data['query'],
             knowledge_base=knowledge_base,
             tenant=knowledge_base.tenant,
-            top_n=serializer.validated_data['topN'],
+            top_n=serializer.validated_data.get('topN') or knowledge_base.retrieval_top_n,
         )
         return Response(result)
 

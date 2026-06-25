@@ -10,6 +10,21 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
+            model_name='knowledgebase',
+            name='chunk_overlap',
+            field=models.PositiveSmallIntegerField(default=50, verbose_name='分块重叠'),
+        ),
+        migrations.AddField(
+            model_name='knowledgebase',
+            name='chunk_size',
+            field=models.PositiveSmallIntegerField(default=500, verbose_name='分块长度'),
+        ),
+        migrations.AddField(
+            model_name='knowledgebase',
+            name='retrieval_top_n',
+            field=models.PositiveSmallIntegerField(default=5, verbose_name='默认召回段数'),
+        ),
+        migrations.AddField(
             model_name='knowledgedocument',
             name='chunk_count',
             field=models.PositiveIntegerField(default=0, verbose_name='分块数量'),

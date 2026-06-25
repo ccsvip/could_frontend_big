@@ -12,6 +12,9 @@ class KnowledgeBase(models.Model):
     name = models.CharField('知识库名称', max_length=128)
     description = models.CharField('知识库说明', max_length=255, blank=True, default='')
     is_active = models.BooleanField('是否启用', default=True)
+    chunk_size = models.PositiveSmallIntegerField('分块长度', default=500)
+    chunk_overlap = models.PositiveSmallIntegerField('分块重叠', default=50)
+    retrieval_top_n = models.PositiveSmallIntegerField('默认召回段数', default=5)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
