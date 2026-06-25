@@ -1,25 +1,26 @@
+import React from 'react';
 import type { Key } from 'react';
 import {
-  ArrowLeft,
-  ArrowRight,
-  Book,
-  CloudUpload,
-  Compass,
-  Database,
-  Download,
-  FilePlus,
-  FileSearch,
-  FlaskConical,
-  GitBranch,
-  Key as KeyIcon,
-  Pencil,
-  Plus,
-  RefreshCw,
-  ShieldCheck,
-  SlidersHorizontal,
-  Split,
-  Trash2,
-} from 'lucide-react';
+  IconArrowLeft,
+  IconArrowRight,
+  IconBook,
+  IconCloudUpload,
+  IconCompass,
+  IconDatabase,
+  IconDownload,
+  IconFilePlus,
+  IconFileSearch,
+  IconFlask,
+  IconGitBranch,
+  IconKey,
+  IconPencil,
+  IconPlus,
+  IconRefresh,
+  IconShieldCheck,
+  IconAdjustments,
+  IconStack2,
+  IconTrash,
+} from '@tabler/icons-react';
 import {
   Alert,
   Button,
@@ -99,17 +100,20 @@ const createGuideCards = [
   {
     title: '创建业务知识库',
     description: '按业务域、产品线或部门拆分知识库，方便权限隔离和后续维护。',
-    icon: <Book />,
+    icon: <IconBook />,
+    gradient: 'from-teal-400 to-emerald-500',
   },
   {
     title: '上传并维护文档',
     description: `当前支持 ${KNOWLEDGE_BASE_ACCEPT.replace(/\./g, '').toUpperCase()}，建议文件名保留版本和适用范围。`,
-    icon: <FilePlus />,
+    icon: <IconFilePlus />,
+    gradient: 'from-blue-400 to-cyan-500',
   },
   {
     title: '测试召回效果',
     description: '用真实用户问题检查命中内容，再把知识库绑定到智能体应用。',
-    icon: <FlaskConical />,
+    icon: <IconFlask />,
+    gradient: 'from-purple-400 to-indigo-500',
   },
 ];
 
@@ -123,17 +127,20 @@ const retrievalPolicies = [
   {
     title: '高质量索引',
     description: '上传后走解析、切分、Embedding 入库，召回时优先按向量相似度排序。',
-    icon: <Split />,
+    icon: <IconStack2 />,
+    gradient: 'from-teal-400 to-emerald-500',
   },
   {
     title: '关键词降级',
     description: 'Embedding 模型不可用时自动退回关键词匹配，保证知识库仍可用。',
-    icon: <KeyIcon />,
+    icon: <IconKey />,
+    gradient: 'from-blue-400 to-cyan-500',
   },
   {
     title: 'Rerank 精排',
     description: '配置 Rerank 模型后，对 Top N 候选片段二次排序，提升答案来源可信度。',
-    icon: <SlidersHorizontal />,
+    icon: <IconAdjustments />,
+    gradient: 'from-purple-400 to-indigo-500',
   },
 ];
 
@@ -675,7 +682,7 @@ export const KnowledgeBasePage = () => {
                 className="!w-full !border-dashed !border-slate-200 hover:!border-teal-400 !bg-slate-50/50 hover:!bg-teal-50/10 !transition-colors !rounded-xl"
               >
                 <div className="py-4">
-                  <p className="ant-upload-drag-icon !mb-2 !text-teal-600"><CloudUpload className="text-2xl" /></p>
+                  <p className="ant-upload-drag-icon !mb-2 !text-teal-600"><IconCloudUpload className="text-2xl" /></p>
                   <p className="ant-upload-text !text-sm !font-medium !text-slate-700">拖拽文件到此处，或 <span className="text-teal-600">点击上传</span></p>
                   <p className="ant-upload-hint !text-xs !text-slate-400 mt-1">支持并发上传最多 3 个文件。支持格式：{KNOWLEDGE_BASE_ACCEPT.replace(/\./g, '').toUpperCase()}</p>
                 </div>
@@ -747,7 +754,7 @@ export const KnowledgeBasePage = () => {
       <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
         <Space direction="vertical" size={16} className="w-full">
           <div className="flex items-center gap-2">
-            <FileSearch className="text-teal-600 text-lg" />
+            <IconFileSearch className="text-teal-600 text-lg" />
             <Typography.Title level={5} className="!mb-0">召回测试</Typography.Title>
           </div>
           <Typography.Text className="!text-sm !text-slate-500">先用真实业务问题验证命中片段，再绑定给智能体。</Typography.Text>
@@ -757,7 +764,7 @@ export const KnowledgeBasePage = () => {
               <Typography.Text className="!text-sm !text-slate-500">Top N</Typography.Text>
               <InputNumber min={1} max={20} value={recallTopN} onChange={(value) => setRecallTopN(Number(value || 5))} />
             </Space>
-            <Button type="primary" icon={<CloudUpload />} loading={recallLoading} onClick={() => void handleRecallTest()}>测试召回</Button>
+            <Button type="primary" icon={<IconCloudUpload />} loading={recallLoading} onClick={() => void handleRecallTest()}>测试召回</Button>
           </div>
           {recallMode ? (
             <Tag color="success" className="!border-teal-100 !bg-teal-50 !text-teal-700">
@@ -823,8 +830,8 @@ export const KnowledgeBasePage = () => {
       {retrievalPolicies.map((item) => (
         <Card key={item.title} variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card hover:!border-teal-100 hover:!shadow-md transition-all duration-300">
           <div className="flex gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600 text-lg">
-              {item.icon}
+            <div className={`p-2.5 bg-gradient-to-br ${item.gradient} rounded-xl text-white shrink-0 shadow-sm`}>
+              {React.cloneElement(item.icon as React.ReactElement, { size: 20 })}
             </div>
             <div>
               <Typography.Title level={5} className="!mb-1.5 !text-slate-800">{item.title}</Typography.Title>
@@ -843,7 +850,7 @@ export const KnowledgeBasePage = () => {
         <section className="space-y-3 relative overflow-hidden rounded-2xl p-5 sm:p-6 md:p-8 bg-gradient-to-br from-teal-600/5 to-teal-500/5 border border-teal-600/10">
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-teal-50 text-teal-700 rounded-full mb-4 border border-teal-100">
-              <ShieldCheck className="text-[14px]" />
+              <IconShieldCheck className="text-[14px]" />
               <span className="text-xs font-semibold">企业知识沉淀与智能体召回中心</span>
             </div>
             <Typography.Title level={2} className="!mb-2 !text-slate-900">知识库</Typography.Title>
@@ -852,7 +859,7 @@ export const KnowledgeBasePage = () => {
             </p>
           </div>
           <div className="absolute right-0 top-0 w-1/3 h-full opacity-[0.03] pointer-events-none flex items-center justify-end pr-8">
-            <FlaskConical className="text-[180px] rotate-12 text-teal-800" />
+            <IconFlask className="text-[180px] rotate-12 text-teal-800" />
           </div>
         </section>
 
@@ -866,8 +873,8 @@ export const KnowledgeBasePage = () => {
                 <span className="text-[10px] text-teal-600/70 font-semibold bg-teal-50 px-1.5 py-0.5 rounded-full border border-teal-100/30">本月新建</span>
               </div>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-teal-50/50 text-teal-600 flex items-center justify-center text-base border border-teal-100/30 shrink-0">
-              <Database />
+            <div className="p-2.5 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-xl text-white shadow-sm shrink-0">
+              <IconDatabase size={20} />
             </div>
           </div>
           <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-[0px_4px_20px_rgba(0,0,0,0.015)] hover:shadow-md hover:border-slate-300/60 transition-all duration-300 flex items-center justify-between h-24">
@@ -878,8 +885,8 @@ export const KnowledgeBasePage = () => {
                 <span className="text-[10px] text-emerald-600/70 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-100/30">100% 运行中</span>
               </div>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-teal-50/50 text-teal-600 flex items-center justify-center text-base border border-teal-100/30 shrink-0">
-              <ShieldCheck />
+            <div className="p-2.5 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl text-white shadow-sm shrink-0">
+              <IconShieldCheck size={20} />
             </div>
           </div>
           <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-[0px_4px_20px_rgba(0,0,0,0.015)] hover:shadow-md hover:border-slate-300/60 transition-all duration-300 flex items-center justify-between h-24">
@@ -890,8 +897,8 @@ export const KnowledgeBasePage = () => {
                 <span className="text-[10px] text-slate-500 font-semibold bg-slate-50 px-1.5 py-0.5 rounded-full border border-slate-200/40">已入库</span>
               </div>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-teal-50/50 text-teal-600 flex items-center justify-center text-base border border-teal-100/30 shrink-0">
-              <FilePlus />
+            <div className="p-2.5 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-xl text-white shadow-sm shrink-0">
+              <IconFilePlus size={20} />
             </div>
           </div>
           <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-[0px_4px_20px_rgba(0,0,0,0.015)] hover:shadow-md hover:border-slate-300/60 transition-all duration-300 flex items-center justify-between h-24">
@@ -902,8 +909,8 @@ export const KnowledgeBasePage = () => {
                 <span className="text-[10px] text-slate-400 font-mono mt-0.5">{latestUpdatedAt ? latestUpdatedAt.split(' ')[1] : ''}</span>
               </div>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-teal-50/50 text-teal-600 flex items-center justify-center text-base border border-teal-100/30 shrink-0">
-              <RefreshCw />
+            <div className="p-2.5 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl text-white shadow-sm shrink-0">
+              <IconRefresh size={20} />
             </div>
           </div>
         </section>
@@ -925,9 +932,9 @@ export const KnowledgeBasePage = () => {
                       setBasePage(1);
                     }}
                   />
-                  <Button icon={<RefreshCw />} onClick={() => void loadBases()}>刷新</Button>
+                  <Button icon={<IconRefresh />} onClick={() => void loadBases()}>刷新</Button>
                 </div>
-                <Button type="primary" icon={<Plus />} disabled={!canUpload} onClick={() => setCreateOpen(true)}>
+                <Button type="primary" icon={<IconPlus />} disabled={!canUpload} onClick={() => setCreateOpen(true)}>
                   创建知识库
                 </Button>
               </div>
@@ -938,21 +945,30 @@ export const KnowledgeBasePage = () => {
                   {bases.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
                       {bases.map((item) => {
-                        // Select icon based on keywords in name
-                        let cardIcon = <Database />;
+                        // Select icon and gradient based on keywords in name
+                        let cardIcon = <IconDatabase />;
+                        let gradient = 'from-teal-400 to-emerald-500';
+                        const name = item.name;
                         if (name.includes('医') || name.includes('健康') || name.includes('药')) {
-                          cardIcon = <ShieldCheck />;
+                          cardIcon = <IconShieldCheck />;
+                          gradient = 'from-emerald-400 to-teal-500';
                         } else if (name.includes('科') || name.includes('数') || name.includes('网') || name.includes('算') || name.includes('智能') || name.includes('系统')) {
-                          cardIcon = <Split />;
+                          cardIcon = <IconStack2 />;
+                          gradient = 'from-purple-400 to-indigo-500';
                         } else if (name.includes('城') || name.includes('游') || name.includes('古') || name.includes('馆') || name.includes('历史') || name.includes('景')) {
-                          cardIcon = <Compass />;
+                          cardIcon = <IconCompass />;
+                          gradient = 'from-amber-400 to-orange-500';
                         } else if (name.includes('文档') || name.includes('书') || name.includes('学') || name.includes('策略') || name.includes('政策')) {
-                          cardIcon = <Book />;
+                          cardIcon = <IconBook />;
+                          gradient = 'from-blue-400 to-cyan-500';
+                        } else if (name.includes('客服') || name.includes('服务') || name.includes('售后')) {
+                          cardIcon = <IconFlask />;
+                          gradient = 'from-rose-400 to-pink-500';
                         }
 
                         const iconBg = item.isActive
-                          ? 'bg-teal-50/80 border border-teal-100/40 text-teal-600'
-                          : 'bg-slate-50 border border-slate-200/50 text-slate-400';
+                          ? `bg-gradient-to-br ${gradient} text-white`
+                          : 'bg-gradient-to-br from-slate-300 to-slate-400 text-white';
 
                         return (
                           <div
@@ -962,8 +978,8 @@ export const KnowledgeBasePage = () => {
                             <div>
                               {/* Header Row */}
                               <div className="flex items-start justify-between gap-2 mb-4">
-                                <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center text-lg shrink-0 shadow-sm transition-transform group-hover:scale-105 duration-300`}>
-                                  {cardIcon}
+                                <div className={`p-2.5 rounded-xl ${iconBg} shrink-0 shadow-sm transition-transform group-hover:scale-105 duration-300`}>
+                                  {React.cloneElement(cardIcon as React.ReactElement, { size: 20 })}
                                 </div>
                                 <div className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-xs font-medium font-sans ${item.isActive ? 'bg-emerald-50/70 border-emerald-100 text-emerald-700' : 'bg-slate-50 border-slate-200/60 text-slate-500'}`}>
                                   <span className={`w-1.5 h-1.5 rounded-full ${item.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
@@ -1008,7 +1024,7 @@ export const KnowledgeBasePage = () => {
                                     type="text"
                                     size="small"
                                     className="text-slate-400 hover:text-teal-600 hover:bg-teal-50/50 rounded-lg flex items-center justify-center p-1.5"
-                                    icon={<Pencil className="text-xs" />}
+                                    icon={<IconPencil className="text-xs" />}
                                     disabled={!canUpload}
                                     onClick={() => openEditBase(item)}
                                   />
@@ -1026,7 +1042,7 @@ export const KnowledgeBasePage = () => {
                                       size="small"
                                       danger
                                       className="text-slate-400 hover:text-red-600 hover:bg-red-50/50 rounded-lg flex items-center justify-center p-1.5"
-                                       icon={<Trash2 className="text-xs" />}
+                                       icon={<IconTrash className="text-xs" />}
                                       disabled={!canDelete}
                                       loading={deletingBaseId === item.id}
                                     />
@@ -1040,7 +1056,7 @@ export const KnowledgeBasePage = () => {
                                   onClick={() => setSelectedBase(item)}
                                 >
                                   进入管理
-                                   <ArrowRight className="text-[10px] group-hover/btn:translate-x-0.5 transition-transform duration-200" />
+                                   <IconArrowRight className="text-[10px] group-hover/btn:translate-x-0.5 transition-transform duration-200" />
                                 </Button>
                               </div>
                             </div>
@@ -1090,8 +1106,8 @@ export const KnowledgeBasePage = () => {
                   
                   {createGuideCards.map((item, index) => (
                     <div key={item.title} className="relative pl-12">
-                      <div className={`absolute left-0 top-0.5 w-7 h-7 rounded-lg flex items-center justify-center z-10 border ${index === 0 ? 'border-teal-200 bg-teal-50 text-teal-600' : 'border-slate-200/60 bg-slate-50 text-slate-400'} shadow-sm transition-all duration-300`}>
-                        {item.icon}
+                      <div className={`absolute left-0 top-0.5 w-7 h-7 rounded-lg flex items-center justify-center z-10 bg-gradient-to-br ${item.gradient} text-white shadow-sm transition-all duration-300`}>
+                        {React.cloneElement(item.icon as React.ReactElement, { size: 14 })}
                       </div>
                       <div>
                         <span className={`text-[9px] font-bold font-mono tracking-wider px-2 py-0.5 rounded-full ${index === 0 ? 'bg-teal-50 text-teal-600 border border-teal-100/50' : 'bg-slate-100 text-slate-500 border border-slate-200/30'}`}>
@@ -1186,7 +1202,7 @@ export const KnowledgeBasePage = () => {
       <Card variant="borderless" className="!rounded-xl !border !border-slate-100 !shadow-[0px_4px_20px_rgba(0,0,0,0.02)]">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <Space size={12} align="start">
-            <Button icon={<ArrowLeft />} onClick={() => setSelectedBase(null)} />
+            <Button icon={<IconArrowLeft />} onClick={() => setSelectedBase(null)} />
             <div>
               <Typography.Title level={3} className="!mb-1 !text-slate-900">{selectedBase.name}</Typography.Title>
               <Typography.Text className="!text-slate-500">{selectedBase.description || '暂无描述'}</Typography.Text>
@@ -1213,9 +1229,9 @@ export const KnowledgeBasePage = () => {
               className="!w-44 sm:!w-52 md:!w-64"
               onSearch={(value) => setDocumentKeyword(value.trim())}
             />
-            <Button icon={<RefreshCw />} onClick={() => void loadDocuments()}>刷新</Button>
+            <Button icon={<IconRefresh />} onClick={() => void loadDocuments()}>刷新</Button>
             <Button
-              icon={<GitBranch />}
+              icon={<IconGitBranch />}
               disabled={!canUpload}
               loading={indexingBase}
               onClick={() => void handleIndexBase()}
@@ -1224,7 +1240,7 @@ export const KnowledgeBasePage = () => {
             </Button>
             <Button
               type="primary"
-              icon={<Download />}
+              icon={<IconDownload />}
               disabled={!canBulkDownload || selectedRowKeys.length === 0}
               loading={bulkDownloading}
               onClick={() => void handleBulkDownload()}
