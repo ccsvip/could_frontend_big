@@ -30,6 +30,7 @@ RUNTIME_ERROR_TENANT_DISABLED = ('DEVICE_TENANT_DISABLED', 44012)
 RUNTIME_ERROR_DEVICE_DISABLED = ('DEVICE_DISABLED', 44013)
 RUNTIME_ERROR_DEVICE_EXPIRED = ('DEVICE_EXPIRED', 44014)
 RUNTIME_ERROR_AGENT_UNBOUND = ('DEVICE_AGENT_UNBOUND', 44021)
+RUNTIME_ERROR_APPLICATION_INACTIVE = ('DEVICE_APPLICATION_INACTIVE', 44022)
 
 
 def runtime_device_error(message: str, status_code: int, error: tuple[str, int]) -> RuntimeDeviceError:
@@ -75,3 +76,9 @@ def get_runtime_device_or_none(device_code: str, *, require_tenant: bool = True)
         return get_runtime_device(device_code, require_tenant=require_tenant)
     except RuntimeDeviceError:
         return None
+
+
+def validate_runtime_application_active(device: Device) -> None:
+    application = getattr(device, 'application', None)
+    if application is not None and not application.is_active:
+        raise runtime_device_error('设备绑定应用未启用', status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_APPLICATION_INACTIVE)

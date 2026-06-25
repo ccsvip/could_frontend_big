@@ -1069,6 +1069,180 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         self.role.permission_points.set(permission_points)
         self.tenant.permission_points.set(permission_points)
 
+    def test_device_llm_session_isolates_memory_by_agent_and_injects_current_knowledge(self):
+        from config import realtime
+
+        provider = LLMProvider.objects.create(
+            name='Runtime Agent Switch Provider',
+            provider_type='openai',
+            api_base_url='https://llm.example/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='agent-switch-model', is_active=True)
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        agent_a = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Agent A',
+            llm_model=model,
+            system_prompt='你是 A 智能体。',
+        )
+        agent_b = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Agent B',
+            llm_model=model,
+            system_prompt='你是 B 智能体。',
+        )
+        device_application = DeviceApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime Agent Switch App',
+            code='runtime-agent-switch-app',
+            agent_application=agent_a,
+        )
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=device_application,
+            name='Runtime Agent Switch Device',
+            code='ANDROID-AGENT-SWITCH-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+
+        realtime._remember_agent_exchange(
+            realtime._agent_memory_key(device, agent_a),
+            'A 知识问题',
+            'A 知识答案',
+        )
+        device_application.agent_application = agent_b
+        device_application.save(update_fields=['agent_application', 'updated_at'])
+
+        with patch(
+            'apps.ai_models.services.agent_knowledge.retrieve_knowledge_context',
+            return_value='B 知识库上下文',
+        ) as retrieve_knowledge_context:
+            session = realtime._prepare_device_llm_session('ANDROID-AGENT-SWITCH-001', 'B 知识问题')
+
+        self.assertEqual(session['agentApplicationId'], agent_b.id)
+        self.assertEqual(session['memoryKey'], realtime._agent_memory_key(device, agent_b))
+        retrieve_knowledge_context.assert_called_once()
+        self.assertEqual(retrieve_knowledge_context.call_args.args[0].id, agent_b.id)
+        self.assertEqual(retrieve_knowledge_context.call_args.args[1], 'B 知识问题')
+        self.assertIn({'role': 'system', 'content': 'B 知识库上下文'}, session['messages'])
+        self.assertNotIn({'role': 'user', 'content': 'A 知识问题'}, session['messages'])
+        self.assertNotIn({'role': 'assistant', 'content': 'A 知识答案'}, session['messages'])
+
+    def test_device_llm_session_rejects_inactive_device_application(self):
+        from apps.devices.services.runtime import RuntimeDeviceError
+        from config import realtime
+
+        provider = LLMProvider.objects.create(
+            name='Runtime Inactive App Provider',
+            provider_type='openai',
+            api_base_url='https://llm.example/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='inactive-app-model', is_active=True)
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        agent_application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Inactive App Agent',
+            llm_model=model,
+        )
+        device_application = DeviceApplication.objects.create(
+            tenant=self.tenant,
+            name='Inactive Runtime App',
+            code='inactive-runtime-app',
+            agent_application=agent_application,
+            is_active=False,
+        )
+        Device.objects.create(
+            tenant=self.tenant,
+            application=device_application,
+            name='Inactive Runtime Device',
+            code='ANDROID-INACTIVE-APP-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+
+        with self.assertRaises(RuntimeDeviceError) as ctx:
+            realtime._prepare_device_llm_session('ANDROID-INACTIVE-APP-001', '还能回答吗？')
+
+        self.assertEqual(ctx.exception.code, 'DEVICE_APPLICATION_INACTIVE')
+
+    def test_agent_session_start_returns_error_for_inactive_device_application(self):
+        provider = LLMProvider.objects.create(
+            name='Runtime Agent Inactive App Provider',
+            provider_type='openai',
+            api_base_url='https://llm.example/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='agent-inactive-app-model', is_active=True)
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        agent_application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Agent Inactive App',
+            llm_model=model,
+        )
+        device_application = DeviceApplication.objects.create(
+            tenant=self.tenant,
+            name='Agent Inactive Runtime App',
+            code='agent-inactive-runtime-app',
+            agent_application=agent_application,
+            is_active=False,
+        )
+        Device.objects.create(
+            tenant=self.tenant,
+            application=device_application,
+            name='Agent Inactive Runtime Device',
+            code='ANDROID-AGENT-INACTIVE-APP-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+
+        async def run_websocket():
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            response = await communicator.receive_output(timeout=1)
+            self.assertEqual(response['type'], 'websocket.accept')
+
+            await communicator.send_input({
+                'type': 'websocket.receive',
+                'text': json.dumps({
+                    'type': 'agent.session.start',
+                    'id': 'agent-inactive-session',
+                    'payload': {
+                        'deviceCode': 'ANDROID-AGENT-INACTIVE-APP-001',
+                        'text': '还能回答吗？',
+                        'requestId': 'req-inactive-agent',
+                        'traceId': 'trace-inactive-agent',
+                    },
+                }),
+            })
+
+            message = await communicator.receive_output(timeout=1)
+            payload = json.loads(message['text'])
+            self.assertEqual(payload['type'], 'agent.error')
+            self.assertEqual(payload['id'], 'agent-inactive-session')
+            self.assertEqual(payload['requestId'], 'req-inactive-agent')
+            self.assertEqual(payload['traceId'], 'trace-inactive-agent')
+            self.assertEqual(payload['code'], 'DEVICE_APPLICATION_INACTIVE')
+            self.assertEqual(payload['statusCode'], 44022)
+            self.assertEqual(payload['message'], '设备绑定应用未启用')
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
     def test_unified_realtime_websocket_subscribes_to_device_events(self):
         token = str(AccessToken.for_user(self.user))
 

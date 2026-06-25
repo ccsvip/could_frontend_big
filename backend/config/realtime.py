@@ -12,7 +12,7 @@ from websockets.exceptions import ConnectionClosed
 
 from apps.ai_models import llm_services, realtime_asr, realtime_tts
 from apps.ai_models.services import tts as tts_services
-from apps.devices.services.runtime import RuntimeDeviceError
+from apps.devices.services.runtime import RuntimeDeviceError, validate_runtime_application_active
 from apps.devices.views import DeviceVoiceChatView
 from apps.devices.realtime import (
     add_device_event_subscriber,
@@ -492,6 +492,12 @@ async def _handle_agent_session_start(send, connection: RealtimeConnection, mess
         await _send_json(send, _trace_payload('agent.error', command_id, request_id, trace_id, message='Device code is required'))
         return
 
+    try:
+        await sync_to_async(_validate_agent_runtime_start, thread_sensitive=True)(device_code)
+    except Exception as exc:
+        await _send_json(send, _trace_payload('agent.error', command_id, request_id, trace_id, **_realtime_error_payload(exc)))
+        return
+
     connection.agent_session_id = command_id
     connection.agent_mode = mode
     connection.agent_device_code = device_code
@@ -566,6 +572,7 @@ async def _run_llm_session_body(
     command_id,
     message: dict[str, Any],
     on_tts_segment: Callable[[str], Awaitable[None]] | None = None,
+    error_event_type: str = 'llm.error',
 ) -> str | None:
     command_id = message.get('id')
     payload = message.get('payload') if isinstance(message.get('payload'), dict) else {}
@@ -574,16 +581,16 @@ async def _run_llm_session_body(
     request_id = _request_id_from_payload(payload)
     trace_id = _trace_id_from_payload(payload, request_id)
     if not device_code:
-        await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message='Device code is required'))
+        await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message='Device code is required'))
         return None
     if not question_text:
-        await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message='Question text is required'))
+        await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message='Question text is required'))
         return None
 
     try:
         session = await sync_to_async(_prepare_device_llm_session, thread_sensitive=True)(device_code, question_text)
     except Exception as exc:
-        await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, **_realtime_error_payload(exc)))
+        await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, **_realtime_error_payload(exc)))
         return None
 
     started_payload = {
@@ -646,7 +653,7 @@ async def _run_llm_session_body(
                     if on_tts_segment is not None:
                         await on_tts_segment(segment)
         except Exception as exc:
-            await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message=str(exc)[:200]))
+            await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message=str(exc)[:200]))
             return None
         final_segments, _ = _pop_llm_tts_segments(tts_buffer, session, flush=True)
         for segment in final_segments:
@@ -655,7 +662,7 @@ async def _run_llm_session_body(
                 await on_tts_segment(segment)
 
     if not answer_text:
-        await _send_json(send, _trace_payload('llm.error', command_id, request_id, trace_id, message='LLM 没有返回有效回复'))
+        await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message='LLM 没有返回有效回复'))
         return None
 
     _remember_agent_exchange(session.get('memoryKey'), question_text, answer_text)
@@ -707,8 +714,11 @@ async def _send_llm_tts_segment(send, command_id, request_id: str, trace_id: str
     )
 
 
-def _agent_memory_key(device) -> str:
-    return f'{device.tenant_id}:{device.code}'
+def _agent_memory_key(device, agent_application=None) -> str:
+    if agent_application is None:
+        agent_application = getattr(device, 'effective_agent_application', None)
+    agent_application_id = getattr(agent_application, 'id', None)
+    return f'{device.tenant_id}:{device.code}:agent:{agent_application_id or "none"}'
 
 
 def _get_agent_memory(memory_key: str) -> list[dict[str, str]]:
@@ -903,12 +913,20 @@ async def _run_agent_llm_and_finish(send, connection: RealtimeConnection, questi
     }
 
     try:
-        await _run_llm_session_body(send, command_id, message, on_tts_segment=lambda segment: _queue_agent_tts_segment(connection, segment))
+        answer_text = await _run_llm_session_body(
+            send,
+            command_id,
+            message,
+            on_tts_segment=lambda segment: _queue_agent_tts_segment(connection, segment),
+            error_event_type='agent.error',
+        )
         if connection.agent_tts_queue is not None:
             await connection.agent_tts_queue.put(None)
             if connection.agent_tts_worker is not None:
                 await asyncio.gather(connection.agent_tts_worker, return_exceptions=True)
                 connection.agent_tts_worker = None
+        if answer_text is None:
+            return
         await _send_json(send, _trace_payload('agent.done', command_id, request_id, trace_id, payload={'deviceCode': device_code, 'questionText': question_text}))
     except asyncio.CancelledError:
         raise
@@ -917,6 +935,16 @@ async def _run_agent_llm_and_finish(send, connection: RealtimeConnection, questi
             raise
     finally:
         await connection.close_agent_session()
+
+
+def _validate_agent_runtime_start(device_code: str) -> None:
+    from apps.devices.services.runtime import get_runtime_device
+
+    device = get_runtime_device(device_code)
+    validate_runtime_application_active(device)
+    agent_application = device.effective_agent_application
+    if agent_application is None or not agent_application.is_active:
+        raise RuntimeError('设备未绑定可用智能体')
 
 
 async def _queue_agent_tts_segment(connection: RealtimeConnection, segment: str) -> None:
@@ -1005,6 +1033,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
     from apps.devices.services.runtime import get_runtime_device
 
     device = get_runtime_device(device_code)
+    validate_runtime_application_active(device)
     agent_application = device.effective_agent_application
     if agent_application is None or not agent_application.is_active:
         raise RuntimeError('设备未绑定可用智能体')
@@ -1019,7 +1048,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
         return {
             'deviceCode': device.code,
             'annotationAnswer': annotation.answer,
-            'memoryKey': _agent_memory_key(device),
+            'memoryKey': _agent_memory_key(device, agent_application),
             'agentApplicationId': agent_application.id,
             'agentApplicationName': agent_application.name,
             'applicationId': device.application_id,
@@ -1044,8 +1073,14 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
     system_prompt += f' 当前设备智能体：{agent_application.name}。'
     if device.application is not None:
         system_prompt += f' 当前设备资源应用：{device.application.name}。'
-    memory_key = _agent_memory_key(device)
+    memory_key = _agent_memory_key(device, agent_application)
     messages = [{'role': 'system', 'content': system_prompt}]
+
+    from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context
+
+    knowledge_context = retrieve_knowledge_context(agent_application, question_text)
+    if knowledge_context:
+        messages.append({'role': 'system', 'content': knowledge_context})
     messages.extend(_get_agent_memory(memory_key))
     messages.append({'role': 'user', 'content': question_text})
 
@@ -1076,6 +1111,7 @@ def _run_device_llm_answer(device_code: str, question_text: str) -> dict[str, An
     from apps.devices.services.runtime import get_runtime_device
 
     device = get_runtime_device(device_code)
+    validate_runtime_application_active(device)
     agent_application = device.effective_agent_application
     if agent_application is None or not agent_application.is_active:
         raise RuntimeError('设备未绑定可用智能体')

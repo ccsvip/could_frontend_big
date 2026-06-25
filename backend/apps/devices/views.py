@@ -52,6 +52,7 @@ from .services.runtime import (
     RuntimeDeviceError,
     get_runtime_device,
     runtime_device_error,
+    validate_runtime_application_active,
 )
 from .serializers import (
     DeviceApplicationSerializer,
@@ -730,6 +731,10 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         device, error = self.validate_device(request)
         if error is not None:
             return error
+        try:
+            validate_runtime_application_active(device)
+        except RuntimeDeviceError as exc:
+            return Response(exc.as_payload(), status=exc.status_code)
         if device.effective_agent_application is None or not device.effective_agent_application.is_active:
             error = runtime_device_error('设备未绑定可用智能体', status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_AGENT_UNBOUND)
             return Response(error.as_payload(), status=error.status_code)
