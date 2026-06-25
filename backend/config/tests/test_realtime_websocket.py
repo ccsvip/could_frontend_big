@@ -225,18 +225,14 @@ class RealtimeWebSocketTests(SimpleTestCase):
 
         async_to_sync(run_task)()
 
-    def test_agent_asr_filtered_empty_text_finishes_without_error(self):
+    def test_agent_asr_filtered_filler_waits_for_client_finish(self):
         async def run_task():
             from config.realtime import RealtimeConnection, _agent_asr_upstream_to_client
 
             sent_payloads = []
-            llm_questions = []
 
             async def send(event):
                 sent_payloads.append(json.loads(event['text']))
-
-            async def fake_run_agent_llm(send, connection, question_text):
-                llm_questions.append(question_text)
 
             connection = RealtimeConnection()
             connection.agent_session_id = 'agent-filter-empty-1'
@@ -246,24 +242,13 @@ class RealtimeWebSocketTests(SimpleTestCase):
 
             upstream = AutoFinishASRUpstream('嗯。')
             upstream._audio_seen.set()
-            with patch('config.realtime._run_agent_llm_and_finish', side_effect=fake_run_agent_llm):
-                await _agent_asr_upstream_to_client(upstream, send, connection, [])
+            task = asyncio.create_task(_agent_asr_upstream_to_client(upstream, send, connection, []))
+            await asyncio.sleep(0.05)
+            task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
 
-            event_types = [payload['type'] for payload in sent_payloads]
-            self.assertEqual(
-                sent_payloads,
-                [
-                    {
-                        'type': 'asr.done',
-                        'id': 'agent-filter-empty-1',
-                        'requestId': 'req-agent-filter-empty-1',
-                        'traceId': 'trace-agent-filter-empty-1',
-                    },
-                ],
-            )
-            self.assertNotIn('agent.error', event_types)
-            self.assertEqual(llm_questions, [])
-            self.assertIn('session.finish', [message.get('type') for message in upstream.messages])
+            self.assertEqual(sent_payloads, [])
+            self.assertNotIn('session.finish', [message.get('type') for message in upstream.messages])
 
         async_to_sync(run_task)()
 
@@ -666,7 +651,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
 
         async_to_sync(run_websocket)()
 
-    def test_unified_realtime_websocket_filters_filler_final_transcript(self):
+    def test_unified_realtime_websocket_filters_filler_and_waits_for_client_finish(self):
         async def run_websocket():
             from config.asgi import application
 
@@ -717,6 +702,14 @@ class RealtimeWebSocketTests(SimpleTestCase):
                 self.assertEqual(json.loads((await communicator.receive_output(timeout=1))['text'])['type'], 'asr.ready')
 
                 await communicator.send_input({'type': 'websocket.receive', 'bytes': b'\x01\x02'})
+                with self.assertRaises(asyncio.TimeoutError):
+                    await communicator.receive_output(timeout=0.05)
+                self.assertNotIn('session.finish', [message.get('type') for message in upstream.messages])
+
+                await communicator.send_input({
+                    'type': 'websocket.receive',
+                    'text': json.dumps({'type': 'asr.session.finish', 'id': 'asr-filter-finish'}),
+                })
                 done = await communicator.receive_output(timeout=1)
                 self.assertEqual(json.loads(done['text']), {'type': 'asr.done', 'id': 'asr-filter-session'})
 

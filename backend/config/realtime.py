@@ -863,6 +863,13 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
                     await upstream.send(json.dumps(realtime_asr._session_finish_event()))
                 continue
 
+            if realtime_asr.is_filtered_filler_final_event(
+                event,
+                replacement_pairs=replacement_pairs,
+                filter_filler_words=connection.asr_filter_filler_words,
+            ):
+                continue
+
             if realtime_asr.is_final_transcript_event(event) and not finish_sent:
                 finish_sent = True
                 connection.asr_accepting_audio = False
@@ -1199,6 +1206,13 @@ async def _asr_upstream_to_client(upstream, send, connection: RealtimeConnection
                 finish_sent = True
                 connection.asr_accepting_audio = False
                 await upstream.send(json.dumps(realtime_asr._session_finish_event()))
+            continue
+
+        if realtime_asr.is_filtered_filler_final_event(
+            event,
+            replacement_pairs=replacement_pairs,
+            filter_filler_words=getattr(connection, 'asr_filter_filler_words', True),
+        ):
             continue
 
         if realtime_asr.is_final_transcript_event(event) and not finish_sent:

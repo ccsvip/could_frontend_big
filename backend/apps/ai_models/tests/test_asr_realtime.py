@@ -161,6 +161,32 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
             )
         )
 
+    def test_filtered_filler_final_event_is_detected(self):
+        from apps.ai_models.realtime_asr import is_filtered_filler_final_event
+
+        self.assertTrue(
+            is_filtered_filler_final_event(
+                {
+                    'type': 'conversation.item.input_audio_transcription.completed',
+                    'transcript': '嗯。',
+                },
+                filter_filler_words=True,
+            )
+        )
+
+    def test_meaningful_final_event_is_not_treated_as_filtered_filler(self):
+        from apps.ai_models.realtime_asr import is_filtered_filler_final_event
+
+        self.assertFalse(
+            is_filtered_filler_final_event(
+                {
+                    'type': 'conversation.item.input_audio_transcription.completed',
+                    'transcript': '嗯好的',
+                },
+                filter_filler_words=True,
+            )
+        )
+
     def test_extract_transcript_payload_keeps_meaningful_text_when_filter_enabled(self):
         from apps.ai_models.realtime_asr import extract_transcript_payload
 

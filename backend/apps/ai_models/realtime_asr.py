@@ -156,6 +156,22 @@ def is_final_transcript_event(event: dict[str, Any]) -> bool:
     return str(event.get('type') or '') in FINAL_EVENT_TYPES
 
 
+def is_filtered_filler_final_event(
+    event: dict[str, Any],
+    *,
+    replacement_pairs: list[tuple[str, str]] | None = None,
+    filter_filler_words: bool = False,
+) -> bool:
+    if not filter_filler_words or not is_final_transcript_event(event):
+        return False
+
+    text = _extract_text(event)
+    if not text:
+        return False
+    replaced_text = apply_asr_replacement_rules(text, replacement_pairs or [])
+    return is_filler_transcript_text(replaced_text)
+
+
 def is_filler_transcript_text(text: str) -> bool:
     compact = ''.join(char for char in str(text or '').strip().lower() if not char.isspace())
     if not compact:
