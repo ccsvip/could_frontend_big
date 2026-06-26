@@ -11,6 +11,7 @@ import {
   fetchAgentApplication,
   fetchAgentApplicationStats,
   fetchAgentApplications,
+  publishAgentApplication,
   updateAgentAnnotation,
   type AgentAnnotationRecord,
   updateAgentApplication,
@@ -402,6 +403,7 @@ export const ApplicationManagementPage = () => {
   const [selectedApplication, setSelectedApplication] = useState<AgentApplicationRecord | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [configSaving, setConfigSaving] = useState(false);
+  const [publishSaving, setPublishSaving] = useState(false);
   const [llmOptions, setLlmOptions] = useState<CompanyLLMOptions | null>(null);
   const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBaseRecord[]>([]);
   const [optionsLoading, setOptionsLoading] = useState(false);
@@ -581,6 +583,16 @@ export const ApplicationManagementPage = () => {
     ttsFilterPunctuation,
     ttsFilterEmoji,
   ]);
+
+  const getPublishStatus = (app: AgentApplicationRecord) => {
+    if (!app.hasPublishedConfig) {
+      return { color: 'default', text: '未发布' };
+    }
+    if (!app.isPublishedCurrent) {
+      return { color: 'warning', text: '待发布' };
+    }
+    return { color: 'success', text: `已发布 v${app.publishedVersion}` };
+  };
 
   const handleBackClick = () => {
     if (isDirty) {
@@ -1021,6 +1033,25 @@ export const ApplicationManagementPage = () => {
     applyApplicationState,
   ]);
 
+  const handlePublish = useCallback(async () => {
+    if (!selectedApplication || !canUpdate) return;
+    if (isDirty) {
+      message.warning('请先保存当前草稿，再发布到运行时');
+      return;
+    }
+    setPublishSaving(true);
+    try {
+      const published = await publishAgentApplication(selectedApplication.id);
+      applyApplicationState(published);
+      message.success('智能体已发布，设备和 API 将使用最新发布版本');
+      await loadApplications();
+    } catch {
+      message.error('发布失败');
+    } finally {
+      setPublishSaving(false);
+    }
+  }, [applyApplicationState, canUpdate, isDirty, loadApplications, selectedApplication]);
+
   // Keyboard Shortcuts (Alt+1/2/3 for switching tabs, Ctrl+S for saving)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1424,6 +1455,7 @@ export const ApplicationManagementPage = () => {
               {applications.map((app) => {
                 const modelName = app.llmModelDisplayName || app.llmModelName;
                 const knowledgeCount = app.knowledgeBaseIds?.length || app.knowledgeBases?.length || 0;
+                const publishStatus = getPublishStatus(app);
 
                 return (
                   <Card variant="borderless" key={app.id} className="flex flex-col justify-between bg-white border border-slate-200/60 hover:border-teal-200 hover:shadow-md transition-all duration-300 rounded-2xl relative overflow-hidden group min-h-[220px]">
@@ -1476,6 +1508,9 @@ export const ApplicationManagementPage = () => {
                         <Tag color={knowledgeCount > 0 ? 'blue' : 'default'} className="m-0 flex items-center gap-1">
                           <BookOpen size={10} className="shrink-0" />
                           {knowledgeCount} 库
+                        </Tag>
+                        <Tag color={publishStatus.color} className="m-0">
+                          {publishStatus.text}
                         </Tag>
                       </div>
                     </div>
@@ -2653,6 +2688,11 @@ export const ApplicationManagementPage = () => {
                   ? `${selectedApplication.llmProviderName} / ${selectedApplication.llmModelDisplayName || selectedApplication.llmModelName}`
                   : '未配置大语言模型'}
               </span>
+              {selectedApplication && (
+                <Tag color={getPublishStatus(selectedApplication).color} className="m-0">
+                  {getPublishStatus(selectedApplication).text}
+                </Tag>
+              )}
             </div>
           </div>
         </div>
@@ -2664,6 +2704,16 @@ export const ApplicationManagementPage = () => {
                 未保存更改
               </Tag>
             )}
+            <Button
+              type="default"
+              loading={publishSaving}
+              disabled={!canUpdate || streaming || isDirty || !selectedApplication}
+              onClick={() => void handlePublish()}
+              style={{ minWidth: 96 }}
+              className="flex items-center gap-1"
+            >
+              <Zap size={14} /> 发布
+            </Button>
             <Button 
               type="primary"
               loading={configSaving} 

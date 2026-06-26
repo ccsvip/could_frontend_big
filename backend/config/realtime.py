@@ -718,7 +718,25 @@ def _agent_memory_key(device, agent_application=None) -> str:
     if agent_application is None:
         agent_application = getattr(device, 'effective_agent_application', None)
     agent_application_id = getattr(agent_application, 'id', None)
-    return f'{device.tenant_id}:{device.code}:agent:{agent_application_id or "none"}'
+    if agent_application is None:
+        knowledge_version = 'none'
+    elif agent_application.published_at:
+        knowledge_version = f'published:{agent_application.published_version}:{agent_application.published_at.isoformat()}'
+    else:
+        knowledge_base_ids = ','.join(
+            str(item)
+            for item in agent_application.knowledge_bases.order_by('id').values_list('id', flat=True)
+        )
+        knowledge_document_ids = ','.join(
+            str(item)
+            for item in agent_application.knowledge_documents.order_by('id').values_list('id', flat=True)
+        )
+        knowledge_version = (
+            f'{agent_application.updated_at.isoformat()}:'
+            f'kb={knowledge_base_ids or "none"}:'
+            f'doc={knowledge_document_ids or "none"}'
+        )
+    return f'{device.tenant_id}:{device.code}:agent:{agent_application_id or "none"}:{knowledge_version}'
 
 
 def _get_agent_memory(memory_key: str) -> list[dict[str, str]]:
@@ -950,7 +968,7 @@ def _validate_agent_runtime_start(device_code: str) -> None:
     device = get_runtime_device(device_code)
     validate_runtime_application_active(device)
     agent_application = device.effective_agent_application
-    if agent_application is None or not agent_application.is_active:
+    if agent_application is None or not agent_application.runtime_config().get('is_active'):
         raise RuntimeError('设备未绑定可用智能体')
 
 
@@ -1042,8 +1060,9 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
     device = get_runtime_device(device_code)
     validate_runtime_application_active(device)
     agent_application = device.effective_agent_application
-    if agent_application is None or not agent_application.is_active:
+    if agent_application is None or not agent_application.runtime_config().get('is_active'):
         raise RuntimeError('设备未绑定可用智能体')
+    runtime_config = agent_application.runtime_config()
 
     annotation = DeviceVoiceChatView._find_annotation(agent_application, question_text)
     if annotation is not None:
@@ -1057,15 +1076,22 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
             'annotationAnswer': annotation.answer,
             'memoryKey': _agent_memory_key(device, agent_application),
             'agentApplicationId': agent_application.id,
-            'agentApplicationName': agent_application.name,
+            'agentApplicationName': runtime_config.get('name') or agent_application.name,
             'applicationId': device.application_id,
             'applicationName': device.application.name if device.application else '',
             'modelName': agent_application.llm_model.name if agent_application.llm_model else '',
-            'ttsFilterPunctuation': agent_application.tts_filter_punctuation,
-            'ttsFilterEmoji': agent_application.tts_filter_emoji,
+            'ttsFilterPunctuation': runtime_config.get('tts_filter_punctuation') or '',
+            'ttsFilterEmoji': runtime_config.get('tts_filter_emoji'),
         }
 
-    model = agent_application.llm_model
+    model = None
+    runtime_model_id = runtime_config.get('llm_model_id')
+    if runtime_model_id:
+        from apps.ai_models.models import LLMModel
+
+        model = LLMModel.objects.select_related('provider').filter(id=runtime_model_id).first()
+    if model is None:
+        model = agent_application.llm_model
     if model is None:
         settings = llm_services.get_tenant_llm_settings(device.tenant)
         model = settings.default_model if settings is not None else None
@@ -1073,11 +1099,11 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
         raise RuntimeError('请先为设备绑定智能体配置可用 LLM 模型')
 
     system_prompt = (
-        agent_application.system_prompt.strip()
-        if agent_application.system_prompt.strip()
+        str(runtime_config.get('system_prompt') or '').strip()
+        if str(runtime_config.get('system_prompt') or '').strip()
         else '你是数字人设备的中文语音问答助手。回答要自然、简洁，适合直接转成语音播报。'
     )
-    system_prompt += f' 当前设备智能体：{agent_application.name}。'
+    system_prompt += f' 当前设备智能体：{runtime_config.get("name") or agent_application.name}。'
     if device.application is not None:
         system_prompt += f' 当前设备资源应用：{device.application.name}。'
     memory_key = _agent_memory_key(device, agent_application)
@@ -1085,7 +1111,12 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
 
     from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context
 
-    knowledge_context = retrieve_knowledge_context(agent_application, question_text)
+    knowledge_context = retrieve_knowledge_context(
+        agent_application,
+        question_text,
+        knowledge_document_ids=runtime_config.get('knowledge_document_ids') or [],
+        knowledge_base_ids=runtime_config.get('knowledge_base_ids') or [],
+    )
     if knowledge_context:
         messages.append({'role': 'system', 'content': knowledge_context})
     messages.extend(_get_agent_memory(memory_key))
@@ -1101,16 +1132,16 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
         },
         'messages': messages,
         'memoryKey': memory_key,
-        'temperature': agent_application.temperature,
-        'maxTokens': None if agent_application.max_tokens_unlimited else agent_application.max_tokens,
+        'temperature': runtime_config.get('temperature', 0.7),
+        'maxTokens': None if runtime_config.get('max_tokens_unlimited') else runtime_config.get('max_tokens', 1000),
         'annotationAnswer': None,
         'agentApplicationId': agent_application.id,
-        'agentApplicationName': agent_application.name,
+        'agentApplicationName': runtime_config.get('name') or agent_application.name,
         'applicationId': device.application_id,
         'applicationName': device.application.name if device.application else '',
         'modelName': model.name,
-        'ttsFilterPunctuation': agent_application.tts_filter_punctuation,
-        'ttsFilterEmoji': agent_application.tts_filter_emoji,
+        'ttsFilterPunctuation': runtime_config.get('tts_filter_punctuation') or '',
+        'ttsFilterEmoji': runtime_config.get('tts_filter_emoji'),
     }
 
 
@@ -1120,14 +1151,15 @@ def _run_device_llm_answer(device_code: str, question_text: str) -> dict[str, An
     device = get_runtime_device(device_code)
     validate_runtime_application_active(device)
     agent_application = device.effective_agent_application
-    if agent_application is None or not agent_application.is_active:
+    if agent_application is None or not agent_application.runtime_config().get('is_active'):
         raise RuntimeError('设备未绑定可用智能体')
+    runtime_config = agent_application.runtime_config()
     answer_text = DeviceVoiceChatView._generate_answer(device, question_text)
     return {
         'deviceCode': device.code,
         'answerText': answer_text,
         'agentApplicationId': agent_application.id,
-        'agentApplicationName': agent_application.name,
+        'agentApplicationName': runtime_config.get('name') or agent_application.name,
         'applicationId': device.application_id,
         'applicationName': device.application.name if device.application else '',
     }

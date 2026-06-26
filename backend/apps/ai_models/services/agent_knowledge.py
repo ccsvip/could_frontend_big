@@ -550,6 +550,21 @@ def _bound_approved_text_documents(application) -> list[KnowledgeDocument]:
     return list(document_query.distinct())
 
 
+def _approved_text_documents_for_ids(
+    application,
+    *,
+    knowledge_document_ids: list[int] | None = None,
+    knowledge_base_ids: list[int] | None = None,
+) -> list[KnowledgeDocument]:
+    tenant_filter = {'tenant': application.tenant} if application.tenant_id else {'tenant__isnull': True}
+    document_query = KnowledgeDocument.objects.none()
+    if knowledge_document_ids:
+        document_query = document_query | KnowledgeDocument.objects.filter(id__in=knowledge_document_ids, **tenant_filter)
+    if knowledge_base_ids:
+        document_query = document_query | KnowledgeDocument.objects.filter(knowledge_base_id__in=knowledge_base_ids, **tenant_filter)
+    return list(document_query.distinct())
+
+
 def _approved_text_documents_for_knowledge_base(knowledge_base: KnowledgeBase) -> list[KnowledgeDocument]:
     return list(
         knowledge_base.documents.filter(
@@ -602,8 +617,8 @@ def _retrieve_keyword_chunks(docs: list[KnowledgeDocument], query: str, top_n: i
     return all_scored_chunks[:top_n]
 
 
-def _retrieve_keyword_knowledge_context(application, query: str, top_n: int, max_chars: int) -> str:
-    return _format_context(_retrieve_keyword_chunks(_bound_approved_text_documents(application), query, top_n), max_chars)
+def _retrieve_keyword_knowledge_context(application, query: str, top_n: int, max_chars: int, docs: list[KnowledgeDocument] | None = None) -> str:
+    return _format_context(_retrieve_keyword_chunks(docs if docs is not None else _bound_approved_text_documents(application), query, top_n), max_chars)
 
 
 def _serialize_recall_result(*, chunks: list[RetrievedChunk], mode: str, embedding_model: EmbeddingModel | None, rerank_model: RerankModel | None) -> dict:
@@ -714,7 +729,15 @@ def retrieve_knowledge_chunks(
         )
 
 
-def retrieve_knowledge_context(application, query: str, top_n: int = 5, max_chars: int = 3000) -> str:
+def retrieve_knowledge_context(
+    application,
+    query: str,
+    top_n: int = 5,
+    max_chars: int = 3000,
+    *,
+    knowledge_document_ids: list[int] | None = None,
+    knowledge_base_ids: list[int] | None = None,
+) -> str:
     """
     Retrieves matching document fragments from txt/md documents bound to the application.
 
@@ -724,14 +747,22 @@ def retrieve_knowledge_context(application, query: str, top_n: int = 5, max_char
     if not application or not query:
         return ''
 
+    docs = None
     try:
-        docs = _bound_approved_text_documents(application)
+        if knowledge_document_ids is None and knowledge_base_ids is None:
+            docs = _bound_approved_text_documents(application)
+        else:
+            docs = _approved_text_documents_for_ids(
+                application,
+                knowledge_document_ids=knowledge_document_ids,
+                knowledge_base_ids=knowledge_base_ids,
+            )
         if not docs:
             return ''
 
         embedding_model = _embedding_model_for_tenant(application.tenant)
         if not embedding_model:
-            return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars)
+            return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars, docs)
 
         with httpx.Client(timeout=30.0) as client:
             embedding_preparation_failed = False
@@ -742,7 +773,7 @@ def retrieve_knowledge_context(application, query: str, top_n: int = 5, max_char
                     logger.warning('Failed to prepare knowledge document embeddings id=%s error=%s', doc.id, result.get('error'))
 
             if embedding_preparation_failed:
-                return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars)
+                return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars, docs)
 
             query_embedding = _embed_texts(client, embedding_model, [query])[0]
             stored_chunks = list(
@@ -752,7 +783,7 @@ def retrieve_knowledge_context(application, query: str, top_n: int = 5, max_char
                 ).select_related('document')
             )
             if not stored_chunks:
-                return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars)
+                return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars, docs)
 
             scored_chunks = [
                     RetrievedChunk(
@@ -768,7 +799,7 @@ def retrieve_knowledge_context(application, query: str, top_n: int = 5, max_char
             scored_chunks.sort(key=lambda item: item.score, reverse=True)
             candidates = scored_chunks[: max(top_n * 4, top_n)]
             if not candidates:
-                return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars)
+                return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars, docs)
 
             rerank_model = _rerank_model_for_tenant(application.tenant)
             if rerank_model:
@@ -782,7 +813,7 @@ def retrieve_knowledge_context(application, query: str, top_n: int = 5, max_char
         return _format_context(candidates[:top_n], max_chars)
     except Exception as e:
         logger.exception('Error during vector knowledge base retrieval, fallback to keyword retrieval: %s', e)
-        return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars)
+        return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars, docs)
 
 
 def inject_knowledge_context(conversation, api_messages, query: str) -> list[dict]:
@@ -793,7 +824,13 @@ def inject_knowledge_context(conversation, api_messages, query: str) -> list[dic
     if not conversation.application:
         return api_messages
 
-    context_str = retrieve_knowledge_context(conversation.application, query)
+    runtime_config = conversation.application.runtime_config()
+    context_str = retrieve_knowledge_context(
+        conversation.application,
+        query,
+        knowledge_document_ids=runtime_config.get('knowledge_document_ids') or [],
+        knowledge_base_ids=runtime_config.get('knowledge_base_ids') or [],
+    )
     if not context_str:
         return api_messages
 

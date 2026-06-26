@@ -41,6 +41,10 @@ export type AgentApplicationRecord = {
   knowledgeBases: AgentApplicationKnowledgeBase[];
   createdBy: string;
   isActive: boolean;
+  publishedAt: string | null;
+  publishedVersion: number;
+  hasPublishedConfig: boolean;
+  isPublishedCurrent: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -103,6 +107,11 @@ export const createAgentApplication = async (payload: AgentApplicationPayload) =
 
 export const updateAgentApplication = async (id: number, payload: Partial<AgentApplicationPayload>) => {
   const response = await httpClient.patch<AgentApplicationRecord>(`/ai-models/applications/${id}/`, payload);
+  return response.data;
+};
+
+export const publishAgentApplication = async (id: number) => {
+  const response = await httpClient.post<AgentApplicationRecord>(`/ai-models/applications/${id}/publish/`);
   return response.data;
 };
 

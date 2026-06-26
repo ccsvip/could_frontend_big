@@ -663,6 +663,10 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
     knowledgeBases = AgentKnowledgeBaseSerializer(source='knowledge_bases', many=True, read_only=True)
     createdBy = serializers.SerializerMethodField()
     isActive = serializers.BooleanField(source='is_active', required=False)
+    publishedAt = serializers.DateTimeField(source='published_at', read_only=True, allow_null=True)
+    publishedVersion = serializers.IntegerField(source='published_version', read_only=True)
+    hasPublishedConfig = serializers.SerializerMethodField()
+    isPublishedCurrent = serializers.SerializerMethodField()
 
     class Meta:
         model = AgentApplication
@@ -691,6 +695,10 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
             'knowledgeBases',
             'createdBy',
             'isActive',
+            'publishedAt',
+            'publishedVersion',
+            'hasPublishedConfig',
+            'isPublishedCurrent',
             'created_at',
             'updated_at',
         ]
@@ -702,6 +710,10 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
             'knowledgeDocuments',
             'knowledgeBases',
             'createdBy',
+            'publishedAt',
+            'publishedVersion',
+            'hasPublishedConfig',
+            'isPublishedCurrent',
             'created_at',
             'updated_at',
         )
@@ -731,6 +743,14 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
         if obj.created_by is None:
             return ''
         return obj.created_by.get_full_name() or obj.created_by.username
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_hasPublishedConfig(self, obj: AgentApplication) -> bool:
+        return bool(obj.published_at and obj.published_config)
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_isPublishedCurrent(self, obj: AgentApplication) -> bool:
+        return obj.is_published_current
 
     def validate_name(self, value: str) -> str:
         value = value.strip()

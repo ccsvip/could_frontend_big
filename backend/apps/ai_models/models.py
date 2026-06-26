@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 from apps.tenants.managers import TenantManager
 
@@ -517,6 +518,9 @@ class AgentApplication(models.Model):
     )
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
+    published_config = models.JSONField('已发布配置', blank=True, default=dict)
+    published_at = models.DateTimeField('发布时间', null=True, blank=True)
+    published_version = models.PositiveIntegerField('发布版本', default=0)
 
     objects = TenantManager()
 
@@ -530,6 +534,60 @@ class AgentApplication(models.Model):
 
     def __str__(self):
         return self.name
+
+    def build_publish_config(self) -> dict:
+        return {
+            'name': self.name,
+            'description': self.description,
+            'llm_model_id': self.llm_model_id,
+            'system_prompt': self.system_prompt,
+            'temperature': self.temperature,
+            'max_tokens': self.max_tokens,
+            'max_tokens_unlimited': self.max_tokens_unlimited,
+            'opening_message_enabled': self.opening_message_enabled,
+            'opening_message': self.opening_message,
+            'suggested_questions': list(self.suggested_questions or []),
+            'voice_input_enabled': self.voice_input_enabled,
+            'reply_playback_enabled': self.reply_playback_enabled,
+            'tts_filter_punctuation': self.tts_filter_punctuation,
+            'tts_filter_emoji': self.tts_filter_emoji,
+            'is_active': self.is_active,
+            'knowledge_document_ids': list(self.knowledge_documents.order_by('id').values_list('id', flat=True)),
+            'knowledge_base_ids': list(self.knowledge_bases.order_by('id').values_list('id', flat=True)),
+        }
+
+    def publish(self) -> None:
+        self.published_config = self.build_publish_config()
+        self.published_at = timezone.now()
+        self.published_version = (self.published_version or 0) + 1
+        self.save(update_fields=['published_config', 'published_at', 'published_version', 'updated_at'])
+
+    def runtime_config(self) -> dict:
+        config = self.published_config if self.published_at and self.published_config else self.build_publish_config()
+        return {
+            **config,
+            'name': config.get('name', self.name),
+            'description': config.get('description', self.description),
+            'llm_model_id': config.get('llm_model_id', self.llm_model_id),
+            'system_prompt': config.get('system_prompt', self.system_prompt),
+            'temperature': config.get('temperature', self.temperature),
+            'max_tokens': config.get('max_tokens', self.max_tokens),
+            'max_tokens_unlimited': config.get('max_tokens_unlimited', self.max_tokens_unlimited),
+            'opening_message_enabled': config.get('opening_message_enabled', self.opening_message_enabled),
+            'opening_message': config.get('opening_message', self.opening_message),
+            'suggested_questions': config.get('suggested_questions', self.suggested_questions or []),
+            'voice_input_enabled': config.get('voice_input_enabled', self.voice_input_enabled),
+            'reply_playback_enabled': config.get('reply_playback_enabled', self.reply_playback_enabled),
+            'tts_filter_punctuation': config.get('tts_filter_punctuation', self.tts_filter_punctuation),
+            'tts_filter_emoji': config.get('tts_filter_emoji', self.tts_filter_emoji),
+            'is_active': config.get('is_active', self.is_active),
+            'knowledge_document_ids': config.get('knowledge_document_ids', []),
+            'knowledge_base_ids': config.get('knowledge_base_ids', []),
+        }
+
+    @property
+    def is_published_current(self) -> bool:
+        return bool(self.published_at and self.published_config == self.build_publish_config())
 
     def save(self, *args, **kwargs):
         if not self.opening_message:

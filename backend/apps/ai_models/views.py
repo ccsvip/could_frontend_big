@@ -1077,6 +1077,7 @@ async def _generate_conversation_summary(
     create_annotation=extend_schema(tags=['Agent Applications']),
     update_annotation=extend_schema(tags=['Agent Applications']),
     create_conversation=extend_schema(tags=['Agent Applications']),
+    publish=extend_schema(tags=['Agent Applications']),
 )
 class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
     queryset = (
@@ -1092,6 +1093,7 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         'update': [CanUpdateAgentApplications],
         'partial_update': [CanUpdateAgentApplications],
         'destroy': [CanDeleteAgentApplications],
+        'publish': [CanUpdateAgentApplications],
         'annotations': [CanViewAgentApplications],
         'create_annotation': [CanUpdateAgentApplications],
         'update_annotation': [CanUpdateAgentApplications],
@@ -1152,19 +1154,31 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
     @action(detail=True, methods=['post'], url_path='conversations')
     def create_conversation(self, request, pk=None):
         application = self.get_object()
+        runtime_config = application.runtime_config()
+        llm_model = application.llm_model
+        runtime_model_id = runtime_config.get('llm_model_id')
+        if runtime_model_id:
+            llm_model = LLMModel.objects.filter(id=runtime_model_id).first()
         conversation = ChatConversation.objects.create(
-            title=f'{application.name} 调试会话',
+            title=f'{runtime_config.get("name") or application.name} 调试会话',
             user=request.user,
-            llm_model=application.llm_model,
+            llm_model=llm_model,
             summary='',
-            system_prompt=application.system_prompt,
-            temperature=application.temperature,
-            max_tokens=application.max_tokens,
-            max_tokens_unlimited=application.max_tokens_unlimited,
+            system_prompt=runtime_config.get('system_prompt') or '',
+            temperature=runtime_config.get('temperature', 0.7),
+            max_tokens=runtime_config.get('max_tokens', 1000),
+            max_tokens_unlimited=runtime_config.get('max_tokens_unlimited', False),
             application=application,
             tenant=application.tenant,
         )
         return Response(ChatConversationDetailSerializer(conversation).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'], url_path='publish')
+    def publish(self, request, pk=None):
+        application = self.get_object()
+        application.publish()
+        serializer = self.get_serializer(application)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['get', 'post'], url_path='annotations')
     def annotations(self, request, pk=None):

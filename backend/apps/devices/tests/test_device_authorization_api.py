@@ -7,6 +7,7 @@ from unittest.mock import patch
 from asgiref.sync import async_to_sync, sync_to_async
 from asgiref.testing import ApplicationCommunicator
 from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError
 from django.utils import timezone
@@ -21,6 +22,7 @@ from apps.devices.services.authorization import record_device_authorization_acti
 from apps.devices.services.queries import device_authorization_requests_queryset
 from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device
 from apps.devices.serializers import DeviceActivationLogSerializer
+from apps.knowledge_base.models import KnowledgeBase, KnowledgeDocument, KnowledgeDocumentChunk
 from apps.resources.models import ModelAsset, Resource, ScrollingText, ScrollingTextItem
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
@@ -658,6 +660,168 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(chat_log.question_text, '介绍一下展厅')
         self.assertEqual(chat_log.answer_text, '欢迎来到数字人展厅。')
         self.assertEqual(chat_log.model_name, 'qwen/qwen3-32b')
+
+    def test_device_voice_chat_uses_published_agent_knowledge_base(self):
+        provider = LLMProvider.objects.create(
+            name='OpenAI compatible',
+            provider_type='openai',
+            api_base_url='https://example.com/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='qwen/qwen3-32b', is_active=True)
+        self.agent_application.llm_model = model
+        self.agent_application.save(update_fields=['llm_model', 'updated_at'])
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+
+        kb_a = KnowledgeBase.objects.create(tenant=self.tenant, name='A 知识库', created_by=self.user)
+        doc_a = KnowledgeDocument.objects.create(
+            tenant=self.tenant,
+            knowledge_base=kb_a,
+            uploaded_by=self.user,
+            title='A 文档',
+        )
+        doc_a.file.save('a.txt', ContentFile(b'A knowledge answer: old hall.'))
+        KnowledgeDocumentChunk.objects.create(
+            tenant=self.tenant,
+            document=doc_a,
+            chunk_index=0,
+            content='same question answer is A old hall',
+            content_hash='a' * 64,
+            embedding_model='keyword',
+        )
+        kb_b = KnowledgeBase.objects.create(tenant=self.tenant, name='B 知识库', created_by=self.user)
+        doc_b = KnowledgeDocument.objects.create(
+            tenant=self.tenant,
+            knowledge_base=kb_b,
+            uploaded_by=self.user,
+            title='B 文档',
+        )
+        doc_b.file.save('b.txt', ContentFile(b'B knowledge answer: new hall.'))
+        KnowledgeDocumentChunk.objects.create(
+            tenant=self.tenant,
+            document=doc_b,
+            chunk_index=0,
+            content='same question answer is B new hall',
+            content_hash='b' * 64,
+            embedding_model='keyword',
+        )
+        self.agent_application.knowledge_bases.set([kb_a])
+        self.agent_application.publish()
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Voice Device',
+            code='ANDROID-VOICE-KB-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        captured_messages = []
+
+        def fake_run_llm_chat_completion(**kwargs):
+            captured_messages.append(kwargs['messages'])
+            return '知识库回答'
+
+        with patch('apps.devices.views.llm_services.run_llm_chat_completion', fake_run_llm_chat_completion):
+            response_a = self.client.post(
+                '/api/v1/device/voice-chat',
+                {'text': 'same question'},
+                format='json',
+                HTTP_X_DEVICE_CODE='ANDROID-VOICE-KB-001',
+            )
+            self.agent_application.knowledge_bases.set([kb_b])
+            response_draft_b = self.client.post(
+                '/api/v1/device/voice-chat',
+                {'text': 'same question'},
+                format='json',
+                HTTP_X_DEVICE_CODE='ANDROID-VOICE-KB-001',
+            )
+            self.agent_application.publish()
+            response_published_b = self.client.post(
+                '/api/v1/device/voice-chat',
+                {'text': 'same question'},
+                format='json',
+                HTTP_X_DEVICE_CODE='ANDROID-VOICE-KB-001',
+            )
+
+        self.assertEqual(response_a.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_draft_b.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_published_b.status_code, status.HTTP_200_OK)
+        first_message_text = '\n'.join(item['content'] for item in captured_messages[0])
+        draft_message_text = '\n'.join(item['content'] for item in captured_messages[1])
+        published_message_text = '\n'.join(item['content'] for item in captured_messages[2])
+        self.assertIn('A old hall', first_message_text)
+        self.assertNotIn('B new hall', first_message_text)
+        self.assertIn('A old hall', draft_message_text)
+        self.assertNotIn('B new hall', draft_message_text)
+        self.assertIn('B new hall', published_message_text)
+        self.assertNotIn('A old hall', published_message_text)
+
+    def test_realtime_agent_memory_key_changes_only_after_publish(self):
+        from config.realtime import _agent_memory_key
+
+        kb_a = KnowledgeBase.objects.create(tenant=self.tenant, name='A 知识库', created_by=self.user)
+        kb_b = KnowledgeBase.objects.create(tenant=self.tenant, name='B 知识库', created_by=self.user)
+        self.agent_application.knowledge_bases.set([kb_a])
+        self.agent_application.publish()
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Realtime Device',
+            code='ANDROID-REALTIME-KB-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        key_a = _agent_memory_key(device, self.agent_application)
+        self.agent_application.knowledge_bases.set([kb_b])
+        key_draft_b = _agent_memory_key(device, self.agent_application)
+        self.agent_application.publish()
+        key_published_b = _agent_memory_key(device, self.agent_application)
+
+        self.assertEqual(key_a, key_draft_b)
+        self.assertNotEqual(key_a, key_published_b)
+
+    def test_realtime_llm_session_uses_published_agent_prompt(self):
+        from config.realtime import _prepare_device_llm_session
+
+        provider = LLMProvider.objects.create(
+            name='OpenAI compatible',
+            provider_type='openai',
+            api_base_url='https://example.com/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='qwen/qwen3-32b', is_active=True)
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        self.agent_application.llm_model = model
+        self.agent_application.system_prompt = 'A prompt for published runtime.'
+        self.agent_application.save(update_fields=['llm_model', 'system_prompt', 'updated_at'])
+        self.agent_application.publish()
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Realtime Prompt Device',
+            code='ANDROID-REALTIME-PROMPT-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        session_a = _prepare_device_llm_session('ANDROID-REALTIME-PROMPT-001', '你好')
+        self.agent_application.system_prompt = 'B prompt draft only.'
+        self.agent_application.save(update_fields=['system_prompt', 'updated_at'])
+        session_draft_b = _prepare_device_llm_session('ANDROID-REALTIME-PROMPT-001', '你好')
+        self.agent_application.publish()
+        session_published_b = _prepare_device_llm_session('ANDROID-REALTIME-PROMPT-001', '你好')
+
+        self.assertIn('A prompt for published runtime.', session_a['messages'][0]['content'])
+        self.assertIn('A prompt for published runtime.', session_draft_b['messages'][0]['content'])
+        self.assertNotIn('B prompt draft only.', session_draft_b['messages'][0]['content'])
+        self.assertIn('B prompt draft only.', session_published_b['messages'][0]['content'])
 
     def test_device_chat_logs_endpoint_filters_by_agent_application(self):
         device = Device.objects.create(

@@ -20,7 +20,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from apps.accounts.permissions import CanCreateDevices, CanDeleteDevices, CanUpdateDevices, CanViewDevices, IsSuperUser
 from apps.ai_models import llm_services
-from apps.ai_models.models import AgentAnnotation
+from apps.ai_models.models import AgentAnnotation, LLMModel
 from apps.ai_models.services import asr as asr_services
 from apps.ai_models.services import tts as tts_services
 from apps.resources.models import ModelAsset, Resource, ScrollingText
@@ -408,11 +408,18 @@ class DeviceActivationView(APIView):
     def _agent_application_payload(agent_application):
         if agent_application is None:
             return None
+        config = agent_application.runtime_config()
+        llm_model_id = config.get('llm_model_id')
+        model_name = agent_application.model_name
+        if llm_model_id != agent_application.llm_model_id:
+            model_name = LLMModel.objects.filter(id=llm_model_id).values_list('name', flat=True).first() or ''
         return {
             'id': agent_application.id,
-            'name': agent_application.name,
-            'llmModelId': agent_application.llm_model_id,
-            'llmModelName': agent_application.model_name,
+            'name': config.get('name') or agent_application.name,
+            'llmModelId': llm_model_id,
+            'llmModelName': model_name,
+            'publishedAt': agent_application.published_at,
+            'publishedVersion': agent_application.published_version,
         }
 
     @staticmethod
@@ -468,7 +475,7 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
             return error
         application = device.application
         agent_application = device.effective_agent_application
-        if agent_application is None or not agent_application.is_active:
+        if agent_application is None or not agent_application.runtime_config().get('is_active'):
             error = runtime_device_error('设备未绑定可用智能体', status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_AGENT_UNBOUND)
             return Response(error.as_payload(), status=error.status_code)
         DeviceAuthLog.objects.create(
@@ -666,20 +673,21 @@ class DeviceRuntimeResourcesView(DeviceRuntimeView):
     def _agent_application_payload(agent_application):
         if agent_application is None:
             return None
+        config = agent_application.runtime_config()
         return {
             **DeviceActivationView._agent_application_payload(agent_application),
-            'description': agent_application.description,
-            'systemPrompt': agent_application.system_prompt,
-            'temperature': agent_application.temperature,
-            'maxTokens': agent_application.max_tokens,
-            'maxTokensUnlimited': agent_application.max_tokens_unlimited,
-            'openingMessageEnabled': agent_application.opening_message_enabled,
-            'openingMessage': agent_application.opening_message,
-            'suggestedQuestions': agent_application.suggested_questions or [],
-            'voiceInputEnabled': agent_application.voice_input_enabled,
-            'replyPlaybackEnabled': agent_application.reply_playback_enabled,
-            'ttsFilterPunctuation': agent_application.tts_filter_punctuation,
-            'ttsFilterEmoji': agent_application.tts_filter_emoji,
+            'description': config.get('description') or '',
+            'systemPrompt': config.get('system_prompt') or '',
+            'temperature': config.get('temperature'),
+            'maxTokens': config.get('max_tokens'),
+            'maxTokensUnlimited': config.get('max_tokens_unlimited'),
+            'openingMessageEnabled': config.get('opening_message_enabled'),
+            'openingMessage': config.get('opening_message') or '',
+            'suggestedQuestions': config.get('suggested_questions') or [],
+            'voiceInputEnabled': config.get('voice_input_enabled'),
+            'replyPlaybackEnabled': config.get('reply_playback_enabled'),
+            'ttsFilterPunctuation': config.get('tts_filter_punctuation') or '',
+            'ttsFilterEmoji': config.get('tts_filter_emoji'),
         }
 
 
@@ -735,7 +743,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             validate_runtime_application_active(device)
         except RuntimeDeviceError as exc:
             return Response(exc.as_payload(), status=exc.status_code)
-        if device.effective_agent_application is None or not device.effective_agent_application.is_active:
+        if device.effective_agent_application is None or not device.effective_agent_application.runtime_config().get('is_active'):
             error = runtime_device_error('设备未绑定可用智能体', status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_AGENT_UNBOUND)
             return Response(error.as_payload(), status=error.status_code)
 
@@ -826,7 +834,13 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             )
             return annotation.answer
 
-        model = agent_application.llm_model if agent_application is not None else None
+        runtime_config = agent_application.runtime_config() if agent_application is not None else {}
+        model = None
+        runtime_model_id = runtime_config.get('llm_model_id')
+        if runtime_model_id:
+            model = LLMModel.objects.select_related('provider').filter(id=runtime_model_id).first()
+        if model is None:
+            model = agent_application.llm_model if agent_application is not None else None
         if model is None:
             settings = llm_services.get_tenant_llm_settings(device.tenant)
             model = settings.default_model if settings is not None else None
@@ -834,22 +848,32 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             raise RuntimeError('请先为设备绑定智能体配置可用 LLM 模型')
 
         system_prompt = (
-            agent_application.system_prompt.strip()
-            if agent_application is not None and agent_application.system_prompt.strip()
+            str(runtime_config.get('system_prompt') or '').strip()
+            if agent_application is not None and str(runtime_config.get('system_prompt') or '').strip()
             else '你是数字人设备的中文语音问答助手。回答要自然、简洁，适合直接转成语音播报。'
         )
         if agent_application is not None:
-            system_prompt += f' 当前设备智能体：{agent_application.name}。'
+            system_prompt += f' 当前设备智能体：{runtime_config.get("name") or agent_application.name}。'
         if device.application is not None:
             system_prompt += f' 当前设备资源应用：{device.application.name}。'
+        messages = [{'role': 'system', 'content': system_prompt}]
+        if agent_application is not None:
+            from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context
+
+            knowledge_context = retrieve_knowledge_context(
+                agent_application,
+                question_text,
+                knowledge_document_ids=runtime_config.get('knowledge_document_ids') or [],
+                knowledge_base_ids=runtime_config.get('knowledge_base_ids') or [],
+            )
+            if knowledge_context:
+                messages.append({'role': 'system', 'content': knowledge_context})
+        messages.append({'role': 'user', 'content': question_text})
         answer_text = llm_services.run_llm_chat_completion(
             model=model,
-            messages=[
-                {'role': 'system', 'content': system_prompt},
-                {'role': 'user', 'content': question_text},
-            ],
-            temperature=agent_application.temperature if agent_application is not None else 0.7,
-            max_tokens=None if agent_application is not None and agent_application.max_tokens_unlimited else (agent_application.max_tokens if agent_application is not None else 1000),
+            messages=messages,
+            temperature=runtime_config.get('temperature', 0.7) if agent_application is not None else 0.7,
+            max_tokens=None if agent_application is not None and runtime_config.get('max_tokens_unlimited') else (runtime_config.get('max_tokens', 1000) if agent_application is not None else 1000),
         )
         if not answer_text:
             raise RuntimeError('LLM 没有返回有效回复')

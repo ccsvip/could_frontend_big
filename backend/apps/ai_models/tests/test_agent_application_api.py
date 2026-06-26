@@ -193,6 +193,44 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(conversation.max_tokens, 1600)
         self.assertTrue(conversation.max_tokens_unlimited)
 
+    def test_publish_agent_application_snapshots_runtime_config(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.update')
+        provider = self.create_provider()
+        model = self.create_model(provider)
+        document = self.create_document(title='Published playbook')
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Publishable agent',
+            description='Draft description',
+            llm_model=model,
+            system_prompt='Published prompt.',
+            temperature=0.3,
+            max_tokens=900,
+        )
+        application.knowledge_documents.set([document])
+
+        response = self.client.post(f'/api/v1/ai-models/applications/{application.id}/publish/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['hasPublishedConfig'])
+        self.assertTrue(response.data['isPublishedCurrent'])
+        self.assertEqual(response.data['publishedVersion'], 1)
+        application.refresh_from_db()
+        self.assertEqual(application.published_config['system_prompt'], 'Published prompt.')
+        self.assertEqual(application.published_config['knowledge_document_ids'], [document.id])
+
+        application.system_prompt = 'Draft prompt after publish.'
+        application.save(update_fields=['system_prompt', 'updated_at'])
+
+        detail_response = self.client.get(f'/api/v1/ai-models/applications/{application.id}/')
+
+        self.assertEqual(detail_response.status_code, status.HTTP_200_OK)
+        self.assertFalse(detail_response.data['isPublishedCurrent'])
+        application.refresh_from_db()
+        self.assertEqual(application.runtime_config()['system_prompt'], 'Published prompt.')
+
     def test_create_agent_application_supports_unlimited_max_tokens(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.create')
         provider = self.create_provider()
