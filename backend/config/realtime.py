@@ -588,7 +588,7 @@ async def _run_llm_session_body(
         return None
 
     try:
-        session = await sync_to_async(_prepare_device_llm_session, thread_sensitive=True)(device_code, question_text)
+        session = await sync_to_async(_prepare_device_llm_session, thread_sensitive=True)(device_code, question_text, payload)
     except Exception as exc:
         await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, **_realtime_error_payload(exc)))
         return None
@@ -605,6 +605,7 @@ async def _run_llm_session_body(
             'agentApplicationName': session['agentApplicationName'],
             'applicationId': session['applicationId'],
             'applicationName': session['applicationName'],
+            'conversationId': session.get('conversationId'),
         },
     }
     await _send_json(send, started_payload)
@@ -665,7 +666,11 @@ async def _run_llm_session_body(
         await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message='LLM 没有返回有效回复'))
         return None
 
-    _remember_agent_exchange(session.get('memoryKey'), question_text, answer_text)
+    conversation_id = session.get('conversationId')
+    if conversation_id is not None:
+        await sync_to_async(_append_runtime_conversation_messages, thread_sensitive=True)(conversation_id, question_text, answer_text)
+    else:
+        _remember_agent_exchange(session.get('memoryKey'), question_text, answer_text)
     try:
         await sync_to_async(_record_realtime_device_chat_log, thread_sensitive=True)(
             session,
@@ -692,6 +697,7 @@ async def _run_llm_session_body(
                 'agentApplicationName': session['agentApplicationName'],
                 'applicationId': session['applicationId'],
                 'applicationName': session['applicationName'],
+                'conversationId': conversation_id,
             },
         },
     )
@@ -1054,7 +1060,95 @@ def _split_llm_tts_segments(text: str, session: dict[str, Any]) -> list[str]:
     return segments
 
 
-def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[str, Any]:
+def _payload_conversation_id(payload: dict[str, Any] | None) -> int | None:
+    if not isinstance(payload, dict):
+        return None
+    raw_id = (
+        payload.get('conversationId')
+        or payload.get('conversation_id')
+        or payload.get('sessionId')
+        or payload.get('session_id')
+    )
+    if raw_id in (None, ''):
+        return None
+    try:
+        conversation_id = int(raw_id)
+    except (TypeError, ValueError):
+        raise RuntimeError('conversationId 必须是有效整数')
+    if conversation_id <= 0:
+        raise RuntimeError('conversationId 必须是有效整数')
+    return conversation_id
+
+
+def _runtime_conversation_user(agent_application, tenant):
+    if getattr(agent_application, 'created_by_id', None):
+        return agent_application.created_by
+
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+    user = User.objects.filter(membership__tenant=tenant).order_by('-membership__is_tenant_admin', 'id').first()
+    if user is not None:
+        return user
+
+    username = f'runtime_tenant_{tenant.id}'
+    user, _ = User.objects.get_or_create(username=username, defaults={'is_active': False})
+    return user
+
+
+def _resolve_runtime_conversation(device, agent_application, model, runtime_config: dict[str, Any], payload: dict[str, Any] | None):
+    from apps.ai_models.models import ChatConversation
+
+    conversation_id = _payload_conversation_id(payload)
+    if conversation_id is not None:
+        conversation = (
+            ChatConversation.objects
+            .select_related('llm_model__provider', 'application')
+            .filter(id=conversation_id, tenant=device.tenant, application=agent_application)
+            .first()
+        )
+        if conversation is None:
+            raise RuntimeError('conversationId 不存在或不属于当前设备智能体')
+        return conversation
+
+    user = _runtime_conversation_user(agent_application, device.tenant)
+    return ChatConversation.objects.create(
+        title=f'{runtime_config.get("name") or agent_application.name} 运行时会话',
+        user=user,
+        llm_model=model,
+        summary='',
+        system_prompt=runtime_config.get('system_prompt') or '',
+        temperature=runtime_config.get('temperature', 0.7),
+        max_tokens=runtime_config.get('max_tokens', 1000),
+        max_tokens_unlimited=runtime_config.get('max_tokens_unlimited', False),
+        application=agent_application,
+        tenant=device.tenant,
+    )
+
+
+def _append_runtime_conversation_messages(conversation_id: int | None, question_text: str, answer_text: str) -> None:
+    if conversation_id is None:
+        return
+
+    from apps.ai_models.models import ChatConversation, ChatMessage
+
+    conversation = ChatConversation.objects.filter(id=conversation_id).first()
+    if conversation is None:
+        return
+    ChatMessage.objects.create(
+        conversation=conversation,
+        role=ChatMessage.ROLE_USER,
+        content=question_text,
+    )
+    ChatMessage.objects.create(
+        conversation=conversation,
+        role=ChatMessage.ROLE_ASSISTANT,
+        content=answer_text,
+    )
+    conversation.save(update_fields=['updated_at'])
+
+
+def _prepare_device_llm_session(device_code: str, question_text: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
     from apps.devices.services.runtime import get_runtime_device
 
     device = get_runtime_device(device_code)
@@ -1063,26 +1157,6 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
     if agent_application is None or not agent_application.runtime_config().get('is_active'):
         raise RuntimeError('设备未绑定可用智能体')
     runtime_config = agent_application.runtime_config()
-
-    annotation = DeviceVoiceChatView._find_annotation(agent_application, question_text)
-    if annotation is not None:
-        now = timezone.now()
-        annotation.__class__.objects.filter(id=annotation.id).update(
-            hit_count=F('hit_count') + 1,
-            last_hit_at=now,
-        )
-        return {
-            'deviceCode': device.code,
-            'annotationAnswer': annotation.answer,
-            'memoryKey': _agent_memory_key(device, agent_application),
-            'agentApplicationId': agent_application.id,
-            'agentApplicationName': runtime_config.get('name') or agent_application.name,
-            'applicationId': device.application_id,
-            'applicationName': device.application.name if device.application else '',
-            'modelName': agent_application.llm_model.name if agent_application.llm_model else '',
-            'ttsFilterPunctuation': runtime_config.get('tts_filter_punctuation') or '',
-            'ttsFilterEmoji': runtime_config.get('tts_filter_emoji'),
-        }
 
     model = None
     runtime_model_id = runtime_config.get('llm_model_id')
@@ -1097,6 +1171,10 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
         model = settings.default_model if settings is not None else None
     if not llm_services.is_llm_model_effective_for_tenant(device.tenant, model):
         raise RuntimeError('请先为设备绑定智能体配置可用 LLM 模型')
+
+    conversation = None
+    if payload is not None:
+        conversation = _resolve_runtime_conversation(device, agent_application, model, runtime_config, payload)
 
     system_prompt = (
         str(runtime_config.get('system_prompt') or '').strip()
@@ -1119,8 +1197,22 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
     )
     if knowledge_context:
         messages.append({'role': 'system', 'content': knowledge_context})
-    messages.extend(_get_agent_memory(memory_key))
+    if conversation is not None:
+        messages.extend(
+            {'role': role, 'content': content}
+            for role, content in conversation.messages.order_by('created_at').values_list('role', 'content')
+        )
+    else:
+        messages.extend(_get_agent_memory(memory_key))
     messages.append({'role': 'user', 'content': question_text})
+
+    annotation = DeviceVoiceChatView._find_annotation(agent_application, question_text)
+    if annotation is not None:
+        now = timezone.now()
+        annotation.__class__.objects.filter(id=annotation.id).update(
+            hit_count=F('hit_count') + 1,
+            last_hit_at=now,
+        )
 
     return {
         'deviceCode': device.code,
@@ -1132,9 +1224,10 @@ def _prepare_device_llm_session(device_code: str, question_text: str) -> dict[st
         },
         'messages': messages,
         'memoryKey': memory_key,
+        'conversationId': conversation.id if conversation is not None else None,
         'temperature': runtime_config.get('temperature', 0.7),
         'maxTokens': None if runtime_config.get('max_tokens_unlimited') else runtime_config.get('max_tokens', 1000),
-        'annotationAnswer': None,
+        'annotationAnswer': annotation.answer if annotation is not None else None,
         'agentApplicationId': agent_application.id,
         'agentApplicationName': runtime_config.get('name') or agent_application.name,
         'applicationId': device.application_id,

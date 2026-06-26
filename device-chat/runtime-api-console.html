@@ -326,6 +326,7 @@
         ttsPlaybackContext: null,
         activeSection: 'device',
         lastRequest: null,
+        llmConversationId: query.get('conversationId') || query.get('conversation_id') || '',
         sockets: [],
         deviceStatusSocket: null,
         deviceStatusPingTimer: null,
@@ -412,8 +413,10 @@
       }
 
       async function connectDevice() {
+        const previousDeviceCode = state.deviceCode;
         state.apiBaseUrl = normalizeApiBase(els.apiBaseInput.value || DEFAULT_API_BASE);
         state.deviceCode = els.deviceCodeInput.value.trim();
+        if (previousDeviceCode && previousDeviceCode !== state.deviceCode) state.llmConversationId = '';
         els.apiBaseInput.value = state.apiBaseUrl;
         if (!state.deviceCode) throw new Error('请输入设备码');
         setStatus('正在上报设备...', 'warn');
@@ -1142,11 +1145,30 @@
         return pcm.buffer;
       }
 
+      function setLlmConversationId(conversationId) {
+        if (conversationId === undefined || conversationId === null || conversationId === '') return;
+        state.llmConversationId = String(conversationId);
+        const node = document.getElementById('llmWsConversationId');
+        if (node) node.textContent = state.llmConversationId || '未建立';
+      }
+
+      function resetLlmConversationId() {
+        state.llmConversationId = '';
+        const node = document.getElementById('llmWsConversationId');
+        if (node) node.textContent = '未建立';
+        const output = document.getElementById('llmWsOutput');
+        if (output) output.textContent = '已清空 conversationId，下一次提问会创建新会话。';
+        writeRequestDetail({ label: 'LLM WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { note: 'conversationId 已清空；下一次 llm.session.start 不携带 conversationId，后端会返回新的 conversationId。' }, note: '清空本页保存的 LLM 会话 ID，用于重新开始一段智能体多轮对话。' });
+      }
+
       function renderLlmWs() {
         const suggested = (((state.runtimeConfig || {}).agentApplication || {}).suggestedQuestions || [])[0] || '你好，请介绍一下你自己。';
-        els.contentBody.innerHTML = '<div class="field"><label for="llmWsText">问题文本</label><textarea id="llmWsText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmWsBtn" type="button">发送 llm.session.start</button></div><div class="grid"><article class="card"><h3>智能体回复</h3><div id="llmWsAnswer" class="code-chip">等待回复</div></article></div><div class="detail-block"><strong>事件输出</strong><pre id="llmWsOutput">等待请求</pre></div><div class="note">特殊说明：LLM WebSocket 是智能体问答接口，只负责文本问题到智能体回复；打断当前回答发送 llm.session.cancel，后端返回 llm.cancelled，但不会因为 cancel 主动断开 /ws/realtime/。ASR 和 TTS 分别使用自己的 WebSocket type。</div>';
+        const samplePayload = { deviceCode: state.deviceCode || '<deviceCode>', text: suggested, requestId: '<requestId>', traceId: '<traceId>' };
+        if (state.llmConversationId) samplePayload.conversationId = state.llmConversationId;
+        els.contentBody.innerHTML = '<div class="field"><label for="llmWsText">问题文本</label><textarea id="llmWsText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmWsBtn" type="button">发送 llm.session.start</button><button class="button secondary" id="llmWsResetBtn" type="button">新建会话</button></div><div class="grid"><article class="card"><h3>智能体回复</h3><div id="llmWsAnswer" class="code-chip">等待回复</div></article><article class="card"><h3>当前 conversationId</h3><div id="llmWsConversationId" class="code-chip">' + escapeHtml(state.llmConversationId || '未建立') + '</div></article></div><div class="detail-block"><strong>事件输出</strong><pre id="llmWsOutput">等待请求</pre></div><div class="note">特殊说明：LLM WebSocket 是智能体问答接口，只负责文本问题到智能体回复；首次 llm.session.start 不传 conversationId，服务端会在 llm.started/llm.done 返回 conversationId；本页会自动带到下一轮问题里。打断当前回答发送 llm.session.cancel，后端返回 llm.cancelled，但不会因为 cancel 主动断开 /ws/realtime/。ASR 和 TTS 分别使用自己的 WebSocket type。</div>';
         document.getElementById('llmWsBtn').addEventListener('click', sendLlmWs);
-        writeRequestDetail({ label: 'LLM WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { start: { type: 'llm.session.start', id: 'llm-session-<timestamp>', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: suggested, requestId: '<requestId>', traceId: '<traceId>' } }, cancel: { type: 'llm.session.cancel', id: 'llm-cancel-<timestamp>' } }, note: '统一实时通信入口，llm.session.start 按设备码解析绑定智能体，流式返回 llm.started、llm.delta，完成返回 llm.done；llm.session.cancel 打断当前回答并返回 llm.cancelled，但 WebSocket 连接仍可用于下一轮命令。' });
+        document.getElementById('llmWsResetBtn').addEventListener('click', resetLlmConversationId);
+        writeRequestDetail({ label: 'LLM WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { start: { type: 'llm.session.start', id: 'llm-session-<timestamp>', payload: samplePayload }, cancel: { type: 'llm.session.cancel', id: 'llm-cancel-<timestamp>' } }, note: '统一实时通信入口，llm.session.start 按设备码解析绑定智能体，流式返回 llm.started、llm.delta，完成返回 llm.done；llm.started/llm.done 会返回 conversationId，续聊时放回 payload.conversationId。llm.session.cancel 打断当前回答并返回 llm.cancelled，但 WebSocket 连接仍可用于下一轮命令。' });
       }
 
       async function sendLlmWs() {
@@ -1159,10 +1181,14 @@
         try {
           if (answerNode) answerNode.textContent = '';
           const answer = await runLlmWebSocket(text, {
+            onStarted: (payload) => {
+              setLlmConversationId(payload.conversationId);
+            },
             onDelta: (delta) => {
               if (answerNode) answerNode.textContent += delta;
             },
           });
+          setLlmConversationId(answer.conversationId);
           output.textContent = pretty(answer);
           if (answerNode && !answerNode.textContent) answerNode.textContent = answer.answerText || '-';
         } catch (error) {
@@ -1746,12 +1772,14 @@
         return new Promise((resolve, reject) => {
           const opts = options || {};
           const requestIds = makeRequestIds();
+          const startPayload = { deviceCode: state.deviceCode, text, requestId: requestIds.requestId, traceId: requestIds.traceId };
+          if (state.llmConversationId) startPayload.conversationId = state.llmConversationId;
           const command = {
             type: 'llm.session.start',
             id: 'llm-session-' + Date.now(),
-            payload: { deviceCode: state.deviceCode, text, requestId: requestIds.requestId, traceId: requestIds.traceId },
+            payload: startPayload,
           };
-          writeRequestDetail({ label: '智能体回答 LLM 阶段', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: command, note: 'RuntimeAgentRealtimeManager 内部发送 llm.session.start，按 deviceCode 解析智能体，流式返回 llm.started、llm.delta，完成时返回 llm.done；需要打断当前回答时发送 llm.session.cancel。' });
+          writeRequestDetail({ label: '智能体回答 LLM 阶段', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: command, note: 'RuntimeAgentRealtimeManager 内部发送 llm.session.start，按 deviceCode 解析智能体，首次由服务端创建 conversationId，后续请求带回 payload.conversationId 以复用同一对话历史；需要打断当前回答时发送 llm.session.cancel。' });
           const socket = new WebSocket(realtimeWsUrl());
           state.sockets.push(socket);
           let answerText = '';
@@ -1774,7 +1802,9 @@
             const payload = parseJson(event.data) || {};
             writeResponse({ ok: true, status: 'WS', body: payload });
             if (payload.type === 'llm.started') {
-              if (opts.onStarted) opts.onStarted(payload.payload || {});
+              const startedPayload = payload.payload || {};
+              setLlmConversationId(startedPayload.conversationId);
+              if (opts.onStarted) opts.onStarted(startedPayload);
             }
             if (payload.type === 'llm.delta') {
               const delta = String((payload.payload && payload.payload.text) || payload.text || '');
@@ -1789,6 +1819,7 @@
               settled = true;
               window.clearTimeout(timer);
               lastPayload = payload.payload || {};
+              setLlmConversationId(lastPayload.conversationId);
               if (!answerText) answerText = lastPayload.answerText || '';
               socket.close();
               resolve(Object.assign({}, lastPayload, { answerText }));
@@ -2550,14 +2581,14 @@
             ['phases.sendAsr', '发送 <code>asr.session.start</code>，然后发送 16k mono pcm_s16le 二进制音频。'],
             ['phases.asrPreview', '接收 <code>asr.transcript</code> 的实时预览；上游原始事件是 <code>conversation.item.input_audio_transcription.text</code>，预览语义为 <code>text + stash</code>。'],
             ['phases.asrDone', '接收 <code>asr.transcript final=true</code>/<code>asr.done</code>，使用纠错后的最终 <code>text</code> 作为问题；上游最终事件是 <code>conversation.item.input_audio_transcription.completed</code> 的 <code>transcript</code>。'],
-            ['phases.llmReply', '发送 <code>llm.session.start</code>，处理 <code>llm.started</code>/<code>llm.delta</code>/<code>llm.tts_segment</code>/<code>llm.done</code>；<code>llm.delta</code> 用于文字展示，<code>llm.tts_segment</code> 是后端维护好的可播报句子。'],
+            ['phases.llmReply', '发送 <code>llm.session.start</code>，首次不带 <code>conversationId</code>，收到服务端返回后续轮次带回 <code>payload.conversationId</code>；处理 <code>llm.started</code>/<code>llm.delta</code>/<code>llm.tts_segment</code>/<code>llm.done</code>。'],
             ['phases.ttsSpeak', '后端在同一 agent 会话内维护一个上游 TTS WebSocket，持续写入多个 <code>llm.tts_segment</code>，接收 binary PCM 后用 Web Audio 顺序播报。'],
             ['callbacks', '对外继续映射现有 <code>OnAiDialogueListener</code> 或本页实时播报/最终回放。'],
             ['dtoPackage', '安卓端建议将 command、payload、event DTO 统一放在 <code>bean/runtime/agent</code>。'],
           ],
           response: [
             ['ASR 阶段', '<code>asr.ready</code>、<code>asr.transcript</code>、<code>asr.done</code>。实时预览看 <code>final=false</code>，最终问题看 <code>final=true</code>。'],
-            ['LLM 阶段', '<code>llm.started</code>、<code>llm.delta</code>、<code>llm.tts_segment</code>、<code>llm.done</code>。'],
+            ['LLM 阶段', '<code>llm.started</code>、<code>llm.delta</code>、<code>llm.tts_segment</code>、<code>llm.done</code>；<code>llm.started.payload.conversationId</code> 是后续问题要带回的会话 ID。'],
             ['TTS 阶段', '<code>tts.ready</code>、binary PCM、<code>tts.done</code>；一个 agent 会话内只应出现一次 ready/done，中间可有多个可播报片段对应的 PCM。'],
             ['打断播报', '停止本地 Web Audio 队列，并发送 <code>agent.session.cancel</code> 取消当前 agent 会话。'],
             ['停止', '才 cancel/abort 当前 LLM/TTS 或关闭当前流。'],
@@ -2580,6 +2611,7 @@
             ['type', '命令类型，例如 asr.session.start、asr.session.finish、asr.session.cancel、llm.session.start、llm.session.cancel、tts.session.start、tts.session.cancel。'],
             ['id', '客户端生成的 session/request id。'],
             ['payload.deviceCode', '设备运行时必填；用于解析设备、公司和绑定智能体。'],
+            ['payload.conversationId', 'LLM 续聊可选；第一次不传，使用 <code>llm.started</code>/<code>llm.done</code> 返回的值继续同一对话。'],
             ['payload.token / tenantId', '后台登录态页面使用；普通公司账号会被限制在自己所属公司，不能通过 tenantId 越权。'],
             ['payload.requestId / traceId', '可选；链路追踪。'],
           ],
@@ -2589,7 +2621,7 @@
             ['asr.transcript final=true', '最终识别结果。对应上游 <code>conversation.item.input_audio_transcription.completed</code> 的 <code>transcript</code>；安卓端应使用这个最终 <code>text</code> 进入 LLM。'],
             ['asr.transcript 字段', '<code>text</code> 为替换词处理后的文本，<code>originalText</code> 为原始识别文本，<code>replacementApplied</code> 表示是否命中替换词，<code>sourceEventType</code> 标明上游原始事件。若返回 <code>stash</code>，实时展示请拼 <code>text + stash</code>。'],
             ['asr.done', 'ASR 会话结束；通常在最终 transcript 之后出现。'],
-            ['llm.started / llm.delta / llm.tts_segment / llm.done', 'LLM 开始、文字增量、可播报句子和完成事件；llm.done.payload.answerText 是完整回复。'],
+            ['llm.started / llm.delta / llm.tts_segment / llm.done', 'LLM 开始、文字增量、可播报句子和完成事件；llm.started/llm.done payload 带 conversationId，llm.done.payload.answerText 是完整回复。'],
             ['tts.ready / audio/pcm / tts.done', 'TTS 就绪、二进制 PCM 分片和完成事件；tts.ready 带 sampleRate/voice。'],
             ['*.cancelled', '会话取消事件，只表示当前 ASR/LLM/TTS session 被取消；WebSocket 不应因为 cancel 被动断开，可继续发下一轮命令。'],
             ['close / disconnect', '客户端主动关闭 WebSocket 才会彻底结束连接；在线状态连接断开还会触发 offline。'],

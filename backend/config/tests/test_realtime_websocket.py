@@ -4,7 +4,7 @@ import asyncio
 import base64
 import json
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 
 from asgiref.sync import async_to_sync
 from asgiref.testing import ApplicationCommunicator
@@ -14,7 +14,7 @@ from django.test import TestCase
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import AgentApplication, LLMModel, LLMProvider, TenantLLMModelGrant
+from apps.ai_models.models import AgentApplication, ChatConversation, ChatMessage, LLMModel, LLMProvider, TenantLLMModelGrant
 from apps.devices.models import Device, DeviceApplication, DeviceChatLog
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
@@ -1386,6 +1386,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                             'agentApplicationName': 'Runtime Agent',
                             'applicationId': device_application.id,
                             'applicationName': 'Runtime LLM App',
+                            'conversationId': ANY,
                         },
                     },
                 )
@@ -1438,6 +1439,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                             'agentApplicationName': 'Runtime Agent',
                             'applicationId': device_application.id,
                             'applicationName': 'Runtime LLM App',
+                            'conversationId': ANY,
                         },
                     },
                 )
@@ -1464,6 +1466,117 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         self.assertEqual(chat_log.request_id, 'req-llm-1')
         self.assertEqual(chat_log.trace_id, 'trace-llm-1')
         self.assertEqual(chat_log.model_name, 'runtime-model')
+
+    def test_unified_realtime_websocket_reuses_conversation_id_for_device_llm_history(self):
+        provider = LLMProvider.objects.create(
+            name='Runtime Conversation Provider',
+            provider_type='openai',
+            api_base_url='https://llm.example/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='runtime-conversation-model', is_active=True)
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        agent_application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime Conversation Agent',
+            llm_model=model,
+            system_prompt='你是有多轮记忆的设备助手。',
+            created_by=self.user,
+        )
+        device_application = DeviceApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime Conversation App',
+            code='runtime-conversation-app',
+            agent_application=agent_application,
+        )
+        Device.objects.create(
+            tenant=self.tenant,
+            application=device_application,
+            name='Runtime Conversation Device',
+            code='ANDROID-LLM-CONV-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+        captured_messages = []
+        answers = ['第一轮回答。', '第二轮回答。']
+        conversation_ids = []
+
+        async def stream_answer(**kwargs):
+            captured_messages.append(kwargs['messages'])
+            yield answers[len(captured_messages) - 1]
+
+        async def run_websocket():
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            response = await communicator.receive_output(timeout=1)
+            self.assertEqual(response['type'], 'websocket.accept')
+
+            async def send_question(command_id, text, conversation_id=None):
+                payload = {
+                    'deviceCode': 'ANDROID-LLM-CONV-001',
+                    'text': text,
+                    'requestId': f'req-{command_id}',
+                    'traceId': f'trace-{command_id}',
+                }
+                if conversation_id is not None:
+                    payload['conversationId'] = conversation_id
+                await communicator.send_input({
+                    'type': 'websocket.receive',
+                    'text': json.dumps({
+                        'type': 'llm.session.start',
+                        'id': command_id,
+                        'payload': payload,
+                    }),
+                })
+                started = json.loads((await communicator.receive_output(timeout=1))['text'])
+                delta = json.loads((await communicator.receive_output(timeout=1))['text'])
+                tts_segment = json.loads((await communicator.receive_output(timeout=1))['text'])
+                done = json.loads((await communicator.receive_output(timeout=1))['text'])
+                self.assertEqual(started['type'], 'llm.started')
+                self.assertEqual(delta['type'], 'llm.delta')
+                self.assertEqual(tts_segment['type'], 'llm.tts_segment')
+                self.assertEqual(done['type'], 'llm.done')
+                self.assertEqual(started['payload']['conversationId'], done['payload']['conversationId'])
+                return started['payload']['conversationId']
+
+            with patch('apps.ai_models.llm_services.stream_llm_chat_completion', side_effect=stream_answer):
+                conversation_id = await send_question('llm-conv-1', '第一问')
+                conversation_ids.append(conversation_id)
+                reused_conversation_id = await send_question('llm-conv-2', '第二问', conversation_id)
+
+            self.assertEqual(reused_conversation_id, conversation_ids[0])
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
+        self.assertEqual(ChatConversation.objects.count(), 1)
+        conversation = ChatConversation.objects.get()
+        self.assertEqual(conversation.id, conversation_ids[0])
+        self.assertEqual(conversation.application_id, agent_application.id)
+        self.assertEqual(conversation.user_id, self.user.id)
+        self.assertEqual(captured_messages[1][1], {'role': ChatMessage.ROLE_USER, 'content': '第一问'})
+        self.assertEqual(captured_messages[1][2], {'role': ChatMessage.ROLE_ASSISTANT, 'content': '第一轮回答。'})
+        self.assertEqual(captured_messages[1][3], {'role': ChatMessage.ROLE_USER, 'content': '第二问'})
+        self.assertEqual(
+            list(conversation.messages.order_by('created_at').values_list('role', 'content')),
+            [
+                (ChatMessage.ROLE_USER, '第一问'),
+                (ChatMessage.ROLE_ASSISTANT, '第一轮回答。'),
+                (ChatMessage.ROLE_USER, '第二问'),
+                (ChatMessage.ROLE_ASSISTANT, '第二轮回答。'),
+            ],
+        )
 
     def test_unified_realtime_websocket_runs_agent_text_session_with_tts(self):
         provider = LLMProvider.objects.create(
@@ -1591,7 +1704,12 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
 
         from config import realtime
 
-        next_session = realtime._prepare_device_llm_session('ANDROID-AGENT-TEXT-001', '我刚才问了什么？')
+        conversation = ChatConversation.objects.get(application=agent_application)
+        next_session = realtime._prepare_device_llm_session(
+            'ANDROID-AGENT-TEXT-001',
+            '我刚才问了什么？',
+            {'conversationId': conversation.id},
+        )
         self.assertIn({'role': 'user', 'content': '介绍一下展厅'}, next_session['messages'])
         self.assertIn({'role': 'assistant', 'content': '这是第一段。这是第二段。'}, next_session['messages'])
         self.assertEqual(next_session['messages'][-1], {'role': 'user', 'content': '我刚才问了什么？'})
@@ -1854,6 +1972,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                             'agentApplicationName': 'Cancelable Agent',
                             'applicationId': device_application.id,
                             'applicationName': 'Cancelable LLM App',
+                            'conversationId': ANY,
                         },
                     },
                 )
