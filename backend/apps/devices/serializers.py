@@ -403,6 +403,7 @@ class DeviceChatLogSerializer(serializers.ModelSerializer):
     applicationName = serializers.CharField(source='application.name', read_only=True, default='')
     agentApplicationId = serializers.IntegerField(source='agent_application_id', read_only=True)
     agentApplicationName = serializers.CharField(source='agent_application.name', read_only=True, default='')
+    conversationId = serializers.IntegerField(source='conversation_id', read_only=True)
     deviceName = serializers.CharField(source='device.name', read_only=True, default='')
     questionText = serializers.CharField(source='question_text', read_only=True)
     answerText = serializers.CharField(source='answer_text', read_only=True)
@@ -423,6 +424,7 @@ class DeviceChatLogSerializer(serializers.ModelSerializer):
             'applicationName',
             'agentApplicationId',
             'agentApplicationName',
+            'conversationId',
             'deviceName',
             'questionText',
             'answerText',

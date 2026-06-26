@@ -73,6 +73,7 @@ def device_chat_logs_queryset(params: Mapping | None = None) -> QuerySet[DeviceC
         'tenant',
         'application',
         'agent_application',
+        'conversation',
         'device',
     ).order_by('-created_at', '-id')
     tenant_id = _param(params, 'tenantId')

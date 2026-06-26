@@ -66,6 +66,7 @@ class RealtimeConnection:
         self.agent_request_id = None
         self.agent_trace_id = None
         self.agent_latest_text = ''
+        self.agent_conversation_id = None
         self.agent_tts_queue = None
         self.agent_tts_worker = None
 
@@ -132,6 +133,7 @@ class RealtimeConnection:
         self.agent_request_id = None
         self.agent_trace_id = None
         self.agent_latest_text = ''
+        self.agent_conversation_id = None
         self.agent_tts_queue = None
         self.agent_tts_worker = None
 
@@ -504,6 +506,7 @@ async def _handle_agent_session_start(send, connection: RealtimeConnection, mess
     connection.agent_request_id = request_id
     connection.agent_trace_id = trace_id
     connection.agent_latest_text = input_text
+    connection.agent_conversation_id = payload.get('conversationId') or payload.get('conversation_id')
     connection.agent_tts_queue = asyncio.Queue()
     connection.agent_tts_worker = asyncio.create_task(
         _agent_tts_worker(send, connection, command_id, device_code, request_id, trace_id, payload),
@@ -785,6 +788,7 @@ def _record_realtime_device_chat_log(
         request_id=request_id,
         trace_id=trace_id,
         model_name=str(session.get('modelName') or ''),
+        conversation_id=session.get('conversationId'),
     )
 
 
@@ -942,6 +946,8 @@ async def _run_agent_llm_and_finish(send, connection: RealtimeConnection, questi
             'traceId': trace_id,
         },
     }
+    if connection.agent_conversation_id not in (None, ''):
+        message['payload']['conversationId'] = connection.agent_conversation_id
 
     try:
         answer_text = await _run_llm_session_body(

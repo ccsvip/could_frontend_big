@@ -1565,6 +1565,13 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         self.assertEqual(conversation.id, conversation_ids[0])
         self.assertEqual(conversation.application_id, agent_application.id)
         self.assertEqual(conversation.user_id, self.user.id)
+        self.assertEqual(
+            list(DeviceChatLog.objects.order_by('created_at').values_list('question_text', 'conversation_id')),
+            [
+                ('第一问', conversation.id),
+                ('第二问', conversation.id),
+            ],
+        )
         self.assertEqual(captured_messages[1][1], {'role': ChatMessage.ROLE_USER, 'content': '第一问'})
         self.assertEqual(captured_messages[1][2], {'role': ChatMessage.ROLE_ASSISTANT, 'content': '第一轮回答。'})
         self.assertEqual(captured_messages[1][3], {'role': ChatMessage.ROLE_USER, 'content': '第二问'})
@@ -1724,6 +1731,126 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         self.assertEqual(chat_log.request_id, 'req-agent-1')
         self.assertEqual(chat_log.trace_id, 'trace-agent-1')
         self.assertEqual(chat_log.model_name, 'agent-text-model')
+
+    def test_unified_realtime_websocket_reuses_conversation_id_for_agent_text_history(self):
+        provider = LLMProvider.objects.create(
+            name='Runtime Agent Conversation Provider',
+            provider_type='openai',
+            api_base_url='https://api.groq.com/openai/v1',
+            api_key='test-only-api-key',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='agent-conversation-model', is_active=True)
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        agent_application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime Agent Conversation',
+            llm_model=model,
+            system_prompt='你是设备助手。',
+            created_by=self.user,
+        )
+        device_application = DeviceApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime Agent Conversation App',
+            code='runtime-agent-conversation-app',
+            agent_application=agent_application,
+        )
+        Device.objects.create(
+            tenant=self.tenant,
+            application=device_application,
+            name='Runtime Agent Conversation Device',
+            code='ANDROID-AGENT-CONV-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+        captured_messages = []
+        answers = ['第一轮三合一回答。', '第二轮三合一回答。']
+        conversation_ids = []
+
+        async def stream_answer(**kwargs):
+            captured_messages.append(kwargs['messages'])
+            yield answers[len(captured_messages) - 1]
+
+        async def fake_tts_stream(*args, **kwargs):
+            return None
+
+        async def run_websocket():
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            response = await communicator.receive_output(timeout=1)
+            self.assertEqual(response['type'], 'websocket.accept')
+
+            async def send_agent_question(command_id, text, conversation_id=None):
+                payload = {
+                    'deviceCode': 'ANDROID-AGENT-CONV-001',
+                    'text': text,
+                    'requestId': f'req-{command_id}',
+                    'traceId': f'trace-{command_id}',
+                }
+                if conversation_id is not None:
+                    payload['conversationId'] = conversation_id
+                await communicator.send_input({
+                    'type': 'websocket.receive',
+                    'text': json.dumps({
+                        'type': 'agent.session.start',
+                        'id': command_id,
+                        'payload': payload,
+                    }),
+                })
+                events = []
+                for _ in range(8):
+                    message = await communicator.receive_output(timeout=1)
+                    if 'text' not in message:
+                        continue
+                    event = json.loads(message['text'])
+                    events.append(event)
+                    if event['type'] == 'agent.done':
+                        break
+                self.assertEqual(events[0]['type'], 'agent.started')
+                started = next(event for event in events if event['type'] == 'llm.started')
+                done = next(event for event in events if event['type'] == 'llm.done')
+                self.assertEqual(started['payload']['conversationId'], done['payload']['conversationId'])
+                self.assertEqual(events[-1]['type'], 'agent.done')
+                return started['payload']['conversationId']
+
+            with (
+                patch('apps.ai_models.llm_services.stream_llm_chat_completion', side_effect=stream_answer),
+                patch('config.realtime._run_agent_tts_stream', side_effect=fake_tts_stream),
+            ):
+                conversation_id = await send_agent_question('agent-conv-1', '第一问')
+                conversation_ids.append(conversation_id)
+                reused_conversation_id = await send_agent_question('agent-conv-2', '第二问', conversation_id)
+
+            self.assertEqual(reused_conversation_id, conversation_ids[0])
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
+        self.assertEqual(ChatConversation.objects.count(), 1)
+        conversation = ChatConversation.objects.get()
+        self.assertEqual(conversation.id, conversation_ids[0])
+        self.assertEqual(conversation.application_id, agent_application.id)
+        self.assertEqual(conversation.user_id, self.user.id)
+        self.assertEqual(captured_messages[1][1], {'role': ChatMessage.ROLE_USER, 'content': '第一问'})
+        self.assertEqual(captured_messages[1][2], {'role': ChatMessage.ROLE_ASSISTANT, 'content': '第一轮三合一回答。'})
+        self.assertEqual(captured_messages[1][3], {'role': ChatMessage.ROLE_USER, 'content': '第二问'})
+        self.assertEqual(
+            list(DeviceChatLog.objects.order_by('created_at').values_list('question_text', 'conversation_id')),
+            [
+                ('第一问', conversation.id),
+                ('第二问', conversation.id),
+            ],
+        )
 
     def test_unified_realtime_websocket_runs_agent_voice_session_with_tts(self):
         provider = LLMProvider.objects.create(

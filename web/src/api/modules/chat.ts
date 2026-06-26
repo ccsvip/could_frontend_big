@@ -198,6 +198,7 @@ export type ChatConversationListQuery = {
   page?: number;
   pageSize?: number;
   keyword?: string;
+  excludeDeviceRuntime?: boolean;
 };
 
 const buildConversationListParams = (query?: ChatConversationListQuery) => ({
@@ -205,6 +206,7 @@ const buildConversationListParams = (query?: ChatConversationListQuery) => ({
   page: query?.page,
   page_size: query?.pageSize,
   keyword: query?.keyword || undefined,
+  excludeDeviceRuntime: query?.excludeDeviceRuntime || undefined,
 });
 
 export const fetchConversations = async (params?: ChatConversationListQuery) => {

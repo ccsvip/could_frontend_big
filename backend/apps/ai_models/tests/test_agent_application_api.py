@@ -14,6 +14,7 @@ from apps.ai_models.models import (
     TenantLLMModelGrant,
     TenantLLMSettings,
 )
+from apps.devices.models import DeviceApplication, DeviceChatLog
 from apps.knowledge_base.models import KnowledgeDocument
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
@@ -550,6 +551,39 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         ids = [item['id'] for item in response.data['results']]
         self.assertIn(conv1.id, ids)
         self.assertNotIn(conv2.id, ids)
+
+    def test_list_conversations_can_exclude_device_runtime_conversations(self):
+        self.grant_permissions('agent_applications.view', 'ai_models.chat.view')
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(tenant=self.tenant, created_by=self.user, name='Runtime App')
+        web_conversation = ChatConversation.objects.create(user=self.user, application=application, tenant=self.tenant, title='网页调试会话')
+        runtime_conversation = ChatConversation.objects.create(user=self.user, application=application, tenant=self.tenant, title='运行时会话')
+        device_application = DeviceApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime Device App',
+            code='runtime-device-app',
+            agent_application=application,
+        )
+        DeviceChatLog.objects.create(
+            tenant=self.tenant,
+            application=device_application,
+            agent_application=application,
+            conversation=runtime_conversation,
+            code='ANDROID-RUNTIME-001',
+            source=DeviceChatLog.SOURCE_WEBSOCKET,
+            question_text='设备问题',
+            answer_text='设备回答',
+        )
+
+        response = self.client.get(
+            '/api/v1/ai-models/chat/conversations/',
+            {'application': application.id, 'excludeDeviceRuntime': 'true'},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        ids = [item['id'] for item in response.data['results']]
+        self.assertIn(web_conversation.id, ids)
+        self.assertNotIn(runtime_conversation.id, ids)
 
     def test_knowledge_base_retrieval_and_injection(self):
         from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context, inject_knowledge_context

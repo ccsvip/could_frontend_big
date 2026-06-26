@@ -61,7 +61,8 @@ import {
   theme,
   Empty,
   Pagination,
-  Popconfirm
+  Popconfirm,
+  Segmented
 } from 'antd';
 
 import {
@@ -115,67 +116,94 @@ type LogConversationItem = {
   detail?: ChatConversationDetail;
 };
 
+type LogConversationCategory = 'chat' | 'device';
+
 const PAGE_SIZE = 10;
 const LOG_CONVERSATION_PAGE_SIZE = 100;
 const DEFAULT_TEMPERATURE = 0.7;
 const DEFAULT_MAX_TOKENS = 1000;
 const DEFAULT_TTS_FILTER_PUNCTUATION = '。！？!?；;、';
 
-const toDeviceChatConversationDetail = (log: DeviceChatLogRecord): ChatConversationDetail => {
-  const conversationId = -log.id;
-  const title = `${log.deviceName || log.code || '设备'}运行时问答`;
+const toDeviceChatConversationDetail = (logs: DeviceChatLogRecord[]): ChatConversationDetail => {
+  const orderedLogs = [...logs].sort((a, b) => {
+    const byTime = dayjs(a.createdAt).valueOf() - dayjs(b.createdAt).valueOf();
+    return byTime || a.id - b.id;
+  });
+  const firstLog = orderedLogs[0];
+  const lastLog = orderedLogs[orderedLogs.length - 1];
+  const conversationId = firstLog.conversationId ? -firstLog.conversationId : -firstLog.id;
+  const title = `${firstLog.deviceName || firstLog.code || '设备'} 设备运行时`;
+  const messages = orderedLogs.flatMap<ChatMessage>((log) => [
+    {
+      id: log.id * 2,
+      conversationId,
+      role: 'user',
+      content: log.questionText,
+      feedback: 'none',
+      created_at: log.createdAt,
+    },
+    {
+      id: log.id * 2 + 1,
+      conversationId,
+      role: 'assistant',
+      content: log.answerText,
+      feedback: 'none',
+      created_at: log.createdAt,
+    },
+  ]);
+
   return {
     id: conversationId,
     title,
-    applicationId: log.agentApplicationId,
+    applicationId: firstLog.agentApplicationId,
     llmModelId: null,
-    llmModelName: log.modelName,
-    llmModelDisplayName: log.modelName,
+    llmModelName: lastLog.modelName,
+    llmModelDisplayName: lastLog.modelName,
     llmProviderName: null,
-    summary: log.questionText,
+    summary: firstLog.questionText,
     systemPrompt: '',
     temperature: 0,
     maxTokens: 0,
     maxTokensUnlimited: false,
-    messages: [
-      {
-        id: log.id * 2,
-        conversationId,
-        role: 'user',
-        content: log.questionText,
-        feedback: 'none',
-        created_at: log.createdAt,
-      },
-      {
-        id: log.id * 2 + 1,
-        conversationId,
-        role: 'assistant',
-        content: log.answerText,
-        feedback: 'none',
-        created_at: log.createdAt,
-      },
-    ],
-    created_at: log.createdAt,
-    updated_at: log.createdAt,
+    messages,
+    created_at: firstLog.createdAt,
+    updated_at: lastLog.createdAt,
   };
 };
 
-const toDeviceChatLogItem = (log: DeviceChatLogRecord): LogConversationItem => {
-  const detail = toDeviceChatConversationDetail(log);
+const toDeviceChatLogItem = (logs: DeviceChatLogRecord[]): LogConversationItem => {
+  const orderedLogs = [...logs].sort((a, b) => {
+    const byTime = dayjs(a.createdAt).valueOf() - dayjs(b.createdAt).valueOf();
+    return byTime || a.id - b.id;
+  });
+  const firstLog = orderedLogs[0];
+  const lastLog = orderedLogs[orderedLogs.length - 1];
+  const detail = toDeviceChatConversationDetail(orderedLogs);
   return {
-    key: `device-${log.id}`,
+    key: firstLog.conversationId ? `device-conversation-${firstLog.conversationId}` : `device-${firstLog.id}`,
     source: 'device',
-    id: log.id,
+    id: firstLog.conversationId ? -firstLog.conversationId : firstLog.id,
     title: detail.title,
-    summary: log.questionText,
-    lastMessage: log.answerText,
-    messageCount: 2,
-    llmModelName: log.modelName,
-    llmModelDisplayName: log.modelName || '运行时设备',
-    created_at: log.createdAt,
-    updated_at: log.createdAt,
+    summary: firstLog.questionText,
+    lastMessage: lastLog.answerText,
+    messageCount: detail.messages.length,
+    llmModelName: lastLog.modelName,
+    llmModelDisplayName: lastLog.modelName || '运行时设备',
+    created_at: firstLog.createdAt,
+    updated_at: lastLog.createdAt,
     detail,
   };
+};
+
+const toDeviceChatLogItems = (logs: DeviceChatLogRecord[]): LogConversationItem[] => {
+  const groups = new Map<string, DeviceChatLogRecord[]>();
+  for (const log of logs) {
+    const key = log.conversationId ? `conversation-${log.conversationId}` : `log-${log.id}`;
+    const group = groups.get(key) || [];
+    group.push(log);
+    groups.set(key, group);
+  }
+  return Array.from(groups.values()).map(toDeviceChatLogItem);
 };
 
 const toChatConversationItem = (conversation: ChatConversationRecord): LogConversationItem => ({
@@ -183,6 +211,10 @@ const toChatConversationItem = (conversation: ChatConversationRecord): LogConver
   key: `chat-${conversation.id}`,
   source: 'chat',
 });
+
+const getLogConversationDetailId = (conversation: LogConversationItem) => (
+  conversation.source === 'device' && conversation.id > 0 ? -conversation.id : conversation.id
+);
 
 echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer]);
 
@@ -455,6 +487,7 @@ export const ApplicationManagementPage = () => {
   const [logConversations, setLogConversations] = useState<LogConversationItem[]>([]);
   const [logConversationsLoading, setLogConversationsLoading] = useState(false);
   const [logConversationTotal, setLogConversationTotal] = useState(0);
+  const [logConversationCategory, setLogConversationCategory] = useState<LogConversationCategory>('chat');
   const [selectedLogConversation, setSelectedLogConversation] = useState<ChatConversationDetail | null>(null);
   const [selectedLogConversationLoading, setSelectedLogConversationLoading] = useState(false);
 
@@ -736,22 +769,29 @@ export const ApplicationManagementPage = () => {
     if (!selectedApplicationId) return;
     setLogConversationsLoading(true);
     try {
-      const [chatData, deviceLogData] = await Promise.all([
-        fetchConversations({
+      if (logConversationCategory === 'chat') {
+        const chatData = await fetchConversations({
           application: selectedApplicationId,
           pageSize: LOG_CONVERSATION_PAGE_SIZE,
-        }),
-        fetchDeviceChatLogs({
-          agentApplicationId: selectedApplicationId,
-          pageSize: LOG_CONVERSATION_PAGE_SIZE,
-        }),
-      ]);
-      const items = [
-        ...chatData.results.map(toChatConversationItem),
-        ...deviceLogData.results.map(toDeviceChatLogItem),
-      ].sort((a, b) => dayjs(b.updated_at).valueOf() - dayjs(a.updated_at).valueOf());
+          excludeDeviceRuntime: true,
+        });
+        const items = chatData.results.map(toChatConversationItem);
+        setLogConversations(items);
+        setLogConversationTotal(chatData.count);
+        if (items.length > 0 && !selectedLogConversation) {
+          void loadSelectedLogConversation(items[0]);
+        }
+        return;
+      }
+
+      const deviceLogData = await fetchDeviceChatLogs({
+        agentApplicationId: selectedApplicationId,
+        pageSize: LOG_CONVERSATION_PAGE_SIZE,
+      });
+      const deviceLogItems = toDeviceChatLogItems(deviceLogData.results);
+      const items = deviceLogItems.sort((a, b) => dayjs(b.updated_at).valueOf() - dayjs(a.updated_at).valueOf());
       setLogConversations(items);
-      setLogConversationTotal(chatData.count + deviceLogData.count);
+      setLogConversationTotal(deviceLogItems.length);
       if (items.length > 0 && !selectedLogConversation) {
         void loadSelectedLogConversation(items[0]);
       }
@@ -760,7 +800,7 @@ export const ApplicationManagementPage = () => {
     } finally {
       setLogConversationsLoading(false);
     }
-  }, [selectedApplicationId, selectedLogConversation]);
+  }, [logConversationCategory, selectedApplicationId, selectedLogConversation]);
 
   const loadSelectedLogConversation = async (conversation: LogConversationItem) => {
     setSelectedLogConversationLoading(true);
@@ -776,6 +816,13 @@ export const ApplicationManagementPage = () => {
     } finally {
       setSelectedLogConversationLoading(false);
     }
+  };
+
+  const handleLogConversationCategoryChange = (value: LogConversationCategory) => {
+    setLogConversationCategory(value);
+    setLogConversations([]);
+    setLogConversationTotal(0);
+    setSelectedLogConversation(null);
   };
 
   const loadAnnotations = useCallback(async () => {
@@ -2402,9 +2449,21 @@ export const ApplicationManagementPage = () => {
       <div className="grid grid-cols-1 grid-rows-[minmax(0,_1fr)_minmax(0,_1fr)] xl:grid-cols-[380px_minmax(0,_1fr)] xl:grid-rows-1 gap-4 h-full min-h-0 overflow-hidden">
         {/* Conversation List */}
         <Card variant="borderless" className="flex flex-col bg-white border border-slate-200/50 shadow-sm h-full min-h-0 overflow-hidden" styles={{ body: { padding: '16px', height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' } }}>
-          <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-3 shrink-0">
-            <div className="text-base font-bold text-slate-800">历史会话记录</div>
-            <Tag color="default">{logConversationTotal || logConversations.length} 会话</Tag>
+          <div className="flex flex-col gap-3 border-b border-slate-100 pb-3 mb-3 shrink-0">
+            <div className="flex justify-between items-center">
+              <div className="text-base font-bold text-slate-800">历史会话记录</div>
+              <Tag color="default">{logConversationTotal || logConversations.length} 会话</Tag>
+            </div>
+            <Segmented<LogConversationCategory>
+              block
+              size="small"
+              value={logConversationCategory}
+              options={[
+                { label: '网页调试', value: 'chat' },
+                { label: '设备运行时', value: 'device' },
+              ]}
+              onChange={handleLogConversationCategoryChange}
+            />
           </div>
 
           <div className="flex-1 overflow-y-auto overscroll-contain pr-1 flex flex-col gap-1.5 custom-scrollbar min-h-0">
@@ -2414,7 +2473,7 @@ export const ApplicationManagementPage = () => {
                   key={conv.key}
                   onClick={() => void loadSelectedLogConversation(conv)}
                   className={`py-3 px-3 cursor-pointer rounded-xl transition-all duration-200 border ${
-                    selectedLogConversation?.id === (conv.source === 'device' ? -conv.id : conv.id)
+                    selectedLogConversation?.id === getLogConversationDetailId(conv)
                       ? 'bg-teal-50/50 border-teal-200 shadow-sm'
                       : 'border-transparent hover:bg-slate-50'
                   }`}

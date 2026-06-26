@@ -153,6 +153,7 @@ export type DeviceChatLogRecord = {
   applicationName: string;
   agentApplicationId: number | null;
   agentApplicationName: string;
+  conversationId: number | null;
   deviceName: string;
   questionText: string;
   answerText: string;

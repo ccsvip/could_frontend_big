@@ -1165,10 +1165,10 @@
         const suggested = (((state.runtimeConfig || {}).agentApplication || {}).suggestedQuestions || [])[0] || '你好，请介绍一下你自己。';
         const samplePayload = { deviceCode: state.deviceCode || '<deviceCode>', text: suggested, requestId: '<requestId>', traceId: '<traceId>' };
         if (state.llmConversationId) samplePayload.conversationId = state.llmConversationId;
-        els.contentBody.innerHTML = '<div class="field"><label for="llmWsText">问题文本</label><textarea id="llmWsText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmWsBtn" type="button">发送 llm.session.start</button><button class="button secondary" id="llmWsResetBtn" type="button">新建会话</button></div><div class="grid"><article class="card"><h3>智能体回复</h3><div id="llmWsAnswer" class="code-chip">等待回复</div></article><article class="card"><h3>当前 conversationId</h3><div id="llmWsConversationId" class="code-chip">' + escapeHtml(state.llmConversationId || '未建立') + '</div></article></div><div class="detail-block"><strong>事件输出</strong><pre id="llmWsOutput">等待请求</pre></div><div class="note">特殊说明：LLM WebSocket 是智能体问答接口，只负责文本问题到智能体回复；首次 llm.session.start 不传 conversationId，服务端会在 llm.started/llm.done 返回 conversationId；本页会自动带到下一轮问题里。打断当前回答发送 llm.session.cancel，后端返回 llm.cancelled，但不会因为 cancel 主动断开 /ws/realtime/。ASR 和 TTS 分别使用自己的 WebSocket type。</div>';
+        els.contentBody.innerHTML = '<div class="field"><label for="llmWsText">问题文本</label><textarea id="llmWsText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmWsBtn" type="button">发送 llm.session.start</button><button class="button secondary" id="llmWsResetBtn" type="button">新建会话</button></div><div class="grid"><article class="card"><h3>智能体回复</h3><div id="llmWsAnswer" class="code-chip">等待回复</div></article><article class="card"><h3>当前 conversationId</h3><div id="llmWsConversationId" class="code-chip">' + escapeHtml(state.llmConversationId || '未建立') + '</div></article></div><div class="detail-block"><strong>安卓接入要点</strong><ul><li><code>conversationId</code> 是服务端创建的数字会话 ID，安卓首问不要传这个字段。</li><li>收到 <code>llm.started.payload.conversationId</code> 后立即保存；如果只在完成时保存，也可以读取 <code>llm.done.payload.conversationId</code>。</li><li>用户继续追问同一个智能体时，把保存的值放回 <code>payload.conversationId</code>，后端才会复用同一段历史。</li><li>打断/取消只发送 <code>llm.session.cancel</code>，不要清空 <code>conversationId</code>，下一问仍然带同一个值。</li><li>只有用户点击“新建会话”、切换设备、切换智能体，或业务明确要重开上下文时，才清空本地保存的 <code>conversationId</code>。</li></ul></div><div class="detail-block"><strong>LLM 多轮请求/响应示例</strong><pre>' + escapeHtml(JSON.stringify({ firstRequest: { type: 'llm.session.start', id: 'llm-session-1', payload: { deviceCode: state.deviceCode || 'ANDROID-001', text: '第一个问题', requestId: 'req-001', traceId: 'trace-001' } }, firstStarted: { type: 'llm.started', id: 'llm-session-1', payload: { deviceCode: state.deviceCode || 'ANDROID-001', questionText: '第一个问题', conversationId: 123 } }, firstDone: { type: 'llm.done', id: 'llm-session-1', payload: { deviceCode: state.deviceCode || 'ANDROID-001', questionText: '第一个问题', answerText: '第一轮完整回复', conversationId: 123 } }, secondRequest: { type: 'llm.session.start', id: 'llm-session-2', payload: { deviceCode: state.deviceCode || 'ANDROID-001', text: '第二个问题', conversationId: 123, requestId: 'req-002', traceId: 'trace-002' } }, cancelCurrentAnswer: { type: 'llm.session.cancel', id: 'llm-cancel-2' } }, null, 2)) + '</pre></div><div class="detail-block"><strong>事件输出</strong><pre id="llmWsOutput">等待请求</pre></div><div class="note">特殊说明：LLM WebSocket 是智能体文本问答接口。首次 <code>llm.session.start</code> 不传 <code>conversationId</code>，服务端会在 <code>llm.started</code>/<code>llm.done</code> 返回；续聊必须原样带回。<code>llm.session.cancel</code> 只打断当前生成，后端返回 <code>llm.cancelled</code>，不会主动断开 <code>/ws/realtime/</code>，也不会让会话变成新会话。ASR 和 TTS 使用同一个 WebSocket 入口但通过不同 <code>type</code> 区分。</div>';
         document.getElementById('llmWsBtn').addEventListener('click', sendLlmWs);
         document.getElementById('llmWsResetBtn').addEventListener('click', resetLlmConversationId);
-        writeRequestDetail({ label: 'LLM WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { start: { type: 'llm.session.start', id: 'llm-session-<timestamp>', payload: samplePayload }, cancel: { type: 'llm.session.cancel', id: 'llm-cancel-<timestamp>' } }, note: '统一实时通信入口，llm.session.start 按设备码解析绑定智能体，流式返回 llm.started、llm.delta，完成返回 llm.done；llm.started/llm.done 会返回 conversationId，续聊时放回 payload.conversationId。llm.session.cancel 打断当前回答并返回 llm.cancelled，但 WebSocket 连接仍可用于下一轮命令。' });
+        writeRequestDetail({ label: 'LLM WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { firstQuestion: { type: 'llm.session.start', id: 'llm-session-1', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: suggested, requestId: '<requestId>', traceId: '<traceId>' } }, nextQuestion: { type: 'llm.session.start', id: 'llm-session-2', payload: Object.assign({}, samplePayload, { text: '继续追问上一轮内容', conversationId: state.llmConversationId || 123 }) }, cancelCurrentAnswer: { type: 'llm.session.cancel', id: 'llm-cancel-<timestamp>' } }, note: '统一实时通信入口，llm.session.start 按设备码解析绑定智能体。首问不要传 payload.conversationId；服务端在 llm.started/llm.done 返回 conversationId 后，安卓保存这个数字，后续同一对话的文本问题都放回 payload.conversationId。llm.session.cancel 只取消当前生成，不清空 conversationId，WebSocket 连接仍可继续发送下一轮命令。' });
       }
 
       async function sendLlmWs() {
@@ -1779,7 +1779,7 @@
             id: 'llm-session-' + Date.now(),
             payload: startPayload,
           };
-          writeRequestDetail({ label: '智能体回答 LLM 阶段', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: command, note: 'RuntimeAgentRealtimeManager 内部发送 llm.session.start，按 deviceCode 解析智能体，首次由服务端创建 conversationId，后续请求带回 payload.conversationId 以复用同一对话历史；需要打断当前回答时发送 llm.session.cancel。' });
+          writeRequestDetail({ label: '智能体回答 LLM 阶段', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: command, note: 'RuntimeAgentRealtimeManager 内部发送 llm.session.start。首问 command.payload 不带 conversationId；收到 llm.started.payload.conversationId 或 llm.done.payload.conversationId 后保存；同一用户继续追问时带回 command.payload.conversationId 以复用对话历史。打断当前回答发送 llm.session.cancel，但不要把已保存的 conversationId 清空。' });
           const socket = new WebSocket(realtimeWsUrl());
           state.sockets.push(socket);
           let answerText = '';
@@ -2581,22 +2581,24 @@
             ['phases.sendAsr', '发送 <code>asr.session.start</code>，然后发送 16k mono pcm_s16le 二进制音频。'],
             ['phases.asrPreview', '接收 <code>asr.transcript</code> 的实时预览；上游原始事件是 <code>conversation.item.input_audio_transcription.text</code>，预览语义为 <code>text + stash</code>。'],
             ['phases.asrDone', '接收 <code>asr.transcript final=true</code>/<code>asr.done</code>，使用纠错后的最终 <code>text</code> 作为问题；上游最终事件是 <code>conversation.item.input_audio_transcription.completed</code> 的 <code>transcript</code>。'],
-            ['phases.llmReply', '发送 <code>llm.session.start</code>，首次不带 <code>conversationId</code>，收到服务端返回后续轮次带回 <code>payload.conversationId</code>；处理 <code>llm.started</code>/<code>llm.delta</code>/<code>llm.tts_segment</code>/<code>llm.done</code>。'],
+            ['phases.llmReply', '发送 <code>llm.session.start</code>。第一轮请求不传 <code>payload.conversationId</code>；保存 <code>llm.started.payload.conversationId</code> 或 <code>llm.done.payload.conversationId</code>；同一对话的后续文本问题再把它带回。处理 <code>llm.started</code>/<code>llm.delta</code>/<code>llm.tts_segment</code>/<code>llm.done</code>。'],
             ['phases.ttsSpeak', '后端在同一 agent 会话内维护一个上游 TTS WebSocket，持续写入多个 <code>llm.tts_segment</code>，接收 binary PCM 后用 Web Audio 顺序播报。'],
             ['callbacks', '对外继续映射现有 <code>OnAiDialogueListener</code> 或本页实时播报/最终回放。'],
             ['dtoPackage', '安卓端建议将 command、payload、event DTO 统一放在 <code>bean/runtime/agent</code>。'],
           ],
           response: [
             ['ASR 阶段', '<code>asr.ready</code>、<code>asr.transcript</code>、<code>asr.done</code>。实时预览看 <code>final=false</code>，最终问题看 <code>final=true</code>。'],
-            ['LLM 阶段', '<code>llm.started</code>、<code>llm.delta</code>、<code>llm.tts_segment</code>、<code>llm.done</code>；<code>llm.started.payload.conversationId</code> 是后续问题要带回的会话 ID。'],
+            ['LLM 阶段', '<code>llm.started</code>、<code>llm.delta</code>、<code>llm.tts_segment</code>、<code>llm.done</code>；<code>llm.started.payload.conversationId</code> 是服务端创建的数字会话 ID，安卓应立即保存，后续问题写入 <code>llm.session.start.payload.conversationId</code>。'],
             ['TTS 阶段', '<code>tts.ready</code>、binary PCM、<code>tts.done</code>；一个 agent 会话内只应出现一次 ready/done，中间可有多个可播报片段对应的 PCM。'],
-            ['打断播报', '停止本地 Web Audio 队列，并发送 <code>agent.session.cancel</code> 取消当前 agent 会话。'],
+            ['打断播报', '停止本地 Web Audio 队列，并发送 <code>agent.session.cancel</code> 取消当前 agent 会话；这只是打断当前回答，不代表用户要新建 LLM 对话，安卓本地保存的 <code>conversationId</code> 不应因此清空。'],
             ['停止', '才 cancel/abort 当前 LLM/TTS 或关闭当前流。'],
           ],
           responseExample: [
             { manager: 'RuntimeAgentRealtimeManager', phase: 'asrPreview', event: 'asr.transcript', final: false, text: '介绍一下', sourceEventType: 'conversation.item.input_audio_transcription.text' },
             { manager: 'RuntimeAgentRealtimeManager', phase: 'asrDone', event: 'asr.transcript', final: true, text: '介绍一下展厅', sourceEventType: 'conversation.item.input_audio_transcription.completed' },
+            { manager: 'RuntimeAgentRealtimeManager', phase: 'llmStarted', event: 'llm.started', payload: { questionText: '介绍一下展厅', conversationId: 123 } },
             { manager: 'RuntimeAgentRealtimeManager', phase: 'llmReply', event: 'llm.tts_segment', text: '这是展厅介绍。' },
+            { manager: 'RuntimeAgentRealtimeManager', phase: 'llmDone', event: 'llm.done', payload: { answerText: '这是展厅介绍。', conversationId: 123 } },
             { manager: 'RuntimeAgentRealtimeManager', phase: 'ttsPlayback', event: 'binary PCM', segment: 1, callback: 'OnAiDialogueListener' },
           ],
           errors: runtimeDeviceErrors([['WS error / 440xx', '设备码不可解析、设备未绑定公司/智能体，或 ASR/LLM/TTS 任一内部阶段服务未配置。']]),
@@ -2611,7 +2613,7 @@
             ['type', '命令类型，例如 asr.session.start、asr.session.finish、asr.session.cancel、llm.session.start、llm.session.cancel、tts.session.start、tts.session.cancel。'],
             ['id', '客户端生成的 session/request id。'],
             ['payload.deviceCode', '设备运行时必填；用于解析设备、公司和绑定智能体。'],
-            ['payload.conversationId', 'LLM 续聊可选；第一次不传，使用 <code>llm.started</code>/<code>llm.done</code> 返回的值继续同一对话。'],
+            ['payload.conversationId', '<code>number</code>，仅 LLM 续聊使用。第一轮 <code>llm.session.start</code> 必须省略；服务端会创建并返回。第二轮及以后如果要保持同一段上下文，必须把之前保存的值原样放回这里。该 ID 必须属于当前设备绑定的公司/智能体，跨设备、跨公司或无效 ID 会返回错误。'],
             ['payload.token / tenantId', '后台登录态页面使用；普通公司账号会被限制在自己所属公司，不能通过 tenantId 越权。'],
             ['payload.requestId / traceId', '可选；链路追踪。'],
           ],
@@ -2621,13 +2623,23 @@
             ['asr.transcript final=true', '最终识别结果。对应上游 <code>conversation.item.input_audio_transcription.completed</code> 的 <code>transcript</code>；安卓端应使用这个最终 <code>text</code> 进入 LLM。'],
             ['asr.transcript 字段', '<code>text</code> 为替换词处理后的文本，<code>originalText</code> 为原始识别文本，<code>replacementApplied</code> 表示是否命中替换词，<code>sourceEventType</code> 标明上游原始事件。若返回 <code>stash</code>，实时展示请拼 <code>text + stash</code>。'],
             ['asr.done', 'ASR 会话结束；通常在最终 transcript 之后出现。'],
-            ['llm.started / llm.delta / llm.tts_segment / llm.done', 'LLM 开始、文字增量、可播报句子和完成事件；llm.started/llm.done payload 带 conversationId，llm.done.payload.answerText 是完整回复。'],
+            ['llm.started', 'LLM 已开始。<code>payload.conversationId</code> 是服务端创建/确认的对话 ID，安卓收到后应立即保存，避免中途打断导致没有保存到会话。'],
+            ['llm.delta', 'LLM 文字增量。用于实时上屏；完整回复以 <code>llm.done.payload.answerText</code> 为准。'],
+            ['llm.tts_segment', '可播报句子片段。完整 agent 链路会把这些片段送入 TTS。'],
+            ['llm.done', 'LLM 完成。<code>payload.answerText</code> 是完整回复，<code>payload.conversationId</code> 与 <code>llm.started</code> 相同，也可以作为兜底保存。'],
             ['tts.ready / audio/pcm / tts.done', 'TTS 就绪、二进制 PCM 分片和完成事件；tts.ready 带 sampleRate/voice。'],
-            ['*.cancelled', '会话取消事件，只表示当前 ASR/LLM/TTS session 被取消；WebSocket 不应因为 cancel 被动断开，可继续发下一轮命令。'],
+            ['*.cancelled', '会话取消事件，只表示当前 ASR/LLM/TTS session 被取消；WebSocket 不应因为 cancel 被动断开，可继续发下一轮命令。取消 LLM 当前生成不等于新建对话，安卓不要自动清空 <code>conversationId</code>。'],
             ['close / disconnect', '客户端主动关闭 WebSocket 才会彻底结束连接；在线状态连接断开还会触发 offline。'],
             ['*.error', '失败事件，包含 message。'],
           ],
           responseExample: [
+            { type: 'llm.session.start', id: 'llm-session-1', payload: { deviceCode: '<deviceCode>', text: '第一个问题', requestId: '<requestId>', traceId: '<traceId>' } },
+            { type: 'llm.started', id: 'llm-session-1', payload: { deviceCode: '<deviceCode>', questionText: '第一个问题', conversationId: 123 } },
+            { type: 'llm.delta', id: 'llm-session-1', payload: { text: '第一段回复' } },
+            { type: 'llm.done', id: 'llm-session-1', payload: { deviceCode: '<deviceCode>', questionText: '第一个问题', answerText: '第一轮完整回复', conversationId: 123 } },
+            { type: 'llm.session.start', id: 'llm-session-2', payload: { deviceCode: '<deviceCode>', text: '第二个问题', conversationId: 123, requestId: '<requestId>', traceId: '<traceId>' } },
+            { type: 'llm.session.cancel', id: 'llm-cancel-2' },
+            { type: 'llm.cancelled', id: 'llm-cancel-2', payload: { deviceCode: '<deviceCode>', conversationId: 123 } },
             { type: 'asr.ready', id: '<sessionId>' },
             { type: 'asr.transcript', id: '<sessionId>', text: '介绍一下', originalText: '介绍一下', final: false, sourceEventType: 'conversation.item.input_audio_transcription.text' },
             { type: 'asr.transcript', id: '<sessionId>', text: '介绍一下展厅', originalText: '介绍一下展厅', final: true, sourceEventType: 'conversation.item.input_audio_transcription.completed' },

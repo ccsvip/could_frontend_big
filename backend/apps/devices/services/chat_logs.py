@@ -10,6 +10,7 @@ def record_device_chat_log(
     request_id: str = '',
     trace_id: str = '',
     model_name: str = '',
+    conversation_id: int | None = None,
 ) -> DeviceChatLog | None:
     question = str(question_text or '').strip()
     answer = str(answer_text or '').strip()
@@ -21,6 +22,7 @@ def record_device_chat_log(
         application=device.application,
         agent_application=device.effective_agent_application,
         device=device,
+        conversation_id=conversation_id,
         code=device.code,
         source=source,
         question_text=question,

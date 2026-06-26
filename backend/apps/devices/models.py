@@ -320,6 +320,14 @@ class DeviceChatLog(models.Model):
         verbose_name='绑定智能体快照',
     )
     device = models.ForeignKey(Device, on_delete=models.SET_NULL, related_name='chat_logs', null=True, blank=True)
+    conversation = models.ForeignKey(
+        'ai_models.ChatConversation',
+        on_delete=models.SET_NULL,
+        related_name='device_chat_logs',
+        null=True,
+        blank=True,
+        verbose_name='智能体会话',
+    )
     code = models.CharField('设备码', max_length=128, blank=True, default='')
     source = models.CharField('来源', max_length=32, choices=SOURCE_CHOICES)
     question_text = models.TextField('问题')

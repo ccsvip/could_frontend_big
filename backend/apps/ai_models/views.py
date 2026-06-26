@@ -1320,6 +1320,9 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         application_id = self.request.query_params.get('application')
         if application_id:
             qs = qs.filter(application_id=application_id)
+        exclude_device_runtime = self.request.query_params.get('excludeDeviceRuntime', '').strip().lower()
+        if exclude_device_runtime in {'1', 'true', 'yes'}:
+            qs = qs.filter(device_chat_logs__isnull=True)
         keyword = self.request.query_params.get('keyword', '').strip()
         if keyword:
             qs = qs.filter(
