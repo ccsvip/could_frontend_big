@@ -74,6 +74,7 @@ export type TtsTestPayload = {
 export type TtsRealtimeMessage = {
   type?: string;
   sampleRate?: number;
+  responseFormat?: 'pcm' | 'wav' | 'mp3' | 'opus';
   voice?: string;
   message?: string;
 };

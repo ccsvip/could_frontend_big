@@ -1,4 +1,5 @@
 import { type TtsRealtimeMessage, type TtsTestPayload } from '../api/modules/tts';
+import type { AgentTtsSessionConfig } from '../api/modules/applications';
 import {
   buildRealtimeWebSocketUrl,
   buildTtsSessionCancelCommand,
@@ -11,6 +12,7 @@ type PlayRealtimeTtsOptions = TtsTestPayload & {
   token: string;
   tenantId?: number | null;
   providerCode?: string;
+  sessionConfig?: AgentTtsSessionConfig;
   filterPunctuation?: string;
   filterEmoji?: boolean;
   signal?: AbortSignal;
@@ -42,6 +44,7 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
   gain.connect(audioContext.destination);
 
   let sampleRate = 24000;
+  let responseFormat: TtsRealtimeMessage['responseFormat'] = options.sessionConfig?.response_format || 'pcm';
   let nextStartTime = audioContext.currentTime + 0.05;
   const chunks: ArrayBuffer[] = [];
   const scheduledSources: AudioBufferSourceNode[] = [];
@@ -85,7 +88,25 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
           reject(new Error('TTS 未返回有效音频'));
           return;
         }
-        resolve({ blob: pcmToWav(chunks, sampleRate), sampleRate });
+        const blob = buildTtsAudioBlob(chunks, sampleRate, responseFormat);
+        if (responseFormat === 'pcm') {
+          resolve({ blob, sampleRate });
+          return;
+        }
+        const objectUrl = URL.createObjectURL(blob);
+        const audio = new Audio(objectUrl);
+        audio.onended = () => {
+          URL.revokeObjectURL(objectUrl);
+          resolve({ blob, sampleRate });
+        };
+        audio.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error('当前浏览器无法播放该 TTS 音频格式'));
+        };
+        void audio.play().catch(() => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error('当前浏览器无法播放该 TTS 音频格式'));
+        });
       }, playbackTailMs + 50);
     };
 
@@ -142,6 +163,7 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
         text,
         voiceId: options.voiceId ?? null,
         providerCode: options.providerCode,
+        sessionConfig: options.sessionConfig,
       })));
     };
 
@@ -152,6 +174,9 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
         }
         const pcm = event.data.slice(0);
         chunks.push(pcm);
+        if (responseFormat !== 'pcm') {
+          return;
+        }
         schedulePcmChunk(
           audioContext,
           gain,
@@ -174,6 +199,7 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
       }
       if (payload.type === 'tts.ready' && payload.sampleRate) {
         sampleRate = payload.sampleRate;
+        responseFormat = payload.responseFormat || responseFormat;
         return;
       }
       if (payload.type === 'tts.done') {
@@ -214,6 +240,23 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
       }
     };
   });
+};
+
+const buildTtsAudioBlob = (
+  chunks: ArrayBuffer[],
+  sampleRate: number,
+  responseFormat: TtsRealtimeMessage['responseFormat'],
+) => {
+  if (responseFormat === 'wav') {
+    return new Blob(chunks, { type: 'audio/wav' });
+  }
+  if (responseFormat === 'mp3') {
+    return new Blob(chunks, { type: 'audio/mpeg' });
+  }
+  if (responseFormat === 'opus') {
+    return new Blob(chunks, { type: 'audio/opus' });
+  }
+  return pcmToWav(chunks, sampleRate);
 };
 
 export const sanitizeTtsText = (value: string, filterPunctuation?: string, filterEmoji = false) => {

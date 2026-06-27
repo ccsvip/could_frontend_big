@@ -322,17 +322,66 @@ def _extract_upstream_error_message(event: dict) -> str:
     return str(message)[:200]
 
 
-def _session_update_event(config: EffectiveTTSConfig, voice: TTSVoice) -> dict:
+def _session_update_event(config: EffectiveTTSConfig, voice: TTSVoice, session_config: dict | None = None) -> dict:
+    options = _normalize_session_config(config, session_config)
     return {
         'event_id': 'event_tts_session_update',
         'type': 'session.update',
         'session': {
             'model': config.model,
             'voice': voice.voice_code,
-            'response_format': response_format_for_sample_rate(config.sample_rate),
-            'mode': 'server_commit',
+            **options,
         },
     }
+
+
+def _normalize_session_config(config: EffectiveTTSConfig, session_config: dict | None = None) -> dict:
+    raw = session_config if isinstance(session_config, dict) else {}
+    response_format = raw.get('response_format') or raw.get('responseFormat')
+    if response_format not in {'pcm', 'wav', 'mp3', 'opus'}:
+        response_format = response_format_for_sample_rate(config.sample_rate)
+    language_type = raw.get('language_type') or raw.get('languageType') or 'Auto'
+    if language_type not in {
+        'Auto', 'Chinese', 'English', 'German', 'Italian', 'Portuguese',
+        'Spanish', 'Japanese', 'Korean', 'French', 'Russian',
+    }:
+        language_type = 'Auto'
+    sample_rate = _bounded_int(raw.get('sample_rate') or raw.get('sampleRate'), config.sample_rate, 8000, 48000)
+    if sample_rate not in {8000, 16000, 24000, 48000}:
+        sample_rate = config.sample_rate
+    instructions = str(raw.get('instructions') or '').strip()
+    return {
+        'mode': raw.get('mode') if raw.get('mode') in {'server_commit', 'commit'} else 'server_commit',
+        'language_type': language_type,
+        'response_format': response_format,
+        'sample_rate': sample_rate,
+        'speech_rate': _bounded_float(raw.get('speech_rate') or raw.get('speechRate'), 1.0, 0.5, 2.0),
+        'volume': _bounded_int(raw.get('volume'), 50, 0, 100),
+        'pitch_rate': _bounded_float(raw.get('pitch_rate') or raw.get('pitchRate'), 1.0, 0.5, 2.0),
+        'bit_rate': _bounded_int(raw.get('bit_rate') or raw.get('bitRate'), 128, 6, 510),
+        'instructions': instructions,
+        'optimize_instructions': bool(instructions and raw.get('optimize_instructions', raw.get('optimizeInstructions', False))),
+    }
+
+
+def _bounded_float(value, default: float, minimum: float, maximum: float) -> float:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return default
+    if number < minimum or number > maximum:
+        return default
+    return round(number, 2)
+
+
+def _bounded_int(value, default: int, minimum: int, maximum: int) -> int:
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        return default
+    if number < minimum or number > maximum:
+        return default
+    return number
 
 
 def _text_append_event(text: str) -> dict:

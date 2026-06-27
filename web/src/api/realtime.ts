@@ -71,6 +71,7 @@ export const buildTtsSessionStartCommand = (
     text: string;
     voiceId?: number | null;
     providerCode?: string;
+    sessionConfig?: Record<string, unknown>;
   },
 ): RealtimeCommand => ({
   type: 'tts.session.start',
@@ -81,6 +82,7 @@ export const buildTtsSessionStartCommand = (
     text: payload.text,
     voiceId: payload.voiceId ?? null,
     providerCode: payload.providerCode,
+    sessionConfig: payload.sessionConfig,
   },
 });
 

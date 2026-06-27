@@ -97,7 +97,7 @@ def resolve_tts_provider(raw_provider_code) -> TTSProvider:
     return TTSProvider.objects.filter(code=provider_code).first() or get_aliyun_tts_provider()
 
 
-async def _stream_tts_audio(*, text: str, voice: TTSVoice, config, send) -> None:
+async def _stream_tts_audio(*, text: str, voice: TTSVoice, config, send, session_config: dict | None = None) -> None:
     async with websockets.connect(
         build_tts_ws_url(config),
         additional_headers=[
@@ -110,10 +110,20 @@ async def _stream_tts_audio(*, text: str, voice: TTSVoice, config, send) -> None
         ping_timeout=20,
         max_size=8 * 1024 * 1024,
     ) as upstream:
-        await upstream.send(json.dumps(_session_update_event(config, voice)))
+        tts_session = _session_update_event(config, voice, session_config)['session']
+        await upstream.send(json.dumps({
+            'event_id': 'event_tts_session_update',
+            'type': 'session.update',
+            'session': tts_session,
+        }))
         await send({
             'type': 'websocket.send',
-            'text': json.dumps({'type': 'tts.ready', 'sampleRate': config.sample_rate, 'voice': voice.voice_code}),
+            'text': json.dumps({
+                'type': 'tts.ready',
+                'sampleRate': tts_session.get('sample_rate') or config.sample_rate,
+                'responseFormat': tts_session.get('response_format') or 'pcm',
+                'voice': voice.voice_code,
+            }),
         })
         for chunk in split_tts_text(text):
             await upstream.send(json.dumps(_text_append_event(chunk)))
@@ -142,7 +152,7 @@ async def _stream_tts_audio(*, text: str, voice: TTSVoice, config, send) -> None
                 return
 
 
-async def _stream_tts_segments_audio(*, segments: AsyncIterable[str], voice: TTSVoice, config, send) -> None:
+async def _stream_tts_segments_audio(*, segments: AsyncIterable[str], voice: TTSVoice, config, send, session_config: dict | None = None) -> None:
     async with websockets.connect(
         build_tts_ws_url(config),
         additional_headers=[
@@ -155,10 +165,20 @@ async def _stream_tts_segments_audio(*, segments: AsyncIterable[str], voice: TTS
         ping_timeout=20,
         max_size=8 * 1024 * 1024,
     ) as upstream:
-        await upstream.send(json.dumps(_session_update_event(config, voice)))
+        tts_session = _session_update_event(config, voice, session_config)['session']
+        await upstream.send(json.dumps({
+            'event_id': 'event_tts_session_update',
+            'type': 'session.update',
+            'session': tts_session,
+        }))
         await send({
             'type': 'websocket.send',
-            'text': json.dumps({'type': 'tts.ready', 'sampleRate': config.sample_rate, 'voice': voice.voice_code}),
+            'text': json.dumps({
+                'type': 'tts.ready',
+                'sampleRate': tts_session.get('sample_rate') or config.sample_rate,
+                'responseFormat': tts_session.get('response_format') or 'pcm',
+                'voice': voice.voice_code,
+            }),
         })
 
         reader_task = asyncio.create_task(_forward_tts_upstream_audio(upstream, send))

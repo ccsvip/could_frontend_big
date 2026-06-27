@@ -1010,6 +1010,9 @@ async def _agent_tts_worker(send, connection: RealtimeConnection, command_id, de
 
 async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_code: str, first_segment: str, payload: dict[str, Any]) -> None:
     query_params = _payload_query_params({'deviceCode': device_code}, 'deviceCode')
+    session_config = payload.get('sessionConfig') or payload.get('ttsSessionConfig')
+    if session_config is None:
+        session_config = await sync_to_async(_resolve_device_tts_session_config, thread_sensitive=True)(device_code)
     resolved_connection = await sync_to_async(realtime_tts.resolve_tts_realtime_connection, thread_sensitive=True)(
         '',
         query_params=query_params,
@@ -1037,8 +1040,19 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
         segments=_agent_tts_segments(first_segment, queue),
         voice=voice,
         config=config,
+        session_config=session_config,
         send=_with_command_id(send, command_id),
     )
+
+
+def _resolve_device_tts_session_config(device_code: str) -> dict[str, Any]:
+    from apps.devices.services.runtime import get_runtime_device
+
+    device = get_runtime_device(device_code)
+    agent_application = device.effective_agent_application
+    if agent_application is None:
+        return {}
+    return agent_application.runtime_config().get('tts_session_config') or {}
 
 
 async def _agent_tts_segments(first_segment: str, queue: asyncio.Queue):
@@ -1241,6 +1255,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
         'modelName': model.name,
         'ttsFilterPunctuation': runtime_config.get('tts_filter_punctuation') or '',
         'ttsFilterEmoji': runtime_config.get('tts_filter_emoji'),
+        'ttsSessionConfig': runtime_config.get('tts_session_config') or {},
     }
 
 
@@ -1311,6 +1326,7 @@ async def _run_tts_session_body(send, command_id, message: dict[str, Any]) -> No
         text=text,
         voice=voice,
         config=config,
+        session_config=payload.get('sessionConfig') or payload.get('ttsSessionConfig'),
         send=_with_command_id(send, command_id),
     )
 
