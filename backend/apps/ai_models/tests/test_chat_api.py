@@ -223,7 +223,9 @@ class ChatApiTests(TenantTestMixin, APITestCase):
         )
 
         self.assertNotIn('enable_search', base_payload)
+        self.assertNotIn('search_options', base_payload)
         self.assertTrue(search_payload['enable_search'])
+        self.assertTrue(search_payload['search_options']['forced_search'])
 
     def test_update_config_updates_selected_provider_and_model(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')

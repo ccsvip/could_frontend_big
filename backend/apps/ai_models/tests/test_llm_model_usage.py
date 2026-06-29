@@ -279,6 +279,7 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
 
         self.assertTrue(result['success'])
         self.assertTrue(client.post.call_args.kwargs['json']['enable_search'])
+        self.assertTrue(client.post.call_args.kwargs['json']['search_options']['forced_search'])
 
     @patch('apps.ai_models.llm_services.httpx.Client')
     def test_run_llm_model_test_returns_safe_failure_summary(self, mock_client_class):
@@ -359,6 +360,35 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
         self.assertEqual(len(fake_client.stream_calls), 2)
         self.assertEqual(fake_client.stream_calls[0][1]['timeout'], 7)
         self.assertEqual(fake_client.stream_calls[1][1]['timeout'], 9)
+
+    def test_stream_llm_chat_completion_forces_search_when_enabled(self):
+        async def run_stream():
+            fake_client = FakeStreamLLMClient()
+            llm_services._STREAM_LLM_CLIENTS.clear()
+            llm_services._STREAM_LLM_CLIENTS[id(asyncio.get_running_loop())] = fake_client
+            try:
+                model_config = {
+                    'name': 'qwen-flash',
+                    'apiBaseUrl': 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+                    'apiKey': 'sk-secret',
+                    'enableWebSearch': True,
+                }
+                deltas = [
+                    delta async for delta in llm_services.stream_llm_chat_completion(
+                        model_config=model_config,
+                        messages=[{'role': 'user', 'content': '广州今天天气如何'}],
+                    )
+                ]
+            finally:
+                llm_services._STREAM_LLM_CLIENTS.clear()
+            return fake_client, deltas
+
+        fake_client, deltas = async_to_sync(run_stream)()
+
+        request_payload = fake_client.stream_calls[0][1]['json']
+        self.assertEqual(deltas, ['你好'])
+        self.assertTrue(request_payload['enable_search'])
+        self.assertTrue(request_payload['search_options']['forced_search'])
 
     def test_chat_creation_supports_unlimited_max_tokens_snapshot(self):
         self.grant_permissions('ai_models.chat.create')

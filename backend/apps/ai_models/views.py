@@ -137,6 +137,7 @@ def _build_llm_request_payload(
         payload['max_tokens'] = max_tokens
     if enable_web_search:
         payload['enable_search'] = True
+        payload['search_options'] = {'forced_search': True}
     return payload
 
 

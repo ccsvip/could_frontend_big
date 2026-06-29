@@ -115,6 +115,7 @@ def _build_chat_completions_url(raw_url: str) -> str:
 def _with_model_search_param(model: LLMModel, payload: dict) -> dict:
     if model.enable_web_search:
         payload['enable_search'] = True
+        payload['search_options'] = {'forced_search': True}
     return payload
 
 
@@ -211,6 +212,7 @@ async def stream_llm_chat_completion(
     }
     if model_config.get('enableWebSearch'):
         payload['enable_search'] = True
+        payload['search_options'] = {'forced_search': True}
     try:
         client = _get_stream_llm_client()
         async with client.stream(
