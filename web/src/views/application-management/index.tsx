@@ -624,7 +624,7 @@ export const ApplicationManagementPage = () => {
     if (!app.isPublishedCurrent) {
       return { color: 'warning', text: '待发布' };
     }
-    return { color: 'success', text: `已发布 v${app.publishedVersion}` };
+    return { color: 'success', text: '已发布' };
   };
 
   const handleBackClick = () => {
@@ -1157,6 +1157,28 @@ export const ApplicationManagementPage = () => {
       setConversation(nextConversation);
       setMessages(nextConversation.messages);
       return nextConversation;
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const startNewConversation = async () => {
+    if (!selectedApplication || streaming || chatLoading) return null;
+    abortRef.current?.abort();
+    setConversation(null);
+    setMessages([]);
+    setStreamingContent('');
+    setInputValue('');
+    setChatLoading(true);
+    try {
+      const nextConversation = await createAgentApplicationConversation(selectedApplication.id);
+      setConversation(nextConversation);
+      setMessages(nextConversation.messages);
+      message.success('已创建新对话');
+      return nextConversation;
+    } catch {
+      message.error('新对话创建失败');
+      return null;
     } finally {
       setChatLoading(false);
     }
@@ -1903,28 +1925,17 @@ export const ApplicationManagementPage = () => {
               <div className="text-lg font-bold">调试预览</div>
             </div>
             <div className="flex items-center gap-2">
-              {conversation && (
-                <Button type="text" size="small" onClick={async () => {
-                    setChatLoading(true);
-                    try {
-                      const nextConversation = await createAgentApplicationConversation(selectedApplication!.id);
-                      setConversation(nextConversation);
-                      setMessages(nextConversation.messages);
-                      setStreamingContent('');
-                      setInputValue('');
-                      message.success('调试会话已重置');
-                    } catch {
-                      message.error('重置会话失败');
-                    } finally {
-                      setChatLoading(false);
-                    }
-                  }}
-                  className="flex items-center gap-1 text-slate-500 hover:text-teal-600"
-                >
-                  <RotateCcw size={14} />
-                  <span className="text-xs">新对话</span>
-                </Button>
-              )}
+              <Button
+                type="text"
+                size="small"
+                disabled={!selectedApplication || streaming || chatLoading}
+                loading={chatLoading}
+                onClick={() => void startNewConversation()}
+                className="flex items-center gap-1 text-slate-500 hover:text-teal-600"
+              >
+                <RotateCcw size={14} />
+                <span className="text-xs">新对话</span>
+              </Button>
               {conversation ? (
                 <Tag color="cyan" className="font-mono m-0">会话: #{conversation.id}</Tag>
               ) : (
