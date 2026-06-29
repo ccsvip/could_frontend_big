@@ -209,7 +209,6 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
             system_prompt='Published prompt.',
             temperature=0.3,
             max_tokens=900,
-            tts_session_config={'language_type': 'Chinese', 'sample_rate': 48000},
         )
         application.knowledge_documents.set([document])
 
@@ -222,7 +221,6 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         application.refresh_from_db()
         self.assertEqual(application.published_config['system_prompt'], 'Published prompt.')
         self.assertEqual(application.published_config['knowledge_document_ids'], [document.id])
-        self.assertEqual(application.published_config['tts_session_config']['language_type'], 'Chinese')
 
         application.system_prompt = 'Draft prompt after publish.'
         application.save(update_fields=['system_prompt', 'updated_at'])
@@ -233,7 +231,6 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertFalse(detail_response.data['isPublishedCurrent'])
         application.refresh_from_db()
         self.assertEqual(application.runtime_config()['system_prompt'], 'Published prompt.')
-        self.assertEqual(application.runtime_config()['tts_session_config']['sample_rate'], 48000)
 
     def test_create_agent_application_supports_unlimited_max_tokens(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.create')
@@ -374,9 +371,6 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertFalse(response.data['replyPlaybackEnabled'])
         self.assertEqual(response.data['ttsFilterPunctuation'], '。！？!?；;、')
         self.assertTrue(response.data['ttsFilterEmoji'])
-        self.assertEqual(response.data['ttsSessionConfig']['mode'], 'server_commit')
-        self.assertEqual(response.data['ttsSessionConfig']['language_type'], 'Auto')
-        self.assertEqual(response.data['ttsSessionConfig']['sample_rate'], 24000)
 
     def test_update_agent_application_accepts_conversation_settings(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.update')
@@ -397,18 +391,6 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
                 'replyPlaybackEnabled': True,
                 'ttsFilterPunctuation': '。！？!?；;、',
                 'ttsFilterEmoji': False,
-                'ttsSessionConfig': {
-                    'mode': 'commit',
-                    'languageType': 'Chinese',
-                    'responseFormat': 'opus',
-                    'sampleRate': 48000,
-                    'speechRate': 1.25,
-                    'volume': 80,
-                    'pitchRate': 0.85,
-                    'bitRate': 192,
-                    'instructions': '用温柔自然的语气播报。',
-                    'optimizeInstructions': True,
-                },
             },
             format='json',
         )
@@ -420,20 +402,9 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertTrue(response.data['replyPlaybackEnabled'])
         self.assertEqual(response.data['ttsFilterPunctuation'], '。！？!?；;、')
         self.assertFalse(response.data['ttsFilterEmoji'])
-        self.assertEqual(response.data['ttsSessionConfig']['mode'], 'commit')
-        self.assertEqual(response.data['ttsSessionConfig']['language_type'], 'Chinese')
-        self.assertEqual(response.data['ttsSessionConfig']['response_format'], 'opus')
-        self.assertEqual(response.data['ttsSessionConfig']['sample_rate'], 48000)
-        self.assertEqual(response.data['ttsSessionConfig']['speech_rate'], 1.25)
-        self.assertEqual(response.data['ttsSessionConfig']['volume'], 80)
-        self.assertEqual(response.data['ttsSessionConfig']['pitch_rate'], 0.85)
-        self.assertEqual(response.data['ttsSessionConfig']['bit_rate'], 192)
-        self.assertEqual(response.data['ttsSessionConfig']['instructions'], '用温柔自然的语气播报。')
-        self.assertTrue(response.data['ttsSessionConfig']['optimize_instructions'])
         application.refresh_from_db()
         self.assertEqual(application.tts_filter_punctuation, '。！？!?；;、')
         self.assertFalse(application.tts_filter_emoji)
-        self.assertEqual(application.tts_session_config['language_type'], 'Chinese')
 
     def test_update_agent_application_rejects_duplicate_name_in_same_tenant(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.update')

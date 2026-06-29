@@ -1011,8 +1011,6 @@ async def _agent_tts_worker(send, connection: RealtimeConnection, command_id, de
 async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_code: str, first_segment: str, payload: dict[str, Any]) -> None:
     query_params = _payload_query_params({'deviceCode': device_code}, 'deviceCode')
     session_config = payload.get('sessionConfig') or payload.get('ttsSessionConfig')
-    if session_config is None:
-        session_config = await sync_to_async(_resolve_device_tts_session_config, thread_sensitive=True)(device_code)
     resolved_connection = await sync_to_async(realtime_tts.resolve_tts_realtime_connection, thread_sensitive=True)(
         '',
         query_params=query_params,
@@ -1027,14 +1025,18 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
     config = await sync_to_async(realtime_tts.get_effective_tts_config, thread_sensitive=True)(provider)
     if not realtime_tts.is_tts_configured(config):
         raise RuntimeError('TTS 服务未配置或未启用')
+    if session_config is None:
+        session_config = await sync_to_async(_resolve_connection_tts_session_config, thread_sensitive=True)(resolved_connection, config)
+    model_code = tts_services.get_tts_model_profile_code_from_session(session_config, config.model)
 
     voice = await sync_to_async(realtime_tts.resolve_tts_voice, thread_sensitive=True)(
         resolved_connection,
         payload.get('voiceId'),
         provider,
+        model_code=model_code,
     )
     if voice is None:
-        raise RuntimeError('TTS 音色未配置')
+        raise RuntimeError('TTS 音色未配置或当前模型不支持该音色')
 
     await realtime_tts._stream_tts_segments_audio(
         segments=_agent_tts_segments(first_segment, queue),
@@ -1045,14 +1047,18 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
     )
 
 
-def _resolve_device_tts_session_config(device_code: str) -> dict[str, Any]:
-    from apps.devices.services.runtime import get_runtime_device
+def _resolve_connection_tts_session_config(connection: dict[str, Any], config) -> dict[str, Any]:
+    tenant_id = connection.get('tenant_id')
+    if not tenant_id:
+        return config.tts_session_config
 
-    device = get_runtime_device(device_code)
-    agent_application = device.effective_agent_application
-    if agent_application is None:
-        return {}
-    return agent_application.runtime_config().get('tts_session_config') or {}
+    from apps.tenants.models import Tenant
+
+    tenant = Tenant.objects.filter(id=tenant_id, is_active=True).first()
+    settings_obj = tts_services.get_tenant_tts_settings(tenant)
+    if settings_obj is None:
+        return config.tts_session_config
+    return settings_obj.tts_session_config or config.tts_session_config
 
 
 async def _agent_tts_segments(first_segment: str, queue: asyncio.Queue):
@@ -1255,7 +1261,6 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
         'modelName': model.name,
         'ttsFilterPunctuation': runtime_config.get('tts_filter_punctuation') or '',
         'ttsFilterEmoji': runtime_config.get('tts_filter_emoji'),
-        'ttsSessionConfig': runtime_config.get('tts_session_config') or {},
     }
 
 
@@ -1313,20 +1318,25 @@ async def _run_tts_session_body(send, command_id, message: dict[str, Any]) -> No
     if not realtime_tts.is_tts_configured(config):
         raise RuntimeError('TTS 服务未配置或未启用')
 
+    text = realtime_tts.normalize_tts_text(str(payload.get('text') or ''), config)
+    session_config = payload.get('sessionConfig') or payload.get('ttsSessionConfig')
+    if session_config is None:
+        session_config = await sync_to_async(_resolve_connection_tts_session_config, thread_sensitive=True)(resolved_connection, config)
+    model_code = tts_services.get_tts_model_profile_code_from_session(session_config, config.model)
+
     voice = await sync_to_async(realtime_tts.resolve_tts_voice, thread_sensitive=True)(
         resolved_connection,
         payload.get('voiceId'),
         provider,
+        model_code=model_code,
     )
     if voice is None:
-        raise RuntimeError('TTS 音色未配置')
-
-    text = realtime_tts.normalize_tts_text(str(payload.get('text') or ''), config)
+        raise RuntimeError('TTS 音色未配置或当前模型不支持该音色')
     await realtime_tts._stream_tts_audio(
         text=text,
         voice=voice,
         config=config,
-        session_config=payload.get('sessionConfig') or payload.get('ttsSessionConfig'),
+        session_config=session_config,
         send=_with_command_id(send, command_id),
     )
 

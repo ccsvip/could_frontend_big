@@ -20,6 +20,7 @@ from .services.tts import (
     get_default_tts_voice,
     get_effective_tts_config,
     get_effective_tts_voice_for_tenant,
+    is_tts_voice_supported_by_model_code,
     is_tts_configured,
     normalize_tts_text,
     split_tts_text,
@@ -77,17 +78,29 @@ def _resolve_device_connection(query_params: dict[str, list[str]] | None) -> dic
     }
 
 
-def resolve_tts_voice(connection: dict[str, Any], raw_voice_id, provider: TTSProvider) -> TTSVoice | None:
+def resolve_tts_voice(
+    connection: dict[str, Any],
+    raw_voice_id,
+    provider: TTSProvider,
+    *,
+    model_code: str | None = None,
+) -> TTSVoice | None:
     voice_id = _parse_positive_int(raw_voice_id)
     if voice_id is not None:
         voice = TTSVoice.objects.select_related('provider').filter(id=voice_id, provider=provider).first()
-        if voice is not None and voice.is_active and (connection.get('is_superuser') or voice.is_visible):
+        if (
+            voice is not None
+            and voice.is_active
+            and (connection.get('is_superuser') or voice.is_visible)
+            and (model_code is None or is_tts_voice_supported_by_model_code(voice, model_code))
+        ):
             return voice
+        return None
 
     if connection.get('tenant_id'):
         tenant = Tenant.objects.filter(id=connection['tenant_id'], is_active=True).first()
-        return get_effective_tts_voice_for_tenant(tenant, provider)
-    return get_default_tts_voice(provider)
+        return get_effective_tts_voice_for_tenant(tenant, provider, model_code=model_code)
+    return get_default_tts_voice(provider, model_code=model_code)
 
 
 def resolve_tts_provider(raw_provider_code) -> TTSProvider:
@@ -98,8 +111,10 @@ def resolve_tts_provider(raw_provider_code) -> TTSProvider:
 
 
 async def _stream_tts_audio(*, text: str, voice: TTSVoice, config, send, session_config: dict | None = None) -> None:
+    session_event = _session_update_event(config, voice, session_config)
+    tts_session = session_event['session']
     async with websockets.connect(
-        build_tts_ws_url(config),
+        build_tts_ws_url(config, tts_session.get('model')),
         additional_headers=[
             ('Authorization', f'Bearer {config.api_key}'),
             ('OpenAI-Beta', 'realtime=v1'),
@@ -110,7 +125,6 @@ async def _stream_tts_audio(*, text: str, voice: TTSVoice, config, send, session
         ping_timeout=20,
         max_size=8 * 1024 * 1024,
     ) as upstream:
-        tts_session = _session_update_event(config, voice, session_config)['session']
         await upstream.send(json.dumps({
             'event_id': 'event_tts_session_update',
             'type': 'session.update',
@@ -153,8 +167,10 @@ async def _stream_tts_audio(*, text: str, voice: TTSVoice, config, send, session
 
 
 async def _stream_tts_segments_audio(*, segments: AsyncIterable[str], voice: TTSVoice, config, send, session_config: dict | None = None) -> None:
+    session_event = _session_update_event(config, voice, session_config)
+    tts_session = session_event['session']
     async with websockets.connect(
-        build_tts_ws_url(config),
+        build_tts_ws_url(config, tts_session.get('model')),
         additional_headers=[
             ('Authorization', f'Bearer {config.api_key}'),
             ('OpenAI-Beta', 'realtime=v1'),
@@ -165,7 +181,6 @@ async def _stream_tts_segments_audio(*, segments: AsyncIterable[str], voice: TTS
         ping_timeout=20,
         max_size=8 * 1024 * 1024,
     ) as upstream:
-        tts_session = _session_update_event(config, voice, session_config)['session']
         await upstream.send(json.dumps({
             'event_id': 'event_tts_session_update',
             'type': 'session.update',

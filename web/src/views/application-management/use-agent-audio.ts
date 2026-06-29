@@ -9,7 +9,7 @@ import {
   createRealtimeCommandId,
   encodeRealtimeCommand,
 } from '../../api/realtime';
-import type { AgentTtsSessionConfig } from '../../api/modules/applications';
+import type { TtsSessionConfig } from '../../api/modules/tts';
 import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
 import { requestMicrophoneStream } from '../media-devices';
@@ -45,7 +45,7 @@ type StartRecordingOptions = {
 export type TtsFilterRules = {
   punctuation?: string;
   emoji?: boolean;
-  sessionConfig?: AgentTtsSessionConfig;
+  sessionConfig?: TtsSessionConfig;
 };
 
 export const useAgentAudio = () => {

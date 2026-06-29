@@ -11,6 +11,7 @@ from .llm_services import (
     validate_llm_test_settings_values,
 )
 from .services.tts import get_effective_tts_config, mask_api_key as mask_tts_api_key
+from .services import tts as tts_services
 from .models import (
     ASRConfig,
     AgentAnnotation,
@@ -24,10 +25,11 @@ from .models import (
     LLMTestSettings,
     RerankModel,
     TenantKnowledgeModelSettings,
+    TenantTTSSettings,
     TTSProvider,
     TTSVoice,
     default_agent_opening_message,
-    default_agent_tts_session_config,
+    default_tts_session_config,
 )
 
 
@@ -454,10 +456,90 @@ class TTSVoiceWriteSerializer(serializers.ModelSerializer):
         fields = ['displayName', 'voiceCode', 'gender', 'avatarPath', 'isActive', 'isVisible', 'sortOrder']
 
 
+def validate_tts_session_config(value: dict) -> dict:
+    if not isinstance(value, dict):
+        raise serializers.ValidationError('TTS 会话配置必须是对象')
+
+    config = {**default_tts_session_config()}
+    allowed_modes = {'server_commit', 'commit'}
+    allowed_languages = {
+        'Auto', 'Chinese', 'English', 'German', 'Italian', 'Portuguese',
+        'Spanish', 'Japanese', 'Korean', 'French', 'Russian',
+    }
+    allowed_formats = {'pcm', 'wav', 'mp3', 'opus'}
+    allowed_sample_rates = {8000, 16000, 24000, 48000}
+
+    mode = str(value.get('mode', config['mode'])).strip()
+    if mode not in allowed_modes:
+        raise serializers.ValidationError({'mode': 'mode 只能是 server_commit 或 commit'})
+    config['mode'] = mode
+
+    language_type = str(value.get('language_type') or value.get('languageType') or config['language_type']).strip()
+    if language_type not in allowed_languages:
+        raise serializers.ValidationError({'languageType': 'languageType 不在支持范围内'})
+    config['language_type'] = language_type
+
+    response_format = str(value.get('response_format') or value.get('responseFormat') or config['response_format']).strip()
+    if response_format not in allowed_formats:
+        raise serializers.ValidationError({'responseFormat': 'responseFormat 只能是 pcm、wav、mp3 或 opus'})
+    config['response_format'] = response_format
+
+    try:
+        sample_rate = int(value.get('sample_rate') or value.get('sampleRate') or config['sample_rate'])
+    except (TypeError, ValueError):
+        raise serializers.ValidationError({'sampleRate': 'sampleRate 必须是整数'})
+    if sample_rate not in allowed_sample_rates:
+        raise serializers.ValidationError({'sampleRate': 'sampleRate 只能是 8000、16000、24000 或 48000'})
+    config['sample_rate'] = sample_rate
+
+    for payload_key, stored_key, label in (
+        ('speechRate', 'speech_rate', 'speechRate'),
+        ('pitchRate', 'pitch_rate', 'pitchRate'),
+    ):
+        raw_value = value.get(stored_key, value.get(payload_key, config[stored_key]))
+        try:
+            numeric_value = float(raw_value)
+        except (TypeError, ValueError):
+            raise serializers.ValidationError({label: f'{label} 必须是数字'})
+        if numeric_value < 0.5 or numeric_value > 2.0:
+            raise serializers.ValidationError({label: f'{label} 必须在 0.5 到 2.0 之间'})
+        config[stored_key] = round(numeric_value, 2)
+
+    try:
+        volume = int(value.get('volume', config['volume']))
+    except (TypeError, ValueError):
+        raise serializers.ValidationError({'volume': 'volume 必须是整数'})
+    if volume < 0 or volume > 100:
+        raise serializers.ValidationError({'volume': 'volume 必须在 0 到 100 之间'})
+    config['volume'] = volume
+
+    try:
+        bit_rate = int(value.get('bit_rate') or value.get('bitRate') or config['bit_rate'])
+    except (TypeError, ValueError):
+        raise serializers.ValidationError({'bitRate': 'bitRate 必须是整数'})
+    if bit_rate < 6 or bit_rate > 510:
+        raise serializers.ValidationError({'bitRate': 'bitRate 必须在 6 到 510 之间'})
+    config['bit_rate'] = bit_rate
+
+    instructions = str(value.get('instructions') or '').strip()
+    if len(instructions) > 4000:
+        raise serializers.ValidationError({'instructions': 'instructions 不能超过 4000 个字符'})
+    config['instructions'] = instructions
+    config['optimize_instructions'] = bool(value.get('optimize_instructions', value.get('optimizeInstructions', config['optimize_instructions'])))
+    model_code = value.get('model_code', value.get('modelCode'))
+    if model_code:
+        resolved_model_code = tts_services.resolve_tts_model_profile_code(str(model_code))
+        if resolved_model_code != str(model_code).strip():
+            raise serializers.ValidationError({'modelCode': 'TTS 模型选项不存在'})
+        config['model_code'] = resolved_model_code
+    return config
+
+
 class PlatformTTSProviderSummarySerializer(serializers.ModelSerializer):
     defaultVoiceId = serializers.IntegerField(source='default_voice_id', allow_null=True)
     defaultVoiceName = serializers.SerializerMethodField()
     sampleRate = serializers.IntegerField(source='sample_rate')
+    ttsSessionConfig = serializers.JSONField(source='tts_session_config')
     isActive = serializers.BooleanField(source='is_active')
     configured = serializers.SerializerMethodField()
     voiceCount = serializers.SerializerMethodField()
@@ -471,6 +553,7 @@ class PlatformTTSProviderSummarySerializer(serializers.ModelSerializer):
             'defaultVoiceId',
             'defaultVoiceName',
             'sampleRate',
+            'ttsSessionConfig',
             'isActive',
             'configured',
             'voiceCount',
@@ -498,6 +581,7 @@ class PlatformTTSSettingsSerializer(serializers.ModelSerializer):
     baseUrl = serializers.CharField(source='base_url')
     defaultVoiceId = serializers.IntegerField(source='default_voice_id', allow_null=True)
     sampleRate = serializers.IntegerField(source='sample_rate')
+    ttsSessionConfig = serializers.JSONField(source='tts_session_config')
     defaultTestText = serializers.CharField(source='default_test_text')
     isActive = serializers.BooleanField(source='is_active')
     configured = serializers.SerializerMethodField()
@@ -514,6 +598,7 @@ class PlatformTTSSettingsSerializer(serializers.ModelSerializer):
             'baseUrl',
             'model',
             'sampleRate',
+            'ttsSessionConfig',
             'defaultVoiceId',
             'defaultTestText',
             'isActive',
@@ -558,18 +643,22 @@ class PlatformTTSSettingsWriteSerializer(serializers.ModelSerializer):
         allow_null=True,
     )
     sampleRate = serializers.IntegerField(source='sample_rate', required=False)
+    ttsSessionConfig = serializers.JSONField(source='tts_session_config', required=False)
     defaultTestText = serializers.CharField(source='default_test_text', required=False, allow_blank=True)
     isActive = serializers.BooleanField(source='is_active', required=False)
     voices = serializers.ListField(child=serializers.DictField(), required=False, write_only=True)
 
     class Meta:
         model = TTSProvider
-        fields = ['apiKey', 'baseUrl', 'model', 'sampleRate', 'defaultVoiceId', 'defaultTestText', 'isActive', 'voices']
+        fields = ['apiKey', 'baseUrl', 'model', 'sampleRate', 'ttsSessionConfig', 'defaultVoiceId', 'defaultTestText', 'isActive', 'voices']
 
     def validate_sampleRate(self, value: int) -> int:
-        if value not in {16000, 24000}:
-            raise serializers.ValidationError('采样率暂只支持 16000 或 24000')
+        if value not in {8000, 16000, 24000, 48000}:
+            raise serializers.ValidationError('采样率只支持 8000、16000、24000 或 48000')
         return value
+
+    def validate_ttsSessionConfig(self, value: dict) -> dict:
+        return validate_tts_session_config(value)
 
     def validate_defaultVoiceId(self, value: TTSVoice | None) -> TTSVoice | None:
         if value is not None and self.instance is not None and value.provider_id != self.instance.id:
@@ -601,6 +690,40 @@ class PlatformTTSSettingsWriteSerializer(serializers.ModelSerializer):
 class CompanyTTSVoiceSerializer(TTSVoiceSerializer):
     class Meta(TTSVoiceSerializer.Meta):
         fields = ['id', 'displayName', 'voiceCode', 'gender', 'avatarPath', 'isDefault']
+
+
+class CompanyTTSSettingsWriteSerializer(serializers.ModelSerializer):
+    voiceId = serializers.PrimaryKeyRelatedField(
+        source='default_voice',
+        queryset=TTSVoice.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    ttsSessionConfig = serializers.JSONField(source='tts_session_config', required=False)
+    modelCode = serializers.CharField(required=False, allow_blank=False, write_only=True)
+
+    class Meta:
+        model = TenantTTSSettings
+        fields = ['voiceId', 'ttsSessionConfig', 'modelCode']
+
+    def validate_ttsSessionConfig(self, value: dict) -> dict:
+        return validate_tts_session_config(value)
+
+    def validate_modelCode(self, value: str) -> str:
+        raw = str(value or '').strip()
+        resolved = tts_services.resolve_tts_model_profile_code(raw)
+        if resolved != raw:
+            raise serializers.ValidationError('TTS 模型选项不存在')
+        return resolved
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        model_code = attrs.pop('modelCode', None)
+        if model_code:
+            session_config = dict(attrs.get('tts_session_config') or getattr(self.instance, 'tts_session_config', None) or {})
+            session_config['model_code'] = model_code
+            attrs['tts_session_config'] = validate_tts_session_config(session_config)
+        return attrs
 
 
 class AgentKnowledgeDocumentSerializer(serializers.ModelSerializer):
@@ -648,7 +771,6 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
     replyPlaybackEnabled = serializers.BooleanField(source='reply_playback_enabled', required=False)
     ttsFilterPunctuation = serializers.CharField(source='tts_filter_punctuation', required=False, allow_blank=True)
     ttsFilterEmoji = serializers.BooleanField(source='tts_filter_emoji', required=False)
-    ttsSessionConfig = serializers.JSONField(source='tts_session_config', required=False)
     knowledgeDocumentIds = serializers.PrimaryKeyRelatedField(
         source='knowledge_documents',
         queryset=KnowledgeDocument.objects.none(),
@@ -691,7 +813,6 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
             'replyPlaybackEnabled',
             'ttsFilterPunctuation',
             'ttsFilterEmoji',
-            'ttsSessionConfig',
             'knowledgeDocumentIds',
             'knowledgeDocuments',
             'knowledgeBaseIds',
@@ -802,78 +923,6 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
         if len(value) > 64:
             raise serializers.ValidationError('TTS 过滤标点不能超过 64 个字符')
         return value
-
-    def validate_ttsSessionConfig(self, value: dict) -> dict:
-        if not isinstance(value, dict):
-            raise serializers.ValidationError('TTS 会话配置必须是对象')
-
-        config = {**default_agent_tts_session_config()}
-        allowed_modes = {'server_commit', 'commit'}
-        allowed_languages = {
-            'Auto', 'Chinese', 'English', 'German', 'Italian', 'Portuguese',
-            'Spanish', 'Japanese', 'Korean', 'French', 'Russian',
-        }
-        allowed_formats = {'pcm', 'wav', 'mp3', 'opus'}
-        allowed_sample_rates = {8000, 16000, 24000, 48000}
-
-        mode = str(value.get('mode', config['mode'])).strip()
-        if mode not in allowed_modes:
-            raise serializers.ValidationError({'mode': 'mode 只能是 server_commit 或 commit'})
-        config['mode'] = mode
-
-        language_type = str(value.get('language_type') or value.get('languageType') or config['language_type']).strip()
-        if language_type not in allowed_languages:
-            raise serializers.ValidationError({'languageType': 'languageType 不在支持范围内'})
-        config['language_type'] = language_type
-
-        response_format = str(value.get('response_format') or value.get('responseFormat') or config['response_format']).strip()
-        if response_format not in allowed_formats:
-            raise serializers.ValidationError({'responseFormat': 'responseFormat 只能是 pcm、wav、mp3 或 opus'})
-        config['response_format'] = response_format
-
-        try:
-            sample_rate = int(value.get('sample_rate') or value.get('sampleRate') or config['sample_rate'])
-        except (TypeError, ValueError):
-            raise serializers.ValidationError({'sampleRate': 'sampleRate 必须是整数'})
-        if sample_rate not in allowed_sample_rates:
-            raise serializers.ValidationError({'sampleRate': 'sampleRate 只能是 8000、16000、24000 或 48000'})
-        config['sample_rate'] = sample_rate
-
-        for payload_key, stored_key, label in (
-            ('speechRate', 'speech_rate', 'speechRate'),
-            ('pitchRate', 'pitch_rate', 'pitchRate'),
-        ):
-            raw_value = value.get(stored_key, value.get(payload_key, config[stored_key]))
-            try:
-                numeric_value = float(raw_value)
-            except (TypeError, ValueError):
-                raise serializers.ValidationError({label: f'{label} 必须是数字'})
-            if numeric_value < 0.5 or numeric_value > 2.0:
-                raise serializers.ValidationError({label: f'{label} 必须在 0.5 到 2.0 之间'})
-            config[stored_key] = round(numeric_value, 2)
-
-        try:
-            volume = int(value.get('volume', config['volume']))
-        except (TypeError, ValueError):
-            raise serializers.ValidationError({'volume': 'volume 必须是整数'})
-        if volume < 0 or volume > 100:
-            raise serializers.ValidationError({'volume': 'volume 必须在 0 到 100 之间'})
-        config['volume'] = volume
-
-        try:
-            bit_rate = int(value.get('bit_rate') or value.get('bitRate') or config['bit_rate'])
-        except (TypeError, ValueError):
-            raise serializers.ValidationError({'bitRate': 'bitRate 必须是整数'})
-        if bit_rate < 6 or bit_rate > 510:
-            raise serializers.ValidationError({'bitRate': 'bitRate 必须在 6 到 510 之间'})
-        config['bit_rate'] = bit_rate
-
-        instructions = str(value.get('instructions') or '').strip()
-        if len(instructions) > 4000:
-            raise serializers.ValidationError({'instructions': 'instructions 不能超过 4000 个字符'})
-        config['instructions'] = instructions
-        config['optimize_instructions'] = bool(value.get('optimize_instructions', value.get('optimizeInstructions', config['optimize_instructions'])))
-        return config
 
     def validate(self, attrs):
         attrs = super().validate(attrs)

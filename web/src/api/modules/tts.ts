@@ -26,6 +26,20 @@ export type TtsProviderSummary = {
   updated_at: string | null;
 };
 
+export type TtsSessionConfig = {
+  model_code?: string;
+  mode: 'server_commit' | 'commit';
+  language_type: 'Auto' | 'Chinese' | 'English' | 'German' | 'Italian' | 'Portuguese' | 'Spanish' | 'Japanese' | 'Korean' | 'French' | 'Russian';
+  response_format: 'pcm' | 'wav' | 'mp3' | 'opus';
+  sample_rate: 8000 | 16000 | 24000 | 48000;
+  speech_rate: number;
+  volume: number;
+  pitch_rate: number;
+  bit_rate: number;
+  instructions: string;
+  optimize_instructions: boolean;
+};
+
 export type TtsSettings = {
   id: number;
   code: string;
@@ -35,6 +49,7 @@ export type TtsSettings = {
   baseUrl: string;
   model: string;
   sampleRate: number;
+  ttsSessionConfig: TtsSessionConfig;
   defaultVoiceId: number | null;
   defaultTestText: string;
   isActive: boolean;
@@ -48,6 +63,7 @@ export type TtsSettingsPayload = Partial<{
   baseUrl: string;
   model: string;
   sampleRate: number;
+  ttsSessionConfig: TtsSessionConfig;
   defaultVoiceId: number | null;
   defaultTestText: string;
   isActive: boolean;
@@ -58,10 +74,17 @@ export type CompanyTtsOptions = {
   provider: {
     code: string;
     name: string;
+    defaultModelCode: string;
+    modelOptions: Array<{
+      code: string;
+      label: string;
+      supportsInstructionControl: boolean;
+    }>;
     isActive: boolean;
   };
   defaultVoiceId: number | null;
   sampleRate: number;
+  ttsSessionConfig: TtsSessionConfig;
   defaultTestText: string;
   voices: TtsVoiceRecord[];
 };
@@ -115,8 +138,8 @@ export const fetchCompanyTtsOptions = async () => {
   return response.data;
 };
 
-export const updateCompanyDefaultTtsVoice = async (voiceId: number) => {
-  const response = await httpClient.patch<CompanyTtsOptions>('/ai-models/tts/default-voice/', { voiceId });
+export const updateCompanyDefaultTtsVoice = async (voiceId: number, ttsSessionConfig?: TtsSessionConfig, modelCode?: string) => {
+  const response = await httpClient.patch<CompanyTtsOptions>('/ai-models/tts/default-voice/', { voiceId, ttsSessionConfig, modelCode });
   return response.data;
 };
 

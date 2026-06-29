@@ -126,7 +126,7 @@ class TTSRealtimeTests(TenantTestMixin, TestCase):
                 ready = await communicator.receive_output(timeout=1)
                 self.assertEqual(
                     json.loads(ready['text']),
-                    {'type': 'tts.ready', 'sampleRate': 24000, 'voice': 'Cherry', 'id': 'tts-suite-1'},
+                    {'type': 'tts.ready', 'sampleRate': 24000, 'responseFormat': 'pcm', 'voice': 'Cherry', 'id': 'tts-suite-1'},
                 )
                 audio = await communicator.receive_output(timeout=1)
                 self.assertEqual(audio, {'type': 'websocket.send', 'bytes': b'\x01\x02'})
@@ -224,6 +224,43 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(tts_services.response_format_for_sample_rate(24000), 'pcm')
         self.assertEqual(tts_services.response_format_for_sample_rate(16000), 'pcm')
 
+    def test_tts_session_model_alias_maps_to_real_upstream_model(self):
+        config = tts_services.get_effective_tts_config(self.provider)
+
+        standard_session = tts_services._session_update_event(
+            config,
+            self.cherry,
+            {'model_code': 'standard'},
+        )['session']
+        instructional_session = tts_services._session_update_event(
+            config,
+            self.cherry,
+            {'modelCode': 'instructional'},
+        )['session']
+
+        self.assertEqual(standard_session['model'], 'qwen3-tts-flash-realtime')
+        self.assertEqual(instructional_session['model'], 'qwen3-tts-instruct-flash-realtime')
+
+    def test_tts_model_alias_filters_unsupported_voices(self):
+        dylan = TTSVoice.objects.get(provider=self.provider, voice_code='Dylan')
+        jennifer = TTSVoice.objects.get(provider=self.provider, voice_code='Jennifer')
+        elias = TTSVoice.objects.get(provider=self.provider, voice_code='Elias')
+
+        instructional_voices = tts_services.get_available_tts_voices(
+            self.provider,
+            model_code='instructional',
+        )
+        standard_voices = tts_services.get_available_tts_voices(
+            self.provider,
+            model_code='standard',
+        )
+
+        self.assertFalse(instructional_voices.filter(id=dylan.id).exists())
+        self.assertFalse(instructional_voices.filter(id=jennifer.id).exists())
+        self.assertTrue(instructional_voices.filter(id=elias.id).exists())
+        self.assertTrue(standard_voices.filter(id=dylan.id).exists())
+        self.assertTrue(standard_voices.filter(id=jennifer.id).exists())
+
     def test_superuser_can_list_tts_providers_for_card_entry(self):
         superuser = User.objects.create_superuser(username='tts-provider-root', password='test123456')
         self.provider.api_key = 'dashscope-secret'
@@ -249,6 +286,7 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(read_response.status_code, status.HTTP_200_OK)
         self.assertEqual(read_response.data['code'], 'aliyun')
         self.assertEqual(read_response.data['apiKeyMasked'], 'das...cret')
+        self.assertEqual(read_response.data['ttsSessionConfig']['mode'], 'server_commit')
         self.assertTrue(read_response.data['voices'][0]['avatarPath'].startswith('http://testserver/static/tts/voices/'))
         self.assertNotIn('dashscope-secret', str(read_response.data))
 
@@ -259,6 +297,18 @@ class TTSApiTests(TenantTestMixin, APITestCase):
                 'baseUrl': 'wss://dashscope.aliyuncs.com/api-ws/v1/realtime',
                 'model': 'qwen3-tts-flash-realtime',
                 'sampleRate': 16000,
+                'ttsSessionConfig': {
+                    'mode': 'commit',
+                    'languageType': 'Chinese',
+                    'responseFormat': 'opus',
+                    'sampleRate': 48000,
+                    'speechRate': 1.25,
+                    'volume': 80,
+                    'pitchRate': 0.85,
+                    'bitRate': 192,
+                    'instructions': '用温柔自然的语气播报。',
+                    'optimizeInstructions': True,
+                },
                 'defaultVoiceId': self.cherry.id,
                 'defaultTestText': '测试一句中文语音。',
                 'isActive': False,
@@ -269,12 +319,17 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(update_response.status_code, status.HTTP_200_OK)
         self.assertFalse(update_response.data['isActive'])
         self.assertEqual(update_response.data['sampleRate'], 16000)
+        self.assertEqual(update_response.data['ttsSessionConfig']['language_type'], 'Chinese')
+        self.assertEqual(update_response.data['ttsSessionConfig']['response_format'], 'opus')
+        self.assertEqual(update_response.data['ttsSessionConfig']['sample_rate'], 48000)
         self.assertEqual(update_response.data['defaultVoiceId'], self.cherry.id)
         self.assertEqual(update_response.data['defaultTestText'], '测试一句中文语音。')
         self.assertNotIn('new-dashscope-secret', str(update_response.data))
 
-    def test_company_user_can_select_default_voice_without_provider_secrets(self):
+    def test_company_user_can_select_default_voice_and_model_alias_without_provider_secrets(self):
         self.grant_permissions('ai_models.tts.view', 'ai_models.tts.update')
+        self.provider.model = 'qwen3-tts-instruct-flash-realtime'
+        self.provider.save(update_fields=['model'])
         self.client.force_authenticate(user=self.tenant_user)
 
         options_response = self.client.get('/api/v1/ai-models/tts/options/')
@@ -282,18 +337,85 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(options_response.status_code, status.HTTP_200_OK)
         self.assertNotIn('apiKey', str(options_response.data))
         self.assertNotIn('baseUrl', str(options_response.data))
+        self.assertNotIn('qwen3-tts-instruct-flash-realtime', str(options_response.data))
+        self.assertNotIn('qwen3-tts-flash-realtime', str(options_response.data))
+        self.assertEqual(options_response.data['provider']['defaultModelCode'], 'instructional')
+        self.assertEqual(
+            options_response.data['provider']['modelOptions'],
+            [
+                {
+                    'code': 'instructional',
+                    'label': '情感增强',
+                    'supportsInstructionControl': True,
+                },
+                {
+                    'code': 'standard',
+                    'label': '标准播报',
+                    'supportsInstructionControl': False,
+                },
+            ],
+        )
+        self.assertEqual(options_response.data['ttsSessionConfig']['mode'], 'server_commit')
         self.assertGreaterEqual(len(options_response.data['voices']), 1)
 
         update_response = self.client.patch(
             '/api/v1/ai-models/tts/default-voice/',
-            {'voiceId': self.cherry.id},
+            {
+                'modelCode': 'standard',
+                'voiceId': self.cherry.id,
+                'ttsSessionConfig': {
+                    'languageType': 'Chinese',
+                    'responseFormat': 'mp3',
+                    'sampleRate': 24000,
+                    'speechRate': 1.1,
+                    'volume': 70,
+                    'pitchRate': 0.9,
+                    'bitRate': 128,
+                },
+            },
             format='json',
         )
 
         self.assertEqual(update_response.status_code, status.HTTP_200_OK)
         settings = TenantTTSSettings.objects.get(tenant=self.tenant)
         self.assertEqual(settings.default_voice_id, self.cherry.id)
+        self.assertEqual(settings.tts_session_config['model_code'], 'standard')
+        self.assertEqual(settings.tts_session_config['language_type'], 'Chinese')
+        self.assertEqual(settings.tts_session_config['response_format'], 'mp3')
         self.assertEqual(update_response.data['defaultVoiceId'], self.cherry.id)
+        self.assertEqual(update_response.data['provider']['defaultModelCode'], 'standard')
+        self.assertEqual(update_response.data['ttsSessionConfig']['language_type'], 'Chinese')
+
+    def test_company_user_cannot_save_voice_unsupported_by_selected_model_alias(self):
+        self.grant_permissions('ai_models.tts.view', 'ai_models.tts.update')
+        dylan = TTSVoice.objects.get(provider=self.provider, voice_code='Dylan')
+        self.client.force_authenticate(user=self.tenant_user)
+
+        update_response = self.client.patch(
+            '/api/v1/ai-models/tts/default-voice/',
+            {
+                'modelCode': 'instructional',
+                'voiceId': dylan.id,
+            },
+            format='json',
+        )
+
+        self.assertEqual(update_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(update_response.data['voiceId'], '所选音色不支持当前播报模型')
+
+    def test_realtime_voice_resolver_rejects_voice_unsupported_by_model_alias(self):
+        from apps.ai_models.realtime_tts import resolve_tts_voice
+
+        jennifer = TTSVoice.objects.get(provider=self.provider, voice_code='Jennifer')
+
+        voice = resolve_tts_voice(
+            {'user_id': self.tenant_user.id, 'tenant_id': self.tenant.id, 'is_superuser': False},
+            jennifer.id,
+            self.provider,
+            model_code='instructional',
+        )
+
+        self.assertIsNone(voice)
 
     def test_device_code_can_read_company_tts_options_without_jwt(self):
         Device.objects.create(
@@ -335,13 +457,7 @@ class TTSApiTests(TenantTestMixin, APITestCase):
     @patch('apps.ai_models.services.tts.synthesize_tts_pcm', return_value=b'\x01\x02')
     def test_company_test_can_use_selected_voice(self, synthesize_tts_pcm):
         self.grant_permissions('ai_models.tts.view')
-        other_voice = TTSVoice.objects.create(
-            provider=self.provider,
-            display_name='Test Voice',
-            voice_code='TestVoice',
-            is_active=True,
-            is_visible=True,
-        )
+        other_voice = TTSVoice.objects.get(provider=self.provider, voice_code='Elias')
         self.client.force_authenticate(user=self.tenant_user)
 
         response = self.client.post(
@@ -406,13 +522,7 @@ class TTSApiTests(TenantTestMixin, APITestCase):
 
     @patch('apps.ai_models.services.tts.synthesize_tts_pcm', return_value=b'\x05\x06')
     def test_device_runtime_can_use_selected_voice_by_device_code(self, synthesize_tts_pcm):
-        other_voice = TTSVoice.objects.create(
-            provider=self.provider,
-            display_name='Device Voice',
-            voice_code='DeviceVoice',
-            is_active=True,
-            is_visible=True,
-        )
+        other_voice = TTSVoice.objects.get(provider=self.provider, voice_code='Elias')
         Device.objects.create(
             tenant=self.tenant,
             name='TTS Runtime Voice Device',
@@ -430,5 +540,5 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response['X-TTS-Voice'], 'DeviceVoice')
+        self.assertEqual(response['X-TTS-Voice'], 'Elias')
         self.assertEqual(synthesize_tts_pcm.call_args.kwargs['voice'].id, other_voice.id)

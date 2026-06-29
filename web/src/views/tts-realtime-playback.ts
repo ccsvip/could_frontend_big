@@ -1,5 +1,5 @@
 import { type TtsRealtimeMessage, type TtsTestPayload } from '../api/modules/tts';
-import type { AgentTtsSessionConfig } from '../api/modules/applications';
+import type { TtsSessionConfig } from '../api/modules/tts';
 import {
   buildRealtimeWebSocketUrl,
   buildTtsSessionCancelCommand,
@@ -12,7 +12,7 @@ type PlayRealtimeTtsOptions = TtsTestPayload & {
   token: string;
   tenantId?: number | null;
   providerCode?: string;
-  sessionConfig?: AgentTtsSessionConfig;
+  sessionConfig?: TtsSessionConfig;
   filterPunctuation?: string;
   filterEmoji?: boolean;
   signal?: AbortSignal;
@@ -49,21 +49,52 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
   const chunks: ArrayBuffer[] = [];
   const scheduledSources: AudioBufferSourceNode[] = [];
   let audioClosed = false;
+  let encodedAudio: HTMLAudioElement | null = null;
+  let encodedAudioUrl: string | null = null;
+
+  const closeEncodedAudio = () => {
+    if (encodedAudio) {
+      encodedAudio.pause();
+      encodedAudio.src = '';
+      encodedAudio.load();
+      encodedAudio = null;
+    }
+    if (encodedAudioUrl) {
+      URL.revokeObjectURL(encodedAudioUrl);
+      encodedAudioUrl = null;
+    }
+  };
 
   const closeAudio = () => {
+    closeEncodedAudio();
     if (audioClosed) {
       return;
     }
     audioClosed = true;
+    try {
+      gain.gain.cancelScheduledValues(audioContext.currentTime);
+      gain.gain.setValueAtTime(0, audioContext.currentTime);
+    } catch {
+      // Audio context may already be closing.
+    }
     scheduledSources.forEach((source) => {
       try {
-        source.stop();
+        source.stop(audioContext.currentTime);
       } catch {
         // Source may already have ended.
       }
-      source.disconnect();
+      try {
+        source.disconnect();
+      } catch {
+        // Source may already be disconnected.
+      }
     });
-    gain.disconnect();
+    scheduledSources.length = 0;
+    try {
+      gain.disconnect();
+    } catch {
+      // Gain may already be disconnected.
+    }
     void audioContext.close();
   };
 
@@ -71,17 +102,21 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
     let settled = false;
     let completing = false;
     let interrupted = false;
+    let cancelled = false;
     let completionTimer: number | null = null;
     const socket = new WebSocket(buildRealtimeWebSocketUrl());
     socket.binaryType = 'arraybuffer';
 
     const finish = () => {
-      if (settled || completing) {
+      if (settled || completing || cancelled) {
         return;
       }
       completing = true;
       const playbackTailMs = Math.max(0, (nextStartTime - audioContext.currentTime) * 1000);
       completionTimer = window.setTimeout(() => {
+        if (cancelled) {
+          return;
+        }
         settled = true;
         closeAudio();
         if (chunks.length === 0) {
@@ -95,16 +130,24 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
         }
         const objectUrl = URL.createObjectURL(blob);
         const audio = new Audio(objectUrl);
+        encodedAudioUrl = objectUrl;
+        encodedAudio = audio;
         audio.onended = () => {
           URL.revokeObjectURL(objectUrl);
+          encodedAudioUrl = null;
+          encodedAudio = null;
           resolve({ blob, sampleRate });
         };
         audio.onerror = () => {
           URL.revokeObjectURL(objectUrl);
+          encodedAudioUrl = null;
+          encodedAudio = null;
           reject(new Error('当前浏览器无法播放该 TTS 音频格式'));
         };
         void audio.play().catch(() => {
           URL.revokeObjectURL(objectUrl);
+          encodedAudioUrl = null;
+          encodedAudio = null;
           reject(new Error('当前浏览器无法播放该 TTS 音频格式'));
         });
       }, playbackTailMs + 50);
@@ -124,6 +167,8 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
     };
 
     const abort = () => {
+      cancelled = true;
+      closeAudio();
       if (socket.readyState === WebSocket.OPEN) {
         socket.send(encodeRealtimeCommand(buildTtsSessionCancelCommand(createRealtimeCommandId('tts-cancel'))));
       }
@@ -132,15 +177,18 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
     };
 
     const interruptPlayback = () => {
-      if (settled || interrupted) {
+      if (interrupted) {
         return;
       }
       interrupted = true;
+      cancelled = true;
       if (completionTimer !== null) {
         window.clearTimeout(completionTimer);
         completionTimer = null;
       }
       closeAudio();
+      socket.close(1000, 'tts playback interrupted');
+      fail(new DOMException('TTS playback was interrupted', 'AbortError'));
     };
 
     if (options.signal?.aborted) {
@@ -154,6 +202,10 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
     options.interruptSignal?.addEventListener('abort', interruptPlayback, { once: true });
 
     socket.onopen = () => {
+      if (cancelled) {
+        socket.close();
+        return;
+      }
       if (audioContext.state === 'suspended') {
         void audioContext.resume();
       }
@@ -168,10 +220,10 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
     };
 
     socket.onmessage = (event: MessageEvent<string | ArrayBuffer>) => {
+      if (cancelled || audioClosed) {
+        return;
+      }
       if (typeof event.data !== 'string') {
-        if (interrupted) {
-          return;
-        }
         const pcm = event.data.slice(0);
         chunks.push(pcm);
         if (responseFormat !== 'pcm') {

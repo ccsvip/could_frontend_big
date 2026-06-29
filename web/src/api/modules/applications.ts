@@ -16,19 +16,6 @@ export type AgentApplicationKnowledgeBase = {
   updated_at: string;
 };
 
-export type AgentTtsSessionConfig = {
-  mode: 'server_commit' | 'commit';
-  language_type: 'Auto' | 'Chinese' | 'English' | 'German' | 'Italian' | 'Portuguese' | 'Spanish' | 'Japanese' | 'Korean' | 'French' | 'Russian';
-  response_format: 'pcm' | 'wav' | 'mp3' | 'opus';
-  sample_rate: 8000 | 16000 | 24000 | 48000;
-  speech_rate: number;
-  volume: number;
-  pitch_rate: number;
-  bit_rate: number;
-  instructions: string;
-  optimize_instructions: boolean;
-};
-
 export type AgentApplicationRecord = {
   id: number;
   name: string;
@@ -48,7 +35,6 @@ export type AgentApplicationRecord = {
   replyPlaybackEnabled: boolean;
   ttsFilterPunctuation: string;
   ttsFilterEmoji: boolean;
-  ttsSessionConfig: AgentTtsSessionConfig;
   knowledgeDocumentIds: number[];
   knowledgeDocuments: AgentApplicationKnowledgeDocument[];
   knowledgeBaseIds: number[];
@@ -91,7 +77,6 @@ export type AgentApplicationPayload = {
   replyPlaybackEnabled?: boolean;
   ttsFilterPunctuation?: string;
   ttsFilterEmoji?: boolean;
-  ttsSessionConfig?: AgentTtsSessionConfig;
   knowledgeDocumentIds?: number[];
   knowledgeBaseIds?: number[];
   isActive?: boolean;

@@ -71,7 +71,6 @@ from .models import (
     TenantKnowledgeModelSettings,
     TenantLLMModelGrant,
     TenantLLMSettings,
-    TenantTTSSettings,
     TTSProvider,
     TTSVoice,
 )
@@ -100,6 +99,7 @@ from .serializers import (
     PlatformTTSProviderSummarySerializer,
     PlatformTTSSettingsSerializer,
     PlatformTTSSettingsWriteSerializer,
+    CompanyTTSSettingsWriteSerializer,
     CompanyTTSVoiceSerializer,
     TenantKnowledgeModelSettingsSerializer,
     TenantLLMAuthorizationSerializer,
@@ -285,14 +285,26 @@ def _select_platform_tts_voice(provider, raw_voice_id=None) -> TTSVoice | None:
     return tts_services.get_default_tts_voice(provider)
 
 
-def _select_company_tts_voice(tenant, provider, raw_voice_id=None) -> TTSVoice | None:
+def _select_company_tts_voice(tenant, provider, raw_voice_id=None, *, model_code: str | None = None) -> TTSVoice | None:
     if raw_voice_id not in (None, ''):
         try:
             voice_id = int(raw_voice_id)
         except (TypeError, ValueError):
             raise ValidationError({'voiceId': '音色不能为空'})
-        return tts_services.get_available_tts_voices(provider).filter(id=voice_id).first()
-    return tts_services.get_effective_tts_voice_for_tenant(tenant, provider)
+        return tts_services.get_available_tts_voices(provider, model_code=model_code).filter(id=voice_id).first()
+    return tts_services.get_effective_tts_voice_for_tenant(tenant, provider, model_code=model_code)
+
+
+def _company_tts_session_config(tenant, config, request_data=None) -> dict:
+    settings_obj = tts_services.get_tenant_tts_settings(tenant)
+    session_config = dict(settings_obj.tts_session_config if settings_obj is not None else config.tts_session_config)
+    request_config = request_data.get('ttsSessionConfig') if isinstance(request_data, dict) else None
+    if isinstance(request_config, dict):
+        session_config.update(request_config)
+    model_code = request_data.get('modelCode') if isinstance(request_data, dict) else None
+    if model_code:
+        session_config['model_code'] = model_code
+    return session_config
 
 
 def _get_platform_tts_provider(provider_code: str | None = None) -> TTSProvider:
@@ -304,16 +316,22 @@ def _get_platform_tts_provider(provider_code: str | None = None) -> TTSProvider:
 def _build_company_tts_options_payload(tenant, request=None):
     provider = tts_services.get_aliyun_tts_provider()
     config = tts_services.get_effective_tts_config(provider)
-    selected_voice = tts_services.get_effective_tts_voice_for_tenant(tenant, provider)
-    voices = tts_services.get_available_tts_voices(provider)
+    settings_obj = tts_services.get_tenant_tts_settings(tenant)
+    tts_session_config = settings_obj.tts_session_config if settings_obj is not None else config.tts_session_config
+    default_model_code = tts_services.get_tts_model_profile_code_from_session(tts_session_config, config.model)
+    selected_voice = tts_services.get_effective_tts_voice_for_tenant(tenant, provider, model_code=default_model_code)
+    voices = tts_services.get_available_tts_voices(provider, model_code=default_model_code)
     return {
         'provider': {
             'code': provider.code,
             'name': provider.name,
+            'defaultModelCode': default_model_code,
+            'modelOptions': tts_services.public_tts_model_profiles(),
             'isActive': provider.is_active,
         },
         'defaultVoiceId': selected_voice.id if selected_voice else None,
         'sampleRate': config.sample_rate,
+        'ttsSessionConfig': tts_session_config,
         'defaultTestText': config.default_test_text,
         'voices': CompanyTTSVoiceSerializer(
             voices,
@@ -356,12 +374,13 @@ class TTSSettingsTestView(APIView):
     def post(self, request, provider_code=None):
         provider = _get_platform_tts_provider(provider_code)
         config = tts_services.get_effective_tts_config(provider)
+        session_config = request.data.get('ttsSessionConfig') if isinstance(request.data, dict) else None
         voice = _select_platform_tts_voice(provider, request.data.get('voiceId'))
         if voice is None:
             return Response({'voiceId': '请先配置默认音色'}, status=status.HTTP_400_BAD_REQUEST)
         text = tts_services.normalize_tts_text(request.data.get('text'), config)
         try:
-            pcm = tts_services.synthesize_tts_pcm(text=text, voice=voice, config=config)
+            pcm = tts_services.synthesize_tts_pcm(text=text, voice=voice, config=config, session_config=session_config)
         except Exception as exc:
             return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
         return _tts_audio_response(pcm=pcm, config=config, voice=voice, wrap_wav=True)
@@ -393,20 +412,16 @@ class CompanyTTSDefaultVoiceView(TenantScopedQuerysetMixin, APIView):
         tenant = self.request_tenant
         if tenant is None:
             return Response({'tenant': '当前账号未归属公司'}, status=status.HTTP_400_BAD_REQUEST)
-        raw_voice_id = request.data.get('voiceId')
-        try:
-            voice_id = int(raw_voice_id)
-        except (TypeError, ValueError):
-            return Response({'voiceId': '音色不能为空'}, status=status.HTTP_400_BAD_REQUEST)
         provider = tts_services.get_aliyun_tts_provider()
-        voice = tts_services.get_available_tts_voices(provider).filter(id=voice_id).first()
-        if voice is None:
-            return Response({'voiceId': '所选音色不可用'}, status=status.HTTP_400_BAD_REQUEST)
-
-        TenantTTSSettings.objects.update_or_create(
-            tenant=tenant,
-            defaults={'default_voice': voice},
-        )
+        settings_obj = tts_services.get_tenant_tts_settings(tenant)
+        serializer = CompanyTTSSettingsWriteSerializer(settings_obj, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        voice = serializer.validated_data.get('default_voice')
+        session_config = serializer.validated_data.get('tts_session_config') or settings_obj.tts_session_config
+        model_code = tts_services.get_tts_model_profile_code_from_session(session_config, provider.model)
+        if voice is not None and not tts_services.get_available_tts_voices(provider, model_code=model_code).filter(id=voice.id).exists():
+            return Response({'voiceId': '所选音色不支持当前播报模型'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
         return Response(_build_company_tts_options_payload(tenant, request))
 
 
@@ -417,12 +432,14 @@ class CompanyTTSTestView(TenantScopedQuerysetMixin, APIView):
         tenant = self.request_tenant
         provider = tts_services.get_aliyun_tts_provider()
         config = tts_services.get_effective_tts_config(provider)
-        voice = _select_company_tts_voice(tenant, provider, request.data.get('voiceId'))
+        session_config = _company_tts_session_config(tenant, config, request.data)
+        model_code = tts_services.get_tts_model_profile_code_from_session(session_config, config.model)
+        voice = _select_company_tts_voice(tenant, provider, request.data.get('voiceId'), model_code=model_code)
         if voice is None:
-            return Response({'voiceId': '请先配置默认音色'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'voiceId': '请先配置默认音色或当前模型不支持该音色'}, status=status.HTTP_400_BAD_REQUEST)
         text = tts_services.normalize_tts_text(request.data.get('text'), config)
         try:
-            pcm = tts_services.synthesize_tts_pcm(text=text, voice=voice, config=config)
+            pcm = tts_services.synthesize_tts_pcm(text=text, voice=voice, config=config, session_config=session_config)
         except Exception as exc:
             return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
         return _tts_audio_response(pcm=pcm, config=config, voice=voice, wrap_wav=True)
@@ -444,12 +461,14 @@ class TTSRuntimeView(APIView):
             return Response(exc.as_payload(), status=exc.status_code)
         provider = tts_services.get_aliyun_tts_provider()
         config = tts_services.get_effective_tts_config(provider)
-        voice = _select_company_tts_voice(device.tenant, provider, request.data.get('voiceId'))
+        session_config = _company_tts_session_config(device.tenant, config, request.data)
+        model_code = tts_services.get_tts_model_profile_code_from_session(session_config, config.model)
+        voice = _select_company_tts_voice(device.tenant, provider, request.data.get('voiceId'), model_code=model_code)
         if voice is None:
-            return Response({'voiceId': '请先配置默认音色'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'voiceId': '请先配置默认音色或当前模型不支持该音色'}, status=status.HTTP_400_BAD_REQUEST)
         text = tts_services.normalize_tts_text(request.data.get('text'), config)
         try:
-            pcm = tts_services.synthesize_tts_pcm(text=text, voice=voice, config=config)
+            pcm = tts_services.synthesize_tts_pcm(text=text, voice=voice, config=config, session_config=session_config)
         except Exception as exc:
             return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
         return _tts_audio_response(pcm=pcm, config=config, voice=voice, wrap_wav=_request_wav_audio(request))

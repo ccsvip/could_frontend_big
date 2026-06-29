@@ -18,6 +18,74 @@ from apps.ai_models.models import TTSProvider, TTSVoice, TenantTTSSettings
 PCM_SOURCE_FORMAT = 'pcm_s16le'
 DEFAULT_TEST_TEXT = '对吧~我就特别喜欢这种超市，尤其是过年的时候去逛超市就会觉得超级超级开心！想买好多好多的东西呢！'
 DEFAULT_TTS_SEGMENT_BOUNDARIES = '。！？!?；;'
+TTS_MODEL_PROFILES = [
+    {
+        'code': 'instructional',
+        'label': '情感增强',
+        'model': 'qwen3-tts-instruct-flash-realtime',
+        'supportsInstructionControl': True,
+    },
+    {
+        'code': 'standard',
+        'label': '标准播报',
+        'model': 'qwen3-tts-flash-realtime',
+        'supportsInstructionControl': False,
+    },
+]
+DEFAULT_TTS_MODEL_PROFILE_CODE = 'instructional'
+QWEN3_INSTRUCT_FLASH_VOICE_CODES = {
+    'Cherry',
+    'Serena',
+    'Ethan',
+    'Chelsie',
+    'Momo',
+    'Vivian',
+    'Moon',
+    'Maia',
+    'Kai',
+    'Nofish',
+    'Bella',
+    'Eldric Sage',
+    'Mia',
+    'Mochi',
+    'Bellona',
+    'Vincent',
+    'Bunny',
+    'Neil',
+    'Arthur',
+    'Nini',
+    'Elias',
+    'Seren',
+    'Pip',
+    'Stella',
+}
+QWEN3_FLASH_EXTRA_VOICE_CODES = {
+    'Jennifer',
+    'Ryan',
+    'Katerina',
+    'Aiden',
+    'Dylan',
+    'Jada',
+    'Li',
+    'Marcus',
+    'Roy',
+    'Peter',
+    'Sunny',
+    'Eric',
+    'Rocky',
+    'Kiki',
+    'Bodega',
+    'Sonrisa',
+    'Alek',
+    'Dolce',
+    'Sohee',
+    'Ono Anna',
+    'Lenn',
+    'Emilien',
+    'Andre',
+    'Radio Gol',
+}
+QWEN3_FLASH_VOICE_CODES = QWEN3_INSTRUCT_FLASH_VOICE_CODES | QWEN3_FLASH_EXTRA_VOICE_CODES
 
 
 @dataclass(frozen=True)
@@ -27,6 +95,7 @@ class EffectiveTTSConfig:
     base_url: str
     model: str
     sample_rate: int
+    tts_session_config: dict
     default_test_text: str
     is_active: bool
     updated_at: object | None = None
@@ -52,6 +121,7 @@ def get_effective_tts_config(provider: TTSProvider | None = None) -> EffectiveTT
         base_url=(cfg.base_url or getattr(settings, 'ALIYUN_TTS_BASE_URL', '')).strip(),
         model=(cfg.model or getattr(settings, 'ALIYUN_TTS_MODEL', '')).strip(),
         sample_rate=int(cfg.sample_rate or getattr(settings, 'ALIYUN_TTS_SAMPLE_RATE', 24000)),
+        tts_session_config=dict(getattr(cfg, 'tts_session_config', None) or {}),
         default_test_text=(cfg.default_test_text or getattr(settings, 'ALIYUN_TTS_DEFAULT_TEST_TEXT', '') or DEFAULT_TEST_TEXT).strip(),
         is_active=bool(cfg.is_active),
         updated_at=cfg.updated_at,
@@ -62,6 +132,56 @@ def is_tts_configured(config: EffectiveTTSConfig) -> bool:
     return bool(config.is_active and config.api_key and config.base_url and config.model)
 
 
+def public_tts_model_profiles() -> list[dict]:
+    return [
+        {
+            'code': item['code'],
+            'label': item['label'],
+            'supportsInstructionControl': item['supportsInstructionControl'],
+        }
+        for item in TTS_MODEL_PROFILES
+    ]
+
+
+def resolve_tts_model_profile_code(value: str | None) -> str:
+    raw = str(value or '').strip()
+    available = {item['code'] for item in TTS_MODEL_PROFILES}
+    return raw if raw in available else DEFAULT_TTS_MODEL_PROFILE_CODE
+
+
+def resolve_tts_model_profile_model(value: str | None, fallback_model: str = '') -> str:
+    code = resolve_tts_model_profile_code(value)
+    for item in TTS_MODEL_PROFILES:
+        if item['code'] == code:
+            return str(item['model'])
+    return fallback_model
+
+
+def get_tts_model_profile_code_from_session(session_config: dict | None, fallback_model: str = '') -> str:
+    if isinstance(session_config, dict):
+        model_code = session_config.get('model_code') or session_config.get('modelCode')
+        if model_code:
+            return resolve_tts_model_profile_code(str(model_code))
+    normalized_fallback = str(fallback_model or '').strip().lower()
+    for item in TTS_MODEL_PROFILES:
+        if normalized_fallback.startswith(str(item['model']).lower()):
+            return str(item['code'])
+    return DEFAULT_TTS_MODEL_PROFILE_CODE
+
+
+def get_tts_model_profile_voice_codes(model_code: str | None) -> set[str]:
+    resolved = resolve_tts_model_profile_code(model_code)
+    if resolved == 'standard':
+        return set(QWEN3_FLASH_VOICE_CODES)
+    return set(QWEN3_INSTRUCT_FLASH_VOICE_CODES)
+
+
+def is_tts_voice_supported_by_model_code(voice: TTSVoice | None, model_code: str | None) -> bool:
+    if voice is None:
+        return False
+    return voice.voice_code in get_tts_model_profile_voice_codes(model_code)
+
+
 def get_tenant_tts_settings(tenant):
     if tenant is None:
         return None
@@ -69,9 +189,12 @@ def get_tenant_tts_settings(tenant):
     return settings_obj
 
 
-def get_available_tts_voices(provider: TTSProvider | None = None):
+def get_available_tts_voices(provider: TTSProvider | None = None, *, model_code: str | None = None):
     cfg = provider or get_aliyun_tts_provider()
-    return cfg.voices.filter(is_active=True, is_visible=True).order_by('sort_order', 'id')
+    queryset = cfg.voices.filter(is_active=True, is_visible=True)
+    if model_code:
+        queryset = queryset.filter(voice_code__in=get_tts_model_profile_voice_codes(model_code))
+    return queryset.order_by('sort_order', 'id')
 
 
 def is_voice_available(voice: TTSVoice | None) -> bool:
@@ -80,18 +203,22 @@ def is_voice_available(voice: TTSVoice | None) -> bool:
     return bool(voice.is_active and voice.is_visible and voice.provider.is_active)
 
 
-def get_default_tts_voice(provider: TTSProvider | None = None) -> TTSVoice | None:
+def get_default_tts_voice(provider: TTSProvider | None = None, *, model_code: str | None = None) -> TTSVoice | None:
     cfg = provider or get_aliyun_tts_provider()
-    if is_voice_available(cfg.default_voice):
+    if is_voice_available(cfg.default_voice) and (not model_code or is_tts_voice_supported_by_model_code(cfg.default_voice, model_code)):
         return cfg.default_voice
-    return get_available_tts_voices(cfg).first()
+    return get_available_tts_voices(cfg, model_code=model_code).first()
 
 
-def get_effective_tts_voice_for_tenant(tenant, provider: TTSProvider | None = None) -> TTSVoice | None:
+def get_effective_tts_voice_for_tenant(tenant, provider: TTSProvider | None = None, *, model_code: str | None = None) -> TTSVoice | None:
     settings_obj = get_tenant_tts_settings(tenant)
-    if settings_obj is not None and is_voice_available(settings_obj.default_voice):
+    if (
+        settings_obj is not None
+        and is_voice_available(settings_obj.default_voice)
+        and (not model_code or is_tts_voice_supported_by_model_code(settings_obj.default_voice, model_code))
+    ):
         return settings_obj.default_voice
-    return get_default_tts_voice(provider)
+    return get_default_tts_voice(provider, model_code=model_code)
 
 
 def normalize_tts_text(text: str | None, config: EffectiveTTSConfig) -> str:
@@ -249,30 +376,44 @@ def pcm_to_wav(pcm: bytes, *, sample_rate: int) -> bytes:
     return buffer.getvalue()
 
 
-def build_tts_ws_url(config: EffectiveTTSConfig) -> str:
+def build_tts_ws_url(config: EffectiveTTSConfig, model: str | None = None) -> str:
     base_url = config.base_url.rstrip()
     separator = '&' if '?' in base_url else '?'
-    return f'{base_url}{separator}{urlencode({"model": config.model})}'
+    return f'{base_url}{separator}{urlencode({"model": model or config.model})}'
 
 
 def response_format_for_sample_rate(sample_rate: int) -> str:
     return 'pcm'
 
 
-def synthesize_tts_pcm(*, text: str, voice: TTSVoice, config: EffectiveTTSConfig | None = None) -> bytes:
+def synthesize_tts_pcm(
+    *,
+    text: str,
+    voice: TTSVoice,
+    config: EffectiveTTSConfig | None = None,
+    session_config: dict | None = None,
+) -> bytes:
     effective = config or get_effective_tts_config(voice.provider)
-    return asyncio.run(_synthesize_tts_pcm_async(text=text, voice=voice, config=effective))
+    return asyncio.run(_synthesize_tts_pcm_async(text=text, voice=voice, config=effective, session_config=session_config))
 
 
-async def _synthesize_tts_pcm_async(*, text: str, voice: TTSVoice, config: EffectiveTTSConfig) -> bytes:
+async def _synthesize_tts_pcm_async(
+    *,
+    text: str,
+    voice: TTSVoice,
+    config: EffectiveTTSConfig,
+    session_config: dict | None = None,
+) -> bytes:
     if not is_tts_configured(config):
         raise RuntimeError('TTS 服务未配置或未启用')
     if voice is None:
         raise RuntimeError('TTS 音色未配置')
 
     audio_parts: list[bytes] = []
+    session_event = _session_update_event(config, voice, session_config)
+    session_model = session_event['session']['model']
     async with websockets.connect(
-        build_tts_ws_url(config),
+        build_tts_ws_url(config, session_model),
         additional_headers=[
             ('Authorization', f'Bearer {config.api_key}'),
             ('OpenAI-Beta', 'realtime=v1'),
@@ -283,7 +424,7 @@ async def _synthesize_tts_pcm_async(*, text: str, voice: TTSVoice, config: Effec
         ping_timeout=20,
         max_size=8 * 1024 * 1024,
     ) as upstream:
-        await upstream.send(json.dumps(_session_update_event(config, voice)))
+        await upstream.send(json.dumps(session_event))
         for chunk in split_tts_text(text):
             await upstream.send(json.dumps(_text_append_event(chunk)))
             await asyncio.sleep(0.05)
@@ -324,11 +465,13 @@ def _extract_upstream_error_message(event: dict) -> str:
 
 def _session_update_event(config: EffectiveTTSConfig, voice: TTSVoice, session_config: dict | None = None) -> dict:
     options = _normalize_session_config(config, session_config)
+    model_code = get_tts_model_profile_code_from_session(options, config.model)
+    model = resolve_tts_model_profile_model(model_code, config.model)
     return {
         'event_id': 'event_tts_session_update',
         'type': 'session.update',
         'session': {
-            'model': config.model,
+            'model': model,
             'voice': voice.voice_code,
             **options,
         },
@@ -336,7 +479,7 @@ def _session_update_event(config: EffectiveTTSConfig, voice: TTSVoice, session_c
 
 
 def _normalize_session_config(config: EffectiveTTSConfig, session_config: dict | None = None) -> dict:
-    raw = session_config if isinstance(session_config, dict) else {}
+    raw = session_config if isinstance(session_config, dict) else (getattr(config, 'tts_session_config', None) or {})
     response_format = raw.get('response_format') or raw.get('responseFormat')
     if response_format not in {'pcm', 'wav', 'mp3', 'opus'}:
         response_format = response_format_for_sample_rate(config.sample_rate)
@@ -350,7 +493,9 @@ def _normalize_session_config(config: EffectiveTTSConfig, session_config: dict |
     if sample_rate not in {8000, 16000, 24000, 48000}:
         sample_rate = config.sample_rate
     instructions = str(raw.get('instructions') or '').strip()
+    model_code = get_tts_model_profile_code_from_session(raw, config.model)
     return {
+        'model_code': model_code,
         'mode': raw.get('mode') if raw.get('mode') in {'server_commit', 'commit'} else 'server_commit',
         'language_type': language_type,
         'response_format': response_format,

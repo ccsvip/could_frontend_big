@@ -321,6 +321,21 @@ class ASRConfig(models.Model):
         return instance
 
 
+def default_tts_session_config() -> dict:
+    return {
+        'mode': 'server_commit',
+        'language_type': 'Auto',
+        'response_format': 'pcm',
+        'sample_rate': 24000,
+        'speech_rate': 1.0,
+        'volume': 50,
+        'pitch_rate': 1.0,
+        'bit_rate': 128,
+        'instructions': '',
+        'optimize_instructions': False,
+    }
+
+
 class TTSProvider(models.Model):
     code = models.CharField('供应商编码', max_length=32, unique=True, default='aliyun')
     name = models.CharField('供应商名称', max_length=128, default='阿里云 TTS')
@@ -336,6 +351,7 @@ class TTSProvider(models.Model):
         verbose_name='默认音色',
     )
     sample_rate = models.PositiveIntegerField('采样率', default=24000)
+    tts_session_config = models.JSONField('TTS 会话配置', blank=True, default=default_tts_session_config)
     default_test_text = models.TextField(
         '默认测试文本',
         default='对吧~我就特别喜欢这种超市，尤其是过年的时候去逛超市就会觉得超级超级开心！想买好多好多的东西呢！',
@@ -361,6 +377,7 @@ class TTSProvider(models.Model):
                 'base_url': getattr(settings, 'ALIYUN_TTS_BASE_URL', ''),
                 'model': getattr(settings, 'ALIYUN_TTS_MODEL', ''),
                 'sample_rate': getattr(settings, 'ALIYUN_TTS_SAMPLE_RATE', 24000),
+                'tts_session_config': default_tts_session_config(),
                 'default_test_text': getattr(settings, 'ALIYUN_TTS_DEFAULT_TEST_TEXT', ''),
                 'is_active': True,
             },
@@ -411,6 +428,7 @@ class TenantTTSSettings(models.Model):
         related_name='tenant_default_settings',
         verbose_name='默认音色',
     )
+    tts_session_config = models.JSONField('TTS 会话配置', blank=True, default=default_tts_session_config)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
 
     objects = TenantManager()
@@ -456,18 +474,7 @@ def default_agent_opening_message(name: str) -> str:
 
 
 def default_agent_tts_session_config() -> dict:
-    return {
-        'mode': 'server_commit',
-        'language_type': 'Auto',
-        'response_format': 'pcm',
-        'sample_rate': 24000,
-        'speech_rate': 1.0,
-        'volume': 50,
-        'pitch_rate': 1.0,
-        'bit_rate': 128,
-        'instructions': '',
-        'optimize_instructions': False,
-    }
+    return default_tts_session_config()
 
 
 class AgentApplication(models.Model):
@@ -502,7 +509,6 @@ class AgentApplication(models.Model):
     reply_playback_enabled = models.BooleanField('是否自动播报回复', default=False)
     tts_filter_punctuation = models.CharField('TTS 过滤标点', max_length=64, blank=True, default='。！？!?；;、')
     tts_filter_emoji = models.BooleanField('TTS 过滤表情', default=True)
-    tts_session_config = models.JSONField('TTS 会话配置', blank=True, default=default_agent_tts_session_config)
     knowledge_documents = models.ManyToManyField(
         'knowledge_base.KnowledgeDocument',
         blank=True,
@@ -567,7 +573,6 @@ class AgentApplication(models.Model):
             'reply_playback_enabled': self.reply_playback_enabled,
             'tts_filter_punctuation': self.tts_filter_punctuation,
             'tts_filter_emoji': self.tts_filter_emoji,
-            'tts_session_config': {**default_agent_tts_session_config(), **(self.tts_session_config or {})},
             'is_active': self.is_active,
             'knowledge_document_ids': list(self.knowledge_documents.order_by('id').values_list('id', flat=True)),
             'knowledge_base_ids': list(self.knowledge_bases.order_by('id').values_list('id', flat=True)),
@@ -597,10 +602,6 @@ class AgentApplication(models.Model):
             'reply_playback_enabled': config.get('reply_playback_enabled', self.reply_playback_enabled),
             'tts_filter_punctuation': config.get('tts_filter_punctuation', self.tts_filter_punctuation),
             'tts_filter_emoji': config.get('tts_filter_emoji', self.tts_filter_emoji),
-            'tts_session_config': {
-                **default_agent_tts_session_config(),
-                **(config.get('tts_session_config') or self.tts_session_config or {}),
-            },
             'is_active': config.get('is_active', self.is_active),
             'knowledge_document_ids': config.get('knowledge_document_ids', []),
             'knowledge_base_ids': config.get('knowledge_base_ids', []),

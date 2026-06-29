@@ -18,7 +18,6 @@ import {
   type AgentApplicationRecord,
   type AgentApplicationStats,
   type AgentApplicationPayload,
-  type AgentTtsSessionConfig,
 } from '../../api/modules/applications';
 import {
   fetchConversation,
@@ -124,48 +123,6 @@ const LOG_CONVERSATION_PAGE_SIZE = 100;
 const DEFAULT_TEMPERATURE = 0.7;
 const DEFAULT_MAX_TOKENS = 1000;
 const DEFAULT_TTS_FILTER_PUNCTUATION = '。！？!?；;、';
-const DEFAULT_TTS_SESSION_CONFIG: AgentTtsSessionConfig = {
-  mode: 'server_commit',
-  language_type: 'Auto',
-  response_format: 'pcm',
-  sample_rate: 24000,
-  speech_rate: 1,
-  volume: 50,
-  pitch_rate: 1,
-  bit_rate: 128,
-  instructions: '',
-  optimize_instructions: false,
-};
-const TTS_LANGUAGE_OPTIONS = [
-  { label: '自动识别', value: 'Auto' },
-  { label: '中文', value: 'Chinese' },
-  { label: '英语', value: 'English' },
-  { label: '德语', value: 'German' },
-  { label: '意大利语', value: 'Italian' },
-  { label: '葡萄牙语', value: 'Portuguese' },
-  { label: '西班牙语', value: 'Spanish' },
-  { label: '日语', value: 'Japanese' },
-  { label: '韩语', value: 'Korean' },
-  { label: '法语', value: 'French' },
-  { label: '俄语', value: 'Russian' },
-] satisfies Array<{ label: string; value: AgentTtsSessionConfig['language_type'] }>;
-const TTS_RESPONSE_FORMAT_OPTIONS = [
-  { label: 'PCM', value: 'pcm' },
-  { label: 'WAV', value: 'wav' },
-  { label: 'MP3', value: 'mp3' },
-  { label: 'OPUS', value: 'opus' },
-] satisfies Array<{ label: string; value: AgentTtsSessionConfig['response_format'] }>;
-const TTS_SAMPLE_RATE_VALUES: AgentTtsSessionConfig['sample_rate'][] = [8000, 16000, 24000, 48000];
-const TTS_SAMPLE_RATE_OPTIONS: Array<{
-  label: string;
-  value: AgentTtsSessionConfig['sample_rate'];
-}> = TTS_SAMPLE_RATE_VALUES.map((value) => ({ label: `${value} Hz`, value }));
-
-const normalizeTtsSessionConfig = (config?: Partial<AgentTtsSessionConfig> | null): AgentTtsSessionConfig => ({
-  ...DEFAULT_TTS_SESSION_CONFIG,
-  ...(config || {}),
-  instructions: (config?.instructions || '').trim(),
-});
 
 const toDeviceChatConversationDetail = (logs: DeviceChatLogRecord[]): ChatConversationDetail => {
   const orderedLogs = [...logs].sort((a, b) => {
@@ -501,7 +458,6 @@ export const ApplicationManagementPage = () => {
   const [replyPlaybackEnabled, setReplyPlaybackEnabled] = useState(false);
   const [ttsFilterPunctuation, setTtsFilterPunctuation] = useState(DEFAULT_TTS_FILTER_PUNCTUATION);
   const [ttsFilterEmoji, setTtsFilterEmoji] = useState(true);
-  const [ttsSessionConfig, setTtsSessionConfig] = useState<AgentTtsSessionConfig>(DEFAULT_TTS_SESSION_CONFIG);
   const [asrStatus, setAsrStatus] = useState<AsrStatusRecord | null>(null);
   const [ttsOptions, setTtsOptions] = useState<CompanyTtsOptions | null>(null);
   const agentAudio = useAgentAudio();
@@ -578,20 +534,7 @@ export const ApplicationManagementPage = () => {
     setReplyPlaybackEnabled(detail.replyPlaybackEnabled);
     setTtsFilterPunctuation(detail.ttsFilterPunctuation || DEFAULT_TTS_FILTER_PUNCTUATION);
     setTtsFilterEmoji(detail.ttsFilterEmoji);
-    setTtsSessionConfig(normalizeTtsSessionConfig(detail.ttsSessionConfig));
   }, []);
-
-  const updateTtsSessionConfig = <TKey extends keyof AgentTtsSessionConfig>(
-    key: TKey,
-    value: AgentTtsSessionConfig[TKey],
-  ) => {
-    setTtsSessionConfig((current) => ({ ...current, [key]: value }));
-  };
-
-  const ttsPlaybackSessionConfig = useMemo<AgentTtsSessionConfig>(() => ({
-    ...ttsSessionConfig,
-    response_format: 'pcm',
-  }), [ttsSessionConfig]);
 
   const getApplicationSaveMismatch = (detail: AgentApplicationRecord, payload: AgentApplicationPayload) => {
     const stringValue = (value?: string) => value || '';
@@ -624,7 +567,6 @@ export const ApplicationManagementPage = () => {
     if (detail.ttsFilterPunctuation !== normalizedPunctuation) return 'TTS 过滤规则';
     if (!hasTtsFilterEmoji) return '过滤表情字段';
     if (detail.ttsFilterEmoji !== payload.ttsFilterEmoji) return '过滤表情';
-    if (JSON.stringify(normalizeTtsSessionConfig(detail.ttsSessionConfig)) !== JSON.stringify(normalizeTtsSessionConfig(payload.ttsSessionConfig))) return 'TTS 会话参数';
     if (!hasSameQuestions) return '建议问题';
     if (!hasSameDocs) return '绑定知识库';
     return null;
@@ -646,7 +588,6 @@ export const ApplicationManagementPage = () => {
     if (replyPlaybackEnabled !== selectedApplication.replyPlaybackEnabled) return true;
     if (ttsFilterPunctuation !== selectedApplication.ttsFilterPunctuation) return true;
     if (ttsFilterEmoji !== selectedApplication.ttsFilterEmoji) return true;
-    if (JSON.stringify(ttsSessionConfig) !== JSON.stringify(normalizeTtsSessionConfig(selectedApplication.ttsSessionConfig))) return true;
 
     const previousQuestions = selectedApplication.suggestedQuestions || [];
     if (suggestedQuestions.length !== previousQuestions.length) return true;
@@ -674,7 +615,6 @@ export const ApplicationManagementPage = () => {
     replyPlaybackEnabled,
     ttsFilterPunctuation,
     ttsFilterEmoji,
-    ttsSessionConfig,
   ]);
 
   const getPublishStatus = (app: AgentApplicationRecord) => {
@@ -789,6 +729,9 @@ export const ApplicationManagementPage = () => {
 
   const asrReady = Boolean(asrStatus?.isActive && asrStatus.configured);
   const ttsReady = Boolean(ttsOptions?.provider.isActive && ttsOptions.defaultVoiceId);
+  const ttsPlaybackSessionConfig = ttsOptions?.ttsSessionConfig
+    ? { ...ttsOptions.ttsSessionConfig, response_format: 'pcm' as const }
+    : undefined;
   const llmModelOptions = useMemo(
     () => [
       { label: '无模型', value: 'none' },
@@ -1091,7 +1034,6 @@ export const ApplicationManagementPage = () => {
         replyPlaybackEnabled,
         ttsFilterPunctuation,
         ttsFilterEmoji,
-        ttsSessionConfig,
       };
       await updateAgentApplication(selectedApplication.id, payload);
       const updated = await fetchAgentApplication(selectedApplication.id);
@@ -1136,7 +1078,6 @@ export const ApplicationManagementPage = () => {
     replyPlaybackEnabled,
     ttsFilterPunctuation,
     ttsFilterEmoji,
-    ttsSessionConfig,
     conversation,
     loadApplications,
     applyApplicationState,
@@ -2243,86 +2184,6 @@ export const ApplicationManagementPage = () => {
                   <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 md:self-end">
                     <span className="text-sm font-medium text-slate-700">过滤表情</span>
                     <Switch checked={ttsFilterEmoji} disabled={!canUpdate} onChange={setTtsFilterEmoji} />
-                  </div>
-                </div>
-                <div className="grid gap-4 border-t border-slate-100 pt-4">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-sm font-bold text-slate-700">Qwen TTS Realtime 参数</span>
-                    <span className="text-xs text-slate-400">按阿里云 session.update 配置语种、格式、采样率、语速、音量、语调和指令控制</span>
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-xs font-medium text-slate-500">交互模式</span>
-                      <Select
-                        value={ttsSessionConfig.mode}
-                        disabled={!canUpdate}
-                        onChange={(value: AgentTtsSessionConfig['mode']) => updateTtsSessionConfig('mode', value)}
-                        options={[
-                          { label: 'server_commit（服务端自动合成）', value: 'server_commit' },
-                          { label: 'commit（客户端手动提交）', value: 'commit' },
-                        ]}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-xs font-medium text-slate-500">语种</span>
-                      <Select
-                        value={ttsSessionConfig.language_type}
-                        disabled={!canUpdate}
-                        onChange={(value: AgentTtsSessionConfig['language_type']) => updateTtsSessionConfig('language_type', value)}
-                        options={TTS_LANGUAGE_OPTIONS}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-xs font-medium text-slate-500">音频格式</span>
-                      <Select
-                        value={ttsSessionConfig.response_format}
-                        disabled={!canUpdate}
-                        onChange={(value: AgentTtsSessionConfig['response_format']) => updateTtsSessionConfig('response_format', value)}
-                        options={TTS_RESPONSE_FORMAT_OPTIONS}
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-xs font-medium text-slate-500">采样率</span>
-                      <Select
-                        value={ttsSessionConfig.sample_rate}
-                        disabled={!canUpdate}
-                        onChange={(value: AgentTtsSessionConfig['sample_rate']) => updateTtsSessionConfig('sample_rate', value)}
-                        options={TTS_SAMPLE_RATE_OPTIONS}
-                      />
-                    </div>
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <div className="flex justify-between text-xs font-medium text-slate-500"><span>语速</span><span>{ttsSessionConfig.speech_rate.toFixed(2)}</span></div>
-                      <Slider min={0.5} max={2} step={0.05} value={ttsSessionConfig.speech_rate} disabled={!canUpdate} onChange={(value) => updateTtsSessionConfig('speech_rate', typeof value === 'number' ? value : ttsSessionConfig.speech_rate)} />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-xs font-medium text-slate-500"><span>语调</span><span>{ttsSessionConfig.pitch_rate.toFixed(2)}</span></div>
-                      <Slider min={0.5} max={2} step={0.05} value={ttsSessionConfig.pitch_rate} disabled={!canUpdate} onChange={(value) => updateTtsSessionConfig('pitch_rate', typeof value === 'number' ? value : ttsSessionConfig.pitch_rate)} />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-xs font-medium text-slate-500"><span>音量</span><span>{ttsSessionConfig.volume}</span></div>
-                      <Slider min={0} max={100} step={1} value={ttsSessionConfig.volume} disabled={!canUpdate} onChange={(value) => updateTtsSessionConfig('volume', typeof value === 'number' ? value : ttsSessionConfig.volume)} />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-xs font-medium text-slate-500"><span>OPUS 码率</span><span>{ttsSessionConfig.bit_rate} kbps</span></div>
-                      <Slider min={6} max={510} step={1} value={ttsSessionConfig.bit_rate} disabled={!canUpdate || ttsSessionConfig.response_format !== 'opus'} onChange={(value) => updateTtsSessionConfig('bit_rate', typeof value === 'number' ? value : ttsSessionConfig.bit_rate)} />
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-slate-500">指令控制</span>
-                    <Input.TextArea
-                      value={ttsSessionConfig.instructions}
-                      disabled={!canUpdate}
-                      maxLength={4000}
-                      rows={3}
-                      onChange={(event) => updateTtsSessionConfig('instructions', event.target.value)}
-                      placeholder="例如：用温柔、自然、略带微笑的语气朗读。仅千问3-TTS-Instruct-Flash-Realtime 系列生效。"
-                    />
-                    <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2">
-                      <span className="text-sm font-medium text-slate-700">自动优化指令</span>
-                      <Switch checked={ttsSessionConfig.optimize_instructions} disabled={!canUpdate || !ttsSessionConfig.instructions.trim()} onChange={(value) => updateTtsSessionConfig('optimize_instructions', value)} />
-                    </div>
                   </div>
                 </div>
               </div>
