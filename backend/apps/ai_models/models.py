@@ -541,6 +541,7 @@ class AgentApplication(models.Model):
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
     published_config = models.JSONField('已发布配置', blank=True, default=dict)
+    published_annotations = models.JSONField('已发布标注', blank=True, default=list)
     published_at = models.DateTimeField('发布时间', null=True, blank=True)
     published_version = models.PositiveIntegerField('发布版本', default=0)
 
@@ -579,10 +580,13 @@ class AgentApplication(models.Model):
         }
 
     def publish(self) -> None:
+        from .services.reply_blocks import build_published_annotation_snapshot
+
         self.published_config = self.build_publish_config()
+        self.published_annotations = build_published_annotation_snapshot(self)
         self.published_at = timezone.now()
         self.published_version = (self.published_version or 0) + 1
-        self.save(update_fields=['published_config', 'published_at', 'published_version', 'updated_at'])
+        self.save(update_fields=['published_config', 'published_annotations', 'published_at', 'published_version', 'updated_at'])
 
     def runtime_config(self) -> dict:
         config = self.published_config if self.published_at and self.published_config else self.build_publish_config()
@@ -609,7 +613,11 @@ class AgentApplication(models.Model):
 
     @property
     def is_published_current(self) -> bool:
-        return bool(self.published_at and self.published_config == self.build_publish_config())
+        if not self.published_at or self.published_config != self.build_publish_config():
+            return False
+        from .services.reply_blocks import build_published_annotation_snapshot
+
+        return self.published_annotations == build_published_annotation_snapshot(self)
 
     def save(self, *args, **kwargs):
         if not self.opening_message:
@@ -641,6 +649,7 @@ class AgentAnnotation(models.Model):
     )
     question = models.CharField('标准问题', max_length=500)
     answer = models.TextField('标准回复')
+    answer_blocks = models.JSONField('标准回复内容块', blank=True, default=list)
     source_message = models.ForeignKey(
         'ChatMessage',
         on_delete=models.SET_NULL,
@@ -779,6 +788,7 @@ class ChatMessage(models.Model):
     )
     role = models.CharField('角色', max_length=16, choices=ROLE_CHOICES, default=ROLE_USER)
     content = models.TextField('消息内容')
+    content_blocks = models.JSONField('消息内容块', blank=True, default=list)
     feedback = models.CharField('反馈', max_length=8, choices=FEEDBACK_CHOICES, default=FEEDBACK_NONE)
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
 

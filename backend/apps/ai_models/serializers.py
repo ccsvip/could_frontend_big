@@ -32,6 +32,7 @@ from .models import (
     default_tts_session_config,
 )
 from .services.annotations import normalize_annotation_question
+from .services.reply_blocks import blocks_to_text, normalize_reply_blocks, serialize_reply_blocks, text_to_blocks
 
 
 def mask_knowledge_api_key(value: str) -> str:
@@ -938,6 +939,7 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
 class AgentAnnotationSerializer(serializers.ModelSerializer):
     applicationId = serializers.IntegerField(source='application_id', read_only=True)
     sourceMessageId = serializers.IntegerField(source='source_message_id', read_only=True, allow_null=True)
+    answerBlocks = serializers.JSONField(source='answer_blocks', required=False)
     isActive = serializers.BooleanField(source='is_active', required=False)
     hitCount = serializers.IntegerField(source='hit_count', read_only=True)
     lastHitAt = serializers.DateTimeField(source='last_hit_at', read_only=True, allow_null=True)
@@ -950,6 +952,7 @@ class AgentAnnotationSerializer(serializers.ModelSerializer):
             'applicationId',
             'question',
             'answer',
+            'answerBlocks',
             'sourceMessageId',
             'isActive',
             'hitCount',
@@ -986,11 +989,41 @@ class AgentAnnotationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('答案不能为空')
         return value
 
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        tenant = self.context.get('tenant')
+        fallback_text = attrs.get('answer')
+        if fallback_text is None and self.instance is not None:
+            fallback_text = self.instance.answer
+        raw_blocks = attrs.get('answer_blocks')
+        if raw_blocks is None and 'answer' in attrs:
+            raw_blocks = text_to_blocks(attrs.get('answer') or '')
+        if raw_blocks is not None:
+            try:
+                blocks = normalize_reply_blocks(raw_blocks, fallback_text=fallback_text or '', tenant=tenant)
+            except ValueError as exc:
+                raise serializers.ValidationError({'answerBlocks': str(exc)}) from exc
+            if not blocks:
+                raise serializers.ValidationError({'answerBlocks': '标准回复不能为空'})
+            attrs['answer_blocks'] = blocks
+            attrs['answer'] = blocks_to_text(blocks)
+        return attrs
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['answerBlocks'] = serialize_reply_blocks(
+            instance.answer_blocks or text_to_blocks(instance.answer),
+            tenant=instance.tenant,
+            request=self.context.get('request'),
+        )
+        return data
+
 
 class AgentAnnotationCreateFromMessageSerializer(serializers.Serializer):
     messageId = serializers.IntegerField()
     question = serializers.CharField(max_length=500)
     answer = serializers.CharField()
+    answerBlocks = serializers.JSONField(required=False)
 
     def validate_question(self, value: str) -> str:
         value = normalize_annotation_question(value)
@@ -1004,15 +1037,34 @@ class AgentAnnotationCreateFromMessageSerializer(serializers.Serializer):
             raise serializers.ValidationError('答案不能为空')
         return value
 
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        raw_blocks = attrs.get('answerBlocks') or text_to_blocks(attrs.get('answer') or '')
+        try:
+            blocks = normalize_reply_blocks(raw_blocks, fallback_text=attrs.get('answer') or '', tenant=self.context.get('tenant'))
+        except ValueError as exc:
+            raise serializers.ValidationError({'answerBlocks': str(exc)}) from exc
+        attrs['answerBlocks'] = blocks
+        attrs['answer'] = blocks_to_text(blocks)
+        return attrs
+
 
 class ChatMessageSerializer(serializers.ModelSerializer):
     conversationId = serializers.IntegerField(source='conversation_id', read_only=True)
+    contentBlocks = serializers.SerializerMethodField()
     feedback = serializers.CharField(required=False)
 
     class Meta:
         model = ChatMessage
-        fields = ['id', 'conversationId', 'role', 'content', 'feedback', 'created_at']
-        read_only_fields = ['id', 'conversationId', 'role', 'content', 'feedback', 'created_at']
+        fields = ['id', 'conversationId', 'role', 'content', 'contentBlocks', 'feedback', 'created_at']
+        read_only_fields = ['id', 'conversationId', 'role', 'content', 'contentBlocks', 'feedback', 'created_at']
+
+    def get_contentBlocks(self, obj: ChatMessage) -> list[dict]:
+        return serialize_reply_blocks(
+            obj.content_blocks or text_to_blocks(obj.content),
+            tenant=obj.conversation.tenant,
+            request=self.context.get('request'),
+        )
 
 
 class ChatConversationListSerializer(serializers.ModelSerializer):

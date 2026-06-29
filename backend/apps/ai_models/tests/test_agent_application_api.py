@@ -16,6 +16,7 @@ from apps.ai_models.models import (
 )
 from apps.devices.models import DeviceApplication, DeviceChatLog
 from apps.knowledge_base.models import KnowledgeDocument
+from apps.resources.models import Resource
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
 
@@ -290,7 +291,57 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         annotation = AgentAnnotation.objects.get(application=application)
         self.assertEqual(annotation.question, '营业时间')
         self.assertEqual(annotation.answer, '我们的服务时间为周一至周五 09:00 - 18:00。')
+        self.assertEqual(annotation.answer_blocks, [{'type': 'text', 'text': '我们的服务时间为周一至周五 09:00 - 18:00。'}])
         self.assertEqual(annotation.source_message_id, assistant_message.id)
+
+    def test_create_annotation_accepts_media_reply_blocks(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.update')
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(tenant=self.tenant, created_by=self.user, name='Media annotation agent')
+        image = Resource.objects.create(
+            tenant=self.tenant,
+            name='Welcome Image',
+            resource_type=Resource.TYPE_IMAGE,
+            category=Resource.CATEGORY_HORIZONTAL,
+        )
+
+        response = self.client.post(
+            f'/api/v1/ai-models/applications/{application.id}/annotations/',
+            {
+                'question': '介绍展厅',
+                'answer': '第一段\n第二段',
+                'answerBlocks': [
+                    {'type': 'text', 'text': '第一段'},
+                    {'type': 'image', 'resourceId': image.id},
+                    {'type': 'text', 'text': '第二段'},
+                ],
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['answer'], '第一段\n第二段')
+        self.assertEqual(response.data['answerBlocks'][1]['type'], 'image')
+        annotation = AgentAnnotation.objects.get(application=application)
+        self.assertEqual(annotation.answer_blocks[1]['resourceId'], image.id)
+
+    def test_publish_snapshots_annotation_blocks(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.update')
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(tenant=self.tenant, created_by=self.user, name='Published annotations')
+        AgentAnnotation.objects.create(
+            tenant=self.tenant,
+            application=application,
+            question='营业时间',
+            answer='九点到六点',
+            answer_blocks=[{'type': 'text', 'text': '九点到六点'}],
+        )
+
+        response = self.client.post(f'/api/v1/ai-models/applications/{application.id}/publish/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        application.refresh_from_db()
+        self.assertEqual(application.published_annotations[0]['answerBlocks'], [{'type': 'text', 'text': '九点到六点'}])
 
     def test_create_agent_application_without_model_uses_default_model(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.create')

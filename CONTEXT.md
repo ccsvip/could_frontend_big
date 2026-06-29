@@ -56,6 +56,18 @@ _Avoid_: system prompt, first assistant answer, default reply
 A curated starter question configured on an Agent Application and shown near the opening message; an Agent Application can have up to ten suggested questions.
 _Avoid_: FAQ, knowledge question, prompt variable
 
+**Agent Annotation**:
+A company-scoped exact-match standard reply configured on an Agent Application, used when a user question should bypass model generation and return a curated response.
+_Avoid_: FAQ, knowledge item, prompt example
+
+**Agent Reply Block**:
+An ordered part of an Agent Application response, either text, image, or video; only text blocks are eligible for Agent Reply Playback.
+_Avoid_: Markdown snippet, attachment, rich text fragment
+
+**Resource Library Item**:
+A company-scoped reusable image or video selected from resource management and referenced by business content such as Agent Reply Blocks.
+_Avoid_: copied media file, pasted URL, attachment upload
+
 **Agent Reply Playback**:
 Text-to-speech playback of an Agent Application's opening message or assistant replies during conversation preview or runtime conversation.
 _Avoid_: user input playback, suggested question playback, TTS configuration test

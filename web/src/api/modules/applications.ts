@@ -1,6 +1,10 @@
 import { httpClient } from '../client';
 import type { ChatConversationDetail } from './chat';
 
+export type AgentReplyBlock =
+  | { type: 'text'; text: string }
+  | { type: 'image' | 'video'; resourceId: number; resourceName: string; url: string; missing?: boolean };
+
 export type AgentApplicationKnowledgeDocument = {
   id: number;
   title: string;
@@ -145,6 +149,7 @@ export type AgentAnnotationRecord = {
   applicationId: number;
   question: string;
   answer: string;
+  answerBlocks: AgentReplyBlock[];
   sourceMessageId: number | null;
   isActive: boolean;
   hitCount: number;
@@ -157,6 +162,7 @@ export type AgentAnnotationRecord = {
 export type AgentAnnotationPayload = {
   question: string;
   answer: string;
+  answerBlocks?: AgentReplyBlock[];
   isActive?: boolean;
 };
 
@@ -164,6 +170,7 @@ export type AgentAnnotationFromMessagePayload = {
   messageId: number;
   question: string;
   answer: string;
+  answerBlocks?: AgentReplyBlock[];
 };
 
 export const fetchAgentAnnotations = async (applicationId: number, keyword?: string) => {

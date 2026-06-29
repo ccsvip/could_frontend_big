@@ -576,11 +576,11 @@ class ChatApiTests(TenantTestMixin, APITestCase):
         client_mock.assert_not_called()
         annotation.refresh_from_db()
         self.assertEqual(annotation.hit_count, 1)
-        messages = list(conversation.messages.order_by('created_at').values_list('role', 'content'))
+        messages = list(conversation.messages.order_by('created_at').values_list('role', 'content', 'content_blocks'))
         self.assertEqual(
             messages,
             [
-                (ChatMessage.ROLE_USER, '营业时间。'),
-                (ChatMessage.ROLE_ASSISTANT, '我们的服务时间为周一至周五 09:00 - 18:00。'),
+                (ChatMessage.ROLE_USER, '营业时间。', [{'type': 'text', 'text': '营业时间。'}]),
+                (ChatMessage.ROLE_ASSISTANT, '我们的服务时间为周一至周五 09:00 - 18:00。', [{'type': 'text', 'text': '我们的服务时间为周一至周五 09:00 - 18:00。'}]),
             ],
         )

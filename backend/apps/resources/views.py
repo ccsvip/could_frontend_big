@@ -123,6 +123,33 @@ class BaseResourceViewSet(CachedBusinessResponseMixin, TenantScopedQuerysetMixin
         tenant = get_business_write_tenant(self.request)
         return {'tenant': tenant} if tenant is not None else {}
 
+    def perform_destroy(self, instance):
+        reference_count = self._agent_annotation_reference_count(instance)
+        if reference_count:
+            from rest_framework.exceptions import ValidationError
+
+            raise ValidationError({'message': f'该资源被 {reference_count} 个标注回复引用，不能删除'})
+        super().perform_destroy(instance)
+
+    @staticmethod
+    def _agent_annotation_reference_count(resource: Resource) -> int:
+        from apps.ai_models.models import AgentAnnotation, AgentApplication
+
+        def blocks_reference_resource(blocks) -> bool:
+            if not isinstance(blocks, list):
+                return False
+            return any(isinstance(block, dict) and block.get('resourceId') == resource.id for block in blocks)
+
+        count = 0
+        for annotation in AgentAnnotation.objects.filter(tenant=resource.tenant).only('answer_blocks'):
+            if blocks_reference_resource(annotation.answer_blocks):
+                count += 1
+        for application in AgentApplication.objects.filter(tenant=resource.tenant).only('published_annotations'):
+            for annotation in application.published_annotations or []:
+                if isinstance(annotation, dict) and blocks_reference_resource(annotation.get('answerBlocks')):
+                    count += 1
+        return count
+
 
 @extend_schema(tags=['Commands'])
 class AliyunCommandListView(APIView):

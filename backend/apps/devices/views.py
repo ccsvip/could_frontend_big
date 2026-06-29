@@ -21,7 +21,8 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 from apps.accounts.permissions import CanCreateDevices, CanDeleteDevices, CanUpdateDevices, CanViewDevices, IsSuperUser
 from apps.ai_models import llm_services
 from apps.ai_models.models import AgentAnnotation, LLMModel
-from apps.ai_models.services.annotations import find_matching_annotation
+from apps.ai_models.services.annotations import find_matching_annotation, find_matching_published_annotation
+from apps.ai_models.services.reply_blocks import blocks_to_text, serialize_published_annotation_blocks, serialize_reply_blocks, text_to_blocks
 from apps.ai_models.services import asr as asr_services
 from apps.ai_models.services import tts as tts_services
 from apps.resources.models import ModelAsset, Resource, ScrollingText
@@ -770,7 +771,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
                 return Response({'message': 'ASR 没有识别出有效内容'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            answer_text = self._generate_answer(device, question_text)
+            answer_text, answer_blocks = self._generate_answer(device, question_text)
         except Exception as exc:
             return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -794,6 +795,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             'deviceCode': device.code,
             'questionText': question_text,
             'answerText': answer_text,
+            'answerBlocks': answer_blocks,
             'audioBase64': None,
             'audioContentType': 'audio/wav',
         }
@@ -824,16 +826,21 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         return sample_rate, None
 
     @staticmethod
-    def _generate_answer(device: Device, question_text: str) -> str:
+    def _generate_answer(device: Device, question_text: str) -> tuple[str, list[dict]]:
         agent_application = device.effective_agent_application
         annotation = DeviceVoiceChatView._find_annotation(agent_application, question_text)
         if annotation is not None:
             now = timezone.now()
-            AgentAnnotation.objects.filter(id=annotation.id).update(
+            annotation_id = annotation.get('id') if isinstance(annotation, dict) else annotation.id
+            AgentAnnotation.objects.filter(id=annotation_id).update(
                 hit_count=F('hit_count') + 1,
                 last_hit_at=now,
             )
-            return annotation.answer
+            if isinstance(annotation, dict):
+                blocks = annotation.get('answerBlocks') or text_to_blocks(annotation.get('answer') or '')
+                return blocks_to_text(blocks), serialize_published_annotation_blocks(annotation, tenant=agent_application.tenant)
+            blocks = annotation.answer_blocks or text_to_blocks(annotation.answer)
+            return blocks_to_text(blocks), serialize_reply_blocks(blocks, tenant=agent_application.tenant)
 
         runtime_config = agent_application.runtime_config() if agent_application is not None else {}
         model = None
@@ -878,12 +885,14 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         )
         if not answer_text:
             raise RuntimeError('LLM 没有返回有效回复')
-        return answer_text
+        return answer_text, serialize_reply_blocks(text_to_blocks(answer_text), tenant=device.tenant)
 
     @staticmethod
     def _find_annotation(agent_application, question_text: str):
         if agent_application is None:
             return None
+        if agent_application.published_at:
+            return find_matching_published_annotation(agent_application.published_annotations, question_text)
         return find_matching_annotation(agent_application.annotations, question_text)
 
     @staticmethod

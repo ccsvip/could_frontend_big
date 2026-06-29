@@ -5,6 +5,38 @@ import { useTenantScopeStore } from '../store/tenant-scope';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
+export const normalizeMediaAssetUrl = (value: string) => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+
+  let apiOrigin = '';
+  try {
+    apiOrigin = new URL(API_BASE_URL).origin;
+  } catch {
+    apiOrigin = '';
+  }
+
+  if (raw.startsWith('/media/')) {
+    return apiOrigin ? `${apiOrigin}${raw}` : raw;
+  }
+
+  try {
+    const url = new URL(raw);
+    if (
+      apiOrigin
+      && typeof window !== 'undefined'
+      && url.origin === window.location.origin
+      && url.pathname.startsWith('/media/')
+    ) {
+      return `${apiOrigin}${url.pathname}${url.search}${url.hash}`;
+    }
+  } catch {
+    // Keep non-URL strings unchanged unless they are explicit /media paths.
+  }
+
+  return raw;
+};
+
 // 平台超管「按公司浏览」时，仅业务列表接口允许追加 ?tenant=<id>。
 // 显式白名单避免给 /auth、/tenants、/audit、/menus 等管理类接口注入。
 const TENANT_SCOPED_PREFIXES = [

@@ -14,6 +14,7 @@ import {
   publishAgentApplication,
   updateAgentAnnotation,
   type AgentAnnotationRecord,
+  type AgentReplyBlock,
   updateAgentApplication,
   type AgentApplicationRecord,
   type AgentApplicationStats,
@@ -33,7 +34,9 @@ import { fetchCompanyLLMOptions, type CompanyLLMOptions } from '../../api/module
 import { fetchAsrStatus, type AsrStatusRecord } from '../../api/modules/asr';
 import { fetchCompanyTtsOptions, type CompanyTtsOptions } from '../../api/modules/tts';
 import { fetchDeviceChatLogs, type DeviceChatLogRecord } from '../../api/modules/devices';
+import { fetchImageResources, fetchVideoResources, type ResourceRecord, type ResourceType } from '../../api/modules/resources';
 import { ChatMarkdown } from '../../components/chat-markdown';
+import { normalizeMediaAssetUrl } from '../../api/client';
 import { useAuthStore } from '../../store/auth';
 import { useAgentAudio } from './use-agent-audio';
 import dayjs from 'dayjs';
@@ -128,6 +131,23 @@ const ASR_BOUNDARY_PUNCTUATION_PATTERN = /^[\p{P}\s]+|[\p{P}\s]+$/gu;
 
 const normalizeAnnotationQuestion = (value: string) => value.replace(ANNOTATION_PUNCTUATION_PATTERN, '').trim();
 const normalizeAsrTranscript = (value: string) => value.replace(ASR_BOUNDARY_PUNCTUATION_PATTERN, '').trim();
+const textBlock = (text: string): AgentReplyBlock => ({ type: 'text', text });
+const blocksToText = (blocks: AgentReplyBlock[]) => blocks
+  .filter((block): block is Extract<AgentReplyBlock, { type: 'text' }> => block.type === 'text')
+  .map((block) => block.text.trim())
+  .filter(Boolean)
+  .join('\n');
+const normalizeReplyBlocks = (blocks: AgentReplyBlock[] | undefined, fallbackText = '') => {
+  const source = blocks && blocks.length > 0 ? blocks : [textBlock(fallbackText)];
+  return source
+    .map((block) => {
+      if (block.type === 'text') {
+        return textBlock(block.text || '');
+      }
+      return block;
+    })
+    .filter((block) => block.type !== 'text' || block.text.trim());
+};
 
 const toDeviceChatConversationDetail = (logs: DeviceChatLogRecord[]): ChatConversationDetail => {
   const orderedLogs = [...logs].sort((a, b) => {
@@ -144,6 +164,7 @@ const toDeviceChatConversationDetail = (logs: DeviceChatLogRecord[]): ChatConver
       conversationId,
       role: 'user',
       content: log.questionText,
+      contentBlocks: [textBlock(log.questionText)],
       feedback: 'none',
       created_at: log.createdAt,
     },
@@ -152,6 +173,7 @@ const toDeviceChatConversationDetail = (logs: DeviceChatLogRecord[]): ChatConver
       conversationId,
       role: 'assistant',
       content: log.answerText,
+      contentBlocks: [textBlock(log.answerText)],
       feedback: 'none',
       created_at: log.createdAt,
     },
@@ -484,6 +506,7 @@ export const ApplicationManagementPage = () => {
   const [inputValue, setInputValue] = useState('');
   const [streaming, setStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
+  const [streamingBlocks, setStreamingBlocks] = useState<AgentReplyBlock[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -505,8 +528,14 @@ export const ApplicationManagementPage = () => {
   const [editingAnnotation, setEditingAnnotation] = useState<AgentAnnotationRecord | null>(null);
   const [annotationQuestion, setAnnotationQuestion] = useState('');
   const [annotationAnswer, setAnnotationAnswer] = useState('');
+  const [annotationBlocks, setAnnotationBlocks] = useState<AgentReplyBlock[]>([textBlock('')]);
   const [annotationSaving, setAnnotationSaving] = useState(false);
   const [annotationsEnabled, setAnnotationsEnabled] = useState(true);
+  const [resourcePickerOpen, setResourcePickerOpen] = useState(false);
+  const [resourcePickerType, setResourcePickerType] = useState<ResourceType>('image');
+  const [resourcePickerInsertIndex, setResourcePickerInsertIndex] = useState<number | null>(null);
+  const [resourceOptions, setResourceOptions] = useState<ResourceRecord[]>([]);
+  const [resourceOptionsLoading, setResourceOptionsLoading] = useState(false);
 
   // Monitor stats state (Monitor Tab)
   const [stats, setStats] = useState<AgentApplicationStats | null>(null);
@@ -519,6 +548,16 @@ export const ApplicationManagementPage = () => {
   }, [applicationId]);
 
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  useEffect(() => {
+    if (!resourcePickerOpen) return;
+    setResourceOptionsLoading(true);
+    const loader = resourcePickerType === 'image' ? fetchImageResources : fetchVideoResources;
+    loader({ pageSize: 100 })
+      .then((response) => setResourceOptions(response.results))
+      .catch(() => message.error('资源列表加载失败'))
+      .finally(() => setResourceOptionsLoading(false));
+  }, [resourcePickerOpen, resourcePickerType]);
 
   const applyApplicationState = useCallback((detail: AgentApplicationRecord) => {
     setSelectedApplication(detail);
@@ -701,6 +740,7 @@ export const ApplicationManagementPage = () => {
       setConversation(null);
       setMessages([]);
       setStreamingContent('');
+      setStreamingBlocks([]);
       setInputValue('');
     } catch {
       message.error('应用详情加载失败');
@@ -851,6 +891,7 @@ export const ApplicationManagementPage = () => {
     setEditingAnnotation(annotation || null);
     setAnnotationQuestion(annotation?.question || '');
     setAnnotationAnswer(annotation?.answer || '');
+    setAnnotationBlocks(normalizeReplyBlocks(annotation?.answerBlocks, annotation?.answer || '') || [textBlock('')]);
     setAnnotationDialogOpen(true);
   };
 
@@ -859,23 +900,76 @@ export const ApplicationManagementPage = () => {
     setEditingAnnotation(null);
     setAnnotationQuestion('');
     setAnnotationAnswer('');
+    setAnnotationBlocks([textBlock('')]);
+  };
+
+  const updateAnnotationTextBlock = (index: number, text: string) => {
+    setAnnotationBlocks((current) => current.map((block, blockIndex) => (blockIndex === index && block.type === 'text' ? { ...block, text } : block)));
+  };
+
+  const addAnnotationTextBlock = (afterIndex: number | null = null) => {
+    setAnnotationBlocks((current) => {
+      const next = [...current];
+      next.splice(afterIndex == null ? next.length : afterIndex + 1, 0, textBlock(''));
+      return next;
+    });
+  };
+
+  const removeAnnotationBlock = (index: number) => {
+    setAnnotationBlocks((current) => {
+      const next = current.filter((_, blockIndex) => blockIndex !== index);
+      return next.length ? next : [textBlock('')];
+    });
+  };
+
+  const moveAnnotationBlock = (index: number, direction: -1 | 1) => {
+    setAnnotationBlocks((current) => {
+      const nextIndex = index + direction;
+      if (nextIndex < 0 || nextIndex >= current.length) return current;
+      const next = [...current];
+      const [item] = next.splice(index, 1);
+      next.splice(nextIndex, 0, item);
+      return next;
+    });
+  };
+
+  const openResourcePicker = (type: ResourceType, afterIndex: number | null = null) => {
+    setResourcePickerType(type);
+    setResourcePickerInsertIndex(afterIndex);
+    setResourcePickerOpen(true);
+  };
+
+  const insertResourceBlock = (resource: ResourceRecord) => {
+    const block: AgentReplyBlock = {
+      type: resource.resourceType,
+      resourceId: resource.id,
+      resourceName: resource.name,
+      url: resource.fileUrl || resource.cloudUrl,
+    };
+    setAnnotationBlocks((current) => {
+      const next = [...current];
+      next.splice(resourcePickerInsertIndex == null ? next.length : resourcePickerInsertIndex + 1, 0, block);
+      return next;
+    });
+    setResourcePickerOpen(false);
   };
 
   const saveAnnotation = async () => {
     if (!selectedApplicationId) return;
     const question = normalizeAnnotationQuestion(annotationQuestion);
-    const answer = annotationAnswer.trim();
-    if (!question || !answer) {
+    const answerBlocks = normalizeReplyBlocks(annotationBlocks, annotationAnswer);
+    const answer = blocksToText(answerBlocks);
+    if (!question || answerBlocks.length === 0) {
       message.warning('请填写问题和标准回复');
       return;
     }
     setAnnotationSaving(true);
     try {
       if (editingAnnotation) {
-        await updateAgentAnnotation(selectedApplicationId, editingAnnotation.id, { question, answer });
+        await updateAgentAnnotation(selectedApplicationId, editingAnnotation.id, { question, answer, answerBlocks });
         message.success('标注已更新');
       } else {
-        await createAgentAnnotation(selectedApplicationId, { question, answer });
+        await createAgentAnnotation(selectedApplicationId, { question, answer, answerBlocks });
         message.success('标注已创建');
       }
       closeAnnotationDialog();
@@ -930,6 +1024,7 @@ export const ApplicationManagementPage = () => {
         messageId: assistantMessage.id,
         question: normalizeAnnotationQuestion(previousUserMessage.content),
         answer: assistantMessage.content,
+        answerBlocks: normalizeReplyBlocks(assistantMessage.contentBlocks, assistantMessage.content),
       });
       message.success('已添加到标注');
       if (activeTab === 'annotations') {
@@ -1173,6 +1268,7 @@ export const ApplicationManagementPage = () => {
     setConversation(null);
     setMessages([]);
     setStreamingContent('');
+    setStreamingBlocks([]);
     setInputValue('');
     setChatLoading(true);
     try {
@@ -1194,6 +1290,7 @@ export const ApplicationManagementPage = () => {
     setConversation(nextConversation);
     setMessages(nextConversation.messages);
     setStreamingContent('');
+    setStreamingBlocks([]);
     return nextConversation;
   };
 
@@ -1207,6 +1304,7 @@ export const ApplicationManagementPage = () => {
       conversationId: activeConversation.id,
       role: 'user',
       content,
+      contentBlocks: [textBlock(content)],
       feedback: 'none',
       created_at: new Date().toISOString(),
     };
@@ -1214,6 +1312,7 @@ export const ApplicationManagementPage = () => {
     setMessages((current) => [...current, localUserMessage]);
     setStreaming(true);
     setStreamingContent('');
+    setStreamingBlocks([]);
     if (replyPlaybackEnabled && ttsReady) {
       agentAudio.startStreamPlayback();
     }
@@ -1253,6 +1352,7 @@ export const ApplicationManagementPage = () => {
           });
         }
       },
+      (blocks) => setStreamingBlocks(blocks),
       () => undefined,
       () => undefined,
       (error) => message.error(error),
@@ -1328,11 +1428,12 @@ export const ApplicationManagementPage = () => {
         conversationId: conversation?.id || 0,
         role: 'assistant' as const,
         content: streamingContent,
+        contentBlocks: streamingBlocks.length ? streamingBlocks : [textBlock(streamingContent)],
         feedback: 'none' as const,
         created_at: new Date().toISOString(),
       },
     ];
-  }, [conversation?.id, messages, streamingContent]);
+  }, [conversation?.id, messages, streamingBlocks, streamingContent]);
 
   const applicationOverview = useMemo(() => {
     const activeCount = applications.filter((app) => app.isActive).length;
@@ -1656,6 +1757,29 @@ export const ApplicationManagementPage = () => {
     </div>
   );
 
+  const renderReplyBlocks = (blocks: AgentReplyBlock[] | undefined, fallback: string, className = 'chat-markdown') => {
+    const normalized = normalizeReplyBlocks(blocks, fallback);
+    return (
+      <div className="flex flex-col gap-3">
+        {normalized.map((block, index) => {
+          if (block.type === 'text') {
+            return <ChatMarkdown key={`text-${index}`} content={block.text} className={className} />;
+          }
+          if (block.missing || !block.url) {
+            return <div key={`media-${index}`} className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-400">资源已缺失</div>;
+          }
+          const mediaUrl = normalizeMediaAssetUrl(block.url);
+          if (block.type === 'image') {
+            return <img key={`image-${block.resourceId}-${index}`} src={mediaUrl} alt={block.resourceName || '标注图片'} className="max-h-80 rounded-xl border border-slate-100 object-contain" />;
+          }
+          return (
+            <video key={`video-${block.resourceId}-${index}`} src={mediaUrl} controls preload="metadata" className="max-h-80 rounded-xl border border-slate-100 bg-black" />
+          );
+        })}
+      </div>
+    );
+  };
+
   const renderChatMessage = (msg: ChatMessage) => {
     const isUser = msg.role === 'user';
     const playbackKey = `message-${msg.id}`;
@@ -1680,7 +1804,7 @@ export const ApplicationManagementPage = () => {
               {isUser ? (
                 <span className="whitespace-pre-wrap break-words">{msg.content}</span>
               ) : (
-                <ChatMarkdown content={msg.content} className="chat-markdown" />
+                renderReplyBlocks(msg.contentBlocks, msg.content)
               )}
               {msg.id === -1 && (
                 <span className="ml-1 inline-block h-4 w-0.5 bg-teal-500 animate-pulse align-middle" />
@@ -2444,7 +2568,7 @@ export const ApplicationManagementPage = () => {
                       A
                     </span>
                     <div className="flex-1 min-w-0">
-                      <ChatMarkdown content={annotation.answer} className="chat-markdown text-sm leading-relaxed text-slate-700" />
+                      {renderReplyBlocks(annotation.answerBlocks, annotation.answer, 'chat-markdown text-sm leading-relaxed text-slate-700')}
                     </div>
                   </div>
 
@@ -2569,9 +2693,7 @@ export const ApplicationManagementPage = () => {
                               >
                                 {isUser ? (
                                   <span className="whitespace-pre-wrap break-words">{msg.content}</span>
-                                ) : (
-                                  <ChatMarkdown content={msg.content} className="chat-markdown" />
-                                )}
+                                ) : renderReplyBlocks(msg.contentBlocks, msg.content)}
                               </div>
                               <div className="flex items-center gap-2 text-[10px] text-slate-400 px-1 mt-0.5 justify-start">
                                 <span className="font-mono">{dayjs(msg.created_at).format('HH:mm:ss')}</span>
@@ -2837,6 +2959,49 @@ export const ApplicationManagementPage = () => {
     </div>
   );
 
+  const renderAnnotationBlockEditor = () => (
+    <div className="flex flex-col gap-3">
+      {annotationBlocks.map((block, index) => (
+        <div key={`${block.type}-${index}`} className="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <Tag color={block.type === 'text' ? 'blue' : block.type === 'image' ? 'green' : 'purple'} className="m-0">
+              {block.type === 'text' ? '文本' : block.type === 'image' ? '图片' : '视频'}
+            </Tag>
+            <div className="flex items-center gap-1">
+              <Button size="small" type="text" disabled={index === 0} onClick={() => moveAnnotationBlock(index, -1)}>上移</Button>
+              <Button size="small" type="text" disabled={index === annotationBlocks.length - 1} onClick={() => moveAnnotationBlock(index, 1)}>下移</Button>
+              <Button size="small" type="text" danger onClick={() => removeAnnotationBlock(index)}>删除</Button>
+            </div>
+          </div>
+          {block.type === 'text' ? (
+            <Input.TextArea
+              rows={3}
+              value={block.text}
+              onChange={(event) => updateAnnotationTextBlock(index, event.target.value)}
+              placeholder="输入这一段文本，TTS 只会播报文本块"
+            />
+          ) : (
+            <div className="flex flex-col gap-2">
+              <div className="text-sm font-medium text-slate-700">{block.resourceName || `资源 #${block.resourceId}`}</div>
+              {block.type === 'image' && block.url && <img src={normalizeMediaAssetUrl(block.url)} alt={block.resourceName || '标注图片'} className="max-h-40 rounded-lg border border-slate-200 object-contain" />}
+              {block.type === 'video' && block.url && <video src={normalizeMediaAssetUrl(block.url)} controls preload="metadata" className="max-h-40 rounded-lg border border-slate-200 bg-black" />}
+            </div>
+          )}
+          <div className="mt-3 flex flex-wrap gap-2 border-t border-slate-200/70 pt-3">
+            <Button size="small" onClick={() => addAnnotationTextBlock(index)}>在后面加文本</Button>
+            <Button size="small" onClick={() => openResourcePicker('image', index)}>在后面插入图片</Button>
+            <Button size="small" onClick={() => openResourcePicker('video', index)}>在后面插入视频</Button>
+          </div>
+        </div>
+      ))}
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={() => addAnnotationTextBlock()}>添加文本</Button>
+        <Button onClick={() => openResourcePicker('image')}>插入图片</Button>
+        <Button onClick={() => openResourcePicker('video')}>插入视频</Button>
+      </div>
+    </div>
+  );
+
   return (
     <ConfigProvider theme={{ token: { colorPrimary: "#0f766e", borderRadius: 12 } }}>
       <div className="relative min-h-full bg-slate-50/20 px-4 py-4 text-slate-900">
@@ -2850,7 +3015,7 @@ export const ApplicationManagementPage = () => {
             <Button key="cancel" onClick={() => closeAnnotationDialog()}>取消</Button>,
             <Button key="save" type="primary" loading={annotationSaving} onClick={() => void saveAnnotation()}>保存</Button>
           ]}
-          width={560}
+          width={760}
         >
           <div className="py-2 flex flex-col gap-4">
             <p className="text-slate-500 text-xs mb-2">
@@ -2867,14 +3032,43 @@ export const ApplicationManagementPage = () => {
             </div>
             <div className="flex flex-col gap-1.5">
               <span className="text-sm font-semibold text-slate-700">标准回复</span>
-              <Input.TextArea
-                rows={5}
-                value={annotationAnswer}
-                onChange={(event) => setAnnotationAnswer(event.target.value)}
-                placeholder="输入命中后要直接返回的标准答案"
-              />
+              {renderAnnotationBlockEditor()}
             </div>
           </div>
+        </Modal>
+
+        <Modal
+          open={resourcePickerOpen}
+          title={resourcePickerType === 'image' ? '选择背景图片' : '选择视频'}
+          onCancel={() => setResourcePickerOpen(false)}
+          footer={null}
+          width={720}
+        >
+          <Spin spinning={resourceOptionsLoading}>
+            <div className="grid max-h-[520px] grid-cols-1 gap-3 overflow-y-auto py-2 sm:grid-cols-2">
+              {resourceOptions.map((resource) => (
+                <button
+                  key={resource.id}
+                  type="button"
+                  onClick={() => insertResourceBlock(resource)}
+                  className="flex cursor-pointer flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-teal-300 hover:bg-teal-50/40"
+                >
+                  <div className="text-sm font-semibold text-slate-800">{resource.name}</div>
+                  {resource.resourceType === 'image' ? (
+                    <img src={normalizeMediaAssetUrl(resource.fileUrl || resource.cloudUrl)} alt={resource.name} className="h-32 w-full rounded-lg bg-slate-100 object-contain" />
+                  ) : (
+                    <video src={normalizeMediaAssetUrl(resource.fileUrl || resource.cloudUrl)} preload="metadata" className="h-32 w-full rounded-lg bg-black object-contain" />
+                  )}
+                  <div className="truncate text-xs text-slate-400">{resource.fileName || resource.cloudUrl || resource.objectKey}</div>
+                </button>
+              ))}
+              {!resourceOptionsLoading && resourceOptions.length === 0 && (
+                <div className="col-span-full py-10">
+                  <Empty description={resourcePickerType === 'image' ? '暂无可选背景图片' : '暂无可选视频'} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                </div>
+              )}
+            </div>
+          </Spin>
         </Modal>
 
         {/* Create Dialog */}

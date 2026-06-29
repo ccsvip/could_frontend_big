@@ -1,10 +1,12 @@
 import { httpClient } from '../client';
+import type { AgentReplyBlock } from './applications';
 
 export type ChatMessage = {
   id: number;
   conversationId: number;
   role: 'user' | 'assistant' | 'system';
   content: string;
+  contentBlocks: AgentReplyBlock[];
   feedback: 'none' | 'up' | 'down';
   created_at: string;
 };
@@ -70,6 +72,7 @@ export const sendMessageStream = async (
   stream: boolean,
   regenerateMessageId: number | null,
   onChunk: (text: string) => void,
+  onBlocks: (blocks: AgentReplyBlock[]) => void,
   onTitle: (title: string) => void,
   onSummary: (summary: string) => void,
   onError: (error: string) => void,
@@ -141,6 +144,9 @@ export const sendMessageStream = async (
                 onSummary(parsed.summary);
               } else if (parsed.content) {
                 onChunk(parsed.content);
+                if (Array.isArray(parsed.blocks)) {
+                  onBlocks(parsed.blocks);
+                }
               }
             } catch {
               // Ignore malformed JSON lines

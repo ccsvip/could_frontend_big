@@ -76,6 +76,7 @@ from .models import (
 )
 from .realtime_asr import resolve_asr_device_connection
 from .services.annotations import find_matching_annotation
+from .services.reply_blocks import blocks_to_text, serialize_reply_blocks, text_to_blocks
 from .serializers import (
     ASRConfigSerializer,
     ASRVADConfigSerializer,
@@ -1197,7 +1198,10 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
     @action(detail=True, methods=['post'], url_path='publish')
     def publish(self, request, pk=None):
         application = self.get_object()
-        application.publish()
+        try:
+            application.publish()
+        except ValueError as exc:
+            return Response({'status': 'error', 'message': str(exc), 'code': 400}, status=status.HTTP_400_BAD_REQUEST)
         serializer = self.get_serializer(application)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -1209,9 +1213,9 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             keyword = request.query_params.get('keyword', '').strip()
             if keyword:
                 queryset = queryset.filter(Q(question__icontains=keyword) | Q(answer__icontains=keyword))
-            return Response(AgentAnnotationSerializer(queryset, many=True).data)
+            return Response(AgentAnnotationSerializer(queryset, many=True, context=self.get_serializer_context()).data)
 
-        serializer = AgentAnnotationSerializer(data=request.data)
+        serializer = AgentAnnotationSerializer(data=request.data, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)
         annotation, created = AgentAnnotation.objects.update_or_create(
             application=application,
@@ -1219,17 +1223,18 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             defaults={
                 'tenant': application.tenant,
                 'answer': serializer.validated_data['answer'],
+                'answer_blocks': serializer.validated_data['answer_blocks'],
                 'is_active': serializer.validated_data.get('is_active', True),
                 'created_by': request.user,
             },
         )
         status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
-        return Response(AgentAnnotationSerializer(annotation).data, status=status_code)
+        return Response(AgentAnnotationSerializer(annotation, context=self.get_serializer_context()).data, status=status_code)
 
     @action(detail=True, methods=['post'], url_path='annotations/from-message')
     def create_annotation(self, request, pk=None):
         application = self.get_object()
-        serializer = AgentAnnotationCreateFromMessageSerializer(data=request.data)
+        serializer = AgentAnnotationCreateFromMessageSerializer(data=request.data, context={'tenant': application.tenant})
         serializer.is_valid(raise_exception=True)
         message = ChatMessage.objects.select_related('conversation').filter(
             id=serializer.validated_data['messageId'],
@@ -1249,13 +1254,14 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             defaults={
                 'tenant': application.tenant,
                 'answer': serializer.validated_data['answer'],
+                'answer_blocks': serializer.validated_data['answerBlocks'],
                 'source_message': message,
                 'is_active': True,
                 'created_by': request.user,
             },
         )
         status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
-        return Response(AgentAnnotationSerializer(annotation).data, status=status_code)
+        return Response(AgentAnnotationSerializer(annotation, context=self.get_serializer_context()).data, status=status_code)
 
     @action(detail=True, methods=['patch', 'delete'], url_path='annotations/(?P<annotation_id>[^/.]+)')
     def update_annotation(self, request, pk=None, annotation_id=None):
@@ -1270,10 +1276,10 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             annotation.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-        serializer = AgentAnnotationSerializer(annotation, data=request.data, partial=True)
+        serializer = AgentAnnotationSerializer(annotation, data=request.data, partial=True, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(AgentAnnotationSerializer(annotation).data)
+        return Response(AgentAnnotationSerializer(annotation, context=self.get_serializer_context()).data)
 
     @action(detail=True, methods=['get'], url_path='stats')
     def stats(self, request, pk=None):
@@ -1512,6 +1518,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                 conversation=conversation,
                 role=ChatMessage.ROLE_USER,
                 content=content,
+                content_blocks=text_to_blocks(content),
             )
             conversation.save(update_fields=['updated_at'])
 
@@ -1527,15 +1534,18 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         if annotation is not None:
             now = timezone.now()
             AgentAnnotation.objects.filter(id=annotation.id).update(hit_count=F('hit_count') + 1, last_hit_at=now)
+            answer_blocks = annotation.answer_blocks or text_to_blocks(annotation.answer)
+            answer_text = blocks_to_text(answer_blocks)
             ChatMessage.objects.create(
                 conversation=conversation,
                 role=ChatMessage.ROLE_ASSISTANT,
-                content=annotation.answer,
+                content=answer_text,
+                content_blocks=answer_blocks,
             )
             conversation.save(update_fields=['updated_at'])
 
             async def annotation_event_stream():
-                yield f"data: {json.dumps({'content': annotation.answer})}\n\n"
+                yield f"data: {json.dumps({'content': answer_text, 'blocks': serialize_reply_blocks(answer_blocks, tenant=conversation.tenant, request=request)})}\n\n"
                 yield "data: [DONE]\n\n"
 
             logger.info(
@@ -1607,6 +1617,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                 conversation=conversation,
                 role=ChatMessage.ROLE_ASSISTANT,
                 content=content,
+                content_blocks=text_to_blocks(content),
             )
             if update_conversation:
                 conversation.save(update_fields=['updated_at'])

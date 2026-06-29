@@ -27,3 +27,17 @@ def find_matching_annotation(queryset, question_text: str):
         if normalize_annotation_question(annotation.question).casefold() == normalized_casefold:
             return annotation
     return None
+
+
+def find_matching_published_annotation(annotation_snapshots, question_text: str):
+    normalized_question = normalize_annotation_question(question_text)
+    if not normalized_question:
+        return None
+
+    normalized_casefold = normalized_question.casefold()
+    for annotation in annotation_snapshots or []:
+        if not isinstance(annotation, dict) or not annotation.get('isActive', True):
+            continue
+        if normalize_annotation_question(annotation.get('question')).casefold() == normalized_casefold:
+            return annotation
+    return None
