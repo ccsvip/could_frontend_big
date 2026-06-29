@@ -268,7 +268,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         user_message = ChatMessage.objects.create(
             conversation=conversation,
             role=ChatMessage.ROLE_USER,
-            content='营业时间',
+            content='营业时间？',
         )
         assistant_message = ChatMessage.objects.create(
             conversation=conversation,

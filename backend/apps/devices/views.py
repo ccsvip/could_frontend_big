@@ -21,6 +21,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 from apps.accounts.permissions import CanCreateDevices, CanDeleteDevices, CanUpdateDevices, CanViewDevices, IsSuperUser
 from apps.ai_models import llm_services
 from apps.ai_models.models import AgentAnnotation, LLMModel
+from apps.ai_models.services.annotations import find_matching_annotation
 from apps.ai_models.services import asr as asr_services
 from apps.ai_models.services import tts as tts_services
 from apps.resources.models import ModelAsset, Resource, ScrollingText
@@ -883,15 +884,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
     def _find_annotation(agent_application, question_text: str):
         if agent_application is None:
             return None
-        normalized = question_text.strip()
-        if not normalized:
-            return None
-        return (
-            agent_application.annotations
-            .filter(is_active=True, question__iexact=normalized)
-            .order_by('-updated_at', '-id')
-            .first()
-        )
+        return find_matching_annotation(agent_application.annotations, question_text)
 
     @staticmethod
     def _synthesize_answer_audio(device: Device, answer_text: str) -> str:

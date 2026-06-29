@@ -123,6 +123,11 @@ const LOG_CONVERSATION_PAGE_SIZE = 100;
 const DEFAULT_TEMPERATURE = 0.7;
 const DEFAULT_MAX_TOKENS = 1000;
 const DEFAULT_TTS_FILTER_PUNCTUATION = '。！？!?；;、';
+const ANNOTATION_PUNCTUATION_PATTERN = /\p{P}/gu;
+const ASR_BOUNDARY_PUNCTUATION_PATTERN = /^[\p{P}\s]+|[\p{P}\s]+$/gu;
+
+const normalizeAnnotationQuestion = (value: string) => value.replace(ANNOTATION_PUNCTUATION_PATTERN, '').trim();
+const normalizeAsrTranscript = (value: string) => value.replace(ASR_BOUNDARY_PUNCTUATION_PATTERN, '').trim();
 
 const toDeviceChatConversationDetail = (logs: DeviceChatLogRecord[]): ChatConversationDetail => {
   const orderedLogs = [...logs].sort((a, b) => {
@@ -858,7 +863,7 @@ export const ApplicationManagementPage = () => {
 
   const saveAnnotation = async () => {
     if (!selectedApplicationId) return;
-    const question = annotationQuestion.trim();
+    const question = normalizeAnnotationQuestion(annotationQuestion);
     const answer = annotationAnswer.trim();
     if (!question || !answer) {
       message.warning('请填写问题和标准回复');
@@ -923,7 +928,7 @@ export const ApplicationManagementPage = () => {
     try {
       await createAgentAnnotationFromMessage(selectedApplicationId, {
         messageId: assistantMessage.id,
-        question: previousUserMessage.content,
+        question: normalizeAnnotationQuestion(previousUserMessage.content),
         answer: assistantMessage.content,
       });
       message.success('已添加到标注');
@@ -2002,11 +2007,12 @@ export const ApplicationManagementPage = () => {
                     agentAudio.stopPlayback();
                   }
                   void agentAudio.startRecording(
-                    (text) => setInputValue(text),
+                    (text) => setInputValue(normalizeAsrTranscript(text)),
                     {
                       onDone: (text) => {
-                        setInputValue(text);
-                        void sendChatContent(text);
+                        const normalizedText = normalizeAsrTranscript(text);
+                        setInputValue(normalizedText);
+                        void sendChatContent(normalizedText);
                       },
                     },
                   );
@@ -2293,11 +2299,12 @@ export const ApplicationManagementPage = () => {
                     agentAudio.stopPlayback();
                   }
                   void agentAudio.startRecording(
-                    (text) => setInputValue(text),
+                    (text) => setInputValue(normalizeAsrTranscript(text)),
                     {
                       onDone: (text) => {
-                        setInputValue(text);
-                        void sendChatContent(text);
+                        const normalizedText = normalizeAsrTranscript(text);
+                        setInputValue(normalizedText);
+                        void sendChatContent(normalizedText);
                       },
                     },
                   );

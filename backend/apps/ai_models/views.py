@@ -75,6 +75,7 @@ from .models import (
     TTSVoice,
 )
 from .realtime_asr import resolve_asr_device_connection
+from .services.annotations import find_matching_annotation
 from .serializers import (
     ASRConfigSerializer,
     ASRVADConfigSerializer,
@@ -1513,18 +1514,14 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             )
             conversation.save(update_fields=['updated_at'])
 
-        normalized_content = content.strip()
         annotation = None
-        if regenerate_message_id is None and conversation.application_id and normalized_content:
-            annotation = (
-                AgentAnnotation.objects
-                .filter(
+        if regenerate_message_id is None and conversation.application_id:
+            annotation = find_matching_annotation(
+                AgentAnnotation.objects.filter(
                     application=conversation.application,
                     tenant=conversation.tenant,
-                    is_active=True,
-                    question=normalized_content,
-                )
-                .first()
+                ),
+                content,
             )
         if annotation is not None:
             now = timezone.now()

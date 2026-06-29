@@ -31,6 +31,7 @@ from .models import (
     default_agent_opening_message,
     default_tts_session_config,
 )
+from .services.annotations import normalize_annotation_question
 
 
 def mask_knowledge_api_key(value: str) -> str:
@@ -974,7 +975,7 @@ class AgentAnnotationSerializer(serializers.ModelSerializer):
         return obj.created_by.get_full_name() or obj.created_by.username
 
     def validate_question(self, value: str) -> str:
-        value = value.strip()
+        value = normalize_annotation_question(value)
         if not value:
             raise serializers.ValidationError('问题不能为空')
         return value
@@ -992,7 +993,7 @@ class AgentAnnotationCreateFromMessageSerializer(serializers.Serializer):
     answer = serializers.CharField()
 
     def validate_question(self, value: str) -> str:
-        value = value.strip()
+        value = normalize_annotation_question(value)
         if not value:
             raise serializers.ValidationError('问题不能为空')
         return value
