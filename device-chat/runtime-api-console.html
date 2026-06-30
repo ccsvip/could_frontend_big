@@ -166,6 +166,19 @@
     .tts-debug-item:last-child { padding-bottom: 0; border-bottom: 0; }
     .tts-debug-meta { color: #334155; font-weight: 700; overflow-wrap: anywhere; }
     .tts-debug-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+    .reply-blocks { display: grid; gap: 10px; max-width: 100%; }
+    .reply-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+    .reply-media {
+      display: block;
+      width: 100%;
+      max-height: 320px;
+      object-fit: contain;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+    }
+    .reply-media.video { background: #0f172a; }
+    .reply-missing { padding: 9px 10px; border: 1px dashed var(--line-strong); border-radius: 10px; background: var(--surface-soft); color: var(--muted); font-size: 12px; }
     .empty { padding: 24px; border: 1px dashed var(--line-strong); border-radius: 12px; background: var(--surface-soft); color: var(--muted); text-align: center; }
     .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 12px; }
     table { width: 100%; border-collapse: collapse; background: #fff; }
@@ -1176,21 +1189,33 @@
         const answerNode = document.getElementById('llmWsAnswer');
         const text = document.getElementById('llmWsText').value.trim();
         if (!text) return showError(new Error('请输入问题文本'));
-        if (answerNode) answerNode.textContent = '生成中';
+        if (answerNode) {
+          answerNode.classList.add('code-chip');
+          answerNode.classList.remove('reply-blocks');
+          answerNode.textContent = '生成中';
+        }
         output.textContent = '正在请求 LLM WebSocket...';
         try {
-          if (answerNode) answerNode.textContent = '';
+          if (answerNode) {
+            answerNode.classList.add('code-chip');
+            answerNode.classList.remove('reply-blocks');
+            answerNode.textContent = '';
+          }
           const answer = await runLlmWebSocket(text, {
             onStarted: (payload) => {
               setLlmConversationId(payload.conversationId);
             },
             onDelta: (delta) => {
-              if (answerNode) answerNode.textContent += delta;
+              appendReplyText(answerNode, delta);
             },
           });
           setLlmConversationId(answer.conversationId);
           output.textContent = pretty(answer);
-          if (answerNode && !answerNode.textContent) answerNode.textContent = answer.answerText || '-';
+          if (answer.answerBlocks && answer.answerBlocks.length) {
+            renderReplyBlocksInto(answerNode, answer.answerBlocks, answer.answerText || '-');
+          } else if (answerNode && !answerNode.textContent) {
+            renderReplyBlocksInto(answerNode, null, answer.answerText || '-');
+          }
         } catch (error) {
           if (answerNode) answerNode.textContent = '失败';
           output.textContent = error.message;
@@ -1229,7 +1254,11 @@
           fitTextareaContent(questionInput);
         }
         if (document.getElementById('llmAutoPlay') && document.getElementById('llmAutoPlay').checked) unlockTtsPlayback();
-        if (answerText) answerText.textContent = '等待回复';
+        if (answerText) {
+          answerText.classList.add('code-chip');
+          answerText.classList.remove('reply-blocks');
+          answerText.textContent = '等待回复';
+        }
         if (ttsState) ttsState.textContent = '等待合成';
         const autoPlay = Boolean(document.getElementById('llmAutoPlay') && document.getElementById('llmAutoPlay').checked);
         const session = createAgentRealtimeSession({
@@ -1398,7 +1427,11 @@
         const source = options && options.source === 'asr' ? 'ASR' : '手动输入';
         stopAgentTtsPlayback({ silent: true, resetAudio: true });
         output.textContent = source + ' 问题已提交，RuntimeAgentRealtimeManager 正在自动串联 LLM/TTS...';
-        if (answerNode) answerNode.textContent = '生成中';
+        if (answerNode) {
+          answerNode.classList.add('code-chip');
+          answerNode.classList.remove('reply-blocks');
+          answerNode.textContent = '生成中';
+        }
         if (ttsNode) ttsNode.textContent = '等待回复';
         const autoPlay = Boolean(document.getElementById('llmAutoPlay') && document.getElementById('llmAutoPlay').checked);
         const session = createAgentRealtimeSession({
@@ -1414,10 +1447,14 @@
         });
         try {
           output.textContent = pretty([{ manager: 'RuntimeAgentRealtimeManager', command: 'agent.session.start', source, text, mode: autoPlay ? 'streaming_tts' : 'collect_audio' }]);
-          if (answerNode) answerNode.textContent = '';
+          if (answerNode) {
+            answerNode.classList.add('code-chip');
+            answerNode.classList.remove('reply-blocks');
+            answerNode.textContent = '';
+          }
           const result = await runAgentTextWebSocket(session);
           const answer = result.answerText || '';
-          if (answerNode && !answerNode.textContent) answerNode.textContent = answer || '-';
+          if (answerNode && !answerNode.textContent) renderReplyBlocksInto(answerNode, result.answerBlocks, answer || '-');
           output.textContent = pretty([
             { manager: 'RuntimeAgentRealtimeManager', phase: 'agent.done', completeAnswer: answer },
             { manager: 'RuntimeAgentRealtimeManager', phase: 'ttsPlayback', events: 'same websocket tts.ready/binary PCM/tts.done', autoPlay, callback: 'OnAiDialogueListener', segments: result.segments, chunks: result.chunks, bytes: result.bytes, objectUrl: result.objectUrl },
@@ -1438,9 +1475,11 @@
         const text = document.getElementById('llmText').value.trim();
         try {
           const result = await apiRequest('/device/voice-chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) }, 'LLM 文本问答');
+          const body = unwrap(result.body) || {};
           output.textContent = pretty(result.body);
+          renderReplyBlocksInto(document.getElementById('llmAnswerText'), body.answerBlocks || body.blocks || body.contentBlocks, body.answerText || body.answer || body.text || '');
           const autoPlay = Boolean(document.getElementById('llmAutoPlay') && document.getElementById('llmAutoPlay').checked);
-          attachBase64Audio(document.getElementById('llmAudio'), unwrap(result.body), autoPlay);
+          attachBase64Audio(document.getElementById('llmAudio'), body, autoPlay);
         } catch (error) {
           output.textContent = error.message;
         }
@@ -1513,6 +1552,7 @@
           command: { type: 'agent.session.start', id: sessionId, payload },
           events: [],
           answerText: '',
+          answerBlocks: [],
           sampleRate: 24000,
           chunks: [],
           chunkCount: 0,
@@ -1709,7 +1749,7 @@
         if (payload.type === 'llm.delta') {
           const delta = String((payload.payload && payload.payload.text) || payload.text || '');
           session.answerText += delta;
-          if (session.answerNode) session.answerNode.textContent += delta;
+          appendReplyText(session.answerNode, delta);
         }
         if (payload.type === 'llm.tts_segment') {
           const text = String((payload.payload && payload.payload.text) || payload.text || '').trim();
@@ -1736,7 +1776,12 @@
         if (payload.type === 'llm.done') {
           const data = payload.payload || {};
           if (!session.answerText) session.answerText = data.answerText || '';
-          if (session.answerNode && !session.answerNode.textContent) session.answerNode.textContent = session.answerText || '-';
+          session.answerBlocks = data.answerBlocks || data.blocks || data.contentBlocks || payload.answerBlocks || payload.blocks || payload.contentBlocks || session.answerBlocks || [];
+          if (session.answerBlocks && session.answerBlocks.length) {
+            renderReplyBlocksInto(session.answerNode, session.answerBlocks, session.answerText || '-');
+          } else if (session.answerNode && !session.answerNode.textContent) {
+            renderReplyBlocksInto(session.answerNode, null, session.answerText || '-');
+          }
         }
         if (payload.type === 'agent.done') {
           if (session.ttsNode) session.ttsNode.textContent = '播报收尾中';
@@ -1765,7 +1810,7 @@
         session.socket.close();
         if (state.agentSession === session) state.agentSession = null;
         if (state.agentTtsStream === session) state.agentTtsStream = null;
-        return { answerText: session.answerText, segments: session.ttsSegments.length, chunks: session.chunkCount, bytes: session.bytes, sampleRate: session.sampleRate, objectUrl };
+        return { answerText: session.answerText, answerBlocks: session.answerBlocks || [], segments: session.ttsSegments.length, chunks: session.chunkCount, bytes: session.bytes, sampleRate: session.sampleRate, objectUrl };
       }
 
       function runLlmWebSocket(text, options) {
@@ -1783,6 +1828,7 @@
           const socket = new WebSocket(realtimeWsUrl());
           state.sockets.push(socket);
           let answerText = '';
+          let answerBlocks = [];
           let lastPayload = null;
           let settled = false;
           let timer = null;
@@ -1821,8 +1867,9 @@
               lastPayload = payload.payload || {};
               setLlmConversationId(lastPayload.conversationId);
               if (!answerText) answerText = lastPayload.answerText || '';
+              answerBlocks = lastPayload.answerBlocks || lastPayload.blocks || lastPayload.contentBlocks || payload.answerBlocks || payload.blocks || payload.contentBlocks || answerBlocks;
               socket.close();
-              resolve(Object.assign({}, lastPayload, { answerText }));
+              resolve(Object.assign({}, lastPayload, { answerText, answerBlocks }));
             }
             if (payload.type === 'llm.error' || payload.type === 'error') {
               settled = true;
@@ -2512,12 +2559,18 @@
             ['format / sampleRate', '语音问答时描述音频格式，例如 pcm、16000。'],
           ],
           response: [
-            ['text / answer', 'LLM 返回文本。'],
+            ['answerText', '完整文本回复；标注富媒体命中时为所有文本块拼接结果，TTS 只播报这个文本。'],
+            ['answerBlocks', '富媒体回复块数组；<code>type=text</code> 使用 <code>text</code>，<code>type=image/video</code> 使用 <code>resourceId/resourceName/url/missing</code> 渲染图片或视频。'],
             ['audioBase64 / audioUrl', '如果后端合成语音成功，返回音频内容或地址。'],
             ['deviceCode / traceId', '链路定位信息。'],
           ],
           responseExample: {
-            text: '这是设备问答返回内容。',
+            answerText: '这是设备问答返回内容。',
+            answerBlocks: [
+              { type: 'text', text: '这是设备问答返回内容。' },
+              { type: 'image', resourceId: 101, resourceName: '展厅导览图', url: 'https://example.com/media/showroom.png', missing: false },
+              { type: 'video', resourceId: 102, resourceName: '设备演示视频', url: 'https://example.com/media/demo.mp4', missing: false },
+            ],
             deviceCode: '<deviceCode>',
             traceId: '<traceId>',
             audioBase64: '<base64 audio>',
@@ -2581,14 +2634,15 @@
             ['phases.sendAsr', '发送 <code>asr.session.start</code>，然后发送 16k mono pcm_s16le 二进制音频。'],
             ['phases.asrPreview', '接收 <code>asr.transcript</code> 的实时预览；上游原始事件是 <code>conversation.item.input_audio_transcription.text</code>，预览语义为 <code>text + stash</code>。'],
             ['phases.asrDone', '接收 <code>asr.transcript final=true</code>/<code>asr.done</code>，使用纠错后的最终 <code>text</code> 作为问题；上游最终事件是 <code>conversation.item.input_audio_transcription.completed</code> 的 <code>transcript</code>。'],
-            ['phases.llmReply', '发送 <code>llm.session.start</code>。第一轮请求不传 <code>payload.conversationId</code>；保存 <code>llm.started.payload.conversationId</code> 或 <code>llm.done.payload.conversationId</code>；同一对话的后续文本问题再把它带回。处理 <code>llm.started</code>/<code>llm.delta</code>/<code>llm.tts_segment</code>/<code>llm.done</code>。'],
+            ['phases.llmReply', '发送 <code>llm.session.start</code>。第一轮请求不传 <code>payload.conversationId</code>；保存 <code>llm.started.payload.conversationId</code> 或 <code>llm.done.payload.conversationId</code>；同一对话的后续文本问题再把它带回。处理 <code>llm.started</code>/<code>llm.delta</code>/<code>llm.tts_segment</code>/<code>llm.done</code>；标注命中时 <code>llm.done.payload.blocks</code>/<code>answerBlocks</code> 携带文本、图片、视频块。'],
             ['phases.ttsSpeak', '后端在同一 agent 会话内维护一个上游 TTS WebSocket，持续写入多个 <code>llm.tts_segment</code>，接收 binary PCM 后用 Web Audio 顺序播报。'],
             ['callbacks', '对外继续映射现有 <code>OnAiDialogueListener</code> 或本页实时播报/最终回放。'],
             ['dtoPackage', '安卓端建议将 command、payload、event DTO 统一放在 <code>bean/runtime/agent</code>。'],
           ],
           response: [
             ['ASR 阶段', '<code>asr.ready</code>、<code>asr.transcript</code>、<code>asr.done</code>。实时预览看 <code>final=false</code>，最终问题看 <code>final=true</code>。'],
-            ['LLM 阶段', '<code>llm.started</code>、<code>llm.delta</code>、<code>llm.tts_segment</code>、<code>llm.done</code>；<code>llm.started.payload.conversationId</code> 是服务端创建的数字会话 ID，安卓应立即保存，后续问题写入 <code>llm.session.start.payload.conversationId</code>。'],
+            ['LLM 阶段', '<code>llm.started</code>、<code>llm.delta</code>、<code>llm.tts_segment</code>、<code>llm.done</code>；<code>llm.started.payload.conversationId</code> 是服务端创建的数字会话 ID，安卓应立即保存。富媒体标注回复在完成事件中返回 <code>payload.blocks</code>/<code>answerBlocks</code>，客户端按顺序渲染 text/image/video。'],
+            ['富媒体块', '<code>text</code> 块渲染文本；<code>image</code> 块渲染图片；<code>video</code> 块渲染视频控件。媒体块字段包含 <code>resourceId</code>、<code>resourceName</code>、<code>url</code>、<code>missing</code>；<code>missing=true</code> 时展示占位提示。TTS 只使用文本块拼出的 <code>answerText</code>。'],
             ['TTS 阶段', '<code>tts.ready</code>、binary PCM、<code>tts.done</code>；一个 agent 会话内只应出现一次 ready/done，中间可有多个可播报片段对应的 PCM。'],
             ['打断播报', '停止本地 Web Audio 队列，并发送 <code>agent.session.cancel</code> 取消当前 agent 会话；这只是打断当前回答，不代表用户要新建 LLM 对话，安卓本地保存的 <code>conversationId</code> 不应因此清空。'],
             ['停止', '才 cancel/abort 当前 LLM/TTS 或关闭当前流。'],
@@ -2598,7 +2652,7 @@
             { manager: 'RuntimeAgentRealtimeManager', phase: 'asrDone', event: 'asr.transcript', final: true, text: '介绍一下展厅', sourceEventType: 'conversation.item.input_audio_transcription.completed' },
             { manager: 'RuntimeAgentRealtimeManager', phase: 'llmStarted', event: 'llm.started', payload: { questionText: '介绍一下展厅', conversationId: 123 } },
             { manager: 'RuntimeAgentRealtimeManager', phase: 'llmReply', event: 'llm.tts_segment', text: '这是展厅介绍。' },
-            { manager: 'RuntimeAgentRealtimeManager', phase: 'llmDone', event: 'llm.done', payload: { answerText: '这是展厅介绍。', conversationId: 123 } },
+            { manager: 'RuntimeAgentRealtimeManager', phase: 'llmDone', event: 'llm.done', payload: { answerText: '这是展厅介绍。', blocks: [{ type: 'text', text: '这是展厅介绍。' }, { type: 'image', resourceId: 101, resourceName: '展厅导览图', url: 'https://example.com/media/showroom.png', missing: false }, { type: 'video', resourceId: 102, resourceName: '演示视频', url: 'https://example.com/media/demo.mp4', missing: false }], conversationId: 123 } },
             { manager: 'RuntimeAgentRealtimeManager', phase: 'ttsPlayback', event: 'binary PCM', segment: 1, callback: 'OnAiDialogueListener' },
           ],
           errors: runtimeDeviceErrors([['WS error / 440xx', '设备码不可解析、设备未绑定公司/智能体，或 ASR/LLM/TTS 任一内部阶段服务未配置。']]),
@@ -2626,7 +2680,7 @@
             ['llm.started', 'LLM 已开始。<code>payload.conversationId</code> 是服务端创建/确认的对话 ID，安卓收到后应立即保存，避免中途打断导致没有保存到会话。'],
             ['llm.delta', 'LLM 文字增量。用于实时上屏；完整回复以 <code>llm.done.payload.answerText</code> 为准。'],
             ['llm.tts_segment', '可播报句子片段。完整 agent 链路会把这些片段送入 TTS。'],
-            ['llm.done', 'LLM 完成。<code>payload.answerText</code> 是完整回复，<code>payload.conversationId</code> 与 <code>llm.started</code> 相同，也可以作为兜底保存。'],
+            ['llm.done', 'LLM 完成。<code>payload.answerText</code> 是完整回复，<code>payload.blocks</code>/<code>payload.answerBlocks</code> 是可选富媒体块数组，<code>payload.conversationId</code> 与 <code>llm.started</code> 相同，也可以作为兜底保存。'],
             ['tts.ready / audio/pcm / tts.done', 'TTS 就绪、二进制 PCM 分片和完成事件；tts.ready 带 sampleRate/voice。'],
             ['*.cancelled', '会话取消事件，只表示当前 ASR/LLM/TTS session 被取消；WebSocket 不应因为 cancel 被动断开，可继续发下一轮命令。取消 LLM 当前生成不等于新建对话，安卓不要自动清空 <code>conversationId</code>。'],
             ['close / disconnect', '客户端主动关闭 WebSocket 才会彻底结束连接；在线状态连接断开还会触发 offline。'],
@@ -2636,7 +2690,7 @@
             { type: 'llm.session.start', id: 'llm-session-1', payload: { deviceCode: '<deviceCode>', text: '第一个问题', requestId: '<requestId>', traceId: '<traceId>' } },
             { type: 'llm.started', id: 'llm-session-1', payload: { deviceCode: '<deviceCode>', questionText: '第一个问题', conversationId: 123 } },
             { type: 'llm.delta', id: 'llm-session-1', payload: { text: '第一段回复' } },
-            { type: 'llm.done', id: 'llm-session-1', payload: { deviceCode: '<deviceCode>', questionText: '第一个问题', answerText: '第一轮完整回复', conversationId: 123 } },
+            { type: 'llm.done', id: 'llm-session-1', payload: { deviceCode: '<deviceCode>', questionText: '第一个问题', answerText: '第一轮完整回复', blocks: [{ type: 'text', text: '第一轮完整回复' }, { type: 'image', resourceId: 101, resourceName: '展厅导览图', url: 'https://example.com/media/showroom.png', missing: false }], conversationId: 123 } },
             { type: 'llm.session.start', id: 'llm-session-2', payload: { deviceCode: '<deviceCode>', text: '第二个问题', conversationId: 123, requestId: '<requestId>', traceId: '<traceId>' } },
             { type: 'llm.session.cancel', id: 'llm-cancel-2' },
             { type: 'llm.cancelled', id: 'llm-cancel-2', payload: { deviceCode: '<deviceCode>', conversationId: 123 } },
@@ -2852,6 +2906,81 @@
         audio.hidden = false;
         if (autoPlay !== false) audio.play().catch(function () {});
         return url;
+      }
+      function normalizeMediaUrl(url) {
+        const value = String(url || '').trim();
+        if (!value) return '';
+        if (/^(https?:)?\/\//i.test(value) || value.startsWith('data:') || value.startsWith('blob:')) return value;
+        if (value.startsWith('/')) {
+          const api = new URL(state.apiBaseUrl);
+          return api.protocol + '//' + api.host + value;
+        }
+        return value;
+      }
+      function normalizeReplyBlocks(blocks, fallbackText) {
+        const source = Array.isArray(blocks) && blocks.length ? blocks : (fallbackText ? [{ type: 'text', text: fallbackText }] : []);
+        return source.map((block) => {
+          if (!block || typeof block !== 'object') return null;
+          const type = String(block.type || '').trim();
+          if (type === 'text') {
+            const text = String(block.text || '').trim();
+            return text ? { type, text } : null;
+          }
+          if (type === 'image' || type === 'video') {
+            return {
+              type,
+              resourceId: block.resourceId || block.resource_id || '',
+              resourceName: block.resourceName || block.resource_name || '',
+              url: normalizeMediaUrl(block.url || block.fileUrl || block.cloudUrl || ''),
+              missing: Boolean(block.missing),
+            };
+          }
+          return null;
+        }).filter(Boolean);
+      }
+      function renderReplyBlocksInto(target, blocks, fallbackText) {
+        if (!target) return;
+        const normalized = normalizeReplyBlocks(blocks, fallbackText);
+        target.textContent = '';
+        target.classList.remove('code-chip');
+        target.classList.add('reply-blocks');
+        if (!normalized.length) {
+          target.textContent = fallbackText || '-';
+          return;
+        }
+        normalized.forEach((block) => {
+          if (block.type === 'text') {
+            const textNode = document.createElement('div');
+            textNode.className = 'reply-text';
+            textNode.textContent = block.text;
+            target.appendChild(textNode);
+            return;
+          }
+          if (block.missing || !block.url) {
+            const missing = document.createElement('div');
+            missing.className = 'reply-missing';
+            missing.textContent = (block.resourceName || block.resourceId) ? '资源不可用：' + (block.resourceName || ('#' + block.resourceId)) : '资源不可用';
+            target.appendChild(missing);
+            return;
+          }
+          const media = document.createElement(block.type === 'image' ? 'img' : 'video');
+          media.className = 'reply-media ' + block.type;
+          media.src = block.url;
+          if (block.type === 'image') {
+            media.alt = block.resourceName || '智能体回复图片';
+            media.loading = 'lazy';
+          } else {
+            media.controls = true;
+            media.preload = 'metadata';
+          }
+          target.appendChild(media);
+        });
+      }
+      function appendReplyText(target, text) {
+        if (!target) return;
+        target.classList.add('code-chip');
+        target.classList.remove('reply-blocks');
+        target.textContent += text;
       }
       function fitTextareaContent(textarea) {
         if (!textarea) return;
