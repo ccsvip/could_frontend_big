@@ -15,6 +15,7 @@ export type ResourceRecord = {
   cloudUrl: string;
   objectKey?: string;
   objectSize?: number | null;
+  isDigitalHumanBackground: boolean;
   fileUrl: string;
   fileName: string;
   fileSize: number | null;
@@ -36,6 +37,7 @@ export type ResourceListQuery = {
   pageSize?: number;
   category?: ResourceCategory | 'all';
   keyword?: string;
+  isDigitalHumanBackground?: boolean;
 };
 
 export type ResourcePayload = {
@@ -45,8 +47,16 @@ export type ResourcePayload = {
   cloudUrl?: string;
   objectKey?: string;
   objectSize?: number | null;
+  isDigitalHumanBackground?: boolean;
   file?: File;
   clearFile?: boolean;
+};
+
+export type BatchImageResourcePayload = {
+  files: File[];
+  category: ResourceCategory;
+  description?: string;
+  isDigitalHumanBackground?: boolean;
 };
 
 const buildFormData = (payload: ResourcePayload) => {
@@ -60,6 +70,9 @@ const buildFormData = (payload: ResourcePayload) => {
   }
   if (payload.objectSize != null) {
     formData.append('objectSize', String(payload.objectSize));
+  }
+  if (payload.isDigitalHumanBackground != null) {
+    formData.append('isDigitalHumanBackground', String(payload.isDigitalHumanBackground));
   }
   if (payload.file) {
     formData.append('file', payload.file);
@@ -75,6 +88,7 @@ const buildListParams = (query?: ResourceListQuery) => ({
   page_size: query?.pageSize,
   category: query?.category && query.category !== 'all' ? query.category : undefined,
   keyword: query?.keyword || undefined,
+  isDigitalHumanBackground: query?.isDigitalHumanBackground,
 });
 
 export const fetchImageResources = async (query?: ResourceListQuery) => {
@@ -89,6 +103,18 @@ export const fetchVideoResources = async (query?: ResourceListQuery) => {
 
 export const createImageResource = async (payload: ResourcePayload) => {
   const response = await httpClient.post<ResourceRecord>('/resources/images/', buildFormData(payload));
+  return response.data;
+};
+
+export const batchCreateImageResources = async (payload: BatchImageResourcePayload) => {
+  const formData = new FormData();
+  formData.append('category', payload.category);
+  formData.append('description', payload.description || '');
+  formData.append('isDigitalHumanBackground', String(Boolean(payload.isDigitalHumanBackground)));
+  payload.files.forEach((file) => {
+    formData.append('files', file);
+  });
+  const response = await httpClient.post<ResourceRecord[]>('/resources/images/bulk/', formData);
   return response.data;
 };
 

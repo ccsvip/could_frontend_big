@@ -11,15 +11,39 @@ from xml.etree import ElementTree
 import httpx
 from django.utils import timezone
 
-from apps.knowledge_base.models import KnowledgeBase, KnowledgeDocument, KnowledgeDocumentChunk
+from apps.knowledge_base.models import KnowledgeBase, KnowledgeDocument, KnowledgeDocumentChunk, KnowledgeMediaAsset
+from apps.resources.models import Resource
 from apps.ai_models.models import EmbeddingModel, RerankModel, TenantKnowledgeModelSettings
 
 logger = logging.getLogger(__name__)
 
 KEYWORD_INDEX_MODEL = 'keyword'
 EMBEDDING_BATCH_SIZE = 10
+DEFAULT_VECTOR_MIN_SCORE = 0.2
 TEXT_EXTENSIONS = {'txt', 'md'}
 LEGACY_OFFICE_EXTENSIONS = {'doc', 'xls', 'ppt'}
+RETRIEVAL_INTENT_TERMS = {
+    '什么',
+    '怎么',
+    '如何',
+    '多少',
+    '哪里',
+    '哪个',
+    '哪些',
+    '为什么',
+    '能否',
+    '是否',
+    '介绍',
+    '说明',
+    '查询',
+    '推荐',
+    '流程',
+    '政策',
+    '价格',
+    '费用',
+    '时间',
+    '地址',
+}
 
 
 @dataclass
@@ -29,6 +53,15 @@ class RetrievedChunk:
     content: str
     score: float
     chunk_index: int | None = None
+    knowledge_base_id: int | None = None
+    knowledge_base_name: str = ''
+    retrieval_min_score: float = DEFAULT_VECTOR_MIN_SCORE
+
+
+@dataclass
+class RetrievedMediaAsset:
+    asset: KnowledgeMediaAsset
+    relevance: float
 
 
 def chunk_text(text: str, max_chunk_len: int = 500, overlap: int = 50) -> list[str]:
@@ -102,6 +135,64 @@ def score_chunk(chunk: str, keywords: set[str], query: str) -> float:
     if query.lower() in chunk_lower:
         score += len(query) * 2.0
     return score
+
+
+def _has_retrieval_intent(query: str) -> bool:
+    """Returns whether a query carries enough information to search business knowledge."""
+    normalized = re.sub(r'\s+', '', str(query or '').lower())
+    if not normalized:
+        return False
+    if len(normalized) >= 6:
+        return True
+    if re.search(r'[?？]', normalized):
+        return True
+    if any(term in normalized for term in RETRIEVAL_INTENT_TERMS):
+        return True
+    if re.search(r'\d', normalized) and len(normalized) >= 2:
+        return True
+
+    keywords = extract_keywords(normalized)
+    return len(keywords) >= 2
+
+
+def _chunk_knowledge_base_id(chunk) -> int | None:
+    knowledge_base = getattr(getattr(chunk, 'document', None), 'knowledge_base', None)
+    return getattr(knowledge_base, 'id', None)
+
+
+def _chunk_knowledge_base_name(chunk) -> str:
+    knowledge_base = getattr(getattr(chunk, 'document', None), 'knowledge_base', None)
+    return getattr(knowledge_base, 'name', '') or ''
+
+
+def _knowledge_base_min_score(knowledge_base) -> float:
+    value = getattr(knowledge_base, 'retrieval_min_score', DEFAULT_VECTOR_MIN_SCORE)
+    try:
+        return max(0.0, min(float(value), 1.0))
+    except (TypeError, ValueError):
+        return DEFAULT_VECTOR_MIN_SCORE
+
+
+def _chunk_retrieval_min_score(chunk) -> float:
+    knowledge_base = getattr(getattr(chunk, 'document', None), 'knowledge_base', None)
+    return _knowledge_base_min_score(knowledge_base)
+
+
+def _passes_vector_score_gate(chunk: RetrievedChunk) -> bool:
+    return chunk.score >= chunk.retrieval_min_score
+
+
+def _retrieved_chunk_from_stored_chunk(stored_chunk: KnowledgeDocumentChunk, score: float) -> RetrievedChunk:
+    return RetrievedChunk(
+        document_id=stored_chunk.document_id,
+        doc_title=stored_chunk.document.title,
+        content=stored_chunk.content,
+        score=score,
+        chunk_index=stored_chunk.chunk_index,
+        knowledge_base_id=_chunk_knowledge_base_id(stored_chunk),
+        knowledge_base_name=_chunk_knowledge_base_name(stored_chunk),
+        retrieval_min_score=_chunk_retrieval_min_score(stored_chunk),
+    )
 
 
 def _decode_text(raw_content: bytes) -> str:
@@ -512,7 +603,18 @@ def _rerank_chunks(
         if not isinstance(index, int) or index < 0 or index >= len(chunks):
             continue
         score = row.get('relevance_score', row.get('score', chunks[index].score))
-        reranked.append(RetrievedChunk(chunks[index].document_id, chunks[index].doc_title, chunks[index].content, float(score), chunks[index].chunk_index))
+        reranked.append(
+            RetrievedChunk(
+                chunks[index].document_id,
+                chunks[index].doc_title,
+                chunks[index].content,
+                float(score),
+                chunks[index].chunk_index,
+                chunks[index].knowledge_base_id,
+                chunks[index].knowledge_base_name,
+                chunks[index].retrieval_min_score,
+            )
+        )
 
     return reranked or chunks[:top_n]
 
@@ -573,6 +675,15 @@ def _approved_text_documents_for_knowledge_base(knowledge_base: KnowledgeBase) -
     )
 
 
+def _doc_knowledge_base_id(doc: KnowledgeDocument) -> int | None:
+    return doc.knowledge_base_id
+
+
+def _doc_knowledge_base_name(doc: KnowledgeDocument) -> str:
+    knowledge_base = getattr(doc, 'knowledge_base', None)
+    return getattr(knowledge_base, 'name', '') or ''
+
+
 def _retrieve_keyword_chunks(docs: list[KnowledgeDocument], query: str, top_n: int) -> list[RetrievedChunk]:
     keywords = extract_keywords(query)
     if not keywords:
@@ -583,20 +694,12 @@ def _retrieve_keyword_chunks(docs: list[KnowledgeDocument], query: str, top_n: i
         KnowledgeDocumentChunk.objects.filter(
             document__in=docs,
             embedding_model=KEYWORD_INDEX_MODEL,
-        ).select_related('document')
+        ).select_related('document', 'document__knowledge_base')
     )
     for stored_chunk in stored_chunks:
         score = score_chunk(stored_chunk.content, keywords, query)
         if score > 0:
-            all_scored_chunks.append(
-                RetrievedChunk(
-                    stored_chunk.document_id,
-                    stored_chunk.document.title,
-                    stored_chunk.content,
-                    score,
-                    stored_chunk.chunk_index,
-                )
-            )
+            all_scored_chunks.append(_retrieved_chunk_from_stored_chunk(stored_chunk, score))
 
     if all_scored_chunks:
         all_scored_chunks.sort(key=lambda item: item.score, reverse=True)
@@ -608,7 +711,18 @@ def _retrieve_keyword_chunks(docs: list[KnowledgeDocument], query: str, top_n: i
             for chunk_index, chunk in enumerate(_chunk_document_text(doc, content)):
                 score = score_chunk(chunk, keywords, query)
                 if score > 0:
-                    all_scored_chunks.append(RetrievedChunk(doc.id, doc.title, chunk, score, chunk_index))
+                    all_scored_chunks.append(
+                        RetrievedChunk(
+                            doc.id,
+                            doc.title,
+                            chunk,
+                            score,
+                            chunk_index,
+                            _doc_knowledge_base_id(doc),
+                            _doc_knowledge_base_name(doc),
+                            _knowledge_base_min_score(getattr(doc, 'knowledge_base', None)),
+                        )
+                    )
         except Exception as e:
             logger.warning('Failed to read knowledge document id=%s error=%s', doc.id, e)
             continue
@@ -621,9 +735,247 @@ def _retrieve_keyword_knowledge_context(application, query: str, top_n: int, max
     return _format_context(_retrieve_keyword_chunks(docs if docs is not None else _bound_approved_text_documents(application), query, top_n), max_chars)
 
 
-def _serialize_recall_result(*, chunks: list[RetrievedChunk], mode: str, embedding_model: EmbeddingModel | None, rerank_model: RerankModel | None) -> dict:
+MEDIA_RELEVANCE_THRESHOLD = 0.3
+MEDIA_MAX_TOTAL = 3
+MEDIA_MAX_IMAGES = 2
+MEDIA_MAX_VIDEOS = 1
+
+
+def _asset_text(asset: KnowledgeMediaAsset) -> str:
+    resource = asset.resource
+    parts = [
+        asset.resource_name,
+        asset.keywords,
+        asset.description,
+        asset.vlm_keywords,
+        asset.vlm_description,
+        resource.name if resource is not None else '',
+        resource.description if resource is not None else '',
+    ]
+    return ' '.join(str(part or '') for part in parts).strip()
+
+
+def _asset_match_terms(asset: KnowledgeMediaAsset) -> set[str]:
+    resource = asset.resource
+    raw_values = [
+        asset.resource_name,
+        asset.keywords,
+        asset.vlm_keywords,
+        resource.name if resource is not None else '',
+    ]
+    terms: set[str] = set()
+    for value in raw_values:
+        for term in re.split(r'[\s,，、;；|/]+', str(value or '')):
+            normalized = re.sub(r'\s+', '', term.strip().lower())
+            if len(normalized) >= 2:
+                terms.add(normalized)
+    return terms
+
+
+def _direct_media_term_score(asset: KnowledgeMediaAsset, query: str) -> float:
+    normalized_query = re.sub(r'\s+', '', str(query or '').lower())
+    if not normalized_query:
+        return 0.0
+    matched_weight = 0.0
+    for term in _asset_match_terms(asset):
+        if term in normalized_query:
+            matched_weight += min(len(term), 6)
+    return min(matched_weight / 3.0, 1.0)
+
+
+def _score_media_asset(
+    asset: KnowledgeMediaAsset,
+    *,
+    query: str,
+    chunks: list[RetrievedChunk],
+    query_multimodal_embedding: list[float] | None = None,
+) -> float:
+    text = _asset_text(asset)
+    if not text:
+        return 0.0
+
+    multimodal_score = 0.0
+    if query_multimodal_embedding and asset.multimodal_embedding:
+        multimodal_score = max(_cosine_similarity(query_multimodal_embedding, asset.multimodal_embedding), 0.0)
+
+    query_keywords = extract_keywords(query)
+    query_raw_score = score_chunk(text, query_keywords, query) if query_keywords else 0.0
+    query_score = min(query_raw_score / 12.0, 1.0)
+    query_score = max(query_score, _direct_media_term_score(asset, query))
+
+    chunk_scores: list[float] = []
+    for chunk in chunks[:3]:
+        chunk_keywords = extract_keywords(chunk.content[:500])
+        chunk_scores.append(min(score_chunk(text, chunk_keywords, chunk.content[:120]) / 16.0, 1.0))
+    chunk_score = max(chunk_scores, default=0.0)
+    priority_score = min(max(asset.priority, 0) / 20.0, 1.0)
+
+    if multimodal_score:
+        return min(multimodal_score * 0.5 + query_score * 0.2 + chunk_score * 0.25 + priority_score * 0.05, 1.0)
+    return min(query_score * 0.45 + chunk_score * 0.5 + priority_score * 0.05, 1.0)
+
+
+def match_media_assets_for_chunks(*, query: str, chunks: list[RetrievedChunk], tenant=None) -> list[RetrievedMediaAsset]:
+    knowledge_base_ids = {
+        chunk.knowledge_base_id
+        for chunk in chunks
+        if chunk.knowledge_base_id is not None
+    }
+    if not knowledge_base_ids:
+        return []
+
+    queryset = (
+        KnowledgeMediaAsset.objects.filter(
+            knowledge_base_id__in=knowledge_base_ids,
+            is_enabled=True,
+            resource__isnull=False,
+            resource_type__in=[Resource.TYPE_IMAGE, Resource.TYPE_VIDEO],
+        )
+        .select_related('resource', 'knowledge_base')
+        .order_by('-priority', '-updated_at', '-id')
+    )
+    if tenant is None:
+        queryset = queryset.filter(tenant__isnull=True)
+    else:
+        queryset = queryset.filter(tenant=tenant)
+
+    query_multimodal_embedding: list[float] = []
+    if queryset.filter(multimodal_embedding__isnull=False).exclude(multimodal_embedding=[]).exists():
+        try:
+            from apps.knowledge_base.media_indexing import embed_media_query
+
+            query_multimodal_embedding = embed_media_query(query, tenant=tenant)
+        except Exception as e:
+            logger.warning('Failed to build media query embedding error=%s', e)
+
+    scored: list[RetrievedMediaAsset] = []
+    for asset in queryset:
+        relevance = _score_media_asset(
+            asset,
+            query=query,
+            chunks=chunks,
+            query_multimodal_embedding=query_multimodal_embedding,
+        )
+        if relevance >= MEDIA_RELEVANCE_THRESHOLD:
+            scored.append(RetrievedMediaAsset(asset=asset, relevance=relevance))
+
+    scored.sort(key=lambda item: (item.relevance, item.asset.priority, item.asset.updated_at), reverse=True)
+    selected: list[RetrievedMediaAsset] = []
+    image_count = 0
+    video_count = 0
+    for item in scored:
+        if len(selected) >= MEDIA_MAX_TOTAL:
+            break
+        if item.asset.resource_type == Resource.TYPE_IMAGE:
+            if image_count >= MEDIA_MAX_IMAGES:
+                continue
+            image_count += 1
+        elif item.asset.resource_type == Resource.TYPE_VIDEO:
+            if video_count >= MEDIA_MAX_VIDEOS:
+                continue
+            video_count += 1
+        else:
+            continue
+        selected.append(item)
+    return selected
+
+
+def serialize_media_assets(media_assets: list[RetrievedMediaAsset]) -> list[dict]:
+    return [
+        {
+            'id': item.asset.id,
+            'resourceId': item.asset.resource_id,
+            'resourceName': item.asset.resource_name,
+            'resourceType': item.asset.resource_type,
+            'keywords': item.asset.keywords,
+            'description': item.asset.description,
+            'relevance': round(item.relevance, 2),
+            'knowledgeBaseId': item.asset.knowledge_base_id,
+            'knowledgeBaseName': item.asset.knowledge_base.name if item.asset.knowledge_base_id else '',
+        }
+        for item in media_assets
+    ]
+
+
+def media_assets_to_reply_blocks(media_assets: list[RetrievedMediaAsset]) -> list[dict]:
+    blocks: list[dict] = []
+    for item in media_assets:
+        if item.asset.resource_id is None:
+            continue
+        block_type = 'image' if item.asset.resource_type == Resource.TYPE_IMAGE else 'video'
+        blocks.append({'type': block_type, 'resourceId': item.asset.resource_id})
+    return blocks
+
+
+def _chunks_from_recall_result(result: dict) -> list[RetrievedChunk]:
+    chunks: list[RetrievedChunk] = []
+    for item in result.get('chunks') or []:
+        try:
+            score = float(item.get('score') or 0)
+        except (TypeError, ValueError):
+            score = 0.0
+        chunks.append(
+            RetrievedChunk(
+                document_id=item.get('documentId'),
+                doc_title=item.get('documentTitle') or '',
+                content=item.get('content') or '',
+                score=score,
+                chunk_index=item.get('chunkIndex'),
+                knowledge_base_id=item.get('knowledgeBaseId'),
+                knowledge_base_name=item.get('knowledgeBaseName') or '',
+            )
+        )
+    return chunks
+
+
+def match_media_assets_for_reply_text(
+    *,
+    recall_result: dict,
+    user_query: str,
+    reply_text: str,
+    tenant=None,
+) -> list[RetrievedMediaAsset]:
+    chunks = _chunks_from_recall_result(recall_result)
+    if not chunks or not str(reply_text or '').strip():
+        return []
+    media_query = '\n'.join(part for part in [user_query, reply_text] if str(part or '').strip())
+    return match_media_assets_for_chunks(query=media_query, chunks=chunks, tenant=tenant)
+
+
+def media_blocks_for_reply_text(
+    *,
+    recall_result: dict,
+    user_query: str,
+    reply_text: str,
+    tenant=None,
+) -> list[dict]:
+    return media_assets_to_reply_blocks(
+        match_media_assets_for_reply_text(
+            recall_result=recall_result,
+            user_query=user_query,
+            reply_text=reply_text,
+            tenant=tenant,
+        )
+    )
+
+
+def _serialize_recall_result(
+    *,
+    chunks: list[RetrievedChunk],
+    mode: str,
+    embedding_model: EmbeddingModel | None,
+    rerank_model: RerankModel | None,
+    query: str = '',
+    tenant=None,
+    retrieval_skipped: bool = False,
+    skip_reason: str = '',
+    include_media: bool = True,
+) -> dict:
+    media_assets = match_media_assets_for_chunks(query=query, chunks=chunks, tenant=tenant) if chunks and include_media else []
     return {
         'mode': mode,
+        'retrievalSkipped': retrieval_skipped,
+        'skipReason': skip_reason,
         'embeddingModelAlias': embedding_model.name if embedding_model else '',
         'rerankModelAlias': rerank_model.name if rerank_model else '',
         'chunks': [
@@ -633,9 +985,12 @@ def _serialize_recall_result(*, chunks: list[RetrievedChunk], mode: str, embeddi
                 'chunkIndex': chunk.chunk_index,
                 'content': chunk.content,
                 'score': chunk.score,
+                'knowledgeBaseId': chunk.knowledge_base_id,
+                'knowledgeBaseName': chunk.knowledge_base_name,
             }
             for chunk in chunks
         ],
+        'mediaAssets': serialize_media_assets(media_assets),
     }
 
 
@@ -646,21 +1001,43 @@ def retrieve_knowledge_chunks(
     knowledge_base: KnowledgeBase | None = None,
     tenant=None,
     top_n: int = 5,
+    knowledge_document_ids: list[int] | None = None,
+    knowledge_base_ids: list[int] | None = None,
+    include_media: bool = True,
 ) -> dict:
     if not query:
-        return _serialize_recall_result(chunks=[], mode='empty', embedding_model=None, rerank_model=None)
+        return _serialize_recall_result(chunks=[], mode='empty', embedding_model=None, rerank_model=None, include_media=include_media)
+    if not _has_retrieval_intent(query):
+        return _serialize_recall_result(
+            chunks=[],
+            mode='skipped',
+            embedding_model=None,
+            rerank_model=None,
+            query=query,
+            tenant=tenant,
+            retrieval_skipped=True,
+            skip_reason='low_information_query',
+            include_media=include_media,
+        )
 
     if knowledge_base is not None:
         docs = _approved_text_documents_for_knowledge_base(knowledge_base)
         tenant = knowledge_base.tenant
     elif application is not None:
-        docs = _bound_approved_text_documents(application)
+        if knowledge_document_ids is None and knowledge_base_ids is None:
+            docs = _bound_approved_text_documents(application)
+        else:
+            docs = _approved_text_documents_for_ids(
+                application,
+                knowledge_document_ids=knowledge_document_ids,
+                knowledge_base_ids=knowledge_base_ids,
+            )
         tenant = application.tenant
     else:
         docs = []
 
     if not docs:
-        return _serialize_recall_result(chunks=[], mode='empty', embedding_model=None, rerank_model=None)
+        return _serialize_recall_result(chunks=[], mode='empty', embedding_model=None, rerank_model=None, include_media=include_media)
 
     embedding_model = _embedding_model_for_tenant(tenant)
     if not embedding_model:
@@ -669,6 +1046,9 @@ def retrieve_knowledge_chunks(
             mode='keyword',
             embedding_model=None,
             rerank_model=None,
+            query=query,
+            tenant=tenant,
+            include_media=include_media,
         )
 
     try:
@@ -681,27 +1061,27 @@ def retrieve_knowledge_chunks(
                 KnowledgeDocumentChunk.objects.filter(
                     document__in=docs,
                     embedding_model=embedding_model.model,
-                ).select_related('document')
+                ).select_related('document', 'document__knowledge_base')
             )
             scored_chunks = [
-                RetrievedChunk(
-                    document_id=chunk.document_id,
-                    doc_title=chunk.document.title,
-                    content=chunk.content,
-                    score=_cosine_similarity(query_embedding, chunk.embedding or []),
-                    chunk_index=chunk.chunk_index,
+                _retrieved_chunk_from_stored_chunk(
+                    chunk,
+                    _cosine_similarity(query_embedding, chunk.embedding or []),
                 )
                 for chunk in stored_chunks
             ]
-            scored_chunks = [chunk for chunk in scored_chunks if chunk.score > 0]
+            scored_chunks = [chunk for chunk in scored_chunks if _passes_vector_score_gate(chunk)]
             scored_chunks.sort(key=lambda item: item.score, reverse=True)
             candidates = scored_chunks[: max(top_n * 4, top_n)]
             if not candidates:
                 return _serialize_recall_result(
-                    chunks=_retrieve_keyword_chunks(docs, query, top_n),
-                    mode='keyword',
+                    chunks=[],
+                    mode='vector',
                     embedding_model=embedding_model,
                     rerank_model=None,
+                    query=query,
+                    tenant=tenant,
+                    include_media=include_media,
                 )
 
             rerank_model = _rerank_model_for_tenant(tenant)
@@ -718,6 +1098,9 @@ def retrieve_knowledge_chunks(
             mode='vector',
             embedding_model=embedding_model,
             rerank_model=rerank_model,
+            query=query,
+            tenant=tenant,
+            include_media=include_media,
         )
     except Exception as e:
         logger.exception('Error during vector knowledge base retrieval, fallback to keyword retrieval: %s', e)
@@ -726,6 +1109,9 @@ def retrieve_knowledge_chunks(
             mode='keyword',
             embedding_model=embedding_model,
             rerank_model=None,
+            query=query,
+            tenant=tenant,
+            include_media=include_media,
         )
 
 
@@ -745,6 +1131,8 @@ def retrieve_knowledge_context(
     Fallback path: local keyword matching when the external model is not configured or fails.
     """
     if not application or not query:
+        return ''
+    if not _has_retrieval_intent(query):
         return ''
 
     docs = None
@@ -780,26 +1168,23 @@ def retrieve_knowledge_context(
                 KnowledgeDocumentChunk.objects.filter(
                     document__in=docs,
                     embedding_model=embedding_model.model,
-                ).select_related('document')
+                ).select_related('document', 'document__knowledge_base')
             )
             if not stored_chunks:
                 return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars, docs)
 
             scored_chunks = [
-                    RetrievedChunk(
-                        document_id=chunk.document_id,
-                        doc_title=chunk.document.title,
-                        content=chunk.content,
-                        score=_cosine_similarity(query_embedding, chunk.embedding or []),
-                        chunk_index=chunk.chunk_index,
+                    _retrieved_chunk_from_stored_chunk(
+                        chunk,
+                        _cosine_similarity(query_embedding, chunk.embedding or []),
                     )
                 for chunk in stored_chunks
             ]
-            scored_chunks = [chunk for chunk in scored_chunks if chunk.score > 0]
+            scored_chunks = [chunk for chunk in scored_chunks if _passes_vector_score_gate(chunk)]
             scored_chunks.sort(key=lambda item: item.score, reverse=True)
             candidates = scored_chunks[: max(top_n * 4, top_n)]
             if not candidates:
-                return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars, docs)
+                return ''
 
             rerank_model = _rerank_model_for_tenant(application.tenant)
             if rerank_model:
@@ -814,6 +1199,94 @@ def retrieve_knowledge_context(
     except Exception as e:
         logger.exception('Error during vector knowledge base retrieval, fallback to keyword retrieval: %s', e)
         return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars, docs)
+
+
+def _format_context_from_recall_result(result: dict, max_chars: int = 3000) -> str:
+    chunks = result.get('chunks') or []
+    context_parts = []
+    current_len = 0
+    for chunk in chunks:
+        part = (
+            f"---\n文档: {chunk.get('documentTitle') or ''}\n"
+            f"相关度: {float(chunk.get('score') or 0):.4f}\n"
+            f"内容: {chunk.get('content') or ''}\n"
+        )
+        if current_len + len(part) > max_chars:
+            break
+        context_parts.append(part)
+        current_len += len(part)
+    if not context_parts:
+        return ''
+
+    media_assets = result.get('mediaAssets') or []
+    media_context = ''
+    if media_assets:
+        media_lines = [
+            f"- {item.get('resourceName') or ''}（{item.get('resourceType') or ''}，相关度 {item.get('relevance') or 0}）：{item.get('description') or item.get('keywords') or ''}"
+            for item in media_assets
+        ]
+        media_context = '\n【可配套展示的素材候选】\n' + '\n'.join(media_lines) + '\n'
+
+    header = (
+        '你是一个智能体助手。以下是与用户当前问题相关的知识库参考内容。\n'
+        '请严格参考这些内容进行回答。如果参考内容与用户问题相关，请优先基于参考内容回答；\n'
+        '如果参考内容中没有相关信息或与用户问题无关，请忽略它们并使用你已有的知识回答，但不要向用户提及“根据参考内容”或“根据知识库”等字眼。\n\n'
+        '【知识库参考信息】\n'
+    )
+    return header + ''.join(context_parts) + media_context + '---\n'
+
+
+def retrieve_knowledge_context_with_media(
+    application,
+    query: str,
+    top_n: int = 5,
+    max_chars: int = 3000,
+    *,
+    knowledge_document_ids: list[int] | None = None,
+    knowledge_base_ids: list[int] | None = None,
+) -> tuple[str, list[dict]]:
+    if not application or not query:
+        return '', []
+    result = retrieve_knowledge_chunks(
+        query=query,
+        application=application,
+        top_n=top_n,
+        knowledge_document_ids=knowledge_document_ids,
+        knowledge_base_ids=knowledge_base_ids,
+    )
+    context = _format_context_from_recall_result(result, max_chars=max_chars)
+    blocks = [
+        {
+            'type': 'image' if item.get('resourceType') == Resource.TYPE_IMAGE else 'video',
+            'resourceId': item.get('resourceId'),
+        }
+        for item in result.get('mediaAssets') or []
+        if item.get('resourceId') and item.get('resourceType') in {Resource.TYPE_IMAGE, Resource.TYPE_VIDEO}
+    ]
+    return context, blocks
+
+
+def retrieve_knowledge_context_with_recall(
+    application,
+    query: str,
+    top_n: int = 5,
+    max_chars: int = 3000,
+    *,
+    knowledge_document_ids: list[int] | None = None,
+    knowledge_base_ids: list[int] | None = None,
+) -> tuple[str, dict]:
+    if not application or not query:
+        return '', {}
+    result = retrieve_knowledge_chunks(
+        query=query,
+        application=application,
+        top_n=top_n,
+        knowledge_document_ids=knowledge_document_ids,
+        knowledge_base_ids=knowledge_base_ids,
+        include_media=False,
+    )
+    context = _format_context_from_recall_result(result, max_chars=max_chars)
+    return context, result
 
 
 def inject_knowledge_context(conversation, api_messages, query: str) -> list[dict]:
@@ -849,3 +1322,65 @@ def inject_knowledge_context(conversation, api_messages, query: str) -> list[dic
         new_messages.extend(api_messages)
 
     return new_messages
+
+
+def inject_knowledge_context_with_recall(conversation, api_messages, query: str) -> tuple[list[dict], dict]:
+    if not conversation.application:
+        return api_messages, {}
+
+    runtime_config = conversation.application.runtime_config()
+    context_str, recall_result = retrieve_knowledge_context_with_recall(
+        conversation.application,
+        query,
+        knowledge_document_ids=runtime_config.get('knowledge_document_ids') or [],
+        knowledge_base_ids=runtime_config.get('knowledge_base_ids') or [],
+    )
+    if not context_str:
+        return api_messages, {}
+
+    context_msg = {
+        'role': 'system',
+        'content': context_str,
+    }
+
+    new_messages = []
+    if api_messages and api_messages[0]['role'] == 'system':
+        new_messages.append(api_messages[0])
+        new_messages.append(context_msg)
+        new_messages.extend(api_messages[1:])
+    else:
+        new_messages.append(context_msg)
+        new_messages.extend(api_messages)
+
+    return new_messages, recall_result
+
+
+def inject_knowledge_context_with_media(conversation, api_messages, query: str) -> tuple[list[dict], list[dict]]:
+    if not conversation.application:
+        return api_messages, []
+
+    runtime_config = conversation.application.runtime_config()
+    context_str, media_blocks = retrieve_knowledge_context_with_media(
+        conversation.application,
+        query,
+        knowledge_document_ids=runtime_config.get('knowledge_document_ids') or [],
+        knowledge_base_ids=runtime_config.get('knowledge_base_ids') or [],
+    )
+    if not context_str:
+        return api_messages, []
+
+    context_msg = {
+        'role': 'system',
+        'content': context_str,
+    }
+
+    new_messages = []
+    if api_messages and api_messages[0]['role'] == 'system':
+        new_messages.append(api_messages[0])
+        new_messages.append(context_msg)
+        new_messages.extend(api_messages[1:])
+    else:
+        new_messages.append(context_msg)
+        new_messages.extend(api_messages)
+
+    return new_messages, media_blocks

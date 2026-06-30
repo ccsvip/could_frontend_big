@@ -92,7 +92,7 @@ const SUPER_ADMIN_TENANT_MODULES: ReadonlyArray<SuperAdminTenantModule> = [
     label: '资源管理',
     icon: 'PictureOutlined',
     children: [
-      { segment: 'images', label: '背景图片管理', icon: 'PictureOutlined' },
+      { segment: 'images', label: '图片管理', icon: 'PictureOutlined' },
       { segment: 'videos', label: '视频管理', icon: 'VideoCameraOutlined' },
       { segment: 'scrolling-texts', label: '滚动文本', icon: 'NotificationOutlined' },
       { segment: 'models', label: '模型管理', icon: 'RobotOutlined' },

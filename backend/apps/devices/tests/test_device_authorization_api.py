@@ -632,9 +632,15 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             registered_at=timezone.now(),
         )
 
+        captured_messages = []
+
+        def fake_run_llm_chat_completion(**kwargs):
+            captured_messages.append(kwargs['messages'])
+            return '欢迎来到数字人展厅。'
+
         with (
             patch('apps.devices.views.asr_services.transcribe_pcm_audio', return_value='介绍一下展厅'),
-            patch('apps.devices.views.llm_services.run_llm_chat_completion', return_value='欢迎来到数字人展厅。'),
+            patch('apps.devices.views.llm_services.run_llm_chat_completion', fake_run_llm_chat_completion),
             patch('apps.devices.views.tts_services.synthesize_tts_pcm', return_value=b'\x01\x02'),
         ):
             response = self.client.post(
@@ -649,6 +655,12 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(captured_messages), 1)
+        system_prompt = captured_messages[0][0]['content']
+        self.assertEqual(system_prompt, '你是大厅数字人。')
+        self.assertNotIn('Lobby Agent', system_prompt)
+        self.assertNotIn('Lobby App', system_prompt)
+        self.assertNotIn('Voice Device', system_prompt)
         self.assertEqual(response.data['questionText'], '介绍一下展厅')
         self.assertEqual(response.data['answerText'], '欢迎来到数字人展厅。')
         self.assertTrue(response.data['audioBase64'])
@@ -822,6 +834,9 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertIn('A prompt for published runtime.', session_draft_b['messages'][0]['content'])
         self.assertNotIn('B prompt draft only.', session_draft_b['messages'][0]['content'])
         self.assertIn('B prompt draft only.', session_published_b['messages'][0]['content'])
+        self.assertNotIn('Lobby Agent', session_published_b['messages'][0]['content'])
+        self.assertNotIn('Lobby App', session_published_b['messages'][0]['content'])
+        self.assertNotIn('Realtime Prompt Device', session_published_b['messages'][0]['content'])
 
     def test_device_chat_logs_endpoint_filters_by_agent_application(self):
         device = Device.objects.create(

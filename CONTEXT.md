@@ -79,3 +79,7 @@ _Avoid_: realtime interruption, direct voice message, device ASR runtime
 **Knowledge Document**:
 A company-scoped document uploaded to the knowledge base and optionally bound to an Agent Application as its available reference material.
 _Avoid_: dataset, knowledge collection, vector store
+
+**Knowledge Media Asset**:
+A Resource Library Item bound to a Knowledge Base, and optionally later to a Knowledge Document, as supporting reference material for Agent Application answers.
+_Avoid_: duplicated knowledge upload, global media match, raw media URL, manual link

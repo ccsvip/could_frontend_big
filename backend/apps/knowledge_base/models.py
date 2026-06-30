@@ -15,6 +15,7 @@ class KnowledgeBase(models.Model):
     chunk_size = models.PositiveSmallIntegerField('分块长度', default=500)
     chunk_overlap = models.PositiveSmallIntegerField('分块重叠', default=50)
     retrieval_top_n = models.PositiveSmallIntegerField('默认召回段数', default=5)
+    retrieval_min_score = models.FloatField('向量最低相关度', default=0.2)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -173,4 +174,100 @@ class KnowledgeDocumentChunk(models.Model):
     def save(self, *args, **kwargs):
         if self.document_id and self.tenant_id is None:
             self.tenant = self.document.tenant
+        super().save(*args, **kwargs)
+
+
+class KnowledgeMediaAsset(models.Model):
+    class EmbeddingStatus(models.TextChoices):
+        PENDING = 'pending', '待处理'
+        PROCESSING = 'processing', '处理中'
+        READY = 'ready', '已就绪'
+        FAILED = 'failed', '处理失败'
+
+    knowledge_base = models.ForeignKey(
+        KnowledgeBase,
+        on_delete=models.CASCADE,
+        related_name='media_assets',
+        verbose_name='所属知识库',
+    )
+    resource = models.ForeignKey(
+        'resources.Resource',
+        on_delete=models.SET_NULL,
+        related_name='knowledge_media_assets',
+        verbose_name='资源素材',
+        null=True,
+        blank=True,
+    )
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='+',
+        verbose_name='所属公司',
+        null=True,
+        blank=True,
+    )
+    resource_type = models.CharField('素材类型', max_length=20)
+    resource_name = models.CharField('素材名称', max_length=128, blank=True, default='')
+    keywords = models.CharField('关键词', max_length=255, blank=True, default='')
+    description = models.CharField('说明', max_length=500, blank=True, default='')
+    vlm_description = models.TextField('系统生成说明', blank=True, default='')
+    vlm_keywords = models.CharField('系统生成关键词', max_length=500, blank=True, default='')
+    description_embedding = models.JSONField('说明文本向量', blank=True, default=list)
+    multimodal_embedding = models.JSONField('多模态向量', blank=True, default=list)
+    embedding_status = models.CharField(
+        '素材向量状态',
+        max_length=16,
+        choices=EmbeddingStatus.choices,
+        default=EmbeddingStatus.PENDING,
+    )
+    embedding_error = models.TextField('素材向量错误', blank=True, default='')
+    embedding_model = models.CharField('素材向量模型', max_length=128, blank=True, default='')
+    embedding_processed_at = models.DateTimeField('素材向量处理时间', blank=True, null=True)
+    is_enabled = models.BooleanField('是否启用', default=True)
+    priority = models.IntegerField('优先级', default=0)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name='created_knowledge_media_assets',
+        verbose_name='创建人',
+        blank=True,
+        null=True,
+    )
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        ordering = ['-priority', '-updated_at', '-id']
+        verbose_name = '知识库配套素材'
+        verbose_name_plural = '知识库配套素材'
+        constraints = [
+            models.UniqueConstraint(fields=['knowledge_base', 'resource'], name='uniq_knowledge_media_asset_base_resource'),
+        ]
+        indexes = [
+            models.Index(fields=['tenant', 'knowledge_base'], name='kma_tenant_base_idx'),
+            models.Index(fields=['knowledge_base', 'is_enabled'], name='kma_base_enabled_idx'),
+            models.Index(fields=['tenant', 'embedding_status'], name='kma_tenant_embed_status_idx'),
+        ]
+
+    def __str__(self) -> str:
+        return self.resource_name or f'配套素材 {self.pk}'
+
+    @property
+    def is_missing(self) -> bool:
+        return self.resource_id is None
+
+    def save(self, *args, **kwargs):
+        if self.knowledge_base_id and self.tenant_id is None:
+            self.tenant = self.knowledge_base.tenant
+        if self.resource_id:
+            self.resource_type = self.resource.resource_type
+            self.resource_name = self.resource.name
+            if not self.description:
+                category = self.resource.get_category_display() if self.resource.category else ''
+                parts = [self.resource.name, category, self.resource.get_resource_type_display()]
+                if self.resource.description:
+                    parts.append(self.resource.description)
+                self.description = ' '.join(part for part in parts if part)
         super().save(*args, **kwargs)

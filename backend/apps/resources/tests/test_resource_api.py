@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -91,6 +93,79 @@ class ResourceApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['count'], 3)
         self.assertEqual(len(response.data['results']), 2)
         self.assertIsNotNone(response.data['next'])
+
+    def test_create_image_resource_accepts_digital_human_background_flag(self):
+        self.grant_permissions('resources.images.view', 'resources.images.create')
+
+        response = self.client.post(
+            '/api/v1/resources/images/',
+            {
+                'name': '数字人背景',
+                'category': Resource.CATEGORY_HORIZONTAL,
+                'isDigitalHumanBackground': 'true',
+            },
+            format='multipart',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['isDigitalHumanBackground'])
+        resource = Resource.objects.get(id=response.data['id'])
+        self.assertTrue(resource.is_digital_human_background)
+
+    def test_image_resource_list_filters_by_digital_human_background_flag(self):
+        self.grant_permissions('resources.images.view')
+        background = Resource.objects.create(
+            name='数字人背景',
+            resource_type=Resource.TYPE_IMAGE,
+            category=Resource.CATEGORY_HORIZONTAL,
+            is_digital_human_background=True,
+            tenant=self.tenant,
+        )
+        material = Resource.objects.create(
+            name='普通图片素材',
+            resource_type=Resource.TYPE_IMAGE,
+            category=Resource.CATEGORY_HORIZONTAL,
+            tenant=self.tenant,
+        )
+
+        background_response = self.client.get('/api/v1/resources/images/?isDigitalHumanBackground=true')
+        material_response = self.client.get('/api/v1/resources/images/?isDigitalHumanBackground=false')
+
+        self.assertEqual(background_response.status_code, status.HTTP_200_OK)
+        self.assertEqual([item['id'] for item in background_response.data['results']], [background.id])
+        self.assertEqual(material_response.status_code, status.HTTP_200_OK)
+        self.assertEqual([item['id'] for item in material_response.data['results']], [material.id])
+
+    def test_bulk_create_image_resources_defaults_to_material(self):
+        self.grant_permissions('resources.images.view', 'resources.images.create')
+        cache.clear()
+
+        cached_empty_response = self.client.get('/api/v1/resources/images/?isDigitalHumanBackground=false')
+        self.assertEqual(cached_empty_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(cached_empty_response.data['count'], 0)
+
+        response = self.client.post(
+            '/api/v1/resources/images/bulk/',
+            {
+                'category': Resource.CATEGORY_VERTICAL,
+                'files': [
+                    SimpleUploadedFile('first.png', b'first-image', content_type='image/png'),
+                    SimpleUploadedFile('second.jpg', b'second-image', content_type='image/jpeg'),
+                ],
+            },
+            format='multipart',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual({item['name'] for item in response.data}, {'first', 'second'})
+        self.assertTrue(all(item['category'] == Resource.CATEGORY_VERTICAL for item in response.data))
+        self.assertTrue(all(item['isDigitalHumanBackground'] is False for item in response.data))
+        self.assertEqual(Resource.objects.filter(resource_type=Resource.TYPE_IMAGE, tenant=self.tenant).count(), 2)
+
+        refreshed_response = self.client.get('/api/v1/resources/images/?isDigitalHumanBackground=false')
+        self.assertEqual(refreshed_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(refreshed_response.data['count'], 2)
 
     def test_update_video_resource_allows_long_oss_cloud_url(self):
         self.grant_permissions('resources.videos.view', 'resources.videos.update')

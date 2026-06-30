@@ -1220,9 +1220,6 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
         if str(runtime_config.get('system_prompt') or '').strip()
         else '你是数字人设备的中文语音问答助手。回答要自然、简洁，适合直接转成语音播报。'
     )
-    system_prompt += f' 当前设备智能体：{runtime_config.get("name") or agent_application.name}。'
-    if device.application is not None:
-        system_prompt += f' 当前设备资源应用：{device.application.name}。'
     memory_key = _agent_memory_key(device, agent_application)
     messages = [{'role': 'system', 'content': system_prompt}]
 

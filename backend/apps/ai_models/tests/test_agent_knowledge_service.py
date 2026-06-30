@@ -6,8 +6,13 @@ from django.test import TestCase, override_settings
 from unittest.mock import patch
 
 from apps.ai_models.models import AgentApplication, EmbeddingModel, RerankModel, TenantKnowledgeModelSettings
-from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context
-from apps.knowledge_base.models import KnowledgeDocument, KnowledgeDocumentChunk
+from apps.ai_models.services.agent_knowledge import (
+    media_blocks_for_reply_text,
+    retrieve_knowledge_chunks,
+    retrieve_knowledge_context,
+)
+from apps.knowledge_base.models import KnowledgeBase, KnowledgeDocument, KnowledgeDocumentChunk, KnowledgeMediaAsset
+from apps.resources.models import Resource
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
@@ -201,6 +206,204 @@ class AgentKnowledgeRetrievalTests(TenantTestMixin, TestCase):
         self.assertNotIn('十个工作日', context)
         stale_chunk.refresh_from_db()
         self.assertEqual(stale_chunk.content, '旧缓存：退款需要十个工作日。')
+
+    def test_retrieve_knowledge_chunks_filters_low_confidence_vector_hits_before_media_matching(self):
+        knowledge_base = KnowledgeBase.objects.create(
+            tenant=self.tenant,
+            name='低置信知识库',
+            retrieval_min_score=0.5,
+            created_by=self.user,
+        )
+        document = self.create_document(
+            title='退款政策',
+            body='退款政策\n客户购买后七天内可以申请退款，到账时间通常为三个工作日。',
+        )
+        document.knowledge_base = knowledge_base
+        document.save(update_fields=['knowledge_base'])
+        KnowledgeDocumentChunk.objects.create(
+            document=document,
+            tenant=self.tenant,
+            chunk_index=0,
+            content='退款政策\n客户购买后七天内可以申请退款。',
+            content_hash='low-confidence',
+            embedding=[0.1, 0.0, 0.995],
+            embedding_model='text-embedding-v4',
+        )
+        guide_image = Resource.objects.create(
+            tenant=self.tenant,
+            name='退款流程图',
+            resource_type=Resource.TYPE_IMAGE,
+            description='退款政策流程图片',
+        )
+        KnowledgeMediaAsset.objects.create(
+            tenant=self.tenant,
+            knowledge_base=knowledge_base,
+            resource=guide_image,
+            resource_type=Resource.TYPE_IMAGE,
+            resource_name='退款流程图',
+            keywords='退款 政策 流程',
+            description='退款政策说明图',
+        )
+        embedding_model = EmbeddingModel.objects.create(
+            code='aliyun',
+            name='阿里云通用文本向量',
+            api_key='dashscope-secret',
+            base_url='https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings',
+            model='text-embedding-v4',
+            is_active=True,
+        )
+        TenantKnowledgeModelSettings.objects.create(
+            tenant=self.tenant,
+            embedding_model=embedding_model,
+            is_active=True,
+        )
+
+        with (
+            patch('apps.ai_models.services.agent_knowledge.build_document_index', return_value={'status': KnowledgeDocument.IndexStatus.READY}),
+            patch('apps.ai_models.services.agent_knowledge._embed_texts', return_value=[[1.0, 0.0, 0.0]]),
+        ):
+            result = retrieve_knowledge_chunks(query='退款多久到账？', knowledge_base=knowledge_base, top_n=3)
+
+        self.assertEqual(result['mode'], 'vector')
+        self.assertEqual(result['chunks'], [])
+        self.assertEqual(result['mediaAssets'], [])
+
+    def test_low_information_query_skips_knowledge_and_media_retrieval(self):
+        knowledge_base = KnowledgeBase.objects.create(
+            tenant=self.tenant,
+            name='问候测试知识库',
+            created_by=self.user,
+        )
+        document = self.create_document(
+            title='退款政策',
+            body='退款政策\n客户购买后七天内可以申请退款。',
+        )
+        document.knowledge_base = knowledge_base
+        document.save(update_fields=['knowledge_base'])
+        image = Resource.objects.create(
+            tenant=self.tenant,
+            name='退款流程图',
+            resource_type=Resource.TYPE_IMAGE,
+            description='退款流程说明图',
+        )
+        KnowledgeMediaAsset.objects.create(
+            tenant=self.tenant,
+            knowledge_base=knowledge_base,
+            resource=image,
+            resource_type=Resource.TYPE_IMAGE,
+            resource_name='退款流程图',
+            keywords='退款 流程',
+            description='退款流程图片',
+        )
+
+        result = retrieve_knowledge_chunks(query='你好啊', knowledge_base=knowledge_base, top_n=3)
+
+        self.assertEqual(result['mode'], 'skipped')
+        self.assertTrue(result['retrievalSkipped'])
+        self.assertEqual(result['skipReason'], 'low_information_query')
+        self.assertEqual(result['chunks'], [])
+        self.assertEqual(result['mediaAssets'], [])
+
+    def test_media_relevance_is_normalized_for_keyword_retrieval(self):
+        knowledge_base = KnowledgeBase.objects.create(
+            tenant=self.tenant,
+            name='素材分数知识库',
+            created_by=self.user,
+        )
+        document = self.create_document(
+            title='退款流程',
+            body='退款流程\n客户申请退款后，客服会审核订单并确认到账时间。',
+        )
+        document.knowledge_base = knowledge_base
+        document.save(update_fields=['knowledge_base'])
+        image = Resource.objects.create(
+            tenant=self.tenant,
+            name='退款流程图',
+            resource_type=Resource.TYPE_IMAGE,
+            description='退款流程说明图',
+        )
+        KnowledgeMediaAsset.objects.create(
+            tenant=self.tenant,
+            knowledge_base=knowledge_base,
+            resource=image,
+            resource_type=Resource.TYPE_IMAGE,
+            resource_name='退款流程图',
+            keywords='退款 流程 审核 到账',
+            description='退款流程、审核订单、到账时间说明图',
+            priority=10,
+        )
+
+        result = retrieve_knowledge_chunks(query='退款流程是什么？', knowledge_base=knowledge_base, top_n=3)
+
+        self.assertEqual(result['mode'], 'keyword')
+        self.assertEqual(len(result['mediaAssets']), 1)
+        self.assertGreaterEqual(result['mediaAssets'][0]['relevance'], 0.3)
+        self.assertLessEqual(result['mediaAssets'][0]['relevance'], 1.0)
+
+    def test_reply_text_keywords_are_used_for_media_matching_after_text_recall(self):
+        knowledge_base = KnowledgeBase.objects.create(
+            tenant=self.tenant,
+            name='大唐不夜城知识库',
+            created_by=self.user,
+        )
+        document = self.create_document(
+            title='大唐不夜城美食推荐',
+            body='大唐不夜城周边适合做美食推荐，包含本地小吃、甜品和夜游路线。',
+        )
+        document.knowledge_base = knowledge_base
+        document.save(update_fields=['knowledge_base'])
+        steamed_cake_image = Resource.objects.create(
+            tenant=self.tenant,
+            name='甑糕图片',
+            resource_type=Resource.TYPE_IMAGE,
+            description='甑糕美食图片',
+        )
+        roujiamo_image = Resource.objects.create(
+            tenant=self.tenant,
+            name='肉夹馍图片',
+            resource_type=Resource.TYPE_IMAGE,
+            description='肉夹馍美食图片',
+        )
+        KnowledgeMediaAsset.objects.create(
+            tenant=self.tenant,
+            knowledge_base=knowledge_base,
+            resource=steamed_cake_image,
+            resource_type=Resource.TYPE_IMAGE,
+            resource_name='甑糕图片',
+            keywords='甑糕 甜品 软糯',
+            description='大唐不夜城附近甑糕小吃图片',
+        )
+        KnowledgeMediaAsset.objects.create(
+            tenant=self.tenant,
+            knowledge_base=knowledge_base,
+            resource=roujiamo_image,
+            resource_type=Resource.TYPE_IMAGE,
+            resource_name='肉夹馍图片',
+            keywords='肉夹馍 小吃 酥香',
+            description='大唐不夜城附近肉夹馍小吃图片',
+        )
+
+        recall_result = retrieve_knowledge_chunks(
+            query='大唐不夜城有什么美食推荐？',
+            knowledge_base=knowledge_base,
+            top_n=3,
+            include_media=False,
+        )
+        blocks = media_blocks_for_reply_text(
+            recall_result=recall_result,
+            user_query='大唐不夜城有什么美食推荐？',
+            reply_text='可以试试甑糕，口感软糯；也可以吃肉夹馍，酥香管饱，适合夜游时作为小吃。',
+            tenant=self.tenant,
+        )
+
+        self.assertEqual(recall_result['mediaAssets'], [])
+        self.assertEqual(
+            blocks,
+            [
+                {'type': 'image', 'resourceId': roujiamo_image.id},
+                {'type': 'image', 'resourceId': steamed_cake_image.id},
+            ],
+        )
 
 
 class ModelConfigDefaultsTests(TestCase):

@@ -1588,8 +1588,8 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         api_messages.extend({'role': role, 'content': msg} for role, msg in history_messages)
 
         # Inject knowledge base context if configured
-        from apps.ai_models.services.agent_knowledge import inject_knowledge_context
-        api_messages = inject_knowledge_context(conversation, api_messages, content)
+        from apps.ai_models.services.agent_knowledge import inject_knowledge_context_with_recall, media_blocks_for_reply_text
+        api_messages, knowledge_recall_result = inject_knowledge_context_with_recall(conversation, api_messages, content)
 
         api_url = _build_chat_completions_url(provider.api_base_url)
 
@@ -1611,16 +1611,33 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             """Ensure DB connection is alive inside the streaming generator."""
             connections['default'].ensure_connection()
 
-        def _save_assistant_message(content: str, *, update_conversation: bool = False):
+        def _save_assistant_message(content: str, *, update_conversation: bool = False, media_blocks: list[dict] | None = None):
             _ensure_db()
+            content_blocks = text_to_blocks(content) + list(media_blocks or [])
             ChatMessage.objects.create(
                 conversation=conversation,
                 role=ChatMessage.ROLE_ASSISTANT,
                 content=content,
-                content_blocks=text_to_blocks(content),
+                content_blocks=content_blocks,
             )
             if update_conversation:
                 conversation.save(update_fields=['updated_at'])
+            return content_blocks
+
+        conversation_tenant = conversation.tenant
+
+        def _serialize_assistant_blocks(blocks: list[dict]):
+            _ensure_db()
+            return serialize_reply_blocks(blocks, tenant=conversation_tenant, request=request)
+
+        def _match_knowledge_media_blocks(reply_content: str) -> list[dict]:
+            _ensure_db()
+            return media_blocks_for_reply_text(
+                recall_result=knowledge_recall_result,
+                user_query=content,
+                reply_text=reply_content,
+                tenant=conversation_tenant,
+            )
 
         def _update_conversation_title(new_title: str):
             _ensure_db()
@@ -1634,6 +1651,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
 
         async def event_stream():
             full_content = ''
+            assistant_message_saved = False
             try:
                 async with httpx.AsyncClient(timeout=120) as client:
                     if not use_stream:
@@ -1712,10 +1730,16 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                                 yield f"data: {json.dumps({'content': text})}\n\n"
 
                         if full_content:
-                            await sync_to_async(_save_assistant_message, thread_sensitive=True)(
+                            knowledge_media_blocks = await sync_to_async(_match_knowledge_media_blocks, thread_sensitive=True)(full_content)
+                            saved_blocks = await sync_to_async(_save_assistant_message, thread_sensitive=True)(
                                 full_content,
                                 update_conversation=True,
+                                media_blocks=knowledge_media_blocks,
                             )
+                            assistant_message_saved = True
+                            if knowledge_media_blocks:
+                                serialized_blocks = await sync_to_async(_serialize_assistant_blocks, thread_sensitive=True)(saved_blocks)
+                                yield f"data: {json.dumps({'blocks': serialized_blocks})}\n\n"
                             if conversation.title == '新对话':
                                 generated_title = await _generate_conversation_title(
                                     client=client,
@@ -1874,10 +1898,16 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                             )
 
                         if full_content:
-                            await sync_to_async(_save_assistant_message, thread_sensitive=True)(
+                            knowledge_media_blocks = await sync_to_async(_match_knowledge_media_blocks, thread_sensitive=True)(full_content)
+                            saved_blocks = await sync_to_async(_save_assistant_message, thread_sensitive=True)(
                                 full_content,
                                 update_conversation=True,
+                                media_blocks=knowledge_media_blocks,
                             )
+                            assistant_message_saved = True
+                            if knowledge_media_blocks:
+                                serialized_blocks = await sync_to_async(_serialize_assistant_blocks, thread_sensitive=True)(saved_blocks)
+                                yield f"data: {json.dumps({'blocks': serialized_blocks})}\n\n"
                             if conversation.title == '新对话':
                                 generated_title = await _generate_conversation_title(
                                     client=client,
@@ -1931,7 +1961,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                     provider.id,
                     len(full_content),
                 )
-                if full_content:
+                if full_content and not assistant_message_saved:
                     await sync_to_async(_save_assistant_message, thread_sensitive=True)(
                         full_content + '\n\n[请求超时，回复可能不完整]'
                     )
@@ -1945,7 +1975,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                     provider.id,
                     model_name,
                 )
-                if full_content:
+                if full_content and not assistant_message_saved:
                     await sync_to_async(_save_assistant_message, thread_sensitive=True)(
                         full_content + f'\n\n[发生错误: {str(exc)[:100]}]'
                     )

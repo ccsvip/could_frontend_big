@@ -3039,7 +3039,7 @@ export const ApplicationManagementPage = () => {
 
         <Modal
           open={resourcePickerOpen}
-          title={resourcePickerType === 'image' ? '选择背景图片' : '选择视频'}
+          title={resourcePickerType === 'image' ? '选择图片' : '选择视频'}
           onCancel={() => setResourcePickerOpen(false)}
           footer={null}
           width={720}
@@ -3064,7 +3064,7 @@ export const ApplicationManagementPage = () => {
               ))}
               {!resourceOptionsLoading && resourceOptions.length === 0 && (
                 <div className="col-span-full py-10">
-                  <Empty description={resourcePickerType === 'image' ? '暂无可选背景图片' : '暂无可选视频'} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                  <Empty description={resourcePickerType === 'image' ? '暂无可选图片' : '暂无可选视频'} image={Empty.PRESENTED_IMAGE_SIMPLE} />
                 </div>
               )}
             </div>

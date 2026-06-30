@@ -20,7 +20,9 @@ import {
   Popconfirm,
   Progress,
   Select,
+  Segmented,
   Space,
+  Switch,
   Tag,
   Typography,
   Upload,
@@ -28,6 +30,7 @@ import {
 import type { UploadFile } from 'antd/es/upload/interface';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  batchCreateImageResources,
   createImageResource,
   createVideoResource,
   deleteImageResource,
@@ -65,12 +68,20 @@ type ResourceFormValues = {
   cloudUrl?: string;
   file?: UploadFile[];
   clearFile?: boolean;
+  isDigitalHumanBackground?: boolean;
+};
+
+type BatchUploadFormValues = {
+  category: ResourceCategory;
+  description?: string;
+  files?: UploadFile[];
+  isDigitalHumanBackground?: boolean;
 };
 
 const resourceConfig = {
   image: {
-    title: '背景图片管理',
-    description: '集中维护背景图片资源，支持分类、分页、空态提示与大图预览。',
+    title: '图片管理',
+    description: '集中维护图片资源，支持分类、分页、空态提示与大图预览。',
     viewPermission: 'resources.images.view',
     createPermission: 'resources.images.create',
     updatePermission: 'resources.images.update',
@@ -105,6 +116,11 @@ const VIDEO_THUMBNAIL_CONCURRENCY = 2;
 const VIDEO_THUMBNAIL_CAPTURE_TIME = 0.8;
 const VIDEO_THUMBNAIL_TIMEOUT_MS = 10000;
 const resourceGridClassName = 'grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4';
+const imageUsageOptions = [
+  { label: '数字人背景图', value: 'background' },
+  { label: '图片素材', value: 'material' },
+] as const;
+type ImageUsage = typeof imageUsageOptions[number]['value'];
 
 const formatFileMB = (bytes: number | null | undefined) => {
   if (bytes == null) {
@@ -503,6 +519,9 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
   const [editingItem, setEditingItem] = useState<ResourceRecord | null>(null);
   const [formVisible, setFormVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [imageUsage, setImageUsage] = useState<ImageUsage>('material');
+  const [batchModalVisible, setBatchModalVisible] = useState(false);
+  const [batchSubmitting, setBatchSubmitting] = useState(false);
   const [videoUploadConfig, setVideoUploadConfig] = useState<VideoUploadConfig | null>(null);
   const [uploadProgress, setUploadProgress] = useState<{
     visible: boolean;
@@ -514,8 +533,15 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
   }>({ visible: false, percent: 0, loaded: 0, total: 0, status: 'active', message: '' });
   const uploadAbortRef = useRef<AbortController | null>(null);
   const [form] = Form.useForm<ResourceFormValues>();
+  const [batchForm] = Form.useForm<BatchUploadFormValues>();
+  const batchFiles = Form.useWatch('files', batchForm) || [];
 
-  const query = useMemo<ResourceListQuery>(() => ({ page, category, keyword }), [page, category, keyword]);
+  const query = useMemo<ResourceListQuery>(() => ({
+    page,
+    category,
+    keyword,
+    isDigitalHumanBackground: resourceType === 'image' ? imageUsage === 'background' : undefined,
+  }), [page, category, keyword, resourceType, imageUsage]);
 
   const loadData = useCallback(async (nextQuery: ResourceListQuery = query) => {
     setLoading(true);
@@ -549,7 +575,13 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
     setEditingItem(null);
     setUploadProgress({ visible: false, percent: 0, loaded: 0, total: 0, status: 'active', message: '' });
     form.resetFields();
-    form.setFieldsValue({ category: 'uncategorized', clearFile: false, cloudUrl: '', file: [] });
+    form.setFieldsValue({
+      category: 'uncategorized',
+      clearFile: false,
+      cloudUrl: '',
+      file: [],
+      isDigitalHumanBackground: resourceType === 'image' && imageUsage === 'background',
+    });
     setFormVisible(true);
   };
 
@@ -563,8 +595,24 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
       cloudUrl: item.cloudUrl || '',
       clearFile: false,
       file: [],
+      isDigitalHumanBackground: item.isDigitalHumanBackground,
     });
     setFormVisible(true);
+  };
+
+  const openBatchModal = () => {
+    batchForm.resetFields();
+    batchForm.setFieldsValue({
+      category: 'uncategorized',
+      files: [],
+      isDigitalHumanBackground: imageUsage === 'background',
+    });
+    setBatchModalVisible(true);
+  };
+
+  const closeBatchModal = () => {
+    setBatchModalVisible(false);
+    batchForm.resetFields();
   };
 
   const closeFormModal = () => {
@@ -692,6 +740,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         objectKey: objectKey || undefined,
         objectSize,
         file,
+        isDigitalHumanBackground: resourceType === 'image' ? Boolean(values.isDigitalHumanBackground) : false,
         clearFile: resourceType === 'image' ? Boolean(values.clearFile) : false,
       };
 
@@ -719,7 +768,19 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
       if (!editingItem) {
         setPage(1);
       }
-      void loadData(editingItem ? query : { ...query, page: 1 });
+      if (!editingItem && resourceType === 'image') {
+        const nextImageUsage: ImageUsage = values.isDigitalHumanBackground ? 'background' : 'material';
+        setImageUsage(nextImageUsage);
+        setCategory(values.category);
+        void loadData({
+          page: 1,
+          category: values.category,
+          keyword,
+          isDigitalHumanBackground: nextImageUsage === 'background',
+        });
+      } else {
+        void loadData(editingItem ? query : { ...query, page: 1 });
+      }
     } catch {
       // 错误由拦截器处理
     } finally {
@@ -727,7 +788,41 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
     }
   };
 
-  const emptyDescription = resourceType === 'image' ? '暂无背景图资源，请先上传图片。' : '暂无视频资源，请先上传视频。';
+  const handleBatchSubmit = async () => {
+    try {
+      const values = await batchForm.validateFields();
+      const files = values.files?.map((file) => file.originFileObj).filter(Boolean) as File[];
+      if (!files.length) {
+        message.error('请至少选择一个图片文件');
+        return;
+      }
+      setBatchSubmitting(true);
+      await batchCreateImageResources({
+        files,
+        category: values.category,
+        description: values.description,
+        isDigitalHumanBackground: Boolean(values.isDigitalHumanBackground),
+      });
+      const nextImageUsage: ImageUsage = values.isDigitalHumanBackground ? 'background' : 'material';
+      message.success(`已上传 ${files.length} 个图片资源`);
+      closeBatchModal();
+      setPage(1);
+      setImageUsage(nextImageUsage);
+      setCategory(values.category);
+      void loadData({
+        page: 1,
+        category: values.category,
+        keyword,
+        isDigitalHumanBackground: nextImageUsage === 'background',
+      });
+    } catch {
+      // 错误由拦截器处理
+    } finally {
+      setBatchSubmitting(false);
+    }
+  };
+
+  const emptyDescription = resourceType === 'image' ? '暂无图片资源，请先上传图片。' : '暂无视频资源，请先上传视频。';
   const showCloudUrlField = resourceType === 'image' || videoUploadConfig?.allowCloudUrl !== false;
 
   return (
@@ -741,6 +836,16 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
             <Typography.Text className="!text-slate-500">{config.description}</Typography.Text>
           </div>
           <Space wrap>
+            {resourceType === 'image' ? (
+              <Segmented
+                value={imageUsage}
+                options={imageUsageOptions as unknown as { label: string; value: string }[]}
+                onChange={(value) => {
+                  setImageUsage(value as ImageUsage);
+                  setPage(1);
+                }}
+              />
+            ) : null}
             <Input.Search
               allowClear
               placeholder="搜索资源名称"
@@ -763,9 +868,16 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
               刷新
             </Button>
             {canCreate ? (
-              <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
-                新建资源
-              </Button>
+              <>
+                {resourceType === 'image' ? (
+                  <Button icon={<UploadOutlined />} onClick={openBatchModal}>
+                    批量上传
+                  </Button>
+                ) : null}
+                <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
+                  新建资源
+                </Button>
+              </>
             ) : null}
           </Space>
         </div>
@@ -795,7 +907,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
                   <div className={`flex items-center justify-center bg-slate-100 text-slate-400 ${item.category === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'}`}>
                     <Space direction="vertical" align="center">
                       <FileImageOutlined className="text-4xl" />
-                      <span>{resourceType === 'image' ? '未上传背景图' : '未配置视频地址'}</span>
+                      <span>{resourceType === 'image' ? '未上传图片' : '未配置视频地址'}</span>
                     </Space>
                   </div>
                 )
@@ -832,6 +944,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
                 <Space wrap>
                   <Tag color="blue">{item.categoryLabel}</Tag>
                   <Tag>{item.resourceTypeLabel}</Tag>
+                  {resourceType === 'image' && item.isDigitalHumanBackground ? <Tag color="purple">数字人背景图</Tag> : null}
                 </Space>
                 <Typography.Paragraph className="!mb-0 !text-slate-500" ellipsis={{ rows: 2 }}>
                   {item.description || '暂无资源说明'}
@@ -882,13 +995,18 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
           <Form.Item label="资源说明" name="description">
             <Input.TextArea rows={3} placeholder="请输入资源说明" />
           </Form.Item>
+          {resourceType === 'image' ? (
+            <Form.Item label="作为数字人背景图" name="isDigitalHumanBackground" valuePropName="checked">
+              <Switch checkedChildren="是" unCheckedChildren="否" />
+            </Form.Item>
+          ) : null}
           {showCloudUrlField ? (
             <Form.Item label="云端URL地址（选填）" name="cloudUrl">
               <Input placeholder="请输入云端 URL（选填）" />
             </Form.Item>
           ) : null}
           <Form.Item
-            label={resourceType === 'image' ? '上传背景图（选填）' : '上传视频（选填）'}
+            label={resourceType === 'image' ? '上传图片（选填）' : '上传视频（选填）'}
             name="file"
             valuePropName="fileList"
             getValueFromEvent={(event) => event?.fileList}
@@ -925,7 +1043,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
             </Space>
           ) : null}
           {resourceType === 'image' && editingItem ? (
-            <Form.Item label="背景图清空" name="clearFile">
+            <Form.Item label="图片清空" name="clearFile">
               <Select
                 options={[
                   { value: false, label: '保留现有图片' },
@@ -935,7 +1053,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
             </Form.Item>
           ) : null}
           {resourceType === 'image' && editingItem && !editingItem.hasFile ? (
-            <Typography.Text className="!text-slate-500">当前资源没有上传背景图，保存时可继续保持空态。</Typography.Text>
+            <Typography.Text className="!text-slate-500">当前资源没有上传图片，保存时可继续保持空态。</Typography.Text>
           ) : null}
         </Form>
       </Modal>
@@ -964,9 +1082,54 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
               </div>
             )
           ) : (
-            <Empty description={resourceType === 'image' ? '该背景图资源当前为空' : '该视频资源当前未配置视频地址'} />
+            <Empty description={resourceType === 'image' ? '该图片资源当前为空' : '该视频资源当前未配置视频地址'} />
           )
         ) : null}
+      </Modal>
+
+      <Modal
+        title="批量上传图片"
+        open={batchModalVisible}
+        onCancel={closeBatchModal}
+        onOk={() => void handleBatchSubmit()}
+        confirmLoading={batchSubmitting}
+        destroyOnHidden
+        forceRender
+        okText="上传"
+        cancelText="取消"
+      >
+        <Form<BatchUploadFormValues> form={batchForm} layout="vertical">
+          <Form.Item label="分类" name="category" rules={[{ required: true, message: '请选择分类' }]}>
+            <Select options={categoryOptions.slice(1) as unknown as { label: string; value: string }[]} />
+          </Form.Item>
+          <Form.Item label="作为数字人背景图" name="isDigitalHumanBackground" valuePropName="checked">
+            <Switch checkedChildren="是" unCheckedChildren="否" />
+          </Form.Item>
+          <Form.Item label="资源说明" name="description">
+            <Input.TextArea rows={3} placeholder="请输入资源说明" />
+          </Form.Item>
+          <Form.Item
+            label="图片文件"
+            name="files"
+            valuePropName="fileList"
+            getValueFromEvent={(event) => event?.fileList}
+            rules={[{ required: true, message: '请选择图片文件' }]}
+          >
+            <Upload
+              beforeUpload={() => false}
+              multiple
+              accept="image/*"
+              listType="text"
+              showUploadList={{ showPreviewIcon: false }}
+              className="[&_.ant-upload-list]:max-h-56 [&_.ant-upload-list]:overflow-y-auto [&_.ant-upload-list]:rounded-lg [&_.ant-upload-list]:border [&_.ant-upload-list]:border-slate-100 [&_.ant-upload-list]:bg-slate-50/60 [&_.ant-upload-list]:px-2"
+            >
+              <Button icon={<UploadOutlined />}>选择多个图片</Button>
+            </Upload>
+          </Form.Item>
+          {batchFiles.length > 0 ? (
+            <Typography.Text className="!text-slate-500">已选择 {batchFiles.length} 个图片文件</Typography.Text>
+          ) : null}
+        </Form>
       </Modal>
     </Space>
   );

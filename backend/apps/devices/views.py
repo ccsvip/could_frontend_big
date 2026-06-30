@@ -860,10 +860,6 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             if agent_application is not None and str(runtime_config.get('system_prompt') or '').strip()
             else '你是数字人设备的中文语音问答助手。回答要自然、简洁，适合直接转成语音播报。'
         )
-        if agent_application is not None:
-            system_prompt += f' 当前设备智能体：{runtime_config.get("name") or agent_application.name}。'
-        if device.application is not None:
-            system_prompt += f' 当前设备资源应用：{device.application.name}。'
         messages = [{'role': 'system', 'content': system_prompt}]
         if agent_application is not None:
             from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context

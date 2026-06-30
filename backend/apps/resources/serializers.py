@@ -47,6 +47,7 @@ class ResourceSerializer(serializers.ModelSerializer):
     cloudUrl = serializers.CharField(source='cloud_url', required=False, allow_blank=True, default='')
     objectKey = serializers.CharField(source='object_key', required=False, allow_blank=True, default='')
     objectSize = serializers.IntegerField(source='object_size', required=False, allow_null=True, min_value=0)
+    isDigitalHumanBackground = serializers.BooleanField(source='is_digital_human_background', required=False, default=False)
     clearFile = serializers.BooleanField(write_only=True, required=False, default=False)
 
     class Meta:
@@ -63,6 +64,7 @@ class ResourceSerializer(serializers.ModelSerializer):
             'cloudUrl',
             'objectKey',
             'objectSize',
+            'isDigitalHumanBackground',
             'fileUrl',
             'fileName',
             'fileSize',
@@ -144,6 +146,7 @@ class ResourceSerializer(serializers.ModelSerializer):
             # 视频来源必填；开启云端 URL 时仍与上传文件互斥。
             if clear_file:
                 raise serializers.ValidationError({'clearFile': '视频资源不支持清空文件，请直接删除或重新上传'})
+            attrs['is_digital_human_background'] = False
 
         attrs['resource_type'] = resource_type
         attrs['_clear_file'] = clear_file

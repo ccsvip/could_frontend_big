@@ -33,6 +33,7 @@ export type KnowledgeBaseRecord = {
   chunkSize: number;
   chunkOverlap: number;
   retrievalTopN: number;
+  retrievalMinScore: number;
   created_at: string;
   updated_at: string;
 };
@@ -80,13 +81,44 @@ export type KnowledgeRecallChunk = {
   chunkIndex: number | null;
   content: string;
   score: number;
+  knowledgeBaseId?: number | null;
+  knowledgeBaseName?: string;
+};
+
+export type KnowledgeMediaAssetRecord = {
+  id: number;
+  resourceId: number | null;
+  resourceName: string;
+  resourceType: 'image' | 'video';
+  resourceTypeLabel: string;
+  keywords: string;
+  description: string;
+  vlmDescription?: string;
+  vlmKeywords?: string;
+  isEnabled: boolean;
+  priority: number;
+  isMissing: boolean;
+  embeddingStatus?: 'pending' | 'processing' | 'ready' | 'failed';
+  embeddingStatusLabel?: string;
+  embeddingError?: string;
+  embeddingModel?: string;
+  embeddingProcessedAt?: string | null;
+  url: string;
+  relevance?: number;
+  knowledgeBaseId?: number;
+  knowledgeBaseName?: string;
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type KnowledgeRecallResult = {
-  mode: 'empty' | 'keyword' | 'vector';
+  mode: 'empty' | 'keyword' | 'vector' | 'skipped';
+  retrievalSkipped?: boolean;
+  skipReason?: string;
   embeddingModelAlias: string;
   rerankModelAlias: string;
   chunks: KnowledgeRecallChunk[];
+  mediaAssets: KnowledgeMediaAssetRecord[];
 };
 
 export type KnowledgeModelSettings = {
@@ -249,12 +281,12 @@ export const fetchKnowledgeBases = async (query?: KnowledgeBaseListQuery) => {
   return response.data;
 };
 
-export const createKnowledgeBase = async (payload: { name: string; description?: string; chunkSize?: number; chunkOverlap?: number; retrievalTopN?: number }) => {
+export const createKnowledgeBase = async (payload: { name: string; description?: string; chunkSize?: number; chunkOverlap?: number; retrievalTopN?: number; retrievalMinScore?: number }) => {
   const response = await httpClient.post<KnowledgeBaseRecord>('/knowledge-bases/', payload);
   return response.data;
 };
 
-export const updateKnowledgeBase = async (id: number, payload: Partial<{ name: string; description: string; isActive: boolean; chunkSize: number; chunkOverlap: number; retrievalTopN: number }>) => {
+export const updateKnowledgeBase = async (id: number, payload: Partial<{ name: string; description: string; isActive: boolean; chunkSize: number; chunkOverlap: number; retrievalTopN: number; retrievalMinScore: number }>) => {
   const response = await httpClient.patch<KnowledgeBaseRecord>(`/knowledge-bases/${id}/`, payload);
   return response.data;
 };
@@ -318,6 +350,35 @@ export const uploadKnowledgeBaseDocument = async (
 export const recallTestKnowledgeBase = async (knowledgeBaseId: number, payload: { query: string; topN?: number }) => {
   const response = await httpClient.post<KnowledgeRecallResult>(`/knowledge-bases/${knowledgeBaseId}/recall-test/`, payload);
   return response.data;
+};
+
+export const fetchKnowledgeMediaAssets = async (knowledgeBaseId: number) => {
+  const response = await httpClient.get<KnowledgeMediaAssetRecord[]>(`/knowledge-bases/${knowledgeBaseId}/media-assets/`);
+  return response.data;
+};
+
+export const bindKnowledgeMediaAssets = async (knowledgeBaseId: number, resourceIds: number[]) => {
+  const response = await httpClient.post<KnowledgeMediaAssetRecord[]>(
+    `/knowledge-bases/${knowledgeBaseId}/media-assets/`,
+    { resourceIds },
+  );
+  return response.data;
+};
+
+export const updateKnowledgeMediaAsset = async (
+  knowledgeBaseId: number,
+  assetId: number,
+  payload: Partial<{ keywords: string; description: string; isEnabled: boolean; priority: number }>,
+) => {
+  const response = await httpClient.patch<KnowledgeMediaAssetRecord>(
+    `/knowledge-bases/${knowledgeBaseId}/media-assets/${assetId}/`,
+    payload,
+  );
+  return response.data;
+};
+
+export const deleteKnowledgeMediaAsset = async (knowledgeBaseId: number, assetId: number) => {
+  await httpClient.delete(`/knowledge-bases/${knowledgeBaseId}/media-assets/${assetId}/`);
 };
 
 export const indexKnowledgeBase = async (knowledgeBaseId: number) => {

@@ -14,12 +14,14 @@ import {
   IconGitBranch,
   IconKey,
   IconPencil,
+  IconPhoto,
   IconPlus,
   IconRefresh,
   IconShieldCheck,
   IconAdjustments,
   IconStack2,
   IconTrash,
+  IconVideo,
 } from '@tabler/icons-react';
 import {
   Alert,
@@ -41,29 +43,40 @@ import {
   message,
   Pagination,
   Spin,
+  Switch,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   KNOWLEDGE_BASE_ACCEPT,
+  bindKnowledgeMediaAssets,
   bulkDownloadKnowledgeDocuments,
   createKnowledgeBase,
   deleteKnowledgeBase,
   deleteKnowledgeDocument,
+  deleteKnowledgeMediaAsset,
   downloadKnowledgeDocument,
   fetchKnowledgeBaseDocuments,
   fetchKnowledgeBases,
+  fetchKnowledgeMediaAssets,
   indexKnowledgeBase,
   indexKnowledgeDocument,
   recallTestKnowledgeBase,
   updateKnowledgeBase,
+  updateKnowledgeMediaAsset,
   uploadKnowledgeBaseDocument,
   type KnowledgeBaseListQuery,
   type KnowledgeBaseRecord,
   type KnowledgeDocumentListQuery,
   type KnowledgeDocumentRecord,
+  type KnowledgeMediaAssetRecord,
   type KnowledgeRecallChunk,
 } from '../../api/modules/knowledge-base';
+import {
+  fetchImageResources,
+  fetchVideoResources,
+  type ResourceRecord,
+} from '../../api/modules/resources';
 import { useAuthStore } from '../../store/auth';
 
 type UploadTaskStatus = 'pending' | 'uploading' | 'success' | 'error';
@@ -82,6 +95,14 @@ type KnowledgeBaseFormValues = {
   chunkSize?: number;
   chunkOverlap?: number;
   retrievalTopN?: number;
+  retrievalMinScore?: number;
+};
+
+type MediaAssetFormValues = {
+  keywords?: string;
+  description?: string;
+  isEnabled?: boolean;
+  priority?: number;
 };
 
 type RecallHistoryItem = {
@@ -155,6 +176,32 @@ const defaultIndexConfig = {
   chunkSize: 500,
   chunkOverlap: 50,
   retrievalTopN: 5,
+  retrievalMinScore: 0.2,
+};
+
+const recallModeText: Record<string, string> = {
+  vector: '向量召回',
+  keyword: '关键词召回',
+  empty: '无命中',
+  skipped: '未进入知识库检索',
+};
+
+const recallModeColor: Record<string, string> = {
+  vector: 'success',
+  keyword: 'processing',
+  empty: 'default',
+  skipped: 'warning',
+};
+
+const skipReasonText: Record<string, string> = {
+  low_information_query: '问题信息量较少，系统不会用它去匹配知识库或配套素材。',
+};
+
+const mediaEmbeddingStatusColor: Record<string, string> = {
+  pending: 'default',
+  processing: 'processing',
+  ready: 'success',
+  failed: 'error',
 };
 
 const formatFileSize = (value: number | null) => {
@@ -203,8 +250,23 @@ export const KnowledgeBasePage = () => {
   const [recallTopN, setRecallTopN] = useState(5);
   const [recallLoading, setRecallLoading] = useState(false);
   const [recallChunks, setRecallChunks] = useState<KnowledgeRecallChunk[]>([]);
+  const [recallMediaAssets, setRecallMediaAssets] = useState<KnowledgeMediaAssetRecord[]>([]);
   const [recallMode, setRecallMode] = useState('');
+  const [recallModeKey, setRecallModeKey] = useState('');
+  const [recallSkipReason, setRecallSkipReason] = useState('');
   const [recallHistory, setRecallHistory] = useState<RecallHistoryItem[]>([]);
+
+  const [mediaAssets, setMediaAssets] = useState<KnowledgeMediaAssetRecord[]>([]);
+  const [mediaAssetsLoading, setMediaAssetsLoading] = useState(false);
+  const [bindMediaOpen, setBindMediaOpen] = useState(false);
+  const [bindableResources, setBindableResources] = useState<ResourceRecord[]>([]);
+  const [bindableResourcesLoading, setBindableResourcesLoading] = useState(false);
+  const [selectedResourceKeys, setSelectedResourceKeys] = useState<Key[]>([]);
+  const [bindingMedia, setBindingMedia] = useState(false);
+  const [editingMediaAsset, setEditingMediaAsset] = useState<KnowledgeMediaAssetRecord | null>(null);
+  const [mediaAssetSaving, setMediaAssetSaving] = useState(false);
+  const [deletingMediaAssetId, setDeletingMediaAssetId] = useState<number | null>(null);
+  const [mediaAssetForm] = Form.useForm<MediaAssetFormValues>();
 
   useEffect(() => {
     uploadTasksRef.current = uploadTasks;
@@ -248,6 +310,20 @@ export const KnowledgeBasePage = () => {
     }
   }, [documentQuery, selectedBase]);
 
+  const loadMediaAssets = useCallback(async () => {
+    if (!selectedBase) {
+      setMediaAssets([]);
+      return;
+    }
+    setMediaAssetsLoading(true);
+    try {
+      const response = await fetchKnowledgeMediaAssets(selectedBase.id);
+      setMediaAssets(response);
+    } finally {
+      setMediaAssetsLoading(false);
+    }
+  }, [selectedBase]);
+
   useEffect(() => {
     void loadBases();
   }, [loadBases]);
@@ -257,8 +333,17 @@ export const KnowledgeBasePage = () => {
   }, [loadDocuments]);
 
   useEffect(() => {
+    void loadMediaAssets();
+  }, [loadMediaAssets]);
+
+  useEffect(() => {
     if (selectedBase) {
       setRecallTopN(selectedBase.retrievalTopN || defaultIndexConfig.retrievalTopN);
+      setRecallChunks([]);
+      setRecallMediaAssets([]);
+      setRecallMode('');
+      setRecallModeKey('');
+      setRecallSkipReason('');
     }
   }, [selectedBase?.id, selectedBase?.retrievalTopN]);
 
@@ -272,6 +357,7 @@ export const KnowledgeBasePage = () => {
         chunkSize: values.chunkSize ?? defaultIndexConfig.chunkSize,
         chunkOverlap: values.chunkOverlap ?? defaultIndexConfig.chunkOverlap,
         retrievalTopN: values.retrievalTopN ?? defaultIndexConfig.retrievalTopN,
+        retrievalMinScore: values.retrievalMinScore ?? defaultIndexConfig.retrievalMinScore,
       });
       message.success('知识库已创建');
       setCreateOpen(false);
@@ -360,6 +446,7 @@ export const KnowledgeBasePage = () => {
       chunkSize: item.chunkSize,
       chunkOverlap: item.chunkOverlap,
       retrievalTopN: item.retrievalTopN,
+      retrievalMinScore: item.retrievalMinScore ?? defaultIndexConfig.retrievalMinScore,
     });
     setEditOpen(true);
   }, [editForm]);
@@ -375,6 +462,7 @@ export const KnowledgeBasePage = () => {
         chunkSize: values.chunkSize ?? defaultIndexConfig.chunkSize,
         chunkOverlap: values.chunkOverlap ?? defaultIndexConfig.chunkOverlap,
         retrievalTopN: values.retrievalTopN ?? defaultIndexConfig.retrievalTopN,
+        retrievalMinScore: values.retrievalMinScore ?? defaultIndexConfig.retrievalMinScore,
       });
       message.success('知识库已更新');
       setEditOpen(false);
@@ -460,6 +548,82 @@ export const KnowledgeBasePage = () => {
     }
   }, [loadBases, loadDocuments, selectedBase]);
 
+  const openBindMediaModal = useCallback(async () => {
+    setBindMediaOpen(true);
+    setSelectedResourceKeys([]);
+    setBindableResourcesLoading(true);
+    try {
+      const [images, videos] = await Promise.all([
+        fetchImageResources({ pageSize: 100 }),
+        fetchVideoResources({ pageSize: 100 }),
+      ]);
+      const boundIds = new Set(mediaAssets.map((item) => item.resourceId).filter(Boolean));
+      setBindableResources(
+        [...images.results, ...videos.results].filter((resource) => !boundIds.has(resource.id)),
+      );
+    } finally {
+      setBindableResourcesLoading(false);
+    }
+  }, [mediaAssets]);
+
+  const handleBindMediaAssets = useCallback(async () => {
+    if (!selectedBase || selectedResourceKeys.length === 0) {
+      message.warning('请选择要绑定的图片或视频素材');
+      return;
+    }
+    setBindingMedia(true);
+    try {
+      await bindKnowledgeMediaAssets(selectedBase.id, selectedResourceKeys.map((key) => Number(key)));
+      message.success('配套素材已绑定');
+      setBindMediaOpen(false);
+      setSelectedResourceKeys([]);
+      await loadMediaAssets();
+    } finally {
+      setBindingMedia(false);
+    }
+  }, [loadMediaAssets, selectedBase, selectedResourceKeys]);
+
+  const openEditMediaAsset = useCallback((item: KnowledgeMediaAssetRecord) => {
+    setEditingMediaAsset(item);
+    mediaAssetForm.setFieldsValue({
+      keywords: item.keywords,
+      description: item.description,
+      isEnabled: item.isEnabled,
+      priority: item.priority,
+    });
+  }, [mediaAssetForm]);
+
+  const handleSaveMediaAsset = useCallback(async () => {
+    if (!selectedBase || !editingMediaAsset) return;
+    const values = await mediaAssetForm.validateFields();
+    setMediaAssetSaving(true);
+    try {
+      await updateKnowledgeMediaAsset(selectedBase.id, editingMediaAsset.id, {
+        keywords: values.keywords?.trim() || '',
+        description: values.description?.trim() || '',
+        isEnabled: values.isEnabled ?? true,
+        priority: values.priority ?? 0,
+      });
+      message.success('配套素材已更新');
+      setEditingMediaAsset(null);
+      await loadMediaAssets();
+    } finally {
+      setMediaAssetSaving(false);
+    }
+  }, [editingMediaAsset, loadMediaAssets, mediaAssetForm, selectedBase]);
+
+  const handleDeleteMediaAsset = useCallback(async (item: KnowledgeMediaAssetRecord) => {
+    if (!selectedBase) return;
+    setDeletingMediaAssetId(item.id);
+    try {
+      await deleteKnowledgeMediaAsset(selectedBase.id, item.id);
+      message.success('配套素材已移除');
+      await loadMediaAssets();
+    } finally {
+      setDeletingMediaAssetId(null);
+    }
+  }, [loadMediaAssets, selectedBase]);
+
   const handleRecallTest = useCallback(async () => {
     if (!selectedBase || !recallQuery.trim()) {
       message.warning('请输入召回测试问题');
@@ -471,9 +635,12 @@ export const KnowledgeBasePage = () => {
         query: recallQuery.trim(),
         topN: recallTopN,
       });
-      const modeLabel = result.mode === 'vector' ? '向量召回' : result.mode === 'keyword' ? '关键词召回' : '无命中';
+      const modeLabel = recallModeText[result.mode] || '无命中';
       setRecallChunks(result.chunks);
+      setRecallMediaAssets(result.mediaAssets || []);
       setRecallMode(modeLabel);
+      setRecallModeKey(result.mode);
+      setRecallSkipReason(result.skipReason || '');
       setRecallHistory((current) => [
         {
           id: `${selectedBase.id}-${Date.now()}`,
@@ -605,6 +772,133 @@ export const KnowledgeBasePage = () => {
     indexingDocumentId,
   ]);
 
+  const mediaAssetColumns = useMemo<ColumnsType<KnowledgeMediaAssetRecord>>(() => [
+    {
+      title: '素材',
+      key: 'resource',
+      render: (_, item) => (
+        <Space size={10}>
+          <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${item.resourceType === 'image' ? 'bg-cyan-50 text-cyan-600' : 'bg-violet-50 text-violet-600'}`}>
+            {item.resourceType === 'image' ? <IconPhoto size={18} /> : <IconVideo size={18} />}
+          </div>
+          <Space direction="vertical" size={2}>
+            <Typography.Text strong className="!text-sm">{item.resourceName || '素材已删除'}</Typography.Text>
+            <Typography.Text className="!text-xs !text-slate-500">{item.resourceTypeLabel}</Typography.Text>
+          </Space>
+        </Space>
+      ),
+    },
+    {
+      title: '检索说明',
+      key: 'description',
+      render: (_, item) => (
+        <Space direction="vertical" size={2}>
+          <Typography.Text className="!text-sm !text-slate-700" ellipsis={{ tooltip: item.description }}>
+            {item.description || '--'}
+          </Typography.Text>
+          {item.vlmDescription ? (
+            <Typography.Text className="!text-xs !text-slate-500" ellipsis={{ tooltip: item.vlmDescription }}>
+              自动描述：{item.vlmDescription}
+            </Typography.Text>
+          ) : null}
+          {item.keywords ? (
+            <Typography.Text className="!text-xs !text-slate-500" ellipsis={{ tooltip: item.keywords }}>
+              {item.keywords}
+            </Typography.Text>
+          ) : null}
+        </Space>
+      ),
+    },
+    {
+      title: '多模态索引',
+      key: 'embeddingStatus',
+      width: 150,
+      render: (_, item) => (
+        <Space direction="vertical" size={4}>
+          <Tag color={mediaEmbeddingStatusColor[item.embeddingStatus || 'pending'] || 'default'}>
+            {item.embeddingStatusLabel || item.embeddingStatus || '待处理'}
+          </Tag>
+          {item.embeddingModel ? (
+            <Typography.Text className="!text-xs !text-slate-500" ellipsis={{ tooltip: item.embeddingModel }}>
+              {item.embeddingModel}
+            </Typography.Text>
+          ) : null}
+          {item.embeddingStatus === 'failed' && item.embeddingError ? (
+            <Typography.Text className="!max-w-[160px] !text-xs" type="danger" ellipsis={{ tooltip: item.embeddingError }}>
+              {item.embeddingError}
+            </Typography.Text>
+          ) : null}
+        </Space>
+      ),
+    },
+    {
+      title: '状态',
+      key: 'status',
+      width: 130,
+      render: (_, item) => (
+        <Space direction="vertical" size={4}>
+          <Tag color={item.isMissing ? 'error' : item.isEnabled ? 'success' : 'default'}>
+            {item.isMissing ? '素材已删除' : item.isEnabled ? '启用' : '停用'}
+          </Tag>
+          <span className="text-xs font-mono text-slate-500">P {item.priority}</span>
+        </Space>
+      ),
+    },
+    {
+      title: '操作',
+      key: 'actions',
+      width: 170,
+      align: 'right',
+      render: (_, item) => (
+        <Space>
+          <Button type="link" className="!p-0 !h-auto" disabled={!canUpload} onClick={() => openEditMediaAsset(item)}>
+            编辑
+          </Button>
+          <Popconfirm
+            title="移除配套素材"
+            description={`确认从知识库中移除“${item.resourceName || '素材'}”吗？`}
+            okText="移除"
+            cancelText="取消"
+            okButtonProps={{ danger: true, loading: deletingMediaAssetId === item.id }}
+            disabled={!canUpload}
+            onConfirm={() => void handleDeleteMediaAsset(item)}
+          >
+            <Button type="link" danger className="!p-0 !h-auto" disabled={!canUpload} loading={deletingMediaAssetId === item.id}>
+              移除
+            </Button>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ], [canUpload, deletingMediaAssetId, handleDeleteMediaAsset, openEditMediaAsset]);
+
+  const resourceColumns = useMemo<ColumnsType<ResourceRecord>>(() => [
+    {
+      title: '资源',
+      key: 'resource',
+      render: (_, item) => (
+        <Space size={10}>
+          <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${item.resourceType === 'image' ? 'bg-cyan-50 text-cyan-600' : 'bg-violet-50 text-violet-600'}`}>
+            {item.resourceType === 'image' ? <IconPhoto size={18} /> : <IconVideo size={18} />}
+          </div>
+          <Space direction="vertical" size={2}>
+            <Typography.Text strong className="!text-sm">{item.name}</Typography.Text>
+            <Typography.Text className="!text-xs !text-slate-500">{item.resourceTypeLabel} · {item.categoryLabel}</Typography.Text>
+          </Space>
+        </Space>
+      ),
+    },
+    {
+      title: '说明',
+      dataIndex: 'description',
+      render: (value: string) => (
+        <Typography.Text className="!text-sm !text-slate-600" ellipsis={{ tooltip: value }}>
+          {value || '--'}
+        </Typography.Text>
+      ),
+    },
+  ], []);
+
   const editBaseModal = (
     <Modal
       title="编辑知识库"
@@ -629,7 +923,7 @@ export const KnowledgeBasePage = () => {
           <div className="font-semibold text-slate-600 mb-1">分块参数指南：</div>
           <div>分块长度决定了大模型上下文召回颗粒度。较大的分块能保留更多完整语义，但单次召回消耗的 Token 更多。分块重叠能避免关键信息在切分边界处截断丢失。</div>
         </div>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
           <Form.Item name="chunkSize" label="分块长度" rules={[{ required: true, message: '请输入分块长度' }]}>
             <InputNumber min={100} max={4000} className="!w-full" />
           </Form.Item>
@@ -654,6 +948,9 @@ export const KnowledgeBasePage = () => {
           </Form.Item>
           <Form.Item name="retrievalTopN" label="默认召回段数" rules={[{ required: true, message: '请输入召回段数' }]}>
             <InputNumber min={1} max={20} className="!w-full" />
+          </Form.Item>
+          <Form.Item name="retrievalMinScore" label="最低相关度" rules={[{ required: true, message: '请输入最低相关度' }]}>
+            <InputNumber min={0} max={1} step={0.05} className="!w-full" />
           </Form.Item>
         </div>
       </Form>
@@ -749,6 +1046,104 @@ export const KnowledgeBasePage = () => {
     </Space>
   );
 
+  const mediaManagementTab = (
+    <Space direction="vertical" size={16} className="w-full">
+      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <Typography.Title level={5} className="!mb-1">配套素材</Typography.Title>
+            <Typography.Text className="!text-sm !text-slate-500">
+              从资源库选择图片或视频，知识库只维护绑定关系、关键词和说明。
+            </Typography.Text>
+          </div>
+          <Space>
+            <Button icon={<IconRefresh />} onClick={() => void loadMediaAssets()}>刷新</Button>
+            <Button type="primary" icon={<IconPlus />} disabled={!canUpload} onClick={() => void openBindMediaModal()}>
+              绑定素材
+            </Button>
+          </Space>
+        </div>
+      </Card>
+
+      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+        <Table
+          rowKey="id"
+          loading={mediaAssetsLoading}
+          columns={mediaAssetColumns}
+          dataSource={mediaAssets}
+          pagination={false}
+          locale={{ emptyText: '还没有为当前知识库绑定图片或视频素材' }}
+          scroll={{ x: 920 }}
+        />
+      </Card>
+    </Space>
+  );
+
+  const mediaAssetModals = (
+    <>
+      <Modal
+        title="绑定配套素材"
+        open={bindMediaOpen}
+        width={760}
+        confirmLoading={bindingMedia}
+        onOk={() => void handleBindMediaAssets()}
+        onCancel={() => {
+          setBindMediaOpen(false);
+          setSelectedResourceKeys([]);
+        }}
+        okText="绑定"
+        cancelText="取消"
+      >
+        <Table
+          rowKey="id"
+          loading={bindableResourcesLoading}
+          columns={resourceColumns}
+          dataSource={bindableResources}
+          rowSelection={{ selectedRowKeys: selectedResourceKeys, onChange: setSelectedResourceKeys }}
+          pagination={{ pageSize: 8, showSizeChanger: false }}
+          locale={{ emptyText: '资源库里没有可绑定的图片或视频' }}
+          scroll={{ x: 620 }}
+        />
+      </Modal>
+
+      <Modal
+        title="编辑配套素材"
+        open={Boolean(editingMediaAsset)}
+        confirmLoading={mediaAssetSaving}
+        onOk={() => void handleSaveMediaAsset()}
+        onCancel={() => setEditingMediaAsset(null)}
+        okText="保存"
+        cancelText="取消"
+      >
+        <Form form={mediaAssetForm} layout="vertical">
+          {editingMediaAsset?.vlmDescription ? (
+            <Alert
+              showIcon
+              type="info"
+              className="!mb-4 !rounded-xl"
+              message="系统自动生成的基础描述"
+              description={editingMediaAsset.vlmDescription}
+            />
+          ) : null}
+          <Form.Item name="keywords" label="匹配关键词">
+            <Input.TextArea rows={2} maxLength={255} placeholder="例如：展厅 导览 路线 入口" />
+          </Form.Item>
+          <Form.Item name="description" label="素材说明">
+            <Input.TextArea rows={3} maxLength={500} placeholder="用于说明这张图或这个视频适合回答什么问题" />
+          </Form.Item>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <Form.Item name="priority" label="优先级" initialValue={0}>
+              <InputNumber min={0} max={999} className="!w-full" />
+            </Form.Item>
+            <Form.Item name="isEnabled" label="启用" valuePropName="checked" initialValue>
+              <Switch />
+            </Form.Item>
+          </div>
+        </Form>
+      </Modal>
+    </>
+  );
+
   const recallTestTab = (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
@@ -767,9 +1162,16 @@ export const KnowledgeBasePage = () => {
             <Button type="primary" icon={<IconCloudUpload />} loading={recallLoading} onClick={() => void handleRecallTest()}>测试召回</Button>
           </div>
           {recallMode ? (
-            <Tag color="success" className="!border-teal-100 !bg-teal-50 !text-teal-700">
-              {recallMode}
-            </Tag>
+            <Space direction="vertical" size={6} className="w-full">
+              <Tag color={recallModeColor[recallModeKey] || 'default'} className="w-fit">
+                {recallMode}
+              </Tag>
+              {recallSkipReason ? (
+                <Typography.Text className="!text-xs !text-amber-700">
+                  {skipReasonText[recallSkipReason] || recallSkipReason}
+                </Typography.Text>
+              ) : null}
+            </Space>
           ) : null}
           <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
             <Typography.Text strong className="!text-sm !text-slate-800">最近测试</Typography.Text>
@@ -797,6 +1199,34 @@ export const KnowledgeBasePage = () => {
         <Space direction="vertical" size={16} className="w-full">
           <Typography.Title level={5} className="!mb-0">命中片段</Typography.Title>
           <div className="max-h-[560px] overflow-y-auto pr-1 custom-scrollbar">
+            {recallMediaAssets.length > 0 ? (
+              <div className="mb-4 rounded-xl border border-cyan-100 bg-cyan-50/40 p-3">
+                <div className="mb-2 flex items-center gap-2">
+                  <IconPhoto size={16} className="text-cyan-600" />
+                  <Typography.Text strong className="!text-sm !text-cyan-800">命中素材</Typography.Text>
+                </div>
+                <div className="grid grid-cols-1 gap-2">
+                  {recallMediaAssets.map((item) => (
+                    <div key={item.id} className="flex items-start justify-between gap-3 rounded-lg border border-white/70 bg-white px-3 py-2">
+                      <Space size={8}>
+                        <span className={`flex h-7 w-7 items-center justify-center rounded-md ${item.resourceType === 'image' ? 'bg-cyan-50 text-cyan-600' : 'bg-violet-50 text-violet-600'}`}>
+                          {item.resourceType === 'image' ? <IconPhoto size={15} /> : <IconVideo size={15} />}
+                        </span>
+                        <div>
+                          <Typography.Text strong className="!text-sm !text-slate-800">{item.resourceName}</Typography.Text>
+                          <Typography.Paragraph className="!mb-0 !text-xs !text-slate-500" ellipsis={{ rows: 1, tooltip: item.description || item.keywords }}>
+                            {item.description || item.keywords || '--'}
+                          </Typography.Paragraph>
+                        </div>
+                      </Space>
+                      <Tag color="cyan" className="!font-mono shrink-0">
+                        相关度 {Math.round((item.relevance ?? 0) * 100)}%
+                      </Tag>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             {recallChunks.length > 0 ? (
               <Space direction="vertical" size={10} className="w-full">
                 {recallChunks.map((chunk, index) => (
@@ -818,7 +1248,12 @@ export const KnowledgeBasePage = () => {
                   </div>
                 ))}
               </Space>
-            ) : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无召回结果" />}
+            ) : (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={recallModeKey === 'skipped' ? '这个问题没有进入知识库检索' : '暂无召回结果'}
+              />
+            )}
           </div>
         </Space>
       </Card>
@@ -1151,7 +1586,7 @@ export const KnowledgeBasePage = () => {
               <div className="font-semibold text-slate-600 mb-1">分块参数指南：</div>
               <div>分块长度决定了大模型上下文召回颗粒度。较大的分块能保留更多完整语义，但单次召回消耗的 Token 更多。分块重叠能避免关键信息在切分边界处截断丢失。</div>
             </div>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
               <Form.Item
                 name="chunkSize"
                 label="分块长度"
@@ -1188,6 +1623,14 @@ export const KnowledgeBasePage = () => {
               >
                 <InputNumber min={1} max={20} className="!w-full" />
               </Form.Item>
+              <Form.Item
+                name="retrievalMinScore"
+                label="最低相关度"
+                initialValue={defaultIndexConfig.retrievalMinScore}
+                rules={[{ required: true, message: '请输入最低相关度' }]}
+              >
+                <InputNumber min={0} max={1} step={0.05} className="!w-full" />
+              </Form.Item>
             </div>
           </Form>
         </Modal>
@@ -1218,6 +1661,9 @@ export const KnowledgeBasePage = () => {
                 </Tag>
                 <Tag className="!bg-slate-50 !text-slate-600 !border-slate-200/60">
                   默认召回 <span className="font-mono font-semibold">{selectedBase.retrievalTopN}</span>
+                </Tag>
+                <Tag className="!bg-slate-50 !text-slate-600 !border-slate-200/60">
+                  最低相关度 <span className="font-mono font-semibold">{selectedBase.retrievalMinScore ?? defaultIndexConfig.retrievalMinScore}</span>
                 </Tag>
               </div>
             </div>
@@ -1292,10 +1738,12 @@ export const KnowledgeBasePage = () => {
       <Tabs
         items={[
           { key: 'documents', label: '文档管理', children: documentManagementTab },
+          { key: 'media', label: '配套素材', children: mediaManagementTab },
           { key: 'recall', label: '召回测试', children: recallTestTab },
           { key: 'policy', label: '索引策略', children: indexPolicyTab },
         ]}
       />
+      {mediaAssetModals}
     </Space>
   );
 };

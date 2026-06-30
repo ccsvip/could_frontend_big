@@ -23,12 +23,15 @@ from apps.accounts.permissions import (
     CanViewKnowledgeBase,
 )
 from config.business_cache import CachedBusinessResponseMixin, clear_business_cache_namespace
+from apps.resources.models import Resource
 from apps.tenants.mixins import TenantScopedQuerysetMixin
 
-from .models import KnowledgeBase, KnowledgeDocument
+from .models import KnowledgeBase, KnowledgeDocument, KnowledgeMediaAsset
 from .serializers import (
     KnowledgeBaseSerializer,
     KnowledgeDocumentSerializer,
+    KnowledgeMediaAssetCreateSerializer,
+    KnowledgeMediaAssetSerializer,
     KnowledgeRecallTestSerializer,
 )
 from .services import (
@@ -36,7 +39,7 @@ from .services import (
     notify_knowledge_document_deleted,
     notify_knowledge_document_event,
 )
-from .tasks import build_knowledge_document_index
+from .tasks import build_knowledge_document_index, build_knowledge_media_asset_index
 
 MAX_BULK_DOWNLOAD_COUNT = 20
 MAX_BULK_DOWNLOAD_SIZE = 200 * 1024 * 1024
@@ -97,6 +100,21 @@ def enqueue_document_index(document: KnowledgeDocument, *, force: bool = False) 
         return {'documentId': document.pk, 'queued': False, **result}
 
 
+def enqueue_media_asset_index(asset: KnowledgeMediaAsset, *, force: bool = False) -> dict:
+    KnowledgeMediaAsset.objects.filter(pk=asset.pk).update(
+        embedding_status=KnowledgeMediaAsset.EmbeddingStatus.PENDING,
+        embedding_error='',
+        embedding_processed_at=None,
+    )
+    try:
+        build_knowledge_media_asset_index.delay(asset.pk, force=force)
+        return {'assetId': asset.pk, 'queued': True}
+    except (OperationalError, OSError):
+        from .media_indexing import build_media_asset_index
+
+        return {'assetId': asset.pk, 'queued': False, **build_media_asset_index(asset.pk, force=force)}
+
+
 @extend_schema_view(
     list=extend_schema(tags=['KnowledgeBase']),
     retrieve=extend_schema(tags=['KnowledgeBase']),
@@ -106,6 +124,8 @@ def enqueue_document_index(document: KnowledgeDocument, *, force: bool = False) 
     destroy=extend_schema(tags=['KnowledgeBase']),
     documents=extend_schema(tags=['KnowledgeBase']),
     recall_test=extend_schema(tags=['KnowledgeBase']),
+    media_assets=extend_schema(tags=['KnowledgeBase']),
+    media_asset_detail=extend_schema(tags=['KnowledgeBase']),
     index=extend_schema(tags=['KnowledgeBase']),
 )
 class KnowledgeBaseViewSet(
@@ -130,12 +150,18 @@ class KnowledgeBaseViewSet(
         'destroy': [CanUploadKnowledgeBase],
         'documents': [CanViewKnowledgeBase],
         'recall_test': [CanViewKnowledgeBase],
+        'media_assets': [CanViewKnowledgeBase],
+        'media_asset_detail': [CanViewKnowledgeBase],
         'index': [CanUploadKnowledgeBase],
     }
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def get_permissions(self):
         if self.action == 'documents' and self.request.method == 'POST':
+            return [CanUploadKnowledgeBase()]
+        if self.action == 'media_assets' and self.request.method == 'POST':
+            return [CanUploadKnowledgeBase()]
+        if self.action == 'media_asset_detail' and self.request.method in {'PATCH', 'DELETE'}:
             return [CanUploadKnowledgeBase()]
         return super().get_permissions()
 
@@ -228,13 +254,101 @@ class KnowledgeBaseViewSet(
         )
         return Response(result)
 
+    @action(detail=True, methods=['get', 'post'], url_path='media-assets')
+    def media_assets(self, request, pk=None):
+        knowledge_base = self.get_object()
+        if request.method == 'GET':
+            queryset = (
+                knowledge_base.media_assets
+                .filter(tenant=knowledge_base.tenant)
+                .select_related('resource')
+                .order_by('-priority', '-updated_at', '-id')
+            )
+            serializer = KnowledgeMediaAssetSerializer(
+                queryset,
+                many=True,
+                context={**self.get_serializer_context(), 'request': request},
+            )
+            return Response(serializer.data)
+
+        serializer = KnowledgeMediaAssetCreateSerializer(
+            data=request.data,
+            context=self.get_serializer_context(),
+        )
+        serializer.is_valid(raise_exception=True)
+        resources = list(
+            Resource.objects.filter(
+                tenant=knowledge_base.tenant,
+                id__in=serializer.validated_data['resourceIds'],
+                resource_type__in=[Resource.TYPE_IMAGE, Resource.TYPE_VIDEO],
+            )
+        )
+        resources_by_id = {resource.id: resource for resource in resources}
+        assets: list[KnowledgeMediaAsset] = []
+        for resource_id in serializer.validated_data['resourceIds']:
+            resource = resources_by_id[resource_id]
+            asset, _ = KnowledgeMediaAsset.objects.get_or_create(
+                knowledge_base=knowledge_base,
+                resource=resource,
+                defaults={
+                    'tenant': knowledge_base.tenant,
+                    'resource_type': resource.resource_type,
+                    'resource_name': resource.name,
+                    'created_by': request.user,
+                },
+            )
+            enqueue_media_asset_index(asset)
+            assets.append(asset)
+
+        self.clear_cached_business_responses()
+        output = KnowledgeMediaAssetSerializer(
+            assets,
+            many=True,
+            context={**self.get_serializer_context(), 'request': request},
+        )
+        return Response(output.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['patch', 'delete'], url_path=r'media-assets/(?P<asset_id>[^/.]+)')
+    def media_asset_detail(self, request, pk=None, asset_id=None):
+        knowledge_base = self.get_object()
+        asset = (
+            knowledge_base.media_assets
+            .filter(tenant=knowledge_base.tenant, pk=asset_id)
+            .select_related('resource')
+            .first()
+        )
+        if asset is None:
+            return Response({'status': 'error', 'message': '配套素材不存在', 'code': 404}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == 'DELETE':
+            asset.delete()
+            self.clear_cached_business_responses()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        serializer = KnowledgeMediaAssetSerializer(
+            asset,
+            data=request.data,
+            partial=True,
+            context={**self.get_serializer_context(), 'request': request},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        self.clear_cached_business_responses()
+        return Response(serializer.data)
+
     @action(detail=True, methods=['post'], url_path='index')
     def index(self, request, pk=None):
         knowledge_base = self.get_object()
         documents = list(knowledge_base.documents.filter(tenant=knowledge_base.tenant).order_by('id'))
-        results = [enqueue_document_index(document, force=True) for document in documents]
+        media_assets = list(knowledge_base.media_assets.filter(tenant=knowledge_base.tenant).order_by('id'))
+        document_results = [enqueue_document_index(document, force=True) for document in documents]
+        media_asset_results = [enqueue_media_asset_index(asset, force=True) for asset in media_assets]
         self.clear_cached_business_responses()
-        return Response({'queuedCount': len(results), 'documents': results})
+        return Response({
+            'queuedCount': len(document_results) + len(media_asset_results),
+            'documents': document_results,
+            'mediaAssets': media_asset_results,
+        })
 
 
 @extend_schema_view(

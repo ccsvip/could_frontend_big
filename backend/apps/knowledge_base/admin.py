@@ -3,12 +3,12 @@ from django.utils.html import format_html
 
 from config.business_cache import clear_business_cache_namespace
 
-from .models import KnowledgeBase, KnowledgeDocument, KnowledgeDocumentChunk
+from .models import KnowledgeBase, KnowledgeDocument, KnowledgeDocumentChunk, KnowledgeMediaAsset
 
 
 @admin.register(KnowledgeBase)
 class KnowledgeBaseAdmin(admin.ModelAdmin):
-    list_display = ('name', 'tenant', 'is_active', 'created_by', 'updated_at')
+    list_display = ('name', 'tenant', 'is_active', 'retrieval_min_score', 'created_by', 'updated_at')
     list_filter = ('is_active', 'updated_at')
     search_fields = ('name', 'description')
     raw_id_fields = ('tenant', 'created_by')
@@ -74,4 +74,25 @@ class KnowledgeDocumentChunkAdmin(admin.ModelAdmin):
     list_filter = ('embedding_model', 'updated_at')
     search_fields = ('document__title', 'content')
     readonly_fields = ('tenant', 'document', 'chunk_index', 'content_hash', 'embedding_model', 'created_at', 'updated_at')
+    list_per_page = 30
+
+
+@admin.register(KnowledgeMediaAsset)
+class KnowledgeMediaAssetAdmin(admin.ModelAdmin):
+    list_display = ('resource_name', 'resource_type', 'knowledge_base', 'tenant', 'embedding_status', 'is_enabled', 'priority', 'updated_at')
+    list_filter = ('resource_type', 'embedding_status', 'is_enabled', 'updated_at')
+    search_fields = ('resource_name', 'keywords', 'description', 'vlm_description', 'vlm_keywords', 'knowledge_base__name')
+    raw_id_fields = ('tenant', 'knowledge_base', 'resource', 'created_by')
+    readonly_fields = (
+        'resource_type',
+        'resource_name',
+        'vlm_description',
+        'vlm_keywords',
+        'embedding_status',
+        'embedding_error',
+        'embedding_model',
+        'embedding_processed_at',
+        'created_at',
+        'updated_at',
+    )
     list_per_page = 30

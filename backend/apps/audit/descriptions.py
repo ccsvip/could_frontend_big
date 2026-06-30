@@ -32,7 +32,7 @@ _SPECIAL_ROUTE_LABELS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r'^/api/v1/settings/llm/test-settings/?$'), 'LLM测试设置'),
     (re.compile(r'^/api/v1/settings/llm/tenants/\d+/authorization/?$'), '公司LLM授权'),
     (re.compile(r'^/api/v1/tenants(?:/|$)'), '公司'),
-    (re.compile(r'^/api/v1/resources/images(?:/|$)'), '背景图资源'),
+    (re.compile(r'^/api/v1/resources/images(?:/|$)'), '图片资源'),
     (re.compile(r'^/api/v1/resources/videos(?:/|$)'), '视频资源'),
     (re.compile(r'^/api/v1/resources/scrolling-texts(?:/|$)'), '滚动文案'),
     (re.compile(r'^/api/v1/resources/voice-tones(?:/|$)'), '音色'),

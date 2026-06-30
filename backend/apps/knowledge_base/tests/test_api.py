@@ -15,7 +15,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.knowledge_base.models import KnowledgeBase, KnowledgeDocument, KnowledgeDocumentChunk
+from apps.knowledge_base.models import KnowledgeBase, KnowledgeDocument, KnowledgeDocumentChunk, KnowledgeMediaAsset
+from apps.resources.models import Resource
+from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
@@ -154,6 +156,7 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
                 'chunkSize': 300,
                 'chunkOverlap': 30,
                 'retrievalTopN': 8,
+                'retrievalMinScore': 0.35,
             },
             format='json',
         )
@@ -162,6 +165,7 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['chunkSize'], 300)
         self.assertEqual(response.data['chunkOverlap'], 30)
         self.assertEqual(response.data['retrievalTopN'], 8)
+        self.assertEqual(response.data['retrievalMinScore'], 0.35)
 
     def test_create_knowledge_base_rejects_invalid_chunk_overlap(self):
         self.grant_permissions('knowledge_base.upload')
@@ -388,10 +392,170 @@ class KnowledgeBaseApiTests(TenantTestMixin, APITestCase):
         first.save(update_fields=['knowledge_base'])
         second.knowledge_base = knowledge_base
         second.save(update_fields=['knowledge_base'])
+        image = Resource.objects.create(
+            tenant=self.tenant,
+            name='展厅导览图',
+            resource_type=Resource.TYPE_IMAGE,
+        )
+        asset = KnowledgeMediaAsset.objects.create(
+            tenant=self.tenant,
+            knowledge_base=knowledge_base,
+            resource=image,
+            resource_type=Resource.TYPE_IMAGE,
+            resource_name='展厅导览图',
+            embedding_status=KnowledgeMediaAsset.EmbeddingStatus.READY,
+        )
 
-        with patch('apps.knowledge_base.views.build_knowledge_document_index.delay') as delay:
+        with (
+            patch('apps.knowledge_base.views.build_knowledge_document_index.delay') as document_delay,
+            patch('apps.knowledge_base.views.build_knowledge_media_asset_index.delay') as media_asset_delay,
+        ):
             response = self.client.post(f'/api/v1/knowledge-bases/{knowledge_base.id}/index/')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['queuedCount'], 2)
-        self.assertEqual(delay.call_count, 2)
+        self.assertEqual(response.data['queuedCount'], 3)
+        self.assertEqual(len(response.data['documents']), 2)
+        self.assertEqual(len(response.data['mediaAssets']), 1)
+        self.assertEqual(document_delay.call_count, 2)
+        media_asset_delay.assert_called_once_with(asset.id, force=True)
+        asset.refresh_from_db()
+        self.assertEqual(asset.embedding_status, KnowledgeMediaAsset.EmbeddingStatus.PENDING)
+
+    def test_create_media_assets_binds_existing_resources_to_knowledge_base(self):
+        self.grant_permissions('knowledge_base.view', 'knowledge_base.upload')
+        knowledge_base = self.create_base()
+        image = Resource.objects.create(
+            tenant=self.tenant,
+            name='展厅导览图',
+            resource_type=Resource.TYPE_IMAGE,
+            category=Resource.CATEGORY_HORIZONTAL,
+            description='一楼展厅参观路线',
+        )
+        video = Resource.objects.create(
+            tenant=self.tenant,
+            name='设备演示视频',
+            resource_type=Resource.TYPE_VIDEO,
+            category=Resource.CATEGORY_HORIZONTAL,
+            cloud_url='https://example.com/demo.mp4',
+        )
+
+        response = self.client.post(
+            f'/api/v1/knowledge-bases/{knowledge_base.id}/media-assets/',
+            {'resourceIds': [image.id, video.id]},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual({item['resourceId'] for item in response.data}, {image.id, video.id})
+        first = response.data[0]
+        self.assertIn(first['resourceType'], {'image', 'video'})
+        self.assertTrue(first['isEnabled'])
+        self.assertIn(first['resourceName'], first['description'])
+        self.assertEqual(KnowledgeMediaAsset.objects.filter(knowledge_base=knowledge_base).count(), 2)
+
+    def test_create_media_assets_rejects_cross_tenant_resource(self):
+        self.grant_permissions('knowledge_base.view', 'knowledge_base.upload')
+        knowledge_base = self.create_base()
+        other_tenant = Tenant.objects.create(name='其他公司', code='other-tenant')
+        other_resource = Resource.objects.create(
+            tenant=other_tenant,
+            name='其他公司图片',
+            resource_type=Resource.TYPE_IMAGE,
+        )
+
+        response = self.client.post(
+            f'/api/v1/knowledge-bases/{knowledge_base.id}/media-assets/',
+            {'resourceIds': [other_resource.id]},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(KnowledgeMediaAsset.objects.filter(knowledge_base=knowledge_base).exists())
+
+    def test_update_media_asset_keeps_search_metadata_on_binding(self):
+        self.grant_permissions('knowledge_base.view', 'knowledge_base.upload')
+        knowledge_base = self.create_base()
+        resource = Resource.objects.create(
+            tenant=self.tenant,
+            name='展厅导览图',
+            resource_type=Resource.TYPE_IMAGE,
+        )
+        asset = KnowledgeMediaAsset.objects.create(
+            tenant=self.tenant,
+            knowledge_base=knowledge_base,
+            resource=resource,
+            resource_type=Resource.TYPE_IMAGE,
+            resource_name='展厅导览图',
+            keywords='展厅',
+            description='旧说明',
+        )
+
+        response = self.client.patch(
+            f'/api/v1/knowledge-bases/{knowledge_base.id}/media-assets/{asset.id}/',
+            {'keywords': '展厅 路线 入口', 'description': '一楼展厅导览路线图', 'isEnabled': False, 'priority': 7},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        asset.refresh_from_db()
+        resource.refresh_from_db()
+        self.assertEqual(asset.keywords, '展厅 路线 入口')
+        self.assertEqual(asset.description, '一楼展厅导览路线图')
+        self.assertFalse(asset.is_enabled)
+        self.assertEqual(asset.priority, 7)
+        self.assertEqual(resource.description, '')
+
+    def test_recall_test_returns_matching_media_assets_after_text_recall(self):
+        self.grant_permissions('knowledge_base.view')
+        knowledge_base = self.create_base(name='展厅知识库')
+        document = self.create_document(
+            name='展厅导览.txt',
+            title='展厅导览',
+            content='参观者从展厅入口进入后，可以按照导览路线依次参观产品区。'.encode(),
+        )
+        document.knowledge_base = knowledge_base
+        document.save(update_fields=['knowledge_base'])
+        KnowledgeDocumentChunk.objects.create(
+            tenant=self.tenant,
+            document=document,
+            chunk_index=0,
+            content='参观者从展厅入口进入后，可以按照导览路线依次参观产品区。',
+            content_hash='route',
+            embedding_model='keyword',
+        )
+        guide_image = Resource.objects.create(
+            tenant=self.tenant,
+            name='展厅导览图',
+            resource_type=Resource.TYPE_IMAGE,
+            description='展厅路线图片',
+        )
+        KnowledgeMediaAsset.objects.create(
+            tenant=self.tenant,
+            knowledge_base=knowledge_base,
+            resource=guide_image,
+            resource_type=Resource.TYPE_IMAGE,
+            resource_name='展厅导览图',
+            keywords='展厅 导览 路线 入口',
+            description='一楼展厅路线图',
+        )
+        Resource.objects.create(
+            tenant=self.tenant,
+            name='售后维修视频',
+            resource_type=Resource.TYPE_VIDEO,
+            cloud_url='https://example.com/repair.mp4',
+        )
+
+        response = self.client.post(
+            f'/api/v1/knowledge-bases/{knowledge_base.id}/recall-test/',
+            {'query': '展厅怎么走？'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['mode'], 'keyword')
+        self.assertEqual(len(response.data['chunks']), 1)
+        self.assertEqual(len(response.data['mediaAssets']), 1)
+        self.assertEqual(response.data['mediaAssets'][0]['resourceId'], guide_image.id)
+        self.assertEqual(response.data['mediaAssets'][0]['resourceType'], 'image')
+        self.assertGreater(response.data['mediaAssets'][0]['relevance'], 0)

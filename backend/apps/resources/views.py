@@ -1,3 +1,6 @@
+from pathlib import Path
+
+from django.db import transaction
 from django.db.models import Prefetch, Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -111,6 +114,14 @@ class BaseResourceViewSet(CachedBusinessResponseMixin, TenantScopedQuerysetMixin
         keyword = self.request.query_params.get('keyword', '').strip()
         if keyword:
             queryset = queryset.filter(name__icontains=keyword)
+        if self.resource_type == Resource.TYPE_IMAGE:
+            is_digital_human_background = (
+                self.request.query_params.get('isDigitalHumanBackground')
+                or self.request.query_params.get('is_digital_human_background')
+                or ''
+            ).strip().lower()
+            if is_digital_human_background in {'true', 'false'}:
+                queryset = queryset.filter(is_digital_human_background=is_digital_human_background == 'true')
         return self.apply_tenant_scope(queryset)
 
     def get_serializer_context(self):
@@ -207,7 +218,39 @@ class ImageResourceViewSet(BaseResourceViewSet):
         'update': [CanUpdateImageResources],
         'partial_update': [CanUpdateImageResources],
         'destroy': [CanDeleteImageResources],
+        'bulk': [CanCreateImageResources],
     }
+
+    @action(detail=False, methods=['post'], url_path='bulk')
+    def bulk(self, request):
+        files = request.FILES.getlist('files')
+        if not files:
+            return Response({'files': '请至少选择一个图片文件'}, status=status.HTTP_400_BAD_REQUEST)
+
+        category = request.data.get('category') or Resource.CATEGORY_UNCATEGORIZED
+        description = str(request.data.get('description') or '').strip()
+        is_digital_human_background = str(
+            request.data.get('isDigitalHumanBackground') or request.data.get('is_digital_human_background') or ''
+        ).strip().lower() == 'true'
+
+        created_resources = []
+        with transaction.atomic():
+            for uploaded_file in files:
+                name = Path(uploaded_file.name).stem or uploaded_file.name
+                serializer = self.get_serializer(
+                    data={
+                        'name': name,
+                        'category': category,
+                        'description': description,
+                        'isDigitalHumanBackground': is_digital_human_background,
+                    }
+                )
+                serializer.is_valid(raise_exception=True)
+                created_resources.append(serializer.save(file=uploaded_file, **self.tenant_create_kwargs()))
+
+        self.clear_cached_business_responses()
+        response_serializer = self.get_serializer(created_resources, many=True)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
 
 @extend_schema_view(

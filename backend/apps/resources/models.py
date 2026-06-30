@@ -19,7 +19,7 @@ class Resource(models.Model):
     TYPE_IMAGE = 'image'
     TYPE_VIDEO = 'video'
     TYPE_CHOICES = [
-        (TYPE_IMAGE, '背景图片'),
+        (TYPE_IMAGE, '图片'),
         (TYPE_VIDEO, '视频'),
     ]
 
@@ -45,6 +45,7 @@ class Resource(models.Model):
     object_key = models.CharField('MinIO 对象键', max_length=512, blank=True, default='')
     object_size = models.BigIntegerField('MinIO 对象大小', blank=True, null=True)
     description = models.CharField('资源说明', max_length=255, blank=True, default='')
+    is_digital_human_background = models.BooleanField('是否作为数字人背景图', default=False)
     tenant = _tenant_fk()
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
