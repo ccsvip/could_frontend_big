@@ -137,6 +137,8 @@ const blocksToText = (blocks: AgentReplyBlock[]) => blocks
   .map((block) => block.text.trim())
   .filter(Boolean)
   .join('\n');
+type AgentMediaReplyBlock = Extract<AgentReplyBlock, { type: 'image' | 'video' }>;
+const getEditorText = (blocks: AgentReplyBlock[]) => blocks.find((block): block is Extract<AgentReplyBlock, { type: 'text' }> => block.type === 'text')?.text || '';
 const normalizeReplyBlocks = (blocks: AgentReplyBlock[] | undefined, fallbackText = '') => {
   const source = blocks && blocks.length > 0 ? blocks : [textBlock(fallbackText)];
   return source
@@ -147,6 +149,12 @@ const normalizeReplyBlocks = (blocks: AgentReplyBlock[] | undefined, fallbackTex
       return block;
     })
     .filter((block) => block.type !== 'text' || block.text.trim());
+};
+const normalizeAnnotationEditorBlocks = (blocks: AgentReplyBlock[] | undefined, fallbackText = '') => {
+  const normalized = normalizeReplyBlocks(blocks, fallbackText);
+  const text = blocksToText(normalized) || fallbackText.trim();
+  const mediaBlocks = normalized.filter((block): block is AgentMediaReplyBlock => block.type !== 'text');
+  return [textBlock(text), ...mediaBlocks];
 };
 
 const toDeviceChatConversationDetail = (logs: DeviceChatLogRecord[]): ChatConversationDetail => {
@@ -527,7 +535,6 @@ export const ApplicationManagementPage = () => {
   const [annotationDialogOpen, setAnnotationDialogOpen] = useState(false);
   const [editingAnnotation, setEditingAnnotation] = useState<AgentAnnotationRecord | null>(null);
   const [annotationQuestion, setAnnotationQuestion] = useState('');
-  const [annotationAnswer, setAnnotationAnswer] = useState('');
   const [annotationBlocks, setAnnotationBlocks] = useState<AgentReplyBlock[]>([textBlock('')]);
   const [annotationSaving, setAnnotationSaving] = useState(false);
   const [annotationsEnabled, setAnnotationsEnabled] = useState(true);
@@ -890,8 +897,7 @@ export const ApplicationManagementPage = () => {
   const openAnnotationDialog = (annotation?: AgentAnnotationRecord) => {
     setEditingAnnotation(annotation || null);
     setAnnotationQuestion(annotation?.question || '');
-    setAnnotationAnswer(annotation?.answer || '');
-    setAnnotationBlocks(normalizeReplyBlocks(annotation?.answerBlocks, annotation?.answer || '') || [textBlock('')]);
+    setAnnotationBlocks(normalizeAnnotationEditorBlocks(annotation?.answerBlocks, annotation?.answer || ''));
     setAnnotationDialogOpen(true);
   };
 
@@ -899,37 +905,34 @@ export const ApplicationManagementPage = () => {
     setAnnotationDialogOpen(false);
     setEditingAnnotation(null);
     setAnnotationQuestion('');
-    setAnnotationAnswer('');
     setAnnotationBlocks([textBlock('')]);
   };
 
-  const updateAnnotationTextBlock = (index: number, text: string) => {
-    setAnnotationBlocks((current) => current.map((block, blockIndex) => (blockIndex === index && block.type === 'text' ? { ...block, text } : block)));
-  };
-
-  const addAnnotationTextBlock = (afterIndex: number | null = null) => {
+  const updateAnnotationText = (text: string) => {
     setAnnotationBlocks((current) => {
-      const next = [...current];
-      next.splice(afterIndex == null ? next.length : afterIndex + 1, 0, textBlock(''));
-      return next;
+      const mediaBlocks = current.filter((block): block is AgentMediaReplyBlock => block.type !== 'text');
+      return [textBlock(text), ...mediaBlocks];
     });
   };
 
-  const removeAnnotationBlock = (index: number) => {
+  const removeAnnotationMediaBlock = (index: number) => {
     setAnnotationBlocks((current) => {
-      const next = current.filter((_, blockIndex) => blockIndex !== index);
-      return next.length ? next : [textBlock('')];
+      const text = getEditorText(current);
+      const mediaBlocks = current.filter((block): block is AgentMediaReplyBlock => block.type !== 'text');
+      return [textBlock(text), ...mediaBlocks.filter((_, blockIndex) => blockIndex !== index)];
     });
   };
 
-  const moveAnnotationBlock = (index: number, direction: -1 | 1) => {
+  const moveAnnotationMediaBlock = (index: number, direction: -1 | 1) => {
     setAnnotationBlocks((current) => {
+      const text = getEditorText(current);
+      const mediaBlocks = current.filter((block): block is AgentMediaReplyBlock => block.type !== 'text');
       const nextIndex = index + direction;
-      if (nextIndex < 0 || nextIndex >= current.length) return current;
-      const next = [...current];
+      if (nextIndex < 0 || nextIndex >= mediaBlocks.length) return current;
+      const next = [...mediaBlocks];
       const [item] = next.splice(index, 1);
       next.splice(nextIndex, 0, item);
-      return next;
+      return [textBlock(text), ...next];
     });
   };
 
@@ -947,9 +950,11 @@ export const ApplicationManagementPage = () => {
       url: resource.fileUrl || resource.cloudUrl,
     };
     setAnnotationBlocks((current) => {
-      const next = [...current];
+      const text = getEditorText(current);
+      const mediaBlocks = current.filter((item): item is AgentMediaReplyBlock => item.type !== 'text');
+      const next = [...mediaBlocks];
       next.splice(resourcePickerInsertIndex == null ? next.length : resourcePickerInsertIndex + 1, 0, block);
-      return next;
+      return [textBlock(text), ...next];
     });
     setResourcePickerOpen(false);
   };
@@ -957,9 +962,9 @@ export const ApplicationManagementPage = () => {
   const saveAnnotation = async () => {
     if (!selectedApplicationId) return;
     const question = normalizeAnnotationQuestion(annotationQuestion);
-    const answerBlocks = normalizeReplyBlocks(annotationBlocks, annotationAnswer);
+    const answerBlocks = normalizeReplyBlocks(annotationBlocks);
     const answer = blocksToText(answerBlocks);
-    if (!question || answerBlocks.length === 0) {
+    if (!question || !answer) {
       message.warning('请填写问题和标准回复');
       return;
     }
@@ -2959,48 +2964,47 @@ export const ApplicationManagementPage = () => {
     </div>
   );
 
-  const renderAnnotationBlockEditor = () => (
-    <div className="flex flex-col gap-3">
-      {annotationBlocks.map((block, index) => (
-        <div key={`${block.type}-${index}`} className="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <Tag color={block.type === 'text' ? 'blue' : block.type === 'image' ? 'green' : 'purple'} className="m-0">
-              {block.type === 'text' ? '文本' : block.type === 'image' ? '图片' : '视频'}
-            </Tag>
-            <div className="flex items-center gap-1">
-              <Button size="small" type="text" disabled={index === 0} onClick={() => moveAnnotationBlock(index, -1)}>上移</Button>
-              <Button size="small" type="text" disabled={index === annotationBlocks.length - 1} onClick={() => moveAnnotationBlock(index, 1)}>下移</Button>
-              <Button size="small" type="text" danger onClick={() => removeAnnotationBlock(index)}>删除</Button>
+  const renderAnnotationBlockEditor = () => {
+    const text = getEditorText(annotationBlocks);
+    const mediaBlocks = annotationBlocks.filter((block): block is AgentMediaReplyBlock => block.type !== 'text');
+    return (
+      <div className="flex flex-col gap-3">
+        <Input.TextArea
+          rows={5}
+          value={text}
+          onChange={(event) => updateAnnotationText(event.target.value)}
+          placeholder="输入命中后要直接返回的标准答案"
+        />
+        {mediaBlocks.map((block, index) => (
+          <div key={`${block.type}-${block.resourceId}-${index}`} className="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <Tag color={block.type === 'image' ? 'green' : 'purple'} className="m-0">
+                {block.type === 'image' ? '图片' : '视频'}
+              </Tag>
+              <div className="flex items-center gap-1">
+                <Button size="small" type="text" disabled={index === 0} onClick={() => moveAnnotationMediaBlock(index, -1)}>上移</Button>
+                <Button size="small" type="text" disabled={index === mediaBlocks.length - 1} onClick={() => moveAnnotationMediaBlock(index, 1)}>下移</Button>
+                <Button size="small" type="text" danger onClick={() => removeAnnotationMediaBlock(index)}>删除</Button>
+              </div>
             </div>
-          </div>
-          {block.type === 'text' ? (
-            <Input.TextArea
-              rows={3}
-              value={block.text}
-              onChange={(event) => updateAnnotationTextBlock(index, event.target.value)}
-              placeholder="输入这一段文本，TTS 只会播报文本块"
-            />
-          ) : (
             <div className="flex flex-col gap-2">
               <div className="text-sm font-medium text-slate-700">{block.resourceName || `资源 #${block.resourceId}`}</div>
               {block.type === 'image' && block.url && <img src={normalizeMediaAssetUrl(block.url)} alt={block.resourceName || '标注图片'} className="max-h-40 rounded-lg border border-slate-200 object-contain" />}
               {block.type === 'video' && block.url && <video src={normalizeMediaAssetUrl(block.url)} controls preload="metadata" className="max-h-40 rounded-lg border border-slate-200 bg-black" />}
             </div>
-          )}
-          <div className="mt-3 flex flex-wrap gap-2 border-t border-slate-200/70 pt-3">
-            <Button size="small" onClick={() => addAnnotationTextBlock(index)}>在后面加文本</Button>
-            <Button size="small" onClick={() => openResourcePicker('image', index)}>在后面插入图片</Button>
-            <Button size="small" onClick={() => openResourcePicker('video', index)}>在后面插入视频</Button>
+            <div className="mt-3 flex flex-wrap gap-2 border-t border-slate-200/70 pt-3">
+              <Button size="small" onClick={() => openResourcePicker('image', index)}>在后面插入图片</Button>
+              <Button size="small" onClick={() => openResourcePicker('video', index)}>在后面插入视频</Button>
+            </div>
           </div>
+        ))}
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => openResourcePicker('image')}>插入图片</Button>
+          <Button onClick={() => openResourcePicker('video')}>插入视频</Button>
         </div>
-      ))}
-      <div className="flex flex-wrap gap-2">
-        <Button onClick={() => addAnnotationTextBlock()}>添加文本</Button>
-        <Button onClick={() => openResourcePicker('image')}>插入图片</Button>
-        <Button onClick={() => openResourcePicker('video')}>插入视频</Button>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <ConfigProvider theme={{ token: { colorPrimary: "#0f766e", borderRadius: 12 } }}>
