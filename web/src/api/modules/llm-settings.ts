@@ -30,6 +30,19 @@ export type CompanyLLMOptions = {
   providers: LLMProviderOption[];
 };
 
+export type ThirdPartyChatbotOption = {
+  id: number;
+  name: string;
+  description: string;
+  providerId: number;
+  providerName: string;
+  providerType: string;
+};
+
+export type CompanyThirdPartyChatbotOptions = {
+  chatbots: ThirdPartyChatbotOption[];
+};
+
 export type PlatformLLMProviderRecord = {
   id: number;
   name: string;
@@ -131,6 +144,82 @@ export type TenantLLMAuthorizationPayload = {
   defaultModelId: number | null;
 };
 
+export type PlatformThirdPartyChatbotProviderRecord = {
+  id: number;
+  name: string;
+  providerType: string;
+  providerTypeLabel: string;
+  apiBaseUrl: string;
+  apiKeyMasked: string;
+  apiKeyConfigured: boolean;
+  isActive: boolean;
+  sortOrder: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PlatformThirdPartyChatbotProviderPayload = {
+  name: string;
+  providerType?: string;
+  apiBaseUrl: string;
+  apiKey?: string;
+  isActive?: boolean;
+  sortOrder?: number;
+};
+
+export type PlatformThirdPartyChatbotApplicationRecord = {
+  id: number;
+  providerId: number;
+  providerName: string;
+  providerType: string;
+  name: string;
+  description: string;
+  externalApplicationId: string;
+  isActive: boolean;
+  sortOrder: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PlatformThirdPartyChatbotApplicationPayload = {
+  providerId: number;
+  name: string;
+  description?: string;
+  externalApplicationId: string;
+  isActive?: boolean;
+  sortOrder?: number;
+};
+
+export type TenantThirdPartyChatbotAuthorizationRecord = {
+  id: number;
+  providerId: number;
+  providerName: string;
+  providerType: string;
+  name: string;
+  description: string;
+  externalApplicationId: string;
+  isActive: boolean;
+  providerIsActive: boolean;
+  sortOrder: number;
+  grantIsActive: boolean;
+};
+
+export type TenantThirdPartyChatbotAuthorization = {
+  tenant: {
+    id: number;
+    name: string;
+    isActive: boolean;
+  };
+  chatbots: TenantThirdPartyChatbotAuthorizationRecord[];
+};
+
+export type TenantThirdPartyChatbotAuthorizationPayload = {
+  chatbotGrants: Array<{
+    chatbotId: number;
+    isActive: boolean;
+  }>;
+};
+
 const buildProviderFormData = (payload: Partial<PlatformLLMProviderPayload>) => {
   const formData = new FormData();
   if (payload.name !== undefined) formData.append('name', payload.name);
@@ -146,6 +235,11 @@ const buildProviderFormData = (payload: Partial<PlatformLLMProviderPayload>) => 
 
 export const fetchCompanyLLMOptions = async () => {
   const response = await httpClient.get<CompanyLLMOptions>('/ai-models/llm/options/');
+  return response.data;
+};
+
+export const fetchCompanyThirdPartyChatbotOptions = async () => {
+  const response = await httpClient.get<CompanyThirdPartyChatbotOptions>('/ai-models/third-party-chatbots/options/');
   return response.data;
 };
 
@@ -231,5 +325,85 @@ export const updateTenantLLMAuthorization = async (
 
 export const testPlatformLLMModel = async (modelId: number) => {
   const response = await httpClient.post<TestConnectionResult>(`/settings/llm/models/${modelId}/test/`);
+  return response.data;
+};
+
+export const fetchPlatformThirdPartyChatbotProviders = async () => {
+  const response = await httpClient.get<{ results: PlatformThirdPartyChatbotProviderRecord[] }>(
+    '/settings/third-party-chatbots/providers/',
+  );
+  return response.data;
+};
+
+export const createPlatformThirdPartyChatbotProvider = async (payload: PlatformThirdPartyChatbotProviderPayload) => {
+  const response = await httpClient.post<PlatformThirdPartyChatbotProviderRecord>(
+    '/settings/third-party-chatbots/providers/',
+    payload,
+  );
+  return response.data;
+};
+
+export const updatePlatformThirdPartyChatbotProvider = async (
+  id: number,
+  payload: Partial<PlatformThirdPartyChatbotProviderPayload>,
+) => {
+  const response = await httpClient.patch<PlatformThirdPartyChatbotProviderRecord>(
+    `/settings/third-party-chatbots/providers/${id}/`,
+    payload,
+  );
+  return response.data;
+};
+
+export const deletePlatformThirdPartyChatbotProvider = async (id: number) => {
+  await httpClient.delete(`/settings/third-party-chatbots/providers/${id}/`);
+};
+
+export const fetchPlatformThirdPartyChatbotApplications = async () => {
+  const response = await httpClient.get<{ results: PlatformThirdPartyChatbotApplicationRecord[] }>(
+    '/settings/third-party-chatbots/applications/',
+  );
+  return response.data;
+};
+
+export const createPlatformThirdPartyChatbotApplication = async (
+  payload: PlatformThirdPartyChatbotApplicationPayload,
+) => {
+  const response = await httpClient.post<PlatformThirdPartyChatbotApplicationRecord>(
+    '/settings/third-party-chatbots/applications/',
+    payload,
+  );
+  return response.data;
+};
+
+export const updatePlatformThirdPartyChatbotApplication = async (
+  id: number,
+  payload: Partial<PlatformThirdPartyChatbotApplicationPayload>,
+) => {
+  const response = await httpClient.patch<PlatformThirdPartyChatbotApplicationRecord>(
+    `/settings/third-party-chatbots/applications/${id}/`,
+    payload,
+  );
+  return response.data;
+};
+
+export const deletePlatformThirdPartyChatbotApplication = async (id: number) => {
+  await httpClient.delete(`/settings/third-party-chatbots/applications/${id}/`);
+};
+
+export const fetchTenantThirdPartyChatbotAuthorization = async (tenantId: number) => {
+  const response = await httpClient.get<TenantThirdPartyChatbotAuthorization>(
+    `/settings/third-party-chatbots/tenants/${tenantId}/authorization/`,
+  );
+  return response.data;
+};
+
+export const updateTenantThirdPartyChatbotAuthorization = async (
+  tenantId: number,
+  payload: TenantThirdPartyChatbotAuthorizationPayload,
+) => {
+  const response = await httpClient.put<TenantThirdPartyChatbotAuthorization>(
+    `/settings/third-party-chatbots/tenants/${tenantId}/authorization/`,
+    payload,
+  );
   return response.data;
 };

@@ -24,10 +24,14 @@ export type AgentApplicationRecord = {
   id: number;
   name: string;
   description: string;
+  runtimeBackendType: 'platform_llm' | 'third_party_chatbot';
   llmModelId: number | null;
   llmModelName: string;
   llmModelDisplayName: string;
   llmProviderName: string | null;
+  thirdPartyChatbotId: number | null;
+  thirdPartyChatbotName: string;
+  thirdPartyChatbotProviderName: string | null;
   systemPrompt: string;
   temperature: number;
   maxTokens: number;
@@ -69,7 +73,9 @@ export type AgentApplicationListQuery = {
 export type AgentApplicationPayload = {
   name: string;
   description?: string;
+  runtimeBackendType?: 'platform_llm' | 'third_party_chatbot';
   llmModelId?: number | null;
+  thirdPartyChatbotId?: number | null;
   systemPrompt?: string;
   temperature?: number;
   maxTokens?: number;

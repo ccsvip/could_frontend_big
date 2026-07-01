@@ -11,7 +11,7 @@ from .llm_services import (
     validate_llm_test_settings_values,
 )
 from .services.tts import get_effective_tts_config, mask_api_key as mask_tts_api_key
-from .services import tts as tts_services
+from .services import third_party_chatbots, tts as tts_services
 from .models import (
     ASRConfig,
     AgentAnnotation,
@@ -24,8 +24,15 @@ from .models import (
     LLMProvider,
     LLMTestSettings,
     RerankModel,
+    RUNTIME_BACKEND_CHOICES,
+    RUNTIME_BACKEND_PLATFORM_LLM,
+    RUNTIME_BACKEND_THIRD_PARTY_CHATBOT,
+    THIRD_PARTY_PROVIDER_IHUAPENG,
     TenantKnowledgeModelSettings,
+    TenantThirdPartyChatbotGrant,
     TenantTTSSettings,
+    ThirdPartyChatbotApplication,
+    ThirdPartyChatbotProvider,
     TTSProvider,
     TTSVoice,
     default_agent_opening_message,
@@ -33,6 +40,7 @@ from .models import (
 )
 from .services.annotations import normalize_annotation_question
 from .services.reply_blocks import blocks_to_text, normalize_reply_blocks, serialize_reply_blocks, text_to_blocks
+from .services.third_party_chatbots import normalize_chatbot_api_key
 
 
 def mask_knowledge_api_key(value: str) -> str:
@@ -122,6 +130,158 @@ class PlatformLLMProviderWriteSerializer(serializers.ModelSerializer):
             instance.avatar.delete(save=False)
             instance.avatar = None
         return super().update(instance, validated_data)
+
+
+class PlatformThirdPartyChatbotProviderSerializer(serializers.ModelSerializer):
+    providerType = serializers.CharField(source='provider_type')
+    providerTypeLabel = serializers.CharField(source='get_provider_type_display', read_only=True)
+    apiBaseUrl = serializers.URLField(source='api_base_url')
+    apiKeyMasked = serializers.SerializerMethodField()
+    apiKeyConfigured = serializers.SerializerMethodField()
+    isActive = serializers.BooleanField(source='is_active')
+    sortOrder = serializers.IntegerField(source='sort_order')
+
+    class Meta:
+        model = ThirdPartyChatbotProvider
+        fields = [
+            'id',
+            'name',
+            'providerType',
+            'providerTypeLabel',
+            'apiBaseUrl',
+            'apiKeyMasked',
+            'apiKeyConfigured',
+            'isActive',
+            'sortOrder',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = fields
+
+    @extend_schema_field(serializers.CharField())
+    def get_apiKeyMasked(self, obj: ThirdPartyChatbotProvider) -> str:
+        return mask_api_key(obj.api_key)
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_apiKeyConfigured(self, obj: ThirdPartyChatbotProvider) -> bool:
+        return bool(obj.api_key)
+
+
+class PlatformThirdPartyChatbotProviderWriteSerializer(serializers.ModelSerializer):
+    providerType = serializers.CharField(source='provider_type', required=False, default='ihuapeng_chatbot')
+    apiBaseUrl = serializers.URLField(source='api_base_url')
+    apiKey = serializers.CharField(source='api_key', required=False, allow_blank=True, write_only=True)
+    isActive = serializers.BooleanField(source='is_active', required=False, default=True)
+    sortOrder = serializers.IntegerField(source='sort_order', required=False, default=0)
+
+    class Meta:
+        model = ThirdPartyChatbotProvider
+        fields = ['name', 'providerType', 'apiBaseUrl', 'apiKey', 'isActive', 'sortOrder']
+
+    def validate_apiKey(self, value: str) -> str:
+        value = normalize_chatbot_api_key(value)
+        if value.lower().startswith('bearer '):
+            raise serializers.ValidationError('应用密钥请直接填写原始值，不要添加 Bearer 前缀')
+        return value
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if self.instance is None and not attrs.get('api_key'):
+            raise serializers.ValidationError({'apiKey': 'API Key 不能为空'})
+        if self.instance is not None and attrs.get('api_key') == '':
+            attrs.pop('api_key')
+        return attrs
+
+
+class PlatformThirdPartyChatbotApplicationSerializer(serializers.ModelSerializer):
+    providerId = serializers.IntegerField(source='provider_id', read_only=True)
+    providerName = serializers.CharField(source='provider.name', read_only=True)
+    providerType = serializers.CharField(source='provider.provider_type', read_only=True)
+    externalApplicationId = serializers.CharField(source='external_application_id')
+    isActive = serializers.BooleanField(source='is_active')
+    sortOrder = serializers.IntegerField(source='sort_order')
+
+    class Meta:
+        model = ThirdPartyChatbotApplication
+        fields = [
+            'id',
+            'providerId',
+            'providerName',
+            'providerType',
+            'name',
+            'description',
+            'externalApplicationId',
+            'isActive',
+            'sortOrder',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = fields
+
+
+class PlatformThirdPartyChatbotApplicationWriteSerializer(serializers.ModelSerializer):
+    providerId = serializers.PrimaryKeyRelatedField(
+        source='provider',
+        queryset=ThirdPartyChatbotProvider.objects.all(),
+    )
+    externalApplicationId = serializers.CharField(source='external_application_id')
+    isActive = serializers.BooleanField(source='is_active', required=False, default=True)
+    sortOrder = serializers.IntegerField(source='sort_order', required=False, default=0)
+
+    class Meta:
+        model = ThirdPartyChatbotApplication
+        fields = ['providerId', 'name', 'description', 'externalApplicationId', 'isActive', 'sortOrder']
+
+    def validate_externalApplicationId(self, value: str) -> str:
+        value = str(value).strip()
+        if not value:
+            raise serializers.ValidationError('第三方应用 ID 不能为空')
+        return value
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        provider = attrs.get('provider') or (self.instance.provider if self.instance is not None else None)
+        external_application_id = attrs.get(
+            'external_application_id',
+            self.instance.external_application_id if self.instance is not None else '',
+        )
+        if provider and provider.provider_type == THIRD_PARTY_PROVIDER_IHUAPENG:
+            import uuid
+
+            try:
+                uuid.UUID(str(external_application_id))
+            except (TypeError, ValueError):
+                raise serializers.ValidationError({'externalApplicationId': '华鹏第三方应用 ID 应填写文档中的 UUID，不是机器人名称或说明'})
+        return attrs
+
+
+class TenantThirdPartyChatbotAuthorizationSerializer(serializers.Serializer):
+    chatbotGrants = serializers.ListField(child=serializers.DictField(), required=True)
+
+    def validate(self, attrs):
+        tenant_id = self.context.get('tenant_id')
+        tenant = Tenant.objects.filter(id=tenant_id, is_active=True).first()
+        if tenant is None:
+            raise serializers.ValidationError({'tenantId': '公司不存在或已停用'})
+
+        grants = attrs.get('chatbotGrants') or []
+        chatbot_ids = []
+        for item in grants:
+            try:
+                chatbot_id = int(item.get('chatbotId'))
+            except (TypeError, ValueError):
+                raise serializers.ValidationError({'chatbotGrants': 'chatbotId 必须是正整数'})
+            if chatbot_id <= 0:
+                raise serializers.ValidationError({'chatbotGrants': 'chatbotId 必须是正整数'})
+            chatbot_ids.append(chatbot_id)
+
+        existing_ids = set(ThirdPartyChatbotApplication.objects.filter(id__in=chatbot_ids).values_list('id', flat=True))
+        missing_ids = set(chatbot_ids) - existing_ids
+        if missing_ids:
+            raise serializers.ValidationError({'chatbotGrants': f'第三方机器人不存在：{min(missing_ids)}'})
+
+        attrs['tenant'] = tenant
+        return attrs
 
 
 class PlatformLLMModelSerializer(serializers.ModelSerializer):
@@ -755,9 +915,23 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True,
     )
+    runtimeBackendType = serializers.ChoiceField(
+        source='runtime_backend_type',
+        choices=RUNTIME_BACKEND_CHOICES,
+        required=False,
+        default=RUNTIME_BACKEND_PLATFORM_LLM,
+    )
+    thirdPartyChatbotId = serializers.PrimaryKeyRelatedField(
+        source='third_party_chatbot',
+        queryset=ThirdPartyChatbotApplication.objects.none(),
+        required=False,
+        allow_null=True,
+    )
     llmModelName = serializers.SerializerMethodField()
     llmModelDisplayName = serializers.SerializerMethodField()
     llmProviderName = serializers.SerializerMethodField()
+    thirdPartyChatbotName = serializers.SerializerMethodField()
+    thirdPartyChatbotProviderName = serializers.SerializerMethodField()
     systemPrompt = serializers.CharField(source='system_prompt', required=False, default='', allow_blank=True)
     maxTokens = serializers.IntegerField(source='max_tokens', required=False)
     maxTokensUnlimited = serializers.BooleanField(source='max_tokens_unlimited', required=False)
@@ -800,10 +974,14 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'description',
+            'runtimeBackendType',
             'llmModelId',
             'llmModelName',
             'llmModelDisplayName',
             'llmProviderName',
+            'thirdPartyChatbotId',
+            'thirdPartyChatbotName',
+            'thirdPartyChatbotProviderName',
             'systemPrompt',
             'temperature',
             'maxTokens',
@@ -833,6 +1011,8 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
             'llmModelName',
             'llmModelDisplayName',
             'llmProviderName',
+            'thirdPartyChatbotName',
+            'thirdPartyChatbotProviderName',
             'knowledgeDocuments',
             'knowledgeBases',
             'createdBy',
@@ -849,6 +1029,7 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
         tenant = self.context.get('tenant')
         if tenant is not None:
             fields['llmModelId'].queryset = get_effective_llm_models_for_tenant(tenant)
+            fields['thirdPartyChatbotId'].queryset = ThirdPartyChatbotApplication.objects.select_related('provider').all()
             fields['knowledgeDocumentIds'].child_relation.queryset = KnowledgeDocument.objects.for_tenant(tenant)
             fields['knowledgeBaseIds'].child_relation.queryset = KnowledgeBase.objects.for_tenant(tenant).filter(is_active=True)
         return fields
@@ -864,6 +1045,16 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
     @extend_schema_field(serializers.CharField(allow_null=True))
     def get_llmProviderName(self, obj: AgentApplication) -> str | None:
         return obj.llm_model.provider.name if obj.llm_model and obj.llm_model.provider else None
+
+    @extend_schema_field(serializers.CharField())
+    def get_thirdPartyChatbotName(self, obj: AgentApplication) -> str:
+        return obj.third_party_chatbot.name if obj.third_party_chatbot else ''
+
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_thirdPartyChatbotProviderName(self, obj: AgentApplication) -> str | None:
+        if obj.third_party_chatbot and obj.third_party_chatbot.provider:
+            return obj.third_party_chatbot.provider.name
+        return None
 
     def get_createdBy(self, obj: AgentApplication) -> str:
         if obj.created_by is None:
@@ -928,6 +1119,20 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
+        tenant = self.context.get('tenant')
+        runtime_backend_type = attrs.get(
+            'runtime_backend_type',
+            self.instance.runtime_backend_type if self.instance is not None else RUNTIME_BACKEND_PLATFORM_LLM,
+        )
+        third_party_chatbot = attrs.get(
+            'third_party_chatbot',
+            self.instance.third_party_chatbot if self.instance is not None else None,
+        )
+        if third_party_chatbot is not None and not third_party_chatbots.is_chatbot_effective_for_tenant(tenant, third_party_chatbot):
+            raise serializers.ValidationError({'thirdPartyChatbotId': '第三方会话机器人未授权给当前公司'})
+        if runtime_backend_type == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
+            if third_party_chatbot is None:
+                raise serializers.ValidationError({'thirdPartyChatbotId': '请选择第三方会话机器人'})
         return attrs
 
     def create(self, validated_data):
@@ -1069,10 +1274,14 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 
 class ChatConversationListSerializer(serializers.ModelSerializer):
     applicationId = serializers.IntegerField(source='application_id', read_only=True, allow_null=True)
+    runtimeBackendType = serializers.CharField(source='runtime_backend_type', read_only=True)
     llmModelId = serializers.IntegerField(source='llm_model_id', read_only=True, allow_null=True)
     llmModelName = serializers.SerializerMethodField()
     llmModelDisplayName = serializers.SerializerMethodField()
     llmProviderName = serializers.SerializerMethodField()
+    thirdPartyChatbotId = serializers.IntegerField(source='third_party_chatbot_id', read_only=True, allow_null=True)
+    thirdPartyChatbotName = serializers.SerializerMethodField()
+    thirdPartyChatbotProviderName = serializers.SerializerMethodField()
     summary = serializers.CharField(read_only=True, default='')
     messageCount = serializers.SerializerMethodField()
     lastMessage = serializers.SerializerMethodField()
@@ -1098,21 +1307,36 @@ class ChatConversationListSerializer(serializers.ModelSerializer):
     def get_llmProviderName(self, obj: ChatConversation) -> str | None:
         return obj.llm_model.provider.name if obj.llm_model and obj.llm_model.provider else None
 
+    @extend_schema_field(serializers.CharField())
+    def get_thirdPartyChatbotName(self, obj: ChatConversation) -> str:
+        return obj.third_party_chatbot.name if obj.third_party_chatbot else ''
+
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_thirdPartyChatbotProviderName(self, obj: ChatConversation) -> str | None:
+        if obj.third_party_chatbot and obj.third_party_chatbot.provider:
+            return obj.third_party_chatbot.provider.name
+        return None
+
     class Meta:
         model = ChatConversation
         fields = [
-            'id', 'title', 'applicationId', 'llmModelId', 'llmModelName',
-            'llmModelDisplayName', 'llmProviderName', 'summary', 'messageCount', 'lastMessage',
+            'id', 'title', 'applicationId', 'runtimeBackendType', 'llmModelId', 'llmModelName',
+            'llmModelDisplayName', 'llmProviderName', 'thirdPartyChatbotId', 'thirdPartyChatbotName',
+            'thirdPartyChatbotProviderName', 'summary', 'messageCount', 'lastMessage',
             'created_at', 'updated_at',
         ]
 
 
 class ChatConversationDetailSerializer(serializers.ModelSerializer):
     applicationId = serializers.IntegerField(source='application_id', read_only=True, allow_null=True)
+    runtimeBackendType = serializers.CharField(source='runtime_backend_type', read_only=True)
     llmModelId = serializers.IntegerField(source='llm_model_id', read_only=True, allow_null=True)
     llmModelName = serializers.SerializerMethodField()
     llmModelDisplayName = serializers.SerializerMethodField()
     llmProviderName = serializers.SerializerMethodField()
+    thirdPartyChatbotId = serializers.IntegerField(source='third_party_chatbot_id', read_only=True, allow_null=True)
+    thirdPartyChatbotName = serializers.SerializerMethodField()
+    thirdPartyChatbotProviderName = serializers.SerializerMethodField()
     summary = serializers.CharField(required=False, default='')
     systemPrompt = serializers.CharField(source='system_prompt', required=False, default='')
     temperature = serializers.FloatField(required=False)
@@ -1139,18 +1363,35 @@ class ChatConversationDetailSerializer(serializers.ModelSerializer):
     def get_llmProviderName(self, obj: ChatConversation) -> str | None:
         return obj.llm_model.provider.name if obj.llm_model and obj.llm_model.provider else None
 
+    @extend_schema_field(serializers.CharField())
+    def get_thirdPartyChatbotName(self, obj: ChatConversation) -> str:
+        return obj.third_party_chatbot.name if obj.third_party_chatbot else ''
+
+    @extend_schema_field(serializers.CharField(allow_null=True))
+    def get_thirdPartyChatbotProviderName(self, obj: ChatConversation) -> str | None:
+        if obj.third_party_chatbot and obj.third_party_chatbot.provider:
+            return obj.third_party_chatbot.provider.name
+        return None
+
     class Meta:
         model = ChatConversation
         fields = [
-            'id', 'title', 'applicationId', 'llmModelId', 'llmModelName',
-            'llmModelDisplayName', 'llmProviderName', 'summary', 'systemPrompt',
+            'id', 'title', 'applicationId', 'runtimeBackendType', 'llmModelId', 'llmModelName',
+            'llmModelDisplayName', 'llmProviderName', 'thirdPartyChatbotId', 'thirdPartyChatbotName',
+            'thirdPartyChatbotProviderName', 'summary', 'systemPrompt',
             'temperature', 'maxTokens', 'maxTokensUnlimited', 'messages',
             'created_at', 'updated_at',
         ]
 
 
 class ChatConversationConfigSerializer(serializers.Serializer):
+    runtimeBackendType = serializers.ChoiceField(
+        source='runtime_backend_type',
+        choices=[RUNTIME_BACKEND_PLATFORM_LLM, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT],
+        required=False,
+    )
     llmModelId = serializers.IntegerField(required=False, allow_null=True)
+    thirdPartyChatbotId = serializers.IntegerField(required=False, allow_null=True)
     systemPrompt = serializers.CharField(required=False, default='', allow_blank=True)
     temperature = serializers.FloatField(required=False, default=0.7)
     maxTokens = serializers.IntegerField(required=False, source='max_tokens', default=1000)

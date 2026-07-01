@@ -36,9 +36,29 @@ _Avoid_: tenant admin feature split, employee-only business access
 A platform LLM model grant that is currently enabled for a company, making that model available to that company.
 _Avoid_: historical model usage, disabled authorization, chat history reference
 
+**Third-Party Chatbot Interface**:
+An externally hosted chatbot application endpoint that owns its own conversation flow and credentials, and can be made available to companies as an alternative to a platform LLM model.
+_Avoid_: irregular LLM, non-standard LLM, custom LLM provider, external model
+
+**Third-Party Chatbot Application**:
+A specific externally hosted chatbot, such as a presales assistant, that carries the credentials and application identity needed for runtime conversation and can be granted to companies.
+_Avoid_: third-party provider grant, external supplier, model alias
+
+**Company Third-Party Chatbot Grant**:
+A company-specific authorization that makes a Third-Party Chatbot Application visible and selectable only within that company.
+_Avoid_: global chatbot visibility, public third-party app, platform-wide external chatbot
+
+**Device Chat Contract**:
+The stable HTTP response payload and WebSocket event shape used by runtime devices for Agent Application conversations, regardless of which Agent Runtime Backend produced the answer.
+_Avoid_: provider response passthrough, third-party payload contract, Android-specific third-party format
+
 **Agent Application**:
 A company-scoped LLM-backed application configured with a system prompt, knowledge documents, and runtime chat settings.
 _Avoid_: 智能体, 应用, AI 应用
+
+**Agent Runtime Backend**:
+The single answer-producing backend currently active for an Agent Application, either a platform LLM model or a Third-Party Chatbot Interface; inactive backend configuration can be retained for later switching but must not affect runtime answers.
+_Avoid_: mixed model source, fallback provider, simultaneous LLM binding
 
 **Agent Conversation Settings**:
 Runtime conversation behavior configured on an Agent Application, including its opening message, suggested questions, voice input, and reply playback.

@@ -68,6 +68,9 @@ const TtsSettingsPage = lazy(() =>
 const LlmSettingsAdminPage = lazy(() =>
   import('../views/settings-llm').then((module) => ({ default: module.LlmSettingsAdminPage })),
 );
+const ThirdPartyChatbotSettingsPage = lazy(() =>
+  import('../views/third-party-chatbot-settings').then((module) => ({ default: module.ThirdPartyChatbotSettingsPage })),
+);
 const KnowledgeBaseSettingsPage = lazy(() =>
   import('../views/knowledge-base-settings').then((module) => ({ default: module.KnowledgeBaseSettingsPage })),
 );
@@ -410,6 +413,14 @@ export const AppRouter = () => {
           element: (
             <PermissionGuard permission="tenant.management.view">
               <LlmSettingsAdminPage />
+            </PermissionGuard>
+          ),
+        },
+        {
+          path: 'settings/third-party-chatbots',
+          element: (
+            <PermissionGuard permission="tenant.management.view">
+              <ThirdPartyChatbotSettingsPage />
             </PermissionGuard>
           ),
         },

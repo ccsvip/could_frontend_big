@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 from asgiref.sync import async_to_sync, sync_to_async
 from asgiref.testing import ApplicationCommunicator
+from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -28,6 +29,7 @@ from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
+HUAPENG_APPLICATION_ID = '8d697146-f9a2-11ef-89c4-86dcb2923f74'
 
 
 class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
@@ -75,6 +77,26 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         }
         defaults.update(overrides)
         return DeviceAuthorizationCode.objects.create(**defaults)
+
+    def create_third_party_chatbot(self):
+        Provider = apps.get_model('ai_models', 'ThirdPartyChatbotProvider')
+        Chatbot = apps.get_model('ai_models', 'ThirdPartyChatbotApplication')
+        Grant = apps.get_model('ai_models', 'TenantThirdPartyChatbotGrant')
+        provider = Provider.objects.create(
+            name='华鹏 AI',
+            provider_type='ihuapeng_chatbot',
+            api_base_url='https://ai.ihuapeng.cn/api',
+            api_key='application-key',
+            is_active=True,
+        )
+        chatbot = Chatbot.objects.create(
+            provider=provider,
+            name='华鹏展厅机器人',
+            external_application_id=HUAPENG_APPLICATION_ID,
+            is_active=True,
+        )
+        Grant.objects.create(tenant=self.tenant, chatbot=chatbot, is_active=True)
+        return chatbot
 
     def test_authorization_request_query_filters_pending_bound_and_ignored_devices(self):
         pending = Device.objects.create(name='Pending Device', code='ANDROID-QUERY-PENDING')
@@ -672,6 +694,39 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(chat_log.question_text, '介绍一下展厅')
         self.assertEqual(chat_log.answer_text, '欢迎来到数字人展厅。')
         self.assertEqual(chat_log.model_name, 'qwen/qwen3-32b')
+
+    def test_device_voice_chat_third_party_backend_keeps_android_response_shape(self):
+        chatbot = self.create_third_party_chatbot()
+        self.agent_application.runtime_backend_type = 'third_party_chatbot'
+        self.agent_application.third_party_chatbot = chatbot
+        self.agent_application.save(update_fields=['runtime_backend_type', 'third_party_chatbot', 'updated_at'])
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Third-party Voice Device',
+            code='ANDROID-THIRD-PARTY-VOICE-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        with patch(
+            'apps.devices.views.third_party_chatbots.send_chatbot_message',
+            return_value='第三方机器人回答',
+        ) as send_chatbot_message:
+            response = self.client.post(
+                '/api/v1/device/voice-chat',
+                {'text': '介绍一下展厅', 'sessionId': 'android-session-1'},
+                format='json',
+                HTTP_X_DEVICE_CODE='ANDROID-THIRD-PARTY-VOICE-001',
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['sessionId'], 'android-session-1')
+        self.assertEqual(response.data['answerText'], '第三方机器人回答')
+        self.assertEqual(response.data['answerBlocks'], [{'type': 'text', 'text': '第三方机器人回答'}])
+        self.assertNotIn('chat_id', str(response.data))
+        send_chatbot_message.assert_called_once()
 
     def test_device_voice_chat_uses_published_agent_knowledge_base(self):
         provider = LLMProvider.objects.create(
@@ -1469,6 +1524,68 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             self.assertEqual(tts_segment['payload']['text'], '欢迎来到展厅')
             self.assertEqual(done['type'], 'llm.done')
             self.assertEqual(done['payload']['answerText'], '欢迎来到展厅')
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
+    def test_llm_session_start_uses_third_party_backend_with_existing_event_shape(self):
+        chatbot = self.create_third_party_chatbot()
+        self.agent_application.runtime_backend_type = 'third_party_chatbot'
+        self.agent_application.third_party_chatbot = chatbot
+        self.agent_application.save(update_fields=['runtime_backend_type', 'third_party_chatbot', 'updated_at'])
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Third-party WebSocket Android',
+            code='ANDROID-THIRD-PARTY-WS-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        async def run_websocket():
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            response = await communicator.receive_output(timeout=1)
+            self.assertEqual(response['type'], 'websocket.accept')
+
+            with patch(
+                'config.realtime.third_party_chatbots.send_chatbot_message',
+                return_value='第三方 WebSocket 回答',
+            ):
+                await communicator.send_input({
+                    'type': 'websocket.receive',
+                    'text': json.dumps({
+                        'type': 'llm.session.start',
+                        'id': 'third-party-llm-suite-1',
+                        'payload': {'deviceCode': 'ANDROID-THIRD-PARTY-WS-001', 'text': '介绍一下展厅'},
+                    }),
+                })
+
+                started = json.loads((await communicator.receive_output(timeout=1))['text'])
+                delta = json.loads((await communicator.receive_output(timeout=1))['text'])
+                tts_segment = json.loads((await communicator.receive_output(timeout=1))['text'])
+                done = json.loads((await communicator.receive_output(timeout=1))['text'])
+
+            self.assertEqual(started['type'], 'llm.started')
+            self.assertEqual(delta['type'], 'llm.delta')
+            self.assertEqual(delta['payload']['text'], '第三方 WebSocket 回答')
+            self.assertEqual(tts_segment['type'], 'llm.tts_segment')
+            self.assertEqual(done['type'], 'llm.done')
+            self.assertEqual(done['payload']['answerText'], '第三方 WebSocket 回答')
+            self.assertNotIn('chat_id', str(done))
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)

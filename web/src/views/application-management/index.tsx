@@ -30,7 +30,12 @@ import {
   type ChatConversationRecord,
 } from '../../api/modules/chat';
 import { fetchKnowledgeBases, type KnowledgeBaseRecord } from '../../api/modules/knowledge-base';
-import { fetchCompanyLLMOptions, type CompanyLLMOptions } from '../../api/modules/llm-settings';
+import {
+  fetchCompanyLLMOptions,
+  fetchCompanyThirdPartyChatbotOptions,
+  type CompanyLLMOptions,
+  type CompanyThirdPartyChatbotOptions,
+} from '../../api/modules/llm-settings';
 import { fetchAsrStatus, type AsrStatusRecord } from '../../api/modules/asr';
 import { fetchCompanyTtsOptions, type CompanyTtsOptions } from '../../api/modules/tts';
 import { fetchDeviceChatLogs, type DeviceChatLogRecord } from '../../api/modules/devices';
@@ -104,6 +109,8 @@ import {
   Copy,
 } from 'lucide-react';
 
+type RuntimeBackendType = 'platform_llm' | 'third_party_chatbot';
+
 type LogConversationItem = {
   key: string;
   source: 'chat' | 'device';
@@ -112,8 +119,12 @@ type LogConversationItem = {
   summary: string;
   lastMessage: string | null;
   messageCount: number;
+  runtimeBackendType: RuntimeBackendType;
   llmModelName: string;
   llmModelDisplayName: string;
+  llmProviderName: string | null;
+  thirdPartyChatbotName: string;
+  thirdPartyChatbotProviderName: string | null;
   created_at: string;
   updated_at: string;
   detail?: ChatConversationDetail;
@@ -191,10 +202,14 @@ const toDeviceChatConversationDetail = (logs: DeviceChatLogRecord[]): ChatConver
     id: conversationId,
     title,
     applicationId: firstLog.agentApplicationId,
+    runtimeBackendType: 'platform_llm',
     llmModelId: null,
     llmModelName: lastLog.modelName,
     llmModelDisplayName: lastLog.modelName,
     llmProviderName: null,
+    thirdPartyChatbotId: null,
+    thirdPartyChatbotName: '',
+    thirdPartyChatbotProviderName: null,
     summary: firstLog.questionText,
     systemPrompt: '',
     temperature: 0,
@@ -222,8 +237,12 @@ const toDeviceChatLogItem = (logs: DeviceChatLogRecord[]): LogConversationItem =
     summary: firstLog.questionText,
     lastMessage: lastLog.answerText,
     messageCount: detail.messages.length,
+    runtimeBackendType: 'platform_llm',
     llmModelName: lastLog.modelName,
     llmModelDisplayName: lastLog.modelName || '运行时设备',
+    llmProviderName: null,
+    thirdPartyChatbotName: '',
+    thirdPartyChatbotProviderName: null,
     created_at: firstLog.createdAt,
     updated_at: lastLog.createdAt,
     detail,
@@ -246,6 +265,20 @@ const toChatConversationItem = (conversation: ChatConversationRecord): LogConver
   key: `chat-${conversation.id}`,
   source: 'chat',
 });
+
+const getRuntimeBackendDisplay = (
+  item: Pick<
+    AgentApplicationRecord | ChatConversationRecord | LogConversationItem,
+    'runtimeBackendType' | 'llmModelName' | 'llmModelDisplayName' | 'llmProviderName' | 'thirdPartyChatbotName' | 'thirdPartyChatbotProviderName'
+  >,
+) => {
+  if (item.runtimeBackendType === 'third_party_chatbot') {
+    const chatbotName = item.thirdPartyChatbotName || '未绑定第三方机器人';
+    return item.thirdPartyChatbotProviderName ? `${item.thirdPartyChatbotProviderName} / ${chatbotName}` : chatbotName;
+  }
+  const modelName = item.llmModelDisplayName || item.llmModelName || '未配置大语言模型';
+  return item.llmProviderName ? `${item.llmProviderName} / ${modelName}` : modelName;
+};
 
 const getLogConversationDetailId = (conversation: LogConversationItem) => (
   conversation.source === 'device' && conversation.id > 0 ? -conversation.id : conversation.id
@@ -472,13 +505,16 @@ export const ApplicationManagementPage = () => {
   const [configSaving, setConfigSaving] = useState(false);
   const [publishSaving, setPublishSaving] = useState(false);
   const [llmOptions, setLlmOptions] = useState<CompanyLLMOptions | null>(null);
+  const [thirdPartyChatbotOptions, setThirdPartyChatbotOptions] = useState<CompanyThirdPartyChatbotOptions | null>(null);
   const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBaseRecord[]>([]);
   const [optionsLoading, setOptionsLoading] = useState(false);
 
   // Form states (direct React states instead of AntD forms)
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [runtimeBackendType, setRuntimeBackendType] = useState<RuntimeBackendType>('platform_llm');
   const [llmModelId, setLlmModelId] = useState<number | null>(null);
+  const [thirdPartyChatbotId, setThirdPartyChatbotId] = useState<number | null>(null);
   const [systemPrompt, setSystemPrompt] = useState('');
   const [selectedDocs, setSelectedDocs] = useState<number[]>([]);
   const [temperature, setTemperature] = useState(DEFAULT_TEMPERATURE);
@@ -570,7 +606,9 @@ export const ApplicationManagementPage = () => {
     setSelectedApplication(detail);
     setName(detail.name);
     setDescription(detail.description || '');
+    setRuntimeBackendType(detail.runtimeBackendType || 'platform_llm');
     setLlmModelId(detail.llmModelId);
+    setThirdPartyChatbotId(detail.thirdPartyChatbotId);
     setSystemPrompt(detail.systemPrompt || '');
     setSelectedDocs(detail.knowledgeBaseIds || []);
     setTemperature(detail.temperature);
@@ -604,7 +642,9 @@ export const ApplicationManagementPage = () => {
 
     if (detail.name !== payload.name) return '名称';
     if (stringValue(detail.description) !== stringValue(payload.description)) return '描述说明';
+    if (payload.runtimeBackendType && detail.runtimeBackendType !== payload.runtimeBackendType) return '运行后端';
     if (payload.llmModelId != null && detail.llmModelId !== payload.llmModelId) return '选用模型';
+    if (payload.thirdPartyChatbotId != null && detail.thirdPartyChatbotId !== payload.thirdPartyChatbotId) return '第三方机器人';
     if (stringValue(detail.systemPrompt) !== stringValue(payload.systemPrompt)) return '系统提示词';
     if (detail.temperature !== payload.temperature) return '随机性温度';
     if (detail.maxTokens !== payload.maxTokens) return '最大输出 Tokens';
@@ -627,7 +667,9 @@ export const ApplicationManagementPage = () => {
     if (!selectedApplication) return false;
     if (name.trim() !== selectedApplication.name) return true;
     if (description.trim() !== (selectedApplication.description || '')) return true;
+    if (runtimeBackendType !== (selectedApplication.runtimeBackendType || 'platform_llm')) return true;
     if (llmModelId !== selectedApplication.llmModelId) return true;
+    if (thirdPartyChatbotId !== selectedApplication.thirdPartyChatbotId) return true;
     if (systemPrompt !== (selectedApplication.systemPrompt || '')) return true;
     if (temperature !== selectedApplication.temperature) return true;
     if (maxTokens !== selectedApplication.maxTokens) return true;
@@ -652,7 +694,9 @@ export const ApplicationManagementPage = () => {
     selectedApplication,
     name,
     description,
+    runtimeBackendType,
     llmModelId,
+    thirdPartyChatbotId,
     systemPrompt,
     selectedDocs,
     temperature,
@@ -702,12 +746,16 @@ export const ApplicationManagementPage = () => {
   const loadOptions = useCallback(async () => {
     setOptionsLoading(true);
     try {
-      const [llmResult, documentsResult] = await Promise.allSettled([
+      const [llmResult, chatbotResult, documentsResult] = await Promise.allSettled([
         fetchCompanyLLMOptions(),
+        fetchCompanyThirdPartyChatbotOptions(),
         fetchAllKnowledgeBases(),
       ]);
       if (llmResult.status === 'fulfilled') {
         setLlmOptions(llmResult.value);
+      }
+      if (chatbotResult.status === 'fulfilled') {
+        setThirdPartyChatbotOptions(chatbotResult.value);
       }
       if (documentsResult.status === 'fulfilled') {
         setKnowledgeBases(documentsResult.value);
@@ -800,6 +848,17 @@ export const ApplicationManagementPage = () => {
     [llmOptions],
   );
   const hasAvailableLlmModels = llmModelOptions.length > 1;
+  const thirdPartyChatbotSelectOptions = useMemo(
+    () => [
+      { label: '无第三方机器人', value: 'none' },
+      ...((thirdPartyChatbotOptions?.chatbots || []).map((chatbot) => ({
+        label: `${chatbot.providerName} / ${chatbot.name}`,
+        value: String(chatbot.id),
+      }))),
+    ],
+    [thirdPartyChatbotOptions],
+  );
+  const hasAvailableThirdPartyChatbots = thirdPartyChatbotSelectOptions.length > 1;
   const isOpeningPlaybackPending = agentAudio.pendingPlaybackKey === 'opening-message';
   const isOpeningPlaybackPlaying = agentAudio.playingKey === 'opening-message' && !agentAudio.paused;
   const isStreamingReplyPlaybackActive = (
@@ -1120,12 +1179,18 @@ export const ApplicationManagementPage = () => {
       message.error('建议问题不能为空');
       return;
     }
+    if (runtimeBackendType === 'third_party_chatbot' && !thirdPartyChatbotId) {
+      message.error('请选择第三方会话机器人');
+      return;
+    }
     setConfigSaving(true);
     try {
       const payload: AgentApplicationPayload = {
         name: name.trim(),
         description: description.trim(),
+        runtimeBackendType,
         llmModelId: llmModelId,
+        thirdPartyChatbotId,
         systemPrompt: systemPrompt,
         knowledgeBaseIds: selectedDocs,
         temperature: temperature,
@@ -1150,11 +1215,13 @@ export const ApplicationManagementPage = () => {
       }
       if (conversation) {
         const nextConversation = await updateConversationConfig(conversation.id, {
-          llmModelId: payload.llmModelId,
-          systemPrompt: payload.systemPrompt,
-          temperature: payload.temperature,
-          maxTokens: payload.maxTokens,
-          maxTokensUnlimited: payload.maxTokensUnlimited,
+          runtimeBackendType: updated.runtimeBackendType,
+          llmModelId: updated.llmModelId,
+          thirdPartyChatbotId: updated.thirdPartyChatbotId,
+          systemPrompt: updated.systemPrompt,
+          temperature: updated.temperature,
+          maxTokens: updated.maxTokens,
+          maxTokensUnlimited: updated.maxTokensUnlimited,
         });
         setConversation(nextConversation);
       }
@@ -1169,7 +1236,9 @@ export const ApplicationManagementPage = () => {
     canUpdate,
     name,
     description,
+    runtimeBackendType,
     llmModelId,
+    thirdPartyChatbotId,
     systemPrompt,
     selectedDocs,
     temperature,
@@ -1442,7 +1511,7 @@ export const ApplicationManagementPage = () => {
 
   const applicationOverview = useMemo(() => {
     const activeCount = applications.filter((app) => app.isActive).length;
-    const configuredModelCount = applications.filter((app) => app.llmModelId).length;
+    const configuredModelCount = applications.filter((app) => app.llmModelId || app.thirdPartyChatbotId).length;
     const knowledgeReferenceCount = applications.reduce(
       (total, app) => total + (app.knowledgeBaseIds?.length || app.knowledgeBases?.length || 0),
       0,
@@ -1525,9 +1594,9 @@ export const ApplicationManagementPage = () => {
         </Card>
         <Card variant="borderless" className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-slate-500 font-medium">模型绑定率</span>
+            <span className="text-xs text-slate-500 font-medium">后端绑定数</span>
             <span className="text-2xl font-bold font-mono leading-none text-teal-600">{applicationOverview.configuredModelCount}</span>
-            <span className="text-xs text-slate-400 mt-1">已绑定大语言模型</span>
+            <span className="text-xs text-slate-400 mt-1">已绑定标准模型或第三方机器人</span>
           </div>
         </Card>
         <Card variant="borderless" className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
@@ -1638,7 +1707,10 @@ export const ApplicationManagementPage = () => {
           {applications.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {applications.map((app) => {
-                const modelName = app.llmModelDisplayName || app.llmModelName;
+                const isThirdPartyBackend = app.runtimeBackendType === 'third_party_chatbot';
+                const backendName = isThirdPartyBackend
+                  ? app.thirdPartyChatbotName
+                  : (app.llmModelDisplayName || app.llmModelName);
                 const knowledgeCount = app.knowledgeBaseIds?.length || app.knowledgeBases?.length || 0;
                 const publishStatus = getPublishStatus(app);
 
@@ -1683,12 +1755,15 @@ export const ApplicationManagementPage = () => {
                       </div>
 
                       <div className="flex gap-1.5 flex-wrap mt-1">
-                        {modelName ? (
+                        <Tag color={isThirdPartyBackend ? 'purple' : 'cyan'} className="m-0">
+                          {isThirdPartyBackend ? '第三方机器人' : '标准 LLM'}
+                        </Tag>
+                        {backendName ? (
                           <Tag color="cyan" className="max-w-full truncate m-0">
-                            {modelName}
+                            {backendName}
                           </Tag>
                         ) : (
-                          <Tag color="warning" className="m-0">未绑定模型</Tag>
+                          <Tag color="warning" className="m-0">未绑定后端</Tag>
                         )}
                         <Tag color={knowledgeCount > 0 ? 'blue' : 'default'} className="m-0 flex items-center gap-1">
                           <BookOpen size={10} className="shrink-0" />
@@ -1908,24 +1983,74 @@ export const ApplicationManagementPage = () => {
               />
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1.5">
               <div className="flex items-center gap-1.5">
-                <span className="text-sm font-bold text-slate-700">选用模型</span>
-                <Tooltip title="选择为该智能体提供推理能力的大语言模型。需要先在服务提供商页面配置好 API 密钥。">
+                <span className="text-sm font-bold text-slate-700">运行后端</span>
+                <Tooltip title="切换当前智能体实际使用标准 LLM 还是公司授权的第三方会话机器人。两个绑定都会保留，便于随时切换。">
                   <HelpCircle size={14} className="text-slate-400 cursor-help" />
                 </Tooltip>
               </div>
-              <Select
-                disabled={!canUpdate || !hasAvailableLlmModels}
-                loading={optionsLoading}
-                options={llmModelOptions}
-                optionFilterProp="label"
-                placeholder="请选择模型"
-                showSearch
-                value={llmModelId ? String(llmModelId) : 'none'}
-                onChange={(val) => setLlmModelId(val === 'none' ? null : Number(val))}
+              <Segmented
+                block
+                disabled={!canUpdate}
+                value={runtimeBackendType}
+                onChange={(value) => setRuntimeBackendType(value as RuntimeBackendType)}
+                options={[
+                  { label: '标准 LLM', value: 'platform_llm' },
+                  { label: '第三方机器人', value: 'third_party_chatbot' },
+                ]}
               />
             </div>
+
+            {runtimeBackendType === 'platform_llm' ? (
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-bold text-slate-700">标准 LLM 模型</span>
+                  <Tooltip title="当前智能体会使用这里选择的标准 OpenAI 兼容模型。">
+                    <HelpCircle size={14} className="text-slate-400 cursor-help" />
+                  </Tooltip>
+                </div>
+                <Select
+                  disabled={!canUpdate || !hasAvailableLlmModels}
+                  loading={optionsLoading}
+                  options={llmModelOptions}
+                  optionFilterProp="label"
+                  placeholder="请选择标准模型"
+                  showSearch
+                  value={llmModelId ? String(llmModelId) : 'none'}
+                  onChange={(val) => setLlmModelId(val === 'none' ? null : Number(val))}
+                />
+                {thirdPartyChatbotId ? (
+                  <span className="text-xs text-slate-400">
+                    已保留第三方机器人绑定，切换到第三方机器人后继续使用。
+                  </span>
+                ) : null}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-bold text-slate-700">第三方会话机器人</span>
+                  <Tooltip title="当前智能体会使用这里选择的第三方机器人；这里只显示超管授权给当前公司的机器人。">
+                    <HelpCircle size={14} className="text-slate-400 cursor-help" />
+                  </Tooltip>
+                </div>
+                <Select
+                  disabled={!canUpdate || !hasAvailableThirdPartyChatbots}
+                  loading={optionsLoading}
+                  options={thirdPartyChatbotSelectOptions}
+                  optionFilterProp="label"
+                  placeholder="请选择第三方机器人"
+                  showSearch
+                  value={thirdPartyChatbotId ? String(thirdPartyChatbotId) : 'none'}
+                  onChange={(val) => setThirdPartyChatbotId(val === 'none' ? null : Number(val))}
+                />
+                {llmModelId ? (
+                  <span className="text-xs text-slate-400">
+                    已保留标准 LLM 模型绑定，切换回标准 LLM 后继续使用。
+                  </span>
+                ) : null}
+              </div>
+            )}
 
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-1.5">
@@ -2644,8 +2769,11 @@ export const ApplicationManagementPage = () => {
                     {conv.summary || conv.lastMessage || '暂无对话文本记录'}
                   </span>
                   <div className="flex justify-between items-center text-[10px]">
-                    <Tag color="cyan" className="m-0 scale-90 origin-left">
-                      {conv.llmModelDisplayName || conv.llmModelName || '未分配模型'}
+                    <Tag
+                      color={conv.runtimeBackendType === 'third_party_chatbot' ? 'purple' : 'cyan'}
+                      className="m-0 scale-90 origin-left"
+                    >
+                      {getRuntimeBackendDisplay(conv)}
                     </Tag>
                     {conv.source === 'device' && (
                       <Tag color="gold" className="m-0 scale-90 origin-left">设备运行时</Tag>
@@ -2895,9 +3023,7 @@ export const ApplicationManagementPage = () => {
             <div className="flex items-center gap-2 mt-1">
               <span className="h-1.5 w-1.5 rounded-full bg-teal-500 animate-pulse" />
               <span className="text-xs text-slate-500 truncate">
-                {selectedApplication?.llmProviderName
-                  ? `${selectedApplication.llmProviderName} / ${selectedApplication.llmModelDisplayName || selectedApplication.llmModelName}`
-                  : '未配置大语言模型'}
+                {selectedApplication ? getRuntimeBackendDisplay(selectedApplication) : '未配置运行后端'}
               </span>
               {selectedApplication && (
                 <Tag color={getPublishStatus(selectedApplication).color} className="m-0">

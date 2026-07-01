@@ -68,9 +68,14 @@ from .models import (
     LLMProvider,
     LLMTestSettings,
     RerankModel,
+    RUNTIME_BACKEND_PLATFORM_LLM,
+    RUNTIME_BACKEND_THIRD_PARTY_CHATBOT,
     TenantKnowledgeModelSettings,
     TenantLLMModelGrant,
     TenantLLMSettings,
+    TenantThirdPartyChatbotGrant,
+    ThirdPartyChatbotApplication,
+    ThirdPartyChatbotProvider,
     TTSProvider,
     TTSVoice,
 )
@@ -98,6 +103,10 @@ from .serializers import (
     PlatformLLMModelWriteSerializer,
     PlatformLLMProviderSerializer,
     PlatformLLMProviderWriteSerializer,
+    PlatformThirdPartyChatbotApplicationSerializer,
+    PlatformThirdPartyChatbotApplicationWriteSerializer,
+    PlatformThirdPartyChatbotProviderSerializer,
+    PlatformThirdPartyChatbotProviderWriteSerializer,
     PlatformTTSProviderSummarySerializer,
     PlatformTTSSettingsSerializer,
     PlatformTTSSettingsWriteSerializer,
@@ -105,9 +114,10 @@ from .serializers import (
     CompanyTTSVoiceSerializer,
     TenantKnowledgeModelSettingsSerializer,
     TenantLLMAuthorizationSerializer,
+    TenantThirdPartyChatbotAuthorizationSerializer,
     mask_knowledge_api_key,
 )
-from .services import tts as tts_services
+from .services import third_party_chatbots, tts as tts_services
 from .services.asr import (
     get_effective_asr_config,
     serialize_asr_settings,
@@ -585,6 +595,75 @@ class PlatformLLMModelViewSet(PermissionMappedModelViewSet):
         return Response(llm_services.run_llm_model_test(model=model, settings=LLMTestSettings.load()))
 
 
+class PlatformThirdPartyChatbotProviderViewSet(PermissionMappedModelViewSet):
+    queryset = ThirdPartyChatbotProvider.objects.all().order_by('sort_order', 'id')
+    permission_map = _PLATFORM_LLM_PERMISSION_MAP
+
+    def get_serializer_class(self):
+        if self.action in {'create', 'update', 'partial_update'}:
+            return PlatformThirdPartyChatbotProviderWriteSerializer
+        return PlatformThirdPartyChatbotProviderSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        provider = serializer.save()
+        return Response(
+            PlatformThirdPartyChatbotProviderSerializer(provider).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        provider = serializer.save()
+        return Response(PlatformThirdPartyChatbotProviderSerializer(provider).data)
+
+    def perform_destroy(self, instance):
+        if ThirdPartyChatbotApplication.objects.filter(provider=instance, tenant_grants__is_active=True).exists():
+            raise ValidationError({'detail': '该第三方供应商仍有公司启用授权，不能删除，请先取消授权'})
+        return super().perform_destroy(instance)
+
+
+class PlatformThirdPartyChatbotApplicationViewSet(PermissionMappedModelViewSet):
+    queryset = (
+        ThirdPartyChatbotApplication.objects
+        .select_related('provider')
+        .order_by('provider__sort_order', 'provider__id', 'sort_order', 'id')
+    )
+    permission_map = _PLATFORM_LLM_PERMISSION_MAP
+
+    def get_serializer_class(self):
+        if self.action in {'create', 'update', 'partial_update'}:
+            return PlatformThirdPartyChatbotApplicationWriteSerializer
+        return PlatformThirdPartyChatbotApplicationSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        chatbot = serializer.save()
+        return Response(PlatformThirdPartyChatbotApplicationSerializer(chatbot).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        chatbot = serializer.save()
+        return Response(PlatformThirdPartyChatbotApplicationSerializer(chatbot).data)
+
+    def perform_destroy(self, instance):
+        if third_party_chatbots.chatbot_has_active_company_authorization(instance):
+            raise ValidationError({'detail': '该第三方机器人仍有公司启用授权，不能删除，请先取消授权'})
+        return super().perform_destroy(instance)
+
+
 class LLMTestSettingsView(APIView):
     permission_classes = [IsSuperUser]
 
@@ -674,6 +753,70 @@ class TenantLLMAuthorizationView(APIView):
                 tenant=tenant,
                 defaults={'default_model_id': default_model_id},
             )
+
+        return Response(self._response_payload(tenant))
+
+
+class TenantThirdPartyChatbotAuthorizationView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def _get_tenant(self, tenant_id):
+        tenant = Tenant.objects.filter(id=tenant_id, is_active=True).first()
+        if tenant is None:
+            raise ValidationError({'tenantId': '公司不存在或已停用'})
+        return tenant
+
+    def _response_payload(self, tenant):
+        grant_map = {
+            grant.chatbot_id: grant
+            for grant in TenantThirdPartyChatbotGrant.objects.filter(tenant=tenant).select_related('chatbot')
+        }
+        chatbots = []
+        for chatbot in ThirdPartyChatbotApplication.objects.select_related('provider').order_by('provider__sort_order', 'provider__id', 'sort_order', 'id'):
+            grant = grant_map.get(chatbot.id)
+            chatbots.append({
+                'id': chatbot.id,
+                'providerId': chatbot.provider_id,
+                'providerName': chatbot.provider.name,
+                'providerType': chatbot.provider.provider_type,
+                'name': chatbot.name,
+                'description': chatbot.description,
+                'externalApplicationId': chatbot.external_application_id,
+                'isActive': chatbot.is_active,
+                'providerIsActive': chatbot.provider.is_active,
+                'sortOrder': chatbot.sort_order,
+                'grantIsActive': bool(grant and grant.is_active),
+            })
+        return {
+            'tenant': {
+                'id': tenant.id,
+                'name': tenant.name,
+                'isActive': tenant.is_active,
+            },
+            'chatbots': chatbots,
+        }
+
+    def get(self, request, tenant_id):
+        tenant = self._get_tenant(tenant_id)
+        return Response(self._response_payload(tenant))
+
+    def put(self, request, tenant_id):
+        serializer = TenantThirdPartyChatbotAuthorizationSerializer(
+            data=request.data,
+            context={'tenant_id': tenant_id},
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        tenant = serializer.validated_data['tenant']
+        grants = serializer.validated_data['chatbotGrants']
+
+        with transaction.atomic():
+            for item in grants:
+                TenantThirdPartyChatbotGrant.objects.update_or_create(
+                    tenant=tenant,
+                    chatbot_id=int(item['chatbotId']),
+                    defaults={'is_active': bool(item.get('isActive'))},
+                )
 
         return Response(self._response_payload(tenant))
 
@@ -843,11 +986,32 @@ def _build_company_llm_options_payload(tenant, request):
     }
 
 
+def _build_company_third_party_chatbot_options_payload(tenant):
+    chatbots = []
+    for chatbot in third_party_chatbots.get_effective_chatbots_for_tenant(tenant):
+        chatbots.append({
+            'id': chatbot.id,
+            'name': chatbot.name,
+            'description': chatbot.description,
+            'providerId': chatbot.provider_id,
+            'providerName': chatbot.provider.name,
+            'providerType': chatbot.provider.provider_type,
+        })
+    return {'chatbots': chatbots}
+
+
 class CompanyLLMOptionsView(TenantScopedQuerysetMixin, APIView):
     permission_classes = [CanViewCompanyLLMOptions]
 
     def get(self, request):
         return Response(_build_company_llm_options_payload(self.request_tenant, request))
+
+
+class CompanyThirdPartyChatbotOptionsView(TenantScopedQuerysetMixin, APIView):
+    permission_classes = [CanViewAgentApplications]
+
+    def get(self, request):
+        return Response(_build_company_third_party_chatbot_options_payload(self.request_tenant))
 
 
 class CompanyLLMDefaultModelView(TenantScopedQuerysetMixin, APIView):
@@ -919,6 +1083,13 @@ def _resolve_tenant_llm_model(tenant, model_id=None, *, use_default: bool = Fals
             return model
 
     raise ValidationError({'llmModelId': '请先选择模型或设置公司默认模型'})
+
+
+def _resolve_tenant_third_party_chatbot(tenant, chatbot_id=None) -> ThirdPartyChatbotApplication:
+    chatbot = third_party_chatbots.get_effective_chatbot_for_tenant(tenant, chatbot_id)
+    if chatbot is None:
+        raise ValidationError({'thirdPartyChatbotId': '第三方会话机器人不可用或未授权'})
+    return chatbot
 
 
 def _coerce_openai_content_to_text(content) -> str:
@@ -1104,7 +1275,7 @@ async def _generate_conversation_summary(
 class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
     queryset = (
         AgentApplication.objects
-        .select_related('llm_model__provider', 'created_by')
+        .select_related('llm_model__provider', 'third_party_chatbot__provider', 'created_by')
         .prefetch_related('knowledge_documents', 'knowledge_bases')
     )
     serializer_class = AgentApplicationSerializer
@@ -1142,18 +1313,29 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():
-            if 'llmModelId' in serializer.errors:
+            if 'llmModelId' in serializer.errors or 'thirdPartyChatbotId' in serializer.errors:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             raise ValidationError(serializer.errors)
         try:
             self.perform_create(serializer)
         except ValidationError as exc:
             detail = getattr(exc, 'detail', None)
-            if isinstance(detail, dict) and 'llmModelId' in detail:
+            if isinstance(detail, dict) and ('llmModelId' in detail or 'thirdPartyChatbotId' in detail):
                 return Response(detail, status=status.HTTP_400_BAD_REQUEST)
             raise
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        if not serializer.is_valid():
+            if 'llmModelId' in serializer.errors or 'thirdPartyChatbotId' in serializer.errors:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidationError(serializer.errors)
+        self.perform_update(serializer)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         llm_model = serializer.validated_data.get('llm_model')
@@ -1181,10 +1363,16 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         runtime_model_id = runtime_config.get('llm_model_id')
         if runtime_model_id:
             llm_model = LLMModel.objects.filter(id=runtime_model_id).first()
+        third_party_chatbot = application.third_party_chatbot
+        runtime_chatbot_id = runtime_config.get('third_party_chatbot_id')
+        if runtime_chatbot_id:
+            third_party_chatbot = ThirdPartyChatbotApplication.objects.filter(id=runtime_chatbot_id).first()
         conversation = ChatConversation.objects.create(
             title=f'{runtime_config.get("name") or application.name} 调试会话',
             user=request.user,
             llm_model=llm_model,
+            runtime_backend_type=runtime_config.get('runtime_backend_type') or RUNTIME_BACKEND_PLATFORM_LLM,
+            third_party_chatbot=third_party_chatbot,
             summary='',
             system_prompt=runtime_config.get('system_prompt') or '',
             temperature=runtime_config.get('temperature', 0.7),
@@ -1329,7 +1517,7 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
     update_config=extend_schema(tags=['AI Chat']),
 )
 class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
-    queryset = ChatConversation.objects.select_related('llm_model__provider', 'application')
+    queryset = ChatConversation.objects.select_related('llm_model__provider', 'third_party_chatbot__provider', 'application')
     serializer_class = ChatConversationListSerializer
     permission_map = {
         'list': [CanViewChat],
@@ -1370,18 +1558,36 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         serializer.is_valid(raise_exception=True)
 
         tenant = self.request_tenant
+        runtime_backend_type = serializer.validated_data.get('runtime_backend_type') or RUNTIME_BACKEND_PLATFORM_LLM
+        llm_model = None
+        third_party_chatbot = None
         try:
-            llm_model = _resolve_tenant_llm_model(
-                tenant,
-                serializer.validated_data.get('llmModelId'),
-                use_default=True,
-            )
+            if runtime_backend_type == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
+                third_party_chatbot = _resolve_tenant_third_party_chatbot(
+                    tenant,
+                    serializer.validated_data.get('thirdPartyChatbotId'),
+                )
+                if serializer.validated_data.get('llmModelId') is not None:
+                    llm_model = _resolve_tenant_llm_model(tenant, serializer.validated_data.get('llmModelId'))
+            else:
+                llm_model = _resolve_tenant_llm_model(
+                    tenant,
+                    serializer.validated_data.get('llmModelId'),
+                    use_default=True,
+                )
+                if serializer.validated_data.get('thirdPartyChatbotId') is not None:
+                    third_party_chatbot = _resolve_tenant_third_party_chatbot(
+                        tenant,
+                        serializer.validated_data.get('thirdPartyChatbotId'),
+                    )
         except ValidationError as exc:
             return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
         conversation = ChatConversation.objects.create(
             title=serializer.validated_data.get('title', '新对话'),
             user=request.user,
             llm_model=llm_model,
+            runtime_backend_type=runtime_backend_type,
+            third_party_chatbot=third_party_chatbot,
             summary='',
             system_prompt=serializer.validated_data.get('systemPrompt', ''),
             temperature=serializer.validated_data.get('temperature', 0.7),
@@ -1417,12 +1623,41 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         serializer.is_valid(raise_exception=True)
 
         update_fields = ['system_prompt', 'temperature', 'max_tokens', 'max_tokens_unlimited', 'updated_at']
+        if 'runtime_backend_type' in serializer.validated_data:
+            conversation.runtime_backend_type = serializer.validated_data.get('runtime_backend_type') or RUNTIME_BACKEND_PLATFORM_LLM
+            update_fields.insert(0, 'runtime_backend_type')
         if 'llmModelId' in serializer.validated_data:
-            conversation.llm_model = _resolve_tenant_llm_model(
-                conversation.tenant,
-                serializer.validated_data.get('llmModelId'),
+            llm_model_id = serializer.validated_data.get('llmModelId')
+            conversation.llm_model = (
+                _resolve_tenant_llm_model(conversation.tenant, llm_model_id)
+                if llm_model_id is not None
+                else None
             )
             update_fields.insert(0, 'llm_model')
+        if 'thirdPartyChatbotId' in serializer.validated_data:
+            third_party_chatbot_id = serializer.validated_data.get('thirdPartyChatbotId')
+            conversation.third_party_chatbot = (
+                _resolve_tenant_third_party_chatbot(conversation.tenant, third_party_chatbot_id)
+                if third_party_chatbot_id is not None
+                else None
+            )
+            update_fields.insert(0, 'third_party_chatbot')
+        if (
+            conversation.runtime_backend_type == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT
+            and conversation.third_party_chatbot_id is None
+        ):
+            return Response(
+                {'status': 'error', 'message': '请选择第三方会话机器人', 'code': 400},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if (
+            conversation.runtime_backend_type == RUNTIME_BACKEND_PLATFORM_LLM
+            and conversation.llm_model_id is None
+        ):
+            return Response(
+                {'status': 'error', 'message': '请选择 LLM 模型', 'code': 400},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         conversation.system_prompt = serializer.validated_data.get('systemPrompt', '')
         conversation.temperature = serializer.validated_data.get('temperature', 0.7)
@@ -1556,6 +1791,59 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                 annotation.id,
             )
             response = StreamingHttpResponse(annotation_event_stream(), content_type='text/event-stream')
+            response['Cache-Control'] = 'no-cache'
+            response['X-Accel-Buffering'] = 'no'
+            return response
+
+        if conversation.runtime_backend_type == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
+            chatbot = conversation.third_party_chatbot
+            if not third_party_chatbots.is_chatbot_effective_for_tenant(conversation.tenant, chatbot):
+                logger.warning(
+                    'chat.send.third_party_unavailable conversation_id=%s user_id=%s chatbot_id=%s',
+                    conversation.id,
+                    request.user.id,
+                    conversation.third_party_chatbot_id,
+                )
+                return Response({
+                    'status': 'error',
+                    'message': '第三方会话机器人不可用，请重新选择可用机器人',
+                    'code': 400,
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            def _save_third_party_assistant_message(answer_text: str):
+                answer_blocks = text_to_blocks(answer_text)
+                ChatMessage.objects.create(
+                    conversation=conversation,
+                    role=ChatMessage.ROLE_ASSISTANT,
+                    content=answer_text,
+                    content_blocks=answer_blocks,
+                )
+                conversation.save(update_fields=['updated_at'])
+                return answer_blocks
+
+            async def third_party_event_stream():
+                try:
+                    answer_text = await sync_to_async(
+                        third_party_chatbots.send_chatbot_message,
+                        thread_sensitive=True,
+                    )(chatbot, content, conversation=conversation)
+                    answer_blocks = await sync_to_async(
+                        _save_third_party_assistant_message,
+                        thread_sensitive=True,
+                    )(answer_text)
+                    yield f"data: {json.dumps({'content': answer_text, 'blocks': serialize_reply_blocks(answer_blocks, tenant=conversation.tenant, request=request)})}\n\n"
+                except RuntimeError as exc:
+                    logger.warning(
+                        'chat.send.third_party_error conversation_id=%s user_id=%s chatbot_id=%s error=%s',
+                        conversation.id,
+                        request.user.id,
+                        conversation.third_party_chatbot_id,
+                        str(exc)[:200],
+                    )
+                    yield f"data: {json.dumps({'error': True, 'content': str(exc)[:200]})}\n\n"
+                yield "data: [DONE]\n\n"
+
+            response = StreamingHttpResponse(third_party_event_stream(), content_type='text/event-stream')
             response['Cache-Control'] = 'no-cache'
             response['X-Accel-Buffering'] = 'no'
             return response

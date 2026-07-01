@@ -11,6 +11,8 @@ from django.utils import timezone
 from websockets.exceptions import ConnectionClosed
 
 from apps.ai_models import llm_services, realtime_asr, realtime_tts
+from apps.ai_models.models import RUNTIME_BACKEND_PLATFORM_LLM, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT
+from apps.ai_models.services import third_party_chatbots
 from apps.ai_models.services import tts as tts_services
 from apps.devices.services.runtime import RuntimeDeviceError, validate_runtime_application_active
 from apps.devices.views import DeviceVoiceChatView
@@ -635,15 +637,9 @@ async def _run_llm_session_body(
             if on_tts_segment is not None:
                 await on_tts_segment(segment)
     else:
-        tts_buffer = ''
-        try:
-            async for delta in llm_services.stream_llm_chat_completion(
-                model_config=session['modelConfig'],
-                messages=session['messages'],
-                temperature=session['temperature'],
-                max_tokens=session['maxTokens'],
-            ):
-                answer_text += delta
+        if session.get('backendType') == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
+            try:
+                answer_text = await sync_to_async(_send_third_party_session_message, thread_sensitive=True)(session, question_text)
                 await _send_json(
                     send,
                     {
@@ -651,23 +647,50 @@ async def _run_llm_session_body(
                         'id': command_id,
                         'requestId': request_id,
                         'traceId': trace_id,
-                        'payload': {'text': delta},
+                        'payload': {'text': answer_text},
                     },
                 )
-                tts_buffer += delta
-                segments, tts_buffer = _pop_llm_tts_segments(tts_buffer, session)
-                for segment in segments:
+                for segment in _split_llm_tts_segments(answer_text, session):
                     await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
                     if on_tts_segment is not None:
                         await on_tts_segment(segment)
-        except Exception as exc:
-            await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message=str(exc)[:200]))
-            return None
-        final_segments, _ = _pop_llm_tts_segments(tts_buffer, session, flush=True)
-        for segment in final_segments:
-            await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
-            if on_tts_segment is not None:
-                await on_tts_segment(segment)
+            except Exception as exc:
+                await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message=str(exc)[:200]))
+                return None
+        else:
+            tts_buffer = ''
+            try:
+                async for delta in llm_services.stream_llm_chat_completion(
+                    model_config=session['modelConfig'],
+                    messages=session['messages'],
+                    temperature=session['temperature'],
+                    max_tokens=session['maxTokens'],
+                ):
+                    answer_text += delta
+                    await _send_json(
+                        send,
+                        {
+                            'type': 'llm.delta',
+                            'id': command_id,
+                            'requestId': request_id,
+                            'traceId': trace_id,
+                            'payload': {'text': delta},
+                        },
+                    )
+                    tts_buffer += delta
+                    segments, tts_buffer = _pop_llm_tts_segments(tts_buffer, session)
+                    for segment in segments:
+                        await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
+                        if on_tts_segment is not None:
+                            await on_tts_segment(segment)
+            except Exception as exc:
+                await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message=str(exc)[:200]))
+                return None
+            final_segments, _ = _pop_llm_tts_segments(tts_buffer, session, flush=True)
+            for segment in final_segments:
+                await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
+                if on_tts_segment is not None:
+                    await on_tts_segment(segment)
 
     if not answer_text:
         await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message='LLM 没有返回有效回复'))
@@ -797,6 +820,30 @@ def _record_realtime_device_chat_log(
         model_name=str(session.get('modelName') or ''),
         conversation_id=session.get('conversationId'),
     )
+
+
+def _send_third_party_session_message(session: dict[str, Any], question_text: str) -> str:
+    from apps.ai_models.models import ChatConversation, ThirdPartyChatbotApplication
+
+    chatbot = (
+        ThirdPartyChatbotApplication.objects
+        .select_related('provider')
+        .filter(id=session.get('thirdPartyChatbotId'))
+        .first()
+    )
+    if chatbot is None:
+        raise RuntimeError('第三方会话机器人不存在')
+
+    conversation = None
+    conversation_id = session.get('conversationId')
+    if conversation_id is not None:
+        conversation = (
+            ChatConversation.objects
+            .select_related('third_party_chatbot__provider')
+            .filter(id=conversation_id, third_party_chatbot=chatbot)
+            .first()
+        )
+    return third_party_chatbots.send_chatbot_message(chatbot, question_text, conversation=conversation)
 
 
 def _is_client_disconnected(exc: BaseException) -> bool:
@@ -1133,14 +1180,21 @@ def _runtime_conversation_user(agent_application, tenant):
     return user
 
 
-def _resolve_runtime_conversation(device, agent_application, model, runtime_config: dict[str, Any], payload: dict[str, Any] | None):
+def _resolve_runtime_conversation(
+    device,
+    agent_application,
+    model,
+    runtime_config: dict[str, Any],
+    payload: dict[str, Any] | None,
+    third_party_chatbot=None,
+):
     from apps.ai_models.models import ChatConversation
 
     conversation_id = _payload_conversation_id(payload)
     if conversation_id is not None:
         conversation = (
             ChatConversation.objects
-            .select_related('llm_model__provider', 'application')
+            .select_related('llm_model__provider', 'third_party_chatbot__provider', 'application')
             .filter(id=conversation_id, tenant=device.tenant, application=agent_application)
             .first()
         )
@@ -1153,6 +1207,8 @@ def _resolve_runtime_conversation(device, agent_application, model, runtime_conf
         title=f'{runtime_config.get("name") or agent_application.name} 运行时会话',
         user=user,
         llm_model=model,
+        runtime_backend_type=runtime_config.get('runtime_backend_type') or RUNTIME_BACKEND_PLATFORM_LLM,
+        third_party_chatbot=third_party_chatbot,
         summary='',
         system_prompt=runtime_config.get('system_prompt') or '',
         temperature=runtime_config.get('temperature', 0.7),
@@ -1196,51 +1252,47 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
     if agent_application is None or not agent_application.runtime_config().get('is_active'):
         raise RuntimeError('设备未绑定可用智能体')
     runtime_config = agent_application.runtime_config()
+    runtime_backend_type = runtime_config.get('runtime_backend_type') or RUNTIME_BACKEND_PLATFORM_LLM
+    memory_key = _agent_memory_key(device, agent_application)
 
     model = None
-    runtime_model_id = runtime_config.get('llm_model_id')
-    if runtime_model_id:
-        from apps.ai_models.models import LLMModel
-
-        model = LLMModel.objects.select_related('provider').filter(id=runtime_model_id).first()
-    if model is None:
-        model = agent_application.llm_model
-    if model is None:
-        settings = llm_services.get_tenant_llm_settings(device.tenant)
-        model = settings.default_model if settings is not None else None
-    if not llm_services.is_llm_model_effective_for_tenant(device.tenant, model):
-        raise RuntimeError('请先为设备绑定智能体配置可用 LLM 模型')
-
+    chatbot = None
     conversation = None
-    if payload is not None:
-        conversation = _resolve_runtime_conversation(device, agent_application, model, runtime_config, payload)
+    if runtime_backend_type == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
+        from apps.ai_models.models import ThirdPartyChatbotApplication
 
-    system_prompt = (
-        str(runtime_config.get('system_prompt') or '').strip()
-        if str(runtime_config.get('system_prompt') or '').strip()
-        else '你是数字人设备的中文语音问答助手。回答要自然、简洁，适合直接转成语音播报。'
-    )
-    memory_key = _agent_memory_key(device, agent_application)
-    messages = [{'role': 'system', 'content': system_prompt}]
-
-    from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context
-
-    knowledge_context = retrieve_knowledge_context(
-        agent_application,
-        question_text,
-        knowledge_document_ids=runtime_config.get('knowledge_document_ids') or [],
-        knowledge_base_ids=runtime_config.get('knowledge_base_ids') or [],
-    )
-    if knowledge_context:
-        messages.append({'role': 'system', 'content': knowledge_context})
-    if conversation is not None:
-        messages.extend(
-            {'role': role, 'content': content}
-            for role, content in conversation.messages.order_by('created_at').values_list('role', 'content')
-        )
+        runtime_chatbot_id = runtime_config.get('third_party_chatbot_id')
+        if runtime_chatbot_id:
+            chatbot = ThirdPartyChatbotApplication.objects.select_related('provider').filter(id=runtime_chatbot_id).first()
+        if chatbot is None:
+            chatbot = agent_application.third_party_chatbot
+        if not third_party_chatbots.is_chatbot_effective_for_tenant(device.tenant, chatbot):
+            raise RuntimeError('请先为设备绑定智能体配置可用第三方会话机器人')
+        if payload is not None:
+            conversation = _resolve_runtime_conversation(
+                device,
+                agent_application,
+                None,
+                runtime_config,
+                payload,
+                third_party_chatbot=chatbot,
+            )
     else:
-        messages.extend(_get_agent_memory(memory_key))
-    messages.append({'role': 'user', 'content': question_text})
+        runtime_backend_type = RUNTIME_BACKEND_PLATFORM_LLM
+        runtime_model_id = runtime_config.get('llm_model_id')
+        if runtime_model_id:
+            from apps.ai_models.models import LLMModel
+
+            model = LLMModel.objects.select_related('provider').filter(id=runtime_model_id).first()
+        if model is None:
+            model = agent_application.llm_model
+        if model is None:
+            settings = llm_services.get_tenant_llm_settings(device.tenant)
+            model = settings.default_model if settings is not None else None
+        if not llm_services.is_llm_model_effective_for_tenant(device.tenant, model):
+            raise RuntimeError('请先为设备绑定智能体配置可用 LLM 模型')
+        if payload is not None:
+            conversation = _resolve_runtime_conversation(device, agent_application, model, runtime_config, payload)
 
     annotation = DeviceVoiceChatView._find_annotation(agent_application, question_text)
     if annotation is not None:
@@ -1264,8 +1316,56 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
         annotation_answer = None
         annotation_blocks = None
 
-    return {
+    base_session = {
         'deviceCode': device.code,
+        'backendType': runtime_backend_type,
+        'memoryKey': memory_key,
+        'conversationId': conversation.id if conversation is not None else None,
+        'annotationAnswer': annotation_answer,
+        'annotationBlocks': annotation_blocks,
+        'agentApplicationId': agent_application.id,
+        'agentApplicationName': runtime_config.get('name') or agent_application.name,
+        'applicationId': device.application_id,
+        'applicationName': device.application.name if device.application else '',
+        'ttsFilterPunctuation': runtime_config.get('tts_filter_punctuation') or '',
+        'ttsFilterEmoji': runtime_config.get('tts_filter_emoji'),
+    }
+
+    if runtime_backend_type == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
+        return {
+            **base_session,
+            'thirdPartyChatbotId': chatbot.id,
+            'modelName': chatbot.name,
+        }
+
+    system_prompt = (
+        str(runtime_config.get('system_prompt') or '').strip()
+        if str(runtime_config.get('system_prompt') or '').strip()
+        else '你是数字人设备的中文语音问答助手。回答要自然、简洁，适合直接转成语音播报。'
+    )
+    messages = [{'role': 'system', 'content': system_prompt}]
+
+    from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context
+
+    knowledge_context = retrieve_knowledge_context(
+        agent_application,
+        question_text,
+        knowledge_document_ids=runtime_config.get('knowledge_document_ids') or [],
+        knowledge_base_ids=runtime_config.get('knowledge_base_ids') or [],
+    )
+    if knowledge_context:
+        messages.append({'role': 'system', 'content': knowledge_context})
+    if conversation is not None:
+        messages.extend(
+            {'role': role, 'content': content}
+            for role, content in conversation.messages.order_by('created_at').values_list('role', 'content')
+        )
+    else:
+        messages.extend(_get_agent_memory(memory_key))
+    messages.append({'role': 'user', 'content': question_text})
+
+    return {
+        **base_session,
         'modelConfig': {
             'name': model.name,
             'apiBaseUrl': model.provider.api_base_url,
@@ -1273,19 +1373,9 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
             'enableWebSearch': model.enable_web_search,
         },
         'messages': messages,
-        'memoryKey': memory_key,
-        'conversationId': conversation.id if conversation is not None else None,
         'temperature': runtime_config.get('temperature', 0.7),
         'maxTokens': None if runtime_config.get('max_tokens_unlimited') else runtime_config.get('max_tokens', 1000),
-        'annotationAnswer': annotation_answer,
-        'annotationBlocks': annotation_blocks,
-        'agentApplicationId': agent_application.id,
-        'agentApplicationName': runtime_config.get('name') or agent_application.name,
-        'applicationId': device.application_id,
-        'applicationName': device.application.name if device.application else '',
         'modelName': model.name,
-        'ttsFilterPunctuation': runtime_config.get('tts_filter_punctuation') or '',
-        'ttsFilterEmoji': runtime_config.get('tts_filter_emoji'),
     }
 
 

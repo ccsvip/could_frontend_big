@@ -195,6 +195,12 @@ const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
         path: '/settings/llm',
       },
       {
+        key: 'settings-third-party-chatbots',
+        label: '不规则LLM',
+        icon: 'ThunderboltOutlined',
+        path: '/settings/third-party-chatbots',
+      },
+      {
         key: 'settings-knowledge-base',
         label: '知识库',
         icon: 'FileTextOutlined',

@@ -17,6 +17,18 @@ PROVIDER_TYPE_CHOICES = [
     ('other', '其他'),
 ]
 
+RUNTIME_BACKEND_PLATFORM_LLM = 'platform_llm'
+RUNTIME_BACKEND_THIRD_PARTY_CHATBOT = 'third_party_chatbot'
+RUNTIME_BACKEND_CHOICES = [
+    (RUNTIME_BACKEND_PLATFORM_LLM, '平台 LLM'),
+    (RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, '第三方会话机器人'),
+]
+
+THIRD_PARTY_PROVIDER_IHUAPENG = 'ihuapeng_chatbot'
+THIRD_PARTY_PROVIDER_TYPE_CHOICES = [
+    (THIRD_PARTY_PROVIDER_IHUAPENG, '华鹏会话机器人'),
+]
+
 
 class LLMProvider(models.Model):
     name = models.CharField('供应商名称', max_length=128)
@@ -111,6 +123,90 @@ class TenantLLMSettings(models.Model):
 
     def __str__(self):
         return f'{self.tenant_id}:{self.default_model_id or "unset"}'
+
+
+class ThirdPartyChatbotProvider(models.Model):
+    name = models.CharField('供应商名称', max_length=128)
+    provider_type = models.CharField(
+        '供应商类型',
+        max_length=64,
+        choices=THIRD_PARTY_PROVIDER_TYPE_CHOICES,
+        default=THIRD_PARTY_PROVIDER_IHUAPENG,
+    )
+    api_base_url = models.URLField('API 地址', max_length=512)
+    api_key = models.CharField('应用密钥', max_length=512)
+    is_active = models.BooleanField('是否启用', default=True)
+    sort_order = models.PositiveIntegerField('排序', default=0)
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = '第三方会话机器人供应商'
+        verbose_name_plural = '第三方会话机器人供应商'
+        ordering = ['sort_order', 'id']
+
+    def __str__(self):
+        return f'{self.name} ({self.get_provider_type_display()})'
+
+
+class ThirdPartyChatbotApplication(models.Model):
+    provider = models.ForeignKey(
+        ThirdPartyChatbotProvider,
+        on_delete=models.CASCADE,
+        related_name='chatbots',
+        verbose_name='所属供应商',
+    )
+    name = models.CharField('机器人名称', max_length=128)
+    external_application_id = models.CharField('第三方应用 ID', max_length=128)
+    description = models.CharField('机器人说明', max_length=255, blank=True, default='')
+    is_active = models.BooleanField('是否启用', default=True)
+    sort_order = models.PositiveIntegerField('排序', default=0)
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = '第三方会话机器人'
+        verbose_name_plural = '第三方会话机器人'
+        ordering = ['sort_order', 'id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['provider', 'external_application_id'],
+                name='uniq_third_party_chatbot_provider_external_app',
+            ),
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class TenantThirdPartyChatbotGrant(models.Model):
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='third_party_chatbot_grants',
+        verbose_name='所属公司',
+    )
+    chatbot = models.ForeignKey(
+        ThirdPartyChatbotApplication,
+        on_delete=models.CASCADE,
+        related_name='tenant_grants',
+        verbose_name='授权机器人',
+    )
+    is_active = models.BooleanField('是否启用', default=True)
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        verbose_name = '公司第三方会话机器人授权'
+        verbose_name_plural = '公司第三方会话机器人授权'
+        constraints = [
+            models.UniqueConstraint(fields=['tenant', 'chatbot'], name='uniq_tenant_third_party_chatbot_grant'),
+        ]
+
+    def __str__(self):
+        return f'{self.tenant_id}:{self.chatbot_id}'
 
 
 class LLMTestSettings(models.Model):
@@ -497,6 +593,20 @@ class AgentApplication(models.Model):
         related_name='agent_applications',
         verbose_name='LLM 模型',
     )
+    runtime_backend_type = models.CharField(
+        '运行后端',
+        max_length=32,
+        choices=RUNTIME_BACKEND_CHOICES,
+        default=RUNTIME_BACKEND_PLATFORM_LLM,
+    )
+    third_party_chatbot = models.ForeignKey(
+        ThirdPartyChatbotApplication,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='agent_applications',
+        verbose_name='第三方会话机器人',
+    )
     model_name = models.CharField('模型名称', max_length=128, blank=True, default='')
     system_prompt = models.TextField('系统提示词', blank=True, default='')
     temperature = models.FloatField('Temperature', default=0.7)
@@ -562,7 +672,9 @@ class AgentApplication(models.Model):
         return {
             'name': self.name,
             'description': self.description,
+            'runtime_backend_type': self.runtime_backend_type or RUNTIME_BACKEND_PLATFORM_LLM,
             'llm_model_id': self.llm_model_id,
+            'third_party_chatbot_id': self.third_party_chatbot_id,
             'system_prompt': self.system_prompt,
             'temperature': self.temperature,
             'max_tokens': self.max_tokens,
@@ -594,7 +706,12 @@ class AgentApplication(models.Model):
             **config,
             'name': config.get('name', self.name),
             'description': config.get('description', self.description),
+            'runtime_backend_type': config.get(
+                'runtime_backend_type',
+                self.runtime_backend_type or RUNTIME_BACKEND_PLATFORM_LLM,
+            ),
             'llm_model_id': config.get('llm_model_id', self.llm_model_id),
+            'third_party_chatbot_id': config.get('third_party_chatbot_id', self.third_party_chatbot_id),
             'system_prompt': config.get('system_prompt', self.system_prompt),
             'temperature': config.get('temperature', self.temperature),
             'max_tokens': config.get('max_tokens', self.max_tokens),
@@ -715,6 +832,21 @@ class ChatConversation(models.Model):
         related_name='conversations',
         verbose_name='LLM 模型',
     )
+    runtime_backend_type = models.CharField(
+        '运行后端',
+        max_length=32,
+        choices=RUNTIME_BACKEND_CHOICES,
+        default=RUNTIME_BACKEND_PLATFORM_LLM,
+    )
+    third_party_chatbot = models.ForeignKey(
+        ThirdPartyChatbotApplication,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='conversations',
+        verbose_name='第三方会话机器人',
+    )
+    external_session = models.JSONField('外部会话状态', blank=True, default=dict)
     model_name = models.CharField('模型名称', max_length=128, blank=True, default='')
     summary = models.CharField('会话摘要', max_length=256, blank=True, default='')
     system_prompt = models.TextField('系统提示词', blank=True, default='')

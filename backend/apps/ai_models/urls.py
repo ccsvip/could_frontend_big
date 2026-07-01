@@ -17,12 +17,16 @@ from .views import (
     CompanyLLMDefaultModelView,
     CompanyLLMModelTestView,
     CompanyLLMOptionsView,
+    CompanyThirdPartyChatbotOptionsView,
     PlatformKnowledgeModelSettingsView,
     LLMTestSettingsView,
     PlatformLLMModelViewSet,
     PlatformLLMProviderModelsView,
     PlatformLLMProviderViewSet,
+    PlatformThirdPartyChatbotApplicationViewSet,
+    PlatformThirdPartyChatbotProviderViewSet,
     TenantLLMAuthorizationView,
+    TenantThirdPartyChatbotAuthorizationView,
     TenantKnowledgeModelAuthorizationView,
     TTSRuntimeView,
     TTSProviderListView,
@@ -33,6 +37,8 @@ from .views import (
 router = DefaultRouter()
 router.register('settings/llm/providers', PlatformLLMProviderViewSet, basename='platform-llm-provider')
 router.register('settings/llm/models', PlatformLLMModelViewSet, basename='platform-llm-model')
+router.register('settings/third-party-chatbots/providers', PlatformThirdPartyChatbotProviderViewSet, basename='platform-third-party-chatbot-provider')
+router.register('settings/third-party-chatbots/applications', PlatformThirdPartyChatbotApplicationViewSet, basename='platform-third-party-chatbot-application')
 router.register('ai-models/asr/replacement-rules', ASRReplacementRuleViewSet, basename='asr-replacement-rule')
 router.register('ai-models/applications', AgentApplicationViewSet, basename='agent-application')
 router.register('ai-models/chat/conversations', ChatConversationViewSet, basename='chat-conversation')
@@ -48,9 +54,11 @@ urlpatterns = [
     path('settings/llm/providers/<int:provider_id>/models/', PlatformLLMProviderModelsView.as_view(), name='platform-llm-provider-models'),
     path('settings/llm/test-settings/', LLMTestSettingsView.as_view(), name='platform-llm-test-settings'),
     path('settings/llm/tenants/<int:tenant_id>/authorization/', TenantLLMAuthorizationView.as_view(), name='platform-llm-tenant-authorization'),
+    path('settings/third-party-chatbots/tenants/<int:tenant_id>/authorization/', TenantThirdPartyChatbotAuthorizationView.as_view(), name='platform-third-party-chatbot-tenant-authorization'),
     path('settings/knowledge-base/models/', PlatformKnowledgeModelSettingsView.as_view(), name='platform-knowledge-model-settings'),
     path('settings/knowledge-base/tenants/<int:tenant_id>/authorization/', TenantKnowledgeModelAuthorizationView.as_view(), name='platform-knowledge-tenant-authorization'),
     path('ai-models/llm/options/', CompanyLLMOptionsView.as_view(), name='company-llm-options'),
+    path('ai-models/third-party-chatbots/options/', CompanyThirdPartyChatbotOptionsView.as_view(), name='company-third-party-chatbot-options'),
     path('ai-models/llm/default-model/', CompanyLLMDefaultModelView.as_view(), name='company-llm-default-model'),
     path('ai-models/llm/models/<int:model_id>/test/', CompanyLLMModelTestView.as_view(), name='company-llm-model-test'),
     path('ai-models/tts/options/', CompanyTTSOptionsView.as_view(), name='company-tts-options'),

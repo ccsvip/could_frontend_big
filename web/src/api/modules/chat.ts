@@ -15,10 +15,14 @@ export type ChatConversationDetail = {
   id: number;
   title: string;
   applicationId: number | null;
+  runtimeBackendType: 'platform_llm' | 'third_party_chatbot';
   llmModelId: number | null;
   llmModelName: string;
   llmModelDisplayName: string;
   llmProviderName: string | null;
+  thirdPartyChatbotId: number | null;
+  thirdPartyChatbotName: string;
+  thirdPartyChatbotProviderName: string | null;
   summary: string;
   systemPrompt: string;
   temperature: number;
@@ -30,7 +34,9 @@ export type ChatConversationDetail = {
 };
 
 export type ChatConversationConfigPayload = {
+  runtimeBackendType?: 'platform_llm' | 'third_party_chatbot';
   llmModelId?: number | null;
+  thirdPartyChatbotId?: number | null;
   systemPrompt?: string;
   temperature?: number;
   maxTokens?: number;
@@ -181,10 +187,14 @@ export type ChatConversationRecord = {
   id: number;
   title: string;
   applicationId: number | null;
+  runtimeBackendType: 'platform_llm' | 'third_party_chatbot';
   llmModelId: number | null;
   llmModelName: string;
   llmModelDisplayName: string;
   llmProviderName: string | null;
+  thirdPartyChatbotId: number | null;
+  thirdPartyChatbotName: string;
+  thirdPartyChatbotProviderName: string | null;
   summary: string;
   messageCount: number;
   lastMessage: string | null;

@@ -20,10 +20,11 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from apps.accounts.permissions import CanCreateDevices, CanDeleteDevices, CanUpdateDevices, CanViewDevices, IsSuperUser
 from apps.ai_models import llm_services
-from apps.ai_models.models import AgentAnnotation, LLMModel
+from apps.ai_models.models import AgentAnnotation, LLMModel, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, ThirdPartyChatbotApplication
 from apps.ai_models.services.annotations import find_matching_annotation, find_matching_published_annotation
 from apps.ai_models.services.reply_blocks import blocks_to_text, serialize_published_annotation_blocks, serialize_reply_blocks, text_to_blocks
 from apps.ai_models.services import asr as asr_services
+from apps.ai_models.services import third_party_chatbots
 from apps.ai_models.services import tts as tts_services
 from apps.resources.models import ModelAsset, Resource, ScrollingText
 from apps.resources.services.minio_client import build_public_object_url
@@ -776,6 +777,25 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            runtime_agent = device.effective_agent_application
+            runtime_model_name = ''
+            runtime_config = runtime_agent.runtime_config() if runtime_agent is not None else {}
+            if runtime_config.get('runtime_backend_type') == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
+                runtime_chatbot_id = runtime_config.get('third_party_chatbot_id')
+                runtime_chatbot = (
+                    ThirdPartyChatbotApplication.objects.filter(id=runtime_chatbot_id).first()
+                    if runtime_chatbot_id
+                    else None
+                )
+                runtime_model_name = runtime_chatbot.name if runtime_chatbot is not None else ''
+                if not runtime_model_name and runtime_agent and runtime_agent.third_party_chatbot:
+                    runtime_model_name = runtime_agent.third_party_chatbot.name
+            else:
+                runtime_model_id = runtime_config.get('llm_model_id')
+                runtime_model = LLMModel.objects.filter(id=runtime_model_id).first() if runtime_model_id else None
+                runtime_model_name = runtime_model.name if runtime_model is not None else ''
+                if not runtime_model_name and runtime_agent and runtime_agent.llm_model:
+                    runtime_model_name = runtime_agent.llm_model.name
             record_device_chat_log(
                 device,
                 question_text,
@@ -783,7 +803,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
                 source=DeviceChatLog.SOURCE_HTTP,
                 request_id=get_request_id(request),
                 trace_id=get_trace_id(request),
-                model_name=device.effective_agent_application.llm_model.name if device.effective_agent_application and device.effective_agent_application.llm_model else '',
+                model_name=runtime_model_name,
             )
         except Exception:
             logger.exception('device.voice_chat.log_failed device_code=%s', device.code)
@@ -843,6 +863,18 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             return blocks_to_text(blocks), serialize_reply_blocks(blocks, tenant=agent_application.tenant)
 
         runtime_config = agent_application.runtime_config() if agent_application is not None else {}
+        if runtime_config.get('runtime_backend_type') == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
+            chatbot = None
+            runtime_chatbot_id = runtime_config.get('third_party_chatbot_id')
+            if runtime_chatbot_id:
+                chatbot = ThirdPartyChatbotApplication.objects.select_related('provider').filter(id=runtime_chatbot_id).first()
+            if chatbot is None and agent_application is not None:
+                chatbot = agent_application.third_party_chatbot
+            if not third_party_chatbots.is_chatbot_effective_for_tenant(device.tenant, chatbot):
+                raise RuntimeError('请先为设备绑定智能体配置可用第三方会话机器人')
+            answer_text = third_party_chatbots.send_chatbot_message(chatbot, question_text)
+            return answer_text, serialize_reply_blocks(text_to_blocks(answer_text), tenant=device.tenant)
+
         model = None
         runtime_model_id = runtime_config.get('llm_model_id')
         if runtime_model_id:

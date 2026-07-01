@@ -1,6 +1,10 @@
+import json
+
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from asgiref.sync import async_to_sync
+from unittest.mock import patch
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -21,6 +25,7 @@ from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
+HUAPENG_APPLICATION_ID = '8d697146-f9a2-11ef-89c4-86dcb2923f74'
 
 
 class AgentApplicationAccessDataTests(TestCase):
@@ -99,6 +104,27 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
             )
         return model
 
+    def create_third_party_chatbot(self, *, tenant=None, is_active=True):
+        Provider = apps.get_model('ai_models', 'ThirdPartyChatbotProvider')
+        Chatbot = apps.get_model('ai_models', 'ThirdPartyChatbotApplication')
+        Grant = apps.get_model('ai_models', 'TenantThirdPartyChatbotGrant')
+        provider = Provider.objects.create(
+            name='华鹏 AI',
+            provider_type='ihuapeng_chatbot',
+            api_base_url='https://ai.ihuapeng.cn/api',
+            api_key='application-key',
+            is_active=True,
+        )
+        chatbot = Chatbot.objects.create(
+            provider=provider,
+            name='华鹏展厅机器人',
+            external_application_id=HUAPENG_APPLICATION_ID,
+            is_active=is_active,
+        )
+        if tenant is not None:
+            Grant.objects.create(tenant=tenant, chatbot=chatbot, is_active=True)
+        return chatbot
+
     def create_document(self, *, tenant=None, title='Refund policy') -> KnowledgeDocument:
         return KnowledgeDocument.objects.create(
             tenant=tenant or self.tenant,
@@ -146,6 +172,138 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(application.llm_model_id, model.id)
         self.assertEqual(application.system_prompt, 'Answer as a careful support specialist.')
         self.assertEqual(list(application.knowledge_documents.values_list('id', flat=True)), [document.id])
+
+    def test_agent_application_switches_runtime_backend_without_losing_bindings(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.create', 'agent_applications.update')
+        provider = self.create_provider()
+        model = self.create_model(provider)
+        chatbot = self.create_third_party_chatbot(tenant=self.tenant)
+
+        create_response = self.client.post(
+            '/api/v1/ai-models/applications/',
+            {
+                'name': 'Switchable agent',
+                'runtimeBackendType': 'platform_llm',
+                'llmModelId': model.id,
+                'thirdPartyChatbotId': chatbot.id,
+            },
+            format='json',
+        )
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(create_response.data['runtimeBackendType'], 'platform_llm')
+        self.assertEqual(create_response.data['llmModelId'], model.id)
+        self.assertEqual(create_response.data['thirdPartyChatbotId'], chatbot.id)
+
+        application_id = create_response.data['id']
+        third_party_response = self.client.patch(
+            f'/api/v1/ai-models/applications/{application_id}/',
+            {'runtimeBackendType': 'third_party_chatbot'},
+            format='json',
+        )
+        self.assertEqual(third_party_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(third_party_response.data['runtimeBackendType'], 'third_party_chatbot')
+        self.assertEqual(third_party_response.data['llmModelId'], model.id)
+        self.assertEqual(third_party_response.data['thirdPartyChatbotId'], chatbot.id)
+
+        publish_response = self.client.post(f'/api/v1/ai-models/applications/{application_id}/publish/')
+        self.assertEqual(publish_response.status_code, status.HTTP_200_OK)
+        application = self.agent_application_model().objects.get(pk=application_id)
+        self.assertEqual(application.published_config['runtime_backend_type'], 'third_party_chatbot')
+        self.assertEqual(application.published_config['third_party_chatbot_id'], chatbot.id)
+        self.assertEqual(application.published_config['llm_model_id'], model.id)
+
+        platform_response = self.client.patch(
+            f'/api/v1/ai-models/applications/{application_id}/',
+            {'runtimeBackendType': 'platform_llm'},
+            format='json',
+        )
+        self.assertEqual(platform_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(platform_response.data['runtimeBackendType'], 'platform_llm')
+        self.assertEqual(platform_response.data['thirdPartyChatbotId'], chatbot.id)
+
+    def test_agent_application_rejects_unauthorized_third_party_chatbot(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.create')
+        chatbot = self.create_third_party_chatbot()
+
+        response = self.client.post(
+            '/api/v1/ai-models/applications/',
+            {
+                'name': 'Unauthorized third-party agent',
+                'runtimeBackendType': 'third_party_chatbot',
+                'thirdPartyChatbotId': chatbot.id,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('thirdPartyChatbotId', str(response.data))
+
+    def test_agent_application_rejects_unauthorized_third_party_chatbot_even_when_platform_backend(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.create')
+        provider = self.create_provider()
+        model = self.create_model(provider)
+        chatbot = self.create_third_party_chatbot()
+
+        response = self.client.post(
+            '/api/v1/ai-models/applications/',
+            {
+                'name': 'Hidden third-party binding',
+                'runtimeBackendType': 'platform_llm',
+                'llmModelId': model.id,
+                'thirdPartyChatbotId': chatbot.id,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('thirdPartyChatbotId', str(response.data))
+
+    def test_debug_conversation_third_party_backend_keeps_sse_shape(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.create', 'ai_models.chat.create')
+        chatbot = self.create_third_party_chatbot(tenant=self.tenant)
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Third-party debug agent',
+            runtime_backend_type='third_party_chatbot',
+            third_party_chatbot=chatbot,
+        )
+
+        create_response = self.client.post(f'/api/v1/ai-models/applications/{application.id}/conversations/')
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(create_response.data['runtimeBackendType'], 'third_party_chatbot')
+        self.assertEqual(create_response.data['thirdPartyChatbotId'], chatbot.id)
+
+        with patch(
+            'apps.ai_models.views.third_party_chatbots.send_chatbot_message',
+            return_value='第三方标准化回复',
+        ) as send_mock:
+            response = self.client.post(
+                f"/api/v1/ai-models/chat/conversations/{create_response.data['id']}/send/",
+                {'content': '你好', 'stream': True},
+                format='json',
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+            async def collect_streaming_content():
+                chunks = []
+                async for chunk in response.streaming_content:
+                    chunks.append(chunk)
+                return b''.join(chunks)
+
+            body = async_to_sync(collect_streaming_content)().decode('utf-8')
+        self.assertIn('data:', body)
+        payload_line = next(line for line in body.splitlines() if line.startswith('data: {'))
+        payload = json.loads(payload_line.removeprefix('data: '))
+        self.assertEqual(payload['content'], '第三方标准化回复')
+        self.assertEqual(payload['blocks'][0]['text'], '第三方标准化回复')
+        self.assertIn('"blocks"', body)
+        self.assertIn('[DONE]', body)
+        self.assertNotIn('chat_id', body)
+        send_mock.assert_called_once()
+        conversation = ChatConversation.objects.get(pk=create_response.data['id'])
+        self.assertEqual(conversation.messages.filter(role=ChatMessage.ROLE_ASSISTANT).count(), 1)
 
     def test_create_agent_application_rejects_foreign_knowledge_document(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.create')
