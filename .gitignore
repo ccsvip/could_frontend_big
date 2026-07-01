@@ -29,6 +29,8 @@ Desktop.ini
 .env.production.local
 !.env.example
 !.env.sample
+r2.txt
+wiki/r2.txt
 
 # Project ships with a root .env for host-port mapping (committed intentionally).
 # Re-track it explicitly if it ever gets ignored:
