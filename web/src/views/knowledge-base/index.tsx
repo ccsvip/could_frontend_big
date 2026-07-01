@@ -12,7 +12,6 @@ import {
   IconFileSearch,
   IconFlask,
   IconGitBranch,
-  IconKey,
   IconPencil,
   IconPhoto,
   IconPlus,
@@ -124,19 +123,22 @@ const createGuideCards = [
     title: '创建业务知识库',
     description: '按业务域、产品线或部门拆分知识库，方便权限隔离和后续维护。',
     icon: <IconBook />,
-    gradient: 'from-teal-400 to-emerald-500',
+    iconColor: 'text-teal-600',
+    iconBg: 'bg-teal-50',
   },
   {
     title: '上传并维护文档',
     description: `当前支持 ${KNOWLEDGE_BASE_ACCEPT.replace(/\./g, '').toUpperCase()}，建议文件名保留版本和适用范围。`,
     icon: <IconFilePlus />,
-    gradient: 'from-blue-400 to-cyan-500',
+    iconColor: 'text-slate-600',
+    iconBg: 'bg-slate-100',
   },
   {
     title: '测试召回效果',
     description: '用真实用户问题检查命中内容，再把知识库绑定到智能体应用。',
     icon: <IconFlask />,
-    gradient: 'from-purple-400 to-indigo-500',
+    iconColor: 'text-slate-600',
+    iconBg: 'bg-slate-100',
   },
 ];
 
@@ -144,27 +146,6 @@ const detailWorkflow = [
   { title: '上传资料', description: '拖入或选择文档，最多 3 个文件并发上传。' },
   { title: '等待处理', description: '后台完成解析、切分和索引后即可参与召回。' },
   { title: '验证命中', description: '用典型问题测试 Top N 片段，确认答案来源可靠。' },
-];
-
-const retrievalPolicies = [
-  {
-    title: '高质量索引',
-    description: '上传后走解析、切分、Embedding 入库，召回时优先按向量相似度排序。',
-    icon: <IconStack2 />,
-    gradient: 'from-teal-400 to-emerald-500',
-  },
-  {
-    title: '关键词降级',
-    description: 'Embedding 模型不可用时自动退回关键词匹配，保证知识库仍可用。',
-    icon: <IconKey />,
-    gradient: 'from-blue-400 to-cyan-500',
-  },
-  {
-    title: 'Rerank 精排',
-    description: '配置 Rerank 模型后，对 Top N 候选片段二次排序，提升答案来源可信度。',
-    icon: <IconAdjustments />,
-    gradient: 'from-purple-400 to-indigo-500',
-  },
 ];
 
 const indexStatusColor: Record<KnowledgeDocumentRecord['indexingStatus'], string> = {
@@ -201,12 +182,7 @@ const skipReasonText: Record<string, string> = {
   low_information_query: '问题信息量较少，系统不会用它去匹配知识库或配套素材。',
 };
 
-const mediaEmbeddingStatusColor: Record<string, string> = {
-  pending: 'default',
-  processing: 'processing',
-  ready: 'success',
-  failed: 'error',
-};
+
 
 const formatFileSize = (value: number | null) => {
   if (value === null || value === undefined) return '--';
@@ -443,6 +419,13 @@ export const KnowledgeBasePage = () => {
     if (!latest) return item.updated_at;
     return item.updated_at > latest ? item.updated_at : latest;
   }, null);
+  const mediaAssetStats = useMemo(() => ({
+    total: mediaAssets.length,
+    enabled: mediaAssets.filter((item) => item.isEnabled && !item.isMissing).length,
+    ready: mediaAssets.filter((item) => item.embeddingStatus === 'ready').length,
+    images: mediaAssets.filter((item) => item.resourceType === 'image').length,
+    videos: mediaAssets.filter((item) => item.resourceType === 'video').length,
+  }), [mediaAssets]);
 
   const openEditBase = useCallback((item: KnowledgeBaseRecord) => {
     setEditingBase(item);
@@ -782,118 +765,18 @@ export const KnowledgeBasePage = () => {
     indexingDocumentId,
   ]);
 
-  const mediaAssetColumns = useMemo<ColumnsType<KnowledgeMediaAssetRecord>>(() => [
-    {
-      title: '素材',
-      key: 'resource',
-      render: (_, item) => (
-        <Space size={10}>
-          <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${item.resourceType === 'image' ? 'bg-cyan-50 text-cyan-600' : 'bg-violet-50 text-violet-600'}`}>
-            {item.resourceType === 'image' ? <IconPhoto size={18} /> : <IconVideo size={18} />}
-          </div>
-          <Space direction="vertical" size={2}>
-            <Typography.Text strong className="!text-sm">{item.resourceName || '素材已删除'}</Typography.Text>
-            <Typography.Text className="!text-xs !text-slate-500">{item.resourceTypeLabel}</Typography.Text>
-          </Space>
-        </Space>
-      ),
-    },
-    {
-      title: '检索说明',
-      key: 'description',
-      render: (_, item) => (
-        <Space direction="vertical" size={2}>
-          <Typography.Text className="!text-sm !text-slate-700" ellipsis={{ tooltip: item.description }}>
-            {item.description || '--'}
-          </Typography.Text>
-          {item.vlmDescription ? (
-            <Typography.Text className="!text-xs !text-slate-500" ellipsis={{ tooltip: item.vlmDescription }}>
-              自动描述：{item.vlmDescription}
-            </Typography.Text>
-          ) : null}
-          {item.keywords ? (
-            <Typography.Text className="!text-xs !text-slate-500" ellipsis={{ tooltip: item.keywords }}>
-              {item.keywords}
-            </Typography.Text>
-          ) : null}
-        </Space>
-      ),
-    },
-    {
-      title: '多模态索引',
-      key: 'embeddingStatus',
-      width: 150,
-      render: (_, item) => (
-        <Space direction="vertical" size={4}>
-          <Tag color={mediaEmbeddingStatusColor[item.embeddingStatus || 'pending'] || 'default'}>
-            {item.embeddingStatusLabel || item.embeddingStatus || '待处理'}
-          </Tag>
-          {item.embeddingModel ? (
-            <Typography.Text className="!text-xs !text-slate-500" ellipsis={{ tooltip: item.embeddingModel }}>
-              {item.embeddingModel}
-            </Typography.Text>
-          ) : null}
-          {item.embeddingStatus === 'failed' && item.embeddingError ? (
-            <Typography.Text className="!max-w-[160px] !text-xs" type="danger" ellipsis={{ tooltip: item.embeddingError }}>
-              {item.embeddingError}
-            </Typography.Text>
-          ) : null}
-        </Space>
-      ),
-    },
-    {
-      title: '状态',
-      key: 'status',
-      width: 130,
-      render: (_, item) => (
-        <Space direction="vertical" size={4}>
-          <Tag color={item.isMissing ? 'error' : item.isEnabled ? 'success' : 'default'}>
-            {item.isMissing ? '素材已删除' : item.isEnabled ? '启用' : '停用'}
-          </Tag>
-          <span className="text-xs font-mono text-slate-500">P {item.priority}</span>
-        </Space>
-      ),
-    },
-    {
-      title: '操作',
-      key: 'actions',
-      width: 170,
-      align: 'right',
-      render: (_, item) => (
-        <Space>
-          <Button type="link" className="!p-0 !h-auto" disabled={!canUpload} onClick={() => openEditMediaAsset(item)}>
-            编辑
-          </Button>
-          <Popconfirm
-            title="移除配套素材"
-            description={`确认从知识库中移除“${item.resourceName || '素材'}”吗？`}
-            okText="移除"
-            cancelText="取消"
-            okButtonProps={{ danger: true, loading: deletingMediaAssetId === item.id }}
-            disabled={!canUpload}
-            onConfirm={() => void handleDeleteMediaAsset(item)}
-          >
-            <Button type="link" danger className="!p-0 !h-auto" disabled={!canUpload} loading={deletingMediaAssetId === item.id}>
-              移除
-            </Button>
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ], [canUpload, deletingMediaAssetId, handleDeleteMediaAsset, openEditMediaAsset]);
-
   const resourceColumns = useMemo<ColumnsType<ResourceRecord>>(() => [
     {
       title: '资源',
       key: 'resource',
       render: (_, item) => (
         <Space size={10}>
-          <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${item.resourceType === 'image' ? 'bg-cyan-50 text-cyan-600' : 'bg-violet-50 text-violet-600'}`}>
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-slate-100 border border-slate-200/60 text-slate-500">
             {item.resourceType === 'image' ? <IconPhoto size={18} /> : <IconVideo size={18} />}
           </div>
           <Space direction="vertical" size={2}>
-            <Typography.Text strong className="!text-sm">{item.name}</Typography.Text>
-            <Typography.Text className="!text-xs !text-slate-500">{item.resourceTypeLabel} · {item.categoryLabel}</Typography.Text>
+            <Typography.Text strong className="!text-sm text-slate-800">{item.name}</Typography.Text>
+            <Typography.Text className="!text-xs !text-slate-500">{item.resourceTypeLabel} <span className="mx-1 text-slate-300">·</span> {item.categoryLabel}</Typography.Text>
           </Space>
         </Space>
       ),
@@ -911,63 +794,81 @@ export const KnowledgeBasePage = () => {
 
   const editBaseModal = (
     <Modal
-      title="编辑知识库"
+      title={<span className="text-slate-800 font-bold">编辑知识库配置</span>}
       open={editOpen}
+      width={640}
       confirmLoading={editSaving}
       onOk={() => void handleEditBase()}
       onCancel={() => {
         setEditOpen(false);
         setEditingBase(null);
       }}
-      okText="保存"
+      okText="保存更改"
       cancelText="取消"
+      className="top-[10%]"
     >
-      <Form form={editForm} layout="vertical">
-        <Form.Item name="name" label="名称" rules={[{ required: true, message: '请输入知识库名称' }]}>
-          <Input maxLength={128} />
-        </Form.Item>
-        <Form.Item name="description" label="说明">
-          <Input.TextArea maxLength={255} rows={3} placeholder="说明资料范围、维护责任人或适用业务场景" />
-        </Form.Item>
-        <div className="mt-2 mb-4 p-3 rounded-lg bg-slate-50 border border-slate-100 text-xs text-slate-500 leading-relaxed">
-          <div className="font-semibold text-slate-600 mb-1">分块参数指南：</div>
-          <div>分块长度决定了大模型上下文召回颗粒度。较大的分块能保留更多完整语义，但单次召回消耗的 Token 更多。分块重叠能避免关键信息在切分边界处截断丢失。</div>
-        </div>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3 lg:grid-cols-6">
-          <Form.Item name="chunkSize" label="分块长度" rules={[{ required: true, message: '请输入分块长度' }]}>
-            <InputNumber min={100} max={4000} className="!w-full" />
-          </Form.Item>
-          <Form.Item
-            name="chunkOverlap"
-            label="分块重叠"
-            dependencies={['chunkSize']}
-            rules={[
-              { required: true, message: '请输入分块重叠' },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  const chunkSize = Number(getFieldValue('chunkSize') || defaultIndexConfig.chunkSize);
-                  if (Number(value || 0) >= chunkSize) {
-                    return Promise.reject(new Error('重叠必须小于分块长度'));
-                  }
-                  return Promise.resolve();
-                },
-              }),
-            ]}
-          >
-            <InputNumber min={0} max={1000} className="!w-full" />
-          </Form.Item>
-          <Form.Item name="retrievalTopN" label="默认召回段数" rules={[{ required: true, message: '请输入召回段数' }]}>
-            <InputNumber min={1} max={20} className="!w-full" />
-          </Form.Item>
-          <Form.Item name="retrievalMinScore" label="最低相关度" rules={[{ required: true, message: '请输入最低相关度' }]}> 
-            <InputNumber min={0} max={1} step={0.05} className="!w-full" />
-          </Form.Item>
-          <Form.Item name="mediaMaxAssets" label="素材召回上限" tooltip="0 表示不限制，有几张命中就返回几张。" rules={[{ required: true, message: '请输入素材召回上限' }]}> 
-            <InputNumber min={0} max={200} precision={0} className="!w-full" />
-          </Form.Item>
-          <Form.Item name="mediaMinRelevance" label="素材最低相关度" rules={[{ required: true, message: '请输入素材最低相关度' }]}> 
-            <InputNumber min={0} max={1} step={0.05} className="!w-full" />
-          </Form.Item>
+      <Form form={editForm} layout="vertical" className="mt-4">
+        <div className="space-y-6">
+          <section>
+            <div className="mb-3 text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">基本信息</div>
+            <Form.Item name="name" label={<span className="text-slate-600">名称</span>} rules={[{ required: true, message: '请输入知识库名称' }]}>
+              <Input maxLength={128} className="rounded-md" />
+            </Form.Item>
+            <Form.Item name="description" label={<span className="text-slate-600">说明</span>} className="!mb-0">
+              <Input.TextArea maxLength={255} rows={3} placeholder="说明资料范围、维护责任人或适用业务场景" className="rounded-md" />
+            </Form.Item>
+          </section>
+
+          <section>
+            <div className="mb-3 text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">检索与分块策略</div>
+            <div className="mb-4 rounded-md bg-slate-50/50 p-3 border border-slate-100 text-[13px] text-slate-500 leading-relaxed">
+              <IconStack2 size={14} className="inline mr-1 text-slate-400" />
+              分块长度决定召回颗粒度，较大的分块能保留完整语义，但消耗更多 Token。重叠区能防止关键信息在边界截断。
+            </div>
+            
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+              <Form.Item name="chunkSize" label={<span className="text-slate-600">分块长度 (Chunk Size)</span>} rules={[{ required: true, message: '请输入分块长度' }]}>
+                <InputNumber min={100} max={4000} className="!w-full rounded-md font-mono text-sm" />
+              </Form.Item>
+              <Form.Item
+                name="chunkOverlap"
+                label={<span className="text-slate-600">分块重叠 (Overlap)</span>}
+                dependencies={['chunkSize']}
+                rules={[
+                  { required: true, message: '请输入分块重叠' },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      const chunkSize = Number(getFieldValue('chunkSize') || defaultIndexConfig.chunkSize);
+                      if (Number(value || 0) >= chunkSize) {
+                        return Promise.reject(new Error('重叠必须小于分块长度'));
+                      }
+                      return Promise.resolve();
+                    },
+                  }),
+                ]}
+              >
+                <InputNumber min={0} max={1000} className="!w-full rounded-md font-mono text-sm" />
+              </Form.Item>
+              <Form.Item name="retrievalTopN" label={<span className="text-slate-600">文本召回段数 (Top N)</span>} rules={[{ required: true, message: '请输入文本召回段数' }]}>
+                <InputNumber min={1} max={20} className="!w-full rounded-md font-mono text-sm" />
+              </Form.Item>
+              <Form.Item name="retrievalMinScore" label={<span className="text-slate-600">最低相关度阈值</span>} rules={[{ required: true, message: '请输入最低相关度' }]}> 
+                <InputNumber min={0} max={1} step={0.05} className="!w-full rounded-md font-mono text-sm" />
+              </Form.Item>
+            </div>
+          </section>
+
+          <section>
+            <div className="mb-3 text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">配套素材召回配置</div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+              <Form.Item name="mediaMaxAssets" label={<span className="text-slate-600">素材召回上限</span>} tooltip="0 表示不限制，有几张命中就返回几张。" rules={[{ required: true, message: '请输入素材召回上限' }]}> 
+                <InputNumber min={0} max={200} precision={0} className="!w-full rounded-md font-mono text-sm" />
+              </Form.Item>
+              <Form.Item name="mediaMinRelevance" label={<span className="text-slate-600">素材最低相关度</span>} rules={[{ required: true, message: '请输入素材最低相关度' }]}> 
+                <InputNumber min={0} max={1} step={0.05} className="!w-full rounded-md font-mono text-sm" />
+              </Form.Item>
+            </div>
+          </section>
         </div>
       </Form>
     </Modal>
@@ -1063,96 +964,266 @@ export const KnowledgeBasePage = () => {
   );
 
   const mediaManagementTab = (
-    <Space direction="vertical" size={16} className="w-full">
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <Typography.Title level={5} className="!mb-1">配套素材</Typography.Title>
-            <Typography.Text className="!text-sm !text-slate-500">
-              从资源库选择图片或视频，知识库只维护绑定关系、关键词和说明。
-            </Typography.Text>
+    <Space direction="vertical" size={18} className="w-full">
+      <section className="rounded-xl border border-slate-200/70 bg-white p-5 md:p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="flex min-w-0 flex-col justify-between gap-6">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-700">
+                <IconPhoto size={14} />
+                多模态素材增强
+              </div>
+              <Typography.Title level={4} className="!mb-2 !text-slate-900 !font-semibold">配套素材工作台</Typography.Title>
+              <Typography.Paragraph className="!mb-0 max-w-2xl !text-[13px] !leading-relaxed !text-slate-500">
+                把图片、视频等资料放进召回链路。素材可补充场景画面和操作示意，智能体将按相关度在回答中一并返回。
+              </Typography.Paragraph>
+            </div>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              <div className="rounded-lg border border-slate-100 bg-slate-50/50 p-3">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">绑定素材</div>
+                <div className="mt-1 font-mono text-xl font-semibold text-slate-800">{mediaAssetStats.total}</div>
+              </div>
+              <div className="rounded-lg border border-slate-100 bg-slate-50/50 p-3">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">可召回</div>
+                <div className="mt-1 font-mono text-xl font-semibold text-teal-600">{mediaAssetStats.enabled}</div>
+              </div>
+              <div className="rounded-lg border border-slate-100 bg-slate-50/50 p-3">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">索引就绪</div>
+                <div className="mt-1 font-mono text-xl font-semibold text-teal-600">{mediaAssetStats.ready}</div>
+              </div>
+              <div className="rounded-lg border border-slate-100 bg-slate-50/50 p-3">
+                <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">图片 / 视频</div>
+                <div className="mt-1 font-mono text-xl font-semibold text-slate-800">{mediaAssetStats.images}<span className="text-sm text-slate-400 font-normal mx-1">/</span>{mediaAssetStats.videos}</div>
+              </div>
+            </div>
           </div>
-          <Space>
-            <Button icon={<IconRefresh />} onClick={() => void loadMediaAssets()}>刷新</Button>
-            <Button type="primary" icon={<IconPlus />} disabled={!canUpload} onClick={() => void openBindMediaModal()}>
-              绑定素材
-            </Button>
-          </Space>
+          <div className="rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 flex flex-col justify-between">
+            <div>
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400 font-mono">RECALL POLICY</div>
+                  <div className="mt-0.5 text-[13px] font-semibold text-slate-800">素材召回配置</div>
+                </div>
+                <div className="rounded bg-white border border-slate-200 p-1.5 text-slate-400 shadow-sm">
+                  <IconAdjustments size={16} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between rounded-md bg-white border border-slate-100 px-3 py-2">
+                  <span className="text-xs text-slate-500">返回上限</span>
+                  <span className="font-mono text-sm font-semibold text-slate-800">{selectedBase?.mediaMaxAssets || '不限'}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-md bg-white border border-slate-100 px-3 py-2">
+                  <span className="text-xs text-slate-500">最低相关度</span>
+                  <span className="font-mono text-sm font-semibold text-slate-800">{selectedBase?.mediaMinRelevance ?? defaultIndexConfig.mediaMinRelevance}</span>
+                </div>
+              </div>
+            </div>
+            <div className="mt-5 flex items-center gap-2">
+              <Button className="!flex-1 !text-[13px]" icon={<IconRefresh size={16} />} onClick={() => void loadMediaAssets()}>刷新</Button>
+              <Button className="!flex-1 !text-[13px]" type="primary" icon={<IconPlus size={16} />} disabled={!canUpload} onClick={() => void openBindMediaModal()}>
+                绑定素材
+              </Button>
+            </div>
+          </div>
         </div>
-      </Card>
+      </section>
 
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
-        <Table
-          rowKey="id"
-          loading={mediaAssetsLoading}
-          columns={mediaAssetColumns}
-          dataSource={mediaAssets}
-          pagination={false}
-          locale={{ emptyText: '还没有为当前知识库绑定图片或视频素材' }}
-          scroll={{ x: 920 }}
-        />
-      </Card>
+      <Spin spinning={mediaAssetsLoading}>
+        {mediaAssets.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 2xl:grid-cols-3">
+            {mediaAssets.map((item) => {
+              const isImage = item.resourceType === 'image';
+              return (
+                <Card
+                  key={item.id}
+                  variant="borderless"
+                  className="group !overflow-hidden !rounded-xl !border !border-slate-200/70 !shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:!border-teal-300/50 hover:!shadow-[0_4px_10px_rgba(15,23,42,0.06)] [&_.ant-card-body]:!p-0 bg-white"
+                >
+                  <div className="flex flex-col sm:flex-row h-full">
+                    <div className="relative flex min-h-[160px] items-center justify-center overflow-hidden border-b sm:border-b-0 sm:border-r border-slate-100 bg-slate-50 sm:w-44 shrink-0">
+                      {item.url && !item.isMissing ? (
+                        isImage ? (
+                          <img src={item.url} alt={item.resourceName || '素材预览'} className="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+                        ) : (
+                          <video src={item.url} className="h-full w-full object-cover" muted preload="metadata" />
+                        )
+                      ) : (
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-slate-400 border border-slate-200/60">
+                          {isImage ? <IconPhoto size={24} /> : <IconVideo size={24} />}
+                        </div>
+                      )}
+                      <div className="absolute left-2.5 top-2.5 flex gap-1.5">
+                        <span className="inline-flex items-center gap-1 rounded bg-slate-900/70 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur border border-white/10">
+                          {isImage ? <IconPhoto size={10} /> : <IconVideo size={10} />}
+                          {item.resourceTypeLabel}
+                        </span>
+                      </div>
+                      <div className="absolute bottom-2.5 left-2.5 rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-mono font-medium text-slate-700 shadow-sm backdrop-blur border border-slate-200/60">
+                        P{item.priority}
+                      </div>
+                    </div>
+                    
+                    <div className="flex min-w-0 flex-1 flex-col justify-between p-4">
+                      <div>
+                        <div className="mb-2 flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <Typography.Title level={5} className="!mb-1.5 !truncate !text-sm !font-semibold !text-slate-800" title={item.resourceName || '素材已删除'}>
+                              {item.resourceName || '素材已删除'}
+                            </Typography.Title>
+                            <div className="flex flex-wrap gap-1.5">
+                              <Tag color={item.isMissing ? 'error' : item.isEnabled ? 'success' : 'default'} className="!m-0 !border-none !bg-slate-100 !text-slate-600">
+                                {item.isMissing ? (
+                                  <span className="text-red-600">已删除</span>
+                                ) : item.isEnabled ? (
+                                  <span className="text-teal-700 font-medium">● 启用</span>
+                                ) : '暂停'}
+                              </Tag>
+                              <Tag color="default" className={`!m-0 !border-none ${item.embeddingStatus === 'ready' ? '!bg-teal-50 !text-teal-700' : item.embeddingStatus === 'failed' ? '!bg-red-50 !text-red-600' : '!bg-slate-100 !text-slate-600'}`}>
+                                {item.embeddingStatusLabel || item.embeddingStatus || '待处理'}
+                              </Tag>
+                            </div>
+                          </div>
+                        </div>
+                        <Typography.Paragraph className="!mb-2.5 !text-[13px] !leading-relaxed !text-slate-500" ellipsis={{ rows: 2, tooltip: item.description || item.vlmDescription }}>
+                          {item.description || item.vlmDescription || '暂无说明，建议补充说明此素材适用的场景。'}
+                        </Typography.Paragraph>
+                        
+                        <div className="min-h-[24px]">
+                          {item.keywords ? (
+                            <div className="flex flex-wrap gap-1.5">
+                              {item.keywords.split(/[，,\s]+/).filter(Boolean).slice(0, 4).map((keyword) => (
+                                <span key={keyword} className="rounded bg-slate-50 border border-slate-100 px-1.5 py-0.5 text-[11px] text-slate-500">#{keyword}</span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-slate-400">缺少关键词</span>
+                          )}
+                        </div>
+                        {item.embeddingStatus === 'failed' && item.embeddingError ? (
+                          <Typography.Text className="!mt-1 block !text-[11px]" type="danger" ellipsis={{ tooltip: item.embeddingError }}>
+                            {item.embeddingError}
+                          </Typography.Text>
+                        ) : null}
+                      </div>
+                      
+                      <div className="mt-3 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+                        <Typography.Text className="!max-w-[140px] !text-[10px] !text-slate-400 font-mono" ellipsis={{ tooltip: item.embeddingModel }}>
+                          {item.embeddingModel || '--'}
+                        </Typography.Text>
+                        <Space size={14}>
+                          <button type="button" className="text-[13px] font-medium text-slate-500 hover:text-teal-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled={!canUpload} onClick={() => openEditMediaAsset(item)}>
+                            编辑
+                          </button>
+                          <Popconfirm
+                            title={<span className="text-sm font-medium">移除配套素材</span>}
+                            description={<span className="text-[13px] text-slate-500 block mt-1">确认从知识库中移除此素材吗？</span>}
+                            okText="移除"
+                            cancelText="取消"
+                            okButtonProps={{ danger: true, size: 'small', loading: deletingMediaAssetId === item.id }}
+                            cancelButtonProps={{ size: 'small' }}
+                            disabled={!canUpload}
+                            placement="topRight"
+                            onConfirm={() => void handleDeleteMediaAsset(item)}
+                          >
+                            <button type="button" className="text-[13px] font-medium text-slate-500 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled={!canUpload || deletingMediaAssetId === item.id}>
+                              移除
+                            </button>
+                          </Popconfirm>
+                        </Space>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        ) : (
+          <Card variant="borderless" className="!rounded-xl !border !border-dashed !border-slate-300 !bg-slate-50/50 !shadow-none py-8">
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={(
+                <div className="space-y-1.5">
+                  <div className="font-medium text-slate-700 text-sm">尚未绑定素材</div>
+                  <div className="text-[13px] text-slate-500 max-w-sm mx-auto">绑定素材并补充说明，智能体回答时可附带相关视觉内容。</div>
+                </div>
+              )}
+            >
+              <Button type="primary" icon={<IconPlus size={16} />} className="mt-2" disabled={!canUpload} onClick={() => void openBindMediaModal()}>
+                绑定第一批素材
+              </Button>
+            </Empty>
+          </Card>
+        )}
+      </Spin>
     </Space>
   );
 
   const mediaAssetModals = (
     <>
       <Modal
-        title="绑定配套素材"
+        title={<span className="text-slate-800 font-bold">绑定配套素材</span>}
         open={bindMediaOpen}
-        width={760}
+        width={720}
         confirmLoading={bindingMedia}
         onOk={() => void handleBindMediaAssets()}
         onCancel={() => {
           setBindMediaOpen(false);
           setSelectedResourceKeys([]);
         }}
-        okText="绑定"
+        okText={`确认绑定 ${selectedResourceKeys.length ? `(${selectedResourceKeys.length})` : ''}`}
         cancelText="取消"
+        className="top-[10%]"
       >
+        <div className="mt-2 text-[13px] text-slate-500 mb-4 border-b border-slate-100 pb-3">
+          从资源库中选择图片或视频绑定到当前知识库。选中后，系统将自动进行多模态向量化。
+        </div>
         <Table
           rowKey="id"
           loading={bindableResourcesLoading}
           columns={resourceColumns}
           dataSource={bindableResources}
           rowSelection={{ selectedRowKeys: selectedResourceKeys, onChange: setSelectedResourceKeys }}
-          pagination={{ pageSize: 8, showSizeChanger: false }}
-          locale={{ emptyText: '资源库里没有可绑定的图片或视频' }}
-          scroll={{ x: 620 }}
+          pagination={{ pageSize: 6, showSizeChanger: false }}
+          locale={{ emptyText: '资源库里没有可绑定的素材' }}
+          scroll={{ y: 360 }}
+          size="small"
         />
       </Modal>
 
       <Modal
-        title="编辑配套素材"
+        title={<span className="text-slate-800 font-bold">编辑素材信息</span>}
         open={Boolean(editingMediaAsset)}
+        width={520}
         confirmLoading={mediaAssetSaving}
         onOk={() => void handleSaveMediaAsset()}
         onCancel={() => setEditingMediaAsset(null)}
-        okText="保存"
+        okText="保存更改"
         cancelText="取消"
       >
-        <Form form={mediaAssetForm} layout="vertical">
+        <Form form={mediaAssetForm} layout="vertical" className="mt-4">
           {editingMediaAsset?.vlmDescription ? (
-            <Alert
-              showIcon
-              type="info"
-              className="!mb-4 !rounded-xl"
-              message="系统自动生成的基础描述"
-              description={editingMediaAsset.vlmDescription}
-            />
+            <div className="mb-5 rounded-md border border-teal-100 bg-teal-50/50 p-3">
+              <div className="text-xs font-semibold text-teal-800 mb-1 flex items-center gap-1.5">
+                <IconPhoto size={14} /> AI 基础描述
+              </div>
+              <div className="text-[13px] leading-relaxed text-teal-700">
+                {editingMediaAsset.vlmDescription}
+              </div>
+            </div>
           ) : null}
-          <Form.Item name="keywords" label="匹配关键词">
-            <Input.TextArea rows={2} maxLength={255} placeholder="例如：展厅 导览 路线 入口" />
+          <Form.Item name="keywords" label={<span className="text-slate-600 text-[13px]">匹配关键词</span>} extra={<span className="text-[11px]">空格或逗号分隔。关键词命中可提升召回权重。</span>}>
+            <Input.TextArea rows={2} maxLength={255} placeholder="例如：展厅 导览 路线 入口" className="rounded-md" />
           </Form.Item>
-          <Form.Item name="description" label="素材说明">
-            <Input.TextArea rows={3} maxLength={500} placeholder="用于说明这张图或这个视频适合回答什么问题" />
+          <Form.Item name="description" label={<span className="text-slate-600 text-[13px]">素材说明</span>} extra={<span className="text-[11px]">说明该素材适合回答的问题场景。</span>}>
+            <Input.TextArea rows={3} maxLength={500} placeholder="例如：当用户询问如何前往展厅时，出示此平面图。" className="rounded-md" />
           </Form.Item>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <Form.Item name="priority" label="优先级" initialValue={0}>
-              <InputNumber min={0} max={999} className="!w-full" />
+          <div className="grid grid-cols-2 gap-4 mt-4 border-t border-slate-100 pt-4">
+            <Form.Item name="priority" label={<span className="text-slate-600 text-[13px]">召回优先级</span>} initialValue={0} className="!mb-0" extra={<span className="text-[11px]">数值越小越优先 (默认 0)</span>}>
+              <InputNumber min={0} max={999} className="!w-full rounded-md font-mono" />
             </Form.Item>
-            <Form.Item name="isEnabled" label="启用" valuePropName="checked" initialValue>
-              <Switch />
+            <Form.Item name="isEnabled" label={<span className="text-slate-600 text-[13px]">状态</span>} valuePropName="checked" initialValue className="!mb-0">
+              <Switch checkedChildren="启用" unCheckedChildren="停用" />
             </Form.Item>
           </div>
         </Form>
@@ -1276,24 +1347,6 @@ export const KnowledgeBasePage = () => {
     </div>
   );
 
-  const indexPolicyTab = (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {retrievalPolicies.map((item) => (
-        <Card key={item.title} variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card hover:!border-teal-100 hover:!shadow-md transition-all duration-300">
-          <div className="flex gap-4">
-            <div className={`p-2.5 bg-gradient-to-br ${item.gradient} rounded-xl text-white shrink-0 shadow-sm`}>
-              {React.cloneElement(item.icon as React.ReactElement, { size: 20 })}
-            </div>
-            <div>
-              <Typography.Title level={5} className="!mb-1.5 !text-slate-800">{item.title}</Typography.Title>
-              <Typography.Paragraph className="!mb-0 !text-sm !text-slate-500 !leading-relaxed">{item.description}</Typography.Paragraph>
-            </div>
-          </div>
-        </Card>
-      ))}
-    </div>
-  );
-
   if (!selectedBase) {
     return (
       <Space direction="vertical" size={20} className="w-full">
@@ -1324,7 +1377,7 @@ export const KnowledgeBasePage = () => {
                 <span className="text-[10px] text-teal-600/70 font-semibold bg-teal-50 px-1.5 py-0.5 rounded-full border border-teal-100/30">本月新建</span>
               </div>
             </div>
-            <div className="p-2.5 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-xl text-white shadow-sm shrink-0">
+            <div className="p-2.5 bg-slate-100 text-teal-600 rounded-xl shrink-0">
               <IconDatabase size={20} />
             </div>
           </div>
@@ -1336,7 +1389,7 @@ export const KnowledgeBasePage = () => {
                 <span className="text-[10px] text-emerald-600/70 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-100/30">100% 运行中</span>
               </div>
             </div>
-            <div className="p-2.5 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl text-white shadow-sm shrink-0">
+            <div className="p-2.5 bg-slate-100 text-teal-600 rounded-xl shrink-0">
               <IconShieldCheck size={20} />
             </div>
           </div>
@@ -1348,7 +1401,7 @@ export const KnowledgeBasePage = () => {
                 <span className="text-[10px] text-slate-500 font-semibold bg-slate-50 px-1.5 py-0.5 rounded-full border border-slate-200/40">已入库</span>
               </div>
             </div>
-            <div className="p-2.5 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-xl text-white shadow-sm shrink-0">
+            <div className="p-2.5 bg-slate-100 text-slate-500 rounded-xl shrink-0">
               <IconFilePlus size={20} />
             </div>
           </div>
@@ -1360,7 +1413,7 @@ export const KnowledgeBasePage = () => {
                 <span className="text-[10px] text-slate-400 font-mono mt-0.5">{latestUpdatedAt ? latestUpdatedAt.split(' ')[1] : ''}</span>
               </div>
             </div>
-            <div className="p-2.5 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl text-white shadow-sm shrink-0">
+            <div className="p-2.5 bg-slate-100 text-slate-500 rounded-xl shrink-0">
               <IconRefresh size={20} />
             </div>
           </div>
@@ -1396,30 +1449,24 @@ export const KnowledgeBasePage = () => {
                   {bases.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
                       {bases.map((item) => {
-                        // Select icon and gradient based on keywords in name
+                        // Select icon based on keywords in name
                         let cardIcon = <IconDatabase />;
-                        let gradient = 'from-teal-400 to-emerald-500';
                         const name = item.name;
                         if (name.includes('医') || name.includes('健康') || name.includes('药')) {
                           cardIcon = <IconShieldCheck />;
-                          gradient = 'from-emerald-400 to-teal-500';
                         } else if (name.includes('科') || name.includes('数') || name.includes('网') || name.includes('算') || name.includes('智能') || name.includes('系统')) {
                           cardIcon = <IconStack2 />;
-                          gradient = 'from-purple-400 to-indigo-500';
                         } else if (name.includes('城') || name.includes('游') || name.includes('古') || name.includes('馆') || name.includes('历史') || name.includes('景')) {
                           cardIcon = <IconCompass />;
-                          gradient = 'from-amber-400 to-orange-500';
                         } else if (name.includes('文档') || name.includes('书') || name.includes('学') || name.includes('策略') || name.includes('政策')) {
                           cardIcon = <IconBook />;
-                          gradient = 'from-blue-400 to-cyan-500';
                         } else if (name.includes('客服') || name.includes('服务') || name.includes('售后')) {
                           cardIcon = <IconFlask />;
-                          gradient = 'from-rose-400 to-pink-500';
                         }
 
                         const iconBg = item.isActive
-                          ? `bg-gradient-to-br ${gradient} text-white`
-                          : 'bg-gradient-to-br from-slate-300 to-slate-400 text-white';
+                          ? 'bg-teal-50 text-teal-600'
+                          : 'bg-slate-100 text-slate-500';
 
                         return (
                           <div
@@ -1557,7 +1604,7 @@ export const KnowledgeBasePage = () => {
                   
                   {createGuideCards.map((item, index) => (
                     <div key={item.title} className="relative pl-12">
-                      <div className={`absolute left-0 top-0.5 w-7 h-7 rounded-lg flex items-center justify-center z-10 bg-gradient-to-br ${item.gradient} text-white shadow-sm transition-all duration-300`}>
+                      <div className={`absolute left-0 top-0.5 w-7 h-7 rounded-lg flex items-center justify-center z-10 ${item.iconBg} ${item.iconColor} transition-all duration-300`}>
                         {React.cloneElement(item.icon as React.ReactElement, { size: 14 })}
                       </div>
                       <div>
@@ -1779,7 +1826,6 @@ export const KnowledgeBasePage = () => {
           { key: 'documents', label: '文档管理', children: documentManagementTab },
           { key: 'media', label: '配套素材', children: mediaManagementTab },
           { key: 'recall', label: '召回测试', children: recallTestTab },
-          { key: 'policy', label: '索引策略', children: indexPolicyTab },
         ]}
       />
       {mediaAssetModals}
