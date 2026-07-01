@@ -42,6 +42,7 @@ class Resource(models.Model):
     )
     file = models.FileField('资源文件', upload_to='resources/%Y/%m/%d', blank=True, null=True)
     cloud_url = models.URLField('云端URL地址', max_length=2048, blank=True, default='')
+    storage_backend = models.CharField('对象存储后端', max_length=32, blank=True, default='')
     object_key = models.CharField('MinIO 对象键', max_length=512, blank=True, default='')
     object_size = models.BigIntegerField('MinIO 对象大小', blank=True, null=True)
     description = models.CharField('资源说明', max_length=255, blank=True, default='')
@@ -397,6 +398,14 @@ class TaskCommandStep(models.Model):
 
 
 class MinioConfig(models.Model):
+    STORAGE_BACKEND_LOCAL = 'local'
+    STORAGE_BACKEND_R2 = 'r2'
+    STORAGE_BACKEND_CHOICES = [
+        (STORAGE_BACKEND_LOCAL, '现有方案'),
+        (STORAGE_BACKEND_R2, 'R2 存储桶'),
+    ]
+
+    storage_backend = models.CharField('Active storage backend', max_length=32, choices=STORAGE_BACKEND_CHOICES, default=STORAGE_BACKEND_LOCAL)
     endpoint = models.CharField('Endpoint', max_length=255, blank=True, default='', help_text='host:port, e.g. localhost:9000')
     access_key = models.CharField('Access Key', max_length=255, blank=True, default='')
     secret_key = models.CharField('Secret Key', max_length=255, blank=True, default='')
@@ -404,6 +413,11 @@ class MinioConfig(models.Model):
     secure = models.BooleanField('Use HTTPS', default=False)
     region = models.CharField('Region', max_length=64, blank=True, default='')
     public_base_url = models.URLField('Public base URL', max_length=512, blank=True, default='')
+    r2_account_id = models.CharField('R2 Account ID', max_length=128, blank=True, default='')
+    r2_access_key_id = models.CharField('R2 Access Key ID', max_length=255, blank=True, default='')
+    r2_secret_access_key = models.CharField('R2 Secret Access Key', max_length=255, blank=True, default='')
+    r2_bucket_name = models.CharField('R2 Bucket', max_length=255, blank=True, default='')
+    r2_public_base_url = models.URLField('R2 Public base URL', max_length=512, blank=True, default='')
     video_max_size_mb = models.PositiveIntegerField('Video max size MB', default=1024)
     allow_video_cloud_url = models.BooleanField('Allow video cloud URL', default=True)
     is_active = models.BooleanField('Enable video direct upload', default=True)

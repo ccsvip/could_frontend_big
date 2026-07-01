@@ -45,6 +45,7 @@ class ResourceSerializer(serializers.ModelSerializer):
     resourceTypeLabel = serializers.CharField(source='get_resource_type_display', read_only=True)
     hasFile = serializers.BooleanField(source='has_file', read_only=True)
     cloudUrl = serializers.CharField(source='cloud_url', required=False, allow_blank=True, default='')
+    storageBackend = serializers.CharField(source='storage_backend', required=False, allow_blank=True, default='')
     objectKey = serializers.CharField(source='object_key', required=False, allow_blank=True, default='')
     objectSize = serializers.IntegerField(source='object_size', required=False, allow_null=True, min_value=0)
     isDigitalHumanBackground = serializers.BooleanField(source='is_digital_human_background', required=False, default=False)
@@ -62,6 +63,7 @@ class ResourceSerializer(serializers.ModelSerializer):
             'description',
             'file',
             'cloudUrl',
+            'storageBackend',
             'objectKey',
             'objectSize',
             'isDigitalHumanBackground',
@@ -87,7 +89,7 @@ class ResourceSerializer(serializers.ModelSerializer):
 
     def get_fileUrl(self, obj: Resource) -> str:
         if obj.object_key:
-            return build_public_object_url(obj.object_key)
+            return build_public_object_url(obj.object_key, backend=obj.storage_backend)
         return build_absolute_file_url(self.context.get('request'), obj.file)
 
     def get_fileName(self, obj: Resource) -> str:
@@ -123,6 +125,9 @@ class ResourceSerializer(serializers.ModelSerializer):
                 attrs['object_key'] = validate_tenant_object_key(object_key, tenant=tenant)
             except MinioConfigError as exc:
                 raise serializers.ValidationError({'objectKey': str(exc)}) from exc
+            if not attrs.get('storage_backend'):
+                active_backend = get_minio_settings().storage_backend
+                attrs['storage_backend'] = active_backend if active_backend == 'r2' else ''
         if resource_type == Resource.TYPE_VIDEO:
             minio_settings = get_minio_settings()
             submitted_cloud_url = (attrs.get('cloud_url') or '').strip()
@@ -160,7 +165,7 @@ class ResourceSerializer(serializers.ModelSerializer):
         clear_file = validated_data.pop('_clear_file', False)
         new_object_key = validated_data.get('object_key')
         if new_object_key is not None and instance.object_key and new_object_key != instance.object_key:
-            delete_object(instance.object_key)
+            delete_object(instance.object_key, backend=instance.storage_backend)
         if clear_file:
             if instance.file:
                 instance.file.delete(save=False)
@@ -169,10 +174,16 @@ class ResourceSerializer(serializers.ModelSerializer):
 
 
 class MinioConfigSerializer(serializers.ModelSerializer):
+    storageBackend = serializers.ChoiceField(source='storage_backend', choices=MinioConfig.STORAGE_BACKEND_CHOICES, required=False)
     accessKey = serializers.CharField(source='access_key', required=False, allow_blank=True)
     secretKey = serializers.CharField(source='secret_key', required=False, allow_blank=True, write_only=True)
     bucketName = serializers.CharField(source='bucket_name', required=False, allow_blank=True)
     publicBaseUrl = serializers.CharField(source='public_base_url', required=False, allow_blank=True)
+    r2AccountId = serializers.CharField(source='r2_account_id', required=False, allow_blank=True)
+    r2AccessKeyId = serializers.CharField(source='r2_access_key_id', required=False, allow_blank=True)
+    r2SecretAccessKey = serializers.CharField(source='r2_secret_access_key', required=False, allow_blank=True, write_only=True)
+    r2BucketName = serializers.CharField(source='r2_bucket_name', required=False, allow_blank=True)
+    r2PublicBaseUrl = serializers.CharField(source='r2_public_base_url', required=False, allow_blank=True)
     videoMaxSizeMB = serializers.IntegerField(source='video_max_size_mb', required=False, min_value=1)
     allowVideoCloudUrl = serializers.BooleanField(source='allow_video_cloud_url', required=False)
     isActive = serializers.BooleanField(source='is_active', required=False)
@@ -181,12 +192,18 @@ class MinioConfigSerializer(serializers.ModelSerializer):
         model = MinioConfig
         fields = (
             'endpoint',
+            'storageBackend',
             'accessKey',
             'secretKey',
             'bucketName',
             'secure',
             'region',
             'publicBaseUrl',
+            'r2AccountId',
+            'r2AccessKeyId',
+            'r2SecretAccessKey',
+            'r2BucketName',
+            'r2PublicBaseUrl',
             'videoMaxSizeMB',
             'allowVideoCloudUrl',
             'isActive',

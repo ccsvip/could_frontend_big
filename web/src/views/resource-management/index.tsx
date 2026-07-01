@@ -36,9 +36,9 @@ import {
   deleteImageResource,
   deleteVideoResource,
   fetchImageResources,
+  fetchResourceUploadConfig,
   fetchVideoResources,
-  fetchVideoUploadConfig,
-  presignVideoUpload,
+  presignResourceUpload,
   uploadFileToPresignedUrl,
   updateImageResource,
   updateVideoResource,
@@ -66,6 +66,7 @@ type ResourceFormValues = {
   category: ResourceCategory;
   description?: string;
   cloudUrl?: string;
+  storageBackend?: string;
   file?: UploadFile[];
   clearFile?: boolean;
   isDigitalHumanBackground?: boolean;
@@ -522,7 +523,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
   const [imageUsage, setImageUsage] = useState<ImageUsage>('material');
   const [batchModalVisible, setBatchModalVisible] = useState(false);
   const [batchSubmitting, setBatchSubmitting] = useState(false);
-  const [videoUploadConfig, setVideoUploadConfig] = useState<VideoUploadConfig | null>(null);
+  const [resourceUploadConfig, setResourceUploadConfig] = useState<(VideoUploadConfig & { imageDirectUploadEnabled?: boolean }) | null>(null);
   const [uploadProgress, setUploadProgress] = useState<{
     visible: boolean;
     percent: number;
@@ -561,15 +562,12 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
   }, [loadData]);
 
   useEffect(() => {
-    if (resourceType !== 'video') {
-      return;
-    }
-    fetchVideoUploadConfig()
-      .then(setVideoUploadConfig)
+    fetchResourceUploadConfig()
+      .then(setResourceUploadConfig)
       .catch(() => {
-        setVideoUploadConfig(null);
+        setResourceUploadConfig(null);
       });
-  }, [resourceType]);
+  }, []);
 
   const openCreateModal = () => {
     setEditingItem(null);
@@ -637,18 +635,18 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
     }
   };
 
-  const uploadVideoToMinio = async (file: File): Promise<{ objectKey: string; objectSize: number } | null> => {
-    if (videoUploadConfig && !videoUploadConfig.enabled) {
-      message.error('MinIO 视频直传未启用，请填写云端 URL 或联系超级管理员');
+  const uploadResourceToObjectStorage = async (file: File): Promise<{ objectKey: string; objectSize: number; storageBackend?: string } | null> => {
+    if (resourceUploadConfig && !resourceUploadConfig.enabled) {
+      message.error(resourceUploadConfig.storageBackend === 'r2' ? 'R2 存储桶未配置完整，请联系超级管理员' : '视频直传未启用，请填写云端 URL 或联系超级管理员');
       return null;
     }
-    const maxSizeBytes = videoUploadConfig?.maxSizeBytes;
+    const maxSizeBytes = resourceType === 'video' ? resourceUploadConfig?.maxSizeBytes : undefined;
     if (maxSizeBytes && file.size > maxSizeBytes) {
-      message.error(`视频大小超出限制，最多 ${videoUploadConfig?.maxSizeMB ?? Math.floor(maxSizeBytes / 1024 / 1024)}MB`);
+      message.error(`视频大小超出限制，最多 ${resourceUploadConfig?.maxSizeMB ?? Math.floor(maxSizeBytes / 1024 / 1024)}MB`);
       return null;
     }
 
-    if (videoUploadConfig?.quotaLimited && videoUploadConfig.remainingBytes != null && file.size > videoUploadConfig.remainingBytes) {
+    if (resourceType === 'video' && resourceUploadConfig?.quotaLimited && resourceUploadConfig.remainingBytes != null && file.size > resourceUploadConfig.remainingBytes) {
       message.error('公司视频剩余额度不足，请联系超级管理员调整额度');
       return null;
     }
@@ -665,7 +663,8 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
     });
 
     try {
-      const presigned = await presignVideoUpload({
+      const presigned = await presignResourceUpload({
+        resourceType,
         filename: file.name,
         contentType: file.type || 'application/octet-stream',
         fileSize: file.size,
@@ -686,7 +685,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         },
       });
       setUploadProgress((prev) => ({ ...prev, percent: 100, status: 'success', message: '上传完成' }));
-      return { objectKey: presigned.objectKey, objectSize: presigned.objectSize ?? file.size };
+      return { objectKey: presigned.objectKey, objectSize: presigned.objectSize ?? file.size, storageBackend: presigned.storageBackend };
     } catch (error) {
       const aborted = controller.signal.aborted || (error as Error)?.name === 'CanceledError';
       setUploadProgress((prev) => ({
@@ -695,7 +694,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         message: aborted ? '上传已取消' : '上传失败',
       }));
       if (!aborted) {
-        message.error('视频上传到 MinIO 失败，请重试');
+        message.error(resourceUploadConfig?.storageBackend === 'r2' ? '上传到 R2 失败，请重试' : '上传到对象存储失败，请重试');
       }
       return null;
     } finally {
@@ -722,14 +721,16 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         return;
       }
 
-      if (resourceType === 'video' && selectedFile) {
-        const uploaded = await uploadVideoToMinio(selectedFile);
+      if (((resourceType === 'video') || (resourceType === 'image' && resourceUploadConfig?.storageBackend === 'r2')) && selectedFile) {
+        const uploaded = await uploadResourceToObjectStorage(selectedFile);
         if (!uploaded) {
           return;
         }
         objectKey = uploaded.objectKey;
         objectSize = uploaded.objectSize;
+        const storageBackend = uploaded.storageBackend;
         file = undefined;
+        form.setFieldValue('storageBackend', storageBackend);
       }
 
       const payload = {
@@ -739,6 +740,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         cloudUrl,
         objectKey: objectKey || undefined,
         objectSize,
+        storageBackend: form.getFieldValue('storageBackend') || undefined,
         file,
         isDigitalHumanBackground: resourceType === 'image' ? Boolean(values.isDigitalHumanBackground) : false,
         clearFile: resourceType === 'image' ? Boolean(values.clearFile) : false,
@@ -751,7 +753,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
       }
 
       if (resourceType === 'video' && objectSize != null) {
-        setVideoUploadConfig((current) => current
+        setResourceUploadConfig((current) => current
           ? {
               ...current,
               usedBytes: current.usedBytes + objectSize,
@@ -797,12 +799,30 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         return;
       }
       setBatchSubmitting(true);
-      await batchCreateImageResources({
-        files,
-        category: values.category,
-        description: values.description,
-        isDigitalHumanBackground: Boolean(values.isDigitalHumanBackground),
-      });
+      if (resourceUploadConfig?.storageBackend === 'r2') {
+        for (const file of files) {
+          const uploaded = await uploadResourceToObjectStorage(file);
+          if (!uploaded) {
+            return;
+          }
+          await createImageResource({
+            name: file.name.replace(/\.[^.]+$/, '') || file.name,
+            category: values.category,
+            description: values.description,
+            objectKey: uploaded.objectKey,
+            objectSize: uploaded.objectSize,
+            storageBackend: uploaded.storageBackend,
+            isDigitalHumanBackground: Boolean(values.isDigitalHumanBackground),
+          });
+        }
+      } else {
+        await batchCreateImageResources({
+          files,
+          category: values.category,
+          description: values.description,
+          isDigitalHumanBackground: Boolean(values.isDigitalHumanBackground),
+        });
+      }
       const nextImageUsage: ImageUsage = values.isDigitalHumanBackground ? 'background' : 'material';
       message.success(`已上传 ${files.length} 个图片资源`);
       closeBatchModal();
@@ -823,7 +843,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
   };
 
   const emptyDescription = resourceType === 'image' ? '暂无图片资源，请先上传图片。' : '暂无视频资源，请先上传视频。';
-  const showCloudUrlField = resourceType === 'image' || videoUploadConfig?.allowCloudUrl !== false;
+  const showCloudUrlField = resourceType === 'image' || resourceUploadConfig?.allowCloudUrl !== false;
 
   return (
     <Space direction="vertical" size={18} className="w-full">
@@ -1019,9 +1039,9 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
             <Space direction="vertical" size={8} className="mb-3 w-full">
               <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600">
                 <Space wrap size={12}>
-                  <span>单文件最大：{videoUploadConfig ? formatFileMB(videoUploadConfig.maxSizeBytes) : '加载中'}</span>
-                  <span>已用：{formatFileMB(videoUploadConfig?.usedBytes)}</span>
-                  <span>剩余：{videoUploadConfig?.quotaLimited ? formatFileMB(videoUploadConfig.remainingBytes) : '不限制'}</span>
+                  <span>单文件最大：{resourceUploadConfig ? formatFileMB(resourceUploadConfig.maxSizeBytes) : '加载中'}</span>
+                  <span>已用：{formatFileMB(resourceUploadConfig?.usedBytes)}</span>
+                  <span>剩余：{resourceUploadConfig?.quotaLimited ? formatFileMB(resourceUploadConfig.remainingBytes) : '不限制'}</span>
                 </Space>
               </div>
               {uploadProgress.visible ? (

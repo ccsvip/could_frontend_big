@@ -5,8 +5,10 @@ from apps.resources.models import MinioConfig, Resource, TenantVideoQuota
 from apps.resources.services.minio_client import (
     MinioConfigError,
     build_public_object_url,
+    build_resource_object_key,
     build_video_object_key,
     get_minio_settings,
+    presign_resource_put_url,
     presign_video_put_url,
     validate_tenant_object_key,
 )
@@ -25,6 +27,13 @@ class MinioClientTests(TestCase):
         object_key = build_video_object_key('demo video.mp4', tenant=tenant)
 
         self.assertRegex(object_key, rf'^tenants/{tenant.id}/videos/\d{{4}}/\d{{2}}/\d{{2}}/[0-9a-f-]+\.mp4$')
+
+    def test_image_object_key_is_namespaced_by_tenant(self):
+        tenant = Tenant.objects.create(name='Tenant A', code='tenant-a')
+
+        object_key = build_resource_object_key('demo image.png', tenant=tenant, resource_type=Resource.TYPE_IMAGE)
+
+        self.assertRegex(object_key, rf'^tenants/{tenant.id}/images/\d{{4}}/\d{{2}}/\d{{2}}/[0-9a-f-]+\.png$')
 
     def test_validate_tenant_object_key_rejects_other_tenant_prefix(self):
         tenant = Tenant.objects.create(name='Tenant A', code='tenant-a')
@@ -66,6 +75,44 @@ class MinioClientTests(TestCase):
         self.assertEqual(settings.endpoint, 'storage.example.com:9000')
         self.assertEqual(settings.bucket_name, 'tenant-videos')
         self.assertEqual(public_url, 'https://storage.example.com:9000/tenant-videos/tenants/1/videos/demo.mp4')
+
+    def test_r2_public_url_uses_public_base_url(self):
+        MinioConfig.load()
+        MinioConfig.objects.update(r2_public_base_url='https://cdn.example.com/ai-bucket')
+
+        public_url = build_public_object_url('tenants/1/images/demo.png', backend='r2')
+
+        self.assertEqual(public_url, 'https://cdn.example.com/ai-bucket/tenants/1/images/demo.png')
+
+    def test_r2_presign_uses_r2_client_for_images(self):
+        tenant = Tenant.objects.create(name='Tenant A', code='tenant-a')
+        MinioConfig.load()
+        MinioConfig.objects.update(
+            storage_backend=MinioConfig.STORAGE_BACKEND_R2,
+            r2_account_id='account-id',
+            r2_access_key_id='r2-access',
+            r2_secret_access_key='r2-secret',
+            r2_bucket_name='ai-bucket',
+            r2_public_base_url='https://cdn.example.com/ai-bucket',
+        )
+
+        class FakeClient:
+            def presigned_put_object(self, bucket_name, object_name, expires):
+                return f'https://upload.example.com/{bucket_name}/{object_name}'
+
+        with patch('apps.resources.services.minio_client._build_r2_client', return_value=FakeClient()):
+            response = presign_resource_put_url(
+                resource_type=Resource.TYPE_IMAGE,
+                filename='demo.png',
+                content_type='image/png',
+                file_size=1024,
+                tenant=tenant,
+            )
+
+        self.assertEqual(response['storageBackend'], 'r2')
+        self.assertEqual(response['bucket'], 'ai-bucket')
+        self.assertIn(f'tenants/{tenant.id}/images/', response['objectKey'])
+        self.assertTrue(response['publicUrl'].startswith('https://cdn.example.com/ai-bucket/tenants/'))
 
     @override_settings(
         MINIO_ENDPOINT='localhost:9000',

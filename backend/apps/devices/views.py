@@ -540,7 +540,7 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
             if item.cloud_url:
                 return item.cloud_url
             if item.object_key:
-                return build_public_object_url(item.object_key)
+                return build_public_object_url(item.object_key, backend=item.storage_backend)
             return file_url(item.file)
 
         return {

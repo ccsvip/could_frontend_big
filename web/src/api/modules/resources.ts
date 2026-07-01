@@ -13,6 +13,7 @@ export type ResourceRecord = {
   categoryLabel: string;
   description: string;
   cloudUrl: string;
+  storageBackend?: string;
   objectKey?: string;
   objectSize?: number | null;
   isDigitalHumanBackground: boolean;
@@ -45,6 +46,7 @@ export type ResourcePayload = {
   category: ResourceCategory;
   description?: string;
   cloudUrl?: string;
+  storageBackend?: string;
   objectKey?: string;
   objectSize?: number | null;
   isDigitalHumanBackground?: boolean;
@@ -65,6 +67,9 @@ const buildFormData = (payload: ResourcePayload) => {
   formData.append('category', payload.category);
   formData.append('description', payload.description || '');
   formData.append('cloudUrl', payload.cloudUrl || '');
+  if (payload.storageBackend) {
+    formData.append('storageBackend', payload.storageBackend);
+  }
   if (payload.objectKey) {
     formData.append('objectKey', payload.objectKey);
   }
@@ -143,6 +148,7 @@ export const deleteVideoResource = async (id: number) => {
 
 export type VideoUploadConfig = {
   enabled: boolean;
+  storageBackend: 'local' | 'r2';
   maxSizeBytes: number;
   maxSizeMB: number;
   bucketName: string;
@@ -160,6 +166,7 @@ export type VideoUploadConfig = {
 export type VideoPresignResponse = {
   uploadUrl: string;
   objectKey: string;
+  storageBackend?: string;
   publicUrl: string;
   bucket: string;
   expiresIn: number;
@@ -177,6 +184,21 @@ export type VideoPresignResponse = {
 
 export const fetchVideoUploadConfig = async () => {
   const response = await httpClient.get<VideoUploadConfig>('/resources/videos/upload-config/');
+  return response.data;
+};
+
+export const fetchResourceUploadConfig = async () => {
+  const response = await httpClient.get<VideoUploadConfig & { imageDirectUploadEnabled: boolean }>('/resources/upload-config/');
+  return response.data;
+};
+
+export const presignResourceUpload = async (params: { resourceType: ResourceType; filename: string; contentType: string; fileSize: number }) => {
+  const response = await httpClient.post<VideoPresignResponse>('/resources/presign/', {
+    resourceType: params.resourceType,
+    filename: params.filename,
+    contentType: params.contentType,
+    fileSize: params.fileSize,
+  });
   return response.data;
 };
 

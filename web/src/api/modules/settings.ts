@@ -1,12 +1,17 @@
 import { httpClient } from '../client';
 
 export type MinioSettingsRecord = {
+  storageBackend: 'local' | 'r2';
   endpoint: string;
   accessKey: string;
   bucketName: string;
   secure: boolean;
   region: string;
   publicBaseUrl: string;
+  r2AccountId: string;
+  r2AccessKeyId: string;
+  r2BucketName: string;
+  r2PublicBaseUrl: string;
   videoMaxSizeMB: number;
   allowVideoCloudUrl: boolean;
   isActive: boolean;
@@ -15,6 +20,7 @@ export type MinioSettingsRecord = {
 
 export type MinioSettingsPayload = Partial<Omit<MinioSettingsRecord, 'updated_at'>> & {
   secretKey?: string;
+  r2SecretAccessKey?: string;
 };
 
 export type TenantVideoQuotaRecord = {

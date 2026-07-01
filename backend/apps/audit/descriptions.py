@@ -25,7 +25,7 @@ _SPECIAL_ROUTE_LABELS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r'^/api/v1/resources/videos/upload-config/?$'), '视频上传'),
     (re.compile(r'^/api/v1/resources/videos/presign/?$'), '视频上传'),
     (re.compile(r'^/api/v1/settings/minio/quotas/?$'), '视频配额'),
-    (re.compile(r'^/api/v1/settings/minio/?$'), 'MinIO 配置'),
+    (re.compile(r'^/api/v1/settings/minio/?$'), '存储位置'),
     (re.compile(r'^/api/v1/settings/llm/providers/\d+/models/?$'), '平台LLM模型'),
     (re.compile(r'^/api/v1/settings/llm/providers(?:/|$)'), '平台LLM厂商'),
     (re.compile(r'^/api/v1/settings/llm/models(?:/|$)'), '平台LLM模型'),

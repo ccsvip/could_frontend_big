@@ -172,7 +172,7 @@ const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
     children: [
       {
         key: 'settings-minio',
-        label: 'MinIO 设置',
+        label: '存储位置',
         icon: 'CloudOutlined',
         path: '/settings/minio',
       },

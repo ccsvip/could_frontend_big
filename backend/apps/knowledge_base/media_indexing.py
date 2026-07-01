@@ -43,7 +43,7 @@ def _resource_public_url(resource: Resource | None) -> str:
     if resource is None:
         return ''
     if resource.object_key:
-        return build_public_object_url(resource.object_key)
+        return build_public_object_url(resource.object_key, backend=resource.storage_backend)
     return resource.cloud_url or ''
 
 

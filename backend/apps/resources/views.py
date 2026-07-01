@@ -76,7 +76,9 @@ from .services.minio_client import (
     MinioConfigError,
     delete_object,
     get_minio_settings,
+    get_resource_upload_config,
     get_video_upload_config,
+    presign_resource_put_url,
     presign_video_put_url,
 )
 from .tasks import enqueue_command_change_notification, enqueue_command_notification
@@ -98,6 +100,13 @@ def get_business_write_tenant(request):
             return Tenant.objects.filter(id=int(raw), is_active=True).first()
         return None
     return get_request_tenant(request)
+
+
+class CanCreateAnyResource:
+    message = '当前账号缺少资源创建权限'
+
+    def has_permission(self, request, view):
+        return CanCreateImageResources().has_permission(request, view) or CanCreateVideoResources().has_permission(request, view)
 
 
 class BaseResourceViewSet(CachedBusinessResponseMixin, TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
@@ -140,7 +149,11 @@ class BaseResourceViewSet(CachedBusinessResponseMixin, TenantScopedQuerysetMixin
             from rest_framework.exceptions import ValidationError
 
             raise ValidationError({'message': f'该资源被 {reference_count} 个标注回复引用，不能删除'})
+        object_key = (instance.object_key or '').strip()
+        storage_backend = instance.storage_backend
         super().perform_destroy(instance)
+        if object_key:
+            delete_object(object_key, backend=storage_backend)
 
     @staticmethod
     def _agent_annotation_reference_count(resource: Resource) -> int:
@@ -272,18 +285,57 @@ class VideoResourceViewSet(BaseResourceViewSet):
         'destroy': [CanDeleteVideoResources],
     }
 
-    def perform_destroy(self, instance):
-        object_key = (instance.object_key or '').strip()
-        super().perform_destroy(instance)
-        if object_key:
-            delete_object(object_key)
-
-
 class VideoUploadConfigView(APIView):
     permission_classes = [CanCreateVideoResources]
 
     def get(self, request):
         return Response(get_video_upload_config(get_business_write_tenant(request)))
+
+
+class ResourceUploadConfigView(APIView):
+    permission_classes = [CanCreateAnyResource]
+
+    def get(self, request):
+        return Response(get_resource_upload_config(get_business_write_tenant(request)))
+
+
+class ResourceUploadPresignView(APIView):
+    def get_permissions(self):
+        data = self.request.data if isinstance(self.request.data, dict) else {}
+        resource_type = str(data.get('resourceType') or data.get('resource_type') or '').strip()
+        permission = CanCreateImageResources if resource_type == Resource.TYPE_IMAGE else CanCreateVideoResources
+        return [permission()]
+
+    def post(self, request):
+        data = request.data if isinstance(request.data, dict) else {}
+        resource_type = str(data.get('resourceType') or data.get('resource_type') or '').strip()
+        filename = str(data.get('filename') or '').strip()
+        content_type = str(data.get('contentType') or data.get('content_type') or '').strip()
+        try:
+            file_size = int(data.get('fileSize') or data.get('file_size') or 0)
+        except (TypeError, ValueError):
+            file_size = 0
+
+        if resource_type not in {Resource.TYPE_IMAGE, Resource.TYPE_VIDEO}:
+            return Response({'resourceType': 'resourceType 必须是 image 或 video'}, status=status.HTTP_400_BAD_REQUEST)
+        if not filename:
+            return Response({'filename': 'filename 不能为空'}, status=status.HTTP_400_BAD_REQUEST)
+        if file_size <= 0:
+            return Response({'fileSize': 'fileSize 必须是正整数'}, status=status.HTTP_400_BAD_REQUEST)
+
+        tenant = get_business_write_tenant(request)
+        try:
+            return Response(
+                presign_resource_put_url(
+                    resource_type=resource_type,
+                    filename=filename,
+                    content_type=content_type,
+                    file_size=file_size,
+                    tenant=tenant,
+                )
+            )
+        except MinioConfigError as exc:
+            return Response({'message': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class VideoUploadPresignView(APIView):
@@ -324,12 +376,17 @@ class MinioSettingsView(APIView):
         cfg = MinioConfig.load()
         effective = get_minio_settings()
         return {
+            'storageBackend': effective.storage_backend,
             'endpoint': effective.endpoint,
             'accessKey': effective.access_key,
             'bucketName': effective.bucket_name,
             'secure': effective.secure,
             'region': effective.region,
             'publicBaseUrl': effective.public_base_url,
+            'r2AccountId': effective.r2_account_id,
+            'r2AccessKeyId': effective.r2_access_key_id,
+            'r2BucketName': effective.r2_bucket_name,
+            'r2PublicBaseUrl': effective.r2_public_base_url,
             'videoMaxSizeMB': effective.video_max_size_bytes // (1024 * 1024),
             'allowVideoCloudUrl': effective.allow_video_cloud_url,
             'isActive': effective.is_active,

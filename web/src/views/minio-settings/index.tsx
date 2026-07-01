@@ -1,5 +1,5 @@
 import { CloudOutlined, ReloadOutlined, SaveOutlined } from '@ant-design/icons';
-import { Button, Card, Form, Input, InputNumber, Space, Switch, Table, Tag, Typography, message } from 'antd';
+import { Button, Card, Form, Input, InputNumber, Select, Space, Switch, Table, Tag, Typography, message } from 'antd';
 import { useEffect, useState } from 'react';
 import {
   fetchMinioSettings,
@@ -19,6 +19,7 @@ const formatMB = (value: number | null | undefined) => {
 
 export const MinioSettingsPage = () => {
   const [form] = Form.useForm<MinioSettingsPayload>();
+  const storageBackend = Form.useWatch('storageBackend', form) || 'local';
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [quotaRows, setQuotaRows] = useState<TenantVideoQuotaRecord[]>([]);
@@ -27,7 +28,7 @@ export const MinioSettingsPage = () => {
     setLoading(true);
     try {
       const [settings, quotaData] = await Promise.all([fetchMinioSettings(), fetchTenantVideoQuotas()]);
-      form.setFieldsValue({ ...settings, secretKey: '' });
+      form.setFieldsValue({ ...settings, secretKey: '', r2SecretAccessKey: '' });
       setQuotaRows(quotaData.results);
     } catch {
       // handled by interceptor
@@ -46,6 +47,9 @@ export const MinioSettingsPage = () => {
     if (!payload.secretKey) {
       delete payload.secretKey;
     }
+    if (!payload.r2SecretAccessKey) {
+      delete payload.r2SecretAccessKey;
+    }
     setSaving(true);
     try {
       const settings = await updateMinioSettings(payload);
@@ -56,9 +60,9 @@ export const MinioSettingsPage = () => {
           quotaMB: item.quotaLimited ? item.quotaMB : null,
         })),
       });
-      form.setFieldsValue({ ...settings, secretKey: '' });
+      form.setFieldsValue({ ...settings, secretKey: '', r2SecretAccessKey: '' });
       setQuotaRows(quotaData.results);
-      message.success('MinIO 设置已保存');
+      message.success('存储位置已保存');
     } catch {
       // handled by interceptor
     } finally {
@@ -79,8 +83,8 @@ export const MinioSettingsPage = () => {
               <CloudOutlined className="text-xl" />
             </div>
             <div>
-              <Typography.Title level={3} className="!mb-1 !text-slate-900">MinIO 设置</Typography.Title>
-              <Typography.Text className="!text-slate-500">配置平台视频直传对象存储，业务数据按公司对象前缀隔离。</Typography.Text>
+              <Typography.Title level={3} className="!mb-1 !text-slate-900">存储位置</Typography.Title>
+              <Typography.Text className="!text-slate-500">配置平台图片和视频上传位置，选择 R2 后图片与视频都会直传到 R2 存储桶。</Typography.Text>
             </div>
           </div>
           <Space wrap>
@@ -91,12 +95,49 @@ export const MinioSettingsPage = () => {
       </Card>
 
       <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
-        <Form<MinioSettingsPayload> form={form} layout="vertical" className="max-w-3xl">
-          <Form.Item label="Endpoint" name="endpoint" rules={[{ required: true, message: '请输入 Endpoint' }]}>
+        <Form<MinioSettingsPayload> form={form} layout="vertical" className="max-w-3xl" initialValues={{ storageBackend: 'local' }}>
+          <Form.Item label="当前存储位置" name="storageBackend" rules={[{ required: true, message: '请选择存储位置' }]}>
+            <Select
+              options={[
+                { label: '现有方案', value: 'local' },
+                { label: 'R2 存储桶', value: 'r2' },
+              ]}
+            />
+          </Form.Item>
+
+          {storageBackend === 'r2' ? (
+            <Card size="small" className="!mb-4 !rounded-xl !border-slate-200" title="R2 存储桶">
+              <Form.Item label="Account ID" name="r2AccountId" rules={[{ required: true, message: '请输入 R2 Account ID' }]}>
+                <Input placeholder="Cloudflare Account ID" />
+              </Form.Item>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Form.Item label="Access Key ID" name="r2AccessKeyId" rules={[{ required: true, message: '请输入 R2 Access Key ID' }]}>
+                  <Input autoComplete="off" />
+                </Form.Item>
+                <Form.Item label="Secret Access Key" name="r2SecretAccessKey" tooltip="留空表示不修改已保存的 R2 Secret">
+                  <Input.Password autoComplete="new-password" placeholder="留空则不修改" />
+                </Form.Item>
+              </div>
+              <Form.Item label="Bucket" name="r2BucketName" rules={[{ required: true, message: '请输入 R2 Bucket' }]}>
+                <Input placeholder="ai-bucket" />
+              </Form.Item>
+              <Form.Item
+                label="Public Base URL"
+                name="r2PublicBaseUrl"
+                tooltip="必须是百炼和浏览器都能访问的公开地址，例如 R2 自定义域名或 r2.dev 公开域名。S3 API 端点不能替代公开访问地址。"
+                rules={[{ required: true, message: '请输入 R2 公网访问地址' }]}
+              >
+                <Input placeholder="https://pub-xxx.r2.dev 或 https://cdn.example.com" />
+              </Form.Item>
+            </Card>
+          ) : null}
+
+          <Typography.Title level={5} className="!mb-3 !text-slate-800">现有 MinIO / 视频直传方案</Typography.Title>
+          <Form.Item label="Endpoint" name="endpoint" rules={[{ required: storageBackend !== 'r2', message: '请输入 Endpoint' }]}> 
             <Input placeholder="localhost:9000" />
           </Form.Item>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Form.Item label="Access Key" name="accessKey" rules={[{ required: true, message: '请输入 Access Key' }]}>
+            <Form.Item label="Access Key" name="accessKey" rules={[{ required: storageBackend !== 'r2', message: '请输入 Access Key' }]}> 
               <Input autoComplete="off" />
             </Form.Item>
             <Form.Item label="Secret Key" name="secretKey" tooltip="留空表示不修改已保存的 Secret Key">
@@ -104,7 +145,7 @@ export const MinioSettingsPage = () => {
             </Form.Item>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Form.Item label="Bucket" name="bucketName" rules={[{ required: true, message: '请输入 Bucket' }]}>
+            <Form.Item label="Bucket" name="bucketName" rules={[{ required: storageBackend !== 'r2', message: '请输入 Bucket' }]}> 
               <Input placeholder="digital-human" />
             </Form.Item>
             <Form.Item label="Region" name="region">

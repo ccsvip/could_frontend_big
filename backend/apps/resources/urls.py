@@ -13,6 +13,8 @@ from .views import (
     MinioSettingsView,
     MinioTenantQuotaView,
     ModelAssetViewSet,
+    ResourceUploadConfigView,
+    ResourceUploadPresignView,
     ScrollingTextViewSet,
     TaskCommandViewSet,
     VideoUploadConfigView,
@@ -35,6 +37,8 @@ router.register('commands/points', PointViewSet, basename='point')
 urlpatterns = [
     path('settings/minio/', MinioSettingsView.as_view(), name='minio-settings'),
     path('settings/minio/quotas/', MinioTenantQuotaView.as_view(), name='minio-tenant-quotas'),
+    path('resources/upload-config/', ResourceUploadConfigView.as_view(), name='resource-upload-config'),
+    path('resources/presign/', ResourceUploadPresignView.as_view(), name='resource-upload-presign'),
     path('resources/videos/upload-config/', VideoUploadConfigView.as_view(), name='video-upload-config'),
     path('resources/videos/presign/', VideoUploadPresignView.as_view(), name='video-upload-presign'),
     path('commands/aliyun/', AliyunCommandListView.as_view(), name='aliyun-command-list'),

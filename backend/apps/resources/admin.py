@@ -167,14 +167,20 @@ class VoiceToneAdmin(admin.ModelAdmin):
 
 @admin.register(MinioConfig)
 class MinioConfigAdmin(admin.ModelAdmin):
-    list_display = ('endpoint', 'bucket_name', 'is_active', 'video_max_size_mb', 'updated_at')
+    list_display = ('storage_backend', 'endpoint', 'bucket_name', 'r2_bucket_name', 'is_active', 'video_max_size_mb', 'updated_at')
     fieldsets = (
+        ('存储位置', {
+            'fields': ('storage_backend',),
+        }),
         ('连接信息', {
             'fields': ('endpoint', 'secure', 'region', 'access_key', 'secret_key'),
             'description': '字段留空时回退 backend/.env 里的同名 MINIO_* 配置。',
         }),
         ('Bucket / 访问', {
             'fields': ('bucket_name', 'public_base_url', 'is_active'),
+        }),
+        ('R2 存储桶', {
+            'fields': ('r2_account_id', 'r2_access_key_id', 'r2_secret_access_key', 'r2_bucket_name', 'r2_public_base_url'),
         }),
         ('上传约束', {
             'fields': ('video_max_size_mb',),

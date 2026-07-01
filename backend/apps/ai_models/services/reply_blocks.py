@@ -121,7 +121,7 @@ def _resource_url(resource: Resource | None, *, request=None) -> str:
     if resource.object_key:
         from apps.resources.services.minio_client import build_public_object_url
 
-        return build_public_object_url(resource.object_key)
+        return build_public_object_url(resource.object_key, backend=resource.storage_backend)
     file_url = build_absolute_file_url(request, resource.file)
     if file_url:
         return file_url
