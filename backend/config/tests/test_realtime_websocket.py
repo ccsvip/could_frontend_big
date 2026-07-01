@@ -1973,7 +1973,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 event_types = []
                 event_payloads = []
                 tail_audio_sent = False
-                for _ in range(12):
+                for _ in range(14):
                     try:
                         message = await communicator.receive_output(timeout=1)
                     except asyncio.TimeoutError:
@@ -1998,12 +1998,17 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 self.assertIn('llm.started', event_types)
                 self.assertIn('llm.tts_segment', event_types)
                 self.assertIn('tts.ready', event_types)
+                self.assertIn('tts.segment_start', event_types)
                 self.assertIn('binary', event_types)
+                self.assertIn('tts.segment_end', event_types)
                 self.assertIn('tts.done', event_types)
                 self.assertIn('llm.done', event_types)
                 self.assertEqual(event_types[-1], 'agent.done')
                 self.assertLess(event_types.index('asr.done'), event_types.index('llm.started'))
                 self.assertLess(event_types.index('llm.tts_segment'), event_types.index('tts.ready'))
+                self.assertLess(event_types.index('tts.segment_start'), event_types.index('binary'))
+                self.assertLess(event_types.index('binary'), event_types.index('tts.segment_end'))
+                self.assertLess(event_types.index('tts.segment_end'), event_types.index('tts.done'))
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)

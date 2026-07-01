@@ -1224,7 +1224,7 @@
 
       function renderAgentChat() {
         const suggested = (((state.runtimeConfig || {}).agentApplication || {}).suggestedQuestions || [])[0] || '你好，请介绍一下你自己。';
-        els.contentBody.innerHTML = '<div class="note warn">主链路是一个 RuntimeAgentRealtimeManager 负责完整智能体回答；ASR、LLM、TTS 是 manager 内部阶段。左侧 ASR/LLM/TTS 菜单只用于单步调试，不代表设备端需要拆成三个独立业务模块。</div><div class="table-wrap"><table><thead><tr><th>阶段</th><th>manager 内部动作</th></tr></thead><tbody><tr><td>开始会话</td><td>前端只发送 <code>agent.session.start</code>；文字问题放在 payload.text，语音问题随后推送 16k mono PCM。</td></tr><tr><td>ASR 完成</td><td>前端发送 <code>agent.session.finish</code> 后，后端自动使用最终纠错文本续接 LLM。</td></tr><tr><td>LLM 回复</td><td>同一连接返回 <code>llm.started</code>、<code>llm.delta</code>、<code>llm.tts_segment</code>、<code>llm.done</code>。</td></tr><tr><td>TTS 合成</td><td>后端收到可播报片段后自动排队调用 TTS，并在同一连接返回 <code>tts.ready</code>、binary PCM、<code>tts.done</code>。</td></tr><tr><td>TTS 播放</td><td>前端只播放同一 agent 会话返回的 PCM；实时播报期间禁用底部 audio，结束后生成完整回放。</td></tr><tr><td>DTO</td><td>命令、payload、event 可统一放在 bean/runtime/agent 这一类包下。</td></tr></tbody></table></div><div class="field"><label for="llmText">实时问题</label><textarea id="llmText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmVoiceStartBtn" type="button">开始问答</button><button class="button secondary" id="llmVoiceStopBtn" type="button" disabled>停止识别</button><button class="button secondary" id="llmBtn" type="button">用当前问题发送</button><button class="button secondary" id="llmTtsInterruptBtn" type="button" disabled>打断播报</button><label class="code-chip"><input id="llmAutoPlay" type="checkbox" checked> 自动播放</label></div><div class="grid"><article class="card"><h3>问题识别</h3><div id="llmAsrState" class="code-chip">等待录音</div></article><article class="card"><h3>完整回答</h3><div id="llmAnswerText" class="code-chip">等待回复</div></article><article class="card"><h3>回答播报</h3><div id="llmTtsState" class="code-chip">等待合成</div></article><article class="card"><h3>阶段首包耗时</h3><div id="llmTimingStats" class="timing-list">等待计时</div></article><article class="card"><h3>TTS 发送文本</h3><div id="llmTtsSegments" class="tts-debug-list"><span class="tts-debug-empty">等待片段</span></div></article></div><audio id="llmAudio" controls preload="none" hidden></audio><div class="detail-block"><strong>链路结果</strong><pre id="llmOutput">等待请求</pre></div><div class="note">特殊说明：智能体回答主链路统一使用 /ws/realtime/ 的 <code>agent.session.start</code>/<code>agent.session.finish</code>/<code>agent.session.cancel</code>；前端不拆分或清洗 TTS 文本，不再为每段 TTS 单独开 WebSocket；打断播报会停止本地 Web Audio 并取消当前 agent 会话。</div>';
+        els.contentBody.innerHTML = '<div class="note warn">主链路是一个 RuntimeAgentRealtimeManager 负责完整智能体回答；ASR、LLM、TTS 是 manager 内部阶段。左侧 ASR/LLM/TTS 菜单只用于单步调试，不代表设备端需要拆成三个独立业务模块。</div><div class="table-wrap"><table><thead><tr><th>阶段</th><th>manager 内部动作</th></tr></thead><tbody><tr><td>开始会话</td><td>前端只发送 <code>agent.session.start</code>；文字问题放在 payload.text，语音问题随后推送 16k mono PCM。</td></tr><tr><td>ASR 完成</td><td>前端发送 <code>agent.session.finish</code> 后，后端自动使用最终纠错文本续接 LLM。</td></tr><tr><td>LLM 回复</td><td>同一连接返回 <code>llm.started</code>、<code>llm.delta</code>、<code>llm.tts_segment</code>、<code>llm.done</code>。</td></tr><tr><td>TTS 合成</td><td>后端收到可播报片段后自动排队调用 TTS，并在同一连接返回 <code>tts.ready</code>、<code>tts.segment_start</code>、binary PCM、<code>tts.segment_end</code>、<code>tts.done</code>。</td></tr><tr><td>TTS 播放</td><td>前端只播放同一 agent 会话返回的 PCM；实时播报期间禁用底部 audio，结束后生成完整回放。</td></tr><tr><td>DTO</td><td>命令、payload、event 可统一放在 bean/runtime/agent 这一类包下。</td></tr></tbody></table></div><div class="field"><label for="llmText">实时问题</label><textarea id="llmText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmVoiceStartBtn" type="button">开始问答</button><button class="button secondary" id="llmVoiceStopBtn" type="button" disabled>停止识别</button><button class="button secondary" id="llmBtn" type="button">用当前问题发送</button><button class="button secondary" id="llmTtsInterruptBtn" type="button" disabled>打断播报</button><label class="code-chip"><input id="llmAutoPlay" type="checkbox" checked> 自动播放</label></div><div class="grid"><article class="card"><h3>问题识别</h3><div id="llmAsrState" class="code-chip">等待录音</div></article><article class="card"><h3>完整回答</h3><div id="llmAnswerText" class="code-chip">等待回复</div></article><article class="card"><h3>回答播报</h3><div id="llmTtsState" class="code-chip">等待合成</div></article><article class="card"><h3>阶段首包耗时</h3><div id="llmTimingStats" class="timing-list">等待计时</div></article><article class="card"><h3>TTS 发送文本</h3><div id="llmTtsSegments" class="tts-debug-list"><span class="tts-debug-empty">等待片段</span></div></article></div><audio id="llmAudio" controls preload="none" hidden></audio><div class="detail-block"><strong>链路结果</strong><pre id="llmOutput">等待请求</pre></div><div class="note">特殊说明：智能体回答主链路统一使用 /ws/realtime/ 的 <code>agent.session.start</code>/<code>agent.session.finish</code>/<code>agent.session.cancel</code>；前端不拆分或清洗 TTS 文本，不再为每段 TTS 单独开 WebSocket；打断播报会停止本地 Web Audio 并取消当前 agent 会话。</div>';
         const questionInput = document.getElementById('llmText');
         if (questionInput) {
           fitTextareaContent(questionInput);
@@ -1234,7 +1234,7 @@
         document.getElementById('llmVoiceStopBtn').addEventListener('click', () => stopAgentVoiceQuestion({ ask: true }));
         document.getElementById('llmBtn').addEventListener('click', () => sendLlmText({ source: 'manual' }));
         document.getElementById('llmTtsInterruptBtn').addEventListener('click', () => interruptAgentTtsPlayback('用户打断播报'));
-        writeRequestDetail({ label: '智能体回答链路', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { manager: 'RuntimeAgentRealtimeManager', start: { type: 'agent.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: '<optional text>' } }, finish: { type: 'agent.session.finish' }, cancel: { type: 'agent.session.cancel' }, callbacks: ['asr.transcript', 'asr.done', 'llm.delta', 'llm.tts_segment', 'tts.ready', 'binary PCM', 'tts.done', 'agent.done'], dtoPackage: 'bean/runtime/agent' }, note: 'ASR、LLM、TTS 由后端在同一个 agent 会话内自动串联；前端只负责开始/结束/取消会话和播放同一连接返回的 PCM。' });
+        writeRequestDetail({ label: '智能体回答链路', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { manager: 'RuntimeAgentRealtimeManager', start: { type: 'agent.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: '<optional text>' } }, finish: { type: 'agent.session.finish' }, cancel: { type: 'agent.session.cancel' }, callbacks: ['asr.transcript', 'asr.done', 'llm.delta', 'llm.tts_segment', 'tts.ready', 'tts.segment_start', 'binary PCM', 'tts.segment_end', 'tts.done', 'agent.done'], dtoPackage: 'bean/runtime/agent' }, note: 'ASR、LLM、TTS 由后端在同一个 agent 会话内自动串联；前端只负责开始/结束/取消会话和播放同一连接返回的 PCM。' });
       }
 
       async function startAgentVoiceQuestion() {
@@ -1457,7 +1457,7 @@
           if (answerNode && !answerNode.textContent) renderReplyBlocksInto(answerNode, result.answerBlocks, answer || '-');
           output.textContent = pretty([
             { manager: 'RuntimeAgentRealtimeManager', phase: 'agent.done', completeAnswer: answer },
-            { manager: 'RuntimeAgentRealtimeManager', phase: 'ttsPlayback', events: 'same websocket tts.ready/binary PCM/tts.done', autoPlay, callback: 'OnAiDialogueListener', segments: result.segments, chunks: result.chunks, bytes: result.bytes, objectUrl: result.objectUrl },
+            { manager: 'RuntimeAgentRealtimeManager', phase: 'ttsPlayback', events: 'same websocket tts.ready/tts.segment_start/binary PCM/tts.segment_end/tts.done', autoPlay, callback: 'OnAiDialogueListener', segments: result.segments, chunks: result.chunks, bytes: result.bytes, objectUrl: result.objectUrl },
           ]);
         } catch (error) {
           stopAgentTtsPlayback({ silent: true });
@@ -2635,7 +2635,7 @@
             ['phases.asrPreview', '接收 <code>asr.transcript</code> 的实时预览；上游原始事件是 <code>conversation.item.input_audio_transcription.text</code>，预览语义为 <code>text + stash</code>。'],
             ['phases.asrDone', '接收 <code>asr.transcript final=true</code>/<code>asr.done</code>，使用纠错后的最终 <code>text</code> 作为问题；上游最终事件是 <code>conversation.item.input_audio_transcription.completed</code> 的 <code>transcript</code>。'],
             ['phases.llmReply', '发送 <code>llm.session.start</code>。第一轮请求不传 <code>payload.conversationId</code>；保存 <code>llm.started.payload.conversationId</code> 或 <code>llm.done.payload.conversationId</code>；同一对话的后续文本问题再把它带回。处理 <code>llm.started</code>/<code>llm.delta</code>/<code>llm.tts_segment</code>/<code>llm.done</code>；标注命中时 <code>llm.done.payload.blocks</code>/<code>answerBlocks</code> 携带文本、图片、视频块。'],
-            ['phases.ttsSpeak', '后端在同一 agent 会话内维护一个上游 TTS WebSocket，持续写入多个 <code>llm.tts_segment</code>，接收 binary PCM 后用 Web Audio 顺序播报。'],
+            ['phases.ttsSpeak', '后端在同一 agent 会话内维护一个上游 TTS WebSocket，持续写入多个 <code>llm.tts_segment</code>；每段音频输出前后会返回 <code>tts.segment_start</code>/<code>tts.segment_end</code>，中间是 binary PCM。'],
             ['callbacks', '对外继续映射现有 <code>OnAiDialogueListener</code> 或本页实时播报/最终回放。'],
             ['dtoPackage', '安卓端建议将 command、payload、event DTO 统一放在 <code>bean/runtime/agent</code>。'],
           ],
@@ -2643,7 +2643,7 @@
             ['ASR 阶段', '<code>asr.ready</code>、<code>asr.transcript</code>、<code>asr.done</code>。实时预览看 <code>final=false</code>，最终问题看 <code>final=true</code>。'],
             ['LLM 阶段', '<code>llm.started</code>、<code>llm.delta</code>、<code>llm.tts_segment</code>、<code>llm.done</code>；<code>llm.started.payload.conversationId</code> 是服务端创建的数字会话 ID，安卓应立即保存。富媒体标注回复在完成事件中返回 <code>payload.blocks</code>/<code>answerBlocks</code>，客户端按顺序渲染 text/image/video。'],
             ['富媒体块', '<code>text</code> 块渲染文本；<code>image</code> 块渲染图片；<code>video</code> 块渲染视频控件。媒体块字段包含 <code>resourceId</code>、<code>resourceName</code>、<code>url</code>、<code>missing</code>；<code>missing=true</code> 时展示占位提示。TTS 只使用文本块拼出的 <code>answerText</code>。'],
-            ['TTS 阶段', '<code>tts.ready</code>、binary PCM、<code>tts.done</code>；一个 agent 会话内只应出现一次 ready/done，中间可有多个可播报片段对应的 PCM。'],
+            ['TTS 阶段', '<code>tts.ready</code>、<code>tts.segment_start</code>、binary PCM、<code>tts.segment_end</code>、<code>tts.done</code>；一个 agent 会话内只应出现一次 ready/done，中间可有多个可播报片段对应的 PCM。<code>tts.segment_start.payload</code> 包含 <code>index</code> 和 <code>text</code>，<code>tts.segment_end.payload</code> 包含 <code>index</code>。'],
             ['打断播报', '停止本地 Web Audio 队列，并发送 <code>agent.session.cancel</code> 取消当前 agent 会话；这只是打断当前回答，不代表用户要新建 LLM 对话，安卓本地保存的 <code>conversationId</code> 不应因此清空。'],
             ['停止', '才 cancel/abort 当前 LLM/TTS 或关闭当前流。'],
           ],
@@ -2653,7 +2653,9 @@
             { manager: 'RuntimeAgentRealtimeManager', phase: 'llmStarted', event: 'llm.started', payload: { questionText: '介绍一下展厅', conversationId: 123 } },
             { manager: 'RuntimeAgentRealtimeManager', phase: 'llmReply', event: 'llm.tts_segment', text: '这是展厅介绍。' },
             { manager: 'RuntimeAgentRealtimeManager', phase: 'llmDone', event: 'llm.done', payload: { answerText: '这是展厅介绍。', blocks: [{ type: 'text', text: '这是展厅介绍。' }, { type: 'image', resourceId: 101, resourceName: '展厅导览图', url: 'https://example.com/media/showroom.png', missing: false }, { type: 'video', resourceId: 102, resourceName: '演示视频', url: 'https://example.com/media/demo.mp4', missing: false }], conversationId: 123 } },
+            { manager: 'RuntimeAgentRealtimeManager', phase: 'ttsPlayback', event: 'tts.segment_start', payload: { index: 1, text: '这是展厅介绍。' } },
             { manager: 'RuntimeAgentRealtimeManager', phase: 'ttsPlayback', event: 'binary PCM', segment: 1, callback: 'OnAiDialogueListener' },
+            { manager: 'RuntimeAgentRealtimeManager', phase: 'ttsPlayback', event: 'tts.segment_end', payload: { index: 1 } },
           ],
           errors: runtimeDeviceErrors([['WS error / 440xx', '设备码不可解析、设备未绑定公司/智能体，或 ASR/LLM/TTS 任一内部阶段服务未配置。']]),
         };
@@ -2681,7 +2683,7 @@
             ['llm.delta', 'LLM 文字增量。用于实时上屏；完整回复以 <code>llm.done.payload.answerText</code> 为准。'],
             ['llm.tts_segment', '可播报句子片段。完整 agent 链路会把这些片段送入 TTS。'],
             ['llm.done', 'LLM 完成。<code>payload.answerText</code> 是完整回复，<code>payload.blocks</code>/<code>payload.answerBlocks</code> 是可选富媒体块数组，<code>payload.conversationId</code> 与 <code>llm.started</code> 相同，也可以作为兜底保存。'],
-            ['tts.ready / audio/pcm / tts.done', 'TTS 就绪、二进制 PCM 分片和完成事件；tts.ready 带 sampleRate/voice。'],
+            ['tts.ready / tts.segment_start / audio/pcm / tts.segment_end / tts.done', 'TTS 就绪、分段边界事件、二进制 PCM 分片和完成事件；tts.ready 带 sampleRate/voice。<code>tts.segment_start.payload</code> 包含 <code>index</code> 和 <code>text</code>，随后输出该段 binary PCM，<code>tts.segment_end.payload</code> 包含同一个 <code>index</code>。'],
             ['*.cancelled', '会话取消事件，只表示当前 ASR/LLM/TTS session 被取消；WebSocket 不应因为 cancel 被动断开，可继续发下一轮命令。取消 LLM 当前生成不等于新建对话，安卓不要自动清空 <code>conversationId</code>。'],
             ['close / disconnect', '客户端主动关闭 WebSocket 才会彻底结束连接；在线状态连接断开还会触发 offline。'],
             ['*.error', '失败事件，包含 message。'],
@@ -2698,6 +2700,9 @@
             { type: 'asr.transcript', id: '<sessionId>', text: '介绍一下', originalText: '介绍一下', final: false, sourceEventType: 'conversation.item.input_audio_transcription.text' },
             { type: 'asr.transcript', id: '<sessionId>', text: '介绍一下展厅', originalText: '介绍一下展厅', final: true, sourceEventType: 'conversation.item.input_audio_transcription.completed' },
             { type: 'asr.done', id: '<sessionId>' },
+            { type: 'tts.segment_start', id: '<sessionId>', payload: { index: 1, text: '第一段' } },
+            { type: 'binary PCM', id: '<sessionId>', segment: 1 },
+            { type: 'tts.segment_end', id: '<sessionId>', payload: { index: 1 } },
           ],
           errors: runtimeDeviceErrors([['WS error / 440xx', '设备码不可解析、未绑定公司/智能体，或对应能力服务未配置；跨公司数据不会透出。']]),
         };

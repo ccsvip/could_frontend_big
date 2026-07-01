@@ -128,8 +128,18 @@ class TTSRealtimeTests(TenantTestMixin, TestCase):
                     json.loads(ready['text']),
                     {'type': 'tts.ready', 'sampleRate': 24000, 'responseFormat': 'pcm', 'voice': 'Cherry', 'id': 'tts-suite-1'},
                 )
+                segment_start = await communicator.receive_output(timeout=1)
+                self.assertEqual(
+                    json.loads(segment_start['text']),
+                    {'type': 'tts.segment_start', 'payload': {'index': 1, 'text': '你好'}, 'id': 'tts-suite-1'},
+                )
                 audio = await communicator.receive_output(timeout=1)
                 self.assertEqual(audio, {'type': 'websocket.send', 'bytes': b'\x01\x02'})
+                segment_end = await communicator.receive_output(timeout=1)
+                self.assertEqual(
+                    json.loads(segment_end['text']),
+                    {'type': 'tts.segment_end', 'payload': {'index': 1}, 'id': 'tts-suite-1'},
+                )
                 done = await communicator.receive_output(timeout=1)
                 self.assertEqual(json.loads(done['text']), {'type': 'tts.done', 'id': 'tts-suite-1'})
 
