@@ -96,6 +96,8 @@ type KnowledgeBaseFormValues = {
   chunkOverlap?: number;
   retrievalTopN?: number;
   retrievalMinScore?: number;
+  mediaMaxAssets?: number;
+  mediaMinRelevance?: number;
 };
 
 type MediaAssetFormValues = {
@@ -177,6 +179,8 @@ const defaultIndexConfig = {
   chunkOverlap: 50,
   retrievalTopN: 5,
   retrievalMinScore: 0.2,
+  mediaMaxAssets: 0,
+  mediaMinRelevance: 0.22,
 };
 
 const recallModeText: Record<string, string> = {
@@ -358,6 +362,8 @@ export const KnowledgeBasePage = () => {
         chunkOverlap: values.chunkOverlap ?? defaultIndexConfig.chunkOverlap,
         retrievalTopN: values.retrievalTopN ?? defaultIndexConfig.retrievalTopN,
         retrievalMinScore: values.retrievalMinScore ?? defaultIndexConfig.retrievalMinScore,
+        mediaMaxAssets: values.mediaMaxAssets ?? defaultIndexConfig.mediaMaxAssets,
+        mediaMinRelevance: values.mediaMinRelevance ?? defaultIndexConfig.mediaMinRelevance,
       });
       message.success('知识库已创建');
       setCreateOpen(false);
@@ -447,6 +453,8 @@ export const KnowledgeBasePage = () => {
       chunkOverlap: item.chunkOverlap,
       retrievalTopN: item.retrievalTopN,
       retrievalMinScore: item.retrievalMinScore ?? defaultIndexConfig.retrievalMinScore,
+      mediaMaxAssets: item.mediaMaxAssets ?? defaultIndexConfig.mediaMaxAssets,
+      mediaMinRelevance: item.mediaMinRelevance ?? defaultIndexConfig.mediaMinRelevance,
     });
     setEditOpen(true);
   }, [editForm]);
@@ -463,6 +471,8 @@ export const KnowledgeBasePage = () => {
         chunkOverlap: values.chunkOverlap ?? defaultIndexConfig.chunkOverlap,
         retrievalTopN: values.retrievalTopN ?? defaultIndexConfig.retrievalTopN,
         retrievalMinScore: values.retrievalMinScore ?? defaultIndexConfig.retrievalMinScore,
+        mediaMaxAssets: values.mediaMaxAssets ?? defaultIndexConfig.mediaMaxAssets,
+        mediaMinRelevance: values.mediaMinRelevance ?? defaultIndexConfig.mediaMinRelevance,
       });
       message.success('知识库已更新');
       setEditOpen(false);
@@ -923,7 +933,7 @@ export const KnowledgeBasePage = () => {
           <div className="font-semibold text-slate-600 mb-1">分块参数指南：</div>
           <div>分块长度决定了大模型上下文召回颗粒度。较大的分块能保留更多完整语义，但单次召回消耗的 Token 更多。分块重叠能避免关键信息在切分边界处截断丢失。</div>
         </div>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3 lg:grid-cols-6">
           <Form.Item name="chunkSize" label="分块长度" rules={[{ required: true, message: '请输入分块长度' }]}>
             <InputNumber min={100} max={4000} className="!w-full" />
           </Form.Item>
@@ -949,7 +959,13 @@ export const KnowledgeBasePage = () => {
           <Form.Item name="retrievalTopN" label="默认召回段数" rules={[{ required: true, message: '请输入召回段数' }]}>
             <InputNumber min={1} max={20} className="!w-full" />
           </Form.Item>
-          <Form.Item name="retrievalMinScore" label="最低相关度" rules={[{ required: true, message: '请输入最低相关度' }]}>
+          <Form.Item name="retrievalMinScore" label="最低相关度" rules={[{ required: true, message: '请输入最低相关度' }]}> 
+            <InputNumber min={0} max={1} step={0.05} className="!w-full" />
+          </Form.Item>
+          <Form.Item name="mediaMaxAssets" label="素材召回上限" tooltip="0 表示不限制，有几张命中就返回几张。" rules={[{ required: true, message: '请输入素材召回上限' }]}> 
+            <InputNumber min={0} max={200} precision={0} className="!w-full" />
+          </Form.Item>
+          <Form.Item name="mediaMinRelevance" label="素材最低相关度" rules={[{ required: true, message: '请输入素材最低相关度' }]}> 
             <InputNumber min={0} max={1} step={0.05} className="!w-full" />
           </Form.Item>
         </div>
@@ -1586,7 +1602,7 @@ export const KnowledgeBasePage = () => {
               <div className="font-semibold text-slate-600 mb-1">分块参数指南：</div>
               <div>分块长度决定了大模型上下文召回颗粒度。较大的分块能保留更多完整语义，但单次召回消耗的 Token 更多。分块重叠能避免关键信息在切分边界处截断丢失。</div>
             </div>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3 lg:grid-cols-6">
               <Form.Item
                 name="chunkSize"
                 label="分块长度"
@@ -1631,6 +1647,23 @@ export const KnowledgeBasePage = () => {
               >
                 <InputNumber min={0} max={1} step={0.05} className="!w-full" />
               </Form.Item>
+              <Form.Item
+                name="mediaMaxAssets"
+                label="素材召回上限"
+                tooltip="0 表示不限制，有几张命中就返回几张。"
+                initialValue={defaultIndexConfig.mediaMaxAssets}
+                rules={[{ required: true, message: '请输入素材召回上限' }]}
+              >
+                <InputNumber min={0} max={200} precision={0} className="!w-full" />
+              </Form.Item>
+              <Form.Item
+                name="mediaMinRelevance"
+                label="素材最低相关度"
+                initialValue={defaultIndexConfig.mediaMinRelevance}
+                rules={[{ required: true, message: '请输入素材最低相关度' }]}
+              >
+                <InputNumber min={0} max={1} step={0.05} className="!w-full" />
+              </Form.Item>
             </div>
           </Form>
         </Modal>
@@ -1664,6 +1697,12 @@ export const KnowledgeBasePage = () => {
                 </Tag>
                 <Tag className="!bg-slate-50 !text-slate-600 !border-slate-200/60">
                   最低相关度 <span className="font-mono font-semibold">{selectedBase.retrievalMinScore ?? defaultIndexConfig.retrievalMinScore}</span>
+                </Tag>
+                <Tag className="!bg-slate-50 !text-slate-600 !border-slate-200/60">
+                  素材上限 <span className="font-mono font-semibold">{(selectedBase.mediaMaxAssets ?? defaultIndexConfig.mediaMaxAssets) || '不限制'}</span>
+                </Tag>
+                <Tag className="!bg-slate-50 !text-slate-600 !border-slate-200/60">
+                  素材相关度 <span className="font-mono font-semibold">{selectedBase.mediaMinRelevance ?? defaultIndexConfig.mediaMinRelevance}</span>
                 </Tag>
               </div>
             </div>

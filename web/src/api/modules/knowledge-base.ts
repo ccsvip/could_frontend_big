@@ -34,6 +34,8 @@ export type KnowledgeBaseRecord = {
   chunkOverlap: number;
   retrievalTopN: number;
   retrievalMinScore: number;
+  mediaMaxAssets: number;
+  mediaMinRelevance: number;
   created_at: string;
   updated_at: string;
 };
@@ -281,12 +283,12 @@ export const fetchKnowledgeBases = async (query?: KnowledgeBaseListQuery) => {
   return response.data;
 };
 
-export const createKnowledgeBase = async (payload: { name: string; description?: string; chunkSize?: number; chunkOverlap?: number; retrievalTopN?: number; retrievalMinScore?: number }) => {
+export const createKnowledgeBase = async (payload: { name: string; description?: string; chunkSize?: number; chunkOverlap?: number; retrievalTopN?: number; retrievalMinScore?: number; mediaMaxAssets?: number; mediaMinRelevance?: number }) => {
   const response = await httpClient.post<KnowledgeBaseRecord>('/knowledge-bases/', payload);
   return response.data;
 };
 
-export const updateKnowledgeBase = async (id: number, payload: Partial<{ name: string; description: string; isActive: boolean; chunkSize: number; chunkOverlap: number; retrievalTopN: number; retrievalMinScore: number }>) => {
+export const updateKnowledgeBase = async (id: number, payload: Partial<{ name: string; description: string; isActive: boolean; chunkSize: number; chunkOverlap: number; retrievalTopN: number; retrievalMinScore: number; mediaMaxAssets: number; mediaMinRelevance: number }>) => {
   const response = await httpClient.patch<KnowledgeBaseRecord>(`/knowledge-bases/${id}/`, payload);
   return response.data;
 };

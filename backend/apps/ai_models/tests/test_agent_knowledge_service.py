@@ -405,6 +405,151 @@ class AgentKnowledgeRetrievalTests(TenantTestMixin, TestCase):
             ],
         )
 
+    def test_collection_food_query_returns_multiple_related_media_assets(self):
+        knowledge_base = KnowledgeBase.objects.create(
+            tenant=self.tenant,
+            name='大唐不夜城素材知识库',
+            created_by=self.user,
+        )
+        document = self.create_document(
+            title='大唐不夜城美食指南',
+            body='大唐不夜城适合做美食推荐，附近有烧烤、肉夹馍、甑糕、汤品和夜游小吃。',
+        )
+        document.knowledge_base = knowledge_base
+        document.save(update_fields=['knowledge_base'])
+        resources = [
+            Resource.objects.create(tenant=self.tenant, name=name, resource_type=Resource.TYPE_IMAGE, description=f'{name}图片')
+            for name in ['烧烤图片', '肉夹馍图片', '甑糕图片', '汤品图片']
+        ]
+        for resource in resources:
+            KnowledgeMediaAsset.objects.create(
+                tenant=self.tenant,
+                knowledge_base=knowledge_base,
+                resource=resource,
+                resource_type=Resource.TYPE_IMAGE,
+                resource_name=resource.name,
+                keywords=f'{resource.name} 大唐不夜城 美食 小吃',
+                description=f'大唐不夜城附近的{resource.name}，适合回答美食推荐问题',
+            )
+
+        result = retrieve_knowledge_chunks(query='大唐不夜城的美食有什么？', knowledge_base=knowledge_base, top_n=3)
+
+        self.assertEqual(result['mode'], 'keyword')
+        self.assertGreaterEqual(len(result['mediaAssets']), 4)
+
+        blocks = media_blocks_for_reply_text(
+            recall_result=result,
+            user_query='大唐不夜城的美食有什么？',
+            reply_text='可以先看看烧烤，适合夜游时吃。',
+            tenant=self.tenant,
+        )
+        self.assertGreaterEqual(len(blocks), 4)
+
+    def test_media_recall_respects_knowledge_base_configured_limit(self):
+        knowledge_base = KnowledgeBase.objects.create(
+            tenant=self.tenant,
+            name='素材上限知识库',
+            media_max_assets=2,
+            media_min_relevance=0.1,
+            created_by=self.user,
+        )
+        document = self.create_document(
+            title='美食指南',
+            body='大唐不夜城适合推荐烧烤、肉夹馍、甑糕和汤品。',
+        )
+        document.knowledge_base = knowledge_base
+        document.save(update_fields=['knowledge_base'])
+        for name in ['烧烤图片', '肉夹馍图片', '甑糕图片', '汤品图片']:
+            resource = Resource.objects.create(tenant=self.tenant, name=name, resource_type=Resource.TYPE_IMAGE)
+            KnowledgeMediaAsset.objects.create(
+                tenant=self.tenant,
+                knowledge_base=knowledge_base,
+                resource=resource,
+                resource_type=Resource.TYPE_IMAGE,
+                resource_name=name,
+                keywords=f'{name} 大唐不夜城 美食 小吃',
+            )
+
+        result = retrieve_knowledge_chunks(query='大唐不夜城的美食有什么？', knowledge_base=knowledge_base, top_n=3)
+
+        self.assertEqual(len(result['mediaAssets']), 2)
+
+    def test_multimodal_vector_query_keeps_multiple_text_relevant_food_media_assets(self):
+        knowledge_base = KnowledgeBase.objects.create(
+            tenant=self.tenant,
+            name='大唐不夜城多模态素材知识库',
+            created_by=self.user,
+        )
+        document = self.create_document(
+            title='大唐不夜城美食指南',
+            body='大唐不夜城附近有多种美食，适合推荐烧烤、水盆、肉夹馍和夜市小吃。',
+        )
+        document.knowledge_base = knowledge_base
+        document.save(update_fields=['knowledge_base'])
+        KnowledgeDocumentChunk.objects.create(
+            document=document,
+            tenant=self.tenant,
+            chunk_index=0,
+            content='大唐不夜城附近有多种美食，适合推荐烧烤、水盆、肉夹馍和夜市小吃。',
+            content_hash='datang-food',
+            embedding=[1.0, 0.0, 0.0],
+            embedding_model='text-embedding-v4',
+        )
+        embedding_model = EmbeddingModel.objects.create(
+            code='aliyun',
+            name='阿里云通用文本向量',
+            api_key='dashscope-secret',
+            base_url='https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings',
+            model='text-embedding-v4',
+            is_active=True,
+        )
+        TenantKnowledgeModelSettings.objects.create(
+            tenant=self.tenant,
+            embedding_model=embedding_model,
+            is_active=True,
+        )
+        assets = []
+        for index, (name, description, media_embedding) in enumerate([
+            ('清真刚刚烤肉', '大唐不夜城附近的美食餐厅，画面包含烧烤、炒菜、面食和排队顾客。', [0.99, 0.01, 0.0]),
+            ('学斌水盆', '大唐不夜城店的美食和店面，包含汤品、红烧肉、辣椒和配菜。', [0.1, 0.9, 0.0]),
+            ('肉夹馍小吃', '大唐不夜城附近夜游小吃，适合回答美食有什么。', [0.1, 0.0, 0.9]),
+        ]):
+            resource = Resource.objects.create(
+                tenant=self.tenant,
+                name=name,
+                resource_type=Resource.TYPE_IMAGE,
+                description=f'{name}图片',
+            )
+            assets.append(
+                KnowledgeMediaAsset.objects.create(
+                    tenant=self.tenant,
+                    knowledge_base=knowledge_base,
+                    resource=resource,
+                    resource_type=Resource.TYPE_IMAGE,
+                    resource_name=name,
+                    keywords='',
+                    description='',
+                    vlm_description=description,
+                    multimodal_embedding=media_embedding,
+                    embedding_status=KnowledgeMediaAsset.EmbeddingStatus.READY,
+                    priority=index,
+                )
+            )
+
+        with (
+            patch('apps.ai_models.services.agent_knowledge.build_document_index', return_value={'status': KnowledgeDocument.IndexStatus.READY}),
+            patch('apps.ai_models.services.agent_knowledge._embed_texts', return_value=[[1.0, 0.0, 0.0]]),
+            patch('apps.knowledge_base.media_indexing.embed_media_query', return_value=[1.0, 0.0, 0.0]),
+        ):
+            result = retrieve_knowledge_chunks(query='大唐不夜城的美食有什么？', knowledge_base=knowledge_base, top_n=3)
+
+        self.assertEqual(result['mode'], 'vector')
+        self.assertGreaterEqual(len(result['mediaAssets']), 3)
+        self.assertEqual(
+            {item['resourceName'] for item in result['mediaAssets']},
+            {asset.resource_name for asset in assets},
+        )
+
 
 class ModelConfigDefaultsTests(TestCase):
     @override_settings(

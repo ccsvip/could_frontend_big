@@ -16,6 +16,8 @@ class KnowledgeBase(models.Model):
     chunk_overlap = models.PositiveSmallIntegerField('分块重叠', default=50)
     retrieval_top_n = models.PositiveSmallIntegerField('默认召回段数', default=5)
     retrieval_min_score = models.FloatField('向量最低相关度', default=0.2)
+    media_max_assets = models.PositiveSmallIntegerField('配套素材召回上限', default=0)
+    media_min_relevance = models.FloatField('配套素材最低相关度', default=0.22)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

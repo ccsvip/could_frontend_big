@@ -735,10 +735,7 @@ def _retrieve_keyword_knowledge_context(application, query: str, top_n: int, max
     return _format_context(_retrieve_keyword_chunks(docs if docs is not None else _bound_approved_text_documents(application), query, top_n), max_chars)
 
 
-MEDIA_RELEVANCE_THRESHOLD = 0.3
-MEDIA_MAX_TOTAL = 3
-MEDIA_MAX_IMAGES = 2
-MEDIA_MAX_VIDEOS = 1
+MEDIA_RELEVANCE_THRESHOLD = 0.22
 
 
 def _asset_text(asset: KnowledgeMediaAsset) -> str:
@@ -809,9 +806,11 @@ def _score_media_asset(
         chunk_scores.append(min(score_chunk(text, chunk_keywords, chunk.content[:120]) / 16.0, 1.0))
     chunk_score = max(chunk_scores, default=0.0)
     priority_score = min(max(asset.priority, 0) / 20.0, 1.0)
+    text_relevance_score = min(query_score * 0.65 + chunk_score * 0.25 + priority_score * 0.1, 1.0)
 
     if multimodal_score:
-        return min(multimodal_score * 0.5 + query_score * 0.2 + chunk_score * 0.25 + priority_score * 0.05, 1.0)
+        blended_score = min(multimodal_score * 0.7 + query_score * 0.2 + chunk_score * 0.05 + priority_score * 0.05, 1.0)
+        return max(blended_score, text_relevance_score)
     return min(query_score * 0.45 + chunk_score * 0.5 + priority_score * 0.05, 1.0)
 
 
@@ -856,26 +855,21 @@ def match_media_assets_for_chunks(*, query: str, chunks: list[RetrievedChunk], t
             chunks=chunks,
             query_multimodal_embedding=query_multimodal_embedding,
         )
-        if relevance >= MEDIA_RELEVANCE_THRESHOLD:
+        threshold = getattr(asset.knowledge_base, 'media_min_relevance', MEDIA_RELEVANCE_THRESHOLD) if asset.knowledge_base_id else MEDIA_RELEVANCE_THRESHOLD
+        if relevance >= threshold:
             scored.append(RetrievedMediaAsset(asset=asset, relevance=relevance))
 
     scored.sort(key=lambda item: (item.relevance, item.asset.priority, item.asset.updated_at), reverse=True)
     selected: list[RetrievedMediaAsset] = []
-    image_count = 0
-    video_count = 0
+    selected_by_base: dict[int, int] = {}
     for item in scored:
-        if len(selected) >= MEDIA_MAX_TOTAL:
-            break
-        if item.asset.resource_type == Resource.TYPE_IMAGE:
-            if image_count >= MEDIA_MAX_IMAGES:
-                continue
-            image_count += 1
-        elif item.asset.resource_type == Resource.TYPE_VIDEO:
-            if video_count >= MEDIA_MAX_VIDEOS:
-                continue
-            video_count += 1
-        else:
+        if item.asset.resource_type not in {Resource.TYPE_IMAGE, Resource.TYPE_VIDEO}:
             continue
+        knowledge_base_id = int(item.asset.knowledge_base_id or 0)
+        media_max_assets = int(getattr(item.asset.knowledge_base, 'media_max_assets', 0) or 0)
+        if media_max_assets > 0 and selected_by_base.get(knowledge_base_id, 0) >= media_max_assets:
+            continue
+        selected_by_base[knowledge_base_id] = selected_by_base.get(knowledge_base_id, 0) + 1
         selected.append(item)
     return selected
 
@@ -905,6 +899,32 @@ def media_assets_to_reply_blocks(media_assets: list[RetrievedMediaAsset]) -> lis
         block_type = 'image' if item.asset.resource_type == Resource.TYPE_IMAGE else 'video'
         blocks.append({'type': block_type, 'resourceId': item.asset.resource_id})
     return blocks
+
+
+def _serialized_media_assets_to_reply_blocks(media_assets: list[dict]) -> list[dict]:
+    blocks: list[dict] = []
+    for item in media_assets:
+        resource_id = item.get('resourceId')
+        resource_type = item.get('resourceType')
+        if not resource_id or resource_type not in {Resource.TYPE_IMAGE, Resource.TYPE_VIDEO}:
+            continue
+        blocks.append({'type': 'image' if resource_type == Resource.TYPE_IMAGE else 'video', 'resourceId': resource_id})
+    return blocks
+
+
+def _merge_media_reply_blocks(primary: list[dict], fallback: list[dict]) -> list[dict]:
+    merged: list[dict] = []
+    seen: set[tuple[str, int]] = set()
+    for block in [*primary, *fallback]:
+        try:
+            key = (str(block.get('type') or ''), int(block.get('resourceId') or 0))
+        except (TypeError, ValueError):
+            continue
+        if key[0] not in {'image', 'video'} or key[1] <= 0 or key in seen:
+            continue
+        seen.add(key)
+        merged.append({'type': key[0], 'resourceId': key[1]})
+    return merged
 
 
 def _chunks_from_recall_result(result: dict) -> list[RetrievedChunk]:
@@ -949,7 +969,7 @@ def media_blocks_for_reply_text(
     reply_text: str,
     tenant=None,
 ) -> list[dict]:
-    return media_assets_to_reply_blocks(
+    reply_matched_blocks = media_assets_to_reply_blocks(
         match_media_assets_for_reply_text(
             recall_result=recall_result,
             user_query=user_query,
@@ -957,6 +977,8 @@ def media_blocks_for_reply_text(
             tenant=tenant,
         )
     )
+    recalled_blocks = _serialized_media_assets_to_reply_blocks(recall_result.get('mediaAssets') or [])
+    return _merge_media_reply_blocks(reply_matched_blocks, recalled_blocks)
 
 
 def _serialize_recall_result(
@@ -1283,7 +1305,7 @@ def retrieve_knowledge_context_with_recall(
         top_n=top_n,
         knowledge_document_ids=knowledge_document_ids,
         knowledge_base_ids=knowledge_base_ids,
-        include_media=False,
+        include_media=True,
     )
     context = _format_context_from_recall_result(result, max_chars=max_chars)
     return context, result

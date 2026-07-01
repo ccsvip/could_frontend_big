@@ -31,6 +31,8 @@ class KnowledgeBaseSerializer(serializers.ModelSerializer):
     chunkOverlap = serializers.IntegerField(source='chunk_overlap', required=False, min_value=0, max_value=1000)
     retrievalTopN = serializers.IntegerField(source='retrieval_top_n', required=False, min_value=1, max_value=20)
     retrievalMinScore = serializers.FloatField(source='retrieval_min_score', required=False, min_value=0, max_value=1)
+    mediaMaxAssets = serializers.IntegerField(source='media_max_assets', required=False, min_value=0, max_value=200)
+    mediaMinRelevance = serializers.FloatField(source='media_min_relevance', required=False, min_value=0, max_value=1)
 
     class Meta:
         model = KnowledgeBase
@@ -45,6 +47,8 @@ class KnowledgeBaseSerializer(serializers.ModelSerializer):
             'chunkOverlap',
             'retrievalTopN',
             'retrievalMinScore',
+            'mediaMaxAssets',
+            'mediaMinRelevance',
             'created_at',
             'updated_at',
         )
