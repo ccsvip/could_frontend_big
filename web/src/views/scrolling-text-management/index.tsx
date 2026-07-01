@@ -1,11 +1,11 @@
 import {
-  DeleteOutlined,
-  EditOutlined,
-  EyeOutlined,
-  MenuOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-} from '@ant-design/icons';
+  IconTrash,
+  IconEdit,
+  IconEye,
+  IconMenu2,
+  IconPlus,
+  IconReload,
+} from '@tabler/icons-react';
 import {
   Button,
   Card,
@@ -246,17 +246,17 @@ export const ScrollingTextManagementPage = () => {
         width: 220,
         render: (_, record) => (
           <Space wrap>
-            <Button type="link" icon={<EyeOutlined />} onClick={() => setPreviewItem(record)}>
+            <Button type="link" icon={<IconEye />} onClick={() => setPreviewItem(record)}>
               查看
             </Button>
             {canUpdate ? (
-              <Button type="link" icon={<EditOutlined />} onClick={() => openEditModal(record)}>
+              <Button type="link" icon={<IconEdit />} onClick={() => openEditModal(record)}>
                 编辑
               </Button>
             ) : null}
             {canDelete ? (
               <Popconfirm title="确认删除该滚动文本吗？" onConfirm={() => void handleDelete(record)}>
-                <Button type="link" danger icon={<DeleteOutlined />}>
+                <Button type="link" danger icon={<IconTrash />}>
                   删除
                 </Button>
               </Popconfirm>
@@ -302,11 +302,11 @@ export const ScrollingTextManagementPage = () => {
               }}
               className="!w-36"
             />
-            <Button icon={<ReloadOutlined />} onClick={() => void loadData()}>
+            <Button icon={<IconReload />} onClick={() => void loadData()}>
               刷新
             </Button>
             {canCreate ? (
-              <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal} disabled={!canOpenCreate}>
+              <Button type="primary" icon={<IconPlus />} onClick={openCreateModal} disabled={!canOpenCreate}>
                 新增滚动文本
               </Button>
             ) : null}
@@ -349,7 +349,7 @@ export const ScrollingTextManagementPage = () => {
               <Space direction="vertical" size={12} className="w-full">
                 <div className="flex items-center justify-between">
                   <Typography.Text strong>滚动文本内容</Typography.Text>
-                  <Button icon={<PlusOutlined />} onClick={() => add({ order: fields.length + 1, zh: '', en: '' })}>
+                  <Button icon={<IconPlus />} onClick={() => add({ order: fields.length + 1, zh: '', en: '' })}>
                     新增文本
                   </Button>
                 </div>
@@ -362,19 +362,19 @@ export const ScrollingTextManagementPage = () => {
                     className="!rounded-lg !border !border-slate-200"
                     title={
                       <Space>
-                        <MenuOutlined className="text-slate-400" />
+                        <IconMenu2 className="text-slate-400" />
                         <span>第 {index + 1} 条</span>
                       </Space>
                     }
                     extra={
                       <Space size={4} wrap>
                         {index > 0 ? (
-                          <Button type="link" icon={<PlusOutlined />} onClick={() => add({ order: index + 1, zh: '', en: '' }, index)}>
+                          <Button type="link" icon={<IconPlus />} onClick={() => add({ order: index + 1, zh: '', en: '' }, index)}>
                             向上插入
                           </Button>
                         ) : null}
                         {fields.length > 1 ? (
-                          <Button danger type="link" icon={<DeleteOutlined />} onClick={() => remove(fieldName)}>
+                          <Button danger type="link" icon={<IconTrash />} onClick={() => remove(fieldName)}>
                             删除
                           </Button>
                         ) : null}

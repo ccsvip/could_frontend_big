@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { DownloadOutlined, ExportOutlined, ReloadOutlined } from '@ant-design/icons';
+import { IconDownload, IconArrowBarToRight, IconReload } from '@tabler/icons-react';
 import { Button, Card, Empty, message, Space, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useState } from 'react';
@@ -112,7 +112,7 @@ export const CommandExportManagementPage = () => {
         return canDownload ? (
           <Button
             type="text"
-            icon={<DownloadOutlined />}
+            icon={<IconDownload />}
             loading={downloadingGroupId === item.id}
             disabled={actionState.disabled}
             title={actionState.disabledReason}
@@ -131,7 +131,7 @@ export const CommandExportManagementPage = () => {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <Space size={10} align="center">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-              <ExportOutlined className="text-xl" />
+              <IconArrowBarToRight className="text-xl" />
             </div>
             <div>
               <Typography.Title level={3} className="!mb-1 !text-slate-900">导出管理</Typography.Title>
@@ -139,8 +139,8 @@ export const CommandExportManagementPage = () => {
             </div>
           </Space>
           <Space wrap>
-            <Button icon={<ReloadOutlined />} onClick={() => void loadData()}>刷新</Button>
-            {canDownload ? <Button type="primary" icon={<ExportOutlined />} loading={downloading} onClick={() => void handleDownloadCommands()}>导出指令合集</Button> : null}
+            <Button icon={<IconReload />} onClick={() => void loadData()}>刷新</Button>
+            {canDownload ? <Button type="primary" icon={<IconArrowBarToRight />} loading={downloading} onClick={() => void handleDownloadCommands()}>导出指令合集</Button> : null}
           </Space>
         </div>
       </Card>

@@ -22,16 +22,16 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import type { UploadFile } from 'antd/es/upload';
 import {
-  ApiOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  ExperimentOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-  RobotOutlined,
-  SaveOutlined,
-  UploadOutlined,
-} from '@ant-design/icons';
+  IconApi,
+  IconTrash,
+  IconEdit,
+  IconFlask,
+  IconPlus,
+  IconReload,
+  IconRobot,
+  IconDeviceFloppy,
+  IconUpload,
+} from '@tabler/icons-react';
 import { fetchTenants, type TenantRecord } from '../../api/modules/tenants';
 import {
   createPlatformLLMModel,
@@ -319,7 +319,7 @@ export const LlmSettingsAdminPage = () => {
         <div className="flex items-center gap-1.5">
           <Button
             size="small"
-            icon={<ExperimentOutlined />}
+            icon={<IconFlask />}
             loading={testingModelId === record.id}
             onClick={() => void handleTestModel(record.id)}
             className="border-slate-200 hover:border-brand-500 hover:text-brand-600 rounded-md"
@@ -328,7 +328,7 @@ export const LlmSettingsAdminPage = () => {
           </Button>
           <Button
             size="small"
-            icon={<EditOutlined />}
+            icon={<IconEdit />}
             onClick={() => openEditModel(record)}
             className="border-slate-200 hover:border-brand-500 hover:text-brand-600 rounded-md"
           >
@@ -339,7 +339,7 @@ export const LlmSettingsAdminPage = () => {
             description="仍有公司启用授权的模型不能删除，请先取消授权。"
             onConfirm={() => deletePlatformLLMModel(record.id).then(loadPlatformData)}
           >
-            <Button size="small" danger icon={<DeleteOutlined />} className="hover:bg-rose-50 rounded-md">
+            <Button size="small" danger icon={<IconTrash />} className="hover:bg-rose-50 rounded-md">
               删除
             </Button>
           </Popconfirm>
@@ -356,7 +356,7 @@ export const LlmSettingsAdminPage = () => {
         <div className="flex items-center gap-3">
           <Avatar
             src={record.avatarUrl}
-            icon={<RobotOutlined />}
+            icon={<IconRobot />}
             className="shadow-sm border border-slate-100 bg-brand-50 text-brand-600"
             size={36}
           />
@@ -405,7 +405,7 @@ export const LlmSettingsAdminPage = () => {
         <div className="flex items-center gap-1.5">
           <Button
             size="small"
-            icon={<PlusOutlined />}
+            icon={<IconPlus />}
             onClick={() => openCreateModel(record.id)}
             className="border-brand-100 hover:border-brand-500 text-brand-600 hover:text-brand-700 bg-brand-50/30 hover:bg-brand-50 rounded-md"
           >
@@ -413,7 +413,7 @@ export const LlmSettingsAdminPage = () => {
           </Button>
           <Button
             size="small"
-            icon={<EditOutlined />}
+            icon={<IconEdit />}
             onClick={() => openEditProvider(record)}
             className="border-slate-200 hover:border-brand-500 hover:text-brand-600 rounded-md"
           >
@@ -424,7 +424,7 @@ export const LlmSettingsAdminPage = () => {
             description="仍有公司启用授权的厂商不能删除，请先取消授权。"
             onConfirm={() => deletePlatformLLMProvider(record.id).then(loadPlatformData)}
           >
-            <Button size="small" danger icon={<DeleteOutlined />} className="hover:bg-rose-50 rounded-md">
+            <Button size="small" danger icon={<IconTrash />} className="hover:bg-rose-50 rounded-md">
               删除
             </Button>
           </Popconfirm>
@@ -440,12 +440,12 @@ export const LlmSettingsAdminPage = () => {
           平台统一维护各模型供应商的密钥凭证与可用模型产品线。
         </Typography.Text>
         <div className="flex gap-2 w-full sm:w-auto">
-          <Button icon={<ReloadOutlined />} onClick={() => void loadPlatformData()} className="rounded-lg flex-1 sm:flex-initial">
+          <Button icon={<IconReload />} onClick={() => void loadPlatformData()} className="rounded-lg flex-1 sm:flex-initial">
             刷新
           </Button>
           <Button
             type="primary"
-            icon={<PlusOutlined />}
+            icon={<IconPlus />}
             onClick={openCreateProvider}
             className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 rounded-lg text-white flex-1 sm:flex-initial"
           >
@@ -511,7 +511,7 @@ export const LlmSettingsAdminPage = () => {
           />
           <Button
             type="primary"
-            icon={<SaveOutlined />}
+            icon={<IconDeviceFloppy />}
             loading={savingAuth}
             onClick={() => void saveAuthorization()}
             size="large"
@@ -529,7 +529,7 @@ export const LlmSettingsAdminPage = () => {
             label: (
               <div className="flex items-center justify-between w-full pr-4">
                 <Space size="middle" className="flex-wrap">
-                  <ApiOutlined className="text-brand-600 text-base" />
+                  <IconApi className="text-brand-600 text-base" />
                   <span className="font-semibold text-slate-800 text-sm">{provider.name}</span>
                   <Tag color={provider.isActive ? 'success' : 'default'} className="px-2 py-0.5 rounded-md border-0 text-xs">
                     {provider.isActive ? '启用中' : '已停用'}
@@ -582,7 +582,7 @@ export const LlmSettingsAdminPage = () => {
     <div className="max-w-3xl bg-slate-50/30 border border-slate-100 rounded-xl p-4 sm:p-6 shadow-sm">
       <div className="mb-4">
         <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-1.5 mb-1">
-          <ExperimentOutlined className="text-brand-600" />
+          <IconFlask className="text-brand-600" />
           <span>可用性与测速配置</span>
         </h3>
         <p className="text-xs text-slate-400">
@@ -617,7 +617,7 @@ export const LlmSettingsAdminPage = () => {
         </div>
         <Button
           type="primary"
-          icon={<SaveOutlined />}
+          icon={<IconDeviceFloppy />}
           onClick={() => void saveTestSettings()}
           className="w-full sm:w-auto bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 text-white shadow-sm hover:shadow-md transition-all rounded-lg px-4"
         >
@@ -634,7 +634,7 @@ export const LlmSettingsAdminPage = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <RobotOutlined className="text-brand-600" />
+              <IconRobot className="text-brand-600" />
               <span>LLM 平台全局设置</span>
             </h1>
             <p className="text-slate-500 mt-1 text-sm">
@@ -670,7 +670,7 @@ export const LlmSettingsAdminPage = () => {
         title={
           <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
             <span className="p-1 bg-brand-50 text-brand-600 rounded">
-              <RobotOutlined />
+              <IconRobot />
             </span>
             <span className="font-semibold">{editingProvider ? '编辑厂商' : '新增厂商'}</span>
           </div>
@@ -706,7 +706,7 @@ export const LlmSettingsAdminPage = () => {
               >
                 {providerLogoFile.length === 0 && (
                   <div className="text-slate-400 text-center">
-                    <UploadOutlined className="text-lg mb-1" />
+                    <IconUpload className="text-lg mb-1" />
                     <div className="text-xs">上传 Logo</div>
                   </div>
                 )}
@@ -727,7 +727,7 @@ export const LlmSettingsAdminPage = () => {
         title={
           <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
             <span className="p-1 bg-brand-50 text-brand-600 rounded">
-              <ExperimentOutlined />
+              <IconFlask />
             </span>
             <span className="font-semibold">{editingModel ? '编辑模型' : '新增模型'}</span>
           </div>

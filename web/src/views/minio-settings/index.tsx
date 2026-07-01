@@ -1,4 +1,4 @@
-import { CloudOutlined, ReloadOutlined, SaveOutlined } from '@ant-design/icons';
+import { IconCloud, IconReload, IconDeviceFloppy } from '@tabler/icons-react';
 import { Button, Card, Form, Input, InputNumber, Select, Space, Switch, Table, Tag, Typography, message } from 'antd';
 import { useEffect, useState } from 'react';
 import {
@@ -80,7 +80,7 @@ export const MinioSettingsPage = () => {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-              <CloudOutlined className="text-xl" />
+              <IconCloud className="text-xl" />
             </div>
             <div>
               <Typography.Title level={3} className="!mb-1 !text-slate-900">存储位置</Typography.Title>
@@ -88,8 +88,8 @@ export const MinioSettingsPage = () => {
             </div>
           </div>
           <Space wrap>
-            <Button icon={<ReloadOutlined />} loading={loading} onClick={() => void loadData()}>刷新</Button>
-            <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={() => void handleSave()}>保存</Button>
+            <Button icon={<IconReload />} loading={loading} onClick={() => void loadData()}>刷新</Button>
+            <Button type="primary" icon={<IconDeviceFloppy />} loading={saving} onClick={() => void handleSave()}>保存</Button>
           </Space>
         </div>
       </Card>

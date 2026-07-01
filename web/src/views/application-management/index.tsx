@@ -63,9 +63,8 @@ import {
   Popover, 
   Checkbox, 
   Tooltip, 
-  Modal, 
-  Tag, 
-  ConfigProvider, 
+  Modal,
+  Tag,
   theme,
   Empty,
   Pagination,
@@ -74,40 +73,39 @@ import {
 } from 'antd';
 
 import {
-  Bot,
-  User,
-  Plus,
-  Trash2,
-  Save,
-  Search,
-  Send,
-  ArrowLeft,
-  ArrowRight,
-  BookOpen,
-  BookmarkPlus,
-  MessageSquare,
-  Sparkles,
-  ChevronDown,
-  BarChart2,
-  HelpCircle,
-  RotateCcw,
-  Mic,
-  MicOff,
-  Loader2,
-  Pause,
-  Play,
-  Square,
-  Volume2,
-  GripVertical,
-  ChevronUp,
-  ChevronDown as ChevronDownIcon,
-  Headphones,
-  Languages,
-  PenTool,
-  FileQuestion,
-  Zap,
-  Copy,
-} from 'lucide-react';
+  IconRobot,
+  IconUser,
+  IconPlus,
+  IconTrash,
+  IconDeviceFloppy,
+  IconSearch,
+  IconSend,
+  IconArrowLeft,
+  IconArrowRight,
+  IconBook,
+  IconBookmarkPlus,
+  IconMessage,
+  IconSparkles,
+  IconChevronDown,
+  IconChartBar,
+  IconHelpCircle,
+  IconRotate,
+  IconMicrophone,
+  IconMicrophoneOff,
+  IconLoader2,
+  IconPlayerPause,
+  IconPlayerPlay,
+  IconSquare,
+  IconVolume2,
+  IconGripVertical,
+  IconChevronUp,
+  IconHeadphones,
+  IconLanguage,
+  IconPencil,
+  IconFileUnknown,
+  IconBolt,
+  IconCopy,
+} from '@tabler/icons-react';
 
 type RuntimeBackendType = 'platform_llm' | 'third_party_chatbot';
 
@@ -313,7 +311,7 @@ const AGENT_TEMPLATES = [
     temperature: 0.3,
     maxTokens: 1000,
     tag: '客户服务',
-    gradient: 'from-emerald-500 to-teal-600',
+    gradient: 'from-emerald-500 to-brand-600',
     iconName: 'Headphones',
   },
   {
@@ -348,7 +346,7 @@ const AGENT_TEMPLATES = [
     key: 'english_coach',
     name: '英语口语教练',
     description: '一对一口语日常对话练习，实时纠正语法错误并提供地道表达建议。',
-    systemPrompt: 'You are an encouraging and friendly English Speaking Coach. Your goal is to help the user practice conversational English. Speak in clear, natural English, keep your sentences relatively short, and gently correct any major grammatical errors in the user\'s input with polite suggestions.',
+    systemPrompt: 'You are an encouraging and friendly English Speaking Coach. Your goal is to help the User practice conversational English. Speak in clear, natural English, keep your sentences relatively short, and gently correct any major grammatical errors in the User\'s input with polite suggestions.',
     openingMessageEnabled: true,
     openingMessage: 'Hello! I\'m your English Speaking Coach. Let\'s practice speaking English together. What topic would you like to talk about today?',
     suggestedQuestions: ['Let\'s practice ordering food at a restaurant.', 'How can I say "辛苦了" in English?', 'Help me correct this sentence: "I goes to school yesterday."'],
@@ -363,15 +361,15 @@ const AGENT_TEMPLATES = [
 const getTemplateIcon = (iconName: string) => {
   switch (iconName) {
     case 'Headphones':
-      return <Headphones size={24} />;
+      return <IconHeadphones size={24} />;
     case 'PenTool':
-      return <PenTool size={24} />;
+      return <IconPencil size={24} />;
     case 'BarChart2':
-      return <BarChart2 size={24} />;
+      return <IconChartBar size={24} />;
     case 'Languages':
-      return <Languages size={24} />;
+      return <IconLanguage size={24} />;
     default:
-      return <Bot size={24} />;
+      return <IconRobot size={24} />;
   }
 };
 
@@ -1296,7 +1294,7 @@ export const ApplicationManagementPage = () => {
         setActiveTab('monitor');
       }
 
-      // Save config: Ctrl + S (or Cmd + S)
+      // IconDeviceFloppy config: Ctrl + S (or Cmd + S)
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         if ((activeTab === 'orchestrate' || activeTab === 'conversation') && isDirty && canUpdate && !configSaving && !streaming) {
           e.preventDefault();
@@ -1548,10 +1546,10 @@ export const ApplicationManagementPage = () => {
             onChange={(e) => setSearchValue(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             style={{ width: '100%', minWidth: 260 }}
-            prefix={<Search size={16} className="text-slate-400" />}
+            prefix={<IconSearch size={16} className="text-slate-400" />}
           />
           <Button type="primary" onClick={handleSearch} className="w-full sm:w-auto cursor-pointer flex items-center justify-center gap-1">
-            <Search size={14} />
+            <IconSearch size={14} />
             搜索
           </Button>
           {(keyword || searchValue) && (
@@ -1566,7 +1564,7 @@ export const ApplicationManagementPage = () => {
               setCreateDescription('');
               setCreateOpen(true);
             }} className="w-full sm:w-auto cursor-pointer flex items-center justify-center gap-1">
-              <Plus size={16} />
+              <IconPlus size={16} />
               创建智能体
             </Button>
           )}
@@ -1595,7 +1593,7 @@ export const ApplicationManagementPage = () => {
         <Card variant="borderless" className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
           <div className="flex flex-col gap-1">
             <span className="text-xs text-slate-500 font-medium">后端绑定数</span>
-            <span className="text-2xl font-bold font-mono leading-none text-teal-600">{applicationOverview.configuredModelCount}</span>
+            <span className="text-2xl font-bold font-mono leading-none text-brand-600">{applicationOverview.configuredModelCount}</span>
             <span className="text-xs text-slate-400 mt-1">已绑定标准模型或第三方机器人</span>
           </div>
         </Card>
@@ -1612,7 +1610,7 @@ export const ApplicationManagementPage = () => {
       {!keyword && (
         <div className="bg-slate-50/50 border border-slate-200/40 rounded-2xl p-5 mt-1">
           <div className="flex items-center gap-2 mb-3 flex-wrap">
-            <Sparkles size={20} className="text-teal-600" />
+            <IconSparkles size={20} className="text-brand-600" />
             <div className="text-base font-bold text-slate-800">选用推荐模板一键初始化</div>
             <Tag color="cyan">开箱即用</Tag>
           </div>
@@ -1622,7 +1620,7 @@ export const ApplicationManagementPage = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {/* Blank Custom Card */}
-            <Card variant="borderless" className="flex flex-col justify-between border-2 border-dashed border-slate-200 hover:border-teal-400 hover:bg-teal-50/10 cursor-pointer transition-all duration-300 rounded-2xl group min-h-[220px]" onClick={() => {
+            <Card variant="borderless" className="flex flex-col justify-between border-2 border-dashed border-slate-200 hover:border-brand-400 hover:bg-brand-50/10 cursor-pointer transition-all duration-300 rounded-2xl group min-h-[220px]" onClick={() => {
                 setSelectedTemplate(null);
                 setCreateName('');
                 setCreateDescription('');
@@ -1630,11 +1628,11 @@ export const ApplicationManagementPage = () => {
               }}
             >
               <div className="flex flex-col justify-center items-center gap-3 py-6" style={{ height: '100%' }}>
-                <div className="p-4 bg-slate-100 rounded-full text-slate-500 group-hover:bg-teal-50/80 group-hover:text-teal-600 transition-colors duration-300">
-                  <Plus size={28} />
+                <div className="p-4 bg-slate-100 rounded-full text-slate-500 group-hover:bg-brand-50/80 group-hover:text-brand-600 transition-colors duration-300">
+                  <IconPlus size={28} />
                 </div>
                 <div className="text-center">
-                  <span className="text-base font-bold text-slate-700 group-hover:text-teal-700 transition-colors duration-300 block mb-1">
+                  <span className="text-base font-bold text-slate-700 group-hover:text-brand-700 transition-colors duration-300 block mb-1">
                     新建空白智能体
                   </span>
                   <span className="text-xs text-slate-500 px-4 leading-relaxed block">
@@ -1646,14 +1644,14 @@ export const ApplicationManagementPage = () => {
 
             {/* Predefined templates */}
             {AGENT_TEMPLATES.map((tmpl) => (
-              <Card variant="borderless" key={tmpl.key} className="flex flex-col justify-between bg-white border border-slate-200/60 hover:border-teal-300 hover:shadow-md cursor-pointer transition-all duration-300 rounded-2xl relative overflow-hidden group min-h-[220px]" onClick={() => {
+              <Card variant="borderless" key={tmpl.key} className="flex flex-col justify-between bg-white border border-slate-200/60 hover:border-brand-300 hover:shadow-md cursor-pointer transition-all duration-300 rounded-2xl relative overflow-hidden group min-h-[220px]" onClick={() => {
                   setSelectedTemplate(tmpl);
                   setCreateName(tmpl.name);
                   setCreateDescription(tmpl.description);
                   setCreateOpen(true);
                 }}
               >
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-400 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-400 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <div className="flex flex-col gap-3 p-1 h-full justify-between">
                   <div className="flex justify-between items-center">
                     <div className={`p-2.5 bg-gradient-to-br ${tmpl.gradient} rounded-xl text-white shadow-sm`}>
@@ -1665,7 +1663,7 @@ export const ApplicationManagementPage = () => {
                   </div>
 
                   <div>
-                    <span className="text-base font-bold text-slate-800 group-hover:text-teal-700 transition-colors duration-300 block mb-1">
+                    <span className="text-base font-bold text-slate-800 group-hover:text-brand-700 transition-colors duration-300 block mb-1">
                       {tmpl.name}
                     </span>
                     <span className="text-xs text-slate-500 line-clamp-3 leading-relaxed">
@@ -1678,7 +1676,7 @@ export const ApplicationManagementPage = () => {
                       含 {tmpl.suggestedQuestions.length} 条建议问题
                     </span>
                     <Button type="primary" size="small" className="group-hover:translate-x-0.5 transition-transform duration-200 cursor-pointer flex items-center gap-0.5">
-                      使用模板 <ArrowRight size={10} />
+                      使用模板 <IconArrowRight size={10} />
                     </Button>
                   </div>
                 </div>
@@ -1691,7 +1689,7 @@ export const ApplicationManagementPage = () => {
       {/* Created Agents Section */}
       <div className="mt-2">
         <div className="flex items-center gap-2 mb-4">
-          <Bot size={20} className="text-teal-600" />
+          <IconRobot size={20} className="text-brand-600" />
           <div className="text-lg font-bold text-slate-800">
             {keyword ? '搜索筛选结果' : '我的智能体'}
           </div>
@@ -1715,13 +1713,13 @@ export const ApplicationManagementPage = () => {
                 const publishStatus = getPublishStatus(app);
 
                 return (
-                  <Card variant="borderless" key={app.id} className="flex flex-col justify-between bg-white border border-slate-200/60 hover:border-teal-200 hover:shadow-md transition-all duration-300 rounded-2xl relative overflow-hidden group min-h-[220px]">
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 to-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <Card variant="borderless" key={app.id} className="flex flex-col justify-between bg-white border border-slate-200/60 hover:border-brand-200 hover:shadow-md transition-all duration-300 rounded-2xl relative overflow-hidden group min-h-[220px]">
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brand-500 to-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     
                     <div className="flex flex-col gap-3 p-1">
                       <div className="flex justify-between items-center">
-                        <div className="p-2.5 bg-teal-50/80 rounded-xl text-teal-700">
-                          <Bot size={20} />
+                        <div className="p-2.5 bg-brand-50/80 rounded-xl text-brand-700">
+                          <IconRobot size={20} />
                         </div>
                         <div className="flex items-center gap-2">
                           <Switch 
@@ -1766,7 +1764,7 @@ export const ApplicationManagementPage = () => {
                           <Tag color="warning" className="m-0">未绑定后端</Tag>
                         )}
                         <Tag color={knowledgeCount > 0 ? 'blue' : 'default'} className="m-0 flex items-center gap-1">
-                          <BookOpen size={10} className="shrink-0" />
+                          <IconBook size={10} className="shrink-0" />
                           {knowledgeCount} 库
                         </Tag>
                         <Tag color={publishStatus.color} className="m-0">
@@ -1792,12 +1790,12 @@ export const ApplicationManagementPage = () => {
                             placement="topRight"
                           >
                             <Button type="primary" danger size="small" className="rounded-lg cursor-pointer flex items-center justify-center p-1.5">
-                              <Trash2 size={13} />
+                              <IconTrash size={13} />
                             </Button>
                           </Popconfirm>
                         )}
                         <Button type="primary" size="small" onClick={() => navigate(`${app.id}`)} className="rounded-lg cursor-pointer flex items-center gap-0.5">
-                          配置 <ArrowRight size={12} />
+                          配置 <IconArrowRight size={12} />
                         </Button>
                       </div>
                     </div>
@@ -1807,7 +1805,7 @@ export const ApplicationManagementPage = () => {
             </div>
           ) : (
             <div className="flex flex-col justify-center items-center gap-3 bg-white rounded-2xl border border-slate-200/50 shadow-sm text-slate-400 py-12">
-              <Bot size={40} className="text-slate-300" />
+              <IconRobot size={40} className="text-slate-300" />
               <span className="text-sm text-slate-500 font-medium">
                 {keyword ? '没有匹配的智能体' : '还没有已创建的智能体'}
               </span>
@@ -1870,8 +1868,8 @@ export const ApplicationManagementPage = () => {
         <div className={`flex ${isUser ? 'flex-row-reverse' : 'flex-row'} gap-3`} style={{ maxWidth: '85%' }}>
           <Avatar
             size={36}
-            icon={isUser ? <User size={16} /> : <Bot size={16} />}
-            className={isUser ? '!bg-indigo-600 shrink-0' : '!bg-teal-600 shrink-0'}
+            icon={isUser ? <IconUser size={16} /> : <IconRobot size={16} />}
+            className={isUser ? '!bg-indigo-600 shrink-0' : '!bg-brand-600 shrink-0'}
           />
           <div className="flex flex-col gap-1">
             <div
@@ -1887,7 +1885,7 @@ export const ApplicationManagementPage = () => {
                 renderReplyBlocks(msg.contentBlocks, msg.content)
               )}
               {msg.id === -1 && (
-                <span className="ml-1 inline-block h-4 w-0.5 bg-teal-500 animate-pulse align-middle" />
+                <span className="ml-1 inline-block h-4 w-0.5 bg-brand-500 animate-pulse align-middle" />
               )}
             </div>
             {!isUser && msg.id !== -1 && (
@@ -1901,9 +1899,9 @@ export const ApplicationManagementPage = () => {
                     emoji: ttsFilterEmoji,
                     sessionConfig: ttsPlaybackSessionConfig,
                   })}
-                  className="flex items-center gap-1 text-slate-500 hover:text-teal-600 !px-1.5"
+                  className="flex items-center gap-1 text-slate-500 hover:text-brand-600 !px-1.5"
                 >
-                  {isPlaybackPending ? <Loader2 size={12} className="animate-spin" /> : isPlaybackPlaying ? <Pause size={12} /> : <Play size={12} />}
+                  {isPlaybackPending ? <IconLoader2 size={12} className="animate-spin" /> : isPlaybackPlaying ? <IconPlayerPause size={12} /> : <IconPlayerPlay size={12} />}
                   <span className="text-xs">{isPlaybackPending ? '生成中' : isPlaybackPlaying ? '暂停' : '播放'}</span>
                 </Button>
                 {agentAudio.playingKey === playbackKey && (
@@ -1914,7 +1912,7 @@ export const ApplicationManagementPage = () => {
                     onClick={agentAudio.stopPlayback}
                     className="flex items-center gap-1 !px-1.5"
                   >
-                    <Square size={12} />
+                    <IconSquare size={12} />
                     <span className="text-xs">停止</span>
                   </Button>
                 )}
@@ -1929,9 +1927,9 @@ export const ApplicationManagementPage = () => {
                       message.error('复制失败');
                     }
                   }}
-                  className="flex items-center gap-1 text-slate-500 hover:text-teal-600 !px-1.5"
+                  className="flex items-center gap-1 text-slate-500 hover:text-brand-600 !px-1.5"
                 >
-                  <Copy size={12} />
+                  <IconCopy size={12} />
                   <span className="text-xs">复制</span>
                 </Button>
                 <Button 
@@ -1939,9 +1937,9 @@ export const ApplicationManagementPage = () => {
                   size="small"
                   disabled={!canUpdate} 
                   onClick={() => void createAnnotationFromAssistantMessage(msg)}
-                  className="flex items-center gap-1 text-slate-500 hover:text-teal-600 !px-1.5"
+                  className="flex items-center gap-1 text-slate-500 hover:text-brand-600 !px-1.5"
                 >
-                  <BookmarkPlus size={12} />
+                  <IconBookmarkPlus size={12} />
                   <span className="text-xs">添加到标注</span>
                 </Button>
               </div>
@@ -1987,7 +1985,7 @@ export const ApplicationManagementPage = () => {
               <div className="flex items-center gap-1.5">
                 <span className="text-sm font-bold text-slate-700">运行后端</span>
                 <Tooltip title="切换当前智能体实际使用标准 LLM 还是公司授权的第三方会话机器人。两个绑定都会保留，便于随时切换。">
-                  <HelpCircle size={14} className="text-slate-400 cursor-help" />
+                  <IconHelpCircle size={14} className="text-slate-400 cursor-help" />
                 </Tooltip>
               </div>
               <Segmented
@@ -2007,7 +2005,7 @@ export const ApplicationManagementPage = () => {
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-bold text-slate-700">标准 LLM 模型</span>
                   <Tooltip title="当前智能体会使用这里选择的标准 OpenAI 兼容模型。">
-                    <HelpCircle size={14} className="text-slate-400 cursor-help" />
+                    <IconHelpCircle size={14} className="text-slate-400 cursor-help" />
                   </Tooltip>
                 </div>
                 <Select
@@ -2031,7 +2029,7 @@ export const ApplicationManagementPage = () => {
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-bold text-slate-700">第三方会话机器人</span>
                   <Tooltip title="当前智能体会使用这里选择的第三方机器人；这里只显示超管授权给当前公司的机器人。">
-                    <HelpCircle size={14} className="text-slate-400 cursor-help" />
+                    <IconHelpCircle size={14} className="text-slate-400 cursor-help" />
                   </Tooltip>
                 </div>
                 <Select
@@ -2056,7 +2054,7 @@ export const ApplicationManagementPage = () => {
               <div className="flex items-center gap-1.5">
                 <span className="text-sm font-bold text-slate-700">系统提示词 (System Prompt)</span>
                 <Tooltip title="设定智能体的角色人设、回复风格 and 行为约束，引导大模型产生符合预期的输出。">
-                  <HelpCircle size={14} className="text-slate-400 cursor-help" />
+                  <IconHelpCircle size={14} className="text-slate-400 cursor-help" />
                 </Tooltip>
               </div>
               <Input.TextArea
@@ -2116,7 +2114,7 @@ export const ApplicationManagementPage = () => {
               >
                 <Button type="default" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span className="text-sm text-slate-500">选择关联知识库 ({selectedDocs.length} 个已选)</span>
-                  <ChevronDown size={14} className="text-slate-400" />
+                  <IconChevronDown size={14} className="text-slate-400" />
                 </Button>
               </Popover>
             </div>
@@ -2126,7 +2124,7 @@ export const ApplicationManagementPage = () => {
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-bold text-slate-700">随机性温度 (Temperature)</span>
                   <Tooltip title="值越高回复越具创意 and 随机性；值越低回复越确定 and 保守。建议客服场景设为 0.2-0.5，创作场景设为 0.7-1.0。">
-                    <HelpCircle size={14} className="text-slate-400 cursor-help" />
+                    <IconHelpCircle size={14} className="text-slate-400 cursor-help" />
                   </Tooltip>
                 </div>
                 <Tag color="cyan">{temperature}</Tag>
@@ -2146,7 +2144,7 @@ export const ApplicationManagementPage = () => {
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-bold text-slate-700">最大输出 Tokens</span>
                   <Tooltip title="单次模型回复生成的最大 Token 数量。开启不限制后，请求大模型时不会传递 max_tokens 参数。">
-                    <HelpCircle size={14} className="text-slate-400 cursor-help" />
+                    <IconHelpCircle size={14} className="text-slate-400 cursor-help" />
                   </Tooltip>
                 </div>
                 <Button
@@ -2180,7 +2178,7 @@ export const ApplicationManagementPage = () => {
           {/* Chat Header */}
           <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-3 shrink-0">
             <div className="flex items-center gap-2">
-              <Sparkles size={16} className="text-teal-600" />
+              <IconSparkles size={16} className="text-brand-600" />
               <div className="text-lg font-bold">调试预览</div>
             </div>
             <div className="flex items-center gap-2">
@@ -2190,9 +2188,9 @@ export const ApplicationManagementPage = () => {
                 disabled={!selectedApplication || streaming || chatLoading}
                 loading={chatLoading}
                 onClick={() => void startNewConversation()}
-                className="flex items-center gap-1 text-slate-500 hover:text-teal-600"
+                className="flex items-center gap-1 text-slate-500 hover:text-brand-600"
               >
-                <RotateCcw size={14} />
+                <IconRotate size={14} />
                 <span className="text-xs">新对话</span>
               </Button>
               {conversation ? (
@@ -2216,7 +2214,7 @@ export const ApplicationManagementPage = () => {
               </div>
             ) : (
               <div className="flex flex-col justify-center items-center gap-4 h-full text-slate-400">
-                <MessageSquare size={36} className="text-slate-300" />
+                <IconMessage size={36} className="text-slate-300" />
                 {openingMessageEnabled && openingMessage ? (
                   <div className="rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm max-w-xl text-slate-700 text-sm">
                     {openingMessage}
@@ -2233,9 +2231,9 @@ export const ApplicationManagementPage = () => {
                         key={`${index}-${question}`} 
                         disabled={streaming || !canChat} 
                         onClick={() => void sendSuggestedQuestion(question)}
-                        className="rounded-full flex items-center gap-1 text-xs text-slate-600 hover:text-teal-600 hover:border-teal-500"
+                        className="rounded-full flex items-center gap-1 text-xs text-slate-600 hover:text-brand-600 hover:border-brand-500"
                       >
-                        <HelpCircle size={12} /> {question}
+                        <IconHelpCircle size={12} /> {question}
                       </Button>
                     ))}
                   </div>
@@ -2273,7 +2271,7 @@ export const ApplicationManagementPage = () => {
                 }}
                 className={`flex items-center justify-center ${agentAudio.recording ? 'bg-red-50 text-red-500 border-red-200 hover:bg-red-100' : ''}`}
               >
-                {agentAudio.recording ? <MicOff size={16} /> : <Mic size={16} />}
+                {agentAudio.recording ? <IconMicrophoneOff size={16} /> : <IconMicrophone size={16} />}
               </Button>
             )}
             <Input.TextArea
@@ -2292,16 +2290,16 @@ export const ApplicationManagementPage = () => {
             />
             {isStreamingReplyPlaybackActive && (
               <Button danger onClick={agentAudio.interruptStreamPlayback} className="flex items-center gap-1">
-                <Square size={14} /> 打断播报
+                <IconSquare size={14} /> 打断播报
               </Button>
             )}
             {streaming ? (
               <Button type="primary" danger onClick={handleStopStreaming} className="flex items-center gap-1">
-                <Square size={14} /> 停止
+                <IconSquare size={14} /> 停止
               </Button>
             ) : (
               <Button type="primary" disabled={!inputValue.trim() || !canChat || !selectedApplication} onClick={() => void handleSend()} className="flex items-center justify-center">
-                <Send size={16} />
+                <IconSend size={16} />
               </Button>
             )}
           </div>
@@ -2354,7 +2352,7 @@ export const ApplicationManagementPage = () => {
                   <div className="flex flex-col gap-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
                     {suggestedQuestions.map((question, index) => (
                       <div className="flex items-center gap-1.5" key={`${index}-${question}`}>
-                        <GripVertical size={14} className="text-slate-400 shrink-0 cursor-grab" />
+                        <IconGripVertical size={14} className="text-slate-400 shrink-0 cursor-grab" />
                         <Input 
                           value={question}
                           onChange={(event) => updateSuggestedQuestion(index, event.target.value.slice(0, 120))}
@@ -2368,7 +2366,7 @@ export const ApplicationManagementPage = () => {
                           onClick={() => moveSuggestedQuestion(index, -1)}
                           style={{ padding: '4px 8px' }}
                         >
-                          <ChevronUp size={12} />
+                          <IconChevronUp size={12} />
                         </Button>
                         <Button 
                           type="default" 
@@ -2377,7 +2375,7 @@ export const ApplicationManagementPage = () => {
                           onClick={() => moveSuggestedQuestion(index, 1)}
                           style={{ padding: '4px 8px' }}
                         >
-                          <ChevronDownIcon size={12} />
+                          <IconChevronDown size={12} />
                         </Button>
                         <Button 
                           type="primary" 
@@ -2387,7 +2385,7 @@ export const ApplicationManagementPage = () => {
                           onClick={() => removeSuggestedQuestion(index)}
                           style={{ padding: '4px 8px' }}
                         >
-                          <Trash2 size={12} />
+                          <IconTrash size={12} />
                         </Button>
                       </div>
                     ))}
@@ -2412,7 +2410,7 @@ export const ApplicationManagementPage = () => {
                     style={{ flex: 1 }}
                   />
                   <Button disabled={!canUpdate || suggestedQuestions.length >= 10} onClick={addSuggestedQuestion} className="flex items-center gap-1">
-                    <Plus size={14} /> 添加
+                    <IconPlus size={14} /> 添加
                   </Button>
                 </div>
               </div>
@@ -2462,7 +2460,7 @@ export const ApplicationManagementPage = () => {
           </div>
 
           <Button type="primary" size="large" disabled={!canUpdate || streaming} loading={configSaving} onClick={() => void handleSaveConfig()} className="shrink-0 w-full flex items-center justify-center gap-1.5">
-            <Save size={16} /> 保存对话设置
+            <IconDeviceFloppy size={16} /> 保存对话设置
           </Button>
         </div>
 
@@ -2476,8 +2474,8 @@ export const ApplicationManagementPage = () => {
           <div className="flex-1 overflow-y-auto bg-slate-50/40 rounded-xl border border-slate-100/50 p-6 min-h-0 custom-scrollbar flex flex-col justify-center items-center gap-4">
             <Avatar 
               size={64} 
-              icon={<Bot size={32} />} 
-              className="!bg-teal-50 !text-teal-700 shadow-sm"
+              icon={<IconRobot size={32} />} 
+              className="!bg-brand-50 !text-brand-700 shadow-sm"
             />
             <div className="text-lg font-bold text-slate-800">开始与「{selectedApplication?.name || '智能体'}」对话</div>
             
@@ -2498,7 +2496,7 @@ export const ApplicationManagementPage = () => {
                     })}
                     className="flex items-center gap-1 rounded-full px-3"
                   >
-                    {isOpeningPlaybackPending ? <Loader2 size={12} className="animate-spin" /> : isOpeningPlaybackPlaying ? <Pause size={12} /> : <Volume2 size={12} />}
+                    {isOpeningPlaybackPending ? <IconLoader2 size={12} className="animate-spin" /> : isOpeningPlaybackPlaying ? <IconPlayerPause size={12} /> : <IconVolume2 size={12} />}
                     <span>{isOpeningPlaybackPending ? '生成中' : isOpeningPlaybackPlaying ? '暂停开场白' : '播放开场白'}</span>
                   </Button>
                   {agentAudio.playingKey === 'opening-message' && (
@@ -2509,7 +2507,7 @@ export const ApplicationManagementPage = () => {
                       onClick={agentAudio.stopPlayback}
                       className="flex items-center gap-1"
                     >
-                      <Square size={12} />
+                      <IconSquare size={12} />
                       <span>停止</span>
                     </Button>
                   )}
@@ -2526,9 +2524,9 @@ export const ApplicationManagementPage = () => {
                     key={`${index}-${question}`} 
                     disabled={streaming || !canChat} 
                     onClick={() => void sendSuggestedQuestion(question)}
-                    className="rounded-full flex items-center gap-1 text-xs text-slate-600 hover:text-teal-600 hover:border-teal-500"
+                    className="rounded-full flex items-center gap-1 text-xs text-slate-600 hover:text-brand-600 hover:border-brand-500"
                   >
-                    <HelpCircle size={12} /> {question}
+                    <IconHelpCircle size={12} /> {question}
                   </Button>
                 ))}
               </div>
@@ -2565,7 +2563,7 @@ export const ApplicationManagementPage = () => {
                 }}
                 className={`flex items-center justify-center ${agentAudio.recording ? 'bg-red-50 text-red-500 border-red-200 hover:bg-red-100' : ''}`}
               >
-                {agentAudio.recording ? <MicOff size={16} /> : <Mic size={16} />}
+                {agentAudio.recording ? <IconMicrophoneOff size={16} /> : <IconMicrophone size={16} />}
               </Button>
             )}
             <Input.TextArea
@@ -2584,11 +2582,11 @@ export const ApplicationManagementPage = () => {
             />
             {isStreamingReplyPlaybackActive && (
               <Button danger onClick={agentAudio.interruptStreamPlayback} className="flex items-center gap-1">
-                <Square size={14} /> 打断播报
+                <IconSquare size={14} /> 打断播报
               </Button>
             )}
             <Button type="primary" disabled={!inputValue.trim() || !canChat || streaming} onClick={() => void handleSend()} className="flex items-center justify-center">
-              <Send size={16} />
+              <IconSend size={16} />
             </Button>
           </div>
         </Card>
@@ -2604,7 +2602,7 @@ export const ApplicationManagementPage = () => {
           <div className="flex justify-between items-center gap-4">
             <div className="flex items-center gap-4" style={{ minWidth: 0 }}>
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm">
-                <BookOpen size={22} />
+                <IconBook size={22} />
               </div>
               <div className="flex flex-col gap-0.5" style={{ minWidth: 0 }}>
                 <div className="text-base font-bold text-slate-800">精确命中标准问答</div>
@@ -2631,7 +2629,7 @@ export const ApplicationManagementPage = () => {
           </div>
         </Card>
 
-        {/* Search & Create Actions */}
+        {/* IconSearch & Create Actions */}
         <div className="flex flex-col sm:flex-row gap-3 shrink-0">
           <Input 
             value={annotationSearchValue}
@@ -2643,14 +2641,14 @@ export const ApplicationManagementPage = () => {
               }
             }}
             style={{ flex: 1 }}
-            prefix={<Search size={16} className="text-slate-400" />}
+            prefix={<IconSearch size={16} className="text-slate-400" />}
           />
           
           <Button type="default" onClick={() => setAnnotationKeyword(annotationSearchValue.trim())} className="flex items-center gap-1 justify-center">
-            <Search size={14} /> 搜索
+            <IconSearch size={14} /> 搜索
           </Button>
           <Button type="primary" disabled={!canUpdate} onClick={() => openAnnotationDialog()} className="flex items-center gap-1 justify-center shadow-sm">
-            <Plus size={16} /> 新增标注
+            <IconPlus size={16} /> 新增标注
           </Button>
         </div>
 
@@ -2674,7 +2672,7 @@ export const ApplicationManagementPage = () => {
                         onChange={(checked) => void toggleAnnotation(annotation, checked)} 
                         size="small"
                       />
-                      <Button type="text" size="small" disabled={!canUpdate} onClick={() => openAnnotationDialog(annotation)} className="text-slate-500 hover:text-teal-600">
+                      <Button type="text" size="small" disabled={!canUpdate} onClick={() => openAnnotationDialog(annotation)} className="text-slate-500 hover:text-brand-600">
                         编辑
                       </Button>
                       <Popconfirm
@@ -2704,7 +2702,7 @@ export const ApplicationManagementPage = () => {
 
                   <div className="flex items-center gap-3 text-xs text-slate-400 mt-0.5">
                     <span className="flex items-center gap-1 text-slate-500">
-                      <Zap size={13} className="text-amber-500" /> 累计命中 <span className="font-semibold text-slate-700">{annotation.hitCount}</span> 次
+                      <IconBolt size={13} className="text-amber-500" /> 累计命中 <span className="font-semibold text-slate-700">{annotation.hitCount}</span> 次
                     </span>
                     <span>•</span>
                     <span>修改于: {annotation.lastHitAt ? dayjs(annotation.lastHitAt).format('M月D日 HH:mm') : dayjs(annotation.updated_at).format('M月D日 HH:mm')}</span>
@@ -2753,7 +2751,7 @@ export const ApplicationManagementPage = () => {
                   onClick={() => void loadSelectedLogConversation(conv)}
                   className={`py-3 px-3 cursor-pointer rounded-xl transition-all duration-200 border ${
                     selectedLogConversation?.id === getLogConversationDetailId(conv)
-                      ? 'bg-teal-50/50 border-teal-200 shadow-sm'
+                      ? 'bg-brand-50/50 border-brand-200 shadow-sm'
                       : 'border-transparent hover:bg-slate-50'
                   }`}
                 >
@@ -2779,7 +2777,7 @@ export const ApplicationManagementPage = () => {
                       <Tag color="gold" className="m-0 scale-90 origin-left">设备运行时</Tag>
                     )}
                     <span className="flex items-center gap-1 text-slate-400">
-                      <MessageSquare size={11} /> {conv.messageCount} 消息
+                      <IconMessage size={11} /> {conv.messageCount} 消息
                     </span>
                   </div>
                 </div>
@@ -2813,8 +2811,8 @@ export const ApplicationManagementPage = () => {
                           <div className={`flex ${isUser ? 'flex-row-reverse' : 'flex-row'} gap-3`} style={{ maxWidth: '85%' }}>
                             <Avatar
                               size={32}
-                              icon={isUser ? <User size={14} /> : <Bot size={14} />}
-                              className={isUser ? '!bg-indigo-600 shrink-0' : '!bg-teal-600 shrink-0'}
+                              icon={isUser ? <IconUser size={14} /> : <IconRobot size={14} />}
+                              className={isUser ? '!bg-indigo-600 shrink-0' : '!bg-brand-600 shrink-0'}
                             />
                             <div className="flex flex-col gap-1">
                               <div
@@ -2847,10 +2845,10 @@ export const ApplicationManagementPage = () => {
                                         message.error('复制失败');
                                       }
                                     }}
-                                    className="flex items-center gap-1 text-slate-400 hover:text-teal-600 !p-0 !h-auto"
+                                    className="flex items-center gap-1 text-slate-400 hover:text-brand-600 !p-0 !h-auto"
                                     style={{ fontSize: 10 }}
                                   >
-                                    <Copy size={10} />
+                                    <IconCopy size={10} />
                                     <span>复制</span>
                                   </Button>
                                 )}
@@ -2868,7 +2866,7 @@ export const ApplicationManagementPage = () => {
             </Spin>
           ) : (
             <div className="flex flex-col justify-center items-center gap-3 text-slate-400 h-full">
-              <MessageSquare size={40} className="text-slate-300" />
+              <IconMessage size={40} className="text-slate-300" />
               <span className="text-sm">选择左侧历史会话查看详细聊天明细</span>
             </div>
           )}
@@ -2985,7 +2983,7 @@ export const ApplicationManagementPage = () => {
       >
         <div className="flex items-center w-full justify-between">
           <div className="flex items-center min-w-0">
-            <span className={`mr-2.5 flex items-center transition-transform duration-200 ${isActive ? 'scale-110 text-white' : 'text-slate-400 group-hover:text-teal-700'}`}>
+            <span className={`mr-2.5 flex items-center transition-transform duration-200 ${isActive ? 'scale-110 text-white' : 'text-slate-400 group-hover:text-brand-700'}`}>
               {icon}
             </span>
             <span className="truncate">{label}</span>
@@ -3016,12 +3014,12 @@ export const ApplicationManagementPage = () => {
             style={{ width: 34, height: 34, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             className="rounded-full hover:bg-slate-100 text-slate-600"
           >
-            <ArrowLeft size={16} />
+            <IconArrowLeft size={16} />
           </Button>
           <div className="flex flex-col" style={{ minWidth: 0 }}>
             <div className="text-lg font-bold text-slate-800 truncate leading-tight">{selectedApplication?.name || '智能体'}</div>
             <div className="flex items-center gap-2 mt-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-teal-500 animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-500 animate-pulse" />
               <span className="text-xs text-slate-500 truncate">
                 {selectedApplication ? getRuntimeBackendDisplay(selectedApplication) : '未配置运行后端'}
               </span>
@@ -3049,7 +3047,7 @@ export const ApplicationManagementPage = () => {
               style={{ minWidth: 96 }}
               className="flex items-center gap-1"
             >
-              <Zap size={14} /> 发布
+              <IconBolt size={14} /> 发布
             </Button>
             <Button 
               type="primary"
@@ -3059,7 +3057,7 @@ export const ApplicationManagementPage = () => {
               style={{ minWidth: 100 }}
               className="flex items-center gap-1 shadow-sm"
             >
-              <Save size={14} /> 保存配置
+              <IconDeviceFloppy size={14} /> 保存配置
             </Button>
           </div>
         )}
@@ -3070,11 +3068,11 @@ export const ApplicationManagementPage = () => {
         {/* Left Side Tab Navigation Menu */}
         <Card variant="borderless" className="w-full lg:w-56 shrink-0 bg-white border border-slate-200/50 shadow-sm flex flex-col" styles={{ body: { padding: '16px 12px', height: '100%', display: 'flex', flexDirection: 'column' } }}>
           <div className="flex flex-row lg:flex-col gap-1.5 flex-1 w-full">
-            {renderTabButton('orchestrate', <Sparkles size={16} />, '编排')}
-            {renderTabButton('conversation', <MessageSquare size={16} />, '对话设置')}
-            {renderTabButton('annotations', <BookOpen size={16} />, '标注', annotations.length)}
-            {renderTabButton('logs', <FileQuestion size={16} />, '日志')}
-            {renderTabButton('monitor', <BarChart2 size={16} />, '监测')}
+            {renderTabButton('orchestrate', <IconSparkles size={16} />, '编排')}
+            {renderTabButton('conversation', <IconMessage size={16} />, '对话设置')}
+            {renderTabButton('annotations', <IconBook size={16} />, '标注', annotations.length)}
+            {renderTabButton('logs', <IconFileUnknown size={16} />, '日志')}
+            {renderTabButton('monitor', <IconChartBar size={16} />, '监测')}
           </div>
         </Card>
 
@@ -3133,9 +3131,8 @@ export const ApplicationManagementPage = () => {
   };
 
   return (
-    <ConfigProvider theme={{ token: { colorPrimary: "#0f766e", borderRadius: 12 } }}>
-      <div className="relative min-h-full bg-slate-50/20 px-4 py-4 text-slate-900">
-        {selectedApplicationId ? renderApplicationWorkspace() : renderApplicationList()}
+    <div className="relative min-h-full bg-slate-50/20 px-4 py-4 text-slate-900">
+      {selectedApplicationId ? renderApplicationWorkspace() : renderApplicationList()}
         
         <Modal
           open={annotationDialogOpen}
@@ -3181,7 +3178,7 @@ export const ApplicationManagementPage = () => {
                   key={resource.id}
                   type="button"
                   onClick={() => insertResourceBlock(resource)}
-                  className="flex cursor-pointer flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-teal-300 hover:bg-teal-50/40"
+                  className="flex cursor-pointer flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-brand-300 hover:bg-brand-50/40"
                 >
                   <div className="text-sm font-semibold text-slate-800">{resource.name}</div>
                   {resource.resourceType === 'image' ? (
@@ -3269,6 +3266,5 @@ export const ApplicationManagementPage = () => {
           </p>
         </Modal>
       </div>
-    </ConfigProvider>
   );
 };

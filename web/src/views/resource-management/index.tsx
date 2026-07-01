@@ -1,12 +1,12 @@
 import {
-  DeleteOutlined,
-  EditOutlined,
-  EyeOutlined,
-  FileImageOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-  UploadOutlined,
-} from '@ant-design/icons';
+  IconTrash,
+  IconEdit,
+  IconEye,
+  IconPhoto,
+  IconPlus,
+  IconReload,
+  IconUpload,
+} from '@tabler/icons-react';
 import {
   Button,
   Card,
@@ -405,7 +405,7 @@ type VideoThumbnailPlaceholderProps = {
 const VideoThumbnailPlaceholder = ({ status }: VideoThumbnailPlaceholderProps) => (
   <div className="absolute inset-0 flex items-center justify-center bg-slate-900 text-slate-200">
     <Space direction="vertical" align="center" size={8}>
-      <FileImageOutlined className="text-4xl text-slate-300/80" />
+      <IconPhoto className="text-4xl text-slate-300/80" />
       <span className="text-sm">{status === 'loading' ? '正在加载视频缩略图' : '暂无视频缩略图'}</span>
     </Space>
   </div>
@@ -884,17 +884,17 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
               }}
               className="!w-36"
             />
-            <Button icon={<ReloadOutlined />} onClick={() => void loadData()}>
+            <Button icon={<IconReload />} onClick={() => void loadData()}>
               刷新
             </Button>
             {canCreate ? (
               <>
                 {resourceType === 'image' ? (
-                  <Button icon={<UploadOutlined />} onClick={openBatchModal}>
+                  <Button icon={<IconUpload />} onClick={openBatchModal}>
                     批量上传
                   </Button>
                 ) : null}
-                <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
+                <Button type="primary" icon={<IconPlus />} onClick={openCreateModal}>
                   新建资源
                 </Button>
               </>
@@ -926,18 +926,18 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
                 ) : (
                   <div className={`flex items-center justify-center bg-slate-100 text-slate-400 ${item.category === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'}`}>
                     <Space direction="vertical" align="center">
-                      <FileImageOutlined className="text-4xl" />
+                      <IconPhoto className="text-4xl" />
                       <span>{resourceType === 'image' ? '未上传图片' : '未配置视频地址'}</span>
                     </Space>
                   </div>
                 )
               }
               actions={[
-                <Button key="preview" type="text" icon={<EyeOutlined />} onClick={() => setPreviewItem(item)} disabled={!hasSource}>
+                <Button key="preview" type="text" icon={<IconEye />} onClick={() => setPreviewItem(item)} disabled={!hasSource}>
                   预览
                 </Button>,
                 canUpdate ? (
-                  <Button key="edit" type="text" icon={<EditOutlined />} onClick={() => openEditModal(item)}>
+                  <Button key="edit" type="text" icon={<IconEdit />} onClick={() => openEditModal(item)}>
                     编辑
                   </Button>
                 ) : (
@@ -945,7 +945,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
                 ),
                 canDelete ? (
                   <Popconfirm key="delete" title="确认删除该资源吗？" onConfirm={() => void handleDelete(item)}>
-                    <Button type="text" danger icon={<DeleteOutlined />}>
+                    <Button type="text" danger icon={<IconTrash />}>
                       删除
                     </Button>
                   </Popconfirm>
@@ -1032,7 +1032,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
             getValueFromEvent={(event) => event?.fileList}
           >
             <Upload beforeUpload={() => false} maxCount={1} accept={config.accept}>
-              <Button icon={<UploadOutlined />}>选择文件</Button>
+              <Button icon={<IconUpload />}>选择文件</Button>
             </Upload>
           </Form.Item>
           {resourceType === 'video' ? (
@@ -1143,7 +1143,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
               showUploadList={{ showPreviewIcon: false }}
               className="[&_.ant-upload-list]:max-h-56 [&_.ant-upload-list]:overflow-y-auto [&_.ant-upload-list]:rounded-lg [&_.ant-upload-list]:border [&_.ant-upload-list]:border-slate-100 [&_.ant-upload-list]:bg-slate-50/60 [&_.ant-upload-list]:px-2"
             >
-              <Button icon={<UploadOutlined />}>选择多个图片</Button>
+              <Button icon={<IconUpload />}>选择多个图片</Button>
             </Upload>
           </Form.Item>
           {batchFiles.length > 0 ? (

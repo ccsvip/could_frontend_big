@@ -1,6 +1,6 @@
 import { Button, Space, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { LinkOutlined } from '@ant-design/icons';
+import { IconLink } from '@tabler/icons-react';
 import type { ReactNode } from 'react';
 import type { DeviceActivationLogRecord, DeviceAuthorizationRequestRecord } from '../../api/modules/devices';
 import { bindingStatusMap, logActionMap, runtimeStatusMap } from './constants';
@@ -94,7 +94,7 @@ const requestColumns: ColumnsType<DeviceAuthorizationRequestRecord> = [
     width: 160,
     render: (_, record) => (
       <Space size={6}>
-        <Button size="small" type="primary" icon={<LinkOutlined />} onClick={() => openBind(record)}>
+        <Button size="small" type="primary" icon={<IconLink />} onClick={() => openBind(record)}>
           绑定
         </Button>
         <Button size="small" danger onClick={() => handleIgnore(record)}>

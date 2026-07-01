@@ -1,4 +1,4 @@
-import { RobotOutlined } from '@ant-design/icons';
+import { IconRobot } from '@tabler/icons-react';
 
 type BrandMarkProps = {
   title: string;
@@ -13,8 +13,8 @@ export const BrandMark = ({ title, subtitle, tone = 'light', compact = false, cl
   const subtitleColor = tone === 'dark' ? 'text-slate-400' : 'text-slate-500';
   const iconShell =
     tone === 'dark'
-      ? 'border-white/10 bg-gradient-to-br from-teal-500/30 to-teal-700/20 text-teal-200'
-      : 'border-teal-100 bg-gradient-to-br from-teal-50 to-white text-teal-700 shadow-[0_4px_12px_rgba(15,118,110,0.12)]';
+      ? 'border-white/10 bg-gradient-to-br from-brand-500/30 to-brand-700/20 text-brand-200'
+      : 'border-brand-100 bg-gradient-to-br from-brand-50 to-white text-brand-700 shadow-[0_4px_12px_rgba(15,118,110,0.12)]';
 
   return (
     <div className={`flex min-w-0 items-center gap-3 ${className}`}>
@@ -24,7 +24,7 @@ export const BrandMark = ({ title, subtitle, tone = 'light', compact = false, cl
           compact ? 'h-10 w-10' : 'h-11 w-11'
         }`}
       >
-        <RobotOutlined className={compact ? 'text-lg' : 'text-xl'} />
+        <IconRobot className={compact ? 'text-lg' : 'text-xl'} />
       </div>
       <div className="min-w-0">
         <div className={`truncate font-semibold tracking-tight ${titleColor} ${compact ? 'text-[14px]' : 'text-[15px]'}`}>

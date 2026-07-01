@@ -24,6 +24,14 @@ body {
   background: transparent;
 }
 
+/* @tabler/icons-react 的 SVG 是固定 24px，而 antd 组件（Button/Menu 等用 .anticon 包裹 icon）
+   原本靠字号缩放 antd 自带图标。这条规则让 tabler SVG 在 .anticon 容器里也按 1em 缩放，
+   避免 24px 图标撑爆按钮/菜单。需要精确尺寸时仍用 size 属性覆盖。 */
+.anticon > svg {
+  width: 1em;
+  height: 1em;
+}
+
 .rt-BaseDialogOverlay {
   z-index: 1000;
 }
@@ -592,12 +600,13 @@ body {
   gap: 8px;
 }
 
-/* 顶部页面 hero 卡片：克制的渐变 + 主色高光 */
+/* 顶部页面 hero 卡片：克制的渐变 + 主色高光。
+   尺寸用 clamp() 而非裸 vw，保证手机端不会缩到几个像素、桌面端不会膨胀。 */
 .page-hero {
   position: relative;
   overflow: hidden;
   border-radius: 14px;
-  padding: 1.2vw 1.4vw;
+  padding: clamp(16px, 1.6vw, 28px) clamp(18px, 1.8vw, 32px);
   background:
     radial-gradient(120% 200% at 0% 0%, rgba(20, 184, 166, 0.12) 0%, transparent 55%),
     linear-gradient(135deg, #ffffff 0%, #f8fbfa 100%);
@@ -608,10 +617,10 @@ body {
 .page-hero::after {
   content: '';
   position: absolute;
-  right: -2.2vw;
-  top: -2.2vw;
-  width: 12vw;
-  height: 12vw;
+  right: clamp(-60px, -2.2vw, -32px);
+  top: clamp(-60px, -2.2vw, -32px);
+  width: clamp(80px, 12vw, 200px);
+  height: clamp(80px, 12vw, 200px);
   border-radius: 50%;
   background: radial-gradient(circle, rgba(20, 184, 166, 0.10), transparent 70%);
   pointer-events: none;

@@ -1,14 +1,14 @@
 import {
-  AppstoreOutlined,
-  ClusterOutlined,
-  DeleteOutlined,
-  DesktopOutlined,
-  EditOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-  SearchOutlined,
-  SettingOutlined,
-} from '@ant-design/icons';
+  IconApps,
+  IconHierarchy2,
+  IconTrash,
+  IconDeviceDesktop,
+  IconEdit,
+  IconPlus,
+  IconReload,
+  IconSearch,
+  IconSettings,
+} from '@tabler/icons-react';
 import {
   Button,
   Card,
@@ -575,7 +575,7 @@ export const DeviceManagementPage = () => {
         <Space size={6}>
           {canUpdateDevice ? (
             <Tooltip title="编辑设备名称和资源应用">
-              <Button size="small" icon={<EditOutlined />} onClick={() => openDeviceEdit(record)}>
+              <Button size="small" icon={<IconEdit />} onClick={() => openDeviceEdit(record)}>
                 编辑
               </Button>
             </Tooltip>
@@ -589,7 +589,7 @@ export const DeviceManagementPage = () => {
               okButtonProps={{ danger: true }}
               onConfirm={() => void handleDeviceDelete(record)}
             >
-              <Button size="small" danger icon={<DeleteOutlined />}>
+              <Button size="small" danger icon={<IconTrash />}>
                 删除
               </Button>
             </Popconfirm>
@@ -609,7 +609,7 @@ export const DeviceManagementPage = () => {
       render: (_, record) => (
         <Space size={6}>
           {canUpdateDevice ? (
-            <Button size="small" icon={<EditOutlined />} onClick={() => openGroupEdit(record)}>
+            <Button size="small" icon={<IconEdit />} onClick={() => openGroupEdit(record)}>
               编辑
             </Button>
           ) : null}
@@ -622,7 +622,7 @@ export const DeviceManagementPage = () => {
               okButtonProps={{ danger: true }}
               onConfirm={() => void handleGroupDelete(record)}
             >
-              <Button size="small" danger icon={<DeleteOutlined />}>
+              <Button size="small" danger icon={<IconTrash />}>
                 删除
               </Button>
             </Popconfirm>
@@ -652,8 +652,8 @@ export const DeviceManagementPage = () => {
       <div className="page-hero">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0">
-            <div className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-700">
-              <span className="inline-block h-1 w-1 rounded-full bg-teal-600" />
+            <div className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-700">
+              <span className="inline-block h-1 w-1 rounded-full bg-brand-600" />
               Device Code Runtime
             </div>
             <Typography.Title level={4} className="!mb-1 !font-semibold !text-slate-900">
@@ -667,7 +667,7 @@ export const DeviceManagementPage = () => {
             <Tag color={realtimeConnected ? 'success' : 'default'}>
               {realtimeConnected ? '实时同步中' : '实时未连接'}
             </Tag>
-            <Button icon={<ReloadOutlined />} onClick={() => loadData()}>
+            <Button icon={<IconReload />} onClick={() => loadData()}>
               刷新
             </Button>
           </Space>
@@ -727,7 +727,7 @@ export const DeviceManagementPage = () => {
             key: 'devices',
             label: (
               <Space size={6}>
-                <DesktopOutlined />
+                <IconDeviceDesktop />
                 设备
               </Space>
             ),
@@ -736,7 +736,7 @@ export const DeviceManagementPage = () => {
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(220px,1fr)_140px_140px_160px_160px_auto]">
                   <Input
                     value={keyword}
-                    prefix={<SearchOutlined />}
+                    prefix={<IconSearch />}
                     placeholder="按设备名称或设备码搜索"
                     onChange={(event) => setKeyword(event.target.value)}
                     onPressEnter={handleSearch}
@@ -769,7 +769,7 @@ export const DeviceManagementPage = () => {
                     onChange={(value) => handleFilterChange('groupId', value)}
                     options={[{ label: '全部分组', value: 'all' }, ...groupOptions]}
                   />
-                  <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>
+                  <Button type="primary" icon={<IconSearch />} onClick={handleSearch}>
                     查询
                   </Button>
                 </div>
@@ -794,7 +794,7 @@ export const DeviceManagementPage = () => {
             key: 'applications',
             label: (
               <Space size={6}>
-                <AppstoreOutlined />
+                <IconApps />
                 应用
               </Space>
             ),
@@ -802,7 +802,7 @@ export const DeviceManagementPage = () => {
               <Space direction="vertical" size={14} className="w-full">
                 <div className="flex justify-end">
                   {canCreateDevice ? (
-                    <Button type="primary" icon={<PlusOutlined />} onClick={openApplicationCreate}>
+                    <Button type="primary" icon={<IconPlus />} onClick={openApplicationCreate}>
                       新建应用
                     </Button>
                   ) : null}
@@ -816,7 +816,7 @@ export const DeviceManagementPage = () => {
                         <Card
                           variant="borderless"
                           className={`!h-full !rounded-xl !border !shadow-card ${
-                            selectedApplication?.id === item.id ? '!border-teal-300' : '!border-slate-200/70'
+                            selectedApplication?.id === item.id ? '!border-brand-300' : '!border-slate-200/70'
                           }`}
                           onClick={() => setSelectedApplicationId(item.id)}
                         >
@@ -839,7 +839,7 @@ export const DeviceManagementPage = () => {
                               <Tag>指令 {item.commandGroupIds.length}</Tag>
                             </Space>
                             {canUpdateDevice ? (
-                              <Button icon={<SettingOutlined />} onClick={() => openApplicationConfig(item)}>
+                              <Button icon={<IconSettings />} onClick={() => openApplicationConfig(item)}>
                                 配置
                               </Button>
                             ) : null}
@@ -859,7 +859,7 @@ export const DeviceManagementPage = () => {
                         <Typography.Text type="secondary">当前应用绑定概览</Typography.Text>
                       </div>
                       {canUpdateDevice ? (
-                        <Button icon={<SettingOutlined />} onClick={() => openApplicationConfig(selectedApplication)}>
+                        <Button icon={<IconSettings />} onClick={() => openApplicationConfig(selectedApplication)}>
                           打开配置
                         </Button>
                       ) : null}
@@ -888,7 +888,7 @@ export const DeviceManagementPage = () => {
             key: 'groups',
             label: (
               <Space size={6}>
-                <ClusterOutlined />
+                <IconHierarchy2 />
                 分组
               </Space>
             ),
@@ -896,7 +896,7 @@ export const DeviceManagementPage = () => {
               <Space direction="vertical" size={12} className="w-full">
                 {canCreateDevice ? (
                   <div className="flex justify-end">
-                    <Button type="primary" icon={<PlusOutlined />} onClick={openGroupCreate}>
+                    <Button type="primary" icon={<IconPlus />} onClick={openGroupCreate}>
                       新建分组
                     </Button>
                   </div>

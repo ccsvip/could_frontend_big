@@ -4,8 +4,10 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      // brand 是项目唯一的青绿色阶，与 antd theme 的 colorPrimary (#0f766e = brand-700) 对齐。
+      // 页面写颜色一律用 brand-*；不要用 Tailwind 默认 teal-*（虽 hex 相同，但命名不在设计系统内），
+      // 更不要硬写 #0f766e 字面量。
       colors: {
-        // 与 antd theme 对齐：主品牌色为青绿 teal，避免与 ant 蓝色组件冲突
         brand: {
           50: '#f0fdfa',
           100: '#ccfbf1',
@@ -17,6 +19,22 @@ export default {
           700: '#0f766e',
           800: '#115e59',
           900: '#134e4a',
+        },
+      },
+      // 页面内容区统一容器：居中、有最大宽度、随断点放 padding，避免每页各写 %/px。
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: '16px',
+          sm: '20px',
+          lg: '24px',
+        },
+        screens: {
+          sm: '640px',
+          md: '768px',
+          lg: '1024px',
+          xl: '1280px',
+          '2xl': '1440px',
         },
       },
       boxShadow: {

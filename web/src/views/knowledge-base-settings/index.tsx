@@ -15,12 +15,12 @@ import {
   message,
 } from 'antd';
 import {
-  ApiOutlined,
-  DatabaseOutlined,
-  ReloadOutlined,
-  SaveOutlined,
-  SafetyCertificateOutlined,
-} from '@ant-design/icons';
+  IconApi,
+  IconDatabase,
+  IconReload,
+  IconDeviceFloppy,
+  IconCertificate,
+} from '@tabler/icons-react';
 import { fetchTenants, type TenantRecord } from '../../api/modules/tenants';
 import {
   fetchKnowledgeModelSettings,
@@ -198,7 +198,7 @@ export const KnowledgeBaseSettingsPage = () => {
           <Card
             title={
               <Space>
-                <DatabaseOutlined className="text-brand-600" />
+                <IconDatabase className="text-brand-600" />
                 <span>Embedding</span>
                 <Tag color="geekblue">text-embedding-v4</Tag>
               </Space>
@@ -229,7 +229,7 @@ export const KnowledgeBaseSettingsPage = () => {
           <Card
             title={
               <Space>
-                <SafetyCertificateOutlined className="text-brand-600" />
+                <IconCertificate className="text-brand-600" />
                 <span>Rerank</span>
                 <Tag color="purple">qwen3-vl-rerank</Tag>
               </Space>
@@ -254,7 +254,7 @@ export const KnowledgeBaseSettingsPage = () => {
           </Card>
         </div>
         <div className="mt-4 flex justify-end">
-          <Button type="primary" icon={<SaveOutlined />} loading={savingModels} onClick={() => void saveModelSettings()}>
+          <Button type="primary" icon={<IconDeviceFloppy />} loading={savingModels} onClick={() => void saveModelSettings()}>
             保存模型配置
           </Button>
         </div>
@@ -281,7 +281,7 @@ export const KnowledgeBaseSettingsPage = () => {
             unCheckedChildren="停用"
             onChange={(checked) => authorization && setAuthorization({ ...authorization, isActive: checked })}
           />
-          <Button type="primary" icon={<SaveOutlined />} loading={savingAuthorization} onClick={() => void saveAuthorization()}>
+          <Button type="primary" icon={<IconDeviceFloppy />} loading={savingAuthorization} onClick={() => void saveAuthorization()}>
             保存授权
           </Button>
         </Space>
@@ -329,14 +329,14 @@ export const KnowledgeBaseSettingsPage = () => {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="flex items-center gap-2 text-xl font-bold text-slate-900">
-              <ApiOutlined className="text-brand-600" />
+              <IconApi className="text-brand-600" />
               <span>知识库设置</span>
             </h1>
             <Typography.Text className="text-sm text-slate-500">
               平台统一维护知识库检索模型与公司授权。
             </Typography.Text>
           </div>
-          <Button icon={<ReloadOutlined />} onClick={() => void loadPlatformData()}>
+          <Button icon={<IconReload />} onClick={() => void loadPlatformData()}>
             刷新
           </Button>
         </div>

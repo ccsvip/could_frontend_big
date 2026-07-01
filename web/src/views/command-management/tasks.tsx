@@ -1,12 +1,12 @@
 import dayjs from 'dayjs';
 import {
-  DeleteOutlined,
-  EditOutlined,
-  FilterOutlined,
-  MenuOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-} from '@ant-design/icons';
+  IconTrash,
+  IconEdit,
+  IconFilter,
+  IconMenu2,
+  IconPlus,
+  IconReload,
+} from '@tabler/icons-react';
 import {
   Button,
   Card,
@@ -294,10 +294,10 @@ export const TaskCommandManagementPage = () => {
       width: 170,
       render: (_, item) => (
         <Space size={4}>
-          {canUpdate ? <Button type="text" icon={<EditOutlined />} onClick={() => openEditModal(item)}>编辑</Button> : null}
+          {canUpdate ? <Button type="text" icon={<IconEdit />} onClick={() => openEditModal(item)}>编辑</Button> : null}
           {canDelete ? (
             <Popconfirm title="确认删除该任务指令吗？" onConfirm={() => void handleDelete(item)}>
-              <Button type="text" danger icon={<DeleteOutlined />}>删除</Button>
+              <Button type="text" danger icon={<IconTrash />}>删除</Button>
             </Popconfirm>
           ) : null}
         </Space>
@@ -311,7 +311,7 @@ export const TaskCommandManagementPage = () => {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <Space size={10} align="center">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-              <MenuOutlined className="text-xl" />
+              <IconMenu2 className="text-xl" />
             </div>
             <div>
               <Typography.Title level={3} className="!mb-1 !text-slate-900">任务指令</Typography.Title>
@@ -319,13 +319,13 @@ export const TaskCommandManagementPage = () => {
             </div>
           </Space>
           <Space wrap>
-            <Input allowClear value={keywordInput} placeholder="搜索名称 / 指令名称" onChange={(event) => setKeywordInput(event.target.value)} onPressEnter={applyFilters} className="!w-64" />
+            <Input allowClear value={keywordInput} placeholder="搜索名称 / 指令名称" onChange={(event) => setKeywordInput(event.target.value)} onPressEnter={applyFilters} className="w-full sm:w-64" />
             <Select value={groupId} options={[{ label: '全部指令管理', value: 'all' }, ...groupOptions]} onChange={(value) => { setGroupId(value as number | 'all'); setPage(1); }} className="!w-40" />
             <Select value={isActive} options={activeOptions as unknown as { label: string; value: string }[]} onChange={(value) => { setIsActive(value as 'all' | 'active' | 'inactive'); setPage(1); }} className="!w-32" />
-            <Button type="primary" icon={<FilterOutlined />} onClick={applyFilters}>筛选</Button>
+            <Button type="primary" icon={<IconFilter />} onClick={applyFilters}>筛选</Button>
             <Button onClick={resetFilters}>重置</Button>
-            <Button icon={<ReloadOutlined />} onClick={() => void loadData()}>刷新</Button>
-            {canCreate ? <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>新增任务指令</Button> : null}
+            <Button icon={<IconReload />} onClick={() => void loadData()}>刷新</Button>
+            {canCreate ? <Button type="primary" icon={<IconPlus />} onClick={openCreateModal}>新增任务指令</Button> : null}
           </Space>
         </div>
       </Card>

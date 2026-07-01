@@ -1,4 +1,4 @@
-import { LockOutlined } from '@ant-design/icons';
+import { IconLock } from '@tabler/icons-react';
 import { Button, Form, Input, Typography, message } from 'antd';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -43,7 +43,7 @@ export const ForcePasswordChangePage = () => {
       <div className="w-full max-w-[420px] rounded-2xl border border-slate-200/80 bg-white p-8 shadow-[0_8px_32px_rgba(15,23,42,0.08)]">
         <div className="mb-6">
           <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-xl text-amber-600">
-            <LockOutlined />
+            <IconLock />
           </div>
           <Typography.Title level={3} className="!mb-1.5">
             请先修改初始密码

@@ -682,7 +682,7 @@ export const KnowledgeBasePage = () => {
         <div className="flex items-center justify-end gap-3.5">
           <Button
             type="link"
-            className="!p-0 !h-auto text-teal-600 hover:text-teal-700 font-semibold"
+            className="!p-0 !h-auto text-brand-600 hover:text-brand-700 font-semibold"
             disabled={!canDownload}
             loading={downloadLoadingId === item.id}
             onClick={() => void handleSingleDownload(item)}
@@ -691,7 +691,7 @@ export const KnowledgeBasePage = () => {
           </Button>
           <Button
             type="link"
-            className="!p-0 !h-auto text-teal-600 hover:text-teal-700 font-semibold"
+            className="!p-0 !h-auto text-brand-600 hover:text-brand-700 font-semibold"
             disabled={!canUpload}
             loading={indexingDocumentId === item.id}
             onClick={() => void handleIndexDocument(item)}
@@ -860,11 +860,11 @@ export const KnowledgeBasePage = () => {
                   enqueueFiles([file as File]);
                   return Upload.LIST_IGNORE;
                 }}
-                className="!w-full !border-dashed !border-slate-200 hover:!border-teal-400 !bg-slate-50/50 hover:!bg-teal-50/10 !transition-colors !rounded-xl"
+                className="!w-full !border-dashed !border-slate-200 hover:!border-brand-400 !bg-slate-50/50 hover:!bg-brand-50/10 !transition-colors !rounded-xl"
               >
                 <div className="py-4">
-                  <p className="ant-upload-drag-icon !mb-2 !text-teal-600"><IconCloudUpload className="text-2xl" /></p>
-                  <p className="ant-upload-text !text-sm !font-medium !text-slate-700">拖拽文件到此处，或 <span className="text-teal-600">点击上传</span></p>
+                  <p className="ant-upload-drag-icon !mb-2 !text-brand-600"><IconCloudUpload className="text-2xl" /></p>
+                  <p className="ant-upload-text !text-sm !font-medium !text-slate-700">拖拽文件到此处，或 <span className="text-brand-600">点击上传</span></p>
                   <p className="ant-upload-hint !text-xs !text-slate-400 mt-1">支持并发上传最多 3 个文件。支持格式：{KNOWLEDGE_BASE_ACCEPT.replace(/\./g, '').toUpperCase()}</p>
                 </div>
               </Upload.Dragger>
@@ -898,12 +898,12 @@ export const KnowledgeBasePage = () => {
             <div className="relative pl-6 space-y-4 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100">
               {detailWorkflow.map((item, index) => (
                 <div key={item.title} className="relative flex gap-3">
-                  <div className="absolute -left-[22px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-white border-2 border-teal-500 z-10">
-                    <div className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+                  <div className="absolute -left-[22px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-white border-2 border-brand-500 z-10">
+                    <div className="h-1.5 w-1.5 rounded-full bg-brand-500" />
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-teal-600 text-xs font-semibold font-mono">STEP 0{index + 1}</span>
+                      <span className="text-brand-600 text-xs font-semibold font-mono">STEP 0{index + 1}</span>
                       <Typography.Text strong className="!text-sm !text-slate-900">{item.title}</Typography.Text>
                     </div>
                     <Typography.Paragraph className="!mb-0 !mt-1 !text-xs !text-slate-500">{item.description}</Typography.Paragraph>
@@ -936,7 +936,7 @@ export const KnowledgeBasePage = () => {
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div className="flex min-w-0 flex-col justify-between gap-6">
             <div>
-              <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[11px] font-semibold text-teal-700">
+              <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-brand-100 bg-brand-50 px-2.5 py-1 text-[11px] font-semibold text-brand-700">
                 <IconPhoto size={14} />
                 多模态素材增强
               </div>
@@ -952,11 +952,11 @@ export const KnowledgeBasePage = () => {
               </div>
               <div className="rounded-lg border border-slate-100 bg-slate-50/50 p-3">
                 <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">可召回</div>
-                <div className="mt-1 font-mono text-xl font-semibold text-teal-600">{mediaAssetStats.enabled}</div>
+                <div className="mt-1 font-mono text-xl font-semibold text-brand-600">{mediaAssetStats.enabled}</div>
               </div>
               <div className="rounded-lg border border-slate-100 bg-slate-50/50 p-3">
                 <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">索引就绪</div>
-                <div className="mt-1 font-mono text-xl font-semibold text-teal-600">{mediaAssetStats.ready}</div>
+                <div className="mt-1 font-mono text-xl font-semibold text-brand-600">{mediaAssetStats.ready}</div>
               </div>
               <div className="rounded-lg border border-slate-100 bg-slate-50/50 p-3">
                 <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">图片 / 视频</div>
@@ -1005,7 +1005,7 @@ export const KnowledgeBasePage = () => {
                 <Card
                   key={item.id}
                   variant="borderless"
-                  className="group !overflow-hidden !rounded-xl !border !border-slate-200/70 !shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:!border-teal-300/50 hover:!shadow-[0_4px_10px_rgba(15,23,42,0.06)] [&_.ant-card-body]:!p-0 bg-white"
+                  className="group !overflow-hidden !rounded-xl !border !border-slate-200/70 !shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:!border-brand-300/50 hover:!shadow-[0_4px_10px_rgba(15,23,42,0.06)] [&_.ant-card-body]:!p-0 bg-white"
                 >
                   <div className="flex flex-col sm:flex-row h-full">
                     <div className="relative flex min-h-[160px] items-center justify-center overflow-hidden border-b sm:border-b-0 sm:border-r border-slate-100 bg-slate-50 sm:w-44 shrink-0">
@@ -1043,10 +1043,10 @@ export const KnowledgeBasePage = () => {
                                 {item.isMissing ? (
                                   <span className="text-red-600">已删除</span>
                                 ) : item.isEnabled ? (
-                                  <span className="text-teal-700 font-medium">● 启用</span>
+                                  <span className="text-brand-700 font-medium">● 启用</span>
                                 ) : '暂停'}
                               </Tag>
-                              <Tag color="default" className={`!m-0 !border-none ${item.embeddingStatus === 'ready' ? '!bg-teal-50 !text-teal-700' : item.embeddingStatus === 'failed' ? '!bg-red-50 !text-red-600' : '!bg-slate-100 !text-slate-600'}`}>
+                              <Tag color="default" className={`!m-0 !border-none ${item.embeddingStatus === 'ready' ? '!bg-brand-50 !text-brand-700' : item.embeddingStatus === 'failed' ? '!bg-red-50 !text-red-600' : '!bg-slate-100 !text-slate-600'}`}>
                                 {item.embeddingStatusLabel || item.embeddingStatus || '待处理'}
                               </Tag>
                             </div>
@@ -1079,7 +1079,7 @@ export const KnowledgeBasePage = () => {
                           {item.embeddingModel || '--'}
                         </Typography.Text>
                         <Space size={14}>
-                          <button type="button" className="text-[13px] font-medium text-slate-500 hover:text-teal-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled={!canUpload} onClick={() => openEditMediaAsset(item)}>
+                          <button type="button" className="text-[13px] font-medium text-slate-500 hover:text-brand-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled={!canUpload} onClick={() => openEditMediaAsset(item)}>
                             编辑
                           </button>
                           <Popconfirm
@@ -1170,11 +1170,11 @@ export const KnowledgeBasePage = () => {
       >
         <Form form={mediaAssetForm} layout="vertical" className="mt-4">
           {editingMediaAsset?.vlmDescription ? (
-            <div className="mb-5 rounded-md border border-teal-100 bg-teal-50/50 p-3">
-              <div className="text-xs font-semibold text-teal-800 mb-1 flex items-center gap-1.5">
+            <div className="mb-5 rounded-md border border-brand-100 bg-brand-50/50 p-3">
+              <div className="text-xs font-semibold text-brand-800 mb-1 flex items-center gap-1.5">
                 <IconPhoto size={14} /> AI 基础描述
               </div>
-              <div className="text-[13px] leading-relaxed text-teal-700">
+              <div className="text-[13px] leading-relaxed text-brand-700">
                 {editingMediaAsset.vlmDescription}
               </div>
             </div>
@@ -1203,7 +1203,7 @@ export const KnowledgeBasePage = () => {
       <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
         <Space direction="vertical" size={16} className="w-full">
           <div className="flex items-center gap-2">
-            <IconFileSearch className="text-teal-600 text-lg" />
+            <IconFileSearch className="text-brand-600 text-lg" />
             <Typography.Title level={5} className="!mb-0">召回测试</Typography.Title>
           </div>
           <Typography.Text className="!text-sm !text-slate-500">先用真实业务问题验证命中片段，再绑定给智能体。</Typography.Text>
@@ -1234,7 +1234,7 @@ export const KnowledgeBasePage = () => {
                 <button
                   key={item.id}
                   type="button"
-                  className="w-full rounded-lg border border-slate-200/60 bg-white px-3 py-2 text-left text-sm transition hover:border-teal-200 hover:bg-teal-50/30"
+                  className="w-full rounded-lg border border-slate-200/60 bg-white px-3 py-2 text-left text-sm transition hover:border-brand-200 hover:bg-brand-50/30"
                   onClick={() => setRecallQuery(item.query)}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -1284,7 +1284,7 @@ export const KnowledgeBasePage = () => {
             {recallChunks.length > 0 ? (
               <Space direction="vertical" size={10} className="w-full">
                 {recallChunks.map((chunk, index) => (
-                  <div key={`${chunk.documentId}-${chunk.chunkIndex}-${index}`} className="rounded-xl border border-slate-200 bg-white p-4 hover:border-teal-100 hover:bg-teal-50/5 transition-all">
+                  <div key={`${chunk.documentId}-${chunk.chunkIndex}-${index}`} className="rounded-xl border border-slate-200 bg-white p-4 hover:border-brand-100 hover:bg-brand-50/5 transition-all">
                     <div className="mb-2.5 flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <Typography.Text strong className="!text-sm !text-slate-800">{chunk.documentTitle}</Typography.Text>
@@ -1320,7 +1320,7 @@ export const KnowledgeBasePage = () => {
         {/* Top bar */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <IconDatabase size={18} className="text-teal-600" />
+            <IconDatabase size={18} className="text-brand-600" />
             <h2 className="text-lg font-semibold text-slate-900">知识库</h2>
             <span className="text-xs text-slate-400">
               共 <span className="font-mono text-slate-600">{baseTotal}</span> · 启用 <span className="font-mono text-emerald-600">{activeBaseCount}</span> · 文档 <span className="font-mono text-slate-600">{visibleDocumentCount}</span>
@@ -1357,10 +1357,10 @@ export const KnowledgeBasePage = () => {
                         key={item.id}
                         type="button"
                         onClick={() => setPreviewBaseId(item.id)}
-                        className={`flex w-full items-center justify-between gap-2 border-b border-slate-50 px-4 py-3 text-left transition ${active ? 'bg-teal-50/60' : 'hover:bg-slate-50'}`}
+                        className={`flex w-full items-center justify-between gap-2 border-b border-slate-50 px-4 py-3 text-left transition ${active ? 'bg-brand-50/60' : 'hover:bg-slate-50'}`}
                       >
                         <div className="min-w-0 flex-1">
-                          <div className={`truncate text-sm font-medium ${active ? 'text-teal-700' : 'text-slate-700'}`}>{item.name}</div>
+                          <div className={`truncate text-sm font-medium ${active ? 'text-brand-700' : 'text-slate-700'}`}>{item.name}</div>
                           <div className="mt-0.5 text-xs text-slate-400">
                             {item.documentCount} 份文档 · <span className="font-mono">{item.chunkSize}/{item.chunkOverlap}</span>
                           </div>
@@ -1418,7 +1418,6 @@ export const KnowledgeBasePage = () => {
                       <Button
                         type="primary"
                         onClick={() => setSelectedBase(previewBase)}
-                        className="!bg-teal-600 hover:!bg-teal-700"
                       >
                         进入管理 <IconArrowRight size={12} className="ml-0.5 inline" />
                       </Button>
@@ -1597,7 +1596,7 @@ export const KnowledgeBasePage = () => {
               <Typography.Title level={3} className="!mb-1 !text-slate-900">{selectedBase.name}</Typography.Title>
               <Typography.Text className="!text-slate-500">{selectedBase.description || '暂无描述'}</Typography.Text>
               <div className="mt-2 flex flex-wrap gap-2">
-                <Tag color="cyan" className="!bg-teal-50 !text-teal-700 !border-teal-100">
+                <Tag color="cyan" className="!bg-brand-50 !text-brand-700 !border-brand-100">
                   文档 <span className="font-mono font-semibold">{selectedBase.documentCount}</span>
                 </Tag>
                 <Tag color={selectedBase.isActive ? 'success' : 'default'}>
@@ -1682,7 +1681,7 @@ export const KnowledgeBasePage = () => {
         <Alert
           showIcon
           type="info"
-          className="!rounded-xl !border-teal-100 !bg-teal-50/30 !text-teal-800"
+          className="!rounded-xl !border-brand-100 !bg-brand-50/30 !text-brand-800"
           message="上线前建议"
           description="先用真实高频问题完成召回验证，确认片段来源可靠后再绑定到智能体应用。"
         />

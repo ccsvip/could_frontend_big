@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Empty, Space, Spin, Tag, Typography, message } from 'antd';
-import { CheckCircleOutlined, ExperimentOutlined, ReloadOutlined } from '@ant-design/icons';
+import { IconCircleCheck, IconFlask, IconReload } from '@tabler/icons-react';
 import { useAuthStore } from '../../store/auth';
 import {
   fetchCompanyLLMOptions,
@@ -79,7 +79,7 @@ export const LlmSettingsPage = () => {
       </div>
       <Space size="small">
         <Button
-          icon={<ExperimentOutlined />}
+          icon={<IconFlask />}
           loading={testingModelId === model.id}
           onClick={() => void handleTest(model)}
         >
@@ -106,7 +106,7 @@ export const LlmSettingsPage = () => {
           <Typography.Title level={3} className="!mb-1">LLM设置</Typography.Title>
           <Typography.Text type="secondary">查看公司可用模型、测试连通性，并维护默认模型。</Typography.Text>
         </div>
-        <Button icon={<ReloadOutlined />} onClick={() => void loadOptions()}>
+        <Button icon={<IconReload />} onClick={() => void loadOptions()}>
           刷新
         </Button>
       </div>
@@ -132,7 +132,7 @@ export const LlmSettingsPage = () => {
           <aside className="space-y-4">
             <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
               <Space className="mb-3">
-                <CheckCircleOutlined className="text-brand-500" />
+                <IconCircleCheck className="text-brand-500" />
                 <Typography.Text className="font-semibold text-slate-900">当前默认模型</Typography.Text>
               </Space>
               {defaultModel ? (

@@ -1,4 +1,4 @@
-import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { IconReload, IconSearch } from '@tabler/icons-react';
 import { Button, Input, Select, Typography } from 'antd';
 import type { TenantRecord } from '../../../api/modules/tenants';
 import type { DeviceAuthorizationRequestRecord } from '../../../api/modules/devices';
@@ -30,8 +30,8 @@ export const DeviceAuthorizationToolbar = ({
     <div className="page-hero">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div className="min-w-0">
-          <div className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-700">
-            <span className="inline-block h-1 w-1 rounded-full bg-teal-600" />
+          <div className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-700">
+            <span className="inline-block h-1 w-1 rounded-full bg-brand-600" />
             Device Authorization
           </div>
           <Typography.Title level={4} className="!mb-1 !font-semibold !text-slate-900">
@@ -61,12 +61,12 @@ export const DeviceAuthorizationToolbar = ({
           />
           <Input
             value={keyword}
-            prefix={<SearchOutlined />}
+            prefix={<IconSearch />}
             placeholder="搜索设备码或设备名称"
             onChange={(event) => onKeywordChange(event.target.value)}
             onPressEnter={onSearch}
           />
-          <Button icon={<ReloadOutlined />} onClick={onSearch}>
+          <Button icon={<IconReload />} onClick={onSearch}>
             刷新
           </Button>
         </div>

@@ -1,8 +1,8 @@
 import {
-  CheckCircleOutlined,
-  FileSearchOutlined,
-  LinkOutlined,
-} from '@ant-design/icons';
+  IconCircleCheck,
+  IconFileSearch,
+  IconLink,
+} from '@tabler/icons-react';
 import { Space, Tabs } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type {
@@ -58,7 +58,7 @@ export const DeviceAuthorizationTabs = ({
         key: 'requests',
         label: (
           <Space size={6}>
-            <CheckCircleOutlined />
+            <IconCircleCheck />
             设备请求
           </Space>
         ),
@@ -80,7 +80,7 @@ export const DeviceAuthorizationTabs = ({
         key: 'authorizations',
         label: (
           <Space size={6}>
-            <LinkOutlined />
+            <IconLink />
             授权管理
           </Space>
         ),
@@ -102,7 +102,7 @@ export const DeviceAuthorizationTabs = ({
         key: 'logs',
         label: (
           <Space size={6}>
-            <FileSearchOutlined />
+            <IconFileSearch />
             授权日志
           </Space>
         ),

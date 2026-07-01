@@ -1,12 +1,12 @@
 import dayjs from 'dayjs';
 import {
-  DeleteOutlined,
-  EditOutlined,
-  EnvironmentOutlined,
-  FilterOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-} from '@ant-design/icons';
+  IconTrash,
+  IconEdit,
+  IconMapPin,
+  IconFilter,
+  IconPlus,
+  IconReload,
+} from '@tabler/icons-react';
 import { Button, Card, Empty, Form, Input, Modal, Popconfirm, Select, Space, Switch, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -183,10 +183,10 @@ export const PointManagementPage = () => {
       width: 170,
       render: (_, item) => (
         <Space size={4}>
-          {canUpdate ? <Button type="text" icon={<EditOutlined />} onClick={() => openEditModal(item)}>编辑</Button> : null}
+          {canUpdate ? <Button type="text" icon={<IconEdit />} onClick={() => openEditModal(item)}>编辑</Button> : null}
           {canDelete ? (
             <Popconfirm title="确认删除该点位吗？" onConfirm={() => void handleDelete(item)}>
-              <Button type="text" danger icon={<DeleteOutlined />}>删除</Button>
+              <Button type="text" danger icon={<IconTrash />}>删除</Button>
             </Popconfirm>
           ) : null}
         </Space>
@@ -200,7 +200,7 @@ export const PointManagementPage = () => {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <Space size={10} align="center">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
-              <EnvironmentOutlined className="text-xl" />
+              <IconMapPin className="text-xl" />
             </div>
             <div>
               <Typography.Title level={3} className="!mb-1 !text-slate-900">点位管理</Typography.Title>
@@ -208,12 +208,12 @@ export const PointManagementPage = () => {
             </div>
           </Space>
           <Space wrap>
-            <Input allowClear value={keywordInput} placeholder="搜索点位名称 / 点位命令" onChange={(event) => setKeywordInput(event.target.value)} onPressEnter={applyFilters} className="!w-64" />
+            <Input allowClear value={keywordInput} placeholder="搜索点位名称 / 点位命令" onChange={(event) => setKeywordInput(event.target.value)} onPressEnter={applyFilters} className="w-full sm:w-64" />
             <Select value={isActive} options={activeOptions as unknown as { label: string; value: string }[]} onChange={(value) => { setIsActive(value as 'all' | 'active' | 'inactive'); setPage(1); }} className="!w-32" />
-            <Button type="primary" icon={<FilterOutlined />} onClick={applyFilters}>筛选</Button>
+            <Button type="primary" icon={<IconFilter />} onClick={applyFilters}>筛选</Button>
             <Button onClick={resetFilters}>重置</Button>
-            <Button icon={<ReloadOutlined />} onClick={() => void loadData()}>刷新</Button>
-            {canCreate ? <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>新增点位</Button> : null}
+            <Button icon={<IconReload />} onClick={() => void loadData()}>刷新</Button>
+            {canCreate ? <Button type="primary" icon={<IconPlus />} onClick={openCreateModal}>新增点位</Button> : null}
           </Space>
         </div>
       </Card>

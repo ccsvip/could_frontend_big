@@ -1,12 +1,12 @@
 import {
-  DeleteOutlined,
-  EditOutlined,
-  EyeOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-  RobotOutlined,
-  UploadOutlined,
-} from '@ant-design/icons';
+  IconTrash,
+  IconEdit,
+  IconEye,
+  IconPlus,
+  IconReload,
+  IconRobot,
+  IconUpload,
+} from '@tabler/icons-react';
 import {
   Button,
   Card,
@@ -166,7 +166,7 @@ const renderModelAvatar = (
         <img
           src={item.thumbnailUrl}
           alt={item.name}
-          className={`${frameClassName} rounded-md border border-teal-200 bg-white object-contain`}
+          className={`${frameClassName} rounded-md border border-brand-200 bg-white object-contain`}
         />
       </div>
     );
@@ -177,7 +177,7 @@ const renderModelAvatar = (
       <div
         className={`${frameClassName} flex items-center justify-center rounded-md border border-slate-200 bg-slate-100 text-slate-500`}
       >
-        <RobotOutlined />
+        <IconRobot />
       </div>
     </div>
   );
@@ -224,14 +224,14 @@ const renderModelPreviewImage = (
       <img
         src={item.thumbnailUrl}
         alt={item.name}
-        className={`${previewClassName} rounded-xl border border-teal-200 bg-white object-contain`}
+        className={`${previewClassName} rounded-xl border border-brand-200 bg-white object-contain`}
       />
     );
   }
 
   return (
     <div className={`${previewClassName} flex items-center justify-center rounded-xl bg-slate-100 text-slate-500`}>
-      <RobotOutlined className="text-5xl" />
+      <IconRobot className="text-5xl" />
     </div>
   );
 };
@@ -448,17 +448,17 @@ export const ModelManagementPage = () => {
         width: 210,
         render: (_, item) => (
           <Space size={4}>
-            <Button type="text" icon={<EyeOutlined />} onClick={() => setPreviewItem(item)}>
+            <Button type="text" icon={<IconEye />} onClick={() => setPreviewItem(item)}>
               详情
             </Button>
             {canUpdate ? (
-              <Button type="text" icon={<EditOutlined />} onClick={() => openEditModal(item)}>
+              <Button type="text" icon={<IconEdit />} onClick={() => openEditModal(item)}>
                 编辑
               </Button>
             ) : null}
             {canDelete ? (
               <Popconfirm title="确认删除该模型吗？" onConfirm={() => void handleDelete(item)}>
-                <Button type="text" danger icon={<DeleteOutlined />}>
+                <Button type="text" danger icon={<IconTrash />}>
                   删除
                 </Button>
               </Popconfirm>
@@ -477,8 +477,8 @@ export const ModelManagementPage = () => {
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="min-w-0">
               <Space size={10} align="center">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-teal-50 to-teal-100/60 text-teal-700">
-                  <RobotOutlined className="text-xl" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand-50 to-brand-100/60 text-brand-700">
+                  <IconRobot className="text-xl" />
                 </div>
                 <div>
                   <Typography.Title level={3} className="!mb-1 !text-slate-900">
@@ -498,7 +498,7 @@ export const ModelManagementPage = () => {
                   setPage(1);
                   setKeyword(value.trim());
                 }}
-                className="!w-80"
+                className="w-full sm:w-80"
               />
               <Select
                 value={visibilityFilter}
@@ -509,11 +509,11 @@ export const ModelManagementPage = () => {
                 }}
                 className="!w-36"
               />
-              <Button icon={<ReloadOutlined />} onClick={() => void loadData()}>
+              <Button icon={<IconReload />} onClick={() => void loadData()}>
                 刷新
               </Button>
               {canCreate ? (
-                <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
+                <Button type="primary" icon={<IconPlus />} onClick={openCreateModal}>
                   新增模型
                 </Button>
               ) : null}
@@ -651,7 +651,7 @@ export const ModelManagementPage = () => {
             getValueFromEvent={getUploadFileList}
           >
             <Upload beforeUpload={() => false} maxCount={1} accept="image/*">
-              <Button icon={<UploadOutlined />}>选择图片</Button>
+              <Button icon={<IconUpload />}>选择图片</Button>
             </Upload>
           </Form.Item>
           {editingItem ? (
@@ -675,7 +675,7 @@ export const ModelManagementPage = () => {
             extra="模型文件非必传；若上传后，系统会自动计算大小并生成本地完整地址。"
           >
             <Upload beforeUpload={() => false} maxCount={1}>
-              <Button icon={<UploadOutlined />}>选择模型文件</Button>
+              <Button icon={<IconUpload />}>选择模型文件</Button>
             </Upload>
           </Form.Item>
           {editingItem ? (

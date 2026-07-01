@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+# Pre-commit: enforce frontend design-token rules (no new `!`-overrides, no `teal-*`).
+# Setup (one-time, per clone): git config core.hooksPath .githooks
+# Bypass emergency: git commit --no-verify
+# If node is not on PATH, warn and pass (don't block commits on env issues).
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "⚠️  [check-tailwind-tokens] node 不在 PATH，跳过设计 token 守卫。请安装 Node.js 以启用。" >&2
+  exit 0
+fi
+
+node scripts/check-tailwind-tokens.js

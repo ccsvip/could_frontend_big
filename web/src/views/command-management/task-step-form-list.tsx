@@ -1,4 +1,4 @@
-import { EditOutlined, FileImageOutlined, HolderOutlined, InsertRowAboveOutlined, PlusOutlined, VideoCameraOutlined } from '@ant-design/icons';
+import { IconEdit, IconPhoto, IconGripVertical, IconRowInsertTop, IconPlus, IconVideo } from '@tabler/icons-react';
 import { Button, Card, Form, Input, InputNumber, Modal, Select, Space, Switch, Tag } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import type { DragEvent } from 'react';
@@ -315,7 +315,7 @@ export const TaskStepFormList = ({
                   ].filter(Boolean).join(' ')}
                   title={(
                     <span className="inline-flex items-center gap-2">
-                      <HolderOutlined className="task-step-drag-handle cursor-grab text-slate-400 active:cursor-grabbing" />
+                      <IconGripVertical className="task-step-drag-handle cursor-grab text-slate-400 active:cursor-grabbing" />
                       第 {index + 1} 个{itemTitle}
                     </span>
                   )}
@@ -324,7 +324,7 @@ export const TaskStepFormList = ({
                       {index > 0 ? (
                         <Button
                           size="small"
-                          icon={<InsertRowAboveOutlined />}
+                          icon={<IconRowInsertTop />}
                           onClick={() => add({ type: 'text', text: '', delaySeconds: 0 }, index)}
                         >
                           向上插入
@@ -455,7 +455,7 @@ export const TaskStepFormList = ({
                           return (
                             <Space direction="vertical" className="w-full" size={0}>
                               <Form.Item {...fieldProps} label="选择图片" name={[field.name, 'resourceId']} rules={[{ required: true, message: '请选择图片资源' }]}>
-                                <Select showSearch optionFilterProp="label" loading={lookupLoading} options={imageOptions} placeholder="从图片资源中选择内容" suffixIcon={<FileImageOutlined />} />
+                                <Select showSearch optionFilterProp="label" loading={lookupLoading} options={imageOptions} placeholder="从图片资源中选择内容" suffixIcon={<IconPhoto />} />
                               </Form.Item>
                               <Form.Item {...fieldProps} label="图片文本（可选）" name={[field.name, 'imageText']}>
                                 <Input placeholder="可不填写，运行时返回空字符串" allowClear />
@@ -466,7 +466,7 @@ export const TaskStepFormList = ({
                         if (type === 'video') {
                           return (
                             <Form.Item {...fieldProps} label="选择视频" name={[field.name, 'resourceId']} rules={[{ required: true, message: '请选择视频资源' }]}>
-                              <Select showSearch optionFilterProp="label" loading={lookupLoading} options={videoOptions} placeholder="从视频资源中选择内容" suffixIcon={<VideoCameraOutlined />} />
+                              <Select showSearch optionFilterProp="label" loading={lookupLoading} options={videoOptions} placeholder="从视频资源中选择内容" suffixIcon={<IconVideo />} />
                             </Form.Item>
                           );
                         }
@@ -480,7 +480,7 @@ export const TaskStepFormList = ({
                               </Form.Item>
                               <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
                                 <Button
-                                  icon={<EditOutlined />}
+                                  icon={<IconEdit />}
                                   onClick={() => setInnerTaskModalKey(fieldKey)}
                                 >
                                   配置子子任务
@@ -525,7 +525,7 @@ export const TaskStepFormList = ({
                 </Card>
               );
             })}
-            <Button type="dashed" icon={<PlusOutlined />} onClick={() => add({ type: 'text', text: '', delaySeconds: 0 })} block>{addButtonText}</Button>
+            <Button type="dashed" icon={<IconPlus />} onClick={() => add({ type: 'text', text: '', delaySeconds: 0 })} block>{addButtonText}</Button>
             <Form.ErrorList errors={errors} />
           </Space>
         </Form.Item>

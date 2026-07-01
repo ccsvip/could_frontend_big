@@ -1,20 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button, Card, Form, Input, Space, Switch, Tag, message } from 'antd';
 import {
-  ApiOutlined,
-  AudioOutlined,
-  ReloadOutlined,
-  SaveOutlined,
-  DatabaseOutlined,
-  KeyOutlined,
-  LinkOutlined,
-  SettingOutlined,
-  ClockCircleOutlined,
-  GlobalOutlined,
-  CheckCircleFilled,
-  CloseCircleFilled,
-  InfoCircleOutlined,
-} from '@ant-design/icons';
+  IconApi,
+  IconMicrophone,
+  IconReload,
+  IconDeviceFloppy,
+  IconDatabase,
+  IconKey,
+  IconLink,
+  IconSettings,
+  IconClock,
+  IconWorld,
+  IconCircleCheckFilled,
+  IconCircleXFilled,
+  IconInfoCircle,
+} from '@tabler/icons-react';
 import {
   fetchAsrSettings,
   testAsrSettings,
@@ -103,8 +103,8 @@ export const AsrSettingsPage = () => {
       <div className="page-hero">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-4">
-            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-teal-50 text-teal-700 shadow-sm border border-teal-100/50 flex-shrink-0">
-              <AudioOutlined className="text-xl" />
+            <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-brand-50 text-brand-700 shadow-sm border border-brand-100/50 flex-shrink-0">
+              <IconMicrophone className="text-xl" />
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -124,10 +124,10 @@ export const AsrSettingsPage = () => {
             </div>
           </div>
           <Button
-            icon={<ReloadOutlined className={loading ? 'animate-spin' : ''} />}
+            icon={<IconReload className={loading ? 'animate-spin' : ''} />}
             onClick={() => void loadSettings()}
             loading={loading}
-            className="self-start md:self-center hover:border-teal-500 hover:text-teal-600 rounded-lg px-4 h-9"
+            className="self-start md:self-center hover:border-brand-500 hover:text-brand-600 rounded-lg px-4 h-9"
           >
             同步状态
           </Button>
@@ -140,7 +140,7 @@ export const AsrSettingsPage = () => {
           bordered
           title={
             <div className="flex items-center gap-2 py-0.5">
-              <div className="w-1 h-4 bg-teal-600 rounded-full" />
+              <div className="w-1 h-4 bg-brand-600 rounded-full" />
               <span className="font-semibold text-slate-800">连接参数</span>
             </div>
           }
@@ -153,7 +153,7 @@ export const AsrSettingsPage = () => {
                 name="workspaceId"
                 label={
                   <span className="flex items-center gap-1.5 font-medium text-slate-700">
-                    <DatabaseOutlined className="text-slate-400" /> Workspace ID
+                    <IconDatabase className="text-slate-400" /> Workspace ID
                   </span>
                 }
                 rules={[{ required: true, message: '请输入 Workspace ID' }]}
@@ -166,7 +166,7 @@ export const AsrSettingsPage = () => {
                 name="apiKey"
                 label={
                   <span className="flex items-center gap-1.5 font-medium text-slate-700">
-                    <KeyOutlined className="text-slate-400" /> API Key
+                    <IconKey className="text-slate-400" /> API Key
                   </span>
                 }
                 className="mb-5"
@@ -184,7 +184,7 @@ export const AsrSettingsPage = () => {
               name="baseUrl"
               label={
                 <span className="flex items-center gap-1.5 font-medium text-slate-700">
-                  <LinkOutlined className="text-slate-400" /> WebSocket 接口地址
+                  <IconLink className="text-slate-400" /> WebSocket 接口地址
                 </span>
               }
               rules={[{ required: true, message: '请输入 WebSocket 地址' }]}
@@ -199,7 +199,7 @@ export const AsrSettingsPage = () => {
                 name="model"
                 label={
                   <span className="flex items-center gap-1.5 font-medium text-slate-700">
-                    <SettingOutlined className="text-slate-400" /> 语音识别模型
+                    <IconSettings className="text-slate-400" /> 语音识别模型
                   </span>
                 }
                 rules={[{ required: true, message: '请输入模型名称' }]}
@@ -211,7 +211,7 @@ export const AsrSettingsPage = () => {
               <Form.Item
                 label={
                   <span className="flex items-center gap-1.5 font-medium text-slate-700">
-                    <InfoCircleOutlined className="text-slate-400" /> 启用服务状态
+                    <IconInfoCircle className="text-slate-400" /> 启用服务状态
                   </span>
                 }
                 className="mb-5"
@@ -227,7 +227,7 @@ export const AsrSettingsPage = () => {
               <Form.Item
                 label={
                   <span className="flex items-center gap-1.5 font-medium text-slate-700">
-                    <InfoCircleOutlined className="text-slate-400" /> 过滤语气词
+                    <IconInfoCircle className="text-slate-400" /> 过滤语气词
                   </span>
                 }
                 className="mb-5"
@@ -246,7 +246,7 @@ export const AsrSettingsPage = () => {
               <Space size={12}>
                 <Button
                   type="primary"
-                  icon={<SaveOutlined />}
+                  icon={<IconDeviceFloppy />}
                   loading={saving}
                   onClick={() => void handleSave()}
                   className="h-10 px-6 rounded-lg font-semibold"
@@ -254,10 +254,10 @@ export const AsrSettingsPage = () => {
                   保存设置
                 </Button>
                 <Button
-                  icon={<ApiOutlined />}
+                  icon={<IconApi />}
                   loading={testing}
                   onClick={() => void handleTest()}
-                  className="h-10 px-5 rounded-lg border-slate-200 text-slate-600 hover:text-teal-600 hover:border-teal-300 font-semibold"
+                  className="h-10 px-5 rounded-lg border-slate-200 text-slate-600 hover:text-brand-600 hover:border-brand-300 font-semibold"
                 >
                   测试连接
                 </Button>
@@ -282,8 +282,8 @@ export const AsrSettingsPage = () => {
             <div className="space-y-3.5">
               <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100/80 bg-slate-50/30 hover:bg-slate-50 hover:border-slate-200/80 transition-all duration-200">
                 <div className="flex items-start gap-3">
-                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-teal-50 text-teal-600 flex-shrink-0 border border-teal-100/50">
-                    <GlobalOutlined className="text-base" />
+                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-brand-50 text-brand-600 flex-shrink-0 border border-brand-100/50">
+                    <IconWorld className="text-base" />
                   </div>
                   <div>
                     <div className="text-xs text-slate-400 font-medium">WebSocket 节点</div>
@@ -297,7 +297,7 @@ export const AsrSettingsPage = () => {
               <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100/80 bg-slate-50/30 hover:bg-slate-50 hover:border-slate-200/80 transition-all duration-200">
                 <div className="flex items-start gap-3">
                   <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-sky-50 text-sky-600 flex-shrink-0 border border-sky-100/50">
-                    <SettingOutlined className="text-base" />
+                    <IconSettings className="text-base" />
                   </div>
                   <div>
                     <div className="text-xs text-slate-400 font-medium">模型版本 (Model)</div>
@@ -311,7 +311,7 @@ export const AsrSettingsPage = () => {
               <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100/80 bg-slate-50/30 hover:bg-slate-50 hover:border-slate-200/80 transition-all duration-200">
                 <div className="flex items-start gap-3">
                   <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex-shrink-0 border border-indigo-100/50">
-                    <DatabaseOutlined className="text-base" />
+                    <IconDatabase className="text-base" />
                   </div>
                   <div>
                     <div className="text-xs text-slate-400 font-medium">工作空间 (Workspace)</div>
@@ -325,7 +325,7 @@ export const AsrSettingsPage = () => {
               <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100/80 bg-slate-50/30 hover:bg-slate-50 hover:border-slate-200/80 transition-all duration-200">
                 <div className="flex items-start gap-3">
                   <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-slate-100 text-slate-600 flex-shrink-0 border border-slate-200/50">
-                    <ClockCircleOutlined className="text-base" />
+                    <IconClock className="text-base" />
                   </div>
                   <div>
                     <div className="text-xs text-slate-400 font-medium">最近更新</div>
@@ -347,9 +347,9 @@ export const AsrSettingsPage = () => {
               >
                 <div className="flex items-start gap-2.5">
                   {testResult.success ? (
-                    <CheckCircleFilled className="text-base text-emerald-500 mt-0.5 flex-shrink-0" />
+                    <IconCircleCheckFilled className="text-base text-emerald-500 mt-0.5 flex-shrink-0" />
                   ) : (
-                    <CloseCircleFilled className="text-base text-rose-500 mt-0.5 flex-shrink-0" />
+                    <IconCircleXFilled className="text-base text-rose-500 mt-0.5 flex-shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1">

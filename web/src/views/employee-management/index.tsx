@@ -1,4 +1,4 @@
-import { PlusOutlined } from '@ant-design/icons';
+import { IconPlus } from '@tabler/icons-react';
 import {
   Button,
   Form,
@@ -164,7 +164,7 @@ const EmployeesTab = () => {
   return (
     <div>
       <div className="mb-3 flex justify-end">
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateVisible(true)}>
+        <Button type="primary" icon={<IconPlus />} onClick={() => setCreateVisible(true)}>
           新建员工
         </Button>
       </div>

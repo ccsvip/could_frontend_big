@@ -15,19 +15,19 @@ import {
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
-  AudioOutlined,
-  ClockCircleOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  LoadingOutlined,
-  PauseCircleOutlined,
-  PlayCircleOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-  SaveOutlined,
-  SettingOutlined,
-  SwapOutlined,
-} from '@ant-design/icons';
+  IconMicrophone,
+  IconClock,
+  IconTrash,
+  IconEdit,
+  IconLoader2,
+  IconPlayerPause,
+  IconPlayerPlay,
+  IconPlus,
+  IconReload,
+  IconDeviceFloppy,
+  IconSettings,
+  IconArrowsExchange,
+} from '@tabler/icons-react';
 import {
   createAsrReplacementRule,
   deleteAsrReplacementRule,
@@ -538,7 +538,7 @@ export const AsrManagementPage = () => {
         key: 'replacementText',
         width: 200,
         render: (value: string) => (
-          <span className="font-medium text-teal-800 bg-teal-50/50 px-2.5 py-1 rounded border border-teal-100/50 text-xs">
+          <span className="font-medium text-brand-800 bg-brand-50/50 px-2.5 py-1 rounded border border-brand-100/50 text-xs">
             {value}
           </span>
         ),
@@ -573,9 +573,9 @@ export const AsrManagementPage = () => {
             <Button
               type="text"
               size="small"
-              icon={<EditOutlined className="text-teal-600" />}
+              icon={<IconEdit className="text-brand-600" />}
               onClick={() => openEditRuleModal(rule)}
-              className="text-teal-600 hover:bg-teal-50"
+              className="text-brand-600 hover:bg-brand-50"
             >
               编辑
             </Button>
@@ -589,7 +589,7 @@ export const AsrManagementPage = () => {
                 type="text"
                 size="small"
                 danger
-                icon={<DeleteOutlined />}
+                icon={<IconTrash />}
                 className="hover:bg-rose-50"
               >
                 删除
@@ -664,8 +664,8 @@ export const AsrManagementPage = () => {
       <div className="page-hero">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-50 text-teal-700 shadow-sm">
-              <AudioOutlined className="text-xl" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-700 shadow-sm">
+              <IconMicrophone className="text-xl" />
             </div>
             <div>
               <Typography.Title level={4} className="!mb-0 !text-slate-900">
@@ -691,10 +691,10 @@ export const AsrManagementPage = () => {
               {phaseInfo.label}
             </Tag>
             <Button
-              icon={<ReloadOutlined />}
+              icon={<IconReload />}
               loading={statusLoading}
               onClick={() => void loadStatus()}
-              className="border-slate-200 hover:border-teal-500 hover:text-teal-600 flex items-center gap-1"
+              className="border-slate-200 hover:border-brand-500 hover:text-brand-600 flex items-center gap-1"
             >
               刷新状态
             </Button>
@@ -708,7 +708,7 @@ export const AsrManagementPage = () => {
           <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-50 text-cyan-700 shadow-sm">
-                <SettingOutlined className="text-lg" />
+                <IconSettings className="text-lg" />
               </div>
               <div>
                 <Typography.Title level={5} className="!mb-0 !text-slate-900">
@@ -735,7 +735,7 @@ export const AsrManagementPage = () => {
                 name="vadThreshold"
                 label={
                   <span className="flex items-center gap-1.5 font-medium text-slate-700">
-                    <AudioOutlined className="text-slate-400" /> VAD 检测阈值
+                    <IconMicrophone className="text-slate-400" /> VAD 检测阈值
                   </span>
                 }
                 rules={[{ required: true, message: '请输入 VAD 检测阈值' }]}
@@ -756,7 +756,7 @@ export const AsrManagementPage = () => {
                 name="vadSilenceDurationMs"
                 label={
                   <span className="flex items-center gap-1.5 font-medium text-slate-700">
-                    <ClockCircleOutlined className="text-slate-400" /> VAD 静音时长
+                    <IconClock className="text-slate-400" /> VAD 静音时长
                   </span>
                 }
                 rules={[{ required: true, message: '请输入 VAD 静音时长' }]}
@@ -776,10 +776,10 @@ export const AsrManagementPage = () => {
 
               <Button
                 type="primary"
-                icon={<SaveOutlined />}
+                icon={<IconDeviceFloppy />}
                 loading={vadSaving}
                 onClick={() => void handleVadSave()}
-                className="h-10 bg-teal-700 hover:bg-teal-600 border-none flex items-center gap-1"
+                className="h-10 bg-brand-700 hover:bg-brand-600 border-none flex items-center gap-1"
               >
                 保存参数
               </Button>
@@ -795,7 +795,7 @@ export const AsrManagementPage = () => {
           <Card className="flex-grow overflow-hidden relative border-slate-100 shadow-sm">
             <div className="p-6 h-full flex flex-col justify-between relative flex-grow min-h-[352px]">
               {/* 装饰性渐变背景 */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500/5 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none" />
 
               <div className="flex flex-col items-center justify-center py-6 flex-grow">
@@ -804,8 +804,8 @@ export const AsrManagementPage = () => {
                   {/* 录音中的涟漪波动效果 */}
                   {phase === 'listening' && (
                     <>
-                      <div className="absolute w-36 h-36 rounded-full bg-teal-500/10 border border-teal-500/20" style={{ animation: 'pulse-ring 2s infinite cubic-bezier(0.215, 0.610, 0.355, 1)' }} />
-                      <div className="absolute w-44 h-44 rounded-full bg-teal-500/5 border border-teal-500/10" style={{ animation: 'pulse-ring-delayed 2.5s infinite cubic-bezier(0.215, 0.610, 0.355, 1)' }} />
+                      <div className="absolute w-36 h-36 rounded-full bg-brand-500/10 border border-brand-500/20" style={{ animation: 'pulse-ring 2s infinite cubic-bezier(0.215, 0.610, 0.355, 1)' }} />
+                      <div className="absolute w-44 h-44 rounded-full bg-brand-500/5 border border-brand-500/10" style={{ animation: 'pulse-ring-delayed 2.5s infinite cubic-bezier(0.215, 0.610, 0.355, 1)' }} />
                     </>
                   )}
 
@@ -825,23 +825,23 @@ export const AsrManagementPage = () => {
                         ? 'border-rose-500 bg-rose-500 text-white hover:bg-rose-600'
                         : !serviceReady
                           ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed'
-                          : 'border-teal-600 bg-teal-600 text-white hover:bg-teal-700'
+                          : 'border-brand-600 bg-brand-600 text-white hover:bg-brand-700'
                     }`}
                     aria-label={canStop ? '停止 ASR 测试' : '开始 ASR 测试'}
                   >
                     {phase === 'connecting' || phase === 'finishing' ? (
-                      <LoadingOutlined className="animate-spin text-3xl" />
+                      <IconLoader2 className="animate-spin text-3xl" />
                     ) : canStop ? (
-                      <PauseCircleOutlined className="animate-pulse" />
+                      <IconPlayerPause className="animate-pulse" />
                     ) : (
-                      <PlayCircleOutlined />
+                      <IconPlayerPlay />
                     )}
                   </button>
                 </div>
 
                 {/* 录音状态和辅助文字 */}
                 <div className="text-center mb-6">
-                  <div className={`font-semibold text-lg ${canStop ? 'text-teal-600' : 'text-slate-800'}`}>
+                  <div className={`font-semibold text-lg ${canStop ? 'text-brand-600' : 'text-slate-800'}`}>
                     {phase === 'listening' ? '录音测试中...' : phase === 'connecting' ? '正在连接服务...' : phase === 'finishing' ? '正在整理数据...' : phase === 'done' ? '测试已完成' : phase === 'error' ? '测试发生异常' : statusLoading ? '正在检查服务...' : serviceReady ? '准备就绪' : '服务未就绪'}
                   </div>
                   <div className="text-slate-400 text-xs mt-1">
@@ -853,13 +853,13 @@ export const AsrManagementPage = () => {
                 <div className="flex items-center gap-1.5 h-12 justify-center w-full px-4 mb-4">
                   {phase === 'listening' ? (
                     <>
-                      <div className="w-1.5 bg-teal-500 rounded-full animate-[bar-grow-1_1.2s_infinite_ease-in-out]" style={{ height: '8px' }} />
-                      <div className="w-1.5 bg-teal-500 rounded-full animate-[bar-grow-2_0.8s_infinite_ease-in-out]" style={{ height: '16px' }} />
-                      <div className="w-1.5 bg-teal-600 rounded-full animate-[bar-grow-3_1.4s_infinite_ease-in-out]" style={{ height: '6px' }} />
-                      <div className="w-1.5 bg-teal-500 rounded-full animate-[bar-grow-4_1s_infinite_ease-in-out]" style={{ height: '24px' }} />
-                      <div className="w-1.5 bg-teal-400 rounded-full animate-[bar-grow-5_1.1s_infinite_ease-in-out]" style={{ height: '12px' }} />
-                      <div className="w-1.5 bg-teal-500 rounded-full animate-[bar-grow-2_0.9s_infinite_ease-in-out]" style={{ height: '20px' }} />
-                      <div className="w-1.5 bg-teal-600 rounded-full animate-[bar-grow-1_1.3s_infinite_ease-in-out]" style={{ height: '8px' }} />
+                      <div className="w-1.5 bg-brand-500 rounded-full animate-[bar-grow-1_1.2s_infinite_ease-in-out]" style={{ height: '8px' }} />
+                      <div className="w-1.5 bg-brand-500 rounded-full animate-[bar-grow-2_0.8s_infinite_ease-in-out]" style={{ height: '16px' }} />
+                      <div className="w-1.5 bg-brand-600 rounded-full animate-[bar-grow-3_1.4s_infinite_ease-in-out]" style={{ height: '6px' }} />
+                      <div className="w-1.5 bg-brand-500 rounded-full animate-[bar-grow-4_1s_infinite_ease-in-out]" style={{ height: '24px' }} />
+                      <div className="w-1.5 bg-brand-400 rounded-full animate-[bar-grow-5_1.1s_infinite_ease-in-out]" style={{ height: '12px' }} />
+                      <div className="w-1.5 bg-brand-500 rounded-full animate-[bar-grow-2_0.9s_infinite_ease-in-out]" style={{ height: '20px' }} />
+                      <div className="w-1.5 bg-brand-600 rounded-full animate-[bar-grow-1_1.3s_infinite_ease-in-out]" style={{ height: '8px' }} />
                     </>
                   ) : (
                     <>
@@ -888,7 +888,7 @@ export const AsrManagementPage = () => {
                   onClick={resetTest}
                   className="text-xs hover:bg-rose-50 flex items-center gap-1"
                 >
-                  <ReloadOutlined className="text-xs" /> 清空测试
+                  <IconReload className="text-xs" /> 清空测试
                 </Button>
               </div>
             </div>
@@ -939,12 +939,12 @@ export const AsrManagementPage = () => {
                   <div className="whitespace-pre-wrap leading-8 text-[15px] relative">
                     {currentText}
                     {phase === 'listening' && (
-                      <span className="inline-block w-2 h-4 bg-teal-400 ml-1 animate-[typing-cursor_0.8s_infinite]" />
+                      <span className="inline-block w-2 h-4 bg-brand-400 ml-1 animate-[typing-cursor_0.8s_infinite]" />
                     )}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center min-h-[250px] text-center text-slate-500">
-                    <AudioOutlined className="text-4xl text-slate-700 mb-3 animate-pulse" />
+                    <IconMicrophone className="text-4xl text-slate-700 mb-3 animate-pulse" />
                     <div className="text-sm">{displayText}</div>
                     {phase === 'idle' && (
                       <div className="text-xs text-slate-600 mt-2 max-w-sm">
@@ -972,8 +972,8 @@ export const AsrManagementPage = () => {
         <div className="p-6">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-50 text-teal-700 shadow-sm">
-                <SwapOutlined className="text-lg" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-700 shadow-sm">
+                <IconArrowsExchange className="text-lg" />
               </div>
               <div>
                 <Typography.Title level={5} className="!mb-0 !text-slate-900">
@@ -986,18 +986,18 @@ export const AsrManagementPage = () => {
             </div>
             <div className="flex gap-2">
               <Button
-                icon={<ReloadOutlined />}
+                icon={<IconReload />}
                 loading={rulesLoading}
                 onClick={() => void loadReplacementRules()}
-                className="border-slate-200 hover:border-teal-500 hover:text-teal-600 flex items-center gap-1"
+                className="border-slate-200 hover:border-brand-500 hover:text-brand-600 flex items-center gap-1"
               >
                 刷新规则
               </Button>
               <Button
                 type="primary"
-                icon={<PlusOutlined />}
+                icon={<IconPlus />}
                 onClick={openCreateRuleModal}
-                className="bg-teal-700 hover:bg-teal-600 border-none flex items-center gap-1"
+                className="bg-brand-700 hover:bg-brand-600 border-none flex items-center gap-1"
               >
                 新建替换词
               </Button>
@@ -1026,8 +1026,8 @@ export const AsrManagementPage = () => {
       <Modal
         title={
           <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-            <span className="flex h-7 w-7 items-center justify-center rounded bg-teal-50 text-teal-700">
-              <SwapOutlined className="text-sm" />
+            <span className="flex h-7 w-7 items-center justify-center rounded bg-brand-50 text-brand-700">
+              <IconArrowsExchange className="text-sm" />
             </span>
             <span className="font-semibold text-slate-800">{editingRule ? '编辑替换词' : '新建替换词'}</span>
           </div>
@@ -1050,7 +1050,7 @@ export const AsrManagementPage = () => {
               rules={[{ required: true, whitespace: true, message: '请输入原词' }]}
               className="mb-4"
             >
-              <Input placeholder="例如：小明" className="h-10 border-slate-200 focus:border-teal-500" />
+              <Input placeholder="例如：小明" className="h-10 border-slate-200 focus:border-brand-500" />
             </Form.Item>
 
             <Form.Item
@@ -1059,7 +1059,7 @@ export const AsrManagementPage = () => {
               rules={[{ required: true, whitespace: true, message: '请输入替换词' }]}
               className="mb-4"
             >
-              <Input placeholder="例如：小张" className="h-10 border-slate-200 focus:border-teal-500" />
+              <Input placeholder="例如：小张" className="h-10 border-slate-200 focus:border-brand-500" />
             </Form.Item>
           </div>
 

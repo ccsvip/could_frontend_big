@@ -1,4 +1,4 @@
-import { ApartmentOutlined, PlusOutlined } from '@ant-design/icons';
+import { IconBuilding, IconPlus } from '@tabler/icons-react';
 import {
   Button,
   Checkbox,
@@ -195,7 +195,7 @@ export const TenantManagementPage = () => {
       key: 'action',
       width: 140,
       render: (_, record) => (
-        <Button type="link" icon={<ApartmentOutlined />} onClick={() => openAssign(record)}>
+        <Button type="link" icon={<IconBuilding />} onClick={() => openAssign(record)}>
           分配菜单
         </Button>
       ),
@@ -218,7 +218,7 @@ export const TenantManagementPage = () => {
             checkedChildren="全部"
             unCheckedChildren="申请"
           />
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateVisible(true)}>
+          <Button type="primary" icon={<IconPlus />} onClick={() => setCreateVisible(true)}>
             新建公司
           </Button>
         </Space>

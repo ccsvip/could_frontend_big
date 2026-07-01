@@ -1,6 +1,6 @@
 import {
-  DatabaseOutlined,
-} from '@ant-design/icons';
+  IconDatabase,
+} from '@tabler/icons-react';
 import { Form, Input, Modal, message } from 'antd';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -185,7 +185,7 @@ export const LoginPage = () => {
       
       {/* 背景动态渐变和网格 */}
       <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-teal-300 blur-[120px] mix-blend-multiply animate-blob" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand-300 blur-[120px] mix-blend-multiply animate-blob" />
         <div className="absolute top-[20%] right-[-10%] w-[35%] h-[35%] rounded-full bg-blue-300 blur-[120px] mix-blend-multiply animate-blob animation-delay-2000" />
         <div className="absolute bottom-[-20%] left-[20%] w-[40%] h-[40%] rounded-full bg-indigo-300 blur-[120px] mix-blend-multiply animate-blob animation-delay-4000" />
       </div>
@@ -204,13 +204,13 @@ export const LoginPage = () => {
           <div className="w-full md:w-1/2 bg-slate-900 relative overflow-hidden flex flex-col justify-between p-12 text-white">
             {/* 左侧内部光效 */}
             <div className="absolute inset-0 z-0 opacity-30">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-teal-500 rounded-full blur-[100px]" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-500 rounded-full blur-[100px]" />
             </div>
 
             {/* 顶部 Logo & 标题 */}
             <div className="relative z-10">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-teal-500/30">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-brand-500/30">
                   <FingerprintIcon className="w-6 h-6 text-white" />
                 </div>
                 <h1 className="text-2xl font-bold tracking-wide">AI System</h1>
@@ -227,13 +227,13 @@ export const LoginPage = () => {
             <div className="relative z-10 flex-1 flex items-center justify-center py-12">
               <div className="relative w-64 h-64">
                 {/* 核心光圈 */}
-                <div className="absolute inset-0 border border-teal-500/30 rounded-full animate-[spin_10s_linear_infinite]" />
+                <div className="absolute inset-0 border border-brand-500/30 rounded-full animate-[spin_10s_linear_infinite]" />
                 <div className="absolute inset-4 border border-blue-500/20 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
                 <div className="absolute inset-8 border border-indigo-500/20 rounded-full animate-[spin_8s_linear_infinite]" />
                 
                 {/* 核心立方/图标 */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-slate-800 rounded-2xl border border-teal-500/50 shadow-[0_0_30px_rgba(20,184,166,0.3)] flex items-center justify-center">
-                  <CpuIcon className="w-10 h-10 text-teal-400" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-slate-800 rounded-2xl border border-brand-500/50 shadow-[0_0_30px_rgba(20,184,166,0.3)] flex items-center justify-center">
+                  <CpuIcon className="w-10 h-10 text-brand-400" />
                 </div>
 
                 {/* 浮动标签 */}
@@ -270,11 +270,11 @@ export const LoginPage = () => {
                   <label className="text-sm font-medium text-slate-700 block">用户名</label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <UserIcon className="h-5 w-5 text-slate-400 group-focus-within:text-teal-500 transition-colors" />
+                      <UserIcon className="h-5 w-5 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
                     </div>
                     <input
                       type="text"
-                      className="block w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm"
+                      className="block w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm"
                       placeholder="在此处输入用户名"
                       value={formData.username}
                       onChange={(e) => setFormData({...formData, username: e.target.value})}
@@ -288,11 +288,11 @@ export const LoginPage = () => {
                   <label className="text-sm font-medium text-slate-700 block">登录密码</label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <LockIcon className="h-5 w-5 text-slate-400 group-focus-within:text-teal-500 transition-colors" />
+                      <LockIcon className="h-5 w-5 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
                     </div>
                     <input
                       type={showPassword ? "text" : "password"}
-                      className="block w-full pl-11 pr-12 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all shadow-sm"
+                      className="block w-full pl-11 pr-12 py-3.5 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all shadow-sm"
                       placeholder="••••••••"
                       value={formData.password}
                       onChange={(e) => setFormData({...formData, password: e.target.value})}
@@ -312,7 +312,7 @@ export const LoginPage = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full flex items-center justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-teal-500/30 text-base font-medium text-white bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-brand-500/30 text-base font-medium text-white bg-gradient-to-r from-brand-500 to-emerald-500 hover:from-brand-600 hover:to-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all transform active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {submitting ? (
                     <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -336,7 +336,7 @@ export const LoginPage = () => {
                   <button
                     type="button"
                     onClick={() => setApplyVisible(true)}
-                    className="font-medium text-teal-600 hover:text-teal-500 transition-colors"
+                    className="font-medium text-brand-600 hover:text-brand-500 transition-colors"
                   >
                     立即申请账号
                   </button>
@@ -363,8 +363,8 @@ export const LoginPage = () => {
           mask: { backdropFilter: 'blur(4px)', backgroundColor: 'rgba(15, 23, 42, 0.40)' },
         }}
       >
-        <div className="mb-4 mt-2 rounded-lg border border-teal-100 bg-teal-50/60 p-3 text-[13px] text-teal-800">
-          <DatabaseOutlined className="mr-2" />
+        <div className="mb-4 mt-2 rounded-lg border border-brand-100 bg-brand-50/60 p-3 text-[13px] text-brand-800">
+          <IconDatabase className="mr-2" />
           提交后管理员会在后台审核，审核通过后即可登录平台。
         </div>
         <Form<ApplyAccountForm> form={applyForm} layout="vertical" requiredMark={false}>

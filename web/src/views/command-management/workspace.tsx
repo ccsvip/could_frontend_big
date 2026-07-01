@@ -1,11 +1,11 @@
 import {
-  DeleteOutlined,
-  DownloadOutlined,
-  EditOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-  UploadOutlined,
-} from '@ant-design/icons';
+  IconTrash,
+  IconDownload,
+  IconEdit,
+  IconPlus,
+  IconReload,
+  IconUpload,
+} from '@tabler/icons-react';
 import {
   Button,
   Empty,
@@ -920,9 +920,9 @@ export const CommandWorkspacePage = () => {
             </div>
           </div>
           <Space size={8} wrap>
-            {canUpdateControl ? <Button size="small" icon={<EditOutlined />} onClick={() => openEditControl(item)}>编辑</Button> : null}
+            {canUpdateControl ? <Button size="small" icon={<IconEdit />} onClick={() => openEditControl(item)}>编辑</Button> : null}
             {canDeleteControl ? (
-              <Button size="small" danger icon={<DeleteOutlined />} onClick={() => confirmRemoveControl(item)}>删除</Button>
+              <Button size="small" danger icon={<IconTrash />} onClick={() => confirmRemoveControl(item)}>删除</Button>
             ) : null}
           </Space>
         </div>
@@ -988,10 +988,10 @@ export const CommandWorkspacePage = () => {
             </div>
           </div>
           <Space size={8} wrap>
-            {canUpdateTask ? <Button size="small" icon={<EditOutlined />} onClick={() => openEditTask(item)}>编辑</Button> : null}
-            {canUpdateTask ? <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => openAppendTaskStep(item)}>新增子任务</Button> : null}
+            {canUpdateTask ? <Button size="small" icon={<IconEdit />} onClick={() => openEditTask(item)}>编辑</Button> : null}
+            {canUpdateTask ? <Button size="small" type="primary" icon={<IconPlus />} onClick={() => openAppendTaskStep(item)}>新增子任务</Button> : null}
             {canDeleteTask ? (
-              <Button size="small" danger icon={<DeleteOutlined />} onClick={() => confirmRemoveTask(item)}>删除</Button>
+              <Button size="small" danger icon={<IconTrash />} onClick={() => confirmRemoveTask(item)}>删除</Button>
             ) : null}
           </Space>
         </div>
@@ -1050,7 +1050,7 @@ export const CommandWorkspacePage = () => {
               <Typography.Title level={4} className="!mb-1 !text-[16px] !text-slate-900">子指令管理</Typography.Title>
               <Typography.Text className="!text-xs !text-slate-500">配置是否导出和类型</Typography.Text>
             </div>
-            {canCreateGroup ? <Button type="primary" size="small" icon={<PlusOutlined />} onClick={openCreateGroup}>新增</Button> : null}
+            {canCreateGroup ? <Button type="primary" size="small" icon={<IconPlus />} onClick={openCreateGroup}>新增</Button> : null}
           </div>
 
           <div className="space-y-3 p-4">
@@ -1065,7 +1065,7 @@ export const CommandWorkspacePage = () => {
                     <div
                       key={item.id}
                       className={`w-full rounded-xl border text-left transition ${
-                        active ? 'border-teal-300 bg-teal-50/70 shadow-sm' : 'border-slate-200 bg-white hover:border-teal-200 hover:bg-slate-50'
+                        active ? 'border-brand-300 bg-brand-50/70 shadow-sm' : 'border-slate-200 bg-white hover:border-brand-200 hover:bg-slate-50'
                       }`}
                     >
                       <button
@@ -1135,9 +1135,9 @@ export const CommandWorkspacePage = () => {
                 }}
                 className="!w-56"
               />
-              <Button icon={<ReloadOutlined />} onClick={refreshCurrentGroup}>刷新</Button>
+              <Button icon={<IconReload />} onClick={refreshCurrentGroup}>刷新</Button>
               {selectedGroup && canExportCommands ? (
-                <Button icon={<DownloadOutlined />} loading={transferLoading} onClick={() => void exportCurrentGroupCommands()}>导出指令</Button>
+                <Button icon={<IconDownload />} loading={transferLoading} onClick={() => void exportCurrentGroupCommands()}>导出指令</Button>
               ) : null}
               {selectedGroup && canCreateCurrentCommand ? (
                 <Upload
@@ -1148,14 +1148,14 @@ export const CommandWorkspacePage = () => {
                   }}
                   showUploadList={false}
                 >
-                  <Button icon={<UploadOutlined />} loading={transferLoading}>导入指令</Button>
+                  <Button icon={<IconUpload />} loading={transferLoading}>导入指令</Button>
                 </Upload>
               ) : null}
               {selectedGroup?.groupType === 'control' && canCreateCurrentCommand ? (
-                <Button type="primary" icon={<PlusOutlined />} onClick={openCreateControl}>新增指令</Button>
+                <Button type="primary" icon={<IconPlus />} onClick={openCreateControl}>新增指令</Button>
               ) : null}
               {selectedGroup?.groupType === 'task' && canCreateCurrentCommand ? (
-                <Button type="primary" icon={<PlusOutlined />} onClick={openCreateTask}>新增任务指令</Button>
+                <Button type="primary" icon={<IconPlus />} onClick={openCreateTask}>新增任务指令</Button>
               ) : null}
             </Space>
           </div>

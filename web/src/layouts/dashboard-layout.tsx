@@ -1,31 +1,30 @@
 import {
-  ApartmentOutlined,
-  AppstoreOutlined,
-  AudioOutlined,
-  CheckCircleOutlined,
-  CloudOutlined,
-  CustomerServiceOutlined,
-  DesktopOutlined,
-  EnvironmentOutlined,
-  ExportOutlined,
-  FileImageOutlined,
-  FileSearchOutlined,
-  FileTextOutlined,
-  LockOutlined,
-  LogoutOutlined,
-  MenuFoldOutlined,
-  MenuOutlined,
-  MenuUnfoldOutlined,
-  PictureOutlined,
-  NotificationOutlined,
-  RobotOutlined,
-  SettingOutlined,
-  SolutionOutlined,
-  SoundOutlined,
-  TeamOutlined,
-  ThunderboltOutlined,
-  VideoCameraOutlined,
-} from '@ant-design/icons';
+  IconArrowBarToRight,
+  IconApps,
+  IconBell,
+  IconBolt,
+  IconBuilding,
+  IconCircleCheck,
+  IconClipboardList,
+  IconCloud,
+  IconDeviceDesktop,
+  IconFileSearch,
+  IconFileText,
+  IconHeadset,
+  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarLeftExpand,
+  IconLock,
+  IconLogout,
+  IconMapPin,
+  IconMenu2,
+  IconMicrophone,
+  IconPhoto,
+  IconRobot,
+  IconSettings,
+  IconUsers,
+  IconVideo,
+  IconVolume,
+} from '@tabler/icons-react';
 import { Avatar, Button, Drawer, Dropdown, Form, Grid, Input, Layout, Menu, Modal, Typography, message } from 'antd';
 import type { MenuProps } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
@@ -45,27 +44,27 @@ const SIDEBAR_COLLAPSED_WIDTH = 80;
 const SIDEBAR_COLLAPSE_STORAGE_KEY = 'app:sidebar-collapsed';
 
 const menuIconMap = {
-  DesktopOutlined: <DesktopOutlined />,
-  CheckCircleOutlined: <CheckCircleOutlined />,
-  ApartmentOutlined: <ApartmentOutlined />,
-  AppstoreOutlined: <AppstoreOutlined />,
-  TeamOutlined: <TeamOutlined />,
-  SolutionOutlined: <SolutionOutlined />,
-  PictureOutlined: <PictureOutlined />,
-  VideoCameraOutlined: <VideoCameraOutlined />,
-  CustomerServiceOutlined: <CustomerServiceOutlined />,
-  FileTextOutlined: <FileTextOutlined />,
-  RobotOutlined: <RobotOutlined />,
-  SettingOutlined: <SettingOutlined />,
-  ThunderboltOutlined: <ThunderboltOutlined />,
-  CloudOutlined: <CloudOutlined />,
-  AudioOutlined: <AudioOutlined />,
-  SoundOutlined: <SoundOutlined />,
-  FileImageOutlined: <FileImageOutlined />,
-  FileSearchOutlined: <FileSearchOutlined />,
-  NotificationOutlined: <NotificationOutlined />,
-  EnvironmentOutlined: <EnvironmentOutlined />,
-  ExportOutlined: <ExportOutlined />,
+  DesktopOutlined: <IconDeviceDesktop size={16} />,
+  CheckCircleOutlined: <IconCircleCheck size={16} />,
+  ApartmentOutlined: <IconBuilding size={16} />,
+  AppstoreOutlined: <IconApps size={16} />,
+  TeamOutlined: <IconUsers size={16} />,
+  SolutionOutlined: <IconClipboardList size={16} />,
+  PictureOutlined: <IconPhoto size={16} />,
+  VideoCameraOutlined: <IconVideo size={16} />,
+  CustomerServiceOutlined: <IconHeadset size={16} />,
+  FileTextOutlined: <IconFileText size={16} />,
+  RobotOutlined: <IconRobot size={16} />,
+  SettingOutlined: <IconSettings size={16} />,
+  ThunderboltOutlined: <IconBolt size={16} />,
+  CloudOutlined: <IconCloud size={16} />,
+  AudioOutlined: <IconMicrophone size={16} />,
+  SoundOutlined: <IconVolume size={16} />,
+  FileImageOutlined: <IconPhoto size={16} />,
+  FileSearchOutlined: <IconFileSearch size={16} />,
+  NotificationOutlined: <IconBell size={16} />,
+  EnvironmentOutlined: <IconMapPin size={16} />,
+  ExportOutlined: <IconArrowBarToRight size={16} />,
 } as const;
 
 const hiddenMenuPaths = new Set([
@@ -361,8 +360,8 @@ const SidebarContent = ({
     <div className={`pb-3 pt-5 ${collapsed ? 'px-2' : 'px-5'}`}>
       {collapsed ? (
         <div className="flex justify-center">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-teal-500/30 to-teal-700/20 text-teal-200">
-            <RobotOutlined className="text-lg" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-gradient-to-br from-brand-500/30 to-brand-700/20 text-brand-200">
+            <IconRobot size={18} />
           </div>
         </div>
       ) : (
@@ -382,7 +381,7 @@ const SidebarContent = ({
               <div className="truncate text-[13px] font-medium text-slate-100">服务运行中</div>
               <div className="truncate text-[11px] text-slate-500">权限与菜单已同步</div>
             </div>
-            <CheckCircleOutlined className="text-emerald-400/80" />
+            <IconCircleCheck size={16} className="text-emerald-400/80" />
           </div>
         </div>
       </div>
@@ -411,7 +410,7 @@ const SidebarContent = ({
           onClick={onToggleCollapsed}
           className={`flex h-10 w-full items-center gap-2.5 rounded-lg text-[13px] font-medium text-slate-300 transition-colors hover:bg-white/[0.06] hover:text-white ${collapsed ? 'justify-center' : 'px-3'}`}
         >
-          {collapsed ? <MenuUnfoldOutlined className="text-base" /> : <MenuFoldOutlined className="text-base" />}
+          {collapsed ? <IconLayoutSidebarLeftExpand size={16} /> : <IconLayoutSidebarLeftCollapse size={16} />}
           {!collapsed ? <span className="truncate">收起侧边栏</span> : null}
         </button>
       </div>
@@ -582,7 +581,7 @@ export const DashboardLayout = () => {
   const userItems: MenuProps['items'] = [
     {
       key: 'change-password',
-      icon: <LockOutlined />,
+      icon: <IconLock size={16} />,
       label: '修改密码',
       onClick: () => {
         passwordForm.resetFields();
@@ -591,7 +590,7 @@ export const DashboardLayout = () => {
     },
     {
       key: 'logout',
-      icon: <LogoutOutlined />,
+      icon: <IconLogout size={16} />,
       label: '退出登录',
       onClick: () => {
         logout();
@@ -655,7 +654,7 @@ export const DashboardLayout = () => {
                 <Button
                   type="text"
                   aria-label="打开导航菜单"
-                  icon={<MenuOutlined />}
+                  icon={<IconMenu2 size={16} />}
                   className="!h-9 !w-9 shrink-0 !rounded-lg !text-slate-600"
                   onClick={() => setMobileMenuOpen(true)}
                 />
@@ -688,8 +687,8 @@ export const DashboardLayout = () => {
               </div>
 
               <Dropdown menu={{ items: userItems }} placement="bottomRight" arrow>
-                <button type="button" className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-1.5 py-1 text-left transition hover:border-teal-300 hover:bg-teal-50/50 sm:gap-2.5 sm:pl-2 sm:pr-3">
-                  <Avatar size={32} className="!bg-gradient-to-br !from-teal-600 !to-teal-700 !font-semibold !text-white">
+                <button type="button" className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-1.5 py-1 text-left transition hover:border-brand-300 hover:bg-brand-50/50 sm:gap-2.5 sm:pl-2 sm:pr-3">
+                  <Avatar size={32} className="!bg-gradient-to-br !from-brand-600 !to-brand-700 !font-semibold !text-white">
                     {username?.[0] || 'A'}
                   </Avatar>
                   <span className="hidden min-w-0 sm:block">

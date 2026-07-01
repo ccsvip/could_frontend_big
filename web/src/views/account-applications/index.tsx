@@ -1,4 +1,4 @@
-import { CheckOutlined, CloseOutlined, ReloadOutlined } from '@ant-design/icons';
+import { IconCheck, IconX, IconReload } from '@tabler/icons-react';
 import { Button, Card, Descriptions, Drawer, Segmented, Space, Table, Tag, Typography, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo, useState } from 'react';
@@ -119,7 +119,7 @@ export const AccountApplicationsPage = () => {
             <>
               <Button
                 type="primary"
-                icon={<CheckOutlined />}
+                icon={<IconCheck />}
                 disabled={record.status !== 'pending'}
                 loading={actionLoading === record.id}
                 onClick={() => void handleAction(record, 'approved')}
@@ -128,7 +128,7 @@ export const AccountApplicationsPage = () => {
               </Button>
               <Button
                 danger
-                icon={<CloseOutlined />}
+                icon={<IconX />}
                 disabled={record.status !== 'pending'}
                 loading={actionLoading === record.id}
                 onClick={() => void handleAction(record, 'rejected')}
@@ -165,7 +165,7 @@ export const AccountApplicationsPage = () => {
                 { label: '已拒绝', value: 'rejected' },
               ]}
             />
-            <Button icon={<ReloadOutlined />} onClick={() => void loadApplications()}>
+            <Button icon={<IconReload />} onClick={() => void loadApplications()}>
               刷新
             </Button>
           </Space>

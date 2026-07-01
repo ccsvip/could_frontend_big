@@ -1,4 +1,4 @@
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { IconCheck, IconX } from '@tabler/icons-react';
 import { Button, Input, Space, Typography } from 'antd';
 import type { DeviceAuthorizationRequestRecord } from '../../../api/modules/devices';
 
@@ -40,8 +40,8 @@ export const EditableDeviceNameCell = ({
         onChange={(event) => onNameChange(event.target.value)}
         onPressEnter={() => onSave(record)}
       />
-      <Button size="small" type="primary" icon={<CheckOutlined />} loading={saving} onClick={() => onSave(record)} />
-      <Button size="small" icon={<CloseOutlined />} disabled={saving} onClick={onCancel} />
+      <Button size="small" type="primary" icon={<IconCheck />} loading={saving} onClick={() => onSave(record)} />
+      <Button size="small" icon={<IconX />} disabled={saving} onClick={onCancel} />
     </Space.Compact>
   );
 };

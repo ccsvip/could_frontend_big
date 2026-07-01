@@ -369,7 +369,7 @@ export const ThirdPartyChatbotSettingsPage = () => {
           <Select
             showSearch
             optionFilterProp="label"
-            className="min-w-[260px]"
+            className="w-full sm:w-64"
             value={selectedTenantId ?? undefined}
             options={activeTenants.map((tenant) => ({ label: tenant.name, value: tenant.id }))}
             onChange={setSelectedTenantId}

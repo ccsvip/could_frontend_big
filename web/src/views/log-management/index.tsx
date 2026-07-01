@@ -1,4 +1,4 @@
-import { DeleteOutlined, FileSearchOutlined } from '@ant-design/icons';
+import { IconTrash, IconFileSearch } from '@tabler/icons-react';
 import { Button, Card, Modal, Select, Space, Table, Tag, Typography, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -148,8 +148,8 @@ export const LogManagementPage = () => {
       <div className="page-hero">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0">
-            <div className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-700">
-              <span className="inline-block h-1 w-1 rounded-full bg-teal-600" />
+            <div className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-700">
+              <span className="inline-block h-1 w-1 rounded-full bg-brand-600" />
               Operation Audit
             </div>
             <Typography.Title level={4} className="!mb-1 !font-semibold !text-slate-900">
@@ -175,7 +175,7 @@ export const LogManagementPage = () => {
                 options={tenants.map((tenantItem) => ({ value: tenantItem.id, label: tenantItem.name }))}
               />
             ) : null}
-            <Button danger icon={<DeleteOutlined />} loading={clearing} onClick={handleClearLogs}>
+            <Button danger icon={<IconTrash />} loading={clearing} onClick={handleClearLogs}>
               清空日志
             </Button>
           </Space>
@@ -187,7 +187,7 @@ export const LogManagementPage = () => {
         className="!rounded-xl !border !border-slate-200/70 !shadow-card"
         title={
           <Space size={8}>
-            <FileSearchOutlined className="text-teal-700" />
+            <IconFileSearch className="text-brand-700" />
             <span>操作日志列表</span>
           </Space>
         }

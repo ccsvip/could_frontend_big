@@ -20,16 +20,16 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import type { UploadFile } from 'antd/es/upload';
 import {
-  CloudOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  PlusOutlined,
-  ApiOutlined,
-  LoadingOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  UploadOutlined,
-} from '@ant-design/icons';
+  IconCloud,
+  IconTrash,
+  IconEdit,
+  IconPlus,
+  IconApi,
+  IconLoader2,
+  IconCircleCheck,
+  IconCircleX,
+  IconUpload,
+} from '@tabler/icons-react';
 import { useAuthStore } from '../../store/auth';
 import {
   fetchLLMProviders,
@@ -253,7 +253,7 @@ export const LlmManagementPage = () => {
         <div className="flex items-center gap-3">
           <Avatar
             src={record.avatarUrl}
-            icon={<CloudOutlined />}
+            icon={<IconCloud />}
             className="shadow-sm border border-slate-100 bg-brand-50 text-brand-600"
             size={36}
           />
@@ -351,7 +351,7 @@ export const LlmManagementPage = () => {
           <div className="flex items-center gap-2">
             <Button
               size="small"
-              icon={testingId === record.id ? <LoadingOutlined /> : <ApiOutlined />}
+              icon={testingId === record.id ? <IconLoader2 /> : <IconApi />}
               loading={testingId === record.id}
               onClick={() => handleTestConnection(record.id)}
               className="border-slate-200 hover:border-brand-500 hover:text-brand-600 flex items-center transition-all rounded-md"
@@ -360,7 +360,7 @@ export const LlmManagementPage = () => {
             </Button>
             {result && (
               <Tag
-                icon={result.success ? <CheckCircleOutlined className="text-emerald-500" /> : <CloseCircleOutlined className="text-rose-500" />}
+                icon={result.success ? <IconCircleCheck className="text-emerald-500" /> : <IconCircleX className="text-rose-500" />}
                 color={result.success ? 'success' : 'error'}
                 className="m-0 font-mono px-2 py-0.5 rounded-md border-0"
               >
@@ -381,7 +381,7 @@ export const LlmManagementPage = () => {
             <Button
               type="link"
               size="small"
-              icon={<EditOutlined />}
+              icon={<IconEdit />}
               onClick={() => openEditModal(record)}
               className="text-brand-600 hover:text-brand-700 hover:bg-brand-50 rounded-md"
             >
@@ -394,7 +394,7 @@ export const LlmManagementPage = () => {
                 type="link"
                 size="small"
                 danger
-                icon={<DeleteOutlined />}
+                icon={<IconTrash />}
                 className="hover:bg-rose-50 rounded-md"
               >
                 删除
@@ -413,7 +413,7 @@ export const LlmManagementPage = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <CloudOutlined className="text-brand-600" />
+              <IconCloud className="text-brand-600" />
               <span>AI 模型供应商管理</span>
             </h1>
             <p className="text-slate-500 mt-1 text-sm">
@@ -445,7 +445,7 @@ export const LlmManagementPage = () => {
             onPressEnter={handleSearch}
             allowClear
             className="w-full sm:w-64 rounded-lg hover:border-brand-500 focus:border-brand-500 py-1.5"
-            prefix={<CloudOutlined className="text-slate-400 mr-1" />}
+            prefix={<IconCloud className="text-slate-400 mr-1" />}
           />
           <div className="flex gap-2 w-full sm:w-auto">
             <Button
@@ -466,7 +466,7 @@ export const LlmManagementPage = () => {
         {canCreate && (
           <Button
             type="primary"
-            icon={<PlusOutlined />}
+            icon={<IconPlus />}
             onClick={openCreateModal}
             className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 text-white shadow-sm hover:shadow-md transition-all rounded-lg px-4 py-2 h-auto flex items-center justify-center font-medium w-full md:w-auto"
           >
@@ -498,7 +498,7 @@ export const LlmManagementPage = () => {
         title={
           <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
             <span className="p-1 bg-brand-50 text-brand-600 rounded">
-              <CloudOutlined />
+              <IconCloud />
             </span>
             <span className="font-semibold">{editingItem ? '编辑供应商' : '新建供应商'}</span>
           </div>
@@ -547,7 +547,7 @@ export const LlmManagementPage = () => {
               >
                 {avatarFile.length === 0 && (
                   <div className="text-slate-400">
-                    <UploadOutlined className="text-lg mb-1" />
+                    <IconUpload className="text-lg mb-1" />
                     <div className="text-xs">上传头像</div>
                   </div>
                 )}
@@ -599,7 +599,7 @@ export const LlmManagementPage = () => {
                       type="text"
                       size="small"
                       danger
-                      icon={<DeleteOutlined />}
+                      icon={<IconTrash />}
                       onClick={() => handleRemoveModel(model.name)}
                       className="hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-md"
                     />
@@ -618,7 +618,7 @@ export const LlmManagementPage = () => {
               <Button
                 type="primary"
                 onClick={handleAddModel}
-                icon={<PlusOutlined />}
+                icon={<IconPlus />}
                 className="bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700 rounded-r-lg"
               >
                 添加
