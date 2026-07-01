@@ -1,22 +1,16 @@
-import React from 'react';
 import type { Key } from 'react';
 import {
   IconArrowLeft,
   IconArrowRight,
-  IconBook,
   IconCloudUpload,
-  IconCompass,
   IconDatabase,
   IconDownload,
-  IconFilePlus,
   IconFileSearch,
-  IconFlask,
   IconGitBranch,
   IconPencil,
   IconPhoto,
   IconPlus,
   IconRefresh,
-  IconShieldCheck,
   IconAdjustments,
   IconStack2,
   IconTrash,
@@ -118,30 +112,6 @@ const MAX_UPLOAD_CONCURRENCY = 3;
 
 
 
-const createGuideCards = [
-  {
-    title: '创建业务知识库',
-    description: '按业务域、产品线或部门拆分知识库，方便权限隔离和后续维护。',
-    icon: <IconBook />,
-    iconColor: 'text-teal-600',
-    iconBg: 'bg-teal-50',
-  },
-  {
-    title: '上传并维护文档',
-    description: `当前支持 ${KNOWLEDGE_BASE_ACCEPT.replace(/\./g, '').toUpperCase()}，建议文件名保留版本和适用范围。`,
-    icon: <IconFilePlus />,
-    iconColor: 'text-slate-600',
-    iconBg: 'bg-slate-100',
-  },
-  {
-    title: '测试召回效果',
-    description: '用真实用户问题检查命中内容，再把知识库绑定到智能体应用。',
-    icon: <IconFlask />,
-    iconColor: 'text-slate-600',
-    iconBg: 'bg-slate-100',
-  },
-];
-
 const detailWorkflow = [
   { title: '上传资料', description: '拖入或选择文档，最多 3 个文件并发上传。' },
   { title: '等待处理', description: '后台完成解析、切分和索引后即可参与召回。' },
@@ -205,6 +175,7 @@ export const KnowledgeBasePage = () => {
   const [baseKeyword, setBaseKeyword] = useState('');
   const [baseLoading, setBaseLoading] = useState(false);
   const [selectedBase, setSelectedBase] = useState<KnowledgeBaseRecord | null>(null);
+  const [previewBaseId, setPreviewBaseId] = useState<number | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [createSaving, setCreateSaving] = useState(false);
   const [createForm] = Form.useForm<KnowledgeBaseFormValues>();
@@ -415,10 +386,6 @@ export const KnowledgeBasePage = () => {
   const hasInFlightUpload = uploadTasks.some((item) => item.status === 'pending' || item.status === 'uploading');
   const activeBaseCount = bases.filter((item) => item.isActive).length;
   const visibleDocumentCount = bases.reduce((total, item) => total + item.documentCount, 0);
-  const latestUpdatedAt = bases.reduce<string | null>((latest, item) => {
-    if (!latest) return item.updated_at;
-    return item.updated_at > latest ? item.updated_at : latest;
-  }, null);
   const mediaAssetStats = useMemo(() => ({
     total: mediaAssets.length,
     enabled: mediaAssets.filter((item) => item.isEnabled && !item.isMissing).length,
@@ -1350,233 +1317,66 @@ export const KnowledgeBasePage = () => {
   if (!selectedBase) {
     return (
       <Space direction="vertical" size={20} className="w-full">
-        {/* Hero Section */}
-        <section className="space-y-3 relative overflow-hidden rounded-2xl p-5 sm:p-6 md:p-8 bg-gradient-to-br from-teal-600/5 to-teal-500/5 border border-teal-600/10">
-          <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-teal-50 text-teal-700 rounded-full mb-4 border border-teal-100">
-              <IconShieldCheck className="text-[14px]" />
-              <span className="text-xs font-semibold">企业知识沉淀与智能体召回中心</span>
-            </div>
-            <Typography.Title level={2} className="!mb-2 !text-slate-900">知识库</Typography.Title>
-            <p className="text-sm text-slate-500 max-w-3xl leading-relaxed !mb-0">
-              这里把“创建资料集”、“导入文档”、“验证召回”、“绑定智能体”收敛到一个页面，先把资料整理成可验证的知识资产，再提供给智能体使用。
-            </p>
+        {/* Top bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <IconDatabase size={18} className="text-teal-600" />
+            <h2 className="text-lg font-semibold text-slate-900">知识库</h2>
+            <span className="text-xs text-slate-400">
+              共 <span className="font-mono text-slate-600">{baseTotal}</span> · 启用 <span className="font-mono text-emerald-600">{activeBaseCount}</span> · 文档 <span className="font-mono text-slate-600">{visibleDocumentCount}</span>
+            </span>
           </div>
-          <div className="absolute right-0 top-0 w-1/3 h-full opacity-[0.03] pointer-events-none flex items-center justify-end pr-8">
-            <IconFlask className="text-[180px] rotate-12 text-teal-800" />
+          <div className="flex items-center gap-2">
+            <Input.Search
+              allowClear
+              placeholder="搜索知识库"
+              className="!w-44 sm:!w-56"
+              onSearch={(value) => {
+                setBaseKeyword(value.trim());
+                setBasePage(1);
+              }}
+            />
+            <Button icon={<IconRefresh />} onClick={() => void loadBases()}>刷新</Button>
+            <Button type="primary" icon={<IconPlus />} disabled={!canUpload} onClick={() => setCreateOpen(true)}>
+              新建知识库
+            </Button>
           </div>
-        </section>
+        </div>
 
-        {/* Summary Cards Row */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-[0px_4px_20px_rgba(0,0,0,0.015)] hover:shadow-md hover:border-slate-300/60 transition-all duration-300 flex items-center justify-between h-24">
-            <div className="flex flex-col justify-between h-full py-0.5">
-              <span className="text-xs text-slate-400 font-medium">知识库总数</span>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold font-mono text-slate-800">{baseTotal}</span>
-                <span className="text-[10px] text-teal-600/70 font-semibold bg-teal-50 px-1.5 py-0.5 rounded-full border border-teal-100/30">本月新建</span>
-              </div>
-            </div>
-            <div className="p-2.5 bg-slate-100 text-teal-600 rounded-xl shrink-0">
-              <IconDatabase size={20} />
-            </div>
-          </div>
-          <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-[0px_4px_20px_rgba(0,0,0,0.015)] hover:shadow-md hover:border-slate-300/60 transition-all duration-300 flex items-center justify-between h-24">
-            <div className="flex flex-col justify-between h-full py-0.5">
-              <span className="text-xs text-slate-400 font-medium">活动知识库</span>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold font-mono text-slate-800">{activeBaseCount}</span>
-                <span className="text-[10px] text-emerald-600/70 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-100/30">100% 运行中</span>
-              </div>
-            </div>
-            <div className="p-2.5 bg-slate-100 text-teal-600 rounded-xl shrink-0">
-              <IconShieldCheck size={20} />
-            </div>
-          </div>
-          <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-[0px_4px_20px_rgba(0,0,0,0.015)] hover:shadow-md hover:border-slate-300/60 transition-all duration-300 flex items-center justify-between h-24">
-            <div className="flex flex-col justify-between h-full py-0.5">
-              <span className="text-xs text-slate-400 font-medium">包含文档数</span>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold font-mono text-slate-800">{visibleDocumentCount}</span>
-                <span className="text-[10px] text-slate-500 font-semibold bg-slate-50 px-1.5 py-0.5 rounded-full border border-slate-200/40">已入库</span>
-              </div>
-            </div>
-            <div className="p-2.5 bg-slate-100 text-slate-500 rounded-xl shrink-0">
-              <IconFilePlus size={20} />
-            </div>
-          </div>
-          <div className="bg-white p-5 rounded-xl border border-slate-200/60 shadow-[0px_4px_20px_rgba(0,0,0,0.015)] hover:shadow-md hover:border-slate-300/60 transition-all duration-300 flex items-center justify-between h-24">
-            <div className="flex flex-col justify-between h-full py-0.5">
-              <span className="text-xs text-slate-400 font-medium">最近更新</span>
-              <div className="flex flex-col mt-1">
-                <span className="text-sm font-semibold font-mono text-slate-700 leading-tight">{latestUpdatedAt ? latestUpdatedAt.split(' ')[0] : '--'}</span>
-                <span className="text-[10px] text-slate-400 font-mono mt-0.5">{latestUpdatedAt ? latestUpdatedAt.split(' ')[1] : ''}</span>
-              </div>
-            </div>
-            <div className="p-2.5 bg-slate-100 text-slate-500 rounded-xl shrink-0">
-              <IconRefresh size={20} />
-            </div>
-          </div>
-        </section>
-
-        {/* Main Grid Layout */}
-        <section className="grid grid-cols-1 gap-5 xl:grid-cols-12 items-start">
-          {/* Left Column: Knowledge Base List */}
-          <div className="col-span-12 xl:col-span-9">
-            <Card variant="borderless" className="!rounded-xl !border !border-slate-100 !shadow-[0px_4px_20px_rgba(0,0,0,0.02)] overflow-hidden [&_.ant-card-body]:!p-0">
-              {/* Toolbar */}
-              <div className="p-4 border-b border-slate-100/80 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between bg-slate-50/50">
-                <div className="flex items-center gap-3">
-                  <Input.Search
-                    allowClear
-                    placeholder="搜索知识库"
-                    className="!w-44 sm:!w-52 md:!w-64"
-                    onSearch={(value) => {
-                      setBaseKeyword(value.trim());
-                      setBasePage(1);
-                    }}
-                  />
-                  <Button icon={<IconRefresh />} onClick={() => void loadBases()}>刷新</Button>
-                </div>
-                <Button type="primary" icon={<IconPlus />} disabled={!canUpload} onClick={() => setCreateOpen(true)}>
-                  创建知识库
-                </Button>
-              </div>
-
-              {/* Card List / Grid */}
-              <Spin spinning={baseLoading}>
-                <div className="p-4 sm:p-5">
-                  {bases.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
-                      {bases.map((item) => {
-                        // Select icon based on keywords in name
-                        let cardIcon = <IconDatabase />;
-                        const name = item.name;
-                        if (name.includes('医') || name.includes('健康') || name.includes('药')) {
-                          cardIcon = <IconShieldCheck />;
-                        } else if (name.includes('科') || name.includes('数') || name.includes('网') || name.includes('算') || name.includes('智能') || name.includes('系统')) {
-                          cardIcon = <IconStack2 />;
-                        } else if (name.includes('城') || name.includes('游') || name.includes('古') || name.includes('馆') || name.includes('历史') || name.includes('景')) {
-                          cardIcon = <IconCompass />;
-                        } else if (name.includes('文档') || name.includes('书') || name.includes('学') || name.includes('策略') || name.includes('政策')) {
-                          cardIcon = <IconBook />;
-                        } else if (name.includes('客服') || name.includes('服务') || name.includes('售后')) {
-                          cardIcon = <IconFlask />;
-                        }
-
-                        const iconBg = item.isActive
-                          ? 'bg-teal-50 text-teal-600'
-                          : 'bg-slate-100 text-slate-500';
-
-                        return (
-                          <div
-                            key={item.id}
-                            className="bg-white rounded-xl border border-slate-200/60 hover:border-teal-500/30 p-4 sm:p-5 shadow-[0px_4px_20px_rgba(0,0,0,0.015)] hover:shadow-[0px_8px_30px_rgba(20,184,166,0.06)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between group"
-                          >
-                            <div>
-                              {/* Header Row */}
-                              <div className="flex items-start justify-between gap-2 mb-4">
-                                <div className={`p-2.5 rounded-xl ${iconBg} shrink-0 shadow-sm transition-transform group-hover:scale-105 duration-300`}>
-                                  {React.cloneElement(cardIcon as React.ReactElement, { size: 20 })}
-                                </div>
-                                <div className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-xs font-medium font-sans ${item.isActive ? 'bg-emerald-50/70 border-emerald-100 text-emerald-700' : 'bg-slate-50 border-slate-200/60 text-slate-500'}`}>
-                                  <span className={`w-1.5 h-1.5 rounded-full ${item.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
-                                  {item.isActive ? '启用' : '停用'}
-                                </div>
-                              </div>
-
-                              {/* Title & Description */}
-                              <h4 className="text-sm sm:text-base font-bold text-slate-800 line-clamp-1 mb-1 group-hover:text-teal-600 transition-colors duration-200" title={item.name}>
-                                {item.name}
-                              </h4>
-                              <p className="text-xs sm:text-sm text-slate-400 line-clamp-2 mb-4 leading-relaxed" title={item.description || '暂无描述'}>
-                                {item.description || '暂无描述'}
-                              </p>
-                            </div>
-
-                            <div>
-                              {/* Stats & Meta */}
-                              <div className="grid grid-cols-2 gap-4 py-3.5 border-y border-slate-100/80">
-                                <div>
-                                  <span className="text-xs font-bold font-mono text-slate-400 uppercase tracking-wider block">包含文档</span>
-                                  <span className="text-sm font-semibold text-slate-700 font-mono mt-0.5 inline-block">
-                                    {item.documentCount} <span className="font-sans font-normal text-xs text-slate-400">份</span>
-                                  </span>
-                                </div>
-                                <div>
-                                  <span className="text-xs font-bold font-mono text-slate-400 uppercase tracking-wider block">分块配置</span>
-                                  <span className="text-sm font-semibold text-slate-700 font-mono mt-0.5 inline-block">
-                                    {item.chunkSize}/{item.chunkOverlap}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="flex items-center justify-between text-xs text-slate-400 mt-2 font-mono">
-                                <span>更新时间</span>
-                                <span>{item.updated_at}</span>
-                              </div>
-
-                              {/* Actions Footer */}
-                              <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
-                                <div className="flex gap-1">
-                                  <Button
-                                    type="text"
-                                    size="small"
-                                    className="text-slate-400 hover:text-teal-600 hover:bg-teal-50/50 rounded-lg flex items-center justify-center p-1.5"
-                                    icon={<IconPencil className="text-xs" />}
-                                    disabled={!canUpload}
-                                    onClick={() => openEditBase(item)}
-                                  />
-                                  <Popconfirm
-                                    title="删除知识库"
-                                    description={`确认删除“${item.name}”及其文档吗？`}
-                                    okText="删除"
-                                    cancelText="取消"
-                                    okButtonProps={{ danger: true, loading: deletingBaseId === item.id }}
-                                    disabled={!canDelete}
-                                    onConfirm={() => void handleDeleteBase(item)}
-                                  >
-                                    <Button
-                                      type="text"
-                                      size="small"
-                                      danger
-                                      className="text-slate-400 hover:text-red-600 hover:bg-red-50/50 rounded-lg flex items-center justify-center p-1.5"
-                                       icon={<IconTrash className="text-xs" />}
-                                      disabled={!canDelete}
-                                      loading={deletingBaseId === item.id}
-                                    />
-                                  </Popconfirm>
-                                </div>
-                                
-                                <Button
-                                  type="primary"
-                                  size="small"
-                                  className="!bg-teal-600 hover:!bg-teal-700 !text-white border-none font-medium rounded-lg px-3 py-1.5 text-xs shadow-sm hover:shadow transition-all duration-200 flex items-center gap-1 group/btn"
-                                  onClick={() => setSelectedBase(item)}
-                                >
-                                  进入管理
-                                   <IconArrowRight className="text-[10px] group-hover/btn:translate-x-0.5 transition-transform duration-200" />
-                                </Button>
-                              </div>
-                            </div>
+        {/* Master-detail: list + detail pane */}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[320px_minmax(0,1fr)] items-start">
+          {/* Sidebar list */}
+          <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card overflow-hidden [&_.ant-card-body]:!p-0">
+            <Spin spinning={baseLoading}>
+              <div className="max-h-[680px] overflow-y-auto custom-scrollbar">
+                {bases.length > 0 ? (
+                  bases.map((item) => {
+                    const active = (previewBaseId ?? bases[0]?.id) === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setPreviewBaseId(item.id)}
+                        className={`flex w-full items-center justify-between gap-2 border-b border-slate-50 px-4 py-3 text-left transition ${active ? 'bg-teal-50/60' : 'hover:bg-slate-50'}`}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className={`truncate text-sm font-medium ${active ? 'text-teal-700' : 'text-slate-700'}`}>{item.name}</div>
+                          <div className="mt-0.5 text-xs text-slate-400">
+                            {item.documentCount} 份文档 · <span className="font-mono">{item.chunkSize}/{item.chunkOverlap}</span>
                           </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <Empty
-                      image={Empty.PRESENTED_IMAGE_SIMPLE}
-                      description={baseKeyword ? '没有匹配的知识库' : '还没有知识库，先创建一个用于沉淀业务资料'}
-                    />
-                  )}
-                </div>
-              </Spin>
-
-              {/* Pagination */}
+                        </div>
+                        <span className={`h-2 w-2 shrink-0 rounded-full ${item.isActive ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="p-6">
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={baseKeyword ? '没有匹配的知识库' : '还没有知识库，先创建一个用于沉淀业务资料'} />
+                  </div>
+                )}
+              </div>
               {bases.length > 0 && (
-                <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/30">
-                  <span className="text-xs text-slate-400 font-medium">
-                    共 <span className="font-mono text-slate-600 font-semibold">{baseTotal}</span> 个知识库
-                  </span>
+                <div className="border-t border-slate-100 bg-slate-50/40 px-4 py-3">
                   <Pagination
                     current={basePage}
                     pageSize={PAGE_SIZE}
@@ -1587,46 +1387,113 @@ export const KnowledgeBasePage = () => {
                   />
                 </div>
               )}
-            </Card>
-          </div>
+            </Spin>
+          </Card>
 
-          {/* Right Column: Recommended Process */}
-          <div className="col-span-12 xl:col-span-3">
-            <Card variant="borderless" className="!rounded-xl !border border-slate-200/60 !shadow-[0px_4px_20px_rgba(0,0,0,0.015)]">
-              <Space direction="vertical" size={20} className="w-full">
-                <h3 className="text-sm font-bold text-slate-800 mb-0 flex items-center gap-2">
-                  <span className="w-1.5 h-4 bg-teal-600 rounded-sm"></span>
-                  推荐流程
-                </h3>
-                <div className="space-y-6 relative mt-2">
-                  {/* Timeline connector */}
-                  <div className="absolute left-3.5 top-3 bottom-3 w-0.5 bg-slate-100"></div>
-                  
-                  {createGuideCards.map((item, index) => (
-                    <div key={item.title} className="relative pl-12">
-                      <div className={`absolute left-0 top-0.5 w-7 h-7 rounded-lg flex items-center justify-center z-10 ${item.iconBg} ${item.iconColor} transition-all duration-300`}>
-                        {React.cloneElement(item.icon as React.ReactElement, { size: 14 })}
+          {/* Detail pane */}
+          {(() => {
+            const previewBase = bases.find((item) => item.id === previewBaseId) ?? bases[0] ?? null;
+            if (!previewBase) {
+              return (
+                <Card variant="borderless" className="!rounded-xl !border !border-dashed !border-slate-300 !bg-slate-50/50 !shadow-none">
+                  <div className="flex h-[280px] items-center justify-center">
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="选择左侧知识库查看详情" />
+                  </div>
+                </Card>
+              );
+            }
+            return (
+              <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+                <div className="flex flex-col gap-5">
+                  <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-4">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-base font-semibold text-slate-900">{previewBase.name}</h3>
+                        <Tag color={previewBase.isActive ? 'success' : 'default'}>{previewBase.isActive ? '启用' : '停用'}</Tag>
                       </div>
-                      <div>
-                        <span className={`text-[9px] font-bold font-mono tracking-wider px-2 py-0.5 rounded-full ${index === 0 ? 'bg-teal-50 text-teal-600 border border-teal-100/50' : 'bg-slate-100 text-slate-500 border border-slate-200/30'}`}>
-                          STEP 0{index + 1}
-                        </span>
-                        <h4 className="text-xs font-bold text-slate-800 mt-2 mb-1">
-                          {item.title}
-                        </h4>
-                        <p className="text-xs text-slate-400 leading-relaxed">
-                          {item.description}
-                        </p>
+                      <p className="mt-1 text-sm text-slate-500">{previewBase.description || '暂无描述'}</p>
+                    </div>
+                    <Space>
+                      <Button icon={<IconPencil />} disabled={!canUpload} onClick={() => openEditBase(previewBase)}>编辑</Button>
+                      <Button
+                        type="primary"
+                        onClick={() => setSelectedBase(previewBase)}
+                        className="!bg-teal-600 hover:!bg-teal-700"
+                      >
+                        进入管理 <IconArrowRight size={12} className="ml-0.5 inline" />
+                      </Button>
+                    </Space>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-slate-100 bg-slate-100 sm:grid-cols-4">
+                    {[
+                      { k: '文档数', v: String(previewBase.documentCount), unit: '份' },
+                      { k: '分块配置', v: `${previewBase.chunkSize}/${previewBase.chunkOverlap}`, unit: '' },
+                      { k: '召回 TopN', v: String(previewBase.retrievalTopN), unit: '段' },
+                      { k: '更新', v: previewBase.updated_at.split(' ')[0] ?? '--', unit: '' },
+                    ].map((s) => (
+                      <div key={s.k} className="bg-white p-4">
+                        <div className="text-xs text-slate-400">{s.k}</div>
+                        <div className="mt-1 font-mono text-lg font-semibold text-slate-800">
+                          {s.v}
+                          {s.unit && <span className="ml-1 text-xs font-normal text-slate-400">{s.unit}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div className="rounded-lg border border-slate-100 p-4">
+                      <div className="mb-2 text-xs font-semibold text-slate-500">检索配置</div>
+                      <div className="space-y-1.5 text-sm">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400">最低相关度</span>
+                          <span className="font-mono text-slate-700">{previewBase.retrievalMinScore}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400">默认召回段数</span>
+                          <span className="font-mono text-slate-700">{previewBase.retrievalTopN}</span>
+                        </div>
                       </div>
                     </div>
-                  ))}
+                    <div className="rounded-lg border border-slate-100 p-4">
+                      <div className="mb-2 text-xs font-semibold text-slate-500">素材召回配置</div>
+                      <div className="space-y-1.5 text-sm">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400">素材上限</span>
+                          <span className="font-mono text-slate-700">{previewBase.mediaMaxAssets || '不限'}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400">素材最低相关度</span>
+                          <span className="font-mono text-slate-700">{previewBase.mediaMinRelevance}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
+                    <Typography.Text className="!text-xs !text-slate-400 font-mono">
+                      创建 {previewBase.created_at?.split(' ')[0] ?? '--'} · 更新 {previewBase.updated_at ?? '--'}
+                    </Typography.Text>
+                    <Popconfirm
+                      title="删除知识库"
+                      description={`确认删除“${previewBase.name}”及其文档吗？`}
+                      okText="删除"
+                      cancelText="取消"
+                      okButtonProps={{ danger: true, loading: deletingBaseId === previewBase.id }}
+                      disabled={!canDelete}
+                      onConfirm={() => void handleDeleteBase(previewBase)}
+                    >
+                      <Button danger disabled={!canDelete} loading={deletingBaseId === previewBase.id} icon={<IconTrash size={14} />}>
+                        删除
+                      </Button>
+                    </Popconfirm>
+                  </div>
                 </div>
-
-
-              </Space>
-            </Card>
-          </div>
-        </section>
+              </Card>
+            );
+          })()}
+        </div>
 
         {/* Create and Edit Modals */}
         <Modal
