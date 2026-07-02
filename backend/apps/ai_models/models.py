@@ -29,6 +29,11 @@ THIRD_PARTY_PROVIDER_TYPE_CHOICES = [
     (THIRD_PARTY_PROVIDER_IHUAPENG, '华鹏会话机器人'),
 ]
 
+THIRD_PARTY_CHATBOT_SCHEME_A = 'scheme_a'
+THIRD_PARTY_CHATBOT_SCHEME_CHOICES = [
+    (THIRD_PARTY_CHATBOT_SCHEME_A, '方案A'),
+]
+
 
 class LLMProvider(models.Model):
     name = models.CharField('供应商名称', max_length=128)
@@ -207,6 +212,41 @@ class TenantThirdPartyChatbotGrant(models.Model):
 
     def __str__(self):
         return f'{self.tenant_id}:{self.chatbot_id}'
+
+
+class ThirdPartyChatbotIntegration(models.Model):
+    scheme_type = models.CharField(
+        '方案类型',
+        max_length=32,
+        choices=THIRD_PARTY_CHATBOT_SCHEME_CHOICES,
+        default=THIRD_PARTY_CHATBOT_SCHEME_A,
+    )
+    name = models.CharField('方案实例名称', max_length=128)
+    remark = models.TextField('备注', blank=True, default='')
+    provider = models.ForeignKey(
+        ThirdPartyChatbotProvider,
+        on_delete=models.CASCADE,
+        related_name='integrations',
+        verbose_name='第三方供应商',
+    )
+    chatbot = models.OneToOneField(
+        ThirdPartyChatbotApplication,
+        on_delete=models.CASCADE,
+        related_name='integration',
+        verbose_name='第三方机器人',
+    )
+    config = models.JSONField('API 流程配置', blank=True, default=dict)
+    is_active = models.BooleanField('是否启用', default=True)
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = '第三方会话机器人方案实例'
+        verbose_name_plural = '第三方会话机器人方案实例'
+        ordering = ['-updated_at', '-id']
+
+    def __str__(self):
+        return self.name
 
 
 class LLMTestSettings(models.Model):

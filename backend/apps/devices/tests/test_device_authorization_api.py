@@ -82,6 +82,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         Provider = apps.get_model('ai_models', 'ThirdPartyChatbotProvider')
         Chatbot = apps.get_model('ai_models', 'ThirdPartyChatbotApplication')
         Grant = apps.get_model('ai_models', 'TenantThirdPartyChatbotGrant')
+        Integration = apps.get_model('ai_models', 'ThirdPartyChatbotIntegration')
         provider = Provider.objects.create(
             name='华鹏 AI',
             provider_type='ihuapeng_chatbot',
@@ -96,8 +97,29 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             is_active=True,
         )
         Grant.objects.create(tenant=self.tenant, chatbot=chatbot, is_active=True)
+        Integration.objects.create(
+            scheme_type='scheme_a',
+            name='华鹏方案A',
+            provider=provider,
+            chatbot=chatbot,
+            config={
+                'steps': [
+                    {
+                        'key': 'send_message',
+                        'name': '发送消息',
+                        'method': 'POST',
+                        'path': '/application/chat_message/{{chat_id}}',
+                        'headers': [{'key': 'AUTHORIZATION', 'value': '{{apiKey}}'}],
+                        'body': {'message': '{{message}}', 'stream': False},
+                        'extract': [],
+                        'success': {'httpStatus': '200-299'},
+                    },
+                ],
+                'answerPaths': ['$.data.content'],
+            },
+            is_active=True,
+        )
         return chatbot
-
     def test_authorization_request_query_filters_pending_bound_and_ignored_devices(self):
         pending = Device.objects.create(name='Pending Device', code='ANDROID-QUERY-PENDING')
         bound = Device.objects.create(tenant=self.tenant, name='Bound Device', code='ANDROID-QUERY-BOUND')

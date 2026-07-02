@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  Alert,
   Button,
   Collapse,
   Form,
   Input,
-  InputNumber,
   Modal,
   Popconfirm,
   Select,
@@ -12,7 +12,6 @@ import {
   Spin,
   Switch,
   Table,
-  Tabs,
   Tag,
   message,
 } from 'antd';
@@ -27,305 +26,385 @@ import {
 } from '@tabler/icons-react';
 import { fetchTenants, type TenantRecord } from '../../api/modules/tenants';
 import {
-  createPlatformThirdPartyChatbotApplication,
-  createPlatformThirdPartyChatbotProvider,
-  deletePlatformThirdPartyChatbotApplication,
-  deletePlatformThirdPartyChatbotProvider,
-  fetchPlatformThirdPartyChatbotApplications,
-  fetchPlatformThirdPartyChatbotProviders,
-  fetchTenantThirdPartyChatbotAuthorization,
-  updatePlatformThirdPartyChatbotApplication,
-  updatePlatformThirdPartyChatbotProvider,
-  updateTenantThirdPartyChatbotAuthorization,
-  type PlatformThirdPartyChatbotApplicationPayload,
-  type PlatformThirdPartyChatbotApplicationRecord,
-  type PlatformThirdPartyChatbotProviderPayload,
-  type PlatformThirdPartyChatbotProviderRecord,
-  type TenantThirdPartyChatbotAuthorization,
+  createPlatformThirdPartyChatbotIntegration,
+  deletePlatformThirdPartyChatbotIntegration,
+  fetchPlatformThirdPartyChatbotIntegrations,
+  testPlatformThirdPartyChatbotIntegrationDraft,
+  updatePlatformThirdPartyChatbotIntegration,
+  type ThirdPartyChatbotApiStep,
+  type ThirdPartyChatbotIntegrationConfig,
+  type ThirdPartyChatbotIntegrationPayload,
+  type ThirdPartyChatbotIntegrationRecord,
+  type ThirdPartyChatbotIntegrationTestResult,
 } from '../../api/modules/llm-settings';
 
-type ProviderFormValues = Omit<PlatformThirdPartyChatbotProviderPayload, 'providerType' | 'isActive'>;
-type ChatbotFormValues = Omit<PlatformThirdPartyChatbotApplicationPayload, 'isActive'>;
+type StepFormValue = Omit<ThirdPartyChatbotApiStep, 'body'> & {
+  bodyText: string;
+  stream?: boolean;
+};
 
-const effectiveGrantChatbotIds = (authorization: TenantThirdPartyChatbotAuthorization | null) => {
-  if (!authorization) return [];
-  return authorization.chatbots
-    .filter((chatbot) => chatbot.providerIsActive && chatbot.isActive && chatbot.grantIsActive)
-    .map((chatbot) => chatbot.id);
+type IntegrationFormValues = Omit<ThirdPartyChatbotIntegrationPayload, 'config'> & {
+  config: {
+    steps: StepFormValue[];
+    answerPaths: string[];
+  };
+  tenantIds: number[];
+  testQuestion?: string;
+};
+
+const METHOD_OPTIONS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD'].map((method) => ({
+  label: method,
+  value: method,
+}));
+
+const createDefaultStep = (): StepFormValue => ({
+  key: `step_${Date.now()}`,
+  name: '发送消息',
+  method: 'POST',
+  path: '/application/chat_message/{{chat_id}}',
+  headers: [
+    { key: 'AUTHORIZATION', value: '{{apiKey}}' },
+    { key: 'Content-Type', value: 'application/json' },
+  ],
+  bodyText: JSON.stringify({ message: '{{message}}', stream: false }, null, 2),
+  stream: false,
+  extract: [],
+  success: { httpStatus: '200-299', bodyPath: '$.code', equals: 200 },
+  errorMessagePath: '$.message',
+});
+
+const createSchemeAValues = (): IntegrationFormValues => ({
+  schemeType: 'scheme_a',
+  name: '方案A',
+  remark: '',
+  providerName: '',
+  providerApiBaseUrl: '',
+  providerApiKey: '',
+  chatbotName: '',
+  chatbotDescription: '',
+  externalApplicationId: '',
+  isActive: true,
+  tenantIds: [],
+  config: {
+    steps: [
+      {
+        key: 'open_chat',
+        name: '打开会话',
+        method: 'GET',
+        path: '/application/{{externalApplicationId}}/chat/open',
+        headers: [
+          { key: 'AUTHORIZATION', value: '{{apiKey}}' },
+          { key: 'Accept', value: 'application/json' },
+        ],
+        bodyText: JSON.stringify({}, null, 2),
+        stream: false,
+        extract: [{ name: 'chat_id', path: '$.data' }],
+        success: { httpStatus: '200-299', bodyPath: '$.code', equals: 200 },
+        errorMessagePath: '$.message',
+      },
+      {
+        key: 'send_message',
+        name: '发送消息',
+        method: 'POST',
+        path: '/application/chat_message/{{chat_id}}',
+        headers: [
+          { key: 'AUTHORIZATION', value: '{{apiKey}}' },
+          { key: 'Accept', value: 'application/json' },
+          { key: 'Content-Type', value: 'application/json' },
+        ],
+        bodyText: JSON.stringify({ message: '{{message}}', stream: false }, null, 2),
+        stream: false,
+        extract: [{ name: 'chat_id', path: '$.data.chat_id' }],
+        success: { httpStatus: '200-299', bodyPath: '$.code', equals: 200 },
+        errorMessagePath: '$.message',
+      },
+    ],
+    answerPaths: ['$.data.content', '$.data.answer_list.0.content'],
+  },
+});
+
+const jsonText = (value: unknown) => JSON.stringify(value ?? {}, null, 2);
+
+const parseJsonBody = (value: string | undefined, label: string) => {
+  const text = String(value || '').trim() || '{}';
+  try {
+    const parsed = JSON.parse(text) as unknown;
+    if (parsed === null || typeof parsed !== 'object') {
+      throw new Error(`${label} 必须是 JSON 对象或数组`);
+    }
+    return parsed as Record<string, unknown> | unknown[];
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error(`${label} 不是有效 JSON`);
+    }
+    throw error;
+  }
+};
+
+const parseEquals = (value: unknown) => {
+  const text = String(value ?? '').trim();
+  if (!text) return undefined;
+  try {
+    return JSON.parse(text) as string | number | boolean | null;
+  } catch {
+    return text;
+  }
+};
+
+const formStepFromConfig = (step: ThirdPartyChatbotApiStep): StepFormValue => {
+  const body = step.body ?? {};
+  const stream = !Array.isArray(body) && typeof body === 'object' && body !== null
+    ? Boolean((body as Record<string, unknown>).stream)
+    : false;
+  return {
+    ...step,
+    bodyText: jsonText(body),
+    stream,
+    headers: step.headers || [],
+    extract: step.extract || [],
+    success: step.success || { httpStatus: '200-299' },
+    errorMessagePath: step.errorMessagePath || '$.message',
+  };
+};
+
+const formValuesFromRecord = (record: ThirdPartyChatbotIntegrationRecord): IntegrationFormValues => ({
+  schemeType: record.schemeType,
+  name: record.name,
+  remark: record.remark,
+  providerName: record.providerName,
+  providerApiBaseUrl: record.providerApiBaseUrl,
+  providerApiKey: '',
+  chatbotName: record.chatbotName,
+  chatbotDescription: record.chatbotDescription,
+  externalApplicationId: record.externalApplicationId,
+  isActive: record.isActive,
+  tenantIds: record.authorizedTenantIds,
+  config: {
+    steps: (record.config.steps || []).map(formStepFromConfig),
+    answerPaths: record.config.answerPaths || [],
+  },
+});
+
+const normalizePayload = (values: IntegrationFormValues): ThirdPartyChatbotIntegrationPayload => {
+  const steps = (values.config.steps || []).map((step, index) => {
+    const body = parseJsonBody(step.bodyText, `步骤 ${index + 1} 请求体`);
+    if (!Array.isArray(body) && typeof body === 'object' && body !== null && step.stream !== undefined) {
+      body.stream = step.stream;
+    }
+    return {
+      key: String(step.key || `step_${index + 1}`).trim(),
+      name: String(step.name || `步骤 ${index + 1}`).trim(),
+      method: step.method,
+      path: String(step.path || '').trim(),
+      headers: (step.headers || [])
+        .map((header) => ({ key: String(header.key || '').trim(), value: String(header.value || '') }))
+        .filter((header) => header.key),
+      body,
+      extract: (step.extract || [])
+        .map((item) => ({ name: String(item.name || '').trim(), path: String(item.path || '').trim() }))
+        .filter((item) => item.name && item.path),
+      success: {
+        httpStatus: String(step.success?.httpStatus || '200-299').trim(),
+        bodyPath: String(step.success?.bodyPath || '').trim(),
+        equals: parseEquals(step.success?.equals),
+      },
+      errorMessagePath: String(step.errorMessagePath || '').trim(),
+    };
+  });
+
+  return {
+    schemeType: values.schemeType || 'scheme_a',
+    name: values.name.trim(),
+    remark: values.remark || '',
+    providerName: values.providerName.trim(),
+    providerApiBaseUrl: values.providerApiBaseUrl.trim(),
+    providerApiKey: values.providerApiKey?.trim() || undefined,
+    chatbotName: values.chatbotName.trim(),
+    chatbotDescription: values.chatbotDescription || '',
+    externalApplicationId: values.externalApplicationId.trim(),
+    config: {
+      schemeType: values.schemeType || 'scheme_a',
+      steps,
+      answerPaths: (values.config.answerPaths || []).map((path) => path.trim()).filter(Boolean),
+    } satisfies ThirdPartyChatbotIntegrationConfig,
+    isActive: values.isActive,
+    tenantIds: values.tenantIds || [],
+  };
 };
 
 export const ThirdPartyChatbotSettingsPage = () => {
-  const [providers, setProviders] = useState<PlatformThirdPartyChatbotProviderRecord[]>([]);
-  const [chatbots, setChatbots] = useState<PlatformThirdPartyChatbotApplicationRecord[]>([]);
+  const [integrations, setIntegrations] = useState<ThirdPartyChatbotIntegrationRecord[]>([]);
   const [tenants, setTenants] = useState<TenantRecord[]>([]);
-  const [authorization, setAuthorization] = useState<TenantThirdPartyChatbotAuthorization | null>(null);
-  const [selectedTenantId, setSelectedTenantId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [authLoading, setAuthLoading] = useState(false);
-  const [savingAuth, setSavingAuth] = useState(false);
-  const [providerModalOpen, setProviderModalOpen] = useState(false);
-  const [chatbotModalOpen, setChatbotModalOpen] = useState(false);
-  const [editingProvider, setEditingProvider] = useState<PlatformThirdPartyChatbotProviderRecord | null>(null);
-  const [editingChatbot, setEditingChatbot] = useState<PlatformThirdPartyChatbotApplicationRecord | null>(null);
-  const [providerForm] = Form.useForm<ProviderFormValues>();
-  const [chatbotForm] = Form.useForm<ChatbotFormValues>();
+  const [schemeModalOpen, setSchemeModalOpen] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<ThirdPartyChatbotIntegrationRecord | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<ThirdPartyChatbotIntegrationTestResult | null>(null);
+  const [form] = Form.useForm<IntegrationFormValues>();
 
   const activeTenants = useMemo(() => tenants.filter((tenant) => tenant.isActive), [tenants]);
-  const activeProviders = useMemo(() => providers.filter((provider) => provider.isActive), [providers]);
-  const activeGrantIds = useMemo(() => effectiveGrantChatbotIds(authorization), [authorization]);
-  const providerOptions = useMemo(
-    () => activeProviders.map((provider) => ({ label: provider.name, value: provider.id })),
-    [activeProviders],
+  const activeTenantOptions = useMemo(
+    () => activeTenants.map((tenant) => ({ label: tenant.name, value: tenant.id })),
+    [activeTenants],
   );
 
-  const loadPlatformData = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [providerData, chatbotData, tenantData] = await Promise.all([
-        fetchPlatformThirdPartyChatbotProviders(),
-        fetchPlatformThirdPartyChatbotApplications(),
+      const [integrationData, tenantData] = await Promise.all([
+        fetchPlatformThirdPartyChatbotIntegrations(),
         fetchTenants({ page_size: 1000, include_hidden: true }),
       ]);
-      const nextActiveTenants = tenantData.results.filter((tenant) => tenant.isActive);
-      const selectedTenantStillActive = nextActiveTenants.some((tenant) => tenant.id === selectedTenantId);
-      setProviders(providerData.results);
-      setChatbots(chatbotData.results);
+      setIntegrations(integrationData.results);
       setTenants(tenantData.results);
-      if (!selectedTenantStillActive) {
-        setSelectedTenantId(nextActiveTenants[0]?.id ?? null);
-      }
     } finally {
       setLoading(false);
     }
-  }, [selectedTenantId]);
+  }, []);
 
-  const loadAuthorization = useCallback(async () => {
-    if (!selectedTenantId) {
-      setAuthorization(null);
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
+
+  const openCreateSchemeSelect = () => {
+    setEditingRecord(null);
+    setTestResult(null);
+    setSchemeModalOpen(true);
+  };
+
+  const openCreateSchemeA = () => {
+    form.resetFields();
+    form.setFieldsValue(createSchemeAValues());
+    setSchemeModalOpen(false);
+    setEditorOpen(true);
+  };
+
+  const openEdit = (record: ThirdPartyChatbotIntegrationRecord) => {
+    setEditingRecord(record);
+    setTestResult(null);
+    form.resetFields();
+    form.setFieldsValue(formValuesFromRecord(record));
+    setEditorOpen(true);
+  };
+
+  const submitIntegration = async () => {
+    const values = await form.validateFields();
+    setSaving(true);
+    try {
+      const payload = normalizePayload(values);
+      if (editingRecord) {
+        await updatePlatformThirdPartyChatbotIntegration(editingRecord.id, payload);
+        message.success('方案已更新');
+      } else {
+        await createPlatformThirdPartyChatbotIntegration(payload);
+        message.success('方案已创建');
+      }
+      setEditorOpen(false);
+      await loadData();
+    } catch (error) {
+      if (error instanceof Error) {
+        message.error(error.message);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const removeIntegration = async (record: ThirdPartyChatbotIntegrationRecord) => {
+    await deletePlatformThirdPartyChatbotIntegration(record.id);
+    message.success('方案已删除');
+    await loadData();
+  };
+
+  const runDraftTest = async () => {
+    const values = await form.validateFields();
+    const question = String(values.testQuestion || '').trim();
+    if (!question) {
+      message.warning('请输入测试问题');
       return;
     }
-    setAuthLoading(true);
+    setTesting(true);
+    setTestResult(null);
     try {
-      const data = await fetchTenantThirdPartyChatbotAuthorization(selectedTenantId);
-      setAuthorization(data);
-    } finally {
-      setAuthLoading(false);
-    }
-  }, [selectedTenantId]);
-
-  useEffect(() => {
-    void loadPlatformData();
-  }, [loadPlatformData]);
-
-  useEffect(() => {
-    void loadAuthorization();
-  }, [loadAuthorization]);
-
-  const openCreateProvider = () => {
-    setEditingProvider(null);
-    providerForm.resetFields();
-    providerForm.setFieldsValue({ sortOrder: 0 });
-    setProviderModalOpen(true);
-  };
-
-  const openEditProvider = (record: PlatformThirdPartyChatbotProviderRecord) => {
-    setEditingProvider(record);
-    providerForm.setFieldsValue({
-      name: record.name,
-      apiBaseUrl: record.apiBaseUrl,
-      sortOrder: record.sortOrder,
-    });
-    setProviderModalOpen(true);
-  };
-
-  const submitProvider = async () => {
-    const values = await providerForm.validateFields();
-    if (editingProvider) {
-      await updatePlatformThirdPartyChatbotProvider(editingProvider.id, values);
-      message.success('第三方供应商已更新');
-    } else {
-      await createPlatformThirdPartyChatbotProvider(values);
-      message.success('第三方供应商已创建');
-    }
-    setProviderModalOpen(false);
-    await loadPlatformData();
-  };
-
-  const openCreateChatbot = () => {
-    setEditingChatbot(null);
-    chatbotForm.resetFields();
-    chatbotForm.setFieldsValue({ providerId: providerOptions[0]?.value, sortOrder: 0 });
-    setChatbotModalOpen(true);
-  };
-
-  const openEditChatbot = (record: PlatformThirdPartyChatbotApplicationRecord) => {
-    setEditingChatbot(record);
-    chatbotForm.setFieldsValue({
-      providerId: record.providerId,
-      name: record.name,
-      description: record.description,
-      externalApplicationId: record.externalApplicationId,
-      sortOrder: record.sortOrder,
-    });
-    setChatbotModalOpen(true);
-  };
-
-  const submitChatbot = async () => {
-    const values = await chatbotForm.validateFields();
-    if (editingChatbot) {
-      await updatePlatformThirdPartyChatbotApplication(editingChatbot.id, values);
-      message.success('第三方机器人已更新');
-    } else {
-      await createPlatformThirdPartyChatbotApplication(values);
-      message.success('第三方机器人已创建');
-    }
-    setChatbotModalOpen(false);
-    await loadPlatformData();
-  };
-
-  const toggleProvider = async (record: PlatformThirdPartyChatbotProviderRecord, checked: boolean) => {
-    await updatePlatformThirdPartyChatbotProvider(record.id, { isActive: checked });
-    message.success(`供应商已${checked ? '启用' : '停用'}`);
-    await loadPlatformData();
-  };
-
-  const toggleChatbot = async (record: PlatformThirdPartyChatbotApplicationRecord, checked: boolean) => {
-    await updatePlatformThirdPartyChatbotApplication(record.id, { isActive: checked });
-    message.success(`机器人已${checked ? '启用' : '停用'}`);
-    await loadPlatformData();
-  };
-
-  const removeProvider = async (record: PlatformThirdPartyChatbotProviderRecord) => {
-    await deletePlatformThirdPartyChatbotProvider(record.id);
-    message.success('第三方供应商已删除');
-    await loadPlatformData();
-  };
-
-  const removeChatbot = async (record: PlatformThirdPartyChatbotApplicationRecord) => {
-    await deletePlatformThirdPartyChatbotApplication(record.id);
-    message.success('第三方机器人已删除');
-    await loadPlatformData();
-  };
-
-  const updateGrant = (chatbotId: number, checked: boolean) => {
-    if (!authorization) return;
-    setAuthorization({
-      ...authorization,
-      chatbots: authorization.chatbots.map((chatbot) =>
-        chatbot.id === chatbotId ? { ...chatbot, grantIsActive: checked } : chatbot,
-      ),
-    });
-  };
-
-  const saveAuthorization = async () => {
-    if (!selectedTenantId || !authorization) return;
-    setSavingAuth(true);
-    try {
-      const nextAuthorization = await updateTenantThirdPartyChatbotAuthorization(selectedTenantId, {
-        chatbotGrants: authorization.chatbots.map((chatbot) => ({
-          chatbotId: chatbot.id,
-          isActive: chatbot.grantIsActive,
-        })),
+      const payload = normalizePayload(values);
+      const result = await testPlatformThirdPartyChatbotIntegrationDraft({
+        ...payload,
+        integrationId: editingRecord?.id ?? null,
+        question,
       });
-      setAuthorization(nextAuthorization);
-      message.success('公司第三方机器人授权已保存');
+      setTestResult(result);
+    } catch (error) {
+      const data = (error as { response?: { data?: Partial<ThirdPartyChatbotIntegrationTestResult> } }).response?.data;
+      if (data) {
+        setTestResult({
+          success: Boolean(data.success),
+          answer: data.answer || '',
+          message: data.message || '测试失败',
+          steps: data.steps || [],
+        });
+      }
     } finally {
-      setSavingAuth(false);
+      setTesting(false);
     }
   };
 
-  const providerColumns: ColumnsType<PlatformThirdPartyChatbotProviderRecord> = [
+  const columns: ColumnsType<ThirdPartyChatbotIntegrationRecord> = [
     {
-      title: '供应商',
+      title: '方案',
       dataIndex: 'name',
       render: (_, record) => (
         <Space size="middle">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 text-violet-700">
-            <IconApi size={18} />
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
+            <IconRobot size={20} />
           </span>
           <div>
-            <div className="font-semibold text-slate-800">{record.name}</div>
-            <div className="text-xs text-slate-400">{record.providerTypeLabel}</div>
+            <div className="font-semibold text-slate-900">{record.name}</div>
+            <div className="text-xs text-slate-500">{record.schemeTypeLabel}</div>
           </div>
         </Space>
       ),
     },
     {
-      title: '接口地址',
-      dataIndex: 'apiBaseUrl',
-      ellipsis: true,
-      render: (value: string) => <code className="text-xs text-slate-500">{value}</code>,
-    },
-    {
-      title: '密钥',
-      dataIndex: 'apiKeyMasked',
-      width: 140,
-      render: (_, record) => (
-        <Tag color={record.apiKeyConfigured ? 'success' : 'warning'}>
-          {record.apiKeyConfigured ? record.apiKeyMasked : '未配置'}
-        </Tag>
-      ),
-    },
-    {
-      title: '启用',
-      dataIndex: 'isActive',
-      width: 90,
-      render: (_, record) => (
-        <Switch checked={record.isActive} onChange={(checked) => void toggleProvider(record, checked)} />
-      ),
-    },
-    {
-      title: '操作',
-      width: 150,
-      render: (_, record) => (
-        <Space>
-          <Button size="small" icon={<IconEdit size={14} />} onClick={() => openEditProvider(record)} />
-          <Popconfirm title="删除供应商" description="删除后其下机器人也会被移除。" onConfirm={() => void removeProvider(record)}>
-            <Button size="small" danger icon={<IconTrash size={14} />} />
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ];
-
-  const chatbotColumns: ColumnsType<PlatformThirdPartyChatbotApplicationRecord> = [
-    {
-      title: '机器人',
-      dataIndex: 'name',
+      title: '供应商',
+      dataIndex: 'providerName',
       render: (_, record) => (
         <div>
-          <div className="font-semibold text-slate-800">{record.name}</div>
-          <div className="text-xs text-slate-400">{record.description || '无说明'}</div>
+          <div className="text-sm text-slate-800">{record.providerName}</div>
+          <code className="text-xs text-slate-500">{record.providerApiBaseUrl}</code>
         </div>
       ),
     },
     {
-      title: '供应商',
-      dataIndex: 'providerName',
-      width: 180,
-      render: (value: string) => <Tag color="purple">{value}</Tag>,
-    },
-    {
-      title: '第三方应用 ID',
-      dataIndex: 'externalApplicationId',
-      width: 180,
-      render: (value: string) => <code className="text-xs text-slate-500">{value}</code>,
-    },
-    {
-      title: '启用',
-      dataIndex: 'isActive',
-      width: 90,
+      title: '机器人应用',
+      dataIndex: 'chatbotName',
       render: (_, record) => (
-        <Switch checked={record.isActive} onChange={(checked) => void toggleChatbot(record, checked)} />
+        <div>
+          <div className="text-sm text-slate-800">{record.chatbotName}</div>
+          <code className="text-xs text-slate-500">{record.externalApplicationId}</code>
+        </div>
       ),
+    },
+    {
+      title: '公司授权',
+      dataIndex: 'authorizedTenantIds',
+      width: 120,
+      render: (tenantIds: number[]) => <Tag color="processing">{tenantIds.length} 家</Tag>,
+    },
+    {
+      title: '状态',
+      dataIndex: 'isActive',
+      width: 100,
+      render: (isActive: boolean) => <Tag color={isActive ? 'success' : 'default'}>{isActive ? '启用' : '停用'}</Tag>,
     },
     {
       title: '操作',
       width: 150,
       render: (_, record) => (
         <Space>
-          <Button size="small" icon={<IconEdit size={14} />} onClick={() => openEditChatbot(record)} />
-          <Popconfirm title="删除机器人" description="删除后已绑定它的智能体将无法继续使用该后端。" onConfirm={() => void removeChatbot(record)}>
+          <Button size="small" icon={<IconEdit size={14} />} onClick={() => openEdit(record)} />
+          <Popconfirm title="删除方案" description="删除后会同步移除对应机器人和公司授权。" onConfirm={() => void removeIntegration(record)}>
             <Button size="small" danger icon={<IconTrash size={14} />} />
           </Popconfirm>
         </Space>
@@ -333,85 +412,119 @@ export const ThirdPartyChatbotSettingsPage = () => {
     },
   ];
 
-  const providersTab = (
-    <div className="space-y-4">
-      <div className="flex justify-end gap-2">
-        <Button icon={<IconRefresh size={16} />} onClick={() => void loadPlatformData()}>
-          刷新
-        </Button>
-        <Button type="primary" icon={<IconPlus size={16} />} onClick={openCreateProvider}>
-          新增供应商
-        </Button>
+  const stepItems = (fields: Array<{ key: number; name: number }>, remove: (index: number | number[]) => void) => fields.map((field, index) => ({
+    key: field.key,
+    label: (
+      <div className="flex items-center justify-between gap-3 pr-4">
+        <span className="font-semibold text-slate-800">步骤 {index + 1}</span>
+        <Tag color="blue">API</Tag>
       </div>
-      <Table rowKey="id" columns={providerColumns} dataSource={providers} pagination={false} />
-    </div>
-  );
+    ),
+    children: (
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
+          <Form.Item name={[field.name, 'key']} label="步骤标识" rules={[{ required: true, message: '请输入步骤标识' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name={[field.name, 'name']} label="步骤名称" rules={[{ required: true, message: '请输入步骤名称' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name={[field.name, 'method']} label="请求方式" rules={[{ required: true, message: '请选择请求方式' }]}>
+            <Select options={METHOD_OPTIONS} />
+          </Form.Item>
+          <Form.Item name={[field.name, 'stream']} label="请求体 stream" valuePropName="checked">
+            <Switch />
+          </Form.Item>
+        </div>
+        <Form.Item name={[field.name, 'path']} label="请求路径" rules={[{ required: true, message: '请输入请求路径' }]}>
+          <Input placeholder="/application/{{externalApplicationId}}/chat/open" />
+        </Form.Item>
 
-  const chatbotsTab = (
-    <div className="space-y-4">
-      <div className="flex justify-end gap-2">
-        <Button icon={<IconRefresh size={16} />} onClick={() => void loadPlatformData()}>
-          刷新
-        </Button>
-        <Button type="primary" icon={<IconPlus size={16} />} disabled={providerOptions.length === 0} onClick={openCreateChatbot}>
-          新增机器人
-        </Button>
-      </div>
-      <Table rowKey="id" columns={chatbotColumns} dataSource={chatbots} pagination={false} />
-    </div>
-  );
+        <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+          <div className="mb-3 text-sm font-semibold text-slate-700">请求头</div>
+          <Form.List name={[field.name, 'headers']}>
+            {(headerFields, { add, remove: removeHeader }) => (
+              <div className="space-y-2">
+                {headerFields.map((headerField) => (
+                  <div key={headerField.key} className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_auto]">
+                    <Form.Item name={[headerField.name, 'key']} className="mb-0">
+                      <Input placeholder="Header" />
+                    </Form.Item>
+                    <Form.Item name={[headerField.name, 'value']} className="mb-0">
+                      <Input placeholder="Value" />
+                    </Form.Item>
+                    <Button icon={<IconTrash size={14} />} onClick={() => removeHeader(headerField.name)} />
+                  </div>
+                ))}
+                <Button type="dashed" icon={<IconPlus size={14} />} onClick={() => add({ key: '', value: '' })}>
+                  添加请求头
+                </Button>
+              </div>
+            )}
+          </Form.List>
+        </div>
 
-  const authorizationTab = (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <Space wrap>
-          <span className="text-sm font-semibold text-slate-700">选择公司</span>
-          <Select
-            showSearch
-            optionFilterProp="label"
-            className="w-full sm:w-64"
-            value={selectedTenantId ?? undefined}
-            options={activeTenants.map((tenant) => ({ label: tenant.name, value: tenant.id }))}
-            onChange={setSelectedTenantId}
-          />
-          <Tag color="purple">{activeGrantIds.length} 个已授权</Tag>
-        </Space>
-        <Button type="primary" loading={savingAuth} onClick={() => void saveAuthorization()}>
-          保存授权
-        </Button>
+        <Form.Item
+          name={[field.name, 'bodyText']}
+          label="请求体 JSON"
+          rules={[
+            {
+              validator: async (_, value) => {
+                parseJsonBody(value, `步骤 ${index + 1} 请求体`);
+              },
+            },
+          ]}
+        >
+          <Input.TextArea rows={7} className="font-mono" />
+        </Form.Item>
+
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+          <Form.Item name={[field.name, 'success', 'httpStatus']} label="成功 HTTP">
+            <Input placeholder="200-299" />
+          </Form.Item>
+          <Form.Item name={[field.name, 'success', 'bodyPath']} label="成功字段">
+            <Input placeholder="$.code" />
+          </Form.Item>
+          <Form.Item name={[field.name, 'success', 'equals']} label="期望值">
+            <Input placeholder="200" />
+          </Form.Item>
+        </div>
+
+        <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+          <div className="mb-3 text-sm font-semibold text-slate-700">变量提取</div>
+          <Form.List name={[field.name, 'extract']}>
+            {(extractFields, { add, remove: removeExtract }) => (
+              <div className="space-y-2">
+                {extractFields.map((extractField) => (
+                  <div key={extractField.key} className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_auto]">
+                    <Form.Item name={[extractField.name, 'name']} className="mb-0">
+                      <Input placeholder="变量名" />
+                    </Form.Item>
+                    <Form.Item name={[extractField.name, 'path']} className="mb-0">
+                      <Input placeholder="$.data" />
+                    </Form.Item>
+                    <Button icon={<IconTrash size={14} />} onClick={() => removeExtract(extractField.name)} />
+                  </div>
+                ))}
+                <Button type="dashed" icon={<IconPlus size={14} />} onClick={() => add({ name: '', path: '' })}>
+                  添加变量
+                </Button>
+              </div>
+            )}
+          </Form.List>
+        </div>
+
+        <Form.Item name={[field.name, 'errorMessagePath']} label="错误消息字段">
+          <Input placeholder="$.message" />
+        </Form.Item>
+        {fields.length > 1 ? (
+          <Button danger icon={<IconTrash size={14} />} onClick={() => remove(field.name)}>
+            删除步骤
+          </Button>
+        ) : null}
       </div>
-      <Spin spinning={authLoading}>
-        <Collapse
-          items={(authorization?.chatbots || []).map((chatbot) => ({
-            key: chatbot.id,
-            label: (
-              <div className="flex items-center justify-between gap-3 pr-4">
-                <Space wrap>
-                  <IconRobot size={18} className="text-violet-700" />
-                  <span className="font-semibold text-slate-800">{chatbot.name}</span>
-                  <Tag color="purple">{chatbot.providerName}</Tag>
-                  <Tag color={chatbot.providerIsActive && chatbot.isActive ? 'success' : 'default'}>
-                    {chatbot.providerIsActive && chatbot.isActive ? '全局可用' : '全局停用'}
-                  </Tag>
-                </Space>
-                <Switch
-                  checked={chatbot.grantIsActive}
-                  disabled={!chatbot.providerIsActive || !chatbot.isActive}
-                  onChange={(checked) => updateGrant(chatbot.id, checked)}
-                />
-              </div>
-            ),
-            children: (
-              <div className="space-y-2 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">
-                <div>第三方应用 ID：<code>{chatbot.externalApplicationId}</code></div>
-                <div>{chatbot.description || '无说明'}</div>
-              </div>
-            ),
-          }))}
-        />
-      </Spin>
-    </div>
-  );
+    ),
+  }));
 
   return (
     <div className="space-y-5 p-4 sm:p-6">
@@ -419,21 +532,21 @@ export const ThirdPartyChatbotSettingsPage = () => {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="flex items-center gap-2 text-xl font-bold text-slate-900">
-              <IconRobot size={24} className="text-violet-700" />
-              <span>不规则 LLM 设置</span>
+              <IconRobot size={24} className="text-brand-700" />
+              <span>第三方会话机器人方案</span>
             </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              维护非 OpenAI 兼容的第三方会话机器人，并按公司单独授权。
-            </p>
+            <p className="mt-1 text-sm text-slate-500">平台级方案实例、接口流程与公司授权。</p>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:flex">
-            <div className="rounded-lg border border-violet-100 bg-violet-50 px-4 py-1.5 text-center">
-              <div className="text-xs font-semibold text-violet-700">供应商</div>
-              <div className="text-lg font-bold text-violet-900">{providers.length} 个</div>
+            <div className="rounded-xl border border-brand-100 bg-brand-50 px-4 py-2 text-center">
+              <div className="text-xs font-semibold text-brand-700">方案实例</div>
+              <div className="text-lg font-bold text-brand-700">{integrations.length} 个</div>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-1.5 text-center">
-              <div className="text-xs font-semibold text-slate-500">机器人</div>
-              <div className="text-lg font-bold text-slate-700">{chatbots.length} 个</div>
+            <div className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-center">
+              <div className="text-xs font-semibold text-slate-500">授权公司</div>
+              <div className="text-lg font-bold text-slate-700">
+                {new Set(integrations.flatMap((item) => item.authorizedTenantIds)).size} 家
+              </div>
             </div>
           </div>
         </div>
@@ -441,70 +554,179 @@ export const ThirdPartyChatbotSettingsPage = () => {
 
       <Spin spinning={loading}>
         <div className="rounded-xl border border-slate-100 bg-white p-4 shadow-sm sm:p-6">
-          <Tabs
-            items={[
-              { key: 'providers', label: '第三方供应商', children: providersTab },
-              { key: 'chatbots', label: '机器人应用', children: chatbotsTab },
-              { key: 'authorization', label: '公司授权', children: authorizationTab },
-            ]}
-          />
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="page-section-title">方案列表</div>
+            <Space wrap>
+              <Button icon={<IconRefresh size={16} />} onClick={() => void loadData()}>
+                刷新
+              </Button>
+              <Button type="primary" icon={<IconPlus size={16} />} onClick={openCreateSchemeSelect}>
+                创建
+              </Button>
+            </Space>
+          </div>
+          <Table rowKey="id" columns={columns} dataSource={integrations} pagination={false} scroll={{ x: 920 }} />
         </div>
       </Spin>
 
       <Modal
-        title={editingProvider ? '编辑第三方供应商' : '新增第三方供应商'}
-        open={providerModalOpen}
-        onCancel={() => setProviderModalOpen(false)}
-        onOk={() => void submitProvider()}
+        title="选择方案"
+        open={schemeModalOpen}
+        footer={null}
+        onCancel={() => setSchemeModalOpen(false)}
         destroyOnHidden
       >
-        <Form form={providerForm} layout="vertical" className="pt-4">
-          <Form.Item name="name" label="供应商名称" rules={[{ required: true, message: '请输入供应商名称' }]}>
-            <Input maxLength={128} />
-          </Form.Item>
-          <Form.Item name="apiBaseUrl" label="API 地址" rules={[{ required: true, message: '请输入 API 地址' }]}>
-            <Input placeholder="https://example.com/api" />
-          </Form.Item>
-          <Form.Item
-            name="apiKey"
-            label="应用密钥"
-            rules={editingProvider ? [] : [{ required: true, message: '请输入应用密钥' }]}
-          >
-            <Input.Password placeholder={editingProvider ? '留空表示不修改' : undefined} />
-          </Form.Item>
-          <Form.Item name="sortOrder" label="排序">
-            <InputNumber min={0} className="w-full" />
-          </Form.Item>
-        </Form>
+        <button
+          type="button"
+          className="flex w-full items-start gap-3 rounded-xl border border-brand-100 bg-brand-50 p-4 text-left transition hover:border-brand-200 hover:bg-white"
+          onClick={openCreateSchemeA}
+        >
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white text-brand-700">
+            <IconApi size={22} />
+          </span>
+          <span>
+            <span className="block font-semibold text-slate-900">方案A</span>
+            <span className="mt-1 block text-sm text-slate-500">多步骤 JSON API 流程</span>
+          </span>
+        </button>
       </Modal>
 
       <Modal
-        title={editingChatbot ? '编辑第三方机器人' : '新增第三方机器人'}
-        open={chatbotModalOpen}
-        onCancel={() => setChatbotModalOpen(false)}
-        onOk={() => void submitChatbot()}
+        title={editingRecord ? '编辑方案A' : '创建方案A'}
+        open={editorOpen}
+        width="min(1180px, calc(100vw - 32px))"
+        onCancel={() => setEditorOpen(false)}
+        onOk={() => void submitIntegration()}
+        okButtonProps={{ loading: saving }}
         destroyOnHidden
       >
-        <Form form={chatbotForm} layout="vertical" className="pt-4">
-          <Form.Item name="providerId" label="所属供应商" rules={[{ required: true, message: '请选择供应商' }]}>
-            <Select options={providerOptions} />
-          </Form.Item>
-          <Form.Item name="name" label="机器人名称" rules={[{ required: true, message: '请输入机器人名称' }]}>
-            <Input maxLength={128} />
-          </Form.Item>
-          <Form.Item
-            name="externalApplicationId"
-            label="第三方应用 ID"
-            rules={[{ required: true, message: '请输入第三方应用 ID' }]}
-          >
-            <Input maxLength={128} />
-          </Form.Item>
-          <Form.Item name="description" label="说明">
-            <Input.TextArea rows={3} maxLength={255} showCount />
-          </Form.Item>
-          <Form.Item name="sortOrder" label="排序">
-            <InputNumber min={0} className="w-full" />
-          </Form.Item>
+        <Form form={form} layout="vertical" className="pt-2">
+          <div className="rounded-xl border border-slate-100 bg-white p-4 sm:p-5">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+              <Form.Item name="name" label="方案名称" rules={[{ required: true, message: '请输入方案名称' }]}>
+                <Input maxLength={128} />
+              </Form.Item>
+              <Form.Item name="isActive" label="启用方案" valuePropName="checked">
+                <Switch />
+              </Form.Item>
+              <Form.Item name="tenantIds" label="公司授权">
+                <Select mode="multiple" showSearch optionFilterProp="label" options={activeTenantOptions} />
+              </Form.Item>
+            </div>
+            <Form.Item name="remark" label="备注">
+              <Input.TextArea rows={3} maxLength={1000} showCount />
+            </Form.Item>
+
+            <div className="border-t border-slate-100 pt-4">
+              <div className="mb-3 text-base font-semibold text-slate-900">供应商</div>
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <Form.Item name="providerName" label="供应商名称" rules={[{ required: true, message: '请输入供应商名称' }]}>
+                  <Input maxLength={128} />
+                </Form.Item>
+                <Form.Item name="providerApiBaseUrl" label="API 地址" rules={[{ required: true, message: '请输入 API 地址' }]}>
+                  <Input placeholder="https://example.com/api" />
+                </Form.Item>
+                <Form.Item
+                  name="providerApiKey"
+                  label="应用密钥"
+                  rules={editingRecord ? [] : [{ required: true, message: '请输入应用密钥' }]}
+                >
+                  <Input.Password placeholder={editingRecord ? '留空表示不修改' : undefined} />
+                </Form.Item>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-100 pt-4">
+              <div className="mb-3 text-base font-semibold text-slate-900">机器人应用</div>
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <Form.Item name="chatbotName" label="机器人名称" rules={[{ required: true, message: '请输入机器人名称' }]}>
+                  <Input maxLength={128} />
+                </Form.Item>
+                <Form.Item
+                  name="externalApplicationId"
+                  label="第三方应用 ID"
+                  rules={[{ required: true, message: '请输入第三方应用 ID' }]}
+                >
+                  <Input maxLength={128} />
+                </Form.Item>
+                <Form.Item name="chatbotDescription" label="机器人说明">
+                  <Input maxLength={255} />
+                </Form.Item>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-100 pt-4">
+              <div className="mb-3 text-base font-semibold text-slate-900">API 流程</div>
+              <Form.List name={['config', 'steps']}>
+                {(fields, { add, remove }) => (
+                  <div className="space-y-3">
+                    <Collapse items={stepItems(fields, remove)} />
+                    <Button type="dashed" icon={<IconPlus size={14} />} onClick={() => add(createDefaultStep())}>
+                      添加步骤
+                    </Button>
+                  </div>
+                )}
+              </Form.List>
+            </div>
+
+            <div className="border-t border-slate-100 pt-4">
+              <div className="mb-3 text-base font-semibold text-slate-900">回复映射</div>
+              <Form.List name={['config', 'answerPaths']}>
+                {(fields, { add, remove }) => (
+                  <div className="space-y-2">
+                    {fields.map((field) => (
+                      <div key={field.key} className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                        <Form.Item name={field.name} className="mb-0" rules={[{ required: true, message: '请输入 JSON Path' }]}>
+                          <Input placeholder="$.data.content" />
+                        </Form.Item>
+                        <Button icon={<IconTrash size={14} />} onClick={() => remove(field.name)} />
+                      </div>
+                    ))}
+                    <Button type="dashed" icon={<IconPlus size={14} />} onClick={() => add('')}>
+                      添加映射
+                    </Button>
+                  </div>
+                )}
+              </Form.List>
+            </div>
+
+            <div className="border-t border-slate-100 pt-4">
+              <div className="mb-3 text-base font-semibold text-slate-900">测试</div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+                <Form.Item name="testQuestion" className="mb-0">
+                  <Input placeholder="输入测试问题" />
+                </Form.Item>
+                <Button loading={testing} icon={<IconApi size={16} />} onClick={() => void runDraftTest()}>
+                  测试
+                </Button>
+              </div>
+              {testResult ? (
+                <div className="mt-4 space-y-3">
+                  <Alert type={testResult.success ? 'success' : 'error'} message={testResult.success ? '测试成功' : testResult.message || '测试失败'} />
+                  {testResult.answer ? (
+                    <pre className="max-h-48 overflow-auto rounded-xl bg-slate-50 p-3 text-sm text-slate-700">{testResult.answer}</pre>
+                  ) : null}
+                  <Table
+                    size="small"
+                    rowKey={(record) => `${record.key}-${record.name}`}
+                    pagination={false}
+                    dataSource={testResult.steps}
+                    columns={[
+                      { title: '步骤', dataIndex: 'name' },
+                      { title: '状态码', dataIndex: 'statusCode', width: 100 },
+                      {
+                        title: '结果',
+                        dataIndex: 'success',
+                        width: 90,
+                        render: (success: boolean) => <Tag color={success ? 'success' : 'error'}>{success ? '成功' : '失败'}</Tag>,
+                      },
+                      { title: '消息', dataIndex: 'message' },
+                    ]}
+                  />
+                </div>
+              ) : null}
+            </div>
+          </div>
         </Form>
       </Modal>
     </div>

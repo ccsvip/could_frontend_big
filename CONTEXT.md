@@ -44,6 +44,14 @@ _Avoid_: irregular LLM, non-standard LLM, custom LLM provider, external model
 A specific externally hosted chatbot, such as a presales assistant, that carries the credentials and application identity needed for runtime conversation and can be granted to companies.
 _Avoid_: third-party provider grant, external supplier, model alias
 
+**Third-Party Chatbot Scheme**:
+A platform-level reusable integration pattern for a class of Third-Party Chatbot Interfaces that share the same external API contract.
+_Avoid_: irregular LLM, company one-off template, hard-coded company integration
+
+**Third-Party Chatbot Scheme Instance**:
+A platform-managed configuration of a Third-Party Chatbot Scheme, with its own external credentials, application identity, API flow snapshot, maintenance remark, and company grants.
+_Avoid_: company-specific provider, raw API script, authorization-only record
+
 **Company Third-Party Chatbot Grant**:
 A company-specific authorization that makes a Third-Party Chatbot Application visible and selectable only within that company.
 _Avoid_: global chatbot visibility, public third-party app, platform-wide external chatbot

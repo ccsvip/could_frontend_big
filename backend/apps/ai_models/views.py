@@ -1,5 +1,6 @@
 import json
 import logging
+from types import SimpleNamespace
 
 import httpx
 from asgiref.sync import sync_to_async
@@ -70,11 +71,13 @@ from .models import (
     RerankModel,
     RUNTIME_BACKEND_PLATFORM_LLM,
     RUNTIME_BACKEND_THIRD_PARTY_CHATBOT,
+    THIRD_PARTY_PROVIDER_IHUAPENG,
     TenantKnowledgeModelSettings,
     TenantLLMModelGrant,
     TenantLLMSettings,
     TenantThirdPartyChatbotGrant,
     ThirdPartyChatbotApplication,
+    ThirdPartyChatbotIntegration,
     ThirdPartyChatbotProvider,
     TTSProvider,
     TTSVoice,
@@ -107,6 +110,9 @@ from .serializers import (
     PlatformThirdPartyChatbotApplicationWriteSerializer,
     PlatformThirdPartyChatbotProviderSerializer,
     PlatformThirdPartyChatbotProviderWriteSerializer,
+    ThirdPartyChatbotIntegrationSerializer,
+    ThirdPartyChatbotIntegrationTestSerializer,
+    ThirdPartyChatbotIntegrationWriteSerializer,
     PlatformTTSProviderSummarySerializer,
     PlatformTTSSettingsSerializer,
     PlatformTTSSettingsWriteSerializer,
@@ -662,6 +668,189 @@ class PlatformThirdPartyChatbotApplicationViewSet(PermissionMappedModelViewSet):
         if third_party_chatbots.chatbot_has_active_company_authorization(instance):
             raise ValidationError({'detail': '该第三方机器人仍有公司启用授权，不能删除，请先取消授权'})
         return super().perform_destroy(instance)
+
+
+def _looks_like_masked_secret(value: str) -> bool:
+    value = str(value or '')
+    return bool(value) and '*' in value and len(value.replace('*', '')) <= 8
+
+
+class PlatformThirdPartyChatbotIntegrationViewSet(PermissionMappedModelViewSet):
+    queryset = ThirdPartyChatbotIntegration.objects.select_related('provider', 'chatbot').order_by('-updated_at', '-id')
+    permission_map = _PLATFORM_LLM_PERMISSION_MAP
+
+    def get_serializer_class(self):
+        if self.action in {'create', 'update', 'partial_update'}:
+            return ThirdPartyChatbotIntegrationWriteSerializer
+        if self.action == 'test':
+            return ThirdPartyChatbotIntegrationTestSerializer
+        return ThirdPartyChatbotIntegrationSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = ThirdPartyChatbotIntegrationWriteSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        integration = self._save_integration(serializer.validated_data)
+        return Response(
+            ThirdPartyChatbotIntegrationSerializer(integration, context=self.get_serializer_context()).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        data = self._payload_from_instance(instance)
+        data.update(request.data if partial else request.data)
+        serializer = ThirdPartyChatbotIntegrationWriteSerializer(
+            data=data,
+            context={'instance': instance},
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        integration = self._save_integration(serializer.validated_data, instance=instance)
+        return Response(ThirdPartyChatbotIntegrationSerializer(integration, context=self.get_serializer_context()).data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        provider = instance.provider
+        chatbot = instance.chatbot
+        with transaction.atomic():
+            TenantThirdPartyChatbotGrant.objects.filter(chatbot=chatbot).delete()
+            instance.delete()
+            chatbot.delete()
+            if not provider.chatbots.exists():
+                provider.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['post'], url_path='test')
+    def test(self, request):
+        integration = None
+        raw_integration_id = request.data.get('integrationId') if isinstance(request.data, dict) else None
+        if raw_integration_id not in (None, ''):
+            try:
+                integration_id = int(raw_integration_id)
+            except (TypeError, ValueError):
+                return Response({'integrationId': '方案实例 ID 必须是整数'}, status=status.HTTP_400_BAD_REQUEST)
+            integration = ThirdPartyChatbotIntegration.objects.select_related('provider', 'chatbot').filter(pk=integration_id).first()
+            if integration is None:
+                return Response({'integrationId': '方案实例不存在'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = ThirdPartyChatbotIntegrationTestSerializer(
+            data=request.data,
+            context={'instance': integration},
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        attrs = serializer.validated_data
+        provider_api_key = attrs.get('providerApiKey') or ''
+        if integration is not None and (not provider_api_key or _looks_like_masked_secret(provider_api_key)):
+            provider_api_key = integration.provider.api_key
+        provider = SimpleNamespace(
+            name=attrs.get('providerName') or (integration.provider.name if integration else ''),
+            provider_type=integration.provider.provider_type if integration else THIRD_PARTY_PROVIDER_IHUAPENG,
+            api_base_url=attrs.get('providerApiBaseUrl') or (integration.provider.api_base_url if integration else ''),
+            api_key=provider_api_key,
+        )
+        try:
+            result = third_party_chatbots.run_chatbot_integration_config(
+                provider=provider,
+                config=attrs.get('config') or {},
+                message=attrs.get('question') or '',
+                conversation=None,
+                initial_variables={
+                    'externalApplicationId': attrs.get('externalApplicationId') or '',
+                },
+                timeout=120,
+            )
+        except third_party_chatbots.ThirdPartyChatbotIntegrationError as exc:
+            return Response(
+                {'success': False, 'message': str(exc)[:200], 'answer': '', 'steps': exc.steps},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except RuntimeError as exc:
+            return Response(
+                {'success': False, 'message': str(exc)[:200], 'answer': '', 'steps': []},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        answer = str(result.get('answer') or '').strip()
+        if not answer:
+            return Response(
+                {'success': False, 'message': '第三方机器人没有返回有效回复', 'answer': '', 'steps': result.get('steps') or []},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response({'success': True, 'answer': answer, 'steps': result.get('steps') or []})
+
+    def _payload_from_instance(self, instance):
+        return {
+            'schemeType': instance.scheme_type,
+            'name': instance.name,
+            'remark': instance.remark,
+            'providerName': instance.provider.name,
+            'providerApiBaseUrl': instance.provider.api_base_url,
+            'providerApiKey': '',
+            'chatbotName': instance.chatbot.name,
+            'chatbotDescription': instance.chatbot.description,
+            'externalApplicationId': instance.chatbot.external_application_id,
+            'config': instance.config or {},
+            'isActive': instance.is_active,
+            'tenantIds': list(instance.chatbot.tenant_grants.filter(is_active=True).values_list('tenant_id', flat=True)),
+        }
+
+    def _save_integration(self, attrs, *, instance=None):
+        tenant_ids = attrs.get('tenantIds') or []
+        provider_api_key = attrs.get('providerApiKey') or ''
+        is_active = bool(attrs.get('isActive', True))
+        with transaction.atomic():
+            if instance is None:
+                provider = ThirdPartyChatbotProvider.objects.create(
+                    name=attrs['providerName'],
+                    provider_type=THIRD_PARTY_PROVIDER_IHUAPENG,
+                    api_base_url=attrs['providerApiBaseUrl'],
+                    api_key=provider_api_key,
+                    is_active=is_active,
+                )
+                chatbot = ThirdPartyChatbotApplication.objects.create(
+                    provider=provider,
+                    name=attrs['chatbotName'],
+                    description=attrs.get('chatbotDescription') or '',
+                    external_application_id=str(attrs['externalApplicationId']).strip(),
+                    is_active=is_active,
+                )
+                integration = ThirdPartyChatbotIntegration(provider=provider, chatbot=chatbot)
+            else:
+                integration = instance
+                provider = instance.provider
+                chatbot = instance.chatbot
+                provider.name = attrs['providerName']
+                provider.api_base_url = attrs['providerApiBaseUrl']
+                if provider_api_key and not _looks_like_masked_secret(provider_api_key):
+                    provider.api_key = provider_api_key
+                provider.is_active = is_active
+                provider.save(update_fields=['name', 'api_base_url', 'api_key', 'is_active', 'updated_at'])
+                chatbot.provider = provider
+                chatbot.name = attrs['chatbotName']
+                chatbot.description = attrs.get('chatbotDescription') or ''
+                chatbot.external_application_id = str(attrs['externalApplicationId']).strip()
+                chatbot.is_active = is_active
+                chatbot.save(update_fields=['provider', 'name', 'description', 'external_application_id', 'is_active', 'updated_at'])
+
+            integration.scheme_type = attrs.get('scheme_type') or integration.scheme_type
+            integration.name = attrs['name']
+            integration.remark = attrs.get('remark') or ''
+            integration.config = attrs.get('config') or {}
+            integration.is_active = is_active
+            integration.provider = provider
+            integration.chatbot = chatbot
+            integration.save()
+
+            TenantThirdPartyChatbotGrant.objects.filter(chatbot=chatbot).exclude(tenant_id__in=tenant_ids).update(is_active=False)
+            for tenant_id in tenant_ids:
+                TenantThirdPartyChatbotGrant.objects.update_or_create(
+                    tenant_id=tenant_id,
+                    chatbot=chatbot,
+                    defaults={'is_active': True},
+                )
+        return integration
 
 
 class LLMTestSettingsView(APIView):

@@ -104,10 +104,11 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
             )
         return model
 
-    def create_third_party_chatbot(self, *, tenant=None, is_active=True):
+    def create_third_party_chatbot(self, *, tenant=None, is_active=True, with_integration=True):
         Provider = apps.get_model('ai_models', 'ThirdPartyChatbotProvider')
         Chatbot = apps.get_model('ai_models', 'ThirdPartyChatbotApplication')
         Grant = apps.get_model('ai_models', 'TenantThirdPartyChatbotGrant')
+        Integration = apps.get_model('ai_models', 'ThirdPartyChatbotIntegration')
         provider = Provider.objects.create(
             name='华鹏 AI',
             provider_type='ihuapeng_chatbot',
@@ -123,8 +124,30 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         )
         if tenant is not None:
             Grant.objects.create(tenant=tenant, chatbot=chatbot, is_active=True)
+        if with_integration:
+            Integration.objects.create(
+                scheme_type='scheme_a',
+                name='华鹏方案A',
+                provider=provider,
+                chatbot=chatbot,
+                config={
+                    'steps': [
+                        {
+                            'key': 'send_message',
+                            'name': '发送消息',
+                            'method': 'POST',
+                            'path': '/application/chat_message/{{chat_id}}',
+                            'headers': [{'key': 'AUTHORIZATION', 'value': '{{apiKey}}'}],
+                            'body': {'message': '{{message}}', 'stream': False},
+                            'extract': [],
+                            'success': {'httpStatus': '200-299'},
+                        },
+                    ],
+                    'answerPaths': ['$.data.content'],
+                },
+                is_active=True,
+            )
         return chatbot
-
     def create_document(self, *, tenant=None, title='Refund policy') -> KnowledgeDocument:
         return KnowledgeDocument.objects.create(
             tenant=tenant or self.tenant,

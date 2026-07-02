@@ -220,6 +220,99 @@ export type TenantThirdPartyChatbotAuthorizationPayload = {
   }>;
 };
 
+export type ThirdPartyChatbotApiHeader = {
+  key: string;
+  value: string;
+};
+
+export type ThirdPartyChatbotApiExtract = {
+  name: string;
+  path: string;
+};
+
+export type ThirdPartyChatbotApiStep = {
+  key: string;
+  name: string;
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD';
+  path: string;
+  headers: ThirdPartyChatbotApiHeader[];
+  body: Record<string, unknown> | unknown[];
+  extract: ThirdPartyChatbotApiExtract[];
+  success?: {
+    httpStatus?: string;
+    bodyPath?: string;
+    equals?: string | number | boolean | null;
+  };
+  errorMessagePath?: string;
+};
+
+export type ThirdPartyChatbotIntegrationConfig = {
+  schemeType?: string;
+  steps: ThirdPartyChatbotApiStep[];
+  answerPaths: string[];
+};
+
+export type ThirdPartyChatbotIntegrationRecord = {
+  id: number;
+  schemeType: string;
+  schemeTypeLabel: string;
+  name: string;
+  remark: string;
+  providerId: number;
+  providerName: string;
+  providerApiBaseUrl: string;
+  providerApiKeyMasked: string;
+  chatbotId: number;
+  chatbotName: string;
+  chatbotDescription: string;
+  externalApplicationId: string;
+  config: ThirdPartyChatbotIntegrationConfig;
+  isActive: boolean;
+  authorizedTenantIds: number[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type ThirdPartyChatbotIntegrationListResponse = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ThirdPartyChatbotIntegrationRecord[];
+};
+
+export type ThirdPartyChatbotIntegrationPayload = {
+  schemeType?: string;
+  name: string;
+  remark?: string;
+  providerName: string;
+  providerApiBaseUrl: string;
+  providerApiKey?: string;
+  chatbotName: string;
+  chatbotDescription?: string;
+  externalApplicationId: string;
+  config: ThirdPartyChatbotIntegrationConfig;
+  isActive?: boolean;
+  tenantIds?: number[];
+};
+
+export type ThirdPartyChatbotIntegrationTestPayload = ThirdPartyChatbotIntegrationPayload & {
+  integrationId?: number | null;
+  question: string;
+};
+
+export type ThirdPartyChatbotIntegrationTestResult = {
+  success: boolean;
+  answer: string;
+  message?: string;
+  steps: Array<{
+    key: string;
+    name: string;
+    statusCode: number | null;
+    success: boolean;
+    message?: string;
+  }>;
+};
+
 const buildProviderFormData = (payload: Partial<PlatformLLMProviderPayload>) => {
   const formData = new FormData();
   if (payload.name !== undefined) formData.append('name', payload.name);
@@ -404,6 +497,48 @@ export const updateTenantThirdPartyChatbotAuthorization = async (
   const response = await httpClient.put<TenantThirdPartyChatbotAuthorization>(
     `/settings/third-party-chatbots/tenants/${tenantId}/authorization/`,
     payload,
+  );
+  return response.data;
+};
+
+
+export const fetchPlatformThirdPartyChatbotIntegrations = async () => {
+  const response = await httpClient.get<ThirdPartyChatbotIntegrationListResponse>(
+    '/settings/third-party-chatbots/integrations/',
+  );
+  return response.data;
+};
+
+export const createPlatformThirdPartyChatbotIntegration = async (payload: ThirdPartyChatbotIntegrationPayload) => {
+  const response = await httpClient.post<ThirdPartyChatbotIntegrationRecord>(
+    '/settings/third-party-chatbots/integrations/',
+    payload,
+  );
+  return response.data;
+};
+
+export const updatePlatformThirdPartyChatbotIntegration = async (
+  id: number,
+  payload: Partial<ThirdPartyChatbotIntegrationPayload>,
+) => {
+  const response = await httpClient.patch<ThirdPartyChatbotIntegrationRecord>(
+    `/settings/third-party-chatbots/integrations/${id}/`,
+    payload,
+  );
+  return response.data;
+};
+
+export const deletePlatformThirdPartyChatbotIntegration = async (id: number) => {
+  await httpClient.delete(`/settings/third-party-chatbots/integrations/${id}/`);
+};
+
+export const testPlatformThirdPartyChatbotIntegrationDraft = async (
+  payload: ThirdPartyChatbotIntegrationTestPayload,
+) => {
+  const response = await httpClient.post<ThirdPartyChatbotIntegrationTestResult>(
+    '/settings/third-party-chatbots/integrations/test/',
+    payload,
+    { timeout: 130000 },
   );
   return response.data;
 };

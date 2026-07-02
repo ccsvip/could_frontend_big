@@ -24,6 +24,7 @@ from .views import (
     PlatformLLMProviderModelsView,
     PlatformLLMProviderViewSet,
     PlatformThirdPartyChatbotApplicationViewSet,
+    PlatformThirdPartyChatbotIntegrationViewSet,
     PlatformThirdPartyChatbotProviderViewSet,
     TenantLLMAuthorizationView,
     TenantThirdPartyChatbotAuthorizationView,
@@ -39,6 +40,7 @@ router.register('settings/llm/providers', PlatformLLMProviderViewSet, basename='
 router.register('settings/llm/models', PlatformLLMModelViewSet, basename='platform-llm-model')
 router.register('settings/third-party-chatbots/providers', PlatformThirdPartyChatbotProviderViewSet, basename='platform-third-party-chatbot-provider')
 router.register('settings/third-party-chatbots/applications', PlatformThirdPartyChatbotApplicationViewSet, basename='platform-third-party-chatbot-application')
+router.register('settings/third-party-chatbots/integrations', PlatformThirdPartyChatbotIntegrationViewSet, basename='platform-third-party-chatbot-integration')
 router.register('ai-models/asr/replacement-rules', ASRReplacementRuleViewSet, basename='asr-replacement-rule')
 router.register('ai-models/applications', AgentApplicationViewSet, basename='agent-application')
 router.register('ai-models/chat/conversations', ChatConversationViewSet, basename='chat-conversation')

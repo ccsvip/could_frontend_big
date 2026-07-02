@@ -27,11 +27,13 @@ from .models import (
     RUNTIME_BACKEND_CHOICES,
     RUNTIME_BACKEND_PLATFORM_LLM,
     RUNTIME_BACKEND_THIRD_PARTY_CHATBOT,
+    THIRD_PARTY_CHATBOT_SCHEME_A,
     THIRD_PARTY_PROVIDER_IHUAPENG,
     TenantKnowledgeModelSettings,
     TenantThirdPartyChatbotGrant,
     TenantTTSSettings,
     ThirdPartyChatbotApplication,
+    ThirdPartyChatbotIntegration,
     ThirdPartyChatbotProvider,
     TTSProvider,
     TTSVoice,
@@ -40,7 +42,13 @@ from .models import (
 )
 from .services.annotations import normalize_annotation_question
 from .services.reply_blocks import blocks_to_text, normalize_reply_blocks, serialize_reply_blocks, text_to_blocks
-from .services.third_party_chatbots import normalize_chatbot_api_key
+from .services.third_party_chatbots import (
+    default_scheme_a_config,
+    mask_sensitive_config,
+    merge_sensitive_config,
+    normalize_chatbot_api_key,
+    normalize_integration_config,
+)
 
 
 def mask_knowledge_api_key(value: str) -> str:
@@ -252,6 +260,140 @@ class PlatformThirdPartyChatbotApplicationWriteSerializer(serializers.ModelSeria
                 uuid.UUID(str(external_application_id))
             except (TypeError, ValueError):
                 raise serializers.ValidationError({'externalApplicationId': '华鹏第三方应用 ID 应填写文档中的 UUID，不是机器人名称或说明'})
+        return attrs
+
+
+class ThirdPartyChatbotIntegrationSerializer(serializers.ModelSerializer):
+    schemeType = serializers.CharField(source='scheme_type')
+    schemeTypeLabel = serializers.CharField(source='get_scheme_type_display', read_only=True)
+    providerId = serializers.IntegerField(source='provider_id', read_only=True)
+    providerName = serializers.CharField(source='provider.name', read_only=True)
+    providerApiBaseUrl = serializers.CharField(source='provider.api_base_url', read_only=True)
+    providerApiKeyMasked = serializers.SerializerMethodField()
+    chatbotId = serializers.IntegerField(source='chatbot_id', read_only=True)
+    chatbotName = serializers.CharField(source='chatbot.name', read_only=True)
+    chatbotDescription = serializers.CharField(source='chatbot.description', read_only=True)
+    externalApplicationId = serializers.CharField(source='chatbot.external_application_id', read_only=True)
+    config = serializers.SerializerMethodField()
+    isActive = serializers.BooleanField(source='is_active')
+    authorizedTenantIds = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ThirdPartyChatbotIntegration
+        fields = [
+            'id',
+            'schemeType',
+            'schemeTypeLabel',
+            'name',
+            'remark',
+            'providerId',
+            'providerName',
+            'providerApiBaseUrl',
+            'providerApiKeyMasked',
+            'chatbotId',
+            'chatbotName',
+            'chatbotDescription',
+            'externalApplicationId',
+            'config',
+            'isActive',
+            'authorizedTenantIds',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = fields
+
+    @extend_schema_field(serializers.CharField())
+    def get_providerApiKeyMasked(self, obj: ThirdPartyChatbotIntegration) -> str:
+        return third_party_chatbots.mask_secret(obj.provider.api_key)
+
+    @extend_schema_field(serializers.JSONField())
+    def get_config(self, obj: ThirdPartyChatbotIntegration) -> dict:
+        return mask_sensitive_config(normalize_integration_config(obj.config or {}))
+
+    @extend_schema_field(serializers.ListField(child=serializers.IntegerField()))
+    def get_authorizedTenantIds(self, obj: ThirdPartyChatbotIntegration) -> list[int]:
+        return list(obj.chatbot.tenant_grants.filter(is_active=True).values_list('tenant_id', flat=True))
+
+
+class ThirdPartyChatbotIntegrationWriteSerializer(serializers.Serializer):
+    schemeType = serializers.ChoiceField(
+        source='scheme_type',
+        choices=[THIRD_PARTY_CHATBOT_SCHEME_A],
+        required=False,
+        default=THIRD_PARTY_CHATBOT_SCHEME_A,
+    )
+    name = serializers.CharField(max_length=128)
+    remark = serializers.CharField(required=False, allow_blank=True, default='')
+    providerName = serializers.CharField(max_length=128)
+    providerApiBaseUrl = serializers.URLField()
+    providerApiKey = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    chatbotName = serializers.CharField(max_length=128)
+    chatbotDescription = serializers.CharField(required=False, allow_blank=True, default='')
+    externalApplicationId = serializers.CharField(max_length=128)
+    config = serializers.JSONField(required=False)
+    isActive = serializers.BooleanField(required=False, default=True)
+    tenantIds = serializers.ListField(child=serializers.IntegerField(), required=False, default=list)
+
+    def validate_providerApiKey(self, value: str) -> str:
+        return normalize_chatbot_api_key(value)
+
+    def validate_externalApplicationId(self, value: str) -> str:
+        value = str(value).strip()
+        if not value:
+            raise serializers.ValidationError('第三方应用 ID 不能为空')
+        return value
+
+    def validate_config(self, value: dict) -> dict:
+        if not isinstance(value, dict):
+            raise serializers.ValidationError('config 必须是 JSON 对象')
+        steps = value.get('steps')
+        if steps is not None and not isinstance(steps, list):
+            raise serializers.ValidationError('config.steps 必须是数组')
+        for index, step in enumerate(steps or []):
+            if not isinstance(step, dict):
+                raise serializers.ValidationError(f'config.steps[{index}] 必须是对象')
+            method = str(step.get('method') or '').upper()
+            if method and method not in {'GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD'}:
+                raise serializers.ValidationError(f'config.steps[{index}].method 不支持')
+            if not str(step.get('path') or '').strip():
+                raise serializers.ValidationError(f'config.steps[{index}].path 不能为空')
+        return normalize_integration_config(value)
+
+    def validate_tenantIds(self, value: list[int]) -> list[int]:
+        tenant_ids = []
+        for item in value or []:
+            if item not in tenant_ids:
+                tenant_ids.append(item)
+        if tenant_ids:
+            existing_ids = set(Tenant.objects.filter(id__in=tenant_ids, is_active=True).values_list('id', flat=True))
+            missing_ids = set(tenant_ids) - existing_ids
+            if missing_ids:
+                raise serializers.ValidationError(f'公司不存在或已停用：{min(missing_ids)}')
+        return tenant_ids
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        instance = self.context.get('instance')
+        if instance is None and not attrs.get('providerApiKey'):
+            raise serializers.ValidationError({'providerApiKey': '应用密钥不能为空'})
+        current_config = instance.config if instance is not None else None
+        next_config = attrs.get('config')
+        if next_config is None:
+            next_config = current_config or default_scheme_a_config()
+        attrs['config'] = merge_sensitive_config(next_config, current_config)
+        return attrs
+
+
+class ThirdPartyChatbotIntegrationTestSerializer(ThirdPartyChatbotIntegrationWriteSerializer):
+    integrationId = serializers.IntegerField(required=False, allow_null=True)
+    question = serializers.CharField(max_length=2000)
+    providerApiKey = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    tenantIds = serializers.ListField(child=serializers.IntegerField(), required=False, default=list)
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if not str(attrs.get('question') or '').strip():
+            raise serializers.ValidationError({'question': '测试问题不能为空'})
         return attrs
 
 
