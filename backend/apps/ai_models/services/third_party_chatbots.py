@@ -8,6 +8,7 @@ import httpx
 
 from apps.ai_models.models import (
     THIRD_PARTY_CHATBOT_SCHEME_A,
+    THIRD_PARTY_CHATBOT_SCHEME_B,
     TenantThirdPartyChatbotGrant,
     ThirdPartyChatbotApplication,
 )
@@ -92,6 +93,7 @@ class ThirdPartyChatbotIntegrationError(RuntimeError):
 
 def default_scheme_a_config() -> dict:
     return {
+        'schemeType': THIRD_PARTY_CHATBOT_SCHEME_A,
         'steps': [
             {
                 'key': 'open_chat',
@@ -129,6 +131,38 @@ def default_scheme_a_config() -> dict:
         ],
         'answerPaths': ['$.data.content', '$.data.answer_list.0.content'],
     }
+
+
+def default_scheme_b_config() -> dict:
+    return {
+        'schemeType': THIRD_PARTY_CHATBOT_SCHEME_B,
+        'steps': [
+            {
+                'key': 'send_message',
+                'name': '发送消息',
+                'method': 'POST',
+                'path': '/apps/{{externalApplicationId}}/chat',
+                'headers': [
+                    {'key': 'Authorization', 'value': 'Bearer {{apiKey}}'},
+                    {'key': 'Accept', 'value': 'application/json'},
+                    {'key': 'Content-Type', 'value': 'application/json'},
+                ],
+                'body': {'query': '{{message}}'},
+                'extract': [
+                    {'name': 'sessionId', 'path': '$.data.sessionId'},
+                ],
+                'success': {'httpStatus': '200-299', 'bodyPath': '$.code', 'equals': 1},
+                'errorMessagePath': '$.message',
+            },
+        ],
+        'answerPaths': ['$.data.answer'],
+    }
+
+
+def default_config_for_scheme(scheme_type: str | None = None) -> dict:
+    if scheme_type == THIRD_PARTY_CHATBOT_SCHEME_B:
+        return default_scheme_b_config()
+    return default_scheme_a_config()
 
 
 def is_sensitive_key(key: str) -> bool:
@@ -304,16 +338,20 @@ def run_chatbot_integration_config(
     return {'answer': answer, 'steps': step_results, 'variables': runtime}
 
 
-def normalize_integration_config(config: dict | None) -> dict:
-    base = default_scheme_a_config()
+def normalize_integration_config(config: dict | None, *, scheme_type: str | None = None) -> dict:
+    normalized_scheme_type = scheme_type
+    if isinstance(config, dict):
+        normalized_scheme_type = normalized_scheme_type or config.get('schemeType')
+    normalized_scheme_type = normalized_scheme_type or THIRD_PARTY_CHATBOT_SCHEME_A
+    base = default_config_for_scheme(normalized_scheme_type)
     if not isinstance(config, dict):
         return base
     result = copy.deepcopy(config)
+    result['schemeType'] = normalized_scheme_type
     if not result.get('steps'):
         result['steps'] = base['steps']
     if not result.get('answerPaths'):
         result['answerPaths'] = base['answerPaths']
-    result.setdefault('schemeType', THIRD_PARTY_CHATBOT_SCHEME_A)
     return result
 
 

@@ -28,6 +28,8 @@ from .models import (
     RUNTIME_BACKEND_PLATFORM_LLM,
     RUNTIME_BACKEND_THIRD_PARTY_CHATBOT,
     THIRD_PARTY_CHATBOT_SCHEME_A,
+    THIRD_PARTY_CHATBOT_SCHEME_B,
+    THIRD_PARTY_PROVIDER_CONFIGURED_API,
     THIRD_PARTY_PROVIDER_IHUAPENG,
     TenantKnowledgeModelSettings,
     TenantThirdPartyChatbotGrant,
@@ -43,7 +45,7 @@ from .models import (
 from .services.annotations import normalize_annotation_question
 from .services.reply_blocks import blocks_to_text, normalize_reply_blocks, serialize_reply_blocks, text_to_blocks
 from .services.third_party_chatbots import (
-    default_scheme_a_config,
+    default_config_for_scheme,
     mask_sensitive_config,
     merge_sensitive_config,
     normalize_chatbot_api_key,
@@ -176,7 +178,7 @@ class PlatformThirdPartyChatbotProviderSerializer(serializers.ModelSerializer):
 
 
 class PlatformThirdPartyChatbotProviderWriteSerializer(serializers.ModelSerializer):
-    providerType = serializers.CharField(source='provider_type', required=False, default='ihuapeng_chatbot')
+    providerType = serializers.CharField(source='provider_type', required=False, default=THIRD_PARTY_PROVIDER_CONFIGURED_API)
     apiBaseUrl = serializers.URLField(source='api_base_url')
     apiKey = serializers.CharField(source='api_key', required=False, allow_blank=True, write_only=True)
     isActive = serializers.BooleanField(source='is_active', required=False, default=True)
@@ -318,7 +320,7 @@ class ThirdPartyChatbotIntegrationSerializer(serializers.ModelSerializer):
 class ThirdPartyChatbotIntegrationWriteSerializer(serializers.Serializer):
     schemeType = serializers.ChoiceField(
         source='scheme_type',
-        choices=[THIRD_PARTY_CHATBOT_SCHEME_A],
+        choices=[THIRD_PARTY_CHATBOT_SCHEME_A, THIRD_PARTY_CHATBOT_SCHEME_B],
         required=False,
         default=THIRD_PARTY_CHATBOT_SCHEME_A,
     )
@@ -357,7 +359,7 @@ class ThirdPartyChatbotIntegrationWriteSerializer(serializers.Serializer):
                 raise serializers.ValidationError(f'config.steps[{index}].method 不支持')
             if not str(step.get('path') or '').strip():
                 raise serializers.ValidationError(f'config.steps[{index}].path 不能为空')
-        return normalize_integration_config(value)
+        return value
 
     def validate_tenantIds(self, value: list[int]) -> list[int]:
         tenant_ids = []
@@ -378,8 +380,13 @@ class ThirdPartyChatbotIntegrationWriteSerializer(serializers.Serializer):
             raise serializers.ValidationError({'providerApiKey': '应用密钥不能为空'})
         current_config = instance.config if instance is not None else None
         next_config = attrs.get('config')
+        scheme_type = attrs.get(
+            'scheme_type',
+            instance.scheme_type if instance is not None else THIRD_PARTY_CHATBOT_SCHEME_A,
+        )
         if next_config is None:
-            next_config = current_config or default_scheme_a_config()
+            next_config = current_config or default_config_for_scheme(scheme_type)
+        next_config = normalize_integration_config(next_config, scheme_type=scheme_type)
         attrs['config'] = merge_sensitive_config(next_config, current_config)
         return attrs
 

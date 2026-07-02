@@ -41,6 +41,14 @@ import {
 type StepFormValue = Omit<ThirdPartyChatbotApiStep, 'body'> & {
   bodyText: string;
   stream?: boolean;
+  hasStreamField?: boolean;
+};
+
+type SchemeTemplate = {
+  key: 'scheme_a' | 'scheme_b';
+  title: string;
+  subtitle: string;
+  createValues: () => IntegrationFormValues;
 };
 
 type IntegrationFormValues = Omit<ThirdPartyChatbotIntegrationPayload, 'config'> & {
@@ -61,15 +69,17 @@ const createDefaultStep = (): StepFormValue => ({
   key: `step_${Date.now()}`,
   name: '发送消息',
   method: 'POST',
-  path: '/application/chat_message/{{chat_id}}',
+  path: '/apps/{{externalApplicationId}}/chat',
   headers: [
-    { key: 'AUTHORIZATION', value: '{{apiKey}}' },
+    { key: 'Authorization', value: 'Bearer {{apiKey}}' },
+    { key: 'Accept', value: 'application/json' },
     { key: 'Content-Type', value: 'application/json' },
   ],
-  bodyText: JSON.stringify({ message: '{{message}}', stream: false }, null, 2),
+  bodyText: JSON.stringify({ query: '{{message}}' }, null, 2),
   stream: false,
+  hasStreamField: false,
   extract: [],
-  success: { httpStatus: '200-299', bodyPath: '$.code', equals: 200 },
+  success: { httpStatus: '200-299', bodyPath: '$.code', equals: 1 },
   errorMessagePath: '$.message',
 });
 
@@ -98,6 +108,7 @@ const createSchemeAValues = (): IntegrationFormValues => ({
         ],
         bodyText: JSON.stringify({}, null, 2),
         stream: false,
+        hasStreamField: false,
         extract: [{ name: 'chat_id', path: '$.data' }],
         success: { httpStatus: '200-299', bodyPath: '$.code', equals: 200 },
         errorMessagePath: '$.message',
@@ -114,6 +125,7 @@ const createSchemeAValues = (): IntegrationFormValues => ({
         ],
         bodyText: JSON.stringify({ message: '{{message}}', stream: false }, null, 2),
         stream: false,
+        hasStreamField: true,
         extract: [{ name: 'chat_id', path: '$.data.chat_id' }],
         success: { httpStatus: '200-299', bodyPath: '$.code', equals: 200 },
         errorMessagePath: '$.message',
@@ -122,6 +134,57 @@ const createSchemeAValues = (): IntegrationFormValues => ({
     answerPaths: ['$.data.content', '$.data.answer_list.0.content'],
   },
 });
+
+const createSchemeBValues = (): IntegrationFormValues => ({
+  schemeType: 'scheme_b',
+  name: '方案B',
+  remark: '',
+  providerName: 'FlowMesh',
+  providerApiBaseUrl: 'https://flowmesh-api.kmyszkj.com/api/open/v1',
+  providerApiKey: '',
+  chatbotName: '',
+  chatbotDescription: '',
+  externalApplicationId: '',
+  isActive: true,
+  tenantIds: [],
+  config: {
+    steps: [
+      {
+        key: 'send_message',
+        name: '发送消息',
+        method: 'POST',
+        path: '/apps/{{externalApplicationId}}/chat',
+        headers: [
+          { key: 'Authorization', value: 'Bearer {{apiKey}}' },
+          { key: 'Accept', value: 'application/json' },
+          { key: 'Content-Type', value: 'application/json' },
+        ],
+        bodyText: JSON.stringify({ query: '{{message}}' }, null, 2),
+        stream: false,
+        hasStreamField: false,
+        extract: [{ name: 'sessionId', path: '$.data.sessionId' }],
+        success: { httpStatus: '200-299', bodyPath: '$.code', equals: 1 },
+        errorMessagePath: '$.message',
+      },
+    ],
+    answerPaths: ['$.data.answer'],
+  },
+});
+
+const SCHEME_TEMPLATES: SchemeTemplate[] = [
+  {
+    key: 'scheme_a',
+    title: '方案A',
+    subtitle: '多步骤 JSON API 流程',
+    createValues: createSchemeAValues,
+  },
+  {
+    key: 'scheme_b',
+    title: '方案B',
+    subtitle: 'FlowMesh LLM 同步对话',
+    createValues: createSchemeBValues,
+  },
+];
 
 const jsonText = (value: unknown) => JSON.stringify(value ?? {}, null, 2);
 
@@ -153,13 +216,13 @@ const parseEquals = (value: unknown) => {
 
 const formStepFromConfig = (step: ThirdPartyChatbotApiStep): StepFormValue => {
   const body = step.body ?? {};
-  const stream = !Array.isArray(body) && typeof body === 'object' && body !== null
-    ? Boolean((body as Record<string, unknown>).stream)
-    : false;
+  const hasStreamField = !Array.isArray(body) && typeof body === 'object' && body !== null && 'stream' in body;
+  const stream = hasStreamField ? Boolean((body as Record<string, unknown>).stream) : false;
   return {
     ...step,
     bodyText: jsonText(body),
     stream,
+    hasStreamField,
     headers: step.headers || [],
     extract: step.extract || [],
     success: step.success || { httpStatus: '200-299' },
@@ -188,8 +251,8 @@ const formValuesFromRecord = (record: ThirdPartyChatbotIntegrationRecord): Integ
 const normalizePayload = (values: IntegrationFormValues): ThirdPartyChatbotIntegrationPayload => {
   const steps = (values.config.steps || []).map((step, index) => {
     const body = parseJsonBody(step.bodyText, `步骤 ${index + 1} 请求体`);
-    if (!Array.isArray(body) && typeof body === 'object' && body !== null && step.stream !== undefined) {
-      body.stream = step.stream;
+    if (!Array.isArray(body) && typeof body === 'object' && body !== null && step.hasStreamField) {
+      body.stream = Boolean(step.stream);
     }
     return {
       key: String(step.key || `step_${index + 1}`).trim(),
@@ -274,9 +337,9 @@ export const ThirdPartyChatbotSettingsPage = () => {
     setSchemeModalOpen(true);
   };
 
-  const openCreateSchemeA = () => {
+  const openCreateSchemeEditor = (template: SchemeTemplate) => {
     form.resetFields();
-    form.setFieldsValue(createSchemeAValues());
+    form.setFieldsValue(template.createValues());
     setSchemeModalOpen(false);
     setEditorOpen(true);
   };
@@ -417,7 +480,18 @@ export const ThirdPartyChatbotSettingsPage = () => {
     label: (
       <div className="flex items-center justify-between gap-3 pr-4">
         <span className="font-semibold text-slate-800">步骤 {index + 1}</span>
-        <Tag color="blue">API</Tag>
+        <Space size="small">
+          <Tag color="blue">API</Tag>
+          <Button
+            size="small"
+            danger
+            icon={<IconTrash size={14} />}
+            onClick={(event) => {
+              event.stopPropagation();
+              remove(field.name);
+            }}
+          />
+        </Space>
       </div>
     ),
     children: (
@@ -433,6 +507,9 @@ export const ThirdPartyChatbotSettingsPage = () => {
             <Select options={METHOD_OPTIONS} />
           </Form.Item>
           <Form.Item name={[field.name, 'stream']} label="请求体 stream" valuePropName="checked">
+            <Switch />
+          </Form.Item>
+          <Form.Item name={[field.name, 'hasStreamField']} hidden valuePropName="checked">
             <Switch />
           </Form.Item>
         </div>
@@ -517,11 +594,6 @@ export const ThirdPartyChatbotSettingsPage = () => {
         <Form.Item name={[field.name, 'errorMessagePath']} label="错误消息字段">
           <Input placeholder="$.message" />
         </Form.Item>
-        {fields.length > 1 ? (
-          <Button danger icon={<IconTrash size={14} />} onClick={() => remove(field.name)}>
-            删除步骤
-          </Button>
-        ) : null}
       </div>
     ),
   }));
@@ -576,23 +648,28 @@ export const ThirdPartyChatbotSettingsPage = () => {
         onCancel={() => setSchemeModalOpen(false)}
         destroyOnHidden
       >
-        <button
-          type="button"
-          className="flex w-full items-start gap-3 rounded-xl border border-brand-100 bg-brand-50 p-4 text-left transition hover:border-brand-200 hover:bg-white"
-          onClick={openCreateSchemeA}
-        >
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white text-brand-700">
-            <IconApi size={22} />
-          </span>
-          <span>
-            <span className="block font-semibold text-slate-900">方案A</span>
-            <span className="mt-1 block text-sm text-slate-500">多步骤 JSON API 流程</span>
-          </span>
-        </button>
+        <div className="space-y-3">
+          {SCHEME_TEMPLATES.map((template) => (
+            <button
+              key={template.key}
+              type="button"
+              className="flex w-full items-start gap-3 rounded-xl border border-brand-100 bg-brand-50 p-4 text-left transition hover:border-brand-200 hover:bg-white"
+              onClick={() => openCreateSchemeEditor(template)}
+            >
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white text-brand-700">
+                <IconApi size={22} />
+              </span>
+              <span>
+                <span className="block font-semibold text-slate-900">{template.title}</span>
+                <span className="mt-1 block text-sm text-slate-500">{template.subtitle}</span>
+              </span>
+            </button>
+          ))}
+        </div>
       </Modal>
 
       <Modal
-        title={editingRecord ? '编辑方案A' : '创建方案A'}
+        title={editingRecord ? `编辑${editingRecord.schemeTypeLabel}` : `创建${form.getFieldValue('name') || '方案'}`}
         open={editorOpen}
         width="min(1180px, calc(100vw - 32px))"
         onCancel={() => setEditorOpen(false)}
@@ -600,7 +677,7 @@ export const ThirdPartyChatbotSettingsPage = () => {
         okButtonProps={{ loading: saving }}
         destroyOnHidden
       >
-        <Form form={form} layout="vertical" className="pt-2">
+        <Form form={form} layout="vertical" className="max-h-[calc(100vh-220px)] overflow-y-auto pr-2 pt-2">
           <div className="rounded-xl border border-slate-100 bg-white p-4 sm:p-5">
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
               <Form.Item name="name" label="方案名称" rules={[{ required: true, message: '请输入方案名称' }]}>

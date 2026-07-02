@@ -261,6 +261,43 @@ class ThirdPartyChatbotApiTests(TenantTestMixin, APITestCase):
         payload.update(overrides)
         return payload
 
+    def scheme_b_payload(self, **overrides):
+        payload = {
+            'schemeType': 'scheme_b',
+            'name': 'FlowMesh 方案B',
+            'remark': 'FlowMesh LLM 同步对话',
+            'providerName': 'FlowMesh',
+            'providerApiBaseUrl': 'https://flowmesh-api.kmyszkj.com/api/open/v1',
+            'providerApiKey': 'flowmesh-key',
+            'chatbotName': 'FlowMesh 助手',
+            'chatbotDescription': '同步 LLM 问答',
+            'externalApplicationId': 'zy-assistant',
+            'config': {
+                'schemeType': 'scheme_b',
+                'steps': [
+                    {
+                        'key': 'send_message',
+                        'name': '发送消息',
+                        'method': 'POST',
+                        'path': '/apps/{{externalApplicationId}}/chat',
+                        'headers': [
+                            {'key': 'Authorization', 'value': 'Bearer {{apiKey}}'},
+                            {'key': 'Content-Type', 'value': 'application/json'},
+                        ],
+                        'body': {'query': '{{message}}'},
+                        'extract': [{'name': 'sessionId', 'path': '$.data.sessionId'}],
+                        'success': {'httpStatus': '200-299', 'bodyPath': '$.code', 'equals': 1},
+                        'errorMessagePath': '$.message',
+                    },
+                ],
+                'answerPaths': ['$.data.answer'],
+            },
+            'isActive': True,
+            'tenantIds': [self.tenant.id],
+        }
+        payload.update(overrides)
+        return payload
+
     def test_superuser_creates_scheme_a_integration_and_binds_company(self):
         self.client.force_authenticate(self.superuser)
 
@@ -316,6 +353,47 @@ class ThirdPartyChatbotApiTests(TenantTestMixin, APITestCase):
         self.assertIn(HUAPENG_APPLICATION_ID, DummyThirdPartyClient.calls[0]['url'])
         self.assertEqual(DummyThirdPartyClient.calls[1]['kwargs']['json'], {'message': '你好', 'stream': True})
 
+    def test_superuser_creates_scheme_b_flowmesh_integration(self):
+        self.client.force_authenticate(self.superuser)
+
+        response = self.client.post(
+            '/api/v1/settings/third-party-chatbots/integrations/',
+            self.scheme_b_payload(),
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['schemeType'], 'scheme_b')
+        self.assertEqual(response.data['schemeTypeLabel'], '方案B')
+        self.assertEqual(response.data['config']['answerPaths'], ['$.data.answer'])
+        self.assertEqual(response.data['config']['steps'][0]['body'], {'query': '{{message}}'})
+        integration = self.integration_model().objects.select_related('provider', 'chatbot').get(pk=response.data['id'])
+        self.assertEqual(integration.provider.provider_type, 'configured_api_chatbot')
+        self.assertEqual(integration.chatbot.external_application_id, 'zy-assistant')
+
+    def test_scheme_b_draft_test_uses_flowmesh_single_step_without_stream(self):
+        self.client.force_authenticate(self.superuser)
+        DummyThirdPartyClient.calls = []
+        responses = [
+            httpx.Response(200, json={'code': 1, 'data': {'sessionId': 'session-1', 'answer': 'FlowMesh 回复'}}),
+        ]
+
+        with patch('apps.ai_models.services.third_party_chatbots.httpx.Client', return_value=DummyThirdPartyClient(responses)):
+            response = self.client.post(
+                '/api/v1/settings/third-party-chatbots/integrations/test/',
+                {**self.scheme_b_payload(), 'question': '你好'},
+                format='json',
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['answer'], 'FlowMesh 回复')
+        self.assertEqual(len(response.data['steps']), 1)
+        self.assertEqual(DummyThirdPartyClient.calls[0]['method'], 'POST')
+        self.assertTrue(DummyThirdPartyClient.calls[0]['url'].endswith('/apps/zy-assistant/chat'))
+        self.assertEqual(DummyThirdPartyClient.calls[0]['kwargs']['json'], {'query': '你好'})
+        self.assertEqual(DummyThirdPartyClient.calls[0]['kwargs']['headers']['Authorization'], 'Bearer flowmesh-key')
+
+
     def test_runtime_uses_scheme_a_config_body_and_answer_mapping(self):
         from apps.ai_models.models import ChatConversation
         from apps.ai_models.services.third_party_chatbots import send_chatbot_message
@@ -336,6 +414,33 @@ class ThirdPartyChatbotApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(DummyThirdPartyClient.calls[1]['kwargs']['json'], {'message': '介绍一下', 'stream': True})
         conversation.refresh_from_db()
         self.assertIn('runtime-chat', str(conversation.external_session))
+
+    def test_runtime_uses_scheme_b_flowmesh_body_and_answer_mapping(self):
+        from apps.ai_models.models import ChatConversation
+        from apps.ai_models.services.third_party_chatbots import send_chatbot_message
+
+        self.client.force_authenticate(self.superuser)
+        create_response = self.client.post(
+            '/api/v1/settings/third-party-chatbots/integrations/',
+            self.scheme_b_payload(),
+            format='json',
+        )
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        chatbot = self.chatbot_model().objects.get(pk=create_response.data['chatbotId'])
+        conversation = ChatConversation.objects.create(user=self.tenant_user, tenant=self.tenant, third_party_chatbot=chatbot)
+        DummyThirdPartyClient.calls = []
+        responses = [
+            httpx.Response(200, json={'code': 1, 'data': {'sessionId': 'session-2', 'answer': '运行时 FlowMesh 回复'}}),
+        ]
+
+        with patch('apps.ai_models.services.third_party_chatbots.httpx.Client', return_value=DummyThirdPartyClient(responses)):
+            answer = send_chatbot_message(chatbot, '介绍一下', conversation=conversation)
+
+        self.assertEqual(answer, '运行时 FlowMesh 回复')
+        self.assertEqual(DummyThirdPartyClient.calls[0]['kwargs']['json'], {'query': '介绍一下'})
+        conversation.refresh_from_db()
+        self.assertIn('session-2', str(conversation.external_session))
+
 
     def test_scheme_a_update_preserves_masked_sensitive_values(self):
         self.client.force_authenticate(self.superuser)

@@ -48,6 +48,10 @@ _Avoid_: third-party provider grant, external supplier, model alias
 A platform-level reusable integration pattern for a class of Third-Party Chatbot Interfaces that share the same external API contract.
 _Avoid_: irregular LLM, company one-off template, hard-coded company integration
 
+**Third-Party Chatbot Scheme B**:
+The reusable Third-Party Chatbot Scheme for FlowMesh LLM synchronous chat interfaces, where a single request sends the user question and the response contains a direct answer.
+_Avoid_: workflow scheme, knowledge-base API, streaming FlowMesh integration, custom hard-coded FlowMesh adapter
+
 **Third-Party Chatbot Scheme Instance**:
 A platform-managed configuration of a Third-Party Chatbot Scheme, with its own external credentials, application identity, API flow snapshot, maintenance remark, and company grants.
 _Avoid_: company-specific provider, raw API script, authorization-only record

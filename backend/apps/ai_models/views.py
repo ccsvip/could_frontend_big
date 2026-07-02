@@ -71,6 +71,7 @@ from .models import (
     RerankModel,
     RUNTIME_BACKEND_PLATFORM_LLM,
     RUNTIME_BACKEND_THIRD_PARTY_CHATBOT,
+    THIRD_PARTY_PROVIDER_CONFIGURED_API,
     THIRD_PARTY_PROVIDER_IHUAPENG,
     TenantKnowledgeModelSettings,
     TenantLLMModelGrant,
@@ -747,7 +748,7 @@ class PlatformThirdPartyChatbotIntegrationViewSet(PermissionMappedModelViewSet):
             provider_api_key = integration.provider.api_key
         provider = SimpleNamespace(
             name=attrs.get('providerName') or (integration.provider.name if integration else ''),
-            provider_type=integration.provider.provider_type if integration else THIRD_PARTY_PROVIDER_IHUAPENG,
+            provider_type=integration.provider.provider_type if integration else THIRD_PARTY_PROVIDER_CONFIGURED_API,
             api_base_url=attrs.get('providerApiBaseUrl') or (integration.provider.api_base_url if integration else ''),
             api_key=provider_api_key,
         )
@@ -804,7 +805,7 @@ class PlatformThirdPartyChatbotIntegrationViewSet(PermissionMappedModelViewSet):
             if instance is None:
                 provider = ThirdPartyChatbotProvider.objects.create(
                     name=attrs['providerName'],
-                    provider_type=THIRD_PARTY_PROVIDER_IHUAPENG,
+                    provider_type=THIRD_PARTY_PROVIDER_CONFIGURED_API,
                     api_base_url=attrs['providerApiBaseUrl'],
                     api_key=provider_api_key,
                     is_active=is_active,
