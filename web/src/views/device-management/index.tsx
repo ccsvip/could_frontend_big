@@ -1,6 +1,5 @@
 import {
   IconApps,
-  IconHierarchy2,
   IconTrash,
   IconDeviceDesktop,
   IconEdit,
@@ -42,21 +41,15 @@ import {
 } from '../../api/realtime';
 import {
   createDeviceApplication,
-  createDeviceGroup,
   deleteDevice,
-  deleteDeviceGroup,
   fetchDeviceApplications,
-  fetchDeviceGroups,
   fetchDeviceStats,
   fetchDevices,
   updateDevice,
   updateDeviceApplication,
-  updateDeviceGroup,
   type DeviceApplicationPayload,
   type DeviceApplicationRecord,
   type DeviceAuthorizationType,
-  type DeviceGroupPayload,
-  type DeviceGroupRecord,
   type DeviceListQuery,
   type DeviceRecord,
 } from '../../api/modules/devices';
@@ -71,7 +64,6 @@ type DeviceEditForm = {
 };
 
 type ApplicationForm = DeviceApplicationPayload;
-type GroupForm = DeviceGroupPayload;
 
 type ResourceOption = {
   label: string;
@@ -162,7 +154,6 @@ export const DeviceManagementPage = () => {
   const [deviceTotal, setDeviceTotal] = useState(0);
   const [devicePage, setDevicePage] = useState(1);
   const [stats, setStats] = useState({ total: 0, online: 0, offline: 0, trial: 0, permanent: 0 });
-  const [groups, setGroups] = useState<DeviceGroupRecord[]>([]);
   const [applications, setApplications] = useState<DeviceApplicationRecord[]>([]);
   const [agentApplications, setAgentApplications] = useState<AgentApplicationRecord[]>([]);
   const [commandGroupOptions, setCommandGroupOptions] = useState<ResourceOption[]>([]);
@@ -171,19 +162,15 @@ export const DeviceManagementPage = () => {
   const [filters, setFilters] = useState<DeviceListQuery>({
     status: 'all',
     enabledStatus: 'all',
-    groupId: 'all',
     applicationId: 'all',
   });
   const [editingDevice, setEditingDevice] = useState<DeviceRecord | null>(null);
   const [editingApplication, setEditingApplication] = useState<DeviceApplicationRecord | null>(null);
-  const [editingGroup, setEditingGroup] = useState<DeviceGroupRecord | null>(null);
   const [selectedApplicationId, setSelectedApplicationId] = useState<number | null>(null);
   const [realtimeConnected, setRealtimeConnected] = useState(false);
   const [applicationModalOpen, setApplicationModalOpen] = useState(false);
-  const [groupModalOpen, setGroupModalOpen] = useState(false);
   const [deviceForm] = Form.useForm<DeviceEditForm>();
   const [applicationForm] = Form.useForm<ApplicationForm>();
-  const [groupForm] = Form.useForm<GroupForm>();
   const hasLoadedRef = useRef(false);
   const filtersRef = useRef(filters);
   const devicePageRef = useRef(devicePage);
@@ -202,7 +189,6 @@ export const DeviceManagementPage = () => {
   const canUpdateDevice = !isPlatformAdmin && hasPermission('devices.update');
   const canDeleteDevice = !isPlatformAdmin && hasPermission('devices.delete');
 
-  const groupOptions = useMemo(() => toSelectOptions(groups), [groups]);
   const applicationOptions = useMemo(() => toSelectOptions(applications), [applications]);
   const agentApplicationOptions = useMemo(() => toSelectOptions(agentApplications), [agentApplications]);
   const selectedApplication = useMemo(
@@ -231,10 +217,9 @@ export const DeviceManagementPage = () => {
   const loadData = async (query: DeviceListQuery = filters, page = devicePage) => {
     setLoading(true);
     try {
-      const [deviceResponse, statsResponse, groupResponse, applicationResponse, agentApplicationResponse] = await Promise.all([
+      const [deviceResponse, statsResponse, applicationResponse, agentApplicationResponse] = await Promise.all([
         fetchDevices({ ...query, keyword, page }),
         fetchDeviceStats(),
-        fetchDeviceGroups(),
         fetchDeviceApplications(),
         fetchAgentApplications({ page: 1 }),
       ]);
@@ -242,7 +227,6 @@ export const DeviceManagementPage = () => {
       setDeviceTotal(deviceResponse.count);
       setDevicePage(page);
       setStats(statsResponse);
-      setGroups(groupResponse.results);
       setApplications(applicationResponse.results);
       setAgentApplications(agentApplicationResponse.results);
       setSelectedApplicationId((current) => current ?? applicationResponse.results[0]?.id ?? null);
@@ -440,38 +424,6 @@ export const DeviceManagementPage = () => {
     setApplicationModalOpen(false);
   };
 
-  const openGroupCreate = () => {
-    setEditingGroup(null);
-    groupForm.resetFields();
-    setGroupModalOpen(true);
-  };
-
-  const openGroupEdit = (record: DeviceGroupRecord) => {
-    setEditingGroup(record);
-    groupForm.setFieldsValue({ name: record.name, remark: record.remark });
-    setGroupModalOpen(true);
-  };
-
-  const handleGroupSave = async () => {
-    const values = await groupForm.validateFields();
-    if (editingGroup) {
-      const next = await updateDeviceGroup(editingGroup.id, values);
-      setGroups((current) => current.map((item) => (item.id === next.id ? next : item)));
-      message.success('分组已更新');
-    } else {
-      const created = await createDeviceGroup(values);
-      setGroups((current) => [created, ...current]);
-      message.success('分组已创建');
-    }
-    setGroupModalOpen(false);
-  };
-
-  const handleGroupDelete = async (record: DeviceGroupRecord) => {
-    await deleteDeviceGroup(record.id);
-    message.success('分组已删除');
-    void loadData(filters);
-  };
-
   const deviceColumns: ColumnsType<DeviceRecord> = [
     {
       title: '设备名称',
@@ -540,13 +492,6 @@ export const DeviceManagementPage = () => {
       render: (value: string) => (value ? <Tag color="cyan">{value}</Tag> : <Tag color="default">未绑定资源</Tag>),
     },
     {
-      title: '分组',
-      dataIndex: 'groupName',
-      key: 'groupName',
-      width: '8%',
-      render: (value: string) => value || '-',
-    },
-    {
       title: '授权',
       dataIndex: 'authorizationType',
       key: 'authorizationType',
@@ -599,39 +544,6 @@ export const DeviceManagementPage = () => {
     },
   ];
 
-  const groupColumns: ColumnsType<DeviceGroupRecord> = [
-    { title: '分组名称', dataIndex: 'name', key: 'name' },
-    { title: '备注', dataIndex: 'remark', key: 'remark', render: (value) => value || '-' },
-    {
-      title: '操作',
-      key: 'action',
-      width: '18%',
-      render: (_, record) => (
-        <Space size={6}>
-          {canUpdateDevice ? (
-            <Button size="small" icon={<IconEdit />} onClick={() => openGroupEdit(record)}>
-              编辑
-            </Button>
-          ) : null}
-          {canDeleteDevice ? (
-            <Popconfirm
-              title="删除分组"
-              description={`确认删除「${record.name}」？设备会变为未分组。`}
-              okText="删除"
-              cancelText="取消"
-              okButtonProps={{ danger: true }}
-              onConfirm={() => void handleGroupDelete(record)}
-            >
-              <Button size="small" danger icon={<IconTrash />}>
-                删除
-              </Button>
-            </Popconfirm>
-          ) : null}
-        </Space>
-      ),
-    },
-  ];
-
   if (!canUseDeviceWorkspace) {
     return (
       <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
@@ -649,75 +561,41 @@ export const DeviceManagementPage = () => {
 
   return (
     <Space direction="vertical" size={16} className="w-full">
-      <div className="page-hero">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">
-            <div className="mb-1.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-700">
-              <span className="inline-block h-1 w-1 rounded-full bg-brand-600" />
-              Device Code Runtime
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <Tag color={realtimeConnected ? 'success' : 'default'}>
+                {realtimeConnected ? '实时同步中' : '实时未连接'}
+              </Tag>
+              <Tag color="success">就绪 {runtimeDiagnosticCounts.ready}</Tag>
+              <Tag color="error">阻塞 {runtimeDiagnosticCounts.blocked}</Tag>
+              <Tag color="default">离线 {runtimeDiagnosticCounts.offline}</Tag>
+              <Tag color="warning">无资源包 {runtimeDiagnosticCounts.warning}</Tag>
             </div>
             <Typography.Title level={4} className="mb-1 font-semibold text-slate-900">
               设备与应用
             </Typography.Title>
             <Typography.Text className="text-[13px] text-slate-500">
-              安卓端只上报设备码；后台负责设备归属、应用绑定和资源包配置。
+              设备码、授权状态、资源应用和智能体运行链路集中维护。
             </Typography.Text>
           </div>
-          <Space size={8}>
-            <Tag color={realtimeConnected ? 'success' : 'default'}>
-              {realtimeConnected ? '实时同步中' : '实时未连接'}
-            </Tag>
-            <Button icon={<IconReload />} onClick={() => loadData()}>
-              刷新
-            </Button>
-          </Space>
-        </div>
-      </div>
-
-      <Row gutter={[14, 14]}>
-        <Col xs={12} lg={6}>
-          <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
-            <Typography.Text type="secondary">设备总数</Typography.Text>
-            <div className="mt-2 text-3xl font-semibold tabular-nums">{stats.total}</div>
-          </Card>
-        </Col>
-        <Col xs={12} lg={6}>
-          <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
-            <Typography.Text type="secondary">在线</Typography.Text>
-            <div className="mt-2 text-3xl font-semibold tabular-nums text-emerald-600">{stats.online}</div>
-          </Card>
-        </Col>
-        <Col xs={12} lg={6}>
-          <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
-            <Typography.Text type="secondary">待绑定</Typography.Text>
-            <div className="mt-2 text-3xl font-semibold tabular-nums text-amber-600">{unboundDeviceCount}</div>
-          </Card>
-        </Col>
-        <Col xs={12} lg={6}>
-          <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
-            <Typography.Text type="secondary">应用数</Typography.Text>
-            <div className="mt-2 text-3xl font-semibold tabular-nums text-indigo-600">{applications.length}</div>
-          </Card>
-        </Col>
-      </Row>
-
-      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <Typography.Text className="font-medium text-slate-700">运行链路诊断</Typography.Text>
-            <div className="mt-1 text-xs text-slate-500">
-              先看授权与智能体绑定，再看在线心跳与资源包；异常联调时让安卓端带回 requestId / traceId。
-            </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:min-w-[34rem]">
+            {[
+              ['设备总数', stats.total, 'text-slate-900'],
+              ['在线', stats.online, 'text-brand-700'],
+              ['待绑定', unboundDeviceCount, 'text-amber-600'],
+              ['应用数', applications.length, 'text-sky-700'],
+            ].map(([label, value, color]) => (
+              <div key={label} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                <div className="text-xs text-slate-500">{label}</div>
+                <div className={`mt-1 text-2xl font-semibold tabular-nums ${color}`}>{value}</div>
+              </div>
+            ))}
           </div>
-          <Space size={[8, 8]} wrap>
-            <Tag color={realtimeConnected ? 'success' : 'default'}>
-              {realtimeConnected ? '实时通道正常' : '实时通道未连接'}
-            </Tag>
-            <Tag color="success">就绪 {runtimeDiagnosticCounts.ready}</Tag>
-            <Tag color="error">阻塞 {runtimeDiagnosticCounts.blocked}</Tag>
-            <Tag color="default">离线 {runtimeDiagnosticCounts.offline}</Tag>
-            <Tag color="warning">无资源包 {runtimeDiagnosticCounts.warning}</Tag>
-          </Space>
+          <Button icon={<IconReload />} onClick={() => loadData()}>
+            刷新
+          </Button>
         </div>
       </Card>
 
@@ -733,7 +611,7 @@ export const DeviceManagementPage = () => {
             ),
             children: (
               <Space direction="vertical" size={12} className="w-full">
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(220px,1fr)_140px_140px_160px_160px_auto]">
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(220px,1fr)_140px_140px_160px_auto]">
                   <Input
                     value={keyword}
                     prefix={<IconSearch />}
@@ -763,11 +641,6 @@ export const DeviceManagementPage = () => {
                     value={filters.applicationId}
                     onChange={(value) => handleFilterChange('applicationId', value)}
                     options={[{ label: '全部资源应用', value: 'all' }, ...applicationOptions]}
-                  />
-                  <Select
-                    value={filters.groupId}
-                    onChange={(value) => handleFilterChange('groupId', value)}
-                    options={[{ label: '全部分组', value: 'all' }, ...groupOptions]}
                   />
                   <Button type="primary" icon={<IconSearch />} onClick={handleSearch}>
                     查询
@@ -884,27 +757,6 @@ export const DeviceManagementPage = () => {
               </Space>
             ),
           },
-          {
-            key: 'groups',
-            label: (
-              <Space size={6}>
-                <IconHierarchy2 />
-                分组
-              </Space>
-            ),
-            children: (
-              <Space direction="vertical" size={12} className="w-full">
-                {canCreateDevice ? (
-                  <div className="flex justify-end">
-                    <Button type="primary" icon={<IconPlus />} onClick={openGroupCreate}>
-                      新建分组
-                    </Button>
-                  </div>
-                ) : null}
-                <Table columns={groupColumns} dataSource={groups} rowKey="id" pagination={false} />
-              </Space>
-            ),
-          },
         ]}
       />
 
@@ -961,25 +813,6 @@ export const DeviceManagementPage = () => {
         </Form>
       </Modal>
 
-      <Modal
-        title={editingGroup ? '编辑分组' : '新建分组'}
-        open={groupModalOpen}
-        onCancel={() => setGroupModalOpen(false)}
-        onOk={handleGroupSave}
-        okText="保存"
-        cancelText="取消"
-        destroyOnHidden
-        width="42vw"
-      >
-        <Form<GroupForm> form={groupForm} layout="vertical">
-          <Form.Item label="分组名称" name="name" rules={[{ required: true, message: '请输入分组名称' }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item label="备注" name="remark">
-            <Input.TextArea rows={2} />
-          </Form.Item>
-        </Form>
-      </Modal>
     </Space>
   );
 };
