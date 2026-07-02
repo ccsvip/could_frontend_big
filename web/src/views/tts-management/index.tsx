@@ -220,15 +220,24 @@ export const TtsManagementPage = () => {
     const checked = selectedVoiceId === voice.id;
     const supported = isTtsVoiceSupportedByModel(selectedModelCode, voice.voiceCode);
     return (
-      <button
+      <div
         key={voice.id}
-        type="button"
+        role="button"
+        tabIndex={0}
         aria-current={checked ? 'true' : undefined}
-        disabled={!supported}
+        aria-disabled={!supported}
         className={`flex w-full items-center gap-3 rounded-lg border bg-white p-3 text-left transition duration-200 ${
           checked ? 'border-brand-500 bg-brand-50/50 ring-1 ring-brand-100' : 'border-slate-200'
         } ${supported ? 'hover:border-brand-300' : 'cursor-not-allowed opacity-60'}`}
-        onClick={() => setSelectedVoiceId(voice.id)}
+        onClick={() => {
+          if (supported) setSelectedVoiceId(voice.id);
+        }}
+        onKeyDown={(e) => {
+          if (supported && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            setSelectedVoiceId(voice.id);
+          }
+        }}
       >
         <Avatar src={voice.avatarPath} icon={<IconHeadphones size={20} />} size={40} />
         <div className="min-w-0 flex-1">
@@ -259,7 +268,7 @@ export const TtsManagementPage = () => {
           </div>
         </div>
         <div className={`h-4 w-4 rounded-full border ${checked ? 'border-brand-600 bg-brand-600 shadow-[inset_0_0_0_3px_white]' : 'border-slate-300'}`} />
-      </button>
+      </div>
     );
   };
 
@@ -274,7 +283,7 @@ export const TtsManagementPage = () => {
               </div>
               <div>
                 <div className="mb-1 flex flex-wrap items-center gap-2">
-                  <Typography.Title level={3} className="!m-0 !text-lg !tracking-normal !text-slate-900">
+                  <Typography.Title level={3} className="m-0 text-lg tracking-normal text-slate-900">
                     TTS 管理
                   </Typography.Title>
                   <Tag color={options?.provider.isActive ? 'success' : 'default'} className="m-0 border-0 rounded-md px-2 py-0.5">

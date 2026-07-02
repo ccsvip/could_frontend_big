@@ -197,10 +197,10 @@ export const ScrollingTextManagementPage = () => {
         key: 'title',
         render: (value: string, record) => (
           <Space direction="vertical" size={2}>
-            <Typography.Text strong className="!text-slate-900">
+            <Typography.Text strong className="text-slate-900">
               {value}
             </Typography.Text>
-            <Typography.Text className="!text-xs !text-slate-400">
+            <Typography.Text className="text-xs text-slate-400">
               更新于 {record.updated_at}
             </Typography.Text>
           </Space>
@@ -235,7 +235,7 @@ export const ScrollingTextManagementPage = () => {
         dataIndex: 'localizedItems',
         key: 'localizedItems',
         render: (_, record) => (
-          <Typography.Paragraph className="!mb-0 !text-slate-500" ellipsis={{ rows: 2 }}>
+          <Typography.Paragraph className="mb-0 text-slate-500" ellipsis={{ rows: 2 }}>
             {record.localizedItems.map((item) => item.text).join(' / ') || '暂无文本'}
           </Typography.Paragraph>
         ),
@@ -270,13 +270,13 @@ export const ScrollingTextManagementPage = () => {
 
   return (
     <Space direction="vertical" size={18} className="w-full">
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <Typography.Title level={3} className="!mb-1 !text-slate-900">
+            <Typography.Title level={3} className="mb-1 text-slate-900">
               滚动文本管理
             </Typography.Title>
-            <Typography.Text className="!text-slate-500">
+            <Typography.Text className="text-slate-500">
               维护前端滚动展示的中英文文本，启用后可按 zh/en 返回对应语言内容。
             </Typography.Text>
             {titleFilter ? (
@@ -292,7 +292,7 @@ export const ScrollingTextManagementPage = () => {
               onSearch={(value) => {
                 setKeyword(value.trim());
               }}
-              className="!w-60"
+              className="w-60"
             />
             <Select
               value={statusFilter}
@@ -300,7 +300,7 @@ export const ScrollingTextManagementPage = () => {
               onChange={(value) => {
                 setStatusFilter(value as ScrollingTextStatusFilter);
               }}
-              className="!w-36"
+              className="w-36"
             />
             <Button icon={<IconReload />} onClick={() => void loadData()}>
               刷新
@@ -314,7 +314,7 @@ export const ScrollingTextManagementPage = () => {
         </div>
       </Card>
 
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <Table
           rowKey="id"
           loading={loading}
@@ -359,7 +359,7 @@ export const ScrollingTextManagementPage = () => {
                   <Card
                     key={fieldKey}
                     size="small"
-                    className="!rounded-lg !border !border-slate-200"
+                    className="rounded-lg border border-slate-200"
                     title={
                       <Space>
                         <IconMenu2 className="text-slate-400" />
@@ -423,13 +423,13 @@ export const ScrollingTextManagementPage = () => {
               </Tag>
             </Space>
             {previewItem.items.map((item, index) => (
-              <Card key={item.id ?? index} size="small" className="!rounded-lg !border !border-slate-200">
+              <Card key={item.id ?? index} size="small" className="rounded-lg border border-slate-200">
                 <Space direction="vertical" size={6} className="w-full">
                   <Typography.Text strong>第 {index + 1} 条</Typography.Text>
-                  <Typography.Paragraph className="!mb-0 !text-slate-700">
+                  <Typography.Paragraph className="mb-0 text-slate-700">
                     中文：{item.zh}
                   </Typography.Paragraph>
-                  <Typography.Paragraph className="!mb-0 !text-slate-500">
+                  <Typography.Paragraph className="mb-0 text-slate-500">
                     英文：{item.en}
                   </Typography.Paragraph>
                 </Space>

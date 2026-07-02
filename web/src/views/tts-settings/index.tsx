@@ -374,7 +374,7 @@ export const TtsSettingsPage = () => {
                 <IconVolume size={22} />
               </div>
               <div>
-                <Typography.Title level={3} className="!m-0 !text-lg !tracking-normal !text-slate-900">
+                <Typography.Title level={3} className="m-0 text-lg tracking-normal text-slate-900">
                   TTS 设置
                 </Typography.Title>
                 <div className="mt-1 text-xs text-slate-500 font-mono">供应商 {providers.length} 个</div>
@@ -467,7 +467,7 @@ export const TtsSettingsPage = () => {
             </div>
             <div>
               <div className="mb-1 flex flex-wrap items-center gap-2">
-                <Typography.Title level={3} className="!m-0 !text-lg !tracking-normal !text-slate-900">
+                <Typography.Title level={3} className="m-0 text-lg tracking-normal text-slate-900">
                   {settings?.name || 'TTS Provider'}
                 </Typography.Title>
                 <Tag color={settings?.isActive ? 'success' : 'default'} className="m-0 border-0 rounded-md px-2 py-0.5">

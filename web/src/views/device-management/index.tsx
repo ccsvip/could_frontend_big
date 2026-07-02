@@ -486,7 +486,7 @@ export const DeviceManagementPage = () => {
       key: 'deviceCode',
       width: '12%',
       render: (value: string) => (
-        <Typography.Text className="!text-xs" copyable>
+        <Typography.Text className="text-xs" copyable>
           {value}
         </Typography.Text>
       ),
@@ -634,9 +634,9 @@ export const DeviceManagementPage = () => {
 
   if (!canUseDeviceWorkspace) {
     return (
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <Space direction="vertical" size={8}>
-          <Typography.Title level={4} className="!mb-0">
+          <Typography.Title level={4} className="mb-0">
             请选择公司
           </Typography.Title>
           <Typography.Text type="secondary">
@@ -656,10 +656,10 @@ export const DeviceManagementPage = () => {
               <span className="inline-block h-1 w-1 rounded-full bg-brand-600" />
               Device Code Runtime
             </div>
-            <Typography.Title level={4} className="!mb-1 !font-semibold !text-slate-900">
+            <Typography.Title level={4} className="mb-1 font-semibold text-slate-900">
               设备与应用
             </Typography.Title>
-            <Typography.Text className="!text-[13px] !text-slate-500">
+            <Typography.Text className="text-[13px] text-slate-500">
               安卓端只上报设备码；后台负责设备归属、应用绑定和资源包配置。
             </Typography.Text>
           </div>
@@ -676,35 +676,35 @@ export const DeviceManagementPage = () => {
 
       <Row gutter={[14, 14]}>
         <Col xs={12} lg={6}>
-          <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+          <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
             <Typography.Text type="secondary">设备总数</Typography.Text>
             <div className="mt-2 text-3xl font-semibold tabular-nums">{stats.total}</div>
           </Card>
         </Col>
         <Col xs={12} lg={6}>
-          <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+          <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
             <Typography.Text type="secondary">在线</Typography.Text>
             <div className="mt-2 text-3xl font-semibold tabular-nums text-emerald-600">{stats.online}</div>
           </Card>
         </Col>
         <Col xs={12} lg={6}>
-          <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+          <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
             <Typography.Text type="secondary">待绑定</Typography.Text>
             <div className="mt-2 text-3xl font-semibold tabular-nums text-amber-600">{unboundDeviceCount}</div>
           </Card>
         </Col>
         <Col xs={12} lg={6}>
-          <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+          <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
             <Typography.Text type="secondary">应用数</Typography.Text>
             <div className="mt-2 text-3xl font-semibold tabular-nums text-indigo-600">{applications.length}</div>
           </Card>
         </Col>
       </Row>
 
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <Typography.Text className="!font-medium !text-slate-700">运行链路诊断</Typography.Text>
+            <Typography.Text className="font-medium text-slate-700">运行链路诊断</Typography.Text>
             <div className="mt-1 text-xs text-slate-500">
               先看授权与智能体绑定，再看在线心跳与资源包；异常联调时让安卓端带回 requestId / traceId。
             </div>
@@ -815,21 +815,21 @@ export const DeviceManagementPage = () => {
                       <Col xs={24} md={12} xl={8} key={item.id}>
                         <Card
                           variant="borderless"
-                          className={`!h-full !rounded-xl !border !shadow-card ${
-                            selectedApplication?.id === item.id ? '!border-brand-300' : '!border-slate-200/70'
+                          className={`h-full rounded-xl border shadow-card ${
+                            selectedApplication?.id === item.id ? 'border-brand-300' : 'border-slate-200/70'
                           }`}
                           onClick={() => setSelectedApplicationId(item.id)}
                         >
                           <Space direction="vertical" size={10} className="w-full">
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
-                                <Typography.Title level={5} className="!mb-1 !truncate">
+                                <Typography.Title level={5} className="mb-1 truncate">
                                   {item.name}
                                 </Typography.Title>
                               </div>
                               <Tag color={item.isActive ? 'success' : 'default'}>{item.isActive ? '启用' : '停用'}</Tag>
                             </div>
-                            <Typography.Paragraph className="!mb-0 !min-h-[40px] !text-[13px] !text-slate-500">
+                            <Typography.Paragraph className="mb-0 min-h-[40px] text-[13px] text-slate-500">
                               {item.description || '未填写说明'}
                             </Typography.Paragraph>
                             <Space size={[4, 4]} wrap>
@@ -853,7 +853,7 @@ export const DeviceManagementPage = () => {
                   <div className="rounded-xl border border-slate-200/70 bg-white p-4 shadow-card">
                     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                       <div>
-                        <Typography.Title level={5} className="!mb-1">
+                        <Typography.Title level={5} className="mb-1">
                           {selectedApplication.name}
                         </Typography.Title>
                         <Typography.Text type="secondary">当前应用绑定概览</Typography.Text>
@@ -864,7 +864,7 @@ export const DeviceManagementPage = () => {
                         </Button>
                       ) : null}
                     </div>
-                    <Divider className="!my-4" />
+                    <Divider className="my-4" />
                     <Row gutter={[10, 10]}>
                       {[
                         ['智能体', selectedApplication.agentApplicationName || '未绑定', '应用运行时使用的智能体'],

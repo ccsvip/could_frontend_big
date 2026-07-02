@@ -1869,7 +1869,7 @@ export const ApplicationManagementPage = () => {
           <Avatar
             size={36}
             icon={isUser ? <IconUser size={16} /> : <IconRobot size={16} />}
-            className={isUser ? '!bg-indigo-600 shrink-0' : '!bg-brand-600 shrink-0'}
+            className={isUser ? 'bg-indigo-600 shrink-0' : 'bg-brand-600 shrink-0'}
           />
           <div className="flex flex-col gap-1">
             <div
@@ -1899,7 +1899,7 @@ export const ApplicationManagementPage = () => {
                     emoji: ttsFilterEmoji,
                     sessionConfig: ttsPlaybackSessionConfig,
                   })}
-                  className="flex items-center gap-1 text-slate-500 hover:text-brand-600 !px-1.5"
+                  className="flex items-center gap-1 text-slate-500 hover:text-brand-600 px-1.5"
                 >
                   {isPlaybackPending ? <IconLoader2 size={12} className="animate-spin" /> : isPlaybackPlaying ? <IconPlayerPause size={12} /> : <IconPlayerPlay size={12} />}
                   <span className="text-xs">{isPlaybackPending ? '生成中' : isPlaybackPlaying ? '暂停' : '播放'}</span>
@@ -1910,7 +1910,7 @@ export const ApplicationManagementPage = () => {
                     danger 
                     size="small"
                     onClick={agentAudio.stopPlayback}
-                    className="flex items-center gap-1 !px-1.5"
+                    className="flex items-center gap-1 px-1.5"
                   >
                     <IconSquare size={12} />
                     <span className="text-xs">停止</span>
@@ -1927,7 +1927,7 @@ export const ApplicationManagementPage = () => {
                       message.error('复制失败');
                     }
                   }}
-                  className="flex items-center gap-1 text-slate-500 hover:text-brand-600 !px-1.5"
+                  className="flex items-center gap-1 text-slate-500 hover:text-brand-600 px-1.5"
                 >
                   <IconCopy size={12} />
                   <span className="text-xs">复制</span>
@@ -1937,7 +1937,7 @@ export const ApplicationManagementPage = () => {
                   size="small"
                   disabled={!canUpdate} 
                   onClick={() => void createAnnotationFromAssistantMessage(msg)}
-                  className="flex items-center gap-1 text-slate-500 hover:text-brand-600 !px-1.5"
+                  className="flex items-center gap-1 text-slate-500 hover:text-brand-600 px-1.5"
                 >
                   <IconBookmarkPlus size={12} />
                   <span className="text-xs">添加到标注</span>
@@ -2475,7 +2475,7 @@ export const ApplicationManagementPage = () => {
             <Avatar 
               size={64} 
               icon={<IconRobot size={32} />} 
-              className="!bg-brand-50 !text-brand-700 shadow-sm"
+              className="bg-brand-50 text-brand-700 shadow-sm"
             />
             <div className="text-lg font-bold text-slate-800">开始与「{selectedApplication?.name || '智能体'}」对话</div>
             
@@ -2812,7 +2812,7 @@ export const ApplicationManagementPage = () => {
                             <Avatar
                               size={32}
                               icon={isUser ? <IconUser size={14} /> : <IconRobot size={14} />}
-                              className={isUser ? '!bg-indigo-600 shrink-0' : '!bg-brand-600 shrink-0'}
+                              className={isUser ? 'bg-indigo-600 shrink-0' : 'bg-brand-600 shrink-0'}
                             />
                             <div className="flex flex-col gap-1">
                               <div
@@ -2845,7 +2845,7 @@ export const ApplicationManagementPage = () => {
                                         message.error('复制失败');
                                       }
                                     }}
-                                    className="flex items-center gap-1 text-slate-400 hover:text-brand-600 !p-0 !h-auto"
+                                    className="flex items-center gap-1 text-slate-400 hover:text-brand-600 p-0 h-auto"
                                     style={{ fontSize: 10 }}
                                   >
                                     <IconCopy size={10} />

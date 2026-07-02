@@ -280,7 +280,7 @@ export const TaskCommandManagementPage = () => {
             <Space key={step.id} size={6} wrap>
               <Tag color={taskTypeColors[step.type]}>{step.order}. {taskTypeLabels[step.type]}</Tag>
               <Tag color="cyan">延迟 {step.delaySeconds ?? 0} 秒</Tag>
-              <Typography.Text className="!text-slate-600">{getStepSummary(step)}</Typography.Text>
+              <Typography.Text className="text-slate-600">{getStepSummary(step)}</Typography.Text>
             </Space>
           ))}
         </Space>
@@ -307,21 +307,21 @@ export const TaskCommandManagementPage = () => {
 
   return (
     <Space direction="vertical" size={18} className="w-full">
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <Space size={10} align="center">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
               <IconMenu2 className="text-xl" />
             </div>
             <div>
-              <Typography.Title level={3} className="!mb-1 !text-slate-900">任务指令</Typography.Title>
-              <Typography.Text className="!text-slate-500">维护场景任务编排，子任务可选择指令、文本、图片、视频或导航点位。</Typography.Text>
+              <Typography.Title level={3} className="mb-1 text-slate-900">任务指令</Typography.Title>
+              <Typography.Text className="text-slate-500">维护场景任务编排，子任务可选择指令、文本、图片、视频或导航点位。</Typography.Text>
             </div>
           </Space>
           <Space wrap>
             <Input allowClear value={keywordInput} placeholder="搜索名称 / 指令名称" onChange={(event) => setKeywordInput(event.target.value)} onPressEnter={applyFilters} className="w-full sm:w-64" />
-            <Select value={groupId} options={[{ label: '全部指令管理', value: 'all' }, ...groupOptions]} onChange={(value) => { setGroupId(value as number | 'all'); setPage(1); }} className="!w-40" />
-            <Select value={isActive} options={activeOptions as unknown as { label: string; value: string }[]} onChange={(value) => { setIsActive(value as 'all' | 'active' | 'inactive'); setPage(1); }} className="!w-32" />
+            <Select value={groupId} options={[{ label: '全部指令管理', value: 'all' }, ...groupOptions]} onChange={(value) => { setGroupId(value as number | 'all'); setPage(1); }} className="w-40" />
+            <Select value={isActive} options={activeOptions as unknown as { label: string; value: string }[]} onChange={(value) => { setIsActive(value as 'all' | 'active' | 'inactive'); setPage(1); }} className="w-32" />
             <Button type="primary" icon={<IconFilter />} onClick={applyFilters}>筛选</Button>
             <Button onClick={resetFilters}>重置</Button>
             <Button icon={<IconReload />} onClick={() => void loadData()}>刷新</Button>
@@ -330,7 +330,7 @@ export const TaskCommandManagementPage = () => {
         </div>
       </Card>
 
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <Table
           rowKey="id"
           loading={loading}

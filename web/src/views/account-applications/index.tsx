@@ -144,13 +144,13 @@ export const AccountApplicationsPage = () => {
 
   return (
     <Space direction="vertical" size={18} className="w-full">
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <Typography.Title level={3} className="!mb-1 !text-slate-900">
+            <Typography.Title level={3} className="mb-1 text-slate-900">
               账号申请管理
             </Typography.Title>
-            <Typography.Text className="!text-slate-500">
+            <Typography.Text className="text-slate-500">
               查看前端提交的账号申请，并完成通过或拒绝处理。审核通过后会自动创建登录账号，登录密码为申请人提交时自定义的密码。
             </Typography.Text>
           </div>
@@ -172,7 +172,7 @@ export const AccountApplicationsPage = () => {
         </div>
       </Card>
 
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <Table
           rowKey="id"
           columns={columns}

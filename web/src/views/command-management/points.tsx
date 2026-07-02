@@ -196,20 +196,20 @@ export const PointManagementPage = () => {
 
   return (
     <Space direction="vertical" size={18} className="w-full">
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <Space size={10} align="center">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
               <IconMapPin className="text-xl" />
             </div>
             <div>
-              <Typography.Title level={3} className="!mb-1 !text-slate-900">点位管理</Typography.Title>
-              <Typography.Text className="!text-slate-500">点位只维护名称、点位命令和启用状态；点位命令是前端运行时传入后端的参数。</Typography.Text>
+              <Typography.Title level={3} className="mb-1 text-slate-900">点位管理</Typography.Title>
+              <Typography.Text className="text-slate-500">点位只维护名称、点位命令和启用状态；点位命令是前端运行时传入后端的参数。</Typography.Text>
             </div>
           </Space>
           <Space wrap>
             <Input allowClear value={keywordInput} placeholder="搜索点位名称 / 点位命令" onChange={(event) => setKeywordInput(event.target.value)} onPressEnter={applyFilters} className="w-full sm:w-64" />
-            <Select value={isActive} options={activeOptions as unknown as { label: string; value: string }[]} onChange={(value) => { setIsActive(value as 'all' | 'active' | 'inactive'); setPage(1); }} className="!w-32" />
+            <Select value={isActive} options={activeOptions as unknown as { label: string; value: string }[]} onChange={(value) => { setIsActive(value as 'all' | 'active' | 'inactive'); setPage(1); }} className="w-32" />
             <Button type="primary" icon={<IconFilter />} onClick={applyFilters}>筛选</Button>
             <Button onClick={resetFilters}>重置</Button>
             <Button icon={<IconReload />} onClick={() => void loadData()}>刷新</Button>
@@ -218,7 +218,7 @@ export const PointManagementPage = () => {
         </div>
       </Card>
 
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <Table
           rowKey="id"
           loading={loading}

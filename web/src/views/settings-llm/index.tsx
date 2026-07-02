@@ -606,13 +606,13 @@ export const LlmSettingsAdminPage = () => {
         </Form.Item>
         <div className="grid gap-4 md:grid-cols-3 mb-4">
           <Form.Item name="testCooldownSeconds" label="冷却秒数" rules={[{ required: true }]}>
-            <InputNumber min={0} max={3600} className="!w-full rounded-lg" />
+            <InputNumber min={0} max={3600} className="w-full rounded-lg" />
           </Form.Item>
           <Form.Item name="testTimeoutSeconds" label="超时秒数" rules={[{ required: true }]}>
-            <InputNumber min={1} max={60} className="!w-full rounded-lg" />
+            <InputNumber min={1} max={60} className="w-full rounded-lg" />
           </Form.Item>
           <Form.Item name="testMaxTokens" label="最大 Tokens" rules={[{ required: true }]}>
-            <InputNumber min={1} max={512} className="!w-full rounded-lg" />
+            <InputNumber min={1} max={512} className="w-full rounded-lg" />
           </Form.Item>
         </div>
         <Button
@@ -716,7 +716,7 @@ export const LlmSettingsAdminPage = () => {
               </div>
             </Form.Item>
             <Form.Item name="sortOrder" label="排序">
-              <InputNumber min={0} className="!w-full rounded-lg" />
+              <InputNumber min={0} className="w-full rounded-lg" />
             </Form.Item>
           </div>
         </Form>
@@ -755,7 +755,7 @@ export const LlmSettingsAdminPage = () => {
             </Form.Item>
           </div>
           <Form.Item name="sortOrder" label="排序">
-            <InputNumber min={0} className="!w-full rounded-lg" />
+            <InputNumber min={0} className="w-full rounded-lg" />
           </Form.Item>
         </Form>
       </Modal>

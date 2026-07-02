@@ -25,7 +25,7 @@ export const AuthorizationTableCard = <T extends object>({
   emptyText,
   onPageChange,
 }: AuthorizationTableCardProps<T>) => (
-  <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+  <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
     <Table<T>
       columns={columns}
       dataSource={dataSource}

@@ -127,15 +127,15 @@ export const CommandExportManagementPage = () => {
 
   return (
     <Space direction="vertical" size={18} className="w-full">
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <Space size={10} align="center">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
               <IconArrowBarToRight className="text-xl" />
             </div>
             <div>
-              <Typography.Title level={3} className="!mb-1 !text-slate-900">导出管理</Typography.Title>
-              <Typography.Text className="!text-slate-500">查看全部指令管理分组，允许导出的分组可执行导出操作。</Typography.Text>
+              <Typography.Title level={3} className="mb-1 text-slate-900">导出管理</Typography.Title>
+              <Typography.Text className="text-slate-500">查看全部指令管理分组，允许导出的分组可执行导出操作。</Typography.Text>
             </div>
           </Space>
           <Space wrap>
@@ -145,7 +145,7 @@ export const CommandExportManagementPage = () => {
         </div>
       </Card>
 
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <Table
           rowKey="id"
           loading={loading}

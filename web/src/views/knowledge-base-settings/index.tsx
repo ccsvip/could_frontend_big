@@ -219,7 +219,7 @@ export const KnowledgeBaseSettingsPage = () => {
                 <Input.Password placeholder={settings?.embedding.apiKeyConfigured ? '留空表示不修改' : undefined} />
               </Form.Item>
               <Form.Item name="embeddingDimensions" label="向量维度">
-                <InputNumber min={0} className="!w-full" />
+                <InputNumber min={0} className="w-full" />
               </Form.Item>
             </div>
             <Form.Item name="embeddingIsActive" label="平台启用" valuePropName="checked">

@@ -34,10 +34,10 @@ export const DeviceAuthorizationToolbar = ({
             <span className="inline-block h-1 w-1 rounded-full bg-brand-600" />
             Device Authorization
           </div>
-          <Typography.Title level={4} className="!mb-1 !font-semibold !text-slate-900">
+          <Typography.Title level={4} className="mb-1 font-semibold text-slate-900">
             设备授权中心
           </Typography.Title>
-          <Typography.Text className="!text-[13px] !text-slate-500">
+          <Typography.Text className="text-[13px] text-slate-500">
             处理安卓上报的设备请求，将设备归属到公司，并追踪授权请求日志。
           </Typography.Text>
         </div>

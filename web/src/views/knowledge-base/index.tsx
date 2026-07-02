@@ -623,7 +623,7 @@ export const KnowledgeBasePage = () => {
       render: (_, item) => (
         <Space direction="vertical" size={2}>
           <Typography.Text strong>{item.title}</Typography.Text>
-          <Typography.Text className="!text-xs font-mono !text-slate-500 bg-slate-50 border border-slate-100 px-1 py-0.5 rounded">{item.fileName}</Typography.Text>
+          <Typography.Text className="text-xs font-mono text-slate-500 bg-slate-50 border border-slate-100 px-1 py-0.5 rounded">{item.fileName}</Typography.Text>
         </Space>
       ),
     },
@@ -658,9 +658,9 @@ export const KnowledgeBasePage = () => {
       render: (_, item) => (
         <Space direction="vertical" size={2}>
           <Tag color={indexStatusColor[item.indexingStatus]}>{item.indexingStatusLabel || item.indexingStatus}</Tag>
-          <Typography.Text className="!text-xs !text-slate-500"><span className="font-mono font-semibold">{item.chunkCount}</span> 块</Typography.Text>
+          <Typography.Text className="text-xs text-slate-500"><span className="font-mono font-semibold">{item.chunkCount}</span> 块</Typography.Text>
           {item.indexingStatus === 'failed' && item.indexingError ? (
-            <Typography.Text className="!max-w-[180px] !text-xs" type="danger" ellipsis={{ tooltip: item.indexingError }}>
+            <Typography.Text className="max-w-[180px] text-xs" type="danger" ellipsis={{ tooltip: item.indexingError }}>
               {item.indexingError}
             </Typography.Text>
           ) : null}
@@ -682,7 +682,7 @@ export const KnowledgeBasePage = () => {
         <div className="flex items-center justify-end gap-3.5">
           <Button
             type="link"
-            className="!p-0 !h-auto text-brand-600 hover:text-brand-700 font-semibold"
+            className="p-0 h-auto text-brand-600 hover:text-brand-700 font-semibold"
             disabled={!canDownload}
             loading={downloadLoadingId === item.id}
             onClick={() => void handleSingleDownload(item)}
@@ -691,7 +691,7 @@ export const KnowledgeBasePage = () => {
           </Button>
           <Button
             type="link"
-            className="!p-0 !h-auto text-brand-600 hover:text-brand-700 font-semibold"
+            className="p-0 h-auto text-brand-600 hover:text-brand-700 font-semibold"
             disabled={!canUpload}
             loading={indexingDocumentId === item.id}
             onClick={() => void handleIndexDocument(item)}
@@ -710,7 +710,7 @@ export const KnowledgeBasePage = () => {
             <Button
               type="link"
               danger
-              className="!p-0 !h-auto font-semibold"
+              className="p-0 h-auto font-semibold"
               disabled={!canDelete}
               loading={deletingDocumentId === item.id}
             >
@@ -742,8 +742,8 @@ export const KnowledgeBasePage = () => {
             {item.resourceType === 'image' ? <IconPhoto size={18} /> : <IconVideo size={18} />}
           </div>
           <Space direction="vertical" size={2}>
-            <Typography.Text strong className="!text-sm text-slate-800">{item.name}</Typography.Text>
-            <Typography.Text className="!text-xs !text-slate-500">{item.resourceTypeLabel} <span className="mx-1 text-slate-300">·</span> {item.categoryLabel}</Typography.Text>
+            <Typography.Text strong className="text-sm text-slate-800">{item.name}</Typography.Text>
+            <Typography.Text className="text-xs text-slate-500">{item.resourceTypeLabel} <span className="mx-1 text-slate-300">·</span> {item.categoryLabel}</Typography.Text>
           </Space>
         </Space>
       ),
@@ -752,7 +752,7 @@ export const KnowledgeBasePage = () => {
       title: '说明',
       dataIndex: 'description',
       render: (value: string) => (
-        <Typography.Text className="!text-sm !text-slate-600" ellipsis={{ tooltip: value }}>
+        <Typography.Text className="text-sm text-slate-600" ellipsis={{ tooltip: value }}>
           {value || '--'}
         </Typography.Text>
       ),
@@ -781,7 +781,7 @@ export const KnowledgeBasePage = () => {
             <Form.Item name="name" label={<span className="text-slate-600">名称</span>} rules={[{ required: true, message: '请输入知识库名称' }]}>
               <Input maxLength={128} className="rounded-md" />
             </Form.Item>
-            <Form.Item name="description" label={<span className="text-slate-600">说明</span>} className="!mb-0">
+            <Form.Item name="description" label={<span className="text-slate-600">说明</span>} className="mb-0">
               <Input.TextArea maxLength={255} rows={3} placeholder="说明资料范围、维护责任人或适用业务场景" className="rounded-md" />
             </Form.Item>
           </section>
@@ -795,7 +795,7 @@ export const KnowledgeBasePage = () => {
             
             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
               <Form.Item name="chunkSize" label={<span className="text-slate-600">分块长度 (Chunk Size)</span>} rules={[{ required: true, message: '请输入分块长度' }]}>
-                <InputNumber min={100} max={4000} className="!w-full rounded-md font-mono text-sm" />
+                <InputNumber min={100} max={4000} className="w-full rounded-md font-mono text-sm" />
               </Form.Item>
               <Form.Item
                 name="chunkOverlap"
@@ -814,13 +814,13 @@ export const KnowledgeBasePage = () => {
                   }),
                 ]}
               >
-                <InputNumber min={0} max={1000} className="!w-full rounded-md font-mono text-sm" />
+                <InputNumber min={0} max={1000} className="w-full rounded-md font-mono text-sm" />
               </Form.Item>
               <Form.Item name="retrievalTopN" label={<span className="text-slate-600">文本召回段数 (Top N)</span>} rules={[{ required: true, message: '请输入文本召回段数' }]}>
-                <InputNumber min={1} max={20} className="!w-full rounded-md font-mono text-sm" />
+                <InputNumber min={1} max={20} className="w-full rounded-md font-mono text-sm" />
               </Form.Item>
               <Form.Item name="retrievalMinScore" label={<span className="text-slate-600">最低相关度阈值</span>} rules={[{ required: true, message: '请输入最低相关度' }]}> 
-                <InputNumber min={0} max={1} step={0.05} className="!w-full rounded-md font-mono text-sm" />
+                <InputNumber min={0} max={1} step={0.05} className="w-full rounded-md font-mono text-sm" />
               </Form.Item>
             </div>
           </section>
@@ -829,10 +829,10 @@ export const KnowledgeBasePage = () => {
             <div className="mb-3 text-sm font-semibold text-slate-800 border-b border-slate-100 pb-2">配套素材召回配置</div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
               <Form.Item name="mediaMaxAssets" label={<span className="text-slate-600">素材召回上限</span>} tooltip="0 表示不限制，有几张命中就返回几张。" rules={[{ required: true, message: '请输入素材召回上限' }]}> 
-                <InputNumber min={0} max={200} precision={0} className="!w-full rounded-md font-mono text-sm" />
+                <InputNumber min={0} max={200} precision={0} className="w-full rounded-md font-mono text-sm" />
               </Form.Item>
               <Form.Item name="mediaMinRelevance" label={<span className="text-slate-600">素材最低相关度</span>} rules={[{ required: true, message: '请输入素材最低相关度' }]}> 
-                <InputNumber min={0} max={1} step={0.05} className="!w-full rounded-md font-mono text-sm" />
+                <InputNumber min={0} max={1} step={0.05} className="w-full rounded-md font-mono text-sm" />
               </Form.Item>
             </div>
           </section>
@@ -844,12 +844,12 @@ export const KnowledgeBasePage = () => {
   const documentManagementTab = (
     <Space direction="vertical" size={16} className="w-full">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-        <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+        <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
           <Space direction="vertical" size={16} className="w-full">
             <div className="flex flex-col gap-4">
               <div>
-                <Typography.Title level={5} className="!mb-1">文档管理</Typography.Title>
-                <Typography.Text className="!text-sm !text-slate-500">按资料集维护原始文件，上传后进入解析、切分、索引流程。</Typography.Text>
+                <Typography.Title level={5} className="mb-1">文档管理</Typography.Title>
+                <Typography.Text className="text-sm text-slate-500">按资料集维护原始文件，上传后进入解析、切分、索引流程。</Typography.Text>
               </div>
               <Upload.Dragger
                 multiple
@@ -860,12 +860,12 @@ export const KnowledgeBasePage = () => {
                   enqueueFiles([file as File]);
                   return Upload.LIST_IGNORE;
                 }}
-                className="!w-full !border-dashed !border-slate-200 hover:!border-brand-400 !bg-slate-50/50 hover:!bg-brand-50/10 !transition-colors !rounded-xl"
+                className="w-full border-dashed border-slate-200 hover:border-brand-400 bg-slate-50/50 hover:bg-brand-50/10 transition-colors rounded-xl"
               >
                 <div className="py-4">
-                  <p className="ant-upload-drag-icon !mb-2 !text-brand-600"><IconCloudUpload className="text-2xl" /></p>
-                  <p className="ant-upload-text !text-sm !font-medium !text-slate-700">拖拽文件到此处，或 <span className="text-brand-600">点击上传</span></p>
-                  <p className="ant-upload-hint !text-xs !text-slate-400 mt-1">支持并发上传最多 3 个文件。支持格式：{KNOWLEDGE_BASE_ACCEPT.replace(/\./g, '').toUpperCase()}</p>
+                  <p className="ant-upload-drag-icon mb-2 text-brand-600"><IconCloudUpload className="text-2xl" /></p>
+                  <p className="ant-upload-text text-sm font-medium text-slate-700">拖拽文件到此处，或 <span className="text-brand-600">点击上传</span></p>
+                  <p className="ant-upload-hint text-xs text-slate-400 mt-1">支持并发上传最多 3 个文件。支持格式：{KNOWLEDGE_BASE_ACCEPT.replace(/\./g, '').toUpperCase()}</p>
                 </div>
               </Upload.Dragger>
             </div>
@@ -875,7 +875,7 @@ export const KnowledgeBasePage = () => {
                 {uploadTasks.map((task) => (
                   <div key={task.id} className="rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-3 transition-all">
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                      <Typography.Text className="!text-sm font-medium !text-slate-700 truncate max-w-[280px]" title={task.file.name}>{task.file.name}</Typography.Text>
+                      <Typography.Text className="text-sm font-medium text-slate-700 truncate max-w-[280px]" title={task.file.name}>{task.file.name}</Typography.Text>
                       <Tag color={task.status === 'success' ? 'success' : task.status === 'error' ? 'error' : 'processing'}>
                         {task.status === 'pending' && '等待上传'}
                         {task.status === 'uploading' && '上传中'}
@@ -884,7 +884,7 @@ export const KnowledgeBasePage = () => {
                       </Tag>
                     </div>
                     <Progress percent={task.progress} size="small" status={task.status === 'error' ? 'exception' : undefined} strokeColor="#14b8a6" className="mt-2" />
-                    {task.error ? <Typography.Text className="!text-xs !text-red-500 block mt-1">{task.error}</Typography.Text> : null}
+                    {task.error ? <Typography.Text className="text-xs text-red-500 block mt-1">{task.error}</Typography.Text> : null}
                   </div>
                 ))}
               </div>
@@ -892,9 +892,9 @@ export const KnowledgeBasePage = () => {
           </Space>
         </Card>
 
-        <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+        <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
           <Space direction="vertical" size={16} className="w-full">
-            <Typography.Title level={5} className="!mb-0">索引流程</Typography.Title>
+            <Typography.Title level={5} className="mb-0">索引流程</Typography.Title>
             <div className="relative pl-6 space-y-4 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100">
               {detailWorkflow.map((item, index) => (
                 <div key={item.title} className="relative flex gap-3">
@@ -904,9 +904,9 @@ export const KnowledgeBasePage = () => {
                   <div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-brand-600 text-xs font-semibold font-mono">STEP 0{index + 1}</span>
-                      <Typography.Text strong className="!text-sm !text-slate-900">{item.title}</Typography.Text>
+                      <Typography.Text strong className="text-sm text-slate-900">{item.title}</Typography.Text>
                     </div>
-                    <Typography.Paragraph className="!mb-0 !mt-1 !text-xs !text-slate-500">{item.description}</Typography.Paragraph>
+                    <Typography.Paragraph className="mb-0 mt-1 text-xs text-slate-500">{item.description}</Typography.Paragraph>
                   </div>
                 </div>
               ))}
@@ -915,7 +915,7 @@ export const KnowledgeBasePage = () => {
         </Card>
       </div>
 
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <Table
           rowKey="id"
           loading={documentsLoading}
@@ -940,8 +940,8 @@ export const KnowledgeBasePage = () => {
                 <IconPhoto size={14} />
                 多模态素材增强
               </div>
-              <Typography.Title level={4} className="!mb-2 !text-slate-900 !font-semibold">配套素材工作台</Typography.Title>
-              <Typography.Paragraph className="!mb-0 max-w-2xl !text-[13px] !leading-relaxed !text-slate-500">
+              <Typography.Title level={4} className="mb-2 text-slate-900 font-semibold">配套素材工作台</Typography.Title>
+              <Typography.Paragraph className="mb-0 max-w-2xl text-[13px] leading-relaxed text-slate-500">
                 把图片、视频等资料放进召回链路。素材可补充场景画面和操作示意，智能体将按相关度在回答中一并返回。
               </Typography.Paragraph>
             </div>
@@ -987,8 +987,8 @@ export const KnowledgeBasePage = () => {
               </div>
             </div>
             <div className="mt-5 flex items-center gap-2">
-              <Button className="!flex-1 !text-[13px]" icon={<IconRefresh size={16} />} onClick={() => void loadMediaAssets()}>刷新</Button>
-              <Button className="!flex-1 !text-[13px]" type="primary" icon={<IconPlus size={16} />} disabled={!canUpload} onClick={() => void openBindMediaModal()}>
+              <Button className="flex-1 text-[13px]" icon={<IconRefresh size={16} />} onClick={() => void loadMediaAssets()}>刷新</Button>
+              <Button className="flex-1 text-[13px]" type="primary" icon={<IconPlus size={16} />} disabled={!canUpload} onClick={() => void openBindMediaModal()}>
                 绑定素材
               </Button>
             </div>
@@ -1005,7 +1005,7 @@ export const KnowledgeBasePage = () => {
                 <Card
                   key={item.id}
                   variant="borderless"
-                  className="group !overflow-hidden !rounded-xl !border !border-slate-200/70 !shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:!border-brand-300/50 hover:!shadow-[0_4px_10px_rgba(15,23,42,0.06)] [&_.ant-card-body]:!p-0 bg-white"
+                  className="group !overflow-hidden rounded-xl border border-slate-200/70 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:border-brand-300/50 hover:shadow-[0_4px_10px_rgba(15,23,42,0.06)] [&_.ant-card-body]:p-0 bg-white"
                 >
                   <div className="flex flex-col sm:flex-row h-full">
                     <div className="relative flex min-h-[160px] items-center justify-center overflow-hidden border-b sm:border-b-0 sm:border-r border-slate-100 bg-slate-50 sm:w-44 shrink-0">
@@ -1035,24 +1035,24 @@ export const KnowledgeBasePage = () => {
                       <div>
                         <div className="mb-2 flex items-start justify-between gap-3">
                           <div className="min-w-0 flex-1">
-                            <Typography.Title level={5} className="!mb-1.5 !truncate !text-sm !font-semibold !text-slate-800" title={item.resourceName || '素材已删除'}>
+                            <Typography.Title level={5} className="mb-1.5 truncate text-sm font-semibold text-slate-800" title={item.resourceName || '素材已删除'}>
                               {item.resourceName || '素材已删除'}
                             </Typography.Title>
                             <div className="flex flex-wrap gap-1.5">
-                              <Tag color={item.isMissing ? 'error' : item.isEnabled ? 'success' : 'default'} className="!m-0 !border-none !bg-slate-100 !text-slate-600">
+                              <Tag color={item.isMissing ? 'error' : item.isEnabled ? 'success' : 'default'} className="m-0 border-none bg-slate-100 text-slate-600">
                                 {item.isMissing ? (
                                   <span className="text-red-600">已删除</span>
                                 ) : item.isEnabled ? (
                                   <span className="text-brand-700 font-medium">● 启用</span>
                                 ) : '暂停'}
                               </Tag>
-                              <Tag color="default" className={`!m-0 !border-none ${item.embeddingStatus === 'ready' ? '!bg-brand-50 !text-brand-700' : item.embeddingStatus === 'failed' ? '!bg-red-50 !text-red-600' : '!bg-slate-100 !text-slate-600'}`}>
+                              <Tag color="default" className={`m-0 border-none ${item.embeddingStatus === 'ready' ? 'bg-brand-50 text-brand-700' : item.embeddingStatus === 'failed' ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600'}`}>
                                 {item.embeddingStatusLabel || item.embeddingStatus || '待处理'}
                               </Tag>
                             </div>
                           </div>
                         </div>
-                        <Typography.Paragraph className="!mb-2.5 !text-[13px] !leading-relaxed !text-slate-500" ellipsis={{ rows: 2, tooltip: item.description || item.vlmDescription }}>
+                        <Typography.Paragraph className="mb-2.5 text-[13px] leading-relaxed text-slate-500" ellipsis={{ rows: 2, tooltip: item.description || item.vlmDescription }}>
                           {item.description || item.vlmDescription || '暂无说明，建议补充说明此素材适用的场景。'}
                         </Typography.Paragraph>
                         
@@ -1068,14 +1068,14 @@ export const KnowledgeBasePage = () => {
                           )}
                         </div>
                         {item.embeddingStatus === 'failed' && item.embeddingError ? (
-                          <Typography.Text className="!mt-1 block !text-[11px]" type="danger" ellipsis={{ tooltip: item.embeddingError }}>
+                          <Typography.Text className="mt-1 block text-[11px]" type="danger" ellipsis={{ tooltip: item.embeddingError }}>
                             {item.embeddingError}
                           </Typography.Text>
                         ) : null}
                       </div>
                       
                       <div className="mt-3 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
-                        <Typography.Text className="!max-w-[140px] !text-[10px] !text-slate-400 font-mono" ellipsis={{ tooltip: item.embeddingModel }}>
+                        <Typography.Text className="max-w-[140px] text-[10px] text-slate-400 font-mono" ellipsis={{ tooltip: item.embeddingModel }}>
                           {item.embeddingModel || '--'}
                         </Typography.Text>
                         <Space size={14}>
@@ -1106,7 +1106,7 @@ export const KnowledgeBasePage = () => {
             })}
           </div>
         ) : (
-          <Card variant="borderless" className="!rounded-xl !border !border-dashed !border-slate-300 !bg-slate-50/50 !shadow-none py-8">
+          <Card variant="borderless" className="rounded-xl border border-dashed border-slate-300 bg-slate-50/50 shadow-none py-8">
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description={(
@@ -1186,10 +1186,10 @@ export const KnowledgeBasePage = () => {
             <Input.TextArea rows={3} maxLength={500} placeholder="例如：当用户询问如何前往展厅时，出示此平面图。" className="rounded-md" />
           </Form.Item>
           <div className="grid grid-cols-2 gap-4 mt-4 border-t border-slate-100 pt-4">
-            <Form.Item name="priority" label={<span className="text-slate-600 text-[13px]">召回优先级</span>} initialValue={0} className="!mb-0" extra={<span className="text-[11px]">数值越小越优先 (默认 0)</span>}>
-              <InputNumber min={0} max={999} className="!w-full rounded-md font-mono" />
+            <Form.Item name="priority" label={<span className="text-slate-600 text-[13px]">召回优先级</span>} initialValue={0} className="mb-0" extra={<span className="text-[11px]">数值越小越优先 (默认 0)</span>}>
+              <InputNumber min={0} max={999} className="w-full rounded-md font-mono" />
             </Form.Item>
-            <Form.Item name="isEnabled" label={<span className="text-slate-600 text-[13px]">状态</span>} valuePropName="checked" initialValue className="!mb-0">
+            <Form.Item name="isEnabled" label={<span className="text-slate-600 text-[13px]">状态</span>} valuePropName="checked" initialValue className="mb-0">
               <Switch checkedChildren="启用" unCheckedChildren="停用" />
             </Form.Item>
           </div>
@@ -1200,17 +1200,17 @@ export const KnowledgeBasePage = () => {
 
   const recallTestTab = (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <Space direction="vertical" size={16} className="w-full">
           <div className="flex items-center gap-2">
             <IconFileSearch className="text-brand-600 text-lg" />
-            <Typography.Title level={5} className="!mb-0">召回测试</Typography.Title>
+            <Typography.Title level={5} className="mb-0">召回测试</Typography.Title>
           </div>
-          <Typography.Text className="!text-sm !text-slate-500">先用真实业务问题验证命中片段，再绑定给智能体。</Typography.Text>
+          <Typography.Text className="text-sm text-slate-500">先用真实业务问题验证命中片段，再绑定给智能体。</Typography.Text>
           <Input.TextArea rows={5} value={recallQuery} onChange={(event) => setRecallQuery(event.target.value)} placeholder="输入问题，例如：设备离线后客户应该如何处理？" />
           <div className="flex items-center justify-between gap-3">
             <Space>
-              <Typography.Text className="!text-sm !text-slate-500">Top N</Typography.Text>
+              <Typography.Text className="text-sm text-slate-500">Top N</Typography.Text>
               <InputNumber min={1} max={20} value={recallTopN} onChange={(value) => setRecallTopN(Number(value || 5))} />
             </Space>
             <Button type="primary" icon={<IconCloudUpload />} loading={recallLoading} onClick={() => void handleRecallTest()}>测试召回</Button>
@@ -1221,14 +1221,14 @@ export const KnowledgeBasePage = () => {
                 {recallMode}
               </Tag>
               {recallSkipReason ? (
-                <Typography.Text className="!text-xs !text-amber-700">
+                <Typography.Text className="text-xs text-amber-700">
                   {skipReasonText[recallSkipReason] || recallSkipReason}
                 </Typography.Text>
               ) : null}
             </Space>
           ) : null}
           <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
-            <Typography.Text strong className="!text-sm !text-slate-800">最近测试</Typography.Text>
+            <Typography.Text strong className="text-sm text-slate-800">最近测试</Typography.Text>
             <div className="mt-3 space-y-2 max-h-[220px] overflow-y-auto custom-scrollbar">
               {recallHistory.length > 0 ? recallHistory.map((item) => (
                 <button
@@ -1249,15 +1249,15 @@ export const KnowledgeBasePage = () => {
         </Space>
       </Card>
 
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <Space direction="vertical" size={16} className="w-full">
-          <Typography.Title level={5} className="!mb-0">命中片段</Typography.Title>
+          <Typography.Title level={5} className="mb-0">命中片段</Typography.Title>
           <div className="max-h-[560px] overflow-y-auto pr-1 custom-scrollbar">
             {recallMediaAssets.length > 0 ? (
               <div className="mb-4 rounded-xl border border-cyan-100 bg-cyan-50/40 p-3">
                 <div className="mb-2 flex items-center gap-2">
                   <IconPhoto size={16} className="text-cyan-600" />
-                  <Typography.Text strong className="!text-sm !text-cyan-800">命中素材</Typography.Text>
+                  <Typography.Text strong className="text-sm text-cyan-800">命中素材</Typography.Text>
                 </div>
                 <div className="grid grid-cols-1 gap-2">
                   {recallMediaAssets.map((item) => (
@@ -1267,13 +1267,13 @@ export const KnowledgeBasePage = () => {
                           {item.resourceType === 'image' ? <IconPhoto size={15} /> : <IconVideo size={15} />}
                         </span>
                         <div>
-                          <Typography.Text strong className="!text-sm !text-slate-800">{item.resourceName}</Typography.Text>
-                          <Typography.Paragraph className="!mb-0 !text-xs !text-slate-500" ellipsis={{ rows: 1, tooltip: item.description || item.keywords }}>
+                          <Typography.Text strong className="text-sm text-slate-800">{item.resourceName}</Typography.Text>
+                          <Typography.Paragraph className="mb-0 text-xs text-slate-500" ellipsis={{ rows: 1, tooltip: item.description || item.keywords }}>
                             {item.description || item.keywords || '--'}
                           </Typography.Paragraph>
                         </div>
                       </Space>
-                      <Tag color="cyan" className="!font-mono shrink-0">
+                      <Tag color="cyan" className="font-mono shrink-0">
                         相关度 {Math.round((item.relevance ?? 0) * 100)}%
                       </Tag>
                     </div>
@@ -1287,18 +1287,18 @@ export const KnowledgeBasePage = () => {
                   <div key={`${chunk.documentId}-${chunk.chunkIndex}-${index}`} className="rounded-xl border border-slate-200 bg-white p-4 hover:border-brand-100 hover:bg-brand-50/5 transition-all">
                     <div className="mb-2.5 flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <Typography.Text strong className="!text-sm !text-slate-800">{chunk.documentTitle}</Typography.Text>
+                        <Typography.Text strong className="text-sm text-slate-800">{chunk.documentTitle}</Typography.Text>
                         {chunk.chunkIndex !== null && (
                           <span className="text-xs font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded border border-slate-200/40">
                             #{chunk.chunkIndex}
                           </span>
                         )}
                       </div>
-                      <Tag color="success" className="!font-mono !border-emerald-100 !bg-emerald-50 !text-emerald-700">
+                      <Tag color="success" className="font-mono border-emerald-100 bg-emerald-50 text-emerald-700">
                         score {chunk.score.toFixed(4)}
                       </Tag>
                     </div>
-                    <Typography.Paragraph className="!mb-0 !text-sm !text-slate-600 !leading-relaxed">{chunk.content}</Typography.Paragraph>
+                    <Typography.Paragraph className="mb-0 text-sm text-slate-600 leading-relaxed">{chunk.content}</Typography.Paragraph>
                   </div>
                 ))}
               </Space>
@@ -1330,7 +1330,7 @@ export const KnowledgeBasePage = () => {
             <Input.Search
               allowClear
               placeholder="搜索知识库"
-              className="!w-44 sm:!w-56"
+              className="w-44 sm:w-56"
               onSearch={(value) => {
                 setBaseKeyword(value.trim());
                 setBasePage(1);
@@ -1346,7 +1346,7 @@ export const KnowledgeBasePage = () => {
         {/* Master-detail: list + detail pane */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[320px_minmax(0,1fr)] items-start">
           {/* Sidebar list */}
-          <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card overflow-hidden [&_.ant-card-body]:!p-0">
+          <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card overflow-hidden [&_.ant-card-body]:p-0">
             <Spin spinning={baseLoading}>
               <div className="max-h-[680px] overflow-y-auto custom-scrollbar">
                 {bases.length > 0 ? (
@@ -1395,7 +1395,7 @@ export const KnowledgeBasePage = () => {
             const previewBase = bases.find((item) => item.id === previewBaseId) ?? bases[0] ?? null;
             if (!previewBase) {
               return (
-                <Card variant="borderless" className="!rounded-xl !border !border-dashed !border-slate-300 !bg-slate-50/50 !shadow-none">
+                <Card variant="borderless" className="rounded-xl border border-dashed border-slate-300 bg-slate-50/50 shadow-none">
                   <div className="flex h-[280px] items-center justify-center">
                     <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="选择左侧知识库查看详情" />
                   </div>
@@ -1403,7 +1403,7 @@ export const KnowledgeBasePage = () => {
               );
             }
             return (
-              <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+              <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
                 <div className="flex flex-col gap-5">
                   <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-4">
                     <div className="min-w-0">
@@ -1471,7 +1471,7 @@ export const KnowledgeBasePage = () => {
                   </div>
 
                   <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
-                    <Typography.Text className="!text-xs !text-slate-400 font-mono">
+                    <Typography.Text className="text-xs text-slate-400 font-mono">
                       创建 {previewBase.created_at?.split(' ')[0] ?? '--'} · 更新 {previewBase.updated_at ?? '--'}
                     </Typography.Text>
                     <Popconfirm
@@ -1522,7 +1522,7 @@ export const KnowledgeBasePage = () => {
                 initialValue={defaultIndexConfig.chunkSize}
                 rules={[{ required: true, message: '请输入分块长度' }]}
               >
-                <InputNumber min={100} max={4000} className="!w-full" />
+                <InputNumber min={100} max={4000} className="w-full" />
               </Form.Item>
               <Form.Item
                 name="chunkOverlap"
@@ -1542,7 +1542,7 @@ export const KnowledgeBasePage = () => {
                   }),
                 ]}
               >
-                <InputNumber min={0} max={1000} className="!w-full" />
+                <InputNumber min={0} max={1000} className="w-full" />
               </Form.Item>
               <Form.Item
                 name="retrievalTopN"
@@ -1550,7 +1550,7 @@ export const KnowledgeBasePage = () => {
                 initialValue={defaultIndexConfig.retrievalTopN}
                 rules={[{ required: true, message: '请输入召回段数' }]}
               >
-                <InputNumber min={1} max={20} className="!w-full" />
+                <InputNumber min={1} max={20} className="w-full" />
               </Form.Item>
               <Form.Item
                 name="retrievalMinScore"
@@ -1558,7 +1558,7 @@ export const KnowledgeBasePage = () => {
                 initialValue={defaultIndexConfig.retrievalMinScore}
                 rules={[{ required: true, message: '请输入最低相关度' }]}
               >
-                <InputNumber min={0} max={1} step={0.05} className="!w-full" />
+                <InputNumber min={0} max={1} step={0.05} className="w-full" />
               </Form.Item>
               <Form.Item
                 name="mediaMaxAssets"
@@ -1567,7 +1567,7 @@ export const KnowledgeBasePage = () => {
                 initialValue={defaultIndexConfig.mediaMaxAssets}
                 rules={[{ required: true, message: '请输入素材召回上限' }]}
               >
-                <InputNumber min={0} max={200} precision={0} className="!w-full" />
+                <InputNumber min={0} max={200} precision={0} className="w-full" />
               </Form.Item>
               <Form.Item
                 name="mediaMinRelevance"
@@ -1575,7 +1575,7 @@ export const KnowledgeBasePage = () => {
                 initialValue={defaultIndexConfig.mediaMinRelevance}
                 rules={[{ required: true, message: '请输入素材最低相关度' }]}
               >
-                <InputNumber min={0} max={1} step={0.05} className="!w-full" />
+                <InputNumber min={0} max={1} step={0.05} className="w-full" />
               </Form.Item>
             </div>
           </Form>
@@ -1588,33 +1588,33 @@ export const KnowledgeBasePage = () => {
 
   return (
     <Space direction="vertical" size={20} className="w-full">
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-100 !shadow-[0px_4px_20px_rgba(0,0,0,0.02)]">
+      <Card variant="borderless" className="rounded-xl border border-slate-100 shadow-[0px_4px_20px_rgba(0,0,0,0.02)]">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <Space size={12} align="start">
             <Button icon={<IconArrowLeft />} onClick={() => setSelectedBase(null)} />
             <div>
-              <Typography.Title level={3} className="!mb-1 !text-slate-900">{selectedBase.name}</Typography.Title>
-              <Typography.Text className="!text-slate-500">{selectedBase.description || '暂无描述'}</Typography.Text>
+              <Typography.Title level={3} className="mb-1 text-slate-900">{selectedBase.name}</Typography.Title>
+              <Typography.Text className="text-slate-500">{selectedBase.description || '暂无描述'}</Typography.Text>
               <div className="mt-2 flex flex-wrap gap-2">
-                <Tag color="cyan" className="!bg-brand-50 !text-brand-700 !border-brand-100">
+                <Tag color="cyan" className="bg-brand-50 text-brand-700 border-brand-100">
                   文档 <span className="font-mono font-semibold">{selectedBase.documentCount}</span>
                 </Tag>
                 <Tag color={selectedBase.isActive ? 'success' : 'default'}>
                   {selectedBase.isActive ? '可用于智能体' : '已停用'}
                 </Tag>
-                <Tag className="!bg-slate-50 !text-slate-600 !border-slate-200/60">
+                <Tag className="bg-slate-50 text-slate-600 border-slate-200/60">
                   分块 <span className="font-mono font-semibold">{selectedBase.chunkSize}</span> / <span className="font-mono font-semibold">{selectedBase.chunkOverlap}</span>
                 </Tag>
-                <Tag className="!bg-slate-50 !text-slate-600 !border-slate-200/60">
+                <Tag className="bg-slate-50 text-slate-600 border-slate-200/60">
                   默认召回 <span className="font-mono font-semibold">{selectedBase.retrievalTopN}</span>
                 </Tag>
-                <Tag className="!bg-slate-50 !text-slate-600 !border-slate-200/60">
+                <Tag className="bg-slate-50 text-slate-600 border-slate-200/60">
                   最低相关度 <span className="font-mono font-semibold">{selectedBase.retrievalMinScore ?? defaultIndexConfig.retrievalMinScore}</span>
                 </Tag>
-                <Tag className="!bg-slate-50 !text-slate-600 !border-slate-200/60">
+                <Tag className="bg-slate-50 text-slate-600 border-slate-200/60">
                   素材上限 <span className="font-mono font-semibold">{(selectedBase.mediaMaxAssets ?? defaultIndexConfig.mediaMaxAssets) || '不限制'}</span>
                 </Tag>
-                <Tag className="!bg-slate-50 !text-slate-600 !border-slate-200/60">
+                <Tag className="bg-slate-50 text-slate-600 border-slate-200/60">
                   素材相关度 <span className="font-mono font-semibold">{selectedBase.mediaMinRelevance ?? defaultIndexConfig.mediaMinRelevance}</span>
                 </Tag>
               </div>
@@ -1624,7 +1624,7 @@ export const KnowledgeBasePage = () => {
             <Input.Search
               allowClear
               placeholder="搜索标题 / 文件名"
-              className="!w-44 sm:!w-52 md:!w-64"
+              className="w-44 sm:w-52 md:w-64"
               onSearch={(value) => setDocumentKeyword(value.trim())}
             />
             <Button icon={<IconRefresh />} onClick={() => void loadDocuments()}>刷新</Button>
@@ -1650,7 +1650,7 @@ export const KnowledgeBasePage = () => {
       </Card>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]">
-        <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+        <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 sm:p-4">
               <div className="text-xs text-slate-500 font-medium">当前文档</div>
@@ -1681,7 +1681,7 @@ export const KnowledgeBasePage = () => {
         <Alert
           showIcon
           type="info"
-          className="!rounded-xl !border-brand-100 !bg-brand-50/30 !text-brand-800"
+          className="rounded-xl border-brand-100 bg-brand-50/30 text-brand-800"
           message="上线前建议"
           description="先用真实高频问题完成召回验证，确认片段来源可靠后再绑定到智能体应用。"
         />

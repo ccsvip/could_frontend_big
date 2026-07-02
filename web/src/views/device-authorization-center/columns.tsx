@@ -27,7 +27,7 @@ const requestColumns: ColumnsType<DeviceAuthorizationRequestRecord> = [
     fixed: 'left',
     width: 210,
     render: (value: string) => (
-      <Typography.Text className="!text-xs" copyable>
+      <Typography.Text className="text-xs" copyable>
         {value}
       </Typography.Text>
     ),
@@ -78,7 +78,7 @@ const requestColumns: ColumnsType<DeviceAuthorizationRequestRecord> = [
       return (
         <Space direction="vertical" size={0}>
           <span>{getInfoText(info, 'softwareVersion') || record.softwareVersion || '-'}</span>
-          <Typography.Text type="secondary" className="!text-xs">
+          <Typography.Text type="secondary" className="text-xs">
             {getInfoText(info, 'mainboardInfo') || record.mainboardInfo || '-'}
           </Typography.Text>
         </Space>
@@ -113,7 +113,7 @@ const authorizationColumns: ColumnsType<DeviceAuthorizationRequestRecord> = [
     fixed: 'left',
     width: 210,
     render: (value: string) => (
-      <Typography.Text className="!text-xs" copyable>
+      <Typography.Text className="text-xs" copyable>
         {value}
       </Typography.Text>
     ),
@@ -169,7 +169,7 @@ const logColumns: ColumnsType<DeviceActivationLogRecord> = [
     key: 'code',
     width: 210,
     render: (value: string) => (
-      <Typography.Text className="!text-xs" copyable>
+      <Typography.Text className="text-xs" copyable>
         {value}
       </Typography.Text>
     ),
@@ -203,7 +203,7 @@ const logColumns: ColumnsType<DeviceActivationLogRecord> = [
     render: (_, record) => (
       <Space direction="vertical" size={0}>
         <span>{getInfoText(record.deviceInfo, 'softwareVersion') || '-'}</span>
-        <Typography.Text type="secondary" className="!text-xs">
+        <Typography.Text type="secondary" className="text-xs">
           {getInfoText(record.deviceInfo, 'systemVersion') || '-'}
         </Typography.Text>
       </Space>

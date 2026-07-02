@@ -767,7 +767,7 @@ export const CommandWorkspacePage = () => {
       width: 720,
       content: (
         <div className="mt-3 max-h-[420px] overflow-y-auto">
-          <Typography.Paragraph className="!mb-3 !text-slate-600">
+          <Typography.Paragraph className="mb-3 text-slate-600">
             以下子任务引用的素材已不存在，已自动跳过；同一指令内其他子任务会正常导入。
           </Typography.Paragraph>
           <div className="space-y-2">
@@ -912,7 +912,7 @@ export const CommandWorkspacePage = () => {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <Typography.Title level={5} className="!mb-0 !text-[16px] !text-slate-900">
+              <Typography.Title level={5} className="mb-0 text-[16px] text-slate-900">
                 {item.name}
               </Typography.Title>
               <Tag color="blue">{item.command}</Tag>
@@ -980,7 +980,7 @@ export const CommandWorkspacePage = () => {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <Typography.Title level={5} className="!mb-0 !text-[16px] !text-slate-900">
+              <Typography.Title level={5} className="mb-0 text-[16px] text-slate-900">
                 {item.name}
               </Typography.Title>
               <Tag color="blue">{item.command}</Tag>
@@ -1014,7 +1014,7 @@ export const CommandWorkspacePage = () => {
                   <span><Tag color={taskTypeColors[step.type]}>{taskTypeLabels[step.type]}</Tag></span>
                   <span className="text-slate-700">{step.delaySeconds ?? 0} 秒</span>
                   <span className="flex flex-wrap items-center gap-2">
-                    <Typography.Text className="!text-slate-700">{getStepSummary(step)}</Typography.Text>
+                    <Typography.Text className="text-slate-700">{getStepSummary(step)}</Typography.Text>
                     {innerTaskCount > 0 ? (
                       <Tag color="cyan">包含 {innerTaskCount} 个子子任务</Tag>
                     ) : null}
@@ -1047,8 +1047,8 @@ export const CommandWorkspacePage = () => {
         <aside className="rounded-xl border border-slate-200/70 bg-white shadow-card">
           <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-4 py-4">
             <div>
-              <Typography.Title level={4} className="!mb-1 !text-[16px] !text-slate-900">子指令管理</Typography.Title>
-              <Typography.Text className="!text-xs !text-slate-500">配置是否导出和类型</Typography.Text>
+              <Typography.Title level={4} className="mb-1 text-[16px] text-slate-900">子指令管理</Typography.Title>
+              <Typography.Text className="text-xs text-slate-500">配置是否导出和类型</Typography.Text>
             </div>
             {canCreateGroup ? <Button type="primary" size="small" icon={<IconPlus />} onClick={openCreateGroup}>新增</Button> : null}
           </div>
@@ -1078,7 +1078,7 @@ export const CommandWorkspacePage = () => {
                         className="block w-full p-3 text-left"
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <Typography.Text strong className="!text-slate-900">{item.name}</Typography.Text>
+                          <Typography.Text strong className="text-slate-900">{item.name}</Typography.Text>
                           <Tag color={groupTypeColors[item.groupType]}>{groupTypeLabels[item.groupType]}</Tag>
                         </div>
                         <div className="mt-3 flex items-center justify-between gap-2 text-xs text-slate-600">
@@ -1115,12 +1115,12 @@ export const CommandWorkspacePage = () => {
           <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <Typography.Title level={4} className="!mb-0 !text-[17px] !text-slate-900">
+                <Typography.Title level={4} className="mb-0 text-[17px] text-slate-900">
                   {selectedGroup?.name || '指令列表'}
                 </Typography.Title>
                 {selectedGroup ? <Tag color={groupTypeColors[selectedGroup.groupType]}>{groupTypeLabels[selectedGroup.groupType]}</Tag> : null}
               </div>
-              <Typography.Text className="!text-xs !text-slate-500">
+              <Typography.Text className="text-xs text-slate-500">
                 类型：{selectedGroup ? groupTypeLabels[selectedGroup.groupType] : '-'}；每个指令基础参数：名称、指令
               </Typography.Text>
             </div>
@@ -1133,7 +1133,7 @@ export const CommandWorkspacePage = () => {
                   setCommandKeyword(event.target.value);
                   setCommandPage(1);
                 }}
-                className="!w-56"
+                className="w-56"
               />
               <Button icon={<IconReload />} onClick={refreshCurrentGroup}>刷新</Button>
               {selectedGroup && canExportCommands ? (
@@ -1231,7 +1231,7 @@ export const CommandWorkspacePage = () => {
               <Input placeholder="192.168.1.10" />
             </Form.Item>
             <Form.Item label="端口" name="port" rules={[{ required: true, message: '请输入端口' }]}>
-              <InputNumber min={1} max={65535} precision={0} className="!w-full" />
+              <InputNumber min={1} max={65535} precision={0} className="w-full" />
             </Form.Item>
             <Form.Item label="调用方式" name="callMethod" rules={[{ required: true, message: '请选择调用方式' }]}>
               <Select options={callMethodOptions} />

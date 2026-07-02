@@ -205,11 +205,11 @@ export const TenantManagementPage = () => {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <Typography.Title level={4} className="!mb-0">
+        <Typography.Title level={4} className="mb-0">
           租户管理
         </Typography.Title>
         <Space size={12} wrap>
-          <Typography.Text type="secondary" className="!text-[13px]">
+          <Typography.Text type="secondary" className="text-[13px]">
             公司范围：默认仅显示账号申请开通的公司，开启后显示全部公司
           </Typography.Text>
           <Switch
@@ -254,7 +254,7 @@ export const TenantManagementPage = () => {
         }
       >
         <Typography.Title level={5}>可见菜单</Typography.Title>
-        <Typography.Paragraph type="secondary" className="!text-[13px]">
+        <Typography.Paragraph type="secondary" className="text-[13px]">
           勾选该公司可使用的业务菜单。公司管理员只能在此范围内给员工分配。
         </Typography.Paragraph>
         <Tree
@@ -291,10 +291,10 @@ export const TenantManagementPage = () => {
           }}
         />
 
-        <Typography.Title level={5} className="!mt-6">
+        <Typography.Title level={5} className="mt-6">
           可用权限点
         </Typography.Title>
-        <Typography.Paragraph type="secondary" className="!text-[13px]">
+        <Typography.Paragraph type="secondary" className="text-[13px]">
           公司可使用的操作权限上限（员工实际权限再按其角色取交集）。勾选上方菜单会自动联动其权限点，你仍可在此手动增减。
         </Typography.Paragraph>
         {permsByModule.map(([module, points]) => (

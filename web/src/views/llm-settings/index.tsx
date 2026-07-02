@@ -103,7 +103,7 @@ export const LlmSettingsPage = () => {
     <div className="space-y-5 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <Typography.Title level={3} className="!mb-1">LLM设置</Typography.Title>
+          <Typography.Title level={3} className="mb-1">LLM设置</Typography.Title>
           <Typography.Text type="secondary">查看公司可用模型、测试连通性，并维护默认模型。</Typography.Text>
         </div>
         <Button icon={<IconReload />} onClick={() => void loadOptions()}>
@@ -136,7 +136,7 @@ export const LlmSettingsPage = () => {
                 <Typography.Text className="font-semibold text-slate-900">当前默认模型</Typography.Text>
               </Space>
               {defaultModel ? (
-                <Typography.Title level={5} className="!mb-0">
+                <Typography.Title level={5} className="mb-0">
                   {getModelAlias(defaultModel)}
                 </Typography.Title>
               ) : (

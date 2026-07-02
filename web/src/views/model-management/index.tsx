@@ -185,7 +185,7 @@ const renderModelAvatar = (
 
 const renderDownloadLink = (item: Pick<ModelAssetRecord, 'effectiveUrl' | 'localUrl' | 'cloudUrl'>) => {
   if (!item.effectiveUrl) {
-    return <Typography.Text className="!text-slate-400">暂无可用下载地址</Typography.Text>;
+    return <Typography.Text className="text-slate-400">暂无可用下载地址</Typography.Text>;
   }
 
   const linkText = item.localUrl ? '本地地址' : item.cloudUrl ? '云端地址' : '下载地址';
@@ -196,14 +196,14 @@ const renderDownloadLink = (item: Pick<ModelAssetRecord, 'effectiveUrl' | 'local
       <Typography.Link href={item.effectiveUrl} target="_blank" rel="noreferrer">
         {linkText}
       </Typography.Link>
-      <Typography.Text className="!text-xs !text-slate-400">{helperText}</Typography.Text>
+      <Typography.Text className="text-xs text-slate-400">{helperText}</Typography.Text>
     </Space>
   );
 };
 
 const renderAddressLink = (url: string, linkText: string, emptyText: string) => {
   if (!url) {
-    return <Typography.Text className="!text-slate-400">{emptyText}</Typography.Text>;
+    return <Typography.Text className="text-slate-400">{emptyText}</Typography.Text>;
   }
 
   return (
@@ -390,7 +390,7 @@ export const ModelManagementPage = () => {
         dataIndex: 'name',
         key: 'name',
         width: 180,
-        render: (value: string) => <Typography.Text strong className="!text-slate-900">{value}</Typography.Text>,
+        render: (value: string) => <Typography.Text strong className="text-slate-900">{value}</Typography.Text>,
       },
       {
         title: '模型类型',
@@ -472,7 +472,7 @@ export const ModelManagementPage = () => {
 
   return (
     <Space direction="vertical" size={18} className="w-full">
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="min-w-0">
@@ -481,10 +481,10 @@ export const ModelManagementPage = () => {
                   <IconRobot className="text-xl" />
                 </div>
                 <div>
-                  <Typography.Title level={3} className="!mb-1 !text-slate-900">
+                  <Typography.Title level={3} className="mb-1 text-slate-900">
                     模型管理
                   </Typography.Title>
-                  <Typography.Text className="!text-slate-500">
+                  <Typography.Text className="text-slate-500">
                     统一维护数字人模型文件、模型类型、屏幕方向、云端兜底地址以及前端可见状态，供生产环境下载消费。
                   </Typography.Text>
                 </div>
@@ -507,7 +507,7 @@ export const ModelManagementPage = () => {
                   setPage(1);
                   setVisibilityFilter(value as ModelAssetVisibilityFilter);
                 }}
-                className="!w-36"
+                className="w-36"
               />
               <Button icon={<IconReload />} onClick={() => void loadData()}>
                 刷新
@@ -521,7 +521,7 @@ export const ModelManagementPage = () => {
           </div>
 
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-            <Typography.Text className="!text-slate-500">
+            <Typography.Text className="text-slate-500">
               快速筛选：支持男、女、横屏男、横屏女、竖屏男、竖屏女等组合场景。
             </Typography.Text>
             <Segmented<ModelQuickFilter>
@@ -536,7 +536,7 @@ export const ModelManagementPage = () => {
         </div>
       </Card>
 
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <Table
           rowKey="id"
           loading={loading}
@@ -592,18 +592,18 @@ export const ModelManagementPage = () => {
                 <Descriptions.Item label="模型大小">{formatFileSize(previewItem.modelSize)}</Descriptions.Item>
                 <Descriptions.Item label="更新时间">{previewItem.updated_at}</Descriptions.Item>
               </Descriptions>
-              <Card variant="borderless" className="!rounded-xl !border !border-slate-200 !shadow-none">
+              <Card variant="borderless" className="rounded-xl border border-slate-200 shadow-none">
                 <Space direction="vertical" size={12} className="w-full">
                   <div>
-                    <Typography.Text className="!text-slate-500">有效下载地址</Typography.Text>
+                    <Typography.Text className="text-slate-500">有效下载地址</Typography.Text>
                     <div className="mt-2">{renderAddressLink(previewItem.effectiveUrl, '打开有效下载地址', '暂无可用下载地址')}</div>
                   </div>
                   <div>
-                    <Typography.Text className="!text-slate-500">本地地址</Typography.Text>
+                    <Typography.Text className="text-slate-500">本地地址</Typography.Text>
                     <div className="mt-2">{renderAddressLink(previewItem.localUrl, '打开本地地址', '未生成本地地址')}</div>
                   </div>
                   <div>
-                    <Typography.Text className="!text-slate-500">云端地址</Typography.Text>
+                    <Typography.Text className="text-slate-500">云端地址</Typography.Text>
                     <div className="mt-2">{renderAddressLink(previewItem.cloudUrl, '打开云端地址', '未填写云端地址')}</div>
                   </div>
                 </Space>
@@ -655,8 +655,8 @@ export const ModelManagementPage = () => {
             </Upload>
           </Form.Item>
           {editingItem ? (
-            <Space direction="vertical" size={4} className="!mb-4">
-              <Typography.Text className="!text-slate-500">
+            <Space direction="vertical" size={4} className="mb-4">
+              <Typography.Text className="text-slate-500">
                 {editingItem.hasThumbnail ? `当前缩略图：${editingItem.thumbnailName || '已上传缩略图'}` : '当前未上传缩略图，可继续保持空态。'}
               </Typography.Text>
               {editingItem.hasThumbnail ? (
@@ -679,12 +679,12 @@ export const ModelManagementPage = () => {
             </Upload>
           </Form.Item>
           {editingItem ? (
-            <Space direction="vertical" size={4} className="!mb-4">
-              <Typography.Text className="!text-slate-500">
+            <Space direction="vertical" size={4} className="mb-4">
+              <Typography.Text className="text-slate-500">
                 {editingItem.hasModelFile ? `当前模型文件：${editingItem.modelFileName || '已上传模型文件'}` : '当前未上传模型文件，可仅保留云端地址。'}
               </Typography.Text>
               {editingItem.localUrl ? (
-                <Typography.Text className="!text-slate-500">
+                <Typography.Text className="text-slate-500">
                   当前本地地址：{editingItem.localUrl}
                 </Typography.Text>
               ) : null}

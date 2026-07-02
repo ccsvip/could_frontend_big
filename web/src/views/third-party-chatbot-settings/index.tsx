@@ -473,7 +473,7 @@ export const ThirdPartyChatbotSettingsPage = () => {
             <Input.Password placeholder={editingProvider ? '留空表示不修改' : undefined} />
           </Form.Item>
           <Form.Item name="sortOrder" label="排序">
-            <InputNumber min={0} className="!w-full" />
+            <InputNumber min={0} className="w-full" />
           </Form.Item>
         </Form>
       </Modal>
@@ -503,7 +503,7 @@ export const ThirdPartyChatbotSettingsPage = () => {
             <Input.TextArea rows={3} maxLength={255} showCount />
           </Form.Item>
           <Form.Item name="sortOrder" label="排序">
-            <InputNumber min={0} className="!w-full" />
+            <InputNumber min={0} className="w-full" />
           </Form.Item>
         </Form>
       </Modal>

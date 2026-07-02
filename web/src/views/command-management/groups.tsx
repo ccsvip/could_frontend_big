@@ -175,21 +175,21 @@ export const CommandGroupManagementPage = () => {
 
   return (
     <Space direction="vertical" size={18} className="w-full">
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <Space size={10} align="center">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand-50 to-brand-100/60 text-brand-700">
               <IconBolt className="text-xl" />
             </div>
             <div>
-              <Typography.Title level={3} className="!mb-1 !text-slate-900">指令管理</Typography.Title>
-              <Typography.Text className="!text-slate-500">维护控制指令与任务指令的分组、导出开关和启用状态。</Typography.Text>
+              <Typography.Title level={3} className="mb-1 text-slate-900">指令管理</Typography.Title>
+              <Typography.Text className="text-slate-500">维护控制指令与任务指令的分组、导出开关和启用状态。</Typography.Text>
             </div>
           </Space>
           <Space wrap>
             <Input allowClear value={keywordInput} placeholder="搜索指令管理名称" onChange={(event) => setKeywordInput(event.target.value)} onPressEnter={applyFilters} className="w-full sm:w-64" />
-            <Select value={groupType} options={[{ label: '全部类型', value: 'all' }, ...groupTypeOptions]} onChange={(value) => { setGroupType(value as CommandGroupListQuery['groupType']); setPage(1); }} className="!w-32" />
-            <Select value={isActive} options={activeOptions as unknown as { label: string; value: string }[]} onChange={(value) => { setIsActive(value as 'all' | 'active' | 'inactive'); setPage(1); }} className="!w-32" />
+            <Select value={groupType} options={[{ label: '全部类型', value: 'all' }, ...groupTypeOptions]} onChange={(value) => { setGroupType(value as CommandGroupListQuery['groupType']); setPage(1); }} className="w-32" />
+            <Select value={isActive} options={activeOptions as unknown as { label: string; value: string }[]} onChange={(value) => { setIsActive(value as 'all' | 'active' | 'inactive'); setPage(1); }} className="w-32" />
             <Button type="primary" icon={<IconFilter />} onClick={applyFilters}>筛选</Button>
             <Button onClick={resetFilters}>重置</Button>
             <Button icon={<IconReload />} onClick={() => void loadData()}>刷新</Button>
@@ -198,7 +198,7 @@ export const CommandGroupManagementPage = () => {
         </div>
       </Card>
 
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <Table rowKey="id" loading={loading} columns={columns} dataSource={items} scroll={{ x: 980 }} pagination={{ current: page, pageSize, total, showSizeChanger: false, onChange: (nextPage) => setPage(nextPage) }} locale={{ emptyText: <Empty description="暂无指令管理数据" /> }} />
       </Card>
 

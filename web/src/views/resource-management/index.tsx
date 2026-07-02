@@ -847,13 +847,13 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
 
   return (
     <Space direction="vertical" size={18} className="w-full">
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <Typography.Title level={3} className="!mb-1 !text-slate-900">
+            <Typography.Title level={3} className="mb-1 text-slate-900">
               {config.title}
             </Typography.Title>
-            <Typography.Text className="!text-slate-500">{config.description}</Typography.Text>
+            <Typography.Text className="text-slate-500">{config.description}</Typography.Text>
           </div>
           <Space wrap>
             {resourceType === 'image' ? (
@@ -873,7 +873,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
                 setKeyword(value.trim());
                 setPage(1);
               }}
-              className="!w-60"
+              className="w-60"
             />
             <Select
               value={category}
@@ -882,7 +882,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
                 setCategory(value as ResourceCategory | 'all');
                 setPage(1);
               }}
-              className="!w-36"
+              className="w-36"
             />
             <Button icon={<IconReload />} onClick={() => void loadData()}>
               刷新
@@ -913,7 +913,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
               key={item.id}
               variant="borderless"
               loading={loading}
-              className="!rounded-xl !border !border-slate-200/70 !shadow-card overflow-hidden"
+              className="rounded-xl border border-slate-200/70 shadow-card overflow-hidden"
               cover={
                 hasSource ? (
                   resourceType === 'image' ? (
@@ -956,7 +956,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
             >
               <Space direction="vertical" size={10} className="w-full">
                 <div className="flex items-start justify-between gap-3">
-                  <Typography.Title level={5} className="!mb-0 !text-slate-900">
+                  <Typography.Title level={5} className="mb-0 text-slate-900">
                     {item.name}
                   </Typography.Title>
                   <Tag color={hasSource ? 'processing' : 'default'}>{hasSource ? (item.hasFile ? '已上传' : '云端') : '空资源'}</Tag>
@@ -966,10 +966,10 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
                   <Tag>{item.resourceTypeLabel}</Tag>
                   {resourceType === 'image' && item.isDigitalHumanBackground ? <Tag color="purple">数字人背景图</Tag> : null}
                 </Space>
-                <Typography.Paragraph className="!mb-0 !text-slate-500" ellipsis={{ rows: 2 }}>
+                <Typography.Paragraph className="mb-0 text-slate-500" ellipsis={{ rows: 2 }}>
                   {item.description || '暂无资源说明'}
                 </Typography.Paragraph>
-                <Typography.Text className="!text-slate-400 text-xs">更新时间：{item.updated_at}</Typography.Text>
+                <Typography.Text className="text-slate-400 text-xs">更新时间：{item.updated_at}</Typography.Text>
               </Space>
             </Card>
           );
@@ -977,12 +977,12 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
       </div>
 
       {!loading && items.length === 0 ? (
-        <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+        <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
           <Empty description={emptyDescription} />
         </Card>
       ) : null}
 
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <div className="flex justify-end">
           <Pagination
             current={page}
@@ -1073,7 +1073,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
             </Form.Item>
           ) : null}
           {resourceType === 'image' && editingItem && !editingItem.hasFile ? (
-            <Typography.Text className="!text-slate-500">当前资源没有上传图片，保存时可继续保持空态。</Typography.Text>
+            <Typography.Text className="text-slate-500">当前资源没有上传图片，保存时可继续保持空态。</Typography.Text>
           ) : null}
         </Form>
       </Modal>
@@ -1147,7 +1147,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
             </Upload>
           </Form.Item>
           {batchFiles.length > 0 ? (
-            <Typography.Text className="!text-slate-500">已选择 {batchFiles.length} 个图片文件</Typography.Text>
+            <Typography.Text className="text-slate-500">已选择 {batchFiles.length} 个图片文件</Typography.Text>
           ) : null}
         </Form>
       </Modal>

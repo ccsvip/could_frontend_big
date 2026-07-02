@@ -152,21 +152,21 @@ export const LogManagementPage = () => {
               <span className="inline-block h-1 w-1 rounded-full bg-brand-600" />
               Operation Audit
             </div>
-            <Typography.Title level={4} className="!mb-1 !font-semibold !text-slate-900">
+            <Typography.Title level={4} className="mb-1 font-semibold text-slate-900">
               操作日志审计
             </Typography.Title>
-            <Typography.Text className="!text-[13px] !text-slate-500">
+            <Typography.Text className="text-[13px] text-slate-500">
               {isPlatformAdmin
                 ? '记录平台范围内的新增、修改、删除操作，可按公司筛选追溯。'
                 : '记录当前公司的新增、修改、删除操作，便于追溯管理变更。'}
             </Typography.Text>
           </div>
-          <Space className="!w-full justify-end md:!w-auto">
+          <Space className="w-full justify-end md:w-auto">
             {isPlatformAdmin ? (
               <Select
                 allowClear
                 placeholder="按公司筛选"
-                className="!w-60"
+                className="w-60"
                 value={tenantFilter}
                 onChange={(value) => {
                   setTenantFilter(value);
@@ -184,7 +184,7 @@ export const LogManagementPage = () => {
 
       <Card
         variant="borderless"
-        className="!rounded-xl !border !border-slate-200/70 !shadow-card"
+        className="rounded-xl border border-slate-200/70 shadow-card"
         title={
           <Space size={8}>
             <IconFileSearch className="text-brand-700" />

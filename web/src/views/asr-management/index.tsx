@@ -668,10 +668,10 @@ export const AsrManagementPage = () => {
               <IconMicrophone className="text-xl" />
             </div>
             <div>
-              <Typography.Title level={4} className="!mb-0 !text-slate-900">
+              <Typography.Title level={4} className="mb-0 text-slate-900">
                 ASR 语音识别管理
               </Typography.Title>
-              <Typography.Text className="!text-slate-500 text-xs">
+              <Typography.Text className="text-slate-500 text-xs">
                 配置与测试语音识别服务，维护特定专有名词的实时文本替换规则。
               </Typography.Text>
             </div>
@@ -711,10 +711,10 @@ export const AsrManagementPage = () => {
                 <IconSettings className="text-lg" />
               </div>
               <div>
-                <Typography.Title level={5} className="!mb-0 !text-slate-900">
+                <Typography.Title level={5} className="mb-0 text-slate-900">
                   VAD 断句参数
                 </Typography.Title>
-                <Typography.Text className="!text-slate-500 text-xs block mt-0.5">
+                <Typography.Text className="text-slate-500 text-xs block mt-0.5">
                   控制实时语音识别的触发灵敏度和停止说话后的断句等待时间。
                 </Typography.Text>
               </div>
@@ -763,15 +763,17 @@ export const AsrManagementPage = () => {
                 className="mb-0"
                 tooltip="session.turn_detection.silence_duration_ms，推荐 400ms，范围 200 到 6000"
               >
-                <InputNumber
-                  min={200}
-                  max={6000}
-                  step={100}
-                  precision={0}
-                  addonAfter="ms"
-                  className="w-full h-10"
-                  placeholder="400"
-                />
+                <div className="flex items-center gap-2">
+                  <InputNumber
+                    min={200}
+                    max={6000}
+                    step={100}
+                    precision={0}
+                    className="flex-1 h-10"
+                    placeholder="400"
+                  />
+                  <span className="text-slate-500 text-sm whitespace-nowrap bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5">ms</span>
+                </div>
               </Form.Item>
 
               <Button
@@ -976,10 +978,10 @@ export const AsrManagementPage = () => {
                 <IconArrowsExchange className="text-lg" />
               </div>
               <div>
-                <Typography.Title level={5} className="!mb-0 !text-slate-900">
+                <Typography.Title level={5} className="mb-0 text-slate-900">
                   替换词规则配置
                 </Typography.Title>
-                <Typography.Text className="!text-slate-500 text-xs block mt-0.5">
+                <Typography.Text className="text-slate-500 text-xs block mt-0.5">
                   设置语音识别文本中的原词与替换词（例如公司名、专有名词），系统将在返回实时识别结果前自动应用规则进行修正。
                 </Typography.Text>
               </div>
@@ -1071,7 +1073,7 @@ export const AsrManagementPage = () => {
           >
             <Switch checkedChildren="启用" unCheckedChildren="停用" />
           </Form.Item>
-          <Typography.Text className="!text-slate-400 !text-xs">
+          <Typography.Text className="text-slate-400 text-xs">
             启用后识别将自动生效
           </Typography.Text>
         </Form>

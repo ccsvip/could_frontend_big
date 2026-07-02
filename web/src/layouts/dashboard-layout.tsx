@@ -393,7 +393,7 @@ const SidebarContent = ({
         selectedKeys={[selectedMenuKey]}
         {...(collapsed ? {} : { openKeys })}
         items={menuItems}
-        className="app-sidebar-menu !border-none !bg-transparent"
+        className="app-sidebar-menu border-none bg-transparent"
         theme="dark"
         inlineIndent={16}
         inlineCollapsed={collapsed}
@@ -623,7 +623,7 @@ export const DashboardLayout = () => {
           collapsed={sidebarCollapsed}
           trigger={null}
           theme="dark"
-          className="!fixed !bottom-0 !left-0 !top-0 !z-50 overflow-hidden !bg-[#0f172a] shadow-[8px_0_24px_rgba(15,23,42,0.10)] transition-all duration-300"
+          className="fixed bottom-0 left-0 top-0 z-50 overflow-hidden bg-[#0f172a] shadow-[8px_0_24px_rgba(15,23,42,0.10)] transition-all duration-300"
         >
           {sidebar}
         </Sider>
@@ -647,7 +647,7 @@ export const DashboardLayout = () => {
         className="relative z-10 min-h-screen bg-transparent transition-[margin-left] duration-300"
         style={{ marginLeft: isDesktop ? currentSidebarWidth : 0 }}
       >
-        <Header className="sticky top-0 z-40 !h-auto !border-b !border-slate-200/60 !bg-white/85 !px-[2%] !py-3 !leading-none backdrop-blur-xl">
+        <Header className="sticky top-0 z-40 h-auto border-b border-slate-200/60 bg-white/85 px-[2%] py-3 leading-none backdrop-blur-xl">
           <div className="mx-auto flex w-[96%] items-center justify-between gap-2 sm:gap-4">
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
               {!isDesktop ? (
@@ -655,7 +655,7 @@ export const DashboardLayout = () => {
                   type="text"
                   aria-label="打开导航菜单"
                   icon={<IconMenu2 size={16} />}
-                  className="!h-9 !w-9 shrink-0 !rounded-lg !text-slate-600"
+                  className="h-9 w-9 shrink-0 rounded-lg text-slate-600"
                   onClick={() => setMobileMenuOpen(true)}
                 />
               ) : null}
@@ -665,7 +665,7 @@ export const DashboardLayout = () => {
                     {breadcrumbText}
                   </div>
                 ) : null}
-                <Typography.Title level={3} className="!mb-0 !truncate !text-base !font-semibold !tracking-normal !text-slate-900 sm:!text-lg lg:!text-xl">
+                <Typography.Title level={3} className="mb-0 truncate text-base font-semibold tracking-normal text-slate-900 sm:text-lg lg:text-xl">
                   {currentMenuLabel || '设备管理中心'}
                 </Typography.Title>
               </div>
@@ -688,7 +688,7 @@ export const DashboardLayout = () => {
 
               <Dropdown menu={{ items: userItems }} placement="bottomRight" arrow>
                 <button type="button" className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-1.5 py-1 text-left transition hover:border-brand-300 hover:bg-brand-50/50 sm:gap-2.5 sm:pl-2 sm:pr-3">
-                  <Avatar size={32} className="!bg-gradient-to-br !from-brand-600 !to-brand-700 !font-semibold !text-white">
+                  <Avatar size={32} className="bg-gradient-to-br from-brand-600 to-brand-700 font-semibold text-white">
                     {username?.[0] || 'A'}
                   </Avatar>
                   <span className="hidden min-w-0 sm:block">

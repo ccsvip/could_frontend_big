@@ -45,10 +45,10 @@ export const ForcePasswordChangePage = () => {
           <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-xl text-amber-600">
             <IconLock />
           </div>
-          <Typography.Title level={3} className="!mb-1.5">
+          <Typography.Title level={3} className="mb-1.5">
             请先修改初始密码
           </Typography.Title>
-          <Typography.Text className="!text-[13px] !text-slate-500">
+          <Typography.Text className="text-[13px] text-slate-500">
             {username ? `${username}，` : ''}为保障账号安全，首次登录需修改管理员设置的初始密码。
           </Typography.Text>
         </div>
@@ -89,7 +89,7 @@ export const ForcePasswordChangePage = () => {
           >
             <Input.Password placeholder="再次输入新密码" autoComplete="new-password" />
           </Form.Item>
-          <Button type="primary" block size="large" loading={submitting} onClick={onSubmit} className="!h-11">
+          <Button type="primary" block size="large" loading={submitting} onClick={onSubmit} className="h-11">
             修改并重新登录
           </Button>
         </Form>

@@ -307,7 +307,7 @@ export const TaskStepFormList = ({
                     clearDragState();
                   }}
                   className={[
-                    '!rounded-lg !border-slate-200 task-step-card--interactive',
+                    'rounded-lg border-slate-200 task-step-card--interactive',
                     isDragging ? 'task-step-card--dragging' : '',
                     dropPosition ? 'task-step-card--drop-target' : '',
                     dropPosition === 'before' ? 'task-step-card--drop-before' : '',
@@ -360,7 +360,7 @@ export const TaskStepFormList = ({
                       name={[field.name, 'delaySeconds']}
                       rules={[{ required: true, message: '请输入延迟时间' }]}
                     >
-                      <InputNumber min={0} precision={0} className="!w-full" suffix="秒" />
+                      <InputNumber min={0} precision={0} className="w-full" suffix="秒" />
                     </Form.Item>
                     <Form.Item shouldUpdate noStyle>
                       {({ getFieldValue }) => {
@@ -375,7 +375,7 @@ export const TaskStepFormList = ({
                               label="等待子子任务完成"
                               name={[field.name, 'waitForInnerTasks']}
                               valuePropName="checked"
-                              className="!mb-0"
+                              className="mb-0"
                             >
                               <Switch checkedChildren="等待" unCheckedChildren="不等" />
                             </Form.Item>
@@ -384,7 +384,7 @@ export const TaskStepFormList = ({
                               label="是否显示到前端"
                               name={[field.name, 'isShow']}
                               valuePropName="checked"
-                              className="!mb-0"
+                              className="mb-0"
                             >
                               <Switch checkedChildren="显示" unCheckedChildren="隐藏" />
                             </Form.Item>

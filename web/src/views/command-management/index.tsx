@@ -253,21 +253,21 @@ export const ControlCommandManagementPage = () => {
 
   return (
     <Space direction="vertical" size={18} className="w-full">
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <Space size={10} align="center">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand-50 to-brand-100/60 text-brand-700">
               <IconBolt className="text-xl" />
             </div>
             <div>
-              <Typography.Title level={3} className="!mb-1 !text-slate-900">控制指令</Typography.Title>
-              <Typography.Text className="!text-slate-500">维护中控可执行指令、网络地址、端口和 UDP/TCP 调用方式。</Typography.Text>
+              <Typography.Title level={3} className="mb-1 text-slate-900">控制指令</Typography.Title>
+              <Typography.Text className="text-slate-500">维护中控可执行指令、网络地址、端口和 UDP/TCP 调用方式。</Typography.Text>
             </div>
           </Space>
           <Space wrap>
             <Input allowClear value={keywordInput} placeholder="搜索名称 / 指令" onChange={(event) => setKeywordInput(event.target.value)} onPressEnter={applyFilters} className="w-full sm:w-64" />
-            <Select value={groupId} options={[{ label: '全部指令管理', value: 'all' }, ...groupOptions]} onChange={(value) => { setGroupId(value as number | 'all'); setPage(1); }} className="!w-40" />
-            <Select value={isActive} options={activeOptions as unknown as { label: string; value: string }[]} onChange={(value) => { setIsActive(value as 'all' | 'active' | 'inactive'); setPage(1); }} className="!w-32" />
+            <Select value={groupId} options={[{ label: '全部指令管理', value: 'all' }, ...groupOptions]} onChange={(value) => { setGroupId(value as number | 'all'); setPage(1); }} className="w-40" />
+            <Select value={isActive} options={activeOptions as unknown as { label: string; value: string }[]} onChange={(value) => { setIsActive(value as 'all' | 'active' | 'inactive'); setPage(1); }} className="w-32" />
             <Button type="primary" icon={<IconFilter />} onClick={applyFilters}>筛选</Button>
             <Button onClick={resetFilters}>重置</Button>
             <Button icon={<IconReload />} onClick={() => void loadData()}>刷新</Button>
@@ -276,7 +276,7 @@ export const ControlCommandManagementPage = () => {
         </div>
       </Card>
 
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <Table
           rowKey="id"
           loading={loading}
@@ -299,7 +299,7 @@ export const ControlCommandManagementPage = () => {
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_120px_120px_130px]">
             <Form.Item label="IP" name="ip" rules={[{ required: true, message: '请输入 IP' }]}><Input placeholder="192.168.1.10" /></Form.Item>
-            <Form.Item label="端口" name="port" rules={[{ required: true, message: '请输入端口' }]}><InputNumber min={1} max={65535} precision={0} className="!w-full" /></Form.Item>
+            <Form.Item label="端口" name="port" rules={[{ required: true, message: '请输入端口' }]}><InputNumber min={1} max={65535} precision={0} className="w-full" /></Form.Item>
             <Form.Item label="调用方式" name="callMethod" rules={[{ required: true, message: '请选择调用方式' }]}><Select options={callMethodOptions} /></Form.Item>
             <Form.Item label="指令类型" name="commandValueType" rules={[{ required: true, message: '请选择指令类型' }]}><Select options={commandValueTypeOptions} /></Form.Item>
           </div>

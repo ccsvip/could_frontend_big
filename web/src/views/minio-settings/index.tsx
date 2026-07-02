@@ -76,15 +76,15 @@ export const MinioSettingsPage = () => {
 
   return (
     <Space direction="vertical" size={18} className="w-full">
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
               <IconCloud className="text-xl" />
             </div>
             <div>
-              <Typography.Title level={3} className="!mb-1 !text-slate-900">存储位置</Typography.Title>
-              <Typography.Text className="!text-slate-500">配置平台图片和视频上传位置，选择 R2 后图片与视频都会直传到 R2 存储桶。</Typography.Text>
+              <Typography.Title level={3} className="mb-1 text-slate-900">存储位置</Typography.Title>
+              <Typography.Text className="text-slate-500">配置平台图片和视频上传位置，选择 R2 后图片与视频都会直传到 R2 存储桶。</Typography.Text>
             </div>
           </div>
           <Space wrap>
@@ -94,7 +94,7 @@ export const MinioSettingsPage = () => {
         </div>
       </Card>
 
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <Form<MinioSettingsPayload> form={form} layout="vertical" className="max-w-3xl" initialValues={{ storageBackend: 'local' }}>
           <Form.Item label="当前存储位置" name="storageBackend" rules={[{ required: true, message: '请选择存储位置' }]}>
             <Select
@@ -106,7 +106,7 @@ export const MinioSettingsPage = () => {
           </Form.Item>
 
           {storageBackend === 'r2' ? (
-            <Card size="small" className="!mb-4 !rounded-xl !border-slate-200" title="R2 存储桶">
+            <Card size="small" className="mb-4 rounded-xl border-slate-200" title="R2 存储桶">
               <Form.Item label="Account ID" name="r2AccountId" rules={[{ required: true, message: '请输入 R2 Account ID' }]}>
                 <Input placeholder="Cloudflare Account ID" />
               </Form.Item>
@@ -132,7 +132,7 @@ export const MinioSettingsPage = () => {
             </Card>
           ) : null}
 
-          <Typography.Title level={5} className="!mb-3 !text-slate-800">现有 MinIO / 视频直传方案</Typography.Title>
+          <Typography.Title level={5} className="mb-3 text-slate-800">现有 MinIO / 视频直传方案</Typography.Title>
           <Form.Item label="Endpoint" name="endpoint" rules={[{ required: storageBackend !== 'r2', message: '请输入 Endpoint' }]}> 
             <Input placeholder="localhost:9000" />
           </Form.Item>
@@ -157,7 +157,7 @@ export const MinioSettingsPage = () => {
           </Form.Item>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Form.Item label="视频大小上限（MB）" name="videoMaxSizeMB" rules={[{ required: true, message: '请输入大小上限' }]}>
-              <InputNumber min={1} precision={0} className="!w-full" />
+              <InputNumber min={1} precision={0} className="w-full" />
             </Form.Item>
             <div className="grid grid-cols-3 gap-4">
               <Form.Item label="HTTPS" name="secure" valuePropName="checked">
@@ -174,10 +174,10 @@ export const MinioSettingsPage = () => {
         </Form>
       </Card>
 
-      <Card variant="borderless" className="!rounded-xl !border !border-slate-200/70 !shadow-card">
+      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
         <div className="mb-4">
-          <Typography.Title level={4} className="!mb-1 !text-slate-900">公司视频额度</Typography.Title>
-          <Typography.Text className="!text-slate-500">
+          <Typography.Title level={4} className="mb-1 text-slate-900">公司视频额度</Typography.Title>
+          <Typography.Text className="text-slate-500">
             超级管理员可为每家公司单独设置视频上传容量额度；关闭限制后该公司不受容量额度限制。
           </Typography.Text>
         </div>
@@ -193,7 +193,7 @@ export const MinioSettingsPage = () => {
               render: (_, record) => (
                 <Space direction="vertical" size={0}>
                   <Typography.Text strong>{record.tenantName}</Typography.Text>
-                  <Typography.Text className="!text-xs !text-slate-400">{record.tenantCode}</Typography.Text>
+                  <Typography.Text className="text-xs text-slate-400">{record.tenantCode}</Typography.Text>
                 </Space>
               ),
             },
@@ -232,7 +232,7 @@ export const MinioSettingsPage = () => {
                   precision={0}
                   disabled={!record.quotaLimited}
                   value={record.quotaMB ?? undefined}
-                  className="!w-full"
+                  className="w-full"
                   onChange={(value) => updateQuotaRow(record.tenantId, { quotaMB: value == null ? null : Number(value) })}
                 />
               ),
