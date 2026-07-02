@@ -170,3 +170,5 @@ docker-compose.override.yaml
 .codex/skills/.system/**
 !.codex/prompts/
 !.codex/prompts/**
+
+wiki/
