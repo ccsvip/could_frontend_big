@@ -1,59 +1,48 @@
 import re
 
-with open('web/src/views/knowledge-base/index.bak.tsx', 'r', encoding='utf-8') as f:
+with open('web/src/views/knowledge-base/index.tsx', 'r', encoding='utf-8') as f:
     content = f.read()
 
-# Match the Create Modal
-match = re.search(r'(\s*<Modal\s+title="创建知识库".*?</Modal>)', content, re.DOTALL)
-if match:
-    create_modal_code = match.group(1)
-    
-    with open('web/src/views/knowledge-base/index.tsx', 'r', encoding='utf-8') as f:
-        current = f.read()
-    
-    insert_str = '\n  const createBaseModal = (' + create_modal_code + '\n  );\n'
-    
-    current = current.replace('  const documentManagementTab = (', insert_str + '\n  const documentManagementTab = (')
-    
-    current = current.replace('{editBaseModal}', '{editBaseModal}\n        {createBaseModal}')
+# Add imports
+imports = '''import { useSearchParams } from 'react-router-dom';
+import { PrototypeSwitcher } from '../../components/PrototypeSwitcher';
+import { DetailVariantA, DetailVariantB, DetailVariantC } from './DetailVariants';
+'''
+content = content.replace('import { useCallback, useEffect, useMemo, useRef, useState } from \'react\';', 'import { useCallback, useEffect, useMemo, useRef, useState } from \'react\';\n' + imports)
 
-    # Also restore the missing unused variables that I stripped earlier
-    # previewBaseId, setPreviewBaseId, createOpen, setCreateOpen, createSaving, setCreateSaving, 
-    # deletingBaseId, setDeletingBaseId, handleCreateBase, openEditBase, handleDeleteBase
+# Find the end of the `if (!selectedBase)` return block
+# It starts around line 1524: `  return (`
+match = re.search(r'(\n  return \(\n    <Space direction="vertical" size=\{32\}.*?);\n\};\n', content, re.DOTALL)
+if not match:
+    print('Failed to find detail view return block in index.tsx')
+    exit(1)
 
-    # Actually they are needed by the new code, so let's check if they exist, if not, wait I just deleted them!
-    # I should restore them from the backup file.
-    
-    state_vars = [
-        r'(const \[previewBaseId, setPreviewBaseId\] = useState<number \| null>\(null\);)',
-        r'(const \[createOpen, setCreateOpen\] = useState\(false\);)',
-        r'(const \[createSaving, setCreateSaving\] = useState\(false\);)',
-        r'(const \[deletingBaseId, setDeletingBaseId\] = useState<number \| null>\(null\);)'
-    ]
-    funcs = [
-        r'(const handleCreateBase = async \(\) => \{.*?\n  \};\n)',
-        r'(const openEditBase = useCallback\(\(item: KnowledgeBaseRecord\) => \{.*?\n  \}\), \[editForm\]\);\n)',
-        r'(const handleDeleteBase = useCallback\(async \(item: KnowledgeBaseRecord\) => \{.*?\n  \}\), \[loadBases, selectedBase\]\);\n)'
-    ]
-    
-    for var in state_vars:
-        m = re.search(var, content)
-        if m and m.group(1) not in current:
-            current = current.replace('const [editForm] = Form.useForm<KnowledgeBaseFormValues>();', 'const [editForm] = Form.useForm<KnowledgeBaseFormValues>();\n  ' + m.group(1))
+old_return = match.group(1)
 
-    for func in funcs:
-        m = re.search(func, content, re.DOTALL)
-        if m and m.group(1)[:20] not in current:
-            current = current.replace('const handleEditBase = async () => {', m.group(1) + '\n\n  const handleEditBase = async () => {')
+new_return = '''
+  const [searchParams] = useSearchParams();
+  const variant = searchParams.get('variant') || 'A';
 
-    # Also fix implicit any on openEditBase and handleDeleteBase just in case
-    current = current.replace('const openEditBase = useCallback((item: KnowledgeBaseRecord) => {', 'const openEditBase = useCallback((item: any) => {')
-    current = current.replace('const handleDeleteBase = useCallback(async (item: KnowledgeBaseRecord) => {', 'const handleDeleteBase = useCallback(async (item: any) => {')
+  const detailProps = {
+    selectedBase, setSelectedBase, canUpload, canDelete, canBulkDownload,
+    openEditBase, deletingBaseId, handleDeleteBase, setDocumentKeyword,
+    loadDocuments, indexingBase, handleIndexBase, selectedRowKeys,
+    bulkDownloading, handleBulkDownload, documentManagementTab,
+    mediaManagementTab, recallTestTab, mediaAssetModals
+  };
 
+  return (
+    <>
+      {variant === 'A' && <DetailVariantA {...detailProps} />}
+      {variant === 'B' && <DetailVariantB {...detailProps} />}
+      {variant === 'C' && <DetailVariantC {...detailProps} />}
+      <PrototypeSwitcher variants={['A', 'B', 'C']} current={variant} />
+    </>
+  );
+'''
 
-    with open('web/src/views/knowledge-base/index.tsx', 'w', encoding='utf-8') as f:
-        f.write(current)
-    
-    print('Successfully inserted createBaseModal and restored vars')
-else:
-    print('Failed to find create base modal')
+content = content.replace(old_return, new_return)
+
+with open('web/src/views/knowledge-base/index.tsx', 'w', encoding='utf-8') as f:
+    f.write(content)
+print('Successfully refactored index.tsx for detail variants')

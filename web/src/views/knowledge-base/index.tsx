@@ -5,11 +5,13 @@ import {
   IconDatabase,
   IconDownload,
   IconFileSearch,
+  IconFileText,
   IconGitBranch,
   IconPencil,
   IconPhoto,
   IconPlus,
   IconRefresh,
+  IconSearch,
   IconAdjustments,
   IconStack2,
   IconTrash,
@@ -30,6 +32,7 @@ import {
   Progress,
   Space,
   Table,
+  Tabs,
   Tag,
   Typography,
   Upload,
@@ -762,6 +765,7 @@ export const KnowledgeBasePage = () => {
 
   const editBaseModal = (
     <Modal
+      forceRender
       title={<span className="text-slate-800 font-bold">编辑知识库配置</span>}
       open={editOpen}
       width={640}
@@ -845,6 +849,7 @@ export const KnowledgeBasePage = () => {
 
   const createBaseModal = (
         <Modal
+          forceRender
           title="创建知识库"
           open={createOpen}
           confirmLoading={createSaving}
@@ -1012,7 +1017,7 @@ export const KnowledgeBasePage = () => {
           columns={documentColumns}
           dataSource={documents}
           rowSelection={canBulkDownload ? { selectedRowKeys, onChange: setSelectedRowKeys } : undefined}
-          pagination={false}
+          pagination={{ pageSize: 10 }}
           locale={{ emptyText: '当前知识库暂无文档' }}
           scroll={{ x: 900 }}
         />
@@ -1095,6 +1100,7 @@ export const KnowledgeBasePage = () => {
                 <Card
                   key={item.id}
                   variant="borderless"
+                  styles={{ body: { padding: 0 } }}
                   className="group overflow-hidden rounded-xl border border-slate-200/70 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:border-brand-300/50 hover:shadow-[0_4px_10px_rgba(15,23,42,0.06)] [&_.ant-card-body]:p-0 bg-white"
                 >
                   <div className="flex flex-col sm:flex-row h-full">
@@ -1219,6 +1225,7 @@ export const KnowledgeBasePage = () => {
   const mediaAssetModals = (
     <>
       <Modal
+        forceRender
         title={<span className="text-slate-800 font-bold">绑定配套素材</span>}
         open={bindMediaOpen}
         width={720}
@@ -1249,6 +1256,7 @@ export const KnowledgeBasePage = () => {
       </Modal>
 
       <Modal
+        forceRender
         title={<span className="text-slate-800 font-bold">编辑素材信息</span>}
         open={Boolean(editingMediaAsset)}
         width={520}
@@ -1455,7 +1463,7 @@ export const KnowledgeBasePage = () => {
                   <Card 
                     hoverable 
                     className="h-full rounded-2xl border-slate-200 overflow-hidden group hover:border-brand-300 hover:shadow-lg transition-all"
-                    bodyStyle={{ padding: 0 }}
+                    styles={{ body: { padding: 0 } }}
                     onClick={() => setSelectedBase(item)}
                   >
                     <div className={`h-2 ${item.isActive ? 'bg-emerald-500' : 'bg-slate-300'}`} />
@@ -1577,49 +1585,36 @@ export const KnowledgeBasePage = () => {
         </div>
       </div>
 
-      {/* Stacked Layout Sections (Instead of Tabs) */}
-      
-      <section id="section-documents" className="scroll-mt-32">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-1.5 h-6 bg-brand-500 rounded-full"></div>
-          <Typography.Title level={4} className="m-0">文档管理</Typography.Title>
-          <Tag className="rounded-full bg-slate-100 border-0 text-slate-600">{selectedBase.documentCount} 份</Tag>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          {documentManagementTab}
-        </div>
-      </section>
-
-      <section id="section-media" className="scroll-mt-32">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-1.5 h-6 bg-cyan-500 rounded-full"></div>
-          <Typography.Title level={4} className="m-0">配套素材</Typography.Title>
-          <Typography.Text type="secondary" className="text-sm">为知识库补充图片和视频</Typography.Text>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          {mediaManagementTab}
-        </div>
-      </section>
-
-      <section id="section-recall" className="scroll-mt-32">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-1.5 h-6 bg-violet-500 rounded-full"></div>
-          <Typography.Title level={4} className="m-0">召回测试</Typography.Title>
-          <Typography.Text type="secondary" className="text-sm">验证检索效果</Typography.Text>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-          <Alert
-            showIcon
-            type="info"
-            className="mb-6 rounded-xl border-brand-100 bg-brand-50/30 text-brand-800"
-            message="验证建议"
-            description="上线前请务必使用真实的高频业务问题进行测试，确保核心知识能够被准确命中。"
-          />
-          {recallTestTab}
-        </div>
-      </section>
-
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <Tabs
+          defaultActiveKey="documents"
+          items={[
+            {
+              key: 'documents',
+              label: <span className="flex items-center gap-2"><IconFileText size={16}/>文档管理</span>,
+              children: documentManagementTab
+            },
+            {
+              key: 'media',
+              label: <span className="flex items-center gap-2"><IconPhoto size={16}/>配套素材</span>,
+              children: mediaManagementTab
+            },
+            {
+              key: 'recall',
+              label: <span className="flex items-center gap-2"><IconSearch size={16}/>召回测试</span>,
+              children: (
+                <>
+                  <Alert showIcon type="info" className="mb-6 rounded-xl border-brand-100 bg-brand-50/30 text-brand-800" message="验证建议" description="上线前请务必使用真实的高频业务问题进行测试。" />
+                  {recallTestTab}
+                </>
+              )
+            },
+          ]}
+        />
+      </div>
       {mediaAssetModals}
+      {editBaseModal}
+      {createBaseModal}
     </Space>
   );
 };
