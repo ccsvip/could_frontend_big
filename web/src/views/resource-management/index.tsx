@@ -1095,9 +1095,9 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         {previewItem ? (
           hasResourceSource(previewItem) ? (
             resourceType === 'image' ? (
-              <Image src={getResourceSourceUrl(previewItem)} alt={previewItem.name} className="w-full max-h-[75vh] object-contain bg-slate-100 rounded-lg" />
+              <Image src={getResourceSourceUrl(previewItem)} alt={previewItem.name} className="w-full max-h-[clamp(300px,75vh,800px)] object-contain bg-slate-100 rounded-lg" />
             ) : (
-              <div className="flex h-[78vh] max-h-[820px] min-h-[360px] w-full items-center justify-center overflow-hidden rounded-xl bg-black">
+              <div className="flex h-[clamp(360px,78vh,820px)] w-full items-center justify-center overflow-hidden rounded-xl bg-black">
                 <video src={getResourceSourceUrl(previewItem)} controls className="h-full w-full object-contain" />
               </div>
             )

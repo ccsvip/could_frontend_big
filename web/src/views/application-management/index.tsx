@@ -405,7 +405,7 @@ const TrendChart = ({ dailyTrends }: { dailyTrends: { date: string; count: numbe
         formatter: (params: any) => {
           const item = params[0];
           return `<div style="font-size: 11px; color: #94a3b8; margin-bottom: 4px;">${item.name}</div>
-            <div style="font-weight: bold; font-size: 14px; color: #38bdf8;">${item.value} <span style="font-size: 11px; font-weight: normal; color: #cbd5e1;">次会话</span></div>`;
+            <div style="font-weight: bold; font-size: 14px; color: #14b8a6;">${item.value} <span style="font-size: 11px; font-weight: normal; color: #cbd5e1;">次会话</span></div>`;
         },
       },
       xAxis: {

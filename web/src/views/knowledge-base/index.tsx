@@ -1005,7 +1005,7 @@ export const KnowledgeBasePage = () => {
                 <Card
                   key={item.id}
                   variant="borderless"
-                  className="group !overflow-hidden rounded-xl border border-slate-200/70 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:border-brand-300/50 hover:shadow-[0_4px_10px_rgba(15,23,42,0.06)] [&_.ant-card-body]:p-0 bg-white"
+                  className="group overflow-hidden rounded-xl border border-slate-200/70 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-all hover:border-brand-300/50 hover:shadow-[0_4px_10px_rgba(15,23,42,0.06)] [&_.ant-card-body]:p-0 bg-white"
                 >
                   <div className="flex flex-col sm:flex-row h-full">
                     <div className="relative flex min-h-[160px] items-center justify-center overflow-hidden border-b sm:border-b-0 sm:border-r border-slate-100 bg-slate-50 sm:w-44 shrink-0">
@@ -1330,7 +1330,7 @@ export const KnowledgeBasePage = () => {
             <Input.Search
               allowClear
               placeholder="搜索知识库"
-              className="w-44 sm:w-56"
+              className="w-44 sm:w-full sm:w-56"
               onSearch={(value) => {
                 setBaseKeyword(value.trim());
                 setBasePage(1);

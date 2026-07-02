@@ -266,8 +266,8 @@ export const ControlCommandManagementPage = () => {
           </Space>
           <Space wrap>
             <Input allowClear value={keywordInput} placeholder="搜索名称 / 指令" onChange={(event) => setKeywordInput(event.target.value)} onPressEnter={applyFilters} className="w-full sm:w-64" />
-            <Select value={groupId} options={[{ label: '全部指令管理', value: 'all' }, ...groupOptions]} onChange={(value) => { setGroupId(value as number | 'all'); setPage(1); }} className="w-40" />
-            <Select value={isActive} options={activeOptions as unknown as { label: string; value: string }[]} onChange={(value) => { setIsActive(value as 'all' | 'active' | 'inactive'); setPage(1); }} className="w-32" />
+            <Select value={groupId} options={[{ label: '全部指令管理', value: 'all' }, ...groupOptions]} onChange={(value) => { setGroupId(value as number | 'all'); setPage(1); }} className="w-full sm:w-40" />
+            <Select value={isActive} options={activeOptions as unknown as { label: string; value: string }[]} onChange={(value) => { setIsActive(value as 'all' | 'active' | 'inactive'); setPage(1); }} className="w-full sm:w-32" />
             <Button type="primary" icon={<IconFilter />} onClick={applyFilters}>筛选</Button>
             <Button onClick={resetFilters}>重置</Button>
             <Button icon={<IconReload />} onClick={() => void loadData()}>刷新</Button>
