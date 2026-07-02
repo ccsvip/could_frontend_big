@@ -3,7 +3,7 @@ import logging
 from types import SimpleNamespace
 
 import httpx
-from asgiref.sync import sync_to_async
+from asgiref.sync import async_to_sync, sync_to_async
 from django.core.cache import cache
 from django.db import transaction
 from django.db import connections
@@ -676,6 +676,13 @@ def _looks_like_masked_secret(value: str) -> bool:
     return bool(value) and '*' in value and len(value.replace('*', '')) <= 8
 
 
+async def _collect_third_party_stream(chatbot, message: str) -> str:
+    parts = []
+    async for text in third_party_chatbots.stream_chatbot_message(chatbot, message, conversation=None):
+        if text:
+            parts.append(str(text))
+    return ''.join(parts).strip()
+
 class PlatformThirdPartyChatbotIntegrationViewSet(PermissionMappedModelViewSet):
     queryset = ThirdPartyChatbotIntegration.objects.select_related('provider', 'chatbot').order_by('-updated_at', '-id')
     permission_map = _PLATFORM_LLM_PERMISSION_MAP
@@ -752,17 +759,29 @@ class PlatformThirdPartyChatbotIntegrationViewSet(PermissionMappedModelViewSet):
             api_base_url=attrs.get('providerApiBaseUrl') or (integration.provider.api_base_url if integration else ''),
             api_key=provider_api_key,
         )
+        config = attrs.get('config') or {}
+        question = attrs.get('question') or ''
         try:
-            result = third_party_chatbots.run_chatbot_integration_config(
-                provider=provider,
-                config=attrs.get('config') or {},
-                message=attrs.get('question') or '',
-                conversation=None,
-                initial_variables={
-                    'externalApplicationId': attrs.get('externalApplicationId') or '',
-                },
-                timeout=120,
-            )
+            if third_party_chatbots.supports_streaming(config):
+                chatbot = SimpleNamespace(
+                    id=integration.chatbot_id if integration else None,
+                    provider=provider,
+                    external_application_id=attrs.get('externalApplicationId') or '',
+                    integration=SimpleNamespace(is_active=True, config=config),
+                )
+                answer = async_to_sync(_collect_third_party_stream)(chatbot, question)
+                result = {'answer': answer, 'steps': []}
+            else:
+                result = third_party_chatbots.run_chatbot_integration_config(
+                    provider=provider,
+                    config=config,
+                    message=question,
+                    conversation=None,
+                    initial_variables={
+                        'externalApplicationId': attrs.get('externalApplicationId') or '',
+                    },
+                    timeout=120,
+                )
         except third_party_chatbots.ThirdPartyChatbotIntegrationError as exc:
             return Response(
                 {'success': False, 'message': str(exc)[:200], 'answer': '', 'steps': exc.steps},
@@ -1707,7 +1726,7 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
     update_config=extend_schema(tags=['AI Chat']),
 )
 class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet):
-    queryset = ChatConversation.objects.select_related('llm_model__provider', 'third_party_chatbot__provider', 'application')
+    queryset = ChatConversation.objects.select_related('llm_model__provider', 'third_party_chatbot__provider', 'third_party_chatbot__integration', 'application')
     serializer_class = ChatConversationListSerializer
     permission_map = {
         'list': [CanViewChat],
@@ -2011,17 +2030,36 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                 conversation.save(update_fields=['updated_at'])
                 return answer_blocks
 
+            third_party_config = (getattr(chatbot.integration, 'config', None) if getattr(chatbot, 'integration', None) else None)
+
             async def third_party_event_stream():
+                full_content = ''
                 try:
-                    answer_text = await sync_to_async(
-                        third_party_chatbots.send_chatbot_message,
-                        thread_sensitive=True,
-                    )(chatbot, content, conversation=conversation)
-                    answer_blocks = await sync_to_async(
-                        _save_third_party_assistant_message,
-                        thread_sensitive=True,
-                    )(answer_text)
-                    yield f"data: {json.dumps({'content': answer_text, 'blocks': serialize_reply_blocks(answer_blocks, tenant=conversation.tenant, request=request)})}\n\n"
+                    if use_stream and third_party_chatbots.supports_streaming(third_party_config):
+                        async for text in third_party_chatbots.stream_chatbot_message(
+                            chatbot,
+                            content,
+                            conversation=conversation,
+                        ):
+                            if text:
+                                full_content += text
+                                yield f"data: {json.dumps({'content': text})}\n\n"
+                    else:
+                        full_content = await sync_to_async(
+                            third_party_chatbots.send_chatbot_message,
+                            thread_sensitive=True,
+                        )(chatbot, content, conversation=conversation)
+                        if full_content:
+                            yield f"data: {json.dumps({'content': full_content})}\n\n"
+
+                    if full_content:
+                        answer_blocks = await sync_to_async(
+                            _save_third_party_assistant_message,
+                            thread_sensitive=True,
+                        )(full_content)
+                        yield f"data: {json.dumps({'blocks': serialize_reply_blocks(answer_blocks, tenant=conversation.tenant, request=request)})}\n\n"
+                    else:
+                        yield f"data: {json.dumps({'error': True, 'content': '第三方机器人没有返回有效回复'})}\n\n"
                 except RuntimeError as exc:
                     logger.warning(
                         'chat.send.third_party_error conversation_id=%s user_id=%s chatbot_id=%s error=%s',

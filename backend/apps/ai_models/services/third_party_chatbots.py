@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import copy
+import json
 import re
 from urllib.parse import urljoin
 
 import httpx
+from asgiref.sync import sync_to_async
 
 from apps.ai_models.models import (
     THIRD_PARTY_CHATBOT_SCHEME_A,
@@ -134,6 +136,11 @@ def default_scheme_a_config() -> dict:
 
 
 def default_scheme_b_config() -> dict:
+    common_headers = [
+        {'key': 'Authorization', 'value': 'Bearer {{apiKey}}'},
+        {'key': 'Accept', 'value': 'application/json'},
+        {'key': 'Content-Type', 'value': 'application/json'},
+    ]
     return {
         'schemeType': THIRD_PARTY_CHATBOT_SCHEME_B,
         'steps': [
@@ -142,11 +149,7 @@ def default_scheme_b_config() -> dict:
                 'name': '发送消息',
                 'method': 'POST',
                 'path': '/apps/{{externalApplicationId}}/chat',
-                'headers': [
-                    {'key': 'Authorization', 'value': 'Bearer {{apiKey}}'},
-                    {'key': 'Accept', 'value': 'application/json'},
-                    {'key': 'Content-Type', 'value': 'application/json'},
-                ],
+                'headers': copy.deepcopy(common_headers),
                 'body': {'query': '{{message}}'},
                 'extract': [
                     {'name': 'sessionId', 'path': '$.data.sessionId'},
@@ -155,6 +158,47 @@ def default_scheme_b_config() -> dict:
                 'errorMessagePath': '$.message',
             },
         ],
+        'streaming': {
+            'enabled': True,
+            'sessionStep': {
+                'key': 'create_session',
+                'name': '创建会话',
+                'method': 'POST',
+                'path': '/apps/{{externalApplicationId}}/sessions',
+                'headers': copy.deepcopy(common_headers),
+                'body': {},
+                'extract': [{'name': 'sessionId', 'path': '$.data.sessionId'}],
+                'success': {'httpStatus': '200-299', 'bodyPath': '$.code', 'equals': 1},
+                'errorMessagePath': '$.message',
+            },
+            'messageStep': {
+                'key': 'stream_message',
+                'name': '流式发送消息',
+                'method': 'POST',
+                'path': '/apps/{{externalApplicationId}}/sessions/{{sessionId}}/chat',
+                'headers': [
+                    {'key': 'Authorization', 'value': 'Bearer {{apiKey}}'},
+                    {'key': 'Accept', 'value': 'text/event-stream'},
+                    {'key': 'Content-Type', 'value': 'application/json'},
+                ],
+                'body': {
+                    'query': '{{message}}',
+                    'history': [],
+                    'deepThinkingEnabled': False,
+                    'deepThinkingLevel': None,
+                },
+                'success': {'httpStatus': '200-299'},
+                'errorMessagePath': '$.content',
+            },
+            'events': {
+                'typePath': '$.type',
+                'deltaType': 'delta',
+                'doneType': 'done',
+                'errorType': 'error',
+                'deltaPath': '$.content',
+                'errorPath': '$.content',
+            },
+        },
         'answerPaths': ['$.data.answer'],
     }
 
@@ -181,12 +225,26 @@ def mask_secret(value: str) -> str:
 
 def mask_sensitive_config(config: dict) -> dict:
     masked = copy.deepcopy(config or {})
-    for step in masked.get('steps') or []:
+    for step in _iter_config_steps(masked):
         for header in step.get('headers') or []:
             if isinstance(header, dict) and is_sensitive_key(header.get('key')) and not _contains_template_reference(header.get('value')):
                 header['value'] = mask_secret(header.get('value'))
         _mask_sensitive_mapping(step.get('body'))
     return masked
+
+
+def _iter_config_steps(config: dict):
+    if not isinstance(config, dict):
+        return
+    for step in config.get('steps') or []:
+        if isinstance(step, dict):
+            yield step
+    streaming = config.get('streaming')
+    if isinstance(streaming, dict):
+        for key in ('sessionStep', 'messageStep'):
+            step = streaming.get(key)
+            if isinstance(step, dict):
+                yield step
 
 
 def _contains_template_reference(value) -> bool:
@@ -208,8 +266,12 @@ def _mask_sensitive_mapping(value):
 def merge_sensitive_config(next_config: dict, current_config: dict | None = None) -> dict:
     current_config = current_config or {}
     merged = copy.deepcopy(next_config or {})
-    current_steps = {str(step.get('key') or index): step for index, step in enumerate(current_config.get('steps') or []) if isinstance(step, dict)}
-    for index, step in enumerate(merged.get('steps') or []):
+    current_steps = {
+        str(step.get('key') or index): step
+        for index, step in enumerate(_iter_config_steps(current_config) or [])
+        if isinstance(step, dict)
+    }
+    for index, step in enumerate(_iter_config_steps(merged) or []):
         if not isinstance(step, dict):
             continue
         step_key = str(step.get('key') or index)
@@ -247,15 +309,7 @@ def _restore_masked_mapping(next_value, current_value):
             _restore_masked_mapping(item, current_item)
 
 
-def run_chatbot_integration_config(
-    *,
-    provider,
-    config: dict,
-    message: str,
-    conversation=None,
-    initial_variables: dict | None = None,
-    timeout: int = 120,
-) -> dict:
+def _build_runtime(provider, message: str, initial_variables: dict | None = None) -> dict:
     runtime = {
         'message': str(message or '').strip(),
         'apiKey': normalize_chatbot_api_key(provider.api_key),
@@ -268,20 +322,52 @@ def run_chatbot_integration_config(
         key = str(key or '').strip()
         if key and key not in {'message', 'apiKey'} and value not in (None, ''):
             runtime[key] = value
+    return runtime
 
-    config = normalize_integration_config(config)
-    session_key = (
+
+def _session_key(provider, config: dict, runtime: dict) -> str:
+    return (
         f'{provider.provider_type}:integration:'
         f'{config.get("schemeType") or THIRD_PARTY_CHATBOT_SCHEME_A}:'
         f'{runtime.get("externalApplicationId") or runtime.get("chatbotId") or ""}'
     )
-    if conversation is not None:
-        session = conversation.external_session or {}
-        item = session.get(session_key)
-        if isinstance(item, dict):
-            for key, value in item.items():
-                if value not in (None, ''):
-                    runtime[key] = value
+
+
+def _load_external_session(conversation, session_key: str, runtime: dict) -> None:
+    if conversation is None:
+        return
+    session = conversation.external_session or {}
+    item = session.get(session_key)
+    if isinstance(item, dict):
+        for key, value in item.items():
+            if value not in (None, ''):
+                runtime[key] = value
+
+
+def _store_external_session(conversation, session_key: str, runtime: dict) -> None:
+    if conversation is None:
+        return
+    stored = {key: value for key, value in runtime.items() if key not in {'message', 'apiKey'} and value not in (None, '')}
+    if stored:
+        session = dict(conversation.external_session or {})
+        session[session_key] = stored
+        conversation.external_session = session
+        conversation.save(update_fields=['external_session', 'updated_at'])
+
+
+def run_chatbot_integration_config(
+    *,
+    provider,
+    config: dict,
+    message: str,
+    conversation=None,
+    initial_variables: dict | None = None,
+    timeout: int = 120,
+) -> dict:
+    runtime = _build_runtime(provider, message, initial_variables)
+    config = normalize_integration_config(config)
+    session_key = _session_key(provider, config, runtime)
+    _load_external_session(conversation, session_key, runtime)
 
     step_results = []
     last_payload = None
@@ -320,13 +406,7 @@ def run_chatbot_integration_config(
     except httpx.HTTPError as exc:
         raise ThirdPartyChatbotIntegrationError('第三方机器人连接失败', steps=step_results) from exc
 
-    if conversation is not None:
-        stored = {key: value for key, value in runtime.items() if key not in {'message', 'apiKey'} and value not in (None, '')}
-        if stored:
-            session = dict(conversation.external_session or {})
-            session[session_key] = stored
-            conversation.external_session = session
-            conversation.save(update_fields=['external_session', 'updated_at'])
+    _store_external_session(conversation, session_key, runtime)
 
     answer = ''
     for path in config.get('answerPaths') or []:
@@ -336,6 +416,137 @@ def run_chatbot_integration_config(
             if answer:
                 break
     return {'answer': answer, 'steps': step_results, 'variables': runtime}
+
+
+def supports_streaming(config: dict | None) -> bool:
+    normalized = normalize_integration_config(config)
+    streaming = normalized.get('streaming')
+    return isinstance(streaming, dict) and streaming.get('enabled') is True and isinstance(streaming.get('messageStep'), dict)
+
+
+async def stream_chatbot_message(
+    chatbot: ThirdPartyChatbotApplication,
+    message: str,
+    *,
+    conversation=None,
+    timeout: int = 120,
+):
+    integration = getattr(chatbot, 'integration', None)
+    if integration is None:
+        raise RuntimeError('第三方机器人未绑定可用方案')
+    if not integration.is_active:
+        raise RuntimeError('第三方机器人方案未启用')
+
+    provider = chatbot.provider
+    config = normalize_integration_config(integration.config or {})
+    streaming = config.get('streaming') if isinstance(config.get('streaming'), dict) else {}
+    if not supports_streaming(config):
+        answer = send_chatbot_message(chatbot, message, conversation=conversation, timeout=timeout)
+        if answer:
+            yield answer
+        return
+
+    runtime = _build_runtime(
+        provider,
+        message,
+        {
+            'chatbotId': chatbot.id,
+            'externalApplicationId': chatbot.external_application_id,
+        },
+    )
+    session_key = _session_key(provider, config, runtime)
+    _load_external_session(conversation, session_key, runtime)
+
+    session_step = streaming.get('sessionStep') if isinstance(streaming.get('sessionStep'), dict) else None
+    message_step = streaming.get('messageStep') or {}
+    events = streaming.get('events') if isinstance(streaming.get('events'), dict) else {}
+    step_results = []
+
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            if session_step and not runtime.get('sessionId'):
+                step_summary = _build_step_summary(session_step)
+                try:
+                    response = await _execute_config_step_async(client, provider.api_base_url, session_step, runtime)
+                    step_summary['statusCode'] = response.status_code
+                    payload = _response_json(response)
+                    _assert_step_success(session_step, response, payload)
+                    _extract_step_variables(session_step, payload, runtime)
+                    step_summary['success'] = True
+                    step_results.append(step_summary)
+                except httpx.TimeoutException as exc:
+                    step_summary['message'] = '第三方机器人请求超时'
+                    step_results.append(step_summary)
+                    raise ThirdPartyChatbotIntegrationError('第三方机器人请求超时', steps=step_results) from exc
+                except httpx.HTTPError as exc:
+                    step_summary['message'] = '第三方机器人连接失败'
+                    step_results.append(step_summary)
+                    raise ThirdPartyChatbotIntegrationError('第三方机器人连接失败', steps=step_results) from exc
+                except RuntimeError as exc:
+                    step_summary['message'] = str(exc)[:200]
+                    step_results.append(step_summary)
+                    raise ThirdPartyChatbotIntegrationError(str(exc), steps=step_results) from exc
+
+            step_summary = _build_step_summary(message_step)
+            method = str(message_step.get('method') or 'POST').upper()
+            url, kwargs = _build_config_step_request(provider.api_base_url, message_step, runtime)
+            async with client.stream(method, url, **kwargs) as response:
+                step_summary['statusCode'] = response.status_code
+                if not _http_status_matches(response.status_code, str((message_step.get('success') or {}).get('httpStatus') or '200-299')):
+                    error_body = (await response.aread()).decode('utf-8', errors='ignore')
+                    step_summary['message'] = f'第三方机器人流式请求失败 (HTTP {response.status_code})'
+                    step_results.append(step_summary)
+                    raise ThirdPartyChatbotIntegrationError(
+                        f'第三方机器人流式请求失败 (HTTP {response.status_code}): {error_body[:200]}',
+                        steps=step_results,
+                    )
+
+                emitted = False
+                event_name = None
+                async for line in response.aiter_lines():
+                    if line and line.startswith('event:'):
+                        event_name = line[6:].strip()
+                        continue
+                    data_str = _parse_sse_data_line(line)
+                    if data_str is None:
+                        continue
+                    data_str = data_str.strip()
+                    if not data_str or data_str == '[DONE]':
+                        if data_str == '[DONE]':
+                            break
+                        continue
+                    try:
+                        payload = json.loads(data_str)
+                    except json.JSONDecodeError:
+                        payload = {'type': event_name, 'content': data_str} if event_name else None
+                    if not isinstance(payload, dict):
+                        continue
+                    event_type = get_json_path(payload, events.get('typePath') or '$.type')
+                    if event_type == (events.get('doneType') or 'done'):
+                        break
+                    if event_type == (events.get('errorType') or 'error'):
+                        message_text = get_json_path(payload, events.get('errorPath') or '$.content') or '第三方机器人流式响应错误'
+                        raise RuntimeError(str(message_text)[:200])
+                    if event_type and event_type != (events.get('deltaType') or 'delta'):
+                        continue
+                    text = get_json_path(payload, events.get('deltaPath') or '$.content')
+                    if text not in (None, ''):
+                        emitted = True
+                        yield str(text)
+
+                step_summary['success'] = True
+                step_results.append(step_summary)
+                await sync_to_async(_store_external_session, thread_sensitive=True)(conversation, session_key, runtime)
+                if not emitted:
+                    raise ThirdPartyChatbotIntegrationError('第三方机器人没有返回有效回复', steps=step_results)
+    except ThirdPartyChatbotIntegrationError:
+        raise
+    except httpx.TimeoutException as exc:
+        raise ThirdPartyChatbotIntegrationError('第三方机器人请求超时', steps=step_results) from exc
+    except httpx.HTTPError as exc:
+        raise ThirdPartyChatbotIntegrationError('第三方机器人连接失败', steps=step_results) from exc
+    except RuntimeError as exc:
+        raise ThirdPartyChatbotIntegrationError(str(exc), steps=step_results) from exc
 
 
 def normalize_integration_config(config: dict | None, *, scheme_type: str | None = None) -> dict:
@@ -349,14 +560,24 @@ def normalize_integration_config(config: dict | None, *, scheme_type: str | None
     result = copy.deepcopy(config)
     result['schemeType'] = normalized_scheme_type
     if not result.get('steps'):
-        result['steps'] = base['steps']
+        result['steps'] = copy.deepcopy(base['steps'])
     if not result.get('answerPaths'):
-        result['answerPaths'] = base['answerPaths']
+        result['answerPaths'] = copy.deepcopy(base['answerPaths'])
+    if not result.get('streaming') and base.get('streaming'):
+        result['streaming'] = copy.deepcopy(base['streaming'])
     return result
 
 
-def _execute_config_step(client: httpx.Client, base_url: str, step: dict, variables: dict) -> httpx.Response:
-    method = str(step.get('method') or 'GET').upper()
+def _build_step_summary(step: dict) -> dict:
+    return {
+        'key': step.get('key') or '',
+        'name': step.get('name') or '',
+        'statusCode': None,
+        'success': False,
+    }
+
+
+def _build_config_step_request(base_url: str, step: dict, variables: dict) -> tuple[str, dict]:
     url = _build_step_url(base_url, render_template(step.get('path') or '', variables))
     headers = {}
     for header in step.get('headers') or []:
@@ -367,9 +588,22 @@ def _execute_config_step(client: httpx.Client, base_url: str, step: dict, variab
             headers[key] = render_template(header.get('value') or '', variables)
     body = render_value(step.get('body'), variables)
     kwargs = {'headers': headers}
+    method = str(step.get('method') or 'GET').upper()
     if method not in {'GET', 'HEAD'}:
         kwargs['json'] = body if isinstance(body, (dict, list)) else {}
+    return url, kwargs
+
+
+def _execute_config_step(client: httpx.Client, base_url: str, step: dict, variables: dict) -> httpx.Response:
+    method = str(step.get('method') or 'GET').upper()
+    url, kwargs = _build_config_step_request(base_url, step, variables)
     return client.request(method, url, **kwargs)
+
+
+async def _execute_config_step_async(client: httpx.AsyncClient, base_url: str, step: dict, variables: dict) -> httpx.Response:
+    method = str(step.get('method') or 'GET').upper()
+    url, kwargs = _build_config_step_request(base_url, step, variables)
+    return await client.request(method, url, **kwargs)
 
 
 def _build_step_url(base_url: str, path: str) -> str:
@@ -395,6 +629,12 @@ def render_template(value: str, variables: dict) -> str:
         replacement = variables.get(key, '')
         return str(replacement if replacement is not None else '')
     return TEMPLATE_PATTERN.sub(replace, text)
+
+
+def _parse_sse_data_line(line: str) -> str | None:
+    if not line or not line.startswith('data:'):
+        return None
+    return line[5:].lstrip()
 
 
 def _response_json(response: httpx.Response) -> dict:

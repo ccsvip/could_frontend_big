@@ -14,6 +14,50 @@ User = get_user_model()
 HUAPENG_APPLICATION_ID = '8d697146-f9a2-11ef-89c4-86dcb2923f74'
 
 
+class DummyAsyncStreamResponse:
+    def __init__(self, lines, status_code=200, headers=None):
+        self._lines = lines
+        self.status_code = status_code
+        self.headers = headers or {'content-type': 'text/event-stream'}
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+    async def aiter_lines(self):
+        for line in self._lines:
+            yield line
+
+    async def aread(self):
+        return ''.join(self._lines).encode('utf-8')
+
+
+class DummyAsyncThirdPartyClient:
+    request_calls = []
+    stream_calls = []
+
+    def __init__(self, *, request_responses=None, stream_response=None):
+        self.request_responses = list(request_responses or [])
+        self.stream_response = stream_response
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+    async def request(self, *args, **kwargs):
+        self.request_calls.append((args, kwargs))
+        if not self.request_responses:
+            raise AssertionError('unexpected async request')
+        return self.request_responses.pop(0)
+
+    def stream(self, *args, **kwargs):
+        self.stream_calls.append((args, kwargs))
+        return self.stream_response
+
 class DummyThirdPartyClient:
     calls = []
 
@@ -373,6 +417,8 @@ class ThirdPartyChatbotApiTests(TenantTestMixin, APITestCase):
 
     def test_scheme_b_draft_test_uses_flowmesh_single_step_without_stream(self):
         self.client.force_authenticate(self.superuser)
+        payload = self.scheme_b_payload()
+        payload['config']['streaming'] = {'enabled': False}
         DummyThirdPartyClient.calls = []
         responses = [
             httpx.Response(200, json={'code': 1, 'data': {'sessionId': 'session-1', 'answer': 'FlowMesh 回复'}}),
@@ -381,7 +427,7 @@ class ThirdPartyChatbotApiTests(TenantTestMixin, APITestCase):
         with patch('apps.ai_models.services.third_party_chatbots.httpx.Client', return_value=DummyThirdPartyClient(responses)):
             response = self.client.post(
                 '/api/v1/settings/third-party-chatbots/integrations/test/',
-                {**self.scheme_b_payload(), 'question': '你好'},
+                {**payload, 'question': '你好'},
                 format='json',
             )
 
@@ -415,6 +461,72 @@ class ThirdPartyChatbotApiTests(TenantTestMixin, APITestCase):
         conversation.refresh_from_db()
         self.assertIn('runtime-chat', str(conversation.external_session))
 
+    def test_scheme_b_draft_test_uses_streaming_when_enabled(self):
+        self.client.force_authenticate(self.superuser)
+        payload = self.scheme_b_payload()
+        payload['config']['streaming'] = {
+            'enabled': True,
+            'sessionStep': {
+                'key': 'create_session',
+                'name': '创建会话',
+                'method': 'POST',
+                'path': '/apps/{{externalApplicationId}}/sessions',
+                'headers': [
+                    {'key': 'Authorization', 'value': 'Bearer {{apiKey}}'},
+                    {'key': 'Content-Type', 'value': 'application/json'},
+                ],
+                'body': {},
+                'extract': [{'name': 'sessionId', 'path': '$.data.sessionId'}],
+                'success': {'httpStatus': '200-299', 'bodyPath': '$.code', 'equals': 1},
+                'errorMessagePath': '$.message',
+            },
+            'messageStep': {
+                'key': 'stream_message',
+                'name': '流式发送消息',
+                'method': 'POST',
+                'path': '/apps/{{externalApplicationId}}/sessions/{{sessionId}}/chat',
+                'headers': [
+                    {'key': 'Authorization', 'value': 'Bearer {{apiKey}}'},
+                    {'key': 'Accept', 'value': 'text/event-stream'},
+                    {'key': 'Content-Type', 'value': 'application/json'},
+                ],
+                'body': {'query': '{{message}}', 'history': []},
+                'success': {'httpStatus': '200-299'},
+            },
+            'events': {
+                'typePath': '$.type',
+                'deltaType': 'delta',
+                'doneType': 'done',
+                'deltaPath': '$.content',
+            },
+        }
+        DummyAsyncThirdPartyClient.request_calls = []
+        DummyAsyncThirdPartyClient.stream_calls = []
+        async_client = DummyAsyncThirdPartyClient(
+            request_responses=[httpx.Response(200, json={'code': 1, 'data': {'sessionId': 'session-1'}})],
+            stream_response=DummyAsyncStreamResponse([
+                'event:delta',
+                'data:FlowMesh',
+                'event:delta',
+                'data: 流式回复',
+                'event:done',
+                'data:',
+            ]),
+        )
+
+        with patch('apps.ai_models.services.third_party_chatbots.httpx.AsyncClient', return_value=async_client):
+            response = self.client.post(
+                '/api/v1/settings/third-party-chatbots/integrations/test/',
+                {**payload, 'question': '你好'},
+                format='json',
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['answer'], 'FlowMesh流式回复')
+        self.assertTrue(DummyAsyncThirdPartyClient.request_calls[0][0][1].endswith('/apps/zy-assistant/sessions'))
+        self.assertTrue(DummyAsyncThirdPartyClient.stream_calls[0][0][1].endswith('/apps/zy-assistant/sessions/session-1/chat'))
+        self.assertEqual(DummyAsyncThirdPartyClient.stream_calls[0][1]['json']['query'], '你好')
+
     def test_runtime_uses_scheme_b_flowmesh_body_and_answer_mapping(self):
         from apps.ai_models.models import ChatConversation
         from apps.ai_models.services.third_party_chatbots import send_chatbot_message
@@ -441,6 +553,58 @@ class ThirdPartyChatbotApiTests(TenantTestMixin, APITestCase):
         conversation.refresh_from_db()
         self.assertIn('session-2', str(conversation.external_session))
 
+
+    def test_scheme_b_streaming_config_masks_and_preserves_sensitive_values(self):
+        self.client.force_authenticate(self.superuser)
+        payload = self.scheme_b_payload()
+        payload['config']['streaming'] = {
+            'enabled': True,
+            'messageStep': {
+                'key': 'stream_message',
+                'name': '流式发送消息',
+                'method': 'POST',
+                'path': '/apps/{{externalApplicationId}}/sessions/{{sessionId}}/chat',
+                'headers': [
+                    {'key': 'Authorization', 'value': 'Bearer real-stream-key'},
+                    {'key': 'Content-Type', 'value': 'application/json'},
+                ],
+                'body': {'query': '{{message}}', 'token': 'stream-body-secret'},
+                'success': {'httpStatus': '200-299'},
+            },
+            'events': {'deltaPath': '$.content'},
+        }
+
+        create_response = self.client.post(
+            '/api/v1/settings/third-party-chatbots/integrations/',
+            payload,
+            format='json',
+        )
+
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        masked_config = create_response.data['config']
+        self.assertNotIn('real-stream-key', str(masked_config))
+        self.assertNotIn('stream-body-secret', str(masked_config))
+
+        update_response = self.client.patch(
+            f"/api/v1/settings/third-party-chatbots/integrations/{create_response.data['id']}/",
+            {
+                'remark': '更新备注',
+                'providerApiKey': create_response.data['providerApiKeyMasked'],
+                'config': masked_config,
+            },
+            format='json',
+        )
+
+        self.assertEqual(update_response.status_code, status.HTTP_200_OK)
+        integration = self.integration_model().objects.get(pk=create_response.data['id'])
+        self.assertEqual(
+            integration.config['streaming']['messageStep']['headers'][0]['value'],
+            'Bearer real-stream-key',
+        )
+        self.assertEqual(
+            integration.config['streaming']['messageStep']['body']['token'],
+            'stream-body-secret',
+        )
 
     def test_scheme_a_update_preserves_masked_sensitive_values(self):
         self.client.force_authenticate(self.superuser)

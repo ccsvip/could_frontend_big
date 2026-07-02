@@ -1,6 +1,8 @@
 import json
 from unittest.mock import patch
 
+import httpx
+
 from asgiref.sync import async_to_sync
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -8,7 +10,23 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import Menu, PermissionPoint, Role, UserRole
-from apps.ai_models.models import AgentAnnotation, AgentApplication, ChatConversation, ChatMessage, LLMModel, LLMProvider, TenantLLMModelGrant
+from apps.ai_models.models import (
+    AgentAnnotation,
+    AgentApplication,
+    ChatConversation,
+    ChatMessage,
+    LLMModel,
+    LLMProvider,
+    RUNTIME_BACKEND_THIRD_PARTY_CHATBOT,
+    THIRD_PARTY_CHATBOT_SCHEME_B,
+    THIRD_PARTY_PROVIDER_CONFIGURED_API,
+    TenantLLMModelGrant,
+    TenantThirdPartyChatbotGrant,
+    ThirdPartyChatbotApplication,
+    ThirdPartyChatbotIntegration,
+    ThirdPartyChatbotProvider,
+)
+from apps.ai_models.services import third_party_chatbots
 from apps.ai_models.views import _build_chat_completions_url, _build_llm_request_payload
 from apps.tenants.test_utils import TenantTestMixin
 
@@ -110,12 +128,18 @@ class _DummyJsonResponse:
 
 
 class _DummyHttpxClient:
-    def __init__(self, stream_response=None, post_response=None):
+    def __init__(self, stream_response=None, post_response=None, request_response=None):
         self._stream_response = stream_response
         self._post_responses = (
             post_response if isinstance(post_response, list) else [post_response] if post_response is not None else []
         )
+        self._request_responses = (
+            request_response
+            if isinstance(request_response, list)
+            else [request_response] if request_response is not None else []
+        )
         self.post_calls = []
+        self.request_calls = []
         self.stream_calls = []
 
     def __enter__(self):
@@ -139,6 +163,30 @@ class _DummyHttpxClient:
         if not self._post_responses:
             return None
         return self._post_responses.pop(0)
+
+    async def request(self, *args, **kwargs):
+        self.request_calls.append((args, kwargs))
+        if not self._request_responses:
+            return None
+        return self._request_responses.pop(0)
+
+
+class _DummySyncThirdPartyClient:
+    def __init__(self, responses):
+        self.responses = list(responses)
+        self.calls = []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
+
+    def request(self, method, url, **kwargs):
+        self.calls.append({'method': method, 'url': url, 'kwargs': kwargs})
+        if not self.responses:
+            raise AssertionError('unexpected sync third-party request')
+        return self.responses.pop(0)
 
 
 class ChatApiTests(TenantTestMixin, APITestCase):
@@ -188,6 +236,31 @@ class ChatApiTests(TenantTestMixin, APITestCase):
 
     def grant_model(self, model: LLMModel):
         return TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+
+    def create_third_party_chatbot(self, *, config=None) -> ThirdPartyChatbotApplication:
+        provider = ThirdPartyChatbotProvider.objects.create(
+            name='FlowMesh',
+            provider_type=THIRD_PARTY_PROVIDER_CONFIGURED_API,
+            api_base_url='https://flowmesh-api.kmyszkj.com/api/open/v1',
+            api_key='flowmesh-key',
+            is_active=True,
+        )
+        chatbot = ThirdPartyChatbotApplication.objects.create(
+            provider=provider,
+            name='FlowMesh 助手',
+            external_application_id='e7415175ac7c',
+            is_active=True,
+        )
+        TenantThirdPartyChatbotGrant.objects.create(tenant=self.tenant, chatbot=chatbot, is_active=True)
+        ThirdPartyChatbotIntegration.objects.create(
+            scheme_type=THIRD_PARTY_CHATBOT_SCHEME_B,
+            name='FlowMesh 方案B',
+            provider=provider,
+            chatbot=chatbot,
+            config=config or third_party_chatbots.default_scheme_b_config(),
+            is_active=True,
+        )
+        return chatbot
 
     def test_build_chat_completions_url_normalizes_longcat_style_base_url(self):
         self.assertEqual(
@@ -405,6 +478,59 @@ class ChatApiTests(TenantTestMixin, APITestCase):
                 (ChatMessage.ROLE_ASSISTANT, '你好！'),
             ],
         )
+
+    def test_send_streams_scheme_b_flowmesh_third_party_chatbot(self):
+        self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
+        chatbot = self.create_third_party_chatbot()
+        conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
+            title='FlowMesh 流式测试',
+            user=self.user,
+            runtime_backend_type=RUNTIME_BACKEND_THIRD_PARTY_CHATBOT,
+            third_party_chatbot=chatbot,
+        )
+        session_response = _DummyJsonResponse({'code': 1, 'data': {'sessionId': 'session-1'}})
+        sse_lines = [
+            'data: {"type":"delta","content":"你好"}',
+            'data: {"type":"delta","content":"，很快"}',
+            'data: {"type":"done","content":""}',
+        ]
+        async_client = _DummyHttpxClient(
+            stream_response=_DummyStreamResponse(sse_lines, headers={'content-type': 'text/event-stream'}),
+            request_response=session_response,
+        )
+        sync_client = _DummySyncThirdPartyClient([
+            httpx.Response(200, json={'code': 1, 'data': {'sessionId': 'sync-session', 'answer': '同步完整回复'}}),
+        ])
+
+        with (
+            patch('apps.ai_models.services.third_party_chatbots.httpx.AsyncClient', return_value=async_client),
+            patch('apps.ai_models.services.third_party_chatbots.httpx.Client', return_value=sync_client),
+        ):
+            response = self.client.post(
+                f'/api/v1/ai-models/chat/conversations/{conversation.id}/send/',
+                {'content': '你好'},
+                format='json',
+            )
+            streamed_body = _read_streaming_body(response)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(_sse_content(streamed_body), '你好，很快')
+        self.assertFalse(sync_client.calls)
+        self.assertTrue(async_client.request_calls[0][0][1].endswith('/apps/e7415175ac7c/sessions'))
+        self.assertTrue(async_client.stream_calls[0][0][1].endswith('/apps/e7415175ac7c/sessions/session-1/chat'))
+        self.assertEqual(async_client.stream_calls[0][1]['json']['query'], '你好')
+
+        messages = list(conversation.messages.order_by('created_at').values_list('role', 'content'))
+        self.assertEqual(
+            messages,
+            [
+                (ChatMessage.ROLE_USER, '你好'),
+                (ChatMessage.ROLE_ASSISTANT, '你好，很快'),
+            ],
+        )
+        conversation.refresh_from_db()
+        self.assertIn('session-1', str(conversation.external_session))
 
     def test_send_can_request_non_stream_mode(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')

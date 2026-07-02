@@ -18,6 +18,7 @@ from apps.ai_models.models import (
     TenantLLMModelGrant,
     TenantLLMSettings,
 )
+from apps.ai_models.services import third_party_chatbots
 from apps.devices.models import DeviceApplication, DeviceChatLog
 from apps.knowledge_base.models import KnowledgeDocument
 from apps.resources.models import Resource
@@ -27,6 +28,104 @@ from apps.tenants.test_utils import TenantTestMixin
 User = get_user_model()
 HUAPENG_APPLICATION_ID = '8d697146-f9a2-11ef-89c4-86dcb2923f74'
 
+
+def _read_streaming_body(response) -> str:
+    async def collect_streaming_content():
+        chunks = []
+        async for chunk in response.streaming_content:
+            chunks.append(chunk)
+        return chunks
+
+    chunks = async_to_sync(collect_streaming_content)()
+    return ''.join(
+        chunk.decode('utf-8') if isinstance(chunk, bytes) else str(chunk)
+        for chunk in chunks
+    )
+
+
+def _sse_payloads(body: str) -> list[dict]:
+    payloads = []
+    for line in body.splitlines():
+        line = line.strip()
+        if not line.startswith('data:'):
+            continue
+        raw_payload = line[len('data:'):].strip()
+        if raw_payload == '[DONE]':
+            continue
+        try:
+            payload = json.loads(raw_payload)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict):
+            payloads.append(payload)
+    return payloads
+
+
+def _sse_content(body: str) -> str:
+    return ''.join(
+        payload['content']
+        for payload in _sse_payloads(body)
+        if isinstance(payload.get('content'), str) and not payload.get('error')
+    )
+
+
+class _DummyStreamResponse:
+    def __init__(self, lines, status_code=200, headers=None):
+        self._lines = lines
+        self.status_code = status_code
+        self.headers = headers or {'content-type': 'text/event-stream'}
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+    async def aiter_lines(self):
+        for line in self._lines:
+            yield line
+
+    async def aread(self):
+        return ''.join(self._lines).encode('utf-8')
+
+
+class _DummyJsonResponse:
+    def __init__(self, payload, status_code=200, headers=None):
+        self._payload = payload
+        self.status_code = status_code
+        self.headers = headers or {'content-type': 'application/json'}
+        self.text = json.dumps(payload, ensure_ascii=False)
+
+    def json(self):
+        return self._payload
+
+
+class _DummyHttpxClient:
+    def __init__(self, stream_response=None, request_response=None):
+        self._stream_response = stream_response
+        self._request_responses = (
+            request_response
+            if isinstance(request_response, list)
+            else [request_response] if request_response is not None else []
+        )
+        self.request_calls = []
+        self.stream_calls = []
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+    async def request(self, *args, **kwargs):
+        self.request_calls.append((args, kwargs))
+        if not self._request_responses:
+            raise AssertionError('unexpected async third-party request')
+        return self._request_responses.pop(0)
+
+    def stream(self, *args, **kwargs):
+        self.stream_calls.append((args, kwargs))
+        return self._stream_response
 
 class AgentApplicationAccessDataTests(TestCase):
     def test_seed_adds_application_menu_and_permissions_to_existing_tenants(self):
@@ -309,18 +408,12 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
             )
             self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-            async def collect_streaming_content():
-                chunks = []
-                async for chunk in response.streaming_content:
-                    chunks.append(chunk)
-                return b''.join(chunks)
-
-            body = async_to_sync(collect_streaming_content)().decode('utf-8')
+            body = _read_streaming_body(response)
         self.assertIn('data:', body)
-        payload_line = next(line for line in body.splitlines() if line.startswith('data: {'))
-        payload = json.loads(payload_line.removeprefix('data: '))
-        self.assertEqual(payload['content'], '第三方标准化回复')
-        self.assertEqual(payload['blocks'][0]['text'], '第三方标准化回复')
+        payloads = _sse_payloads(body)
+        block_payload = next(payload for payload in payloads if 'blocks' in payload)
+        self.assertEqual(_sse_content(body), '第三方标准化回复')
+        self.assertEqual(block_payload['blocks'][0]['text'], '第三方标准化回复')
         self.assertIn('"blocks"', body)
         self.assertIn('[DONE]', body)
         self.assertNotIn('chat_id', body)
@@ -328,6 +421,75 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         conversation = ChatConversation.objects.get(pk=create_response.data['id'])
         self.assertEqual(conversation.messages.filter(role=ChatMessage.ROLE_ASSISTANT).count(), 1)
 
+    def test_debug_conversation_streams_scheme_b_third_party_chatbot(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.create', 'ai_models.chat.create')
+        Provider = apps.get_model('ai_models', 'ThirdPartyChatbotProvider')
+        Chatbot = apps.get_model('ai_models', 'ThirdPartyChatbotApplication')
+        Grant = apps.get_model('ai_models', 'TenantThirdPartyChatbotGrant')
+        Integration = apps.get_model('ai_models', 'ThirdPartyChatbotIntegration')
+        provider = Provider.objects.create(
+            name='FlowMesh',
+            provider_type='configured_api_chatbot',
+            api_base_url='https://flowmesh-api.kmyszkj.com/api/open/v1',
+            api_key='flowmesh-key',
+            is_active=True,
+        )
+        chatbot = Chatbot.objects.create(
+            provider=provider,
+            name='FlowMesh 助手',
+            external_application_id='zy-assistant',
+            is_active=True,
+        )
+        Grant.objects.create(tenant=self.tenant, chatbot=chatbot, is_active=True)
+        Integration.objects.create(
+            scheme_type='scheme_b',
+            name='FlowMesh 方案B',
+            provider=provider,
+            chatbot=chatbot,
+            config=third_party_chatbots.default_scheme_b_config(),
+            is_active=True,
+        )
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='FlowMesh debug agent',
+            runtime_backend_type='third_party_chatbot',
+            third_party_chatbot=chatbot,
+        )
+
+        create_response = self.client.post(f'/api/v1/ai-models/applications/{application.id}/conversations/')
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        session_response = _DummyJsonResponse({'code': 1, 'data': {'sessionId': 'session-1'}})
+        sse_lines = [
+            'event:delta',
+            'data:医院',
+            'event:delta',
+            'data:介绍',
+            'event:done',
+            'data:',
+        ]
+        async_client = _DummyHttpxClient(
+            stream_response=_DummyStreamResponse(sse_lines),
+            request_response=session_response,
+        )
+
+        with patch('apps.ai_models.services.third_party_chatbots.httpx.AsyncClient', return_value=async_client):
+            response = self.client.post(
+                f"/api/v1/ai-models/chat/conversations/{create_response.data['id']}/send/",
+                {'content': '你好', 'stream': True},
+                format='json',
+            )
+            body = _read_streaming_body(response)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(_sse_content(body), '医院介绍')
+        self.assertTrue(async_client.request_calls[0][0][1].endswith('/apps/zy-assistant/sessions'))
+        self.assertTrue(async_client.stream_calls[0][0][1].endswith('/apps/zy-assistant/sessions/session-1/chat'))
+        self.assertEqual(async_client.stream_calls[0][1]['json']['query'], '你好')
+        conversation = ChatConversation.objects.get(pk=create_response.data['id'])
+        self.assertEqual(conversation.messages.filter(role=ChatMessage.ROLE_ASSISTANT).count(), 1)
+        self.assertIn('session-1', str(conversation.external_session))
     def test_create_agent_application_rejects_foreign_knowledge_document(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.create')
         provider = self.create_provider()

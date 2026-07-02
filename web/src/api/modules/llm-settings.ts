@@ -246,10 +246,25 @@ export type ThirdPartyChatbotApiStep = {
   errorMessagePath?: string;
 };
 
+export type ThirdPartyChatbotStreamingConfig = {
+  enabled?: boolean;
+  sessionStep?: ThirdPartyChatbotApiStep;
+  messageStep?: ThirdPartyChatbotApiStep;
+  events?: {
+    typePath?: string;
+    deltaType?: string;
+    doneType?: string;
+    errorType?: string;
+    deltaPath?: string;
+    errorPath?: string;
+  };
+};
+
 export type ThirdPartyChatbotIntegrationConfig = {
   schemeType?: string;
   steps: ThirdPartyChatbotApiStep[];
   answerPaths: string[];
+  streaming?: ThirdPartyChatbotStreamingConfig;
 };
 
 export type ThirdPartyChatbotIntegrationRecord = {

@@ -55,6 +55,7 @@ type IntegrationFormValues = Omit<ThirdPartyChatbotIntegrationPayload, 'config'>
   config: {
     steps: StepFormValue[];
     answerPaths: string[];
+    streamingText?: string;
   };
   tenantIds: number[];
   testQuestion?: string;
@@ -64,6 +65,53 @@ const METHOD_OPTIONS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD'].map((me
   label: method,
   value: method,
 }));
+
+const FLOWMESH_STREAMING_CONFIG = {
+  enabled: true,
+  sessionStep: {
+    key: 'create_session',
+    name: '创建会话',
+    method: 'POST',
+    path: '/apps/{{externalApplicationId}}/sessions',
+    headers: [
+      { key: 'Authorization', value: 'Bearer {{apiKey}}' },
+      { key: 'Accept', value: 'application/json' },
+      { key: 'Content-Type', value: 'application/json' },
+    ],
+    body: {},
+    extract: [{ name: 'sessionId', path: '$.data.sessionId' }],
+    success: { httpStatus: '200-299', bodyPath: '$.code', equals: 1 },
+    errorMessagePath: '$.message',
+  },
+  messageStep: {
+    key: 'stream_message',
+    name: '流式发送消息',
+    method: 'POST',
+    path: '/apps/{{externalApplicationId}}/sessions/{{sessionId}}/chat',
+    headers: [
+      { key: 'Authorization', value: 'Bearer {{apiKey}}' },
+      { key: 'Accept', value: 'text/event-stream' },
+      { key: 'Content-Type', value: 'application/json' },
+    ],
+    body: {
+      query: '{{message}}',
+      history: [],
+      deepThinkingEnabled: false,
+      deepThinkingLevel: null,
+    },
+    extract: [],
+    success: { httpStatus: '200-299' },
+    errorMessagePath: '$.content',
+  },
+  events: {
+    typePath: '$.type',
+    deltaType: 'delta',
+    doneType: 'done',
+    errorType: 'error',
+    deltaPath: '$.content',
+    errorPath: '$.content',
+  },
+};
 
 const createDefaultStep = (): StepFormValue => ({
   key: `step_${Date.now()}`,
@@ -132,6 +180,7 @@ const createSchemeAValues = (): IntegrationFormValues => ({
       },
     ],
     answerPaths: ['$.data.content', '$.data.answer_list.0.content'],
+    streamingText: '',
   },
 });
 
@@ -168,6 +217,7 @@ const createSchemeBValues = (): IntegrationFormValues => ({
       },
     ],
     answerPaths: ['$.data.answer'],
+    streamingText: JSON.stringify(FLOWMESH_STREAMING_CONFIG, null, 2),
   },
 });
 
@@ -181,7 +231,7 @@ const SCHEME_TEMPLATES: SchemeTemplate[] = [
   {
     key: 'scheme_b',
     title: '方案B',
-    subtitle: 'FlowMesh LLM 同步对话',
+    subtitle: 'FlowMesh LLM 流式对话',
     createValues: createSchemeBValues,
   },
 ];
@@ -245,10 +295,17 @@ const formValuesFromRecord = (record: ThirdPartyChatbotIntegrationRecord): Integ
   config: {
     steps: (record.config.steps || []).map(formStepFromConfig),
     answerPaths: record.config.answerPaths || [],
+    streamingText: record.config.streaming ? jsonText(record.config.streaming) : '',
   },
 });
 
 const normalizePayload = (values: IntegrationFormValues): ThirdPartyChatbotIntegrationPayload => {
+  const streamingText = String(values.config.streamingText || '').trim();
+  const parsedStreaming = streamingText ? parseJsonBody(streamingText, '流式配置') : undefined;
+  if (Array.isArray(parsedStreaming)) {
+    throw new Error('流式配置必须是 JSON 对象');
+  }
+  const streaming = parsedStreaming as ThirdPartyChatbotIntegrationConfig['streaming'];
   const steps = (values.config.steps || []).map((step, index) => {
     const body = parseJsonBody(step.bodyText, `步骤 ${index + 1} 请求体`);
     if (!Array.isArray(body) && typeof body === 'object' && body !== null && step.hasStreamField) {
@@ -289,6 +346,7 @@ const normalizePayload = (values: IntegrationFormValues): ThirdPartyChatbotInteg
       schemeType: values.schemeType || 'scheme_a',
       steps,
       answerPaths: (values.config.answerPaths || []).map((path) => path.trim()).filter(Boolean),
+      ...(streaming ? { streaming } : {}),
     } satisfies ThirdPartyChatbotIntegrationConfig,
     isActive: values.isActive,
     tenantIds: values.tenantIds || [],
@@ -744,6 +802,24 @@ export const ThirdPartyChatbotSettingsPage = () => {
                   </div>
                 )}
               </Form.List>
+            </div>
+
+            <div className="border-t border-slate-100 pt-4">
+              <div className="mb-3 text-base font-semibold text-slate-900">流式配置</div>
+              <Form.Item
+                name={['config', 'streamingText']}
+                label="流式配置 JSON"
+                rules={[
+                  {
+                    validator: async (_, value) => {
+                      const text = String(value || '').trim();
+                      if (text) parseJsonBody(text, '流式配置');
+                    },
+                  },
+                ]}
+              >
+                <Input.TextArea rows={8} className="font-mono" placeholder="方案支持流式时填写，留空则运行时走同步接口" />
+              </Form.Item>
             </div>
 
             <div className="border-t border-slate-100 pt-4">
