@@ -192,9 +192,9 @@ class DeviceViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin, viewsets.M
         queryset = self.apply_tenant_scope(device_chat_logs_queryset(request.query_params))
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = DeviceChatLogSerializer(page, many=True)
+            serializer = DeviceChatLogSerializer(page, many=True, context={'request': request})
             return self.get_paginated_response(serializer.data)
-        serializer = DeviceChatLogSerializer(queryset, many=True)
+        serializer = DeviceChatLogSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
 
@@ -773,7 +773,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
                 return Response({'message': 'ASR 没有识别出有效内容'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            answer_text, answer_blocks = self._generate_answer(device, question_text)
+            answer_text, answer_blocks = self._generate_answer(device, question_text, request=request)
         except Exception as exc:
             return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -805,6 +805,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
                 request_id=get_request_id(request),
                 trace_id=get_trace_id(request),
                 model_name=runtime_model_name,
+                answer_blocks=answer_blocks,
             )
         except Exception:
             logger.exception('device.voice_chat.log_failed device_code=%s', device.code)
@@ -847,7 +848,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         return sample_rate, None
 
     @staticmethod
-    def _generate_answer(device: Device, question_text: str) -> tuple[str, list[dict]]:
+    def _generate_answer(device: Device, question_text: str, *, request=None) -> tuple[str, list[dict]]:
         agent_application = device.effective_agent_application
         annotation = DeviceVoiceChatView._find_annotation(agent_application, question_text)
         if annotation is not None:
@@ -859,9 +860,9 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             )
             if isinstance(annotation, dict):
                 blocks = annotation.get('answerBlocks') or text_to_blocks(annotation.get('answer') or '')
-                return blocks_to_text(blocks), serialize_published_annotation_blocks(annotation, tenant=agent_application.tenant)
+                return blocks_to_text(blocks), serialize_published_annotation_blocks(annotation, tenant=agent_application.tenant, request=request)
             blocks = annotation.answer_blocks or text_to_blocks(annotation.answer)
-            return blocks_to_text(blocks), serialize_reply_blocks(blocks, tenant=agent_application.tenant)
+            return blocks_to_text(blocks), serialize_reply_blocks(blocks, tenant=agent_application.tenant, request=request)
 
         runtime_config = agent_application.runtime_config() if agent_application is not None else {}
         if runtime_config.get('runtime_backend_type') == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
@@ -894,10 +895,11 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             else '你是数字人设备的中文语音问答助手。回答要自然、简洁，适合直接转成语音播报。'
         )
         messages = [{'role': 'system', 'content': system_prompt}]
+        media_blocks: list[dict] = []
         if agent_application is not None:
-            from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context
+            from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context_with_media
 
-            knowledge_context = retrieve_knowledge_context(
+            knowledge_context, media_blocks = retrieve_knowledge_context_with_media(
                 agent_application,
                 question_text,
                 knowledge_document_ids=runtime_config.get('knowledge_document_ids') or [],
@@ -914,7 +916,11 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         )
         if not answer_text:
             raise RuntimeError('LLM 没有返回有效回复')
-        return answer_text, serialize_reply_blocks(text_to_blocks(answer_text), tenant=device.tenant)
+        return answer_text, serialize_reply_blocks(
+            [*text_to_blocks(answer_text), *media_blocks],
+            tenant=device.tenant,
+            request=request,
+        )
 
     @staticmethod
     def _find_annotation(agent_application, question_text: str):

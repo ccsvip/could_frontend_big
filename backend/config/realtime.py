@@ -617,6 +617,7 @@ async def _run_llm_session_body(
 
     answer_text = ''
     answer_blocks = session.get('annotationBlocks') or None
+    knowledge_media_blocks = session.get('knowledgeMediaBlocks') or []
     if session.get('annotationAnswer') is not None:
         answer_text = session['annotationAnswer']
         delta_payload = {'text': answer_text}
@@ -695,6 +696,10 @@ async def _run_llm_session_body(
     if not answer_text:
         await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message='LLM 没有返回有效回复'))
         return None
+    if answer_blocks is None and knowledge_media_blocks:
+        from apps.ai_models.services.reply_blocks import text_to_blocks
+
+        answer_blocks = [*text_to_blocks(answer_text), *knowledge_media_blocks]
 
     conversation_id = session.get('conversationId')
     if conversation_id is not None:
@@ -708,6 +713,7 @@ async def _run_llm_session_body(
             answer_text,
             request_id,
             trace_id,
+            answer_blocks,
         )
     except Exception:
         logger.exception('realtime.agent_chat.log_failed device_code=%s request_id=%s', session.get('deviceCode'), request_id)
@@ -804,6 +810,7 @@ def _record_realtime_device_chat_log(
     answer_text: str,
     request_id: str,
     trace_id: str,
+    answer_blocks: list[dict] | None = None,
 ) -> None:
     from apps.devices.models import DeviceChatLog
     from apps.devices.services.chat_logs import record_device_chat_log
@@ -819,6 +826,7 @@ def _record_realtime_device_chat_log(
         trace_id=trace_id,
         model_name=str(session.get('modelName') or ''),
         conversation_id=session.get('conversationId'),
+        answer_blocks=answer_blocks,
     )
 
 
@@ -1260,6 +1268,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
     model = None
     chatbot = None
     conversation = None
+    has_conversation_id = _payload_conversation_id(payload) is not None if payload is not None else False
     if runtime_backend_type == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
         from apps.ai_models.models import ThirdPartyChatbotApplication
 
@@ -1270,7 +1279,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
             chatbot = agent_application.third_party_chatbot
         if not third_party_chatbots.is_chatbot_effective_for_tenant(device.tenant, chatbot):
             raise RuntimeError('请先为设备绑定智能体配置可用第三方会话机器人')
-        if payload is not None:
+        if has_conversation_id:
             conversation = _resolve_runtime_conversation(
                 device,
                 agent_application,
@@ -1293,7 +1302,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
             model = settings.default_model if settings is not None else None
         if not llm_services.is_llm_model_effective_for_tenant(device.tenant, model):
             raise RuntimeError('请先为设备绑定智能体配置可用 LLM 模型')
-        if payload is not None:
+        if has_conversation_id:
             conversation = _resolve_runtime_conversation(device, agent_application, model, runtime_config, payload)
 
     annotation = DeviceVoiceChatView._find_annotation(agent_application, question_text)
@@ -1329,6 +1338,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
         'agentApplicationName': runtime_config.get('name') or agent_application.name,
         'applicationId': device.application_id,
         'applicationName': device.application.name if device.application else '',
+        'tenantId': device.tenant_id,
         'ttsFilterPunctuation': runtime_config.get('tts_filter_punctuation') or '',
         'ttsFilterEmoji': runtime_config.get('tts_filter_emoji'),
         'ttsFilterExcludePatterns': runtime_config.get('tts_filter_exclude_patterns') or [],
@@ -1348,14 +1358,16 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
     )
     messages = [{'role': 'system', 'content': system_prompt}]
 
-    from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context
+    from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context_with_media
+    from apps.ai_models.services.reply_blocks import serialize_reply_blocks
 
-    knowledge_context = retrieve_knowledge_context(
+    knowledge_context, media_blocks = retrieve_knowledge_context_with_media(
         agent_application,
         question_text,
         knowledge_document_ids=runtime_config.get('knowledge_document_ids') or [],
         knowledge_base_ids=runtime_config.get('knowledge_base_ids') or [],
     )
+    media_blocks = serialize_reply_blocks(media_blocks, tenant=agent_application.tenant)
     if knowledge_context:
         messages.append({'role': 'system', 'content': knowledge_context})
     if conversation is not None:
@@ -1376,6 +1388,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
             'enableWebSearch': model.enable_web_search,
         },
         'messages': messages,
+        'knowledgeMediaBlocks': media_blocks,
         'temperature': runtime_config.get('temperature', 0.7),
         'maxTokens': None if runtime_config.get('max_tokens_unlimited') else runtime_config.get('max_tokens', 1000),
         'modelName': model.name,

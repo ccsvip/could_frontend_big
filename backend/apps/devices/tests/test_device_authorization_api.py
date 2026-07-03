@@ -17,12 +17,13 @@ from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import AgentApplication, LLMModel, LLMProvider, TenantLLMModelGrant, TenantLLMSettings, TTSProvider, TTSVoice
+from apps.ai_models.models import AgentAnnotation, AgentApplication, LLMModel, LLMProvider, TenantLLMModelGrant, TenantLLMSettings, TTSProvider, TTSVoice
 from apps.devices.models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup
 from apps.devices.services.authorization import record_device_authorization_action
 from apps.devices.services.queries import device_authorization_requests_queryset
 from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device
 from apps.devices.serializers import DeviceActivationLogSerializer
+from apps.devices.views import DeviceVoiceChatView
 from apps.knowledge_base.models import KnowledgeBase, KnowledgeDocument, KnowledgeDocumentChunk
 from apps.resources.models import ModelAsset, Resource, ScrollingText, ScrollingTextItem
 from apps.tenants.models import Tenant
@@ -717,6 +718,71 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(chat_log.answer_text, '欢迎来到数字人展厅。')
         self.assertEqual(chat_log.model_name, 'qwen/qwen3-32b')
 
+    def test_device_voice_chat_returns_media_annotation_blocks_with_absolute_urls(self):
+        image = Resource.objects.create(
+            tenant=self.tenant,
+            resource_type=Resource.TYPE_IMAGE,
+            name='展厅图片',
+            category=Resource.CATEGORY_HORIZONTAL,
+            file=SimpleUploadedFile('hall.png', b'image-content', content_type='image/png'),
+        )
+        video = Resource.objects.create(
+            tenant=self.tenant,
+            resource_type=Resource.TYPE_VIDEO,
+            name='展厅视频',
+            category=Resource.CATEGORY_HORIZONTAL,
+            file=SimpleUploadedFile('hall.mp4', b'video-content', content_type='video/mp4'),
+        )
+        AgentAnnotation.objects.create(
+            tenant=self.tenant,
+            application=self.agent_application,
+            question='展示素材',
+            answer='这是展厅素材',
+            answer_blocks=[
+                {'type': 'text', 'text': '这是展厅素材'},
+                {'type': 'image', 'resourceId': image.id},
+                {'type': 'video', 'resourceId': video.id},
+            ],
+            created_by=self.user,
+        )
+        self.agent_application.publish()
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Voice Device',
+            code='ANDROID-MEDIA-ANNOTATION-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        with (
+            patch.object(DeviceVoiceChatView, '_synthesize_answer_audio', return_value=''),
+            patch('apps.devices.views.record_device_chat_log', return_value=None),
+        ):
+            response = self.client.post(
+                '/api/v1/device/voice-chat',
+                {'text': '展示素材'},
+                format='json',
+                HTTP_X_DEVICE_CODE='ANDROID-MEDIA-ANNOTATION-001',
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['answerText'], '这是展厅素材')
+        self.assertEqual(response.data['answerBlocks'][0], {'type': 'text', 'text': '这是展厅素材'})
+        image_block = response.data['answerBlocks'][1]
+        video_block = response.data['answerBlocks'][2]
+        self.assertEqual(image_block['type'], 'image')
+        self.assertEqual(image_block['resourceId'], image.id)
+        self.assertEqual(image_block['resourceName'], '展厅图片')
+        self.assertTrue(image_block['url'].startswith('http://testserver/media/'))
+        self.assertFalse(image_block['missing'])
+        self.assertEqual(video_block['type'], 'video')
+        self.assertEqual(video_block['resourceId'], video.id)
+        self.assertEqual(video_block['resourceName'], '展厅视频')
+        self.assertTrue(video_block['url'].startswith('http://testserver/media/'))
+        self.assertFalse(video_block['missing'])
+
     def test_device_voice_chat_third_party_backend_keeps_android_response_shape(self):
         chatbot = self.create_third_party_chatbot()
         self.agent_application.runtime_backend_type = 'third_party_chatbot'
@@ -914,6 +980,109 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertNotIn('Lobby Agent', session_published_b['messages'][0]['content'])
         self.assertNotIn('Lobby App', session_published_b['messages'][0]['content'])
         self.assertNotIn('Realtime Prompt Device', session_published_b['messages'][0]['content'])
+
+    def test_realtime_llm_done_and_chat_logs_include_non_annotation_media_blocks(self):
+        from apps.ai_models.models import ChatConversation
+        from config.realtime import _run_llm_session_body
+
+        provider = LLMProvider.objects.create(
+            name='OpenAI compatible',
+            provider_type='openai',
+            api_base_url='https://example.com/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='qwen/qwen3-32b', is_active=True)
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        self.agent_application.llm_model = model
+        self.agent_application.save(update_fields=['llm_model', 'updated_at'])
+        self.agent_application.publish()
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Realtime Media Device',
+            code='ANDROID-REALTIME-MEDIA-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+        image = Resource.objects.create(
+            tenant=self.tenant,
+            resource_type=Resource.TYPE_IMAGE,
+            name='展厅图片',
+            cloud_url='https://cdn.example.com/hall.jpg',
+        )
+        video = Resource.objects.create(
+            tenant=self.tenant,
+            resource_type=Resource.TYPE_VIDEO,
+            name='展厅视频',
+            cloud_url='https://cdn.example.com/hall.mp4',
+        )
+
+        async def fake_stream_llm_chat_completion(**kwargs):
+            yield '非标注回答'
+
+        async def run_llm():
+            messages = []
+
+            async def send(event):
+                messages.append(json.loads(event['text']))
+
+            await _run_llm_session_body(
+                send,
+                'android-llm-media',
+                {
+                    'id': 'android-llm-media',
+                    'payload': {
+                        'deviceCode': 'ANDROID-REALTIME-MEDIA-001',
+                        'text': '请展示展厅素材',
+                        'requestId': 'req-realtime-media',
+                        'traceId': 'trace-realtime-media',
+                    },
+                },
+            )
+            return messages
+
+        self.assertEqual(ChatConversation.objects.count(), 0)
+
+        with (
+            patch(
+                'apps.ai_models.services.agent_knowledge.retrieve_knowledge_context_with_media',
+                return_value=(
+                    '素材上下文',
+                    [
+                        {'type': 'image', 'resourceId': image.id},
+                        {'type': 'video', 'resourceId': video.id},
+                    ],
+                ),
+            ),
+            patch('config.realtime.llm_services.stream_llm_chat_completion', new=fake_stream_llm_chat_completion),
+        ):
+            messages = async_to_sync(run_llm)()
+
+        done = next(item for item in messages if item['type'] == 'llm.done')
+        answer_blocks = done['payload']['answerBlocks']
+        self.assertEqual(answer_blocks[0], {'type': 'text', 'text': '非标注回答'})
+        self.assertEqual(answer_blocks[1]['type'], 'image')
+        self.assertEqual(answer_blocks[1]['resourceId'], image.id)
+        self.assertEqual(answer_blocks[1]['resourceName'], '展厅图片')
+        self.assertEqual(answer_blocks[1]['url'], 'https://cdn.example.com/hall.jpg')
+        self.assertFalse(answer_blocks[1]['missing'])
+        self.assertEqual(answer_blocks[2]['type'], 'video')
+        self.assertEqual(answer_blocks[2]['resourceId'], video.id)
+        self.assertEqual(answer_blocks[2]['resourceName'], '展厅视频')
+        self.assertEqual(answer_blocks[2]['url'], 'https://cdn.example.com/hall.mp4')
+        self.assertFalse(answer_blocks[2]['missing'])
+
+        chat_log = DeviceChatLog.objects.get(request_id='req-realtime-media')
+        self.assertIsNone(chat_log.conversation_id)
+        self.assertEqual(chat_log.answer_blocks, answer_blocks)
+        self.assertEqual(ChatConversation.objects.count(), 0)
+
+        response = self.client.get('/api/v1/devices/chat-logs/', {'agentApplicationId': self.agent_application.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['answerBlocks'], answer_blocks)
 
     def test_device_chat_logs_endpoint_filters_by_agent_application(self):
         device = Device.objects.create(

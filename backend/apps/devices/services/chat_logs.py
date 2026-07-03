@@ -11,6 +11,7 @@ def record_device_chat_log(
     trace_id: str = '',
     model_name: str = '',
     conversation_id: int | None = None,
+    answer_blocks: list[dict] | None = None,
 ) -> DeviceChatLog | None:
     question = str(question_text or '').strip()
     answer = str(answer_text or '').strip()
@@ -27,6 +28,7 @@ def record_device_chat_log(
         source=source,
         question_text=question,
         answer_text=answer,
+        answer_blocks=answer_blocks or [{'type': 'text', 'text': answer}],
         request_id=str(request_id or ''),
         trace_id=str(trace_id or ''),
         model_name=str(model_name or ''),

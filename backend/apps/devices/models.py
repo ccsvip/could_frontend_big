@@ -332,6 +332,7 @@ class DeviceChatLog(models.Model):
     source = models.CharField('来源', max_length=32, choices=SOURCE_CHOICES)
     question_text = models.TextField('问题')
     answer_text = models.TextField('回答')
+    answer_blocks = models.JSONField('回答内容块', blank=True, default=list)
     request_id = models.CharField('请求 ID', max_length=64, blank=True, default='')
     trace_id = models.CharField('链路 ID', max_length=64, blank=True, default='')
     model_name = models.CharField('模型名称', max_length=128, blank=True, default='')

@@ -3,6 +3,8 @@ from __future__ import annotations
 from django.utils import timezone
 from rest_framework import serializers
 
+from apps.ai_models.services.reply_blocks import serialize_reply_blocks, text_to_blocks
+
 from apps.ai_models.models import AgentApplication, TTSVoice
 from apps.resources.models import CommandGroup, ModelAsset, Resource, ScrollingText
 from apps.tenants.models import Tenant
@@ -407,6 +409,7 @@ class DeviceChatLogSerializer(serializers.ModelSerializer):
     deviceName = serializers.CharField(source='device.name', read_only=True, default='')
     questionText = serializers.CharField(source='question_text', read_only=True)
     answerText = serializers.CharField(source='answer_text', read_only=True)
+    answerBlocks = serializers.SerializerMethodField()
     requestId = serializers.CharField(source='request_id', read_only=True)
     traceId = serializers.CharField(source='trace_id', read_only=True)
     modelName = serializers.CharField(source='model_name', read_only=True)
@@ -428,10 +431,18 @@ class DeviceChatLogSerializer(serializers.ModelSerializer):
             'deviceName',
             'questionText',
             'answerText',
+            'answerBlocks',
             'requestId',
             'traceId',
             'modelName',
             'createdAt',
+        )
+
+    def get_answerBlocks(self, obj: DeviceChatLog) -> list[dict]:
+        return serialize_reply_blocks(
+            obj.answer_blocks or text_to_blocks(obj.answer_text),
+            tenant=obj.tenant,
+            request=self.context.get('request'),
         )
 
 
