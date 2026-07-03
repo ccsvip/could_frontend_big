@@ -1097,6 +1097,7 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
         voice=voice,
         config=config,
         session_config=session_config,
+        exclude_patterns=payload.get('ttsFilterExcludePatterns') or [],
         send=_with_command_id(send, command_id),
     )
 
@@ -1131,6 +1132,7 @@ def _pop_llm_tts_segments(buffer: str, session: dict[str, Any], *, flush: bool =
         buffer,
         filter_punctuation=str(session.get('ttsFilterPunctuation') or ''),
         filter_emoji=bool(session.get('ttsFilterEmoji')),
+        exclude_patterns=session.get('ttsFilterExcludePatterns') or [],
         flush=flush,
     )
 
@@ -1329,6 +1331,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
         'applicationName': device.application.name if device.application else '',
         'ttsFilterPunctuation': runtime_config.get('tts_filter_punctuation') or '',
         'ttsFilterEmoji': runtime_config.get('tts_filter_emoji'),
+        'ttsFilterExcludePatterns': runtime_config.get('tts_filter_exclude_patterns') or [],
     }
 
     if runtime_backend_type == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:

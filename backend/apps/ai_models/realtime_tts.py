@@ -110,7 +110,15 @@ def resolve_tts_provider(raw_provider_code) -> TTSProvider:
     return TTSProvider.objects.filter(code=provider_code).first() or get_aliyun_tts_provider()
 
 
-async def _stream_tts_audio(*, text: str, voice: TTSVoice, config, send, session_config: dict | None = None) -> None:
+async def _stream_tts_audio(
+    *,
+    text: str,
+    voice: TTSVoice,
+    config,
+    send,
+    session_config: dict | None = None,
+    exclude_patterns: list[str] | tuple[str, ...] | None = None,
+) -> None:
     session_event = _session_update_event(config, voice, session_config)
     tts_session = session_event['session']
     async with websockets.connect(
@@ -139,7 +147,7 @@ async def _stream_tts_audio(*, text: str, voice: TTSVoice, config, send, session
                 'voice': voice.voice_code,
             }),
         })
-        for chunk in split_tts_text(text):
+        for chunk in split_tts_text(text, exclude_patterns=exclude_patterns):
             await upstream.send(json.dumps(_text_append_event(chunk)))
             await asyncio.sleep(0)
         await upstream.send(json.dumps(_text_commit_event()))
@@ -179,7 +187,15 @@ async def _stream_tts_audio(*, text: str, voice: TTSVoice, config, send, session
                 return
 
 
-async def _stream_tts_segments_audio(*, segments: AsyncIterable[str], voice: TTSVoice, config, send, session_config: dict | None = None) -> None:
+async def _stream_tts_segments_audio(
+    *,
+    segments: AsyncIterable[str],
+    voice: TTSVoice,
+    config,
+    send,
+    session_config: dict | None = None,
+    exclude_patterns: list[str] | tuple[str, ...] | None = None,
+) -> None:
     session_event = _session_update_event(config, voice, session_config)
     tts_session = session_event['session']
     async with websockets.connect(
@@ -217,9 +233,12 @@ async def _stream_tts_segments_audio(*, segments: AsyncIterable[str], voice: TTS
                 text = normalize_tts_text(segment, config)
                 if not text:
                     continue
+                chunks = split_tts_text(text, exclude_patterns=exclude_patterns)
+                if not chunks:
+                    continue
                 segment_index += 1
                 await segment_queue.put({'index': segment_index, 'text': text})
-                for chunk in split_tts_text(text):
+                for chunk in chunks:
                     await upstream.send(json.dumps(_text_append_event(chunk)))
                     await asyncio.sleep(0)
                 await upstream.send(json.dumps(_text_commit_event()))

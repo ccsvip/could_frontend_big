@@ -21,6 +21,30 @@ from apps.tenants.test_utils import TenantTestMixin
 User = get_user_model()
 
 
+class TTSServiceTests(TestCase):
+    def test_split_tts_text_removes_configured_text_from_segments(self):
+        segments = tts_services.split_tts_text(
+            '第一句正常播报。第二句包含（动作提示）也要播报。第三句继续播报。',
+            exclude_patterns=['（动作提示）'],
+        )
+
+        self.assertEqual(segments, ['第一句正常播报。', '第二句包含也要播报。', '第三句继续播报。'])
+
+    def test_pop_tts_text_segments_removes_configured_text_and_keeps_remainder(self):
+        segments, rest = tts_services.pop_tts_text_segments(
+            '第一句正常播报。第二句包含内心独白也要播报。第三句还没结束',
+            exclude_patterns=['内心独白'],
+        )
+
+        self.assertEqual(segments, ['第一句正常播报。', '第二句包含也要播报。'])
+        self.assertEqual(rest, '第三句还没结束')
+
+    def test_split_tts_text_skips_segment_when_exclusions_remove_everything(self):
+        segments = tts_services.split_tts_text('（动作提示）', exclude_patterns=['（动作提示）'])
+
+        self.assertEqual(segments, [])
+
+
 class OneShotTTSUpstream:
     def __init__(self):
         self.messages = []

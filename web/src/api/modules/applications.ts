@@ -43,6 +43,7 @@ export type AgentApplicationRecord = {
   replyPlaybackEnabled: boolean;
   ttsFilterPunctuation: string;
   ttsFilterEmoji: boolean;
+  ttsFilterExcludePatterns: string[];
   knowledgeDocumentIds: number[];
   knowledgeDocuments: AgentApplicationKnowledgeDocument[];
   knowledgeBaseIds: number[];
@@ -87,6 +88,7 @@ export type AgentApplicationPayload = {
   replyPlaybackEnabled?: boolean;
   ttsFilterPunctuation?: string;
   ttsFilterEmoji?: boolean;
+  ttsFilterExcludePatterns?: string[];
   knowledgeDocumentIds?: number[];
   knowledgeBaseIds?: number[];
   isActive?: boolean;

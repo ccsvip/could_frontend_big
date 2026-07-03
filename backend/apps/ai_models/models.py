@@ -663,6 +663,7 @@ class AgentApplication(models.Model):
     reply_playback_enabled = models.BooleanField('是否自动播报回复', default=False)
     tts_filter_punctuation = models.CharField('TTS 过滤标点', max_length=64, blank=True, default='。！？!?；;、')
     tts_filter_emoji = models.BooleanField('TTS 过滤表情', default=True)
+    tts_filter_exclude_patterns = models.JSONField('TTS 排除文本', blank=True, default=list)
     knowledge_documents = models.ManyToManyField(
         'knowledge_base.KnowledgeDocument',
         blank=True,
@@ -730,6 +731,7 @@ class AgentApplication(models.Model):
             'reply_playback_enabled': self.reply_playback_enabled,
             'tts_filter_punctuation': self.tts_filter_punctuation,
             'tts_filter_emoji': self.tts_filter_emoji,
+            'tts_filter_exclude_patterns': list(self.tts_filter_exclude_patterns or []),
             'is_active': self.is_active,
             'knowledge_document_ids': list(self.knowledge_documents.order_by('id').values_list('id', flat=True)),
             'knowledge_base_ids': list(self.knowledge_bases.order_by('id').values_list('id', flat=True)),
@@ -767,6 +769,7 @@ class AgentApplication(models.Model):
             'reply_playback_enabled': config.get('reply_playback_enabled', self.reply_playback_enabled),
             'tts_filter_punctuation': config.get('tts_filter_punctuation', self.tts_filter_punctuation),
             'tts_filter_emoji': config.get('tts_filter_emoji', self.tts_filter_emoji),
+            'tts_filter_exclude_patterns': config.get('tts_filter_exclude_patterns', self.tts_filter_exclude_patterns or []),
             'is_active': config.get('is_active', self.is_active),
             'knowledge_document_ids': config.get('knowledge_document_ids', []),
             'knowledge_base_ids': config.get('knowledge_base_ids', []),

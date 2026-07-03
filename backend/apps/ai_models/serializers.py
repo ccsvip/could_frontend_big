@@ -1096,6 +1096,12 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
     replyPlaybackEnabled = serializers.BooleanField(source='reply_playback_enabled', required=False)
     ttsFilterPunctuation = serializers.CharField(source='tts_filter_punctuation', required=False, allow_blank=True)
     ttsFilterEmoji = serializers.BooleanField(source='tts_filter_emoji', required=False)
+    ttsFilterExcludePatterns = serializers.ListField(
+        source='tts_filter_exclude_patterns',
+        child=serializers.CharField(max_length=120, allow_blank=False),
+        required=False,
+        allow_empty=True,
+    )
     knowledgeDocumentIds = serializers.PrimaryKeyRelatedField(
         source='knowledge_documents',
         queryset=KnowledgeDocument.objects.none(),
@@ -1142,6 +1148,7 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
             'replyPlaybackEnabled',
             'ttsFilterPunctuation',
             'ttsFilterEmoji',
+            'ttsFilterExcludePatterns',
             'knowledgeDocumentIds',
             'knowledgeDocuments',
             'knowledgeBaseIds',
@@ -1265,6 +1272,23 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
         if len(value) > 64:
             raise serializers.ValidationError('TTS 过滤标点不能超过 64 个字符')
         return value
+
+    def validate_ttsFilterExcludePatterns(self, value: list[str]) -> list[str]:
+        if len(value) > 20:
+            raise serializers.ValidationError('TTS 排除文本最多 20 条')
+        normalized = []
+        seen = set()
+        for item in value:
+            text = str(item).strip()
+            if not text:
+                raise serializers.ValidationError('TTS 排除文本不能为空')
+            if len(text) > 120:
+                raise serializers.ValidationError('TTS 排除文本单条不能超过 120 字')
+            if text in seen:
+                continue
+            seen.add(text)
+            normalized.append(text)
+        return normalized
 
     def validate(self, attrs):
         attrs = super().validate(attrs)

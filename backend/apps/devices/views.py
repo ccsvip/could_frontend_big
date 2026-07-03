@@ -691,6 +691,7 @@ class DeviceRuntimeResourcesView(DeviceRuntimeView):
             'replyPlaybackEnabled': config.get('reply_playback_enabled'),
             'ttsFilterPunctuation': config.get('tts_filter_punctuation') or '',
             'ttsFilterEmoji': config.get('tts_filter_emoji'),
+            'ttsFilterExcludePatterns': config.get('tts_filter_exclude_patterns') or [],
         }
 
 

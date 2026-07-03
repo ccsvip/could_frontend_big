@@ -135,11 +135,16 @@ const LOG_CONVERSATION_PAGE_SIZE = 100;
 const DEFAULT_TEMPERATURE = 0.7;
 const DEFAULT_MAX_TOKENS = 1000;
 const DEFAULT_TTS_FILTER_PUNCTUATION = '。！？!?；;、';
+const MAX_TTS_EXCLUDE_PATTERN_COUNT = 20;
+const MAX_TTS_EXCLUDE_PATTERN_LENGTH = 120;
 const ANNOTATION_PUNCTUATION_PATTERN = /\p{P}/gu;
 const ASR_BOUNDARY_PUNCTUATION_PATTERN = /^[\p{P}\s]+|[\p{P}\s]+$/gu;
 
 const normalizeAnnotationQuestion = (value: string) => value.replace(ANNOTATION_PUNCTUATION_PATTERN, '').trim();
 const normalizeAsrTranscript = (value: string) => value.replace(ASR_BOUNDARY_PUNCTUATION_PATTERN, '').trim();
+const normalizeTtsFilterExcludePatterns = (items: string[] = []) => Array.from(
+  new Set(items.map((item) => item.trim()).filter(Boolean)),
+).slice(0, MAX_TTS_EXCLUDE_PATTERN_COUNT);
 const textBlock = (text: string): AgentReplyBlock => ({ type: 'text', text });
 const blocksToText = (blocks: AgentReplyBlock[]) => blocks
   .filter((block): block is Extract<AgentReplyBlock, { type: 'text' }> => block.type === 'text')
@@ -527,6 +532,8 @@ export const ApplicationManagementPage = () => {
   const [replyPlaybackEnabled, setReplyPlaybackEnabled] = useState(false);
   const [ttsFilterPunctuation, setTtsFilterPunctuation] = useState(DEFAULT_TTS_FILTER_PUNCTUATION);
   const [ttsFilterEmoji, setTtsFilterEmoji] = useState(true);
+  const [ttsFilterExcludePatterns, setTtsFilterExcludePatterns] = useState<string[]>([]);
+  const [newTtsFilterExcludePattern, setNewTtsFilterExcludePattern] = useState('');
   const [asrStatus, setAsrStatus] = useState<AsrStatusRecord | null>(null);
   const [ttsOptions, setTtsOptions] = useState<CompanyTtsOptions | null>(null);
   const agentAudio = useAgentAudio();
@@ -621,6 +628,8 @@ export const ApplicationManagementPage = () => {
     setReplyPlaybackEnabled(detail.replyPlaybackEnabled);
     setTtsFilterPunctuation(detail.ttsFilterPunctuation || DEFAULT_TTS_FILTER_PUNCTUATION);
     setTtsFilterEmoji(detail.ttsFilterEmoji);
+    setTtsFilterExcludePatterns(normalizeTtsFilterExcludePatterns(detail.ttsFilterExcludePatterns || []));
+    setNewTtsFilterExcludePattern('');
   }, []);
 
   const getApplicationSaveMismatch = (detail: AgentApplicationRecord, payload: AgentApplicationPayload) => {
@@ -628,6 +637,9 @@ export const ApplicationManagementPage = () => {
     const normalizedPunctuation = Array.from(new Set(stringValue(payload.ttsFilterPunctuation).trim())).join('');
     const hasTtsFilterPunctuation = Object.prototype.hasOwnProperty.call(detail, 'ttsFilterPunctuation');
     const hasTtsFilterEmoji = Object.prototype.hasOwnProperty.call(detail, 'ttsFilterEmoji');
+    const hasTtsFilterExcludePatterns = Object.prototype.hasOwnProperty.call(detail, 'ttsFilterExcludePatterns');
+    const payloadExcludePatterns = normalizeTtsFilterExcludePatterns(payload.ttsFilterExcludePatterns || []);
+    const detailExcludePatterns = normalizeTtsFilterExcludePatterns(detail.ttsFilterExcludePatterns || []);
     const payloadDocs = payload.knowledgeBaseIds || [];
     const detailDocs = detail.knowledgeBaseIds || [];
     const payloadQuestions = payload.suggestedQuestions || [];
@@ -656,6 +668,11 @@ export const ApplicationManagementPage = () => {
     if (detail.ttsFilterPunctuation !== normalizedPunctuation) return 'TTS 过滤规则';
     if (!hasTtsFilterEmoji) return '过滤表情字段';
     if (detail.ttsFilterEmoji !== payload.ttsFilterEmoji) return '过滤表情';
+    if (!hasTtsFilterExcludePatterns) return '不播报文本字段';
+    if (
+      payloadExcludePatterns.length !== detailExcludePatterns.length ||
+      !payloadExcludePatterns.every((item, index) => item === detailExcludePatterns[index])
+    ) return '不播报文本';
     if (!hasSameQuestions) return '建议问题';
     if (!hasSameDocs) return '绑定知识库';
     return null;
@@ -679,6 +696,10 @@ export const ApplicationManagementPage = () => {
     if (replyPlaybackEnabled !== selectedApplication.replyPlaybackEnabled) return true;
     if (ttsFilterPunctuation !== selectedApplication.ttsFilterPunctuation) return true;
     if (ttsFilterEmoji !== selectedApplication.ttsFilterEmoji) return true;
+    const previousExcludePatterns = normalizeTtsFilterExcludePatterns(selectedApplication.ttsFilterExcludePatterns || []);
+    const currentExcludePatterns = normalizeTtsFilterExcludePatterns(ttsFilterExcludePatterns);
+    if (currentExcludePatterns.length !== previousExcludePatterns.length) return true;
+    if (!previousExcludePatterns.every((item, index) => item === currentExcludePatterns[index])) return true;
 
     const previousQuestions = selectedApplication.suggestedQuestions || [];
     if (suggestedQuestions.length !== previousQuestions.length) return true;
@@ -708,6 +729,7 @@ export const ApplicationManagementPage = () => {
     replyPlaybackEnabled,
     ttsFilterPunctuation,
     ttsFilterEmoji,
+    ttsFilterExcludePatterns,
   ]);
 
   const getPublishStatus = (app: AgentApplicationRecord) => {
@@ -1181,6 +1203,11 @@ export const ApplicationManagementPage = () => {
       message.error('请选择第三方会话机器人');
       return;
     }
+    const normalizedTtsFilterExcludePatterns = normalizeTtsFilterExcludePatterns(ttsFilterExcludePatterns);
+    if (normalizedTtsFilterExcludePatterns.some((item) => item.length > MAX_TTS_EXCLUDE_PATTERN_LENGTH)) {
+      message.error(`TTS 不播报文本单条不能超过 ${MAX_TTS_EXCLUDE_PATTERN_LENGTH} 字`);
+      return;
+    }
     setConfigSaving(true);
     try {
       const payload: AgentApplicationPayload = {
@@ -1202,6 +1229,7 @@ export const ApplicationManagementPage = () => {
         replyPlaybackEnabled,
         ttsFilterPunctuation,
         ttsFilterEmoji,
+        ttsFilterExcludePatterns: normalizedTtsFilterExcludePatterns,
       };
       await updateAgentApplication(selectedApplication.id, payload);
       const updated = await fetchAgentApplication(selectedApplication.id);
@@ -1250,6 +1278,7 @@ export const ApplicationManagementPage = () => {
     replyPlaybackEnabled,
     ttsFilterPunctuation,
     ttsFilterEmoji,
+    ttsFilterExcludePatterns,
     conversation,
     loadApplications,
     applyApplicationState,
@@ -1399,6 +1428,7 @@ export const ApplicationManagementPage = () => {
         agentAudio.finishStreamPlayback({
           punctuation: ttsFilterPunctuation,
           emoji: ttsFilterEmoji,
+          excludePatterns: ttsFilterExcludePatterns,
           sessionConfig: ttsPlaybackSessionConfig,
         });
       }
@@ -1420,6 +1450,7 @@ export const ApplicationManagementPage = () => {
           agentAudio.appendStreamPlaybackText(text, {
             punctuation: ttsFilterPunctuation,
             emoji: ttsFilterEmoji,
+            excludePatterns: ttsFilterExcludePatterns,
             sessionConfig: ttsPlaybackSessionConfig,
           });
         }
@@ -1439,6 +1470,29 @@ export const ApplicationManagementPage = () => {
       agentAudio.stopRecording({ suppressDone: true, cancel: true });
     }
     await sendChatContent(content);
+  };
+
+  const addTtsFilterExcludePattern = () => {
+    const text = newTtsFilterExcludePattern.trim();
+    if (!text) {
+      message.warning('请输入不播报文本');
+      return;
+    }
+    if (text.length > MAX_TTS_EXCLUDE_PATTERN_LENGTH) {
+      message.warning(`单条不播报文本不能超过 ${MAX_TTS_EXCLUDE_PATTERN_LENGTH} 字`);
+      return;
+    }
+    const nextPatterns = normalizeTtsFilterExcludePatterns([...ttsFilterExcludePatterns, text]);
+    if (nextPatterns.length === ttsFilterExcludePatterns.length && ttsFilterExcludePatterns.includes(text)) {
+      message.info('该文本已存在');
+      return;
+    }
+    setTtsFilterExcludePatterns(nextPatterns);
+    setNewTtsFilterExcludePattern('');
+  };
+
+  const removeTtsFilterExcludePattern = (index: number) => {
+    setTtsFilterExcludePatterns((current) => current.filter((_, itemIndex) => itemIndex !== index));
   };
 
   const handleStopStreaming = () => {
@@ -1897,6 +1951,7 @@ export const ApplicationManagementPage = () => {
                   onClick={() => void agentAudio.playText(playbackKey, msg.content, {
                     punctuation: ttsFilterPunctuation,
                     emoji: ttsFilterEmoji,
+                    excludePatterns: ttsFilterExcludePatterns,
                     sessionConfig: ttsPlaybackSessionConfig,
                   })}
                   className="flex items-center gap-1 text-slate-500 hover:text-brand-600 px-1.5"
@@ -2455,6 +2510,58 @@ export const ApplicationManagementPage = () => {
                     <Switch checked={ttsFilterEmoji} disabled={!canUpdate} onChange={setTtsFilterEmoji} />
                   </div>
                 </div>
+                <div className="flex flex-col gap-2 border-t border-slate-100 pt-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-slate-700">不播报文本</span>
+                      <span className="text-xs text-slate-400">播报前会从回复中移除这些文本片段，其余内容继续送去 TTS</span>
+                    </div>
+                    <Tag color="default" className="m-0">{ttsFilterExcludePatterns.length}/{MAX_TTS_EXCLUDE_PATTERN_COUNT}</Tag>
+                  </div>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Input
+                      value={newTtsFilterExcludePattern}
+                      disabled={!canUpdate || ttsFilterExcludePatterns.length >= MAX_TTS_EXCLUDE_PATTERN_COUNT}
+                      maxLength={MAX_TTS_EXCLUDE_PATTERN_LENGTH}
+                      onChange={(event) => setNewTtsFilterExcludePattern(event.target.value)}
+                      onPressEnter={addTtsFilterExcludePattern}
+                      placeholder="例如：括号内的舞台提示、动作说明等"
+                    />
+                    <Button
+                      disabled={!canUpdate || ttsFilterExcludePatterns.length >= MAX_TTS_EXCLUDE_PATTERN_COUNT}
+                      onClick={addTtsFilterExcludePattern}
+                      className="flex items-center justify-center gap-1 sm:w-24"
+                    >
+                      <IconPlus size={14} /> 添加
+                    </Button>
+                  </div>
+                  {ttsFilterExcludePatterns.length > 0 ? (
+                    <div className="flex flex-col gap-2">
+                      {ttsFilterExcludePatterns.map((pattern, index) => (
+                        <div
+                          key={`${pattern}-${index}`}
+                          className="flex items-center justify-between gap-2 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2"
+                        >
+                          <span className="min-w-0 flex-1 break-words text-sm text-slate-700">{pattern}</span>
+                          <Button
+                            type="text"
+                            danger
+                            size="small"
+                            disabled={!canUpdate}
+                            onClick={() => removeTtsFilterExcludePattern(index)}
+                            className="shrink-0 flex items-center justify-center"
+                          >
+                            <IconTrash size={14} />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-3 py-2 text-xs text-slate-400">
+                      暂未配置不播报文本
+                    </div>
+                  )}
+                </div>
               </div>
             </Card>
           </div>
@@ -2492,6 +2599,7 @@ export const ApplicationManagementPage = () => {
                     onClick={() => void agentAudio.playText('opening-message', openingMessage, {
                       punctuation: ttsFilterPunctuation,
                       emoji: ttsFilterEmoji,
+                      excludePatterns: ttsFilterExcludePatterns,
                       sessionConfig: ttsPlaybackSessionConfig,
                     })}
                     className="flex items-center gap-1 rounded-full px-3"

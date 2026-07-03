@@ -45,6 +45,7 @@ type StartRecordingOptions = {
 export type TtsFilterRules = {
   punctuation?: string;
   emoji?: boolean;
+  excludePatterns?: string[];
   sessionConfig?: TtsSessionConfig;
 };
 
@@ -305,8 +306,12 @@ export const useAgentAudio = () => {
       playbackAbortRef.current = abortController;
       playbackInterruptRef.current = interruptController;
       try {
+        const playbackSegment = removeTtsExcludePatterns(segment, filterRules?.excludePatterns);
+        if (!playbackSegment) {
+          continue;
+        }
         await playRealtimeTts({
-          text: segment,
+          text: playbackSegment,
           token,
           tenantId: tenantScopeId ?? tenant?.id ?? null,
           filterPunctuation: filterRules?.punctuation,
@@ -351,7 +356,11 @@ export const useAgentAudio = () => {
     if (readySegments.segments.length === 0) {
       return;
     }
-    streamPlaybackQueueRef.current.push(...readySegments.segments);
+    streamPlaybackQueueRef.current.push(
+      ...readySegments.segments
+        .map((segment) => removeTtsExcludePatterns(segment, filterRules?.excludePatterns))
+        .filter((segment): segment is string => Boolean(segment)),
+    );
     const sessionId = streamPlaybackSessionRef.current;
     void playQueuedStreamSegments(sessionId, filterRules);
   }, [playQueuedStreamSegments, token]);
@@ -397,6 +406,10 @@ export const useAgentAudio = () => {
     if (!content) {
       return;
     }
+    const playbackContent = removeTtsExcludePatterns(content, filterRules?.excludePatterns);
+    if (!playbackContent) {
+      return;
+    }
 
     if (playbackKeyRef.current === key && audioRef.current) {
       if (audioRef.current.paused) {
@@ -436,7 +449,7 @@ export const useAgentAudio = () => {
         return;
       }
       await playRealtimeTts({
-        text: content,
+        text: playbackContent,
         token,
         tenantId: tenantScopeId ?? tenant?.id ?? null,
         filterPunctuation: filterRules?.punctuation,
@@ -490,6 +503,14 @@ export const useAgentAudio = () => {
 };
 
 const TTS_SEGMENT_PATTERN = /[。！？!?；;\n]/g;
+
+const normalizeTtsExcludePatterns = (patterns?: string[]) => Array.from(
+  new Set((patterns || []).map((pattern) => pattern.trim()).filter(Boolean)),
+);
+
+const removeTtsExcludePatterns = (text: string, patterns?: string[]) => normalizeTtsExcludePatterns(patterns)
+  .reduce((current, pattern) => current.split(pattern).join(''), text)
+  .trim();
 
 const extractReadyTtsSegments = (text: string, force: boolean): { segments: string[]; remainder: string } => {
   const segments: string[] = [];

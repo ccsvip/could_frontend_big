@@ -765,6 +765,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertFalse(response.data['replyPlaybackEnabled'])
         self.assertEqual(response.data['ttsFilterPunctuation'], '。！？!?；;、')
         self.assertTrue(response.data['ttsFilterEmoji'])
+        self.assertEqual(response.data['ttsFilterExcludePatterns'], [])
 
     def test_update_agent_application_accepts_conversation_settings(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.update')
@@ -785,6 +786,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
                 'replyPlaybackEnabled': True,
                 'ttsFilterPunctuation': '。！？!?；;、',
                 'ttsFilterEmoji': False,
+                'ttsFilterExcludePatterns': ['（动作提示）', '  内心独白  ', '（动作提示）'],
             },
             format='json',
         )
@@ -796,9 +798,11 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertTrue(response.data['replyPlaybackEnabled'])
         self.assertEqual(response.data['ttsFilterPunctuation'], '。！？!?；;、')
         self.assertFalse(response.data['ttsFilterEmoji'])
+        self.assertEqual(response.data['ttsFilterExcludePatterns'], ['（动作提示）', '内心独白'])
         application.refresh_from_db()
         self.assertEqual(application.tts_filter_punctuation, '。！？!?；;、')
         self.assertFalse(application.tts_filter_emoji)
+        self.assertEqual(application.tts_filter_exclude_patterns, ['（动作提示）', '内心独白'])
 
     def test_update_agent_application_rejects_duplicate_name_in_same_tenant(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.update')

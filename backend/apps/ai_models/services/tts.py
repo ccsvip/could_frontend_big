@@ -232,8 +232,10 @@ def split_tts_text(
     chunk_size: int = 80,
     filter_punctuation: str | None = None,
     filter_emoji: bool = False,
+    exclude_patterns: list[str] | tuple[str, ...] | None = None,
     flush: bool = True,
 ) -> list[str]:
+    exclusion_patterns = _normalize_tts_exclude_patterns(exclude_patterns)
     stripped = sanitize_tts_text(
         text,
         filter_punctuation=filter_punctuation,
@@ -250,12 +252,18 @@ def split_tts_text(
         if len(current) >= chunk_size or (char in separators and _is_tts_boundary(stripped, index)):
             chunk = current.strip()
             if chunk:
-                chunks.append(_finalize_tts_chunk(chunk, filter_punctuation=filter_punctuation))
+                filtered_chunk = _remove_tts_exclude_patterns(chunk, exclusion_patterns)
+                finalized = _finalize_tts_chunk(filtered_chunk, filter_punctuation=filter_punctuation)
+                if finalized:
+                    chunks.append(finalized)
             current = ''
     tail = current.strip()
     if tail and flush:
-        chunks.append(_finalize_tts_chunk(tail, filter_punctuation=filter_punctuation))
-    return chunks or [stripped]
+        filtered_tail = _remove_tts_exclude_patterns(tail, exclusion_patterns)
+        finalized = _finalize_tts_chunk(filtered_tail, filter_punctuation=filter_punctuation)
+        if finalized:
+            chunks.append(finalized)
+    return chunks
 
 
 def pop_tts_text_segments(
@@ -264,8 +272,10 @@ def pop_tts_text_segments(
     chunk_size: int = 80,
     filter_punctuation: str | None = None,
     filter_emoji: bool = False,
+    exclude_patterns: list[str] | tuple[str, ...] | None = None,
     flush: bool = False,
 ) -> tuple[list[str], str]:
+    exclusion_patterns = _normalize_tts_exclude_patterns(exclude_patterns)
     stripped = sanitize_tts_text(
         buffer,
         filter_punctuation=filter_punctuation,
@@ -281,18 +291,42 @@ def pop_tts_text_segments(
     for index, char in enumerate(stripped):
         current += char
         if len(current) >= chunk_size or (char in separators and _is_tts_boundary(stripped, index)):
-            chunk = _finalize_tts_chunk(current, filter_punctuation=filter_punctuation)
+            filtered_current = _remove_tts_exclude_patterns(current, exclusion_patterns)
+            chunk = _finalize_tts_chunk(filtered_current, filter_punctuation=filter_punctuation)
             if chunk:
                 chunks.append(chunk)
             current = ''
             last_boundary = index + 1
     rest = stripped[last_boundary:]
     if flush and rest:
-        chunk = _finalize_tts_chunk(rest.strip(), filter_punctuation=filter_punctuation)
+        filtered_rest = _remove_tts_exclude_patterns(rest.strip(), exclusion_patterns)
+        chunk = _finalize_tts_chunk(filtered_rest, filter_punctuation=filter_punctuation)
         if chunk:
             chunks.append(chunk)
         rest = ''
     return chunks, rest
+
+
+def _normalize_tts_exclude_patterns(patterns: list[str] | tuple[str, ...] | None) -> list[str]:
+    if not patterns:
+        return []
+    normalized = []
+    seen = set()
+    for pattern in patterns:
+        text = str(pattern).strip()
+        if text and text not in seen:
+            normalized.append(text)
+            seen.add(text)
+    return normalized
+
+
+def _remove_tts_exclude_patterns(text: str, patterns: list[str]) -> str:
+    if not patterns:
+        return text
+    result = text
+    for pattern in patterns:
+        result = result.replace(pattern, '')
+    return result.strip()
 
 
 def sanitize_tts_text(
