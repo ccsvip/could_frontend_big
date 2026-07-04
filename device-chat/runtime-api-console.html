@@ -1884,7 +1884,7 @@
                 window.clearTimeout(timer);
                 finishAgentRealtimeSession(session).then(resolve).catch(reject);
               }
-              if (payload.type === 'agent.error' || payload.type === 'llm.error' || payload.type === 'tts.error' || payload.type === 'error') {
+              if (payload.type === 'agent.error' || payload.type === 'llm.error' || payload.type === 'error') {
                 settled = true;
                 window.clearTimeout(timer);
                 session.socket.close();
@@ -1987,6 +1987,16 @@
             current.status = 'done';
             renderTtsSegmentDebugList(session);
           }
+        }
+        if (payload.type === 'tts.error') {
+          const message = String((payload.error && payload.error.message) || payload.message || 'TTS 播报失败');
+          const current = session.ttsSegments[session.ttsSegments.length - 1];
+          if (current && current.status !== 'done') {
+            current.status = 'error';
+            current.error = message;
+            renderTtsSegmentDebugList(session);
+          }
+          if (session.ttsNode) session.ttsNode.textContent = '播报失败，等待文字回答完成';
         }
         if (payload.type === 'llm.done') {
           const data = payload.payload || {};

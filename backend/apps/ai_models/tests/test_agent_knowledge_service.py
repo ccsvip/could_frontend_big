@@ -5,6 +5,8 @@ from django.core.files.base import ContentFile
 from django.test import TestCase, override_settings
 from unittest.mock import patch
 
+import httpx
+
 from apps.ai_models.models import AgentApplication, EmbeddingModel, RerankModel, TenantKnowledgeModelSettings
 from apps.ai_models.services.agent_knowledge import (
     media_blocks_for_reply_text,
@@ -267,6 +269,45 @@ class AgentKnowledgeRetrievalTests(TenantTestMixin, TestCase):
         self.assertEqual(result['mode'], 'vector')
         self.assertEqual(result['chunks'], [])
         self.assertEqual(result['mediaAssets'], [])
+
+    def test_transport_error_falls_back_to_keyword_without_error_log(self):
+        knowledge_base = KnowledgeBase.objects.create(
+            tenant=self.tenant,
+            name='外部模型网络异常知识库',
+            created_by=self.user,
+        )
+        document = self.create_document(
+            title='退款政策',
+            body='退款政策\n客户购买后七天内可以申请退款，到账时间通常为三个工作日。',
+        )
+        document.knowledge_base = knowledge_base
+        document.save(update_fields=['knowledge_base'])
+        embedding_model = EmbeddingModel.objects.create(
+            code='aliyun',
+            name='阿里云通用文本向量',
+            api_key='dashscope-secret',
+            base_url='https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings',
+            model='text-embedding-v4',
+            is_active=True,
+        )
+        TenantKnowledgeModelSettings.objects.create(
+            tenant=self.tenant,
+            embedding_model=embedding_model,
+            is_active=True,
+        )
+
+        with (
+            patch('apps.ai_models.services.agent_knowledge.build_document_index', return_value={'status': KnowledgeDocument.IndexStatus.READY}),
+            patch('apps.ai_models.services.agent_knowledge._embed_texts', side_effect=httpx.ConnectError('[SSL: UNEXPECTED_EOF_WHILE_READING] EOF')),
+            patch('apps.ai_models.services.agent_knowledge.logger.exception') as log_exception,
+            self.assertLogs('apps.ai_models.services.agent_knowledge', level='WARNING') as captured_logs,
+        ):
+            result = retrieve_knowledge_chunks(query='退款多久到账？', knowledge_base=knowledge_base, top_n=3)
+
+        self.assertEqual(result['mode'], 'keyword')
+        self.assertIn('三个工作日', result['chunks'][0]['content'])
+        self.assertTrue(any('External model transport error during vector knowledge chunk retrieval' in log for log in captured_logs.output))
+        log_exception.assert_not_called()
 
     def test_low_information_query_skips_knowledge_and_media_retrieval(self):
         knowledge_base = KnowledgeBase.objects.create(

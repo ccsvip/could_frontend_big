@@ -79,9 +79,17 @@ class RealtimeConnection:
         await self.close_tts_session()
         self.close_device_events()
         if self.device_status_device_id is not None:
-            offline_event = await sync_to_async(mark_device_offline_for_websocket, thread_sensitive=True)(
-                self.device_status_device_id,
-            )
+            try:
+                offline_event = await sync_to_async(mark_device_offline_for_websocket, thread_sensitive=True)(
+                    self.device_status_device_id,
+                )
+            except Exception:
+                logger.warning(
+                    'mark_device_offline_for_websocket failed during websocket close device_id=%s',
+                    self.device_status_device_id,
+                    exc_info=True,
+                )
+                offline_event = None
             self.device_status_device_id = None
             self.device_status_device_code = None
             self.device_status_command_id = None
@@ -969,7 +977,7 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
             if event.get('type') == 'session.finished':
                 await _send_json(send, {'type': 'asr.done', 'id': command_id, 'requestId': request_id, 'traceId': trace_id})
                 text = connection.agent_latest_text.strip()
-                await _clear_finished_asr_session(connection)
+                await _clear_finished_asr_session(connection, keep_current_task=True)
                 if text:
                     await _run_agent_llm_and_finish(send, connection, text)
                 else:
@@ -981,13 +989,18 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
         if _is_client_disconnected(exc):
             return
         raise
+    finally:
+        if connection.asr_upstream_task is asyncio.current_task():
+            connection.asr_upstream_task = None
 
 
-async def _clear_finished_asr_session(connection: RealtimeConnection) -> None:
+async def _clear_finished_asr_session(connection: RealtimeConnection, *, keep_current_task: bool = False) -> None:
     upstream_context = connection.asr_upstream_context
+    current_task = asyncio.current_task()
     connection.asr_upstream = None
     connection.asr_upstream_context = None
-    connection.asr_upstream_task = None
+    if not keep_current_task or connection.asr_upstream_task is not current_task:
+        connection.asr_upstream_task = None
     connection.asr_session_id = None
     connection.asr_accepting_audio = False
     if upstream_context is not None:
@@ -1026,7 +1039,12 @@ async def _run_agent_llm_and_finish(send, connection: RealtimeConnection, questi
                 connection.agent_tts_worker = None
         if answer_text is None:
             return
-        await _send_json(send, _trace_payload('agent.done', command_id, request_id, trace_id, payload={'deviceCode': device_code, 'questionText': question_text}))
+        try:
+            await _send_json(send, _trace_payload('agent.done', command_id, request_id, trace_id, payload={'deviceCode': device_code, 'questionText': question_text}))
+        except RuntimeError as exc:
+            if 'Unexpected ASGI message' not in str(exc):
+                raise
+            # 客户端已断开连接后 asgi_send 会抛 RuntimeError；agent.done 只是尽力通知，无需上报
     except asyncio.CancelledError:
         raise
     except Exception as exc:
@@ -1064,6 +1082,13 @@ async def _agent_tts_worker(send, connection: RealtimeConnection, command_id, de
     except asyncio.CancelledError:
         raise
     except Exception as exc:
+        logger.exception(
+            'Agent TTS stream failed: request_id=%s trace_id=%s command_id=%s device_code=%s',
+            request_id,
+            trace_id,
+            command_id,
+            device_code,
+        )
         await _send_json(
             send,
             _trace_payload('tts.error', command_id, request_id, trace_id, message=str(exc)[:200]),
@@ -1423,6 +1448,7 @@ async def _run_tts_session(send, connection: RealtimeConnection, command_id, mes
     except asyncio.CancelledError:
         raise
     except Exception as exc:
+        logger.exception('TTS session failed: command_id=%s', command_id)
         await _send_json(send, {'type': 'tts.error', 'id': command_id, 'message': str(exc)[:200]})
     finally:
         if connection.tts_task is asyncio.current_task():

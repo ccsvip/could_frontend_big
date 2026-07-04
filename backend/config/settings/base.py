@@ -96,6 +96,7 @@ if not DATABASE_URL:
 DATABASES = {
     'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
 }
+DATABASES['default']['CONN_HEALTH_CHECKS'] = True
 
 # 默认缓存必须走 Redis，保证 backend 与 Celery worker 进程共享同一份缓存数据。
 REDIS_CACHE_URL = os.getenv('REDIS_CACHE_URL', os.getenv('REDIS_URL', 'redis://localhost:6379/0'))
@@ -309,6 +310,11 @@ ALIYUN_TTS_DEFAULT_TEST_TEXT = os.getenv(
     'ALIYUN_TTS_DEFAULT_TEST_TEXT',
     '对吧~我就特别喜欢这种超市，尤其是过年的时候去逛超市就会觉得超级超级开心！想买好多好多的东西呢！',
 ).strip()
+TTS_REALTIME_WS_OPEN_TIMEOUT_SECONDS = float(os.getenv('TTS_REALTIME_WS_OPEN_TIMEOUT_SECONDS', '10'))
+TTS_REALTIME_WS_PING_INTERVAL_SECONDS = float(os.getenv('TTS_REALTIME_WS_PING_INTERVAL_SECONDS', '20'))
+TTS_REALTIME_WS_PING_TIMEOUT_SECONDS = float(os.getenv('TTS_REALTIME_WS_PING_TIMEOUT_SECONDS', '60'))
+TTS_REALTIME_WS_CLOSE_TIMEOUT_SECONDS = float(os.getenv('TTS_REALTIME_WS_CLOSE_TIMEOUT_SECONDS', '10'))
+TTS_REALTIME_WS_MAX_SIZE_BYTES = int(os.getenv('TTS_REALTIME_WS_MAX_SIZE_BYTES', str(8 * 1024 * 1024)))
 ALIYUN_EMBEDDING_API_KEY = (
     os.getenv('ALIYUN_EMBEDDING_API_KEY')
     or os.getenv('DASHSCOPE_API_KEY')

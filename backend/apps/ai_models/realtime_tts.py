@@ -6,6 +6,7 @@ import json
 from typing import Any, AsyncIterable
 
 import websockets
+from django.conf import settings
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.accounts.services.permissions import get_active_permission_codes_for_user
@@ -110,6 +111,24 @@ def resolve_tts_provider(raw_provider_code) -> TTSProvider:
     return TTSProvider.objects.filter(code=provider_code).first() or get_aliyun_tts_provider()
 
 
+def _optional_positive_seconds(value) -> float | None:
+    try:
+        seconds = float(value)
+    except (TypeError, ValueError):
+        return None
+    return seconds if seconds > 0 else None
+
+
+def _tts_ws_connect_options() -> dict[str, Any]:
+    return {
+        'open_timeout': _optional_positive_seconds(getattr(settings, 'TTS_REALTIME_WS_OPEN_TIMEOUT_SECONDS', 10)) or 10,
+        'ping_interval': _optional_positive_seconds(getattr(settings, 'TTS_REALTIME_WS_PING_INTERVAL_SECONDS', 20)),
+        'ping_timeout': _optional_positive_seconds(getattr(settings, 'TTS_REALTIME_WS_PING_TIMEOUT_SECONDS', 60)),
+        'close_timeout': _optional_positive_seconds(getattr(settings, 'TTS_REALTIME_WS_CLOSE_TIMEOUT_SECONDS', 10)) or 10,
+        'max_size': int(getattr(settings, 'TTS_REALTIME_WS_MAX_SIZE_BYTES', 8 * 1024 * 1024)),
+    }
+
+
 async def _stream_tts_audio(
     *,
     text: str,
@@ -128,10 +147,7 @@ async def _stream_tts_audio(
             ('OpenAI-Beta', 'realtime=v1'),
         ],
         user_agent_header='solin-admin/1.0',
-        open_timeout=10,
-        ping_interval=20,
-        ping_timeout=20,
-        max_size=8 * 1024 * 1024,
+        **_tts_ws_connect_options(),
     ) as upstream:
         await upstream.send(json.dumps({
             'event_id': 'event_tts_session_update',
@@ -205,10 +221,7 @@ async def _stream_tts_segments_audio(
             ('OpenAI-Beta', 'realtime=v1'),
         ],
         user_agent_header='solin-admin/1.0',
-        open_timeout=10,
-        ping_interval=20,
-        ping_timeout=20,
-        max_size=8 * 1024 * 1024,
+        **_tts_ws_connect_options(),
     ) as upstream:
         await upstream.send(json.dumps({
             'event_id': 'event_tts_session_update',

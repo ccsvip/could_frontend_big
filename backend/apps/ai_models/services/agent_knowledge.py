@@ -21,6 +21,15 @@ KEYWORD_INDEX_MODEL = 'keyword'
 EMBEDDING_BATCH_SIZE = 10
 DEFAULT_VECTOR_MIN_SCORE = 0.2
 TEXT_EXTENSIONS = {'txt', 'md'}
+EXPECTED_EXTERNAL_MODEL_TRANSPORT_ERRORS = (
+    httpx.ConnectError,
+    httpx.ConnectTimeout,
+    httpx.NetworkError,
+    httpx.PoolTimeout,
+    httpx.ReadTimeout,
+    httpx.RemoteProtocolError,
+    httpx.WriteTimeout,
+)
 LEGACY_OFFICE_EXTENSIONS = {'doc', 'xls', 'ppt'}
 RETRIEVAL_INTENT_TERMS = {
     '什么',
@@ -352,6 +361,22 @@ def _rerank_model_for_tenant(tenant) -> RerankModel | None:
     return None
 
 
+def _external_model_transport_error_message(exc: httpx.TransportError) -> str:
+    message = str(exc).strip()
+    return f'{exc.__class__.__name__}: {message}' if message else exc.__class__.__name__
+
+
+def _log_expected_external_model_fallback(action: str, exc: httpx.TransportError, **context) -> None:
+    context_parts = [f'{key}={value}' for key, value in context.items() if value is not None]
+    context_text = f" {' '.join(context_parts)}" if context_parts else ''
+    logger.warning(
+        'External model transport error during %s%s; falling back without reporting to Sentry: %s',
+        action,
+        context_text,
+        _external_model_transport_error_message(exc),
+    )
+
+
 def _parse_embedding_response(payload: dict, expected_count: int) -> list[list[float]]:
     """Supports DashScope OpenAI-compatible and legacy embedding response shapes."""
     if isinstance(payload.get('data'), list):
@@ -543,6 +568,23 @@ def build_document_index(document: KnowledgeDocument, *, force: bool = False) ->
             'chunkCount': len(chunks),
             'indexModel': index_model,
             'mode': mode,
+        }
+    except EXPECTED_EXTERNAL_MODEL_TRANSPORT_ERRORS as e:
+        _log_expected_external_model_fallback('knowledge document indexing', e, document_id=document.pk)
+        error_message = _external_model_transport_error_message(e)
+        KnowledgeDocument.objects.filter(pk=document.pk).update(
+            index_status=KnowledgeDocument.IndexStatus.FAILED,
+            index_error=error_message[:1000],
+            indexed_at=None,
+            chunk_count=0,
+            index_model=embedding_model.model if embedding_model else KEYWORD_INDEX_MODEL,
+        )
+        return {
+            'documentId': document.pk,
+            'status': KnowledgeDocument.IndexStatus.FAILED,
+            'chunkCount': 0,
+            'indexModel': embedding_model.model if embedding_model else KEYWORD_INDEX_MODEL,
+            'error': error_message,
         }
     except Exception as e:
         logger.exception('Failed to build knowledge document index id=%s error=%s', document.pk, e)
@@ -1124,8 +1166,19 @@ def retrieve_knowledge_chunks(
             tenant=tenant,
             include_media=include_media,
         )
+    except EXPECTED_EXTERNAL_MODEL_TRANSPORT_ERRORS as e:
+        _log_expected_external_model_fallback('vector knowledge chunk retrieval', e)
+        return _serialize_recall_result(
+            chunks=_retrieve_keyword_chunks(docs, query, top_n),
+            mode='keyword',
+            embedding_model=embedding_model,
+            rerank_model=None,
+            query=query,
+            tenant=tenant,
+            include_media=include_media,
+        )
     except Exception as e:
-        logger.exception('Error during vector knowledge base retrieval, fallback to keyword retrieval: %s', e)
+        logger.warning('Error during vector knowledge base retrieval, fallback to keyword retrieval: %s', e, exc_info=True)
         return _serialize_recall_result(
             chunks=_retrieve_keyword_chunks(docs, query, top_n),
             mode='keyword',
@@ -1218,8 +1271,11 @@ def retrieve_knowledge_context(
                 candidates = candidates[:top_n]
 
         return _format_context(candidates[:top_n], max_chars)
+    except EXPECTED_EXTERNAL_MODEL_TRANSPORT_ERRORS as e:
+        _log_expected_external_model_fallback('vector knowledge context retrieval', e, application_id=application.id)
+        return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars, docs)
     except Exception as e:
-        logger.exception('Error during vector knowledge base retrieval, fallback to keyword retrieval: %s', e)
+        logger.warning('Error during vector knowledge base retrieval, fallback to keyword retrieval: %s', e, exc_info=True)
         return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars, docs)
 
 

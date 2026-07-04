@@ -9,8 +9,9 @@ from unittest.mock import ANY, patch
 from asgiref.sync import async_to_sync
 from asgiref.testing import ApplicationCommunicator
 from django.contrib.auth import get_user_model
+from django.db.utils import OperationalError
 from django.test import SimpleTestCase
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
@@ -183,6 +184,36 @@ class FailingUnifiedASRUpstream:
 
 
 class RealtimeWebSocketTests(SimpleTestCase):
+    @override_settings(
+        TTS_REALTIME_WS_OPEN_TIMEOUT_SECONDS=11,
+        TTS_REALTIME_WS_PING_INTERVAL_SECONDS=22,
+        TTS_REALTIME_WS_PING_TIMEOUT_SECONDS=66,
+        TTS_REALTIME_WS_CLOSE_TIMEOUT_SECONDS=12,
+        TTS_REALTIME_WS_MAX_SIZE_BYTES=1024,
+    )
+    def test_tts_realtime_websocket_keepalive_options_are_configurable(self):
+        from apps.ai_models.realtime_tts import _tts_ws_connect_options
+
+        self.assertEqual(
+            _tts_ws_connect_options(),
+            {
+                'open_timeout': 11.0,
+                'ping_interval': 22.0,
+                'ping_timeout': 66.0,
+                'close_timeout': 12.0,
+                'max_size': 1024,
+            },
+        )
+
+    def test_unexpected_asgi_send_after_close_is_not_suppressed(self):
+        from config.realtime import _is_client_disconnected
+
+        exc = RuntimeError(
+            "Unexpected ASGI message 'websocket.send', after sending 'websocket.close' or response already completed."
+        )
+
+        self.assertFalse(_is_client_disconnected(exc))
+
     def test_binary_audio_without_active_asr_session_is_ignored(self):
         async def run_task():
             from config.realtime import RealtimeConnection, _handle_binary_frame
@@ -195,6 +226,108 @@ class RealtimeWebSocketTests(SimpleTestCase):
             await _handle_binary_frame(send, RealtimeConnection(), b'\x01\x02')
 
             self.assertEqual(sent, [])
+
+        async_to_sync(run_task)()
+
+    def test_agent_tts_error_does_not_block_agent_done(self):
+        async def run_task():
+            from config.realtime import RealtimeConnection, _agent_tts_worker, _run_agent_llm_and_finish
+
+            sent_payloads = []
+
+            async def send(event):
+                if 'text' in event:
+                    sent_payloads.append(json.loads(event['text']))
+
+            async def fake_run_llm_session_body(send, command_id, message, on_tts_segment, error_event_type):
+                await on_tts_segment('这段播报会失败。')
+                return '完整文字回答。'
+
+            async def failing_tts_stream(*args, **kwargs):
+                raise RuntimeError('sent 1011 (internal error) keepalive ping timeout; no close frame received')
+
+            connection = RealtimeConnection()
+            connection.agent_session_id = 'agent-tts-fail-1'
+            connection.agent_request_id = 'req-agent-tts-fail-1'
+            connection.agent_trace_id = 'trace-agent-tts-fail-1'
+            connection.agent_device_code = 'ANDROID-TTS-FAIL-001'
+            connection.agent_tts_queue = asyncio.Queue()
+            connection.agent_tts_worker = asyncio.create_task(_agent_tts_worker(
+                send,
+                connection,
+                connection.agent_session_id,
+                connection.agent_device_code,
+                connection.agent_request_id,
+                connection.agent_trace_id,
+                {},
+            ))
+
+            with (
+                patch('config.realtime._run_llm_session_body', side_effect=fake_run_llm_session_body),
+                patch('config.realtime._run_agent_tts_stream', side_effect=failing_tts_stream),
+                patch('config.realtime.logger.exception') as log_exception,
+            ):
+                await _run_agent_llm_and_finish(send, connection, '介绍一下展厅')
+
+            log_exception.assert_called_once()
+            event_types = [payload['type'] for payload in sent_payloads]
+            self.assertIn('tts.error', event_types)
+            self.assertIn('agent.done', event_types)
+            self.assertEqual(event_types[-1], 'agent.done')
+            tts_error = next(payload for payload in sent_payloads if payload['type'] == 'tts.error')
+            self.assertEqual(tts_error['requestId'], 'req-agent-tts-fail-1')
+            self.assertEqual(tts_error['traceId'], 'trace-agent-tts-fail-1')
+
+        async_to_sync(run_task)()
+
+    def test_agent_done_after_socket_closed_does_not_raise(self):
+        """客户端断开后 agent.done 的 asgi_send 抛 RuntimeError 时不应导致 task exception never retrieved。"""
+        async def run_task():
+            from config.realtime import RealtimeConnection, _run_agent_llm_and_finish
+
+            sent_payloads = []
+
+            async def send(event):
+                if 'text' not in event:
+                    return
+                payload = json.loads(event['text'])
+                if payload.get('type') == 'agent.done':
+                    raise RuntimeError(
+                        "Unexpected ASGI message 'websocket.send', after sending 'websocket.close' or response already completed."
+                    )
+                sent_payloads.append(payload)
+
+            async def fake_run_llm_session_body(send, command_id, message, on_tts_segment, error_event_type):
+                return '完整回答。'
+
+            connection = RealtimeConnection()
+            connection.agent_session_id = 'agent-closed-1'
+            connection.agent_request_id = 'req-closed-1'
+            connection.agent_trace_id = 'trace-closed-1'
+            connection.agent_device_code = 'ANDROID-CLOSED-001'
+
+            with patch('config.realtime._run_llm_session_body', side_effect=fake_run_llm_session_body):
+                # 不应抛出 RuntimeError；agent.done 是尽力通知，socket 已关闭时静默
+                await _run_agent_llm_and_finish(send, connection, '你好')
+
+            self.assertNotIn('agent.done', [p['type'] for p in sent_payloads])
+
+        async_to_sync(run_task)()
+
+    def test_close_tolerates_database_unavailable(self):
+        """数据库重启(AdminShutdown)期间 close() 不应抛异常导致 WebSocket 1006。"""
+        async def run_task():
+            from config.realtime import RealtimeConnection
+
+            connection = RealtimeConnection()
+            connection.device_status_device_id = 999
+            connection.device_status_device_code = 'ANDROID-DB-FAIL'
+            connection.device_status_command_id = 'cmd-db-fail'
+
+            with patch('config.realtime.mark_device_offline_for_websocket', side_effect=OperationalError('the connection is closed')):
+                await connection.close()
+
+            self.assertIsNone(connection.device_status_device_id)
 
         async_to_sync(run_task)()
 
@@ -332,6 +465,53 @@ class RealtimeWebSocketTests(SimpleTestCase):
             self.assertFalse(slow_context.exit_finished.is_set())
             slow_context.allow_exit.set()
             await asyncio.wait_for(slow_context.exit_finished.wait(), timeout=0.1)
+
+        async_to_sync(run_task)()
+
+    def test_agent_voice_pipeline_remains_cancellable_after_asr_finished(self):
+        async def run_task():
+            from config.realtime import RealtimeConnection, _agent_asr_upstream_to_client
+
+            sent_payloads = []
+            llm_started = asyncio.Event()
+            llm_cancelled = asyncio.Event()
+
+            class FinishedASRUpstream:
+                def __aiter__(self):
+                    return self
+
+                async def __anext__(self):
+                    return json.dumps({'type': 'session.finished'})
+
+            async def send(event):
+                if 'text' in event:
+                    sent_payloads.append(json.loads(event['text']))
+
+            async def hanging_run_agent_llm(send, connection, question_text):
+                llm_started.set()
+                try:
+                    await asyncio.Event().wait()
+                except asyncio.CancelledError:
+                    llm_cancelled.set()
+                    raise
+
+            connection = RealtimeConnection()
+            connection.agent_session_id = 'agent-cancellable-1'
+            connection.agent_request_id = 'req-agent-cancellable-1'
+            connection.agent_trace_id = 'trace-agent-cancellable-1'
+            connection.agent_device_code = 'ANDROID-CANCELLABLE-001'
+            connection.agent_latest_text = '已经识别的问题'
+
+            with patch('config.realtime._run_agent_llm_and_finish', side_effect=hanging_run_agent_llm):
+                task = asyncio.create_task(_agent_asr_upstream_to_client(FinishedASRUpstream(), send, connection, []))
+                connection.asr_upstream_task = task
+                await asyncio.wait_for(llm_started.wait(), timeout=1)
+                self.assertIs(connection.asr_upstream_task, task)
+                await connection.close()
+                await asyncio.gather(task, return_exceptions=True)
+
+            self.assertTrue(llm_cancelled.is_set())
+            self.assertIn('asr.done', [payload['type'] for payload in sent_payloads])
 
         async_to_sync(run_task)()
 
@@ -851,6 +1031,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
                             'text': '你好',
                             'voiceId': 7,
                             'providerCode': 'aliyun',
+                            'sessionConfig': {'response_format': 'pcm', 'sample_rate': 24000},
                         },
                     }),
                 })
@@ -858,10 +1039,20 @@ class RealtimeWebSocketTests(SimpleTestCase):
                 ready = await communicator.receive_output(timeout=1)
                 self.assertEqual(
                     json.loads(ready['text']),
-                    {'type': 'tts.ready', 'sampleRate': 24000, 'voice': 'Cherry', 'id': 'tts-session-1'},
+                    {'type': 'tts.ready', 'sampleRate': 24000, 'responseFormat': 'pcm', 'voice': 'Cherry', 'id': 'tts-session-1'},
+                )
+                segment_start = await communicator.receive_output(timeout=1)
+                self.assertEqual(
+                    json.loads(segment_start['text']),
+                    {'type': 'tts.segment_start', 'payload': {'index': 1, 'text': '你好'}, 'id': 'tts-session-1'},
                 )
                 audio = await communicator.receive_output(timeout=1)
                 self.assertEqual(audio, {'type': 'websocket.send', 'bytes': b'\x03\x04'})
+                segment_end = await communicator.receive_output(timeout=1)
+                self.assertEqual(
+                    json.loads(segment_end['text']),
+                    {'type': 'tts.segment_end', 'payload': {'index': 1}, 'id': 'tts-session-1'},
+                )
                 done = await communicator.receive_output(timeout=1)
                 self.assertEqual(json.loads(done['text']), {'type': 'tts.done', 'id': 'tts-session-1'})
 
@@ -1000,13 +1191,14 @@ class RealtimeWebSocketTests(SimpleTestCase):
                             'text': '你好',
                             'voiceId': 7,
                             'providerCode': 'aliyun',
+                            'sessionConfig': {'response_format': 'pcm', 'sample_rate': 24000},
                         },
                     }),
                 })
                 ready = await communicator.receive_output(timeout=1)
                 self.assertEqual(
                     json.loads(ready['text']),
-                    {'type': 'tts.ready', 'sampleRate': 24000, 'voice': 'Cherry', 'id': 'tts-cancel-session'},
+                    {'type': 'tts.ready', 'sampleRate': 24000, 'responseFormat': 'pcm', 'voice': 'Cherry', 'id': 'tts-cancel-session'},
                 )
 
                 await communicator.send_input({
