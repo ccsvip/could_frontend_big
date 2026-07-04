@@ -56,7 +56,7 @@ export default defineConfig(({ mode }) => {
         ? {
             '/api': {
               target: apiProxyTarget,
-              changeOrigin: false,
+              changeOrigin: true,
             },
             '/media': {
               target: apiProxyTarget,
@@ -69,7 +69,7 @@ export default defineConfig(({ mode }) => {
             '/ws': {
               target: apiProxyTarget,
               ws: true,
-              changeOrigin: false,
+              changeOrigin: true,
             },
           }
         : undefined,

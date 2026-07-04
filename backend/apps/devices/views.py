@@ -34,6 +34,7 @@ from config.request_id import get_request_id, get_trace_id
 
 from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup, WakeWord
 from .services.chat_logs import record_device_chat_log
+from .services import session_store
 from .services.authorization import (
     bind_device_authorization,
     ignore_device_authorization_request,
@@ -822,10 +823,20 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             if not question_text:
                 return Response({'message': 'ASR 没有识别出有效内容'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # --- session management ---------------------------------------------------
+        session_id = str(request.data.get('sessionId') or '').strip() or None
+
         try:
-            answer_text, answer_blocks = self._generate_answer(device, question_text, request=request)
+            answer_text, answer_blocks = self._generate_answer(
+                device, question_text, session_id=session_id, request=request,
+            )
         except Exception as exc:
             return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Persist conversation turns so the next request can load history.
+        if session_id:
+            session_store.append_turn(device.code, session_id, 'user', question_text)
+            session_store.append_turn(device.code, session_id, 'assistant', answer_text)
 
         try:
             runtime_agent = device.effective_agent_application
@@ -861,7 +872,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             logger.exception('device.voice_chat.log_failed device_code=%s', device.code)
 
         payload = {
-            'sessionId': str(request.data.get('sessionId') or uuid.uuid4()),
+            'sessionId': session_id or str(uuid.uuid4()),
             'requestId': get_request_id(request),
             'traceId': get_trace_id(request),
             'deviceCode': device.code,
@@ -898,7 +909,13 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         return sample_rate, None
 
     @staticmethod
-    def _generate_answer(device: Device, question_text: str, *, request=None) -> tuple[str, list[dict]]:
+    def _generate_answer(
+        device: Device,
+        question_text: str,
+        *,
+        session_id: str | None = None,
+        request=None,
+    ) -> tuple[str, list[dict]]:
         agent_application = device.effective_agent_application
         annotation = DeviceVoiceChatView._find_annotation(agent_application, question_text)
         if annotation is not None:
@@ -945,6 +962,10 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             else '你是数字人设备的中文语音问答助手。回答要自然、简洁，适合直接转成语音播报。'
         )
         messages = [{'role': 'system', 'content': system_prompt}]
+        # Load conversation history from Redis when a sessionId is provided.
+        if session_id:
+            history = session_store.get_history(device.code, session_id)
+            messages.extend(history)
         media_blocks: list[dict] = []
         if agent_application is not None:
             from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context_with_media
