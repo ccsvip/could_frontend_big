@@ -188,6 +188,49 @@ class Device(models.Model):
         return self.authorization_type == self.AUTHORIZATION_TRIAL and bool(self.expires_at and self.expires_at <= timezone.now())
 
 
+class WakeWord(models.Model):
+    text = models.CharField('唤醒词', max_length=16)
+    encoded_text = models.CharField('编码后唤醒词', max_length=255)
+    boost = models.DecimalField('增强分数', max_digits=4, decimal_places=2, default=2.0)
+    threshold = models.DecimalField('触发阈值', max_digits=4, decimal_places=2, default=0.25)
+    is_active = models.BooleanField('是否启用', default=True)
+    tenant = _tenant_fk()
+    devices = models.ManyToManyField(
+        Device,
+        blank=True,
+        related_name='wake_words',
+        verbose_name='绑定设备',
+    )
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        ordering = ['text', 'id']
+        verbose_name = '唤醒词'
+        verbose_name_plural = '唤醒词'
+        constraints = [
+            models.UniqueConstraint(fields=['tenant', 'text'], name='unique_wake_word_text_per_tenant'),
+        ]
+
+    def __str__(self) -> str:
+        return self.text
+
+    @staticmethod
+    def _format_decimal(value) -> str:
+        formatted = format(value, 'f').rstrip('0').rstrip('.') or '0'
+        if '.' not in formatted:
+            return f'{formatted}.0'
+        return formatted
+
+    @property
+    def keyword_line(self) -> str:
+        boost = self._format_decimal(self.boost)
+        threshold = self._format_decimal(self.threshold)
+        return f'{self.encoded_text} @{self.text} :{boost} #{threshold}'
+
+
 class DeviceAuthorizationCode(models.Model):
     STATUS_UNUSED = 'unused'
     STATUS_USED = 'used'

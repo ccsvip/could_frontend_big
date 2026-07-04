@@ -34,6 +34,37 @@ export type DeviceRecord = {
   updated_at: string;
 };
 
+
+export type WakeWordDeviceRecord = {
+  id: number;
+  deviceCode: string;
+  name: string;
+  status: DeviceStatus;
+};
+
+export type WakeWordRecord = {
+  id: number;
+  text: string;
+  encodedText: string;
+  keywordLine: string;
+  boost: string;
+  threshold: string;
+  isActive: boolean;
+  deviceIds: number[];
+  devices: WakeWordDeviceRecord[];
+  deviceCount: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type WakeWordPayload = {
+  text: string;
+  boost?: number | string;
+  threshold?: number | string;
+  isActive?: boolean;
+  deviceIds?: number[];
+};
+
 export type DeviceListQuery = {
   page?: number;
   keyword?: string;
@@ -339,4 +370,26 @@ export const createDeviceApplication = async (payload: DeviceApplicationPayload)
 export const updateDeviceApplication = async (id: number, payload: DeviceApplicationPayload) => {
   const response = await httpClient.patch<DeviceApplicationRecord>(`/device-applications/${id}/`, payload);
   return response.data;
+};
+
+
+export const fetchWakeWords = async (query?: { page?: number; keyword?: string; deviceId?: number }) => {
+  const response = await httpClient.get<PaginatedResponse<WakeWordRecord> | WakeWordRecord[]>('/wake-words/', {
+    params: query,
+  });
+  return normalizeList(response.data);
+};
+
+export const createWakeWord = async (payload: WakeWordPayload) => {
+  const response = await httpClient.post<WakeWordRecord>('/wake-words/', payload);
+  return response.data;
+};
+
+export const updateWakeWord = async (id: number, payload: WakeWordPayload) => {
+  const response = await httpClient.patch<WakeWordRecord>(`/wake-words/${id}/`, payload);
+  return response.data;
+};
+
+export const deleteWakeWord = async (id: number) => {
+  await httpClient.delete(`/wake-words/${id}/`);
 };

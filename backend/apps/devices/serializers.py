@@ -8,8 +8,9 @@ from apps.ai_models.services.reply_blocks import serialize_reply_blocks, text_to
 from apps.ai_models.models import AgentApplication, TTSVoice
 from apps.resources.models import CommandGroup, ModelAsset, Resource, ScrollingText
 from apps.tenants.models import Tenant
+from .services.wake_words import WakeWordEncodingError, encode_wake_word_text
 
-from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup
+from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup, WakeWord
 
 
 def _tenant_from_context(serializer: serializers.Serializer):
@@ -303,6 +304,96 @@ class DeviceAuthorizationCodeSerializer(serializers.ModelSerializer):
         if request and getattr(request, 'user', None) and request.user.is_authenticated:
             validated_data['created_by'] = request.user
         return super().create(validated_data)
+
+
+class WakeWordDeviceSerializer(serializers.ModelSerializer):
+    deviceCode = serializers.CharField(source='code', read_only=True)
+
+    class Meta:
+        model = Device
+        fields = ('id', 'deviceCode', 'name', 'status')
+
+
+class WakeWordSerializer(serializers.ModelSerializer):
+    text = serializers.CharField(max_length=16, trim_whitespace=True)
+    encodedText = serializers.CharField(source='encoded_text', read_only=True)
+    keywordLine = serializers.CharField(source='keyword_line', read_only=True)
+    isActive = serializers.BooleanField(source='is_active', required=False)
+    deviceIds = serializers.PrimaryKeyRelatedField(
+        source='devices',
+        queryset=Device.objects.all(),
+        many=True,
+        required=False,
+    )
+    devices = WakeWordDeviceSerializer(many=True, read_only=True)
+    deviceCount = serializers.IntegerField(source='devices.count', read_only=True)
+
+    class Meta:
+        model = WakeWord
+        fields = (
+            'id',
+            'text',
+            'encodedText',
+            'keywordLine',
+            'boost',
+            'threshold',
+            'isActive',
+            'deviceIds',
+            'devices',
+            'deviceCount',
+            'created_at',
+            'updated_at',
+        )
+        read_only_fields = ('id', 'encodedText', 'keywordLine', 'devices', 'deviceCount', 'created_at', 'updated_at')
+
+    def validate_text(self, value: str) -> str:
+        text = str(value or '').strip()
+        if not text.startswith('你好'):
+            raise serializers.ValidationError('唤醒词必须以“你好”开头')
+        if len(text) < 4 or len(text) > 6:
+            raise serializers.ValidationError('唤醒词必须为 4-6 个汉字（含“你好”）')
+        if not all('\u4e00' <= char <= '\u9fff' for char in text):
+            raise serializers.ValidationError('唤醒词只能包含汉字')
+        tenant = _tenant_from_context(self)
+        queryset = WakeWord.objects.filter(tenant=tenant, text=text)
+        if self.instance is not None:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        if queryset.exists():
+            raise serializers.ValidationError('同一公司内唤醒词不能重复')
+        return text
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        tenant = _tenant_from_context(self)
+        devices = attrs.get('devices')
+        if devices is not None:
+            invalid = [device for device in devices if device.tenant_id != getattr(tenant, 'id', None)]
+            if invalid:
+                raise serializers.ValidationError({'deviceIds': '只能绑定同公司的设备'})
+        return attrs
+
+    def _encode_text(self, text: str) -> str:
+        try:
+            return encode_wake_word_text(text)
+        except WakeWordEncodingError as exc:
+            raise serializers.ValidationError({'text': str(exc)}) from exc
+
+    def create(self, validated_data):
+        devices = validated_data.pop('devices', [])
+        validated_data['tenant'] = _tenant_from_context(self)
+        validated_data['encoded_text'] = self._encode_text(validated_data['text'])
+        instance = super().create(validated_data)
+        instance.devices.set(devices)
+        return instance
+
+    def update(self, instance: WakeWord, validated_data):
+        devices = validated_data.pop('devices', None)
+        if 'text' in validated_data and validated_data['text'] != instance.text:
+            validated_data['encoded_text'] = self._encode_text(validated_data['text'])
+        instance = super().update(instance, validated_data)
+        if devices is not None:
+            instance.devices.set(devices)
+        return instance
 
 
 class DeviceAuthorizationRequestSerializer(DeviceSerializer):

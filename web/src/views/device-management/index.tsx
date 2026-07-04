@@ -1,5 +1,6 @@
 import {
   IconApps,
+  IconMicrophone,
   IconTrash,
   IconDeviceDesktop,
   IconEdit,
@@ -31,7 +32,7 @@ import {
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import {
   buildDeviceEventsUnsubscribeCommand,
   buildRealtimeWebSocketUrl,
@@ -41,17 +42,23 @@ import {
 } from '../../api/realtime';
 import {
   createDeviceApplication,
+  createWakeWord,
   deleteDevice,
+  deleteWakeWord,
   fetchDeviceApplications,
   fetchDeviceStats,
+  fetchWakeWords,
   fetchDevices,
   updateDevice,
   updateDeviceApplication,
+  updateWakeWord,
   type DeviceApplicationPayload,
   type DeviceApplicationRecord,
   type DeviceAuthorizationType,
   type DeviceListQuery,
   type DeviceRecord,
+  type WakeWordPayload,
+  type WakeWordRecord,
 } from '../../api/modules/devices';
 import { fetchCommandGroups } from '../../api/modules/commands';
 import { fetchAgentApplications, type AgentApplicationRecord } from '../../api/modules/applications';
@@ -64,6 +71,7 @@ type DeviceEditForm = {
 };
 
 type ApplicationForm = DeviceApplicationPayload;
+type WakeWordForm = WakeWordPayload;
 
 type ResourceOption = {
   label: string;
@@ -149,12 +157,18 @@ const isDeviceRealtimePayload = (payload: unknown): payload is { type: string } 
 const emptyApplicationOption = [{ label: '待绑定资源应用', value: null as number | null }];
 const emptyAgentApplicationOption = [{ label: '待绑定智能体', value: null as number | null }];
 
+type DeviceWakeWordRow = {
+  device: DeviceRecord;
+  wakeWords: WakeWordRecord[];
+};
+
 export const DeviceManagementPage = () => {
   const [devices, setDevices] = useState<DeviceRecord[]>([]);
   const [deviceTotal, setDeviceTotal] = useState(0);
   const [devicePage, setDevicePage] = useState(1);
   const [stats, setStats] = useState({ total: 0, online: 0, offline: 0, trial: 0, permanent: 0 });
   const [applications, setApplications] = useState<DeviceApplicationRecord[]>([]);
+  const [wakeWords, setWakeWords] = useState<WakeWordRecord[]>([]);
   const [agentApplications, setAgentApplications] = useState<AgentApplicationRecord[]>([]);
   const [commandGroupOptions, setCommandGroupOptions] = useState<ResourceOption[]>([]);
   const [loading, setLoading] = useState(true);
@@ -166,17 +180,22 @@ export const DeviceManagementPage = () => {
   });
   const [editingDevice, setEditingDevice] = useState<DeviceRecord | null>(null);
   const [editingApplication, setEditingApplication] = useState<DeviceApplicationRecord | null>(null);
+  const [editingWakeWord, setEditingWakeWord] = useState<WakeWordRecord | null>(null);
   const [selectedApplicationId, setSelectedApplicationId] = useState<number | null>(null);
   const [realtimeConnected, setRealtimeConnected] = useState(false);
   const [applicationModalOpen, setApplicationModalOpen] = useState(false);
+  const [wakeWordModalOpen, setWakeWordModalOpen] = useState(false);
+  const [selectedWakeWordDeviceId, setSelectedWakeWordDeviceId] = useState<number | null>(null);
   const [deviceForm] = Form.useForm<DeviceEditForm>();
   const [applicationForm] = Form.useForm<ApplicationForm>();
+  const [wakeWordForm] = Form.useForm<WakeWordForm>();
   const hasLoadedRef = useRef(false);
   const filtersRef = useRef(filters);
   const devicePageRef = useRef(devicePage);
   const realtimeRefreshTimerRef = useRef<number | null>(null);
   const loadDataRef = useRef<((query?: DeviceListQuery, page?: number) => Promise<void>) | null>(null);
   const { pathname } = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const token = useAuthStore((state) => state.token);
   const hasPermission = useAuthStore((state) => state.hasPermission);
   const tenant = useAuthStore((state) => state.tenant);
@@ -190,6 +209,7 @@ export const DeviceManagementPage = () => {
   const canDeleteDevice = !isPlatformAdmin && hasPermission('devices.delete');
 
   const applicationOptions = useMemo(() => toSelectOptions(applications), [applications]);
+  const deviceOptions = useMemo(() => devices.map((item) => ({ label: `${item.name}（${item.deviceCode}）`, value: item.recordId })), [devices]);
   const agentApplicationOptions = useMemo(() => toSelectOptions(agentApplications), [agentApplications]);
   const selectedApplication = useMemo(
     () => applications.find((item) => item.id === selectedApplicationId) ?? applications[0] ?? null,
@@ -209,6 +229,30 @@ export const DeviceManagementPage = () => {
     [devices],
   );
 
+  const tabParam = searchParams.get('tab');
+  const activeTabKey = tabParam === 'applications' || tabParam === 'wakeWords' ? tabParam : 'devices';
+
+  const deviceWakeWordRows = useMemo<DeviceWakeWordRow[]>(() => {
+    const wakeWordsByDeviceId = new Map<number, WakeWordRecord[]>();
+    wakeWords.forEach((wakeWord) => {
+      const deviceIds = wakeWord.deviceIds?.length ? wakeWord.deviceIds : wakeWord.devices.map((device) => device.id);
+      deviceIds.forEach((deviceId) => {
+        const items = wakeWordsByDeviceId.get(deviceId) ?? [];
+        items.push(wakeWord);
+        wakeWordsByDeviceId.set(deviceId, items);
+      });
+    });
+    return devices.map((device) => ({ device, wakeWords: wakeWordsByDeviceId.get(device.recordId) ?? [] }));
+  }, [devices, wakeWords]);
+
+  const selectedDeviceWakeWordRow = useMemo(
+    () =>
+      deviceWakeWordRows.find((item) => item.device.recordId === selectedWakeWordDeviceId) ??
+      deviceWakeWordRows[0] ??
+      null,
+    [deviceWakeWordRows, selectedWakeWordDeviceId],
+  );
+
   const loadApplicationConfigOptions = async () => {
     const commandGroupsResult = await fetchCommandGroups({ pageSize: 100 });
     setCommandGroupOptions(toSelectOptions(commandGroupsResult.results));
@@ -217,11 +261,12 @@ export const DeviceManagementPage = () => {
   const loadData = async (query: DeviceListQuery = filters, page = devicePage) => {
     setLoading(true);
     try {
-      const [deviceResponse, statsResponse, applicationResponse, agentApplicationResponse] = await Promise.all([
+      const [deviceResponse, statsResponse, applicationResponse, agentApplicationResponse, wakeWordResponse] = await Promise.all([
         fetchDevices({ ...query, keyword, page }),
         fetchDeviceStats(),
         fetchDeviceApplications(),
         fetchAgentApplications({ page: 1 }),
+        fetchWakeWords({ keyword: keyword || undefined }),
       ]);
       setDevices(deviceResponse.results);
       setDeviceTotal(deviceResponse.count);
@@ -229,6 +274,7 @@ export const DeviceManagementPage = () => {
       setStats(statsResponse);
       setApplications(applicationResponse.results);
       setAgentApplications(agentApplicationResponse.results);
+      setWakeWords(wakeWordResponse.results);
       setSelectedApplicationId((current) => current ?? applicationResponse.results[0]?.id ?? null);
     } catch {
       // Global interceptor displays request errors.
@@ -361,6 +407,17 @@ export const DeviceManagementPage = () => {
     void loadData(nextFilters, 1);
   };
 
+  const handleMainTabChange = (key: string) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (key === 'devices') {
+      nextParams.delete('tab');
+    } else {
+      nextParams.set('tab', key);
+    }
+    setSearchParams(nextParams, { replace: true });
+  };
+
+
   const openDeviceEdit = (record: DeviceRecord) => {
     setEditingDevice(record);
     deviceForm.setFieldsValue({
@@ -424,6 +481,38 @@ export const DeviceManagementPage = () => {
     setApplicationModalOpen(false);
   };
 
+
+  const openWakeWordModal = (record?: WakeWordRecord, presetDeviceId?: number) => {
+    setEditingWakeWord(record ?? null);
+    wakeWordForm.setFieldsValue({
+      text: record?.text ?? '',
+      boost: record?.boost ?? 2.0,
+      threshold: record?.threshold ?? 0.25,
+      isActive: record?.isActive ?? true,
+      deviceIds: record?.deviceIds ?? (presetDeviceId ? [presetDeviceId] : []),
+    });
+    setWakeWordModalOpen(true);
+  };
+
+  const handleWakeWordSave = async () => {
+    const values = await wakeWordForm.validateFields();
+    if (editingWakeWord) {
+      await updateWakeWord(editingWakeWord.id, values);
+      message.success('唤醒词已更新');
+    } else {
+      await createWakeWord(values);
+      message.success('唤醒词已创建');
+    }
+    setWakeWordModalOpen(false);
+    await loadData(filters, devicePage);
+  };
+
+  const handleWakeWordDelete = async (record: WakeWordRecord) => {
+    await deleteWakeWord(record.id);
+    message.success('唤醒词已删除');
+    await loadData(filters, devicePage);
+  };
+
   const deviceColumns: ColumnsType<DeviceRecord> = [
     {
       title: '设备名称',
@@ -470,6 +559,7 @@ export const DeviceManagementPage = () => {
       width: '11%',
       render: (_, record) => {
         const diagnostic = resolveDeviceRuntimeDiagnostic(record);
+
         return (
           <Tooltip
             title={
@@ -544,19 +634,192 @@ export const DeviceManagementPage = () => {
     },
   ];
 
-  if (!canUseDeviceWorkspace) {
+  const renderWakeWordActions = (wakeWord: WakeWordRecord) => (
+    <Space size={6}>
+      {canUpdateDevice ? (
+        <Button size="small" icon={<IconEdit size={14} />} onClick={() => openWakeWordModal(wakeWord)}>
+          编辑
+        </Button>
+      ) : null}
+      {canDeleteDevice ? (
+        <Popconfirm title="确认删除该唤醒词？" onConfirm={() => handleWakeWordDelete(wakeWord)}>
+          <Button size="small" danger icon={<IconTrash size={14} />}>
+            删除
+          </Button>
+        </Popconfirm>
+      ) : null}
+    </Space>
+  );
+
+  const renderWakeWordPills = (items: WakeWordRecord[]) => {
+    if (!items.length) {
+      return <Tag color="warning">未添加唤醒词</Tag>;
+    }
     return (
-      <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
-        <Space direction="vertical" size={8}>
-          <Typography.Title level={4} className="mb-0">
-            请选择公司
-          </Typography.Title>
-          <Typography.Text type="secondary">
-            平台管理员需要先进入某个公司视图，再维护该公司的设备、应用和资源绑定。
-          </Typography.Text>
-        </Space>
+      <Space size={[6, 6]} wrap>
+        {items.map((item) => (
+          <Tag key={item.id} color={item.isActive ? 'success' : 'default'} className="rounded-full px-3 py-1 text-sm">
+            {item.text}
+          </Tag>
+        ))}
+      </Space>
+    );
+  };
+
+  const renderDeviceIdentity = (device: DeviceRecord) => (
+    <Space direction="vertical" size={2} className="min-w-0">
+      <Typography.Text strong className="truncate text-slate-900">
+        {device.name || device.deviceCode}
+      </Typography.Text>
+      <Typography.Text className="text-xs text-slate-500">{device.deviceCode}</Typography.Text>
+    </Space>
+  );
+
+  const renderDeviceRuntimeTags = (device: DeviceRecord) => {
+    const diagnostic = resolveDeviceRuntimeDiagnostic(device);
+    return (
+      <Space size={[4, 4]} wrap>
+        <Tag color={statusMap[device.status].color}>{statusMap[device.status].text}</Tag>
+        <Tag color={diagnostic.color}>{diagnostic.label}</Tag>
+      </Space>
+    );
+  };
+
+  const renderWakeWordPhraseList = (items: WakeWordRecord[], emptyDescription: string, presetDeviceId?: number) => {
+    if (!items.length) {
+      return (
+        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center">
+          <Typography.Text type="secondary">{emptyDescription}</Typography.Text>
+          {canCreateDevice ? (
+            <div className="mt-3">
+              <Button icon={<IconPlus size={14} />} onClick={() => openWakeWordModal(undefined, presetDeviceId)}>
+                添加唤醒词
+              </Button>
+            </div>
+          ) : null}
+        </div>
+      );
+    }
+
+    return (
+      <Space direction="vertical" size={8} className="w-full">
+        {items.map((wakeWord) => (
+          <div key={wakeWord.id} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <Typography.Text strong className="text-base text-slate-900">
+                {wakeWord.text}
+              </Typography.Text>
+            </div>
+            {renderWakeWordActions(wakeWord)}
+          </div>
+        ))}
+      </Space>
+    );
+  };
+
+  const renderWakeWordsHeader = () => {
+    const configuredDeviceCount = deviceWakeWordRows.filter((item) => item.wakeWords.length > 0).length;
+    const activeWakeWordCount = wakeWords.filter((item) => item.isActive).length;
+    return (
+      <Card className="rounded-xl border border-slate-200/70 shadow-card">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <Typography.Title level={4} className="mb-1 flex items-center gap-2">
+              <IconMicrophone size={22} /> 按设备查看唤醒词
+            </Typography.Title>
+            <Typography.Text type="secondary">
+              只展示用户添加的中文唤醒词，按设备确认哪些已经配置、哪些还需要补齐。
+            </Typography.Text>
+          </div>
+          <div className="grid grid-cols-3 gap-2 sm:min-w-[24rem]">
+            {[
+              ['设备', deviceWakeWordRows.length, 'text-slate-900'],
+              ['已配置', configuredDeviceCount, 'text-brand-700'],
+              ['唤醒词', activeWakeWordCount, 'text-sky-700'],
+            ].map(([label, value, color]) => (
+              <div key={label} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                <div className="text-xs text-slate-500">{label}</div>
+                <div className={`mt-1 text-2xl font-semibold tabular-nums ${color}`}>{value}</div>
+              </div>
+            ))}
+          </div>
+          {canCreateDevice ? (
+            <Button type="primary" icon={<IconPlus size={16} />} onClick={() => openWakeWordModal()}>
+              新建唤醒词
+            </Button>
+          ) : null}
+        </div>
       </Card>
     );
+  };
+
+  const renderWakeWordsByDevice = () => {
+    const selectedRow = selectedDeviceWakeWordRow;
+    const selectedDeviceId = selectedRow?.device.recordId ?? null;
+    return (
+      <Space direction="vertical" size={16} className="w-full">
+        {renderWakeWordsHeader()}
+        {deviceWakeWordRows.length === 0 ? (
+          <Empty description="暂无设备" />
+        ) : (
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+            <Card className="rounded-xl border border-slate-200/70 shadow-card">
+              <Space direction="vertical" size={8} className="w-full">
+                <Typography.Text strong>选择设备</Typography.Text>
+                {deviceWakeWordRows.map((row) => {
+                  const active = row.device.recordId === selectedDeviceId;
+                  return (
+                    <button
+                      key={row.device.recordId}
+                      type="button"
+                      className={`w-full rounded-xl border px-3 py-3 text-left transition ${
+                        active ? 'border-brand-200 bg-brand-50' : 'border-slate-200 bg-white hover:bg-slate-50'
+                      }`}
+                      onClick={() => setSelectedWakeWordDeviceId(row.device.recordId)}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate font-medium text-slate-900">{row.device.name || row.device.deviceCode}</span>
+                        <Tag color={row.wakeWords.length ? 'success' : 'warning'}>{row.wakeWords.length} 个</Tag>
+                      </div>
+                      <div className="mt-2">{renderWakeWordPills(row.wakeWords.slice(0, 3))}</div>
+                    </button>
+                  );
+                })}
+              </Space>
+            </Card>
+            <Card className="rounded-xl border border-slate-200/70 shadow-card">
+              {selectedRow ? (
+                <Space direction="vertical" size={16} className="w-full">
+                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div>{renderDeviceIdentity(selectedRow.device)}</div>
+                    <Space size={[6, 6]} wrap>
+                      {renderDeviceRuntimeTags(selectedRow.device)}
+                      {canCreateDevice ? (
+                        <Button icon={<IconPlus size={14} />} onClick={() => openWakeWordModal(undefined, selectedRow.device.recordId)}>
+                          添加唤醒词
+                        </Button>
+                      ) : null}
+                    </Space>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <Typography.Title level={5} className="mb-3">
+                      当前设备唤醒词
+                    </Typography.Title>
+                    {renderWakeWordPhraseList(selectedRow.wakeWords, '这台设备还没有添加唤醒词', selectedRow.device.recordId)}
+                  </div>
+                </Space>
+              ) : (
+                <Empty description="请选择设备" />
+              )}
+            </Card>
+          </div>
+        )}
+      </Space>
+    );
+  };
+
+  if (!canUseDeviceWorkspace) {
+    return <Empty description="请先进入公司租户范围后再管理设备、应用和唤醒词" />;
   }
 
   return (
@@ -600,6 +863,8 @@ export const DeviceManagementPage = () => {
       </Card>
 
       <Tabs
+        activeKey={activeTabKey}
+        onChange={handleMainTabChange}
         items={[
           {
             key: 'devices',
@@ -757,6 +1022,17 @@ export const DeviceManagementPage = () => {
               </Space>
             ),
           },
+
+          {
+            key: 'wakeWords',
+            label: (
+              <Space size={6}>
+                <IconMicrophone />
+                唤醒词
+              </Space>
+            ),
+            children: renderWakeWordsByDevice(),
+          },
         ]}
       />
 
@@ -809,6 +1085,41 @@ export const DeviceManagementPage = () => {
           </Form.Item>
           <Form.Item label="指令组" name="commandGroupIds">
             <Select mode="multiple" options={commandGroupOptions} optionFilterProp="label" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+
+      <Modal
+        title={editingWakeWord ? '编辑唤醒词' : '新建唤醒词'}
+        open={wakeWordModalOpen}
+        onCancel={() => setWakeWordModalOpen(false)}
+        onOk={handleWakeWordSave}
+        okText="保存"
+        cancelText="取消"
+        destroyOnHidden
+        width={720}
+      >
+        <Form<WakeWordForm> form={wakeWordForm} layout="vertical">
+          <Form.Item
+            label="中文唤醒词"
+            name="text"
+            extra="必须以“你好”开头，总长 4-6 个汉字（含“你好”）。"
+            rules={[{ required: true, message: '请输入中文唤醒词' }]}
+          >
+            <Input placeholder="例如：你好小德" />
+          </Form.Item>
+          <Form.Item name="boost" initialValue={2.0} hidden>
+            <Input type="hidden" />
+          </Form.Item>
+          <Form.Item name="threshold" initialValue={0.25} hidden>
+            <Input type="hidden" />
+          </Form.Item>
+          <Form.Item label="启用唤醒词" name="isActive" valuePropName="checked" initialValue>
+            <Switch />
+          </Form.Item>
+          <Form.Item label="绑定设备" name="deviceIds" extra="一个唤醒词可以绑定多个同公司设备。">
+            <Select mode="multiple" options={deviceOptions} optionFilterProp="label" placeholder="请选择设备" />
           </Form.Item>
         </Form>
       </Modal>

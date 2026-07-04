@@ -352,3 +352,8 @@ FEISHU_WEBHOOK_URL = os.getenv('FEISHU_WEBHOOK_URL', '').strip()
 FEISHU_WEBHOOK_SECRET = os.getenv('FEISHU_WEBHOOK_SECRET', '').strip()
 HOST_IP = os.getenv('HOST_IP', '').strip()
 FEISHU_SERVER_IP = os.getenv('FEISHU_SERVER_IP', os.getenv('SERVER_IP', '')).strip()
+
+SHERPA_ONNX_VENDOR_DIR = BASE_DIR / 'vendor' / 'sherpa-onnx'
+SHERPA_ONNX_KWS_DIR = SHERPA_ONNX_VENDOR_DIR / 'kws'
+SHERPA_ONNX_TOKENS_PATH = SHERPA_ONNX_KWS_DIR / 'tokens.txt'
+SHERPA_ONNX_KEYWORD_SPOTTER_PATH = SHERPA_ONNX_VENDOR_DIR / 'bin' / 'sherpa-onnx-keyword-spotter'

@@ -32,7 +32,7 @@ from apps.tenants.mixins import TenantScopedQuerysetMixin
 from apps.tenants.services import get_request_tenant
 from config.request_id import get_request_id, get_trace_id
 
-from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup
+from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup, WakeWord
 from .services.chat_logs import record_device_chat_log
 from .services.authorization import (
     bind_device_authorization,
@@ -68,6 +68,7 @@ from .serializers import (
     DeviceGroupSerializer,
     DeviceSerializer,
     DeviceStatsSerializer,
+    WakeWordSerializer,
 )
 
 DEFAULT_DEVICE_NAME = '待修改'
@@ -449,6 +450,34 @@ class DeviceActivationView(APIView):
         )
 
 
+@extend_schema_view(
+    list=extend_schema(tags=['Wake Words']),
+    retrieve=extend_schema(tags=['Wake Words']),
+    create=extend_schema(tags=['Wake Words']),
+    update=extend_schema(tags=['Wake Words']),
+    partial_update=extend_schema(tags=['Wake Words']),
+    destroy=extend_schema(tags=['Wake Words']),
+)
+class WakeWordViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin, viewsets.ModelViewSet):
+    queryset = WakeWord.objects.prefetch_related('devices').all()
+    serializer_class = WakeWordSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        keyword = self.request.query_params.get('keyword', '').strip()
+        if keyword:
+            queryset = queryset.filter(Q(text__icontains=keyword) | Q(encoded_text__icontains=keyword))
+        status_filter = self.request.query_params.get('isActive', '').strip().lower()
+        if status_filter == 'true':
+            queryset = queryset.filter(is_active=True)
+        if status_filter == 'false':
+            queryset = queryset.filter(is_active=False)
+        device_id = self.request.query_params.get('deviceId', '').strip()
+        if device_id.isdigit():
+            queryset = queryset.filter(devices__id=int(device_id))
+        return queryset.distinct()
+
+
 class DeviceRuntimeView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -508,6 +537,7 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
                 ),
                 'agentApplication': DeviceActivationView._agent_application_payload(agent_application),
                 'resources': self._resources_payload(device, request),
+                **self._wake_words_payload(device),
             },
             status=status.HTTP_200_OK,
         )
@@ -617,6 +647,26 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
                     else []
                 )
             ],
+        }
+
+
+    @staticmethod
+    def _wake_words_payload(device: Device):
+        wake_words = device.wake_words.filter(is_active=True).order_by('text', 'id')
+        items = [
+            {
+                'id': item.id,
+                'text': item.text,
+                'encodedText': item.encoded_text,
+                'keywordLine': item.keyword_line,
+                'boost': float(item.boost),
+                'threshold': float(item.threshold),
+            }
+            for item in wake_words
+        ]
+        return {
+            'wakeWords': items,
+            'wakeWordLines': [item['keywordLine'] for item in items],
         }
 
 

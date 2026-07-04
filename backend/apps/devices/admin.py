@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup
+from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup, WakeWord
 
 
 @admin.register(DeviceGroup)
@@ -60,3 +60,11 @@ class DeviceChatLogAdmin(admin.ModelAdmin):
     list_filter = ('source', 'tenant', 'application', 'agent_application', 'created_at')
     search_fields = ('code', 'device__name', 'device__code', 'question_text', 'answer_text', 'request_id', 'trace_id')
     readonly_fields = ('created_at',)
+
+
+@admin.register(WakeWord)
+class WakeWordAdmin(admin.ModelAdmin):
+    list_display = ('text', 'tenant', 'boost', 'threshold', 'is_active', 'updated_at')
+    list_filter = ('tenant', 'is_active')
+    search_fields = ('text', 'encoded_text')
+    filter_horizontal = ('devices',)

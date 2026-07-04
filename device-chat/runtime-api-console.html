@@ -217,6 +217,10 @@
     }
     .note { padding: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-soft); color: #334155; font-size: 12px; }
     .note.warn { border-color: #fde68a; background: var(--amber-soft); color: #92400e; }
+    .wake-result { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-soft); }
+    .wake-result.awake { border-color: #bbf7d0; background: var(--green-soft); color: var(--green); }
+    .wake-result.miss { border-color: #fde68a; background: var(--amber-soft); color: var(--amber); }
+    .wake-result strong { font-size: 15px; }
 
     @media (max-width: 1180px) {
       .layout { grid-template-columns: 220px minmax(0, 1fr); }
@@ -259,6 +263,7 @@
       <nav class="nav" aria-label="接口菜单">
         <button class="active" type="button" data-section="device"><span>设备与公司</span><span class="method post">POST/GET</span></button>
         <button type="button" data-section="runtimeConfig"><span>运行时配置</span><span class="method">GET</span></button>
+        <button type="button" data-section="wakeWords"><span>唤醒词测试</span><span class="method">GET/TTS</span></button>
         <button type="button" data-section="application"><span>应用</span><span class="method post">POST</span></button>
         <button type="button" data-section="voiceTones"><span>获取音色列表</span><span class="method">GET</span></button>
         <button type="button" data-section="images"><span>获取背景图片</span><span class="method post">POST</span></button>
@@ -332,6 +337,7 @@
         ttsOptions: null,
         resourceSlices: {},
         asrRecorder: null,
+        wakeRecorder: null,
         agentSession: null,
         agentRecorder: null,
         agentTtsStream: null,
@@ -386,6 +392,7 @@
       const sections = {
         device: { title: '设备与公司', description: '设备启动或首次联网时调用 /device-auth/activate/ 上报一次；设备名称可在后台编辑，后续直接通过 /device-runtime/config/ 获取最新公司、授权和应用配置。' },
         runtimeConfig: { title: '运行时配置', description: 'GET /device-runtime/config/：设备端启动业务前拉取完整配置，包括设备名称、资源应用、智能体应用和资源列表。' },
+        wakeWords: { title: '唤醒词测试', description: '从运行时配置读取当前设备绑定的唤醒词，在页面内模拟输入命中后的已唤醒提示，并可调用 TTS 播报一段提示语。' },
         application: { title: '应用', description: '通过设备码读取资源应用与完整智能体配置，包括开场白、建议问题和语音播报开关。' },
         voiceTones: { title: '获取音色列表', description: '通过固定设备码读取 /ai-models/tts/options/ 返回的 TTS 音色列表，并可直接测试合成。' },
         images: { title: '获取背景图片', description: '通过固定设备码读取当前公司在资源管理/背景图片管理维护的数据。' },
@@ -520,6 +527,7 @@
         if (state.activeSection === 'deviceStatus') return renderDeviceStatus();
         if (state.activeSection === 'heartbeat') return renderHeartbeat();
         if (state.activeSection === 'runtimeConfig') return renderRuntimeConfig();
+        if (state.activeSection === 'wakeWords') return renderWakeWords();
         if (!state.activation && !state.runtimeConfig) {
           renderEmpty('请输入设备码并点击“确认并拉取”。');
           writeResourceSliceDetail(state.activeSection);
@@ -635,6 +643,213 @@
           ]),
         ]) + '<div class="detail-block"><strong>完整返回</strong><pre>' + escapeHtml(pretty(config)) + '</pre></div>';
         document.getElementById('runtimeConfigFetchBtn').addEventListener('click', () => fetchRuntimeConfig().then(renderRuntimeConfig).catch(showError));
+      }
+
+
+      function renderWakeWords() {
+        const config = state.runtimeConfig || null;
+        if (!config) {
+          els.contentBody.innerHTML = '<div class="toolbar"><button class="button" id="wakeConfigFetchBtn" type="button">拉取运行时配置</button></div><div class="empty">尚未拉取 /device-runtime/config/。请输入设备码后先拉取配置，页面会读取当前设备绑定的唤醒词。</div>';
+          document.getElementById('wakeConfigFetchBtn').addEventListener('click', () => fetchRuntimeConfig().then(renderWakeWords).catch(showError));
+          writeWakeWordsRequestDetail();
+          return;
+        }
+        const wakeWords = currentWakeWords();
+        const wakeWordRows = wakeWords.length ? wakeWords.map((item) => {
+          const line = item.keywordLine || buildWakeWordLine(item);
+          return '<div class="kv-row"><span>' + escapeHtml(item.text || '-') + '</span><span>' + code(line || '-') + '</span></div>';
+        }).join('') : '<div class="note warn">当前设备没有绑定启用的唤醒词。请先在后台“设备管理 / 唤醒词”里绑定设备。</div>';
+        const firstText = wakeWords[0] && wakeWords[0].text || '你好小德';
+        els.contentBody.innerHTML = ''
+          + '<div class="toolbar"><button class="button secondary" id="wakeConfigFetchBtn" type="button">重新拉取配置</button></div>'
+          + '<div class="grid">'
+          + '<article class="card"><h3>当前设备唤醒词</h3><div class="kv">' + wakeWordRows + '</div></article>'
+          + '<article class="card"><h3>真实 ASR 唤醒</h3>'
+          + '<div class="field"><label>识别方式</label><div class="note">点击开始后会申请浏览器麦克风权限，使用统一 WebSocket 发送 asr.session.start 和 16k mono pcm_s16le 音频分片；收到 ASR 真实识别文本后再匹配当前设备的唤醒词。</div></div>'
+          + '<div class="field" style="margin-top:10px"><label for="wakeSpeakText">唤醒后播报文本</label><textarea id="wakeSpeakText" class="textarea">我在，请说。</textarea></div>'
+          + '<label class="check-row" style="margin-top:10px"><input id="wakeAutoSpeak" type="checkbox" /> 命中唤醒词后自动播报提示语</label>'
+          + '<div class="toolbar" style="margin-top:10px"><button class="button" id="wakeAsrStartBtn" type="button">开始真实 ASR 唤醒</button><button class="button secondary" id="wakeAsrStopBtn" type="button" disabled>停止识别</button><button class="button secondary" id="wakeSpeakBtn" type="button">仅播报提示语</button></div>'
+          + '<audio id="wakeAudio" controls preload="none" hidden></audio>'
+          + '<div id="wakeResult" class="wake-result" style="margin-top:10px"><strong>等待真实 ASR</strong><span>点击开始后，对麦克风说“' + escapeHtml(firstText) + '”。页面只根据 ASR 返回文本判断是否已唤醒。</span></div>'
+          + '<div class="detail-block" style="margin-top:10px"><strong>ASR 事件输出</strong><pre id="wakeAsrOutput">等待请求</pre></div>'
+          + '</article>'
+          + '</div>'
+          + '<div class="detail-block"><strong>运行时返回的唤醒词字段</strong><pre>' + escapeHtml(pretty({ wakeWords, wakeWordLines: config.wakeWordLines || [] })) + '</pre></div>';
+        document.getElementById('wakeConfigFetchBtn').addEventListener('click', () => fetchRuntimeConfig().then(renderWakeWords).catch(showError));
+        document.getElementById('wakeAsrStartBtn').addEventListener('click', () => startWakeWordAsrTest().catch(showError));
+        document.getElementById('wakeAsrStopBtn').addEventListener('click', () => stopWakeWordAsrTest());
+        document.getElementById('wakeSpeakBtn').addEventListener('click', () => speakWakePrompt().catch(showError));
+        writeWakeWordsRequestDetail();
+      }
+
+      function currentWakeWords() {
+        const config = state.runtimeConfig || {};
+        const source = Array.isArray(config.wakeWords) ? config.wakeWords : [];
+        return source.filter((item) => item && item.isActive !== false);
+      }
+
+      function buildWakeWordLine(item) {
+        const encoded = item.encodedText || item.encoded_text || '';
+        const text = item.text || '';
+        const boost = item.boost == null || item.boost === '' ? '2.0' : item.boost;
+        const threshold = item.threshold == null || item.threshold === '' ? '0.25' : item.threshold;
+        return encoded && text ? encoded + ' @' + text + ' :' + boost + ' #' + threshold : '';
+      }
+
+      function normalizeWakeText(value) {
+        return String(value || '')
+          .replace(/[\s，。！？、,.!?;；：:"'“”‘’（）()【】\[\]{}<>《》]/g, '')
+          .trim();
+      }
+
+      function findMatchedWakeWord(value) {
+        const normalizedInput = normalizeWakeText(value);
+        if (!normalizedInput) return null;
+        return currentWakeWords().find((item) => {
+          const word = normalizeWakeText(item && item.text);
+          return word && (normalizedInput === word || normalizedInput.includes(word));
+        }) || null;
+      }
+
+      async function startWakeWordAsrTest() {
+        const output = document.getElementById('wakeAsrOutput');
+        const result = document.getElementById('wakeResult');
+        const startButton = document.getElementById('wakeAsrStartBtn');
+        const stopButton = document.getElementById('wakeAsrStopBtn');
+        if (!state.deviceCode) throw new Error('请输入设备码');
+        if (!currentWakeWords().length) throw new Error('当前设备没有绑定启用的唤醒词');
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('当前浏览器不支持麦克风录音');
+        stopWakeWordAsrTest({ silent: true, closeSocket: true, skipFinish: true });
+        const requestIds = makeRequestIds();
+        const sessionId = 'wake-asr-session-' + Date.now();
+        const command = { type: 'asr.session.start', id: sessionId, payload: { deviceCode: state.deviceCode, requestId: requestIds.requestId, traceId: requestIds.traceId } };
+        const events = [{ type: 'client.microphone.requesting' }];
+        if (output) output.textContent = pretty(events);
+        result.className = 'wake-result';
+        result.innerHTML = '<strong>正在监听真实 ASR</strong><span>请对麦克风说当前设备绑定的唤醒词。</span>';
+        setStatus('正在监听真实 ASR 唤醒...', 'warn');
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+        const socket = new WebSocket(realtimeWsUrl());
+        state.sockets.push(socket);
+        const recorder = { socket, stream, sessionId, output, events, started: false, chunks: 0, audioContext: null, source: null, processor: null, asrText: '', asrOriginalText: '', asrFinalText: '', asrFinalOriginalText: '', awakened: false, autoSpeakStarted: false };
+        state.wakeRecorder = recorder;
+        if (startButton) startButton.disabled = true;
+        if (stopButton) stopButton.disabled = false;
+        writeRequestDetail({ label: '真实 ASR 唤醒词测试', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: command, docKey: 'wakeWords', note: '唤醒词测试不手输、不模拟；收到 asr.ready 后推送麦克风 16k mono pcm_s16le，使用 asr.transcript 的真实识别文本匹配 runtime config 下发的 wakeWords。' });
+
+        socket.addEventListener('open', () => {
+          socket.send(JSON.stringify(command));
+          events.push({ type: 'client.sent', command: command.type, id: sessionId });
+          if (output) output.textContent = pretty(events);
+        });
+        socket.addEventListener('message', (event) => {
+          const payload = parseJson(event.data) || event.data;
+          events.push(payload);
+          if (output) output.textContent = pretty(events);
+          writeResponse({ ok: true, status: 'WS', body: events });
+          handleWakeWordAsrEvent(payload).catch(showError);
+        });
+        socket.addEventListener('error', () => {
+          events.push({ type: 'client.error', message: 'WebSocket 连接失败' });
+          if (output) output.textContent = pretty(events);
+          stopWakeWordAsrTest({ closeSocket: true, silent: true });
+          setStatus('真实 ASR 唤醒连接失败', 'error');
+        });
+        socket.addEventListener('close', () => {
+          events.push({ type: 'client.close' });
+          if (output) output.textContent = pretty(events);
+          stopWakeWordAsrTest({ silent: true, skipFinish: true });
+        });
+      }
+
+      function stopWakeWordAsrTest(options) {
+        const recorder = state.wakeRecorder;
+        if (!recorder) return;
+        const opts = options || {};
+        recorder.started = false;
+        if (recorder.processor) recorder.processor.disconnect();
+        if (recorder.source) recorder.source.disconnect();
+        if (recorder.audioContext) recorder.audioContext.close().catch(function () {});
+        if (recorder.stream) recorder.stream.getTracks().forEach((track) => track.stop());
+        if (recorder.socket && recorder.socket.readyState === WebSocket.OPEN && !opts.closeSocket && !opts.skipFinish) {
+          recorder.socket.send(JSON.stringify({ type: 'asr.session.finish', id: recorder.sessionId }));
+          recorder.events.push({ type: 'client.sent', command: 'asr.session.finish', chunks: recorder.chunks });
+        } else if (recorder.socket && opts.closeSocket) {
+          recorder.socket.close();
+        }
+        const startButton = document.getElementById('wakeAsrStartBtn');
+        const stopButton = document.getElementById('wakeAsrStopBtn');
+        if (startButton) startButton.disabled = false;
+        if (stopButton) stopButton.disabled = true;
+        if (!opts.silent && recorder.output) recorder.output.textContent = pretty(recorder.events);
+        state.wakeRecorder = null;
+      }
+
+      async function handleWakeWordAsrEvent(payload) {
+        const eventType = payload && payload.type;
+        const recorder = state.wakeRecorder;
+        if (eventType === 'asr.ready') {
+          startMicrophonePcmPump(recorder);
+          return;
+        }
+        if (eventType === 'asr.transcript') {
+          const text = appendAsrRealtimeText(recorder, payload, {});
+          const candidate = text || payload.text || payload.previewText || payload.displayText || payload.originalText || '';
+          const matched = findMatchedWakeWord(candidate);
+          const result = document.getElementById('wakeResult');
+          if (matched && recorder && !recorder.awakened) {
+            recorder.awakened = true;
+            result.className = 'wake-result awake';
+            result.innerHTML = '<strong>已唤醒</strong><span>ASR 识别文本：' + escapeHtml(candidate) + '</span><span>命中唤醒词：' + escapeHtml(matched.text) + '</span><span>下发给端侧的配置行：' + code(matched.keywordLine || buildWakeWordLine(matched)) + '</span>';
+            setStatus('真实 ASR 已唤醒：' + matched.text, 'ok');
+            stopWakeWordAsrTest();
+            const autoSpeak = document.getElementById('wakeAutoSpeak');
+            if (autoSpeak && autoSpeak.checked && !recorder.autoSpeakStarted) {
+              recorder.autoSpeakStarted = true;
+              await speakWakePrompt();
+            }
+          } else if (!matched && result && !(recorder && recorder.awakened)) {
+            result.className = 'wake-result miss';
+            result.innerHTML = '<strong>监听中，尚未唤醒</strong><span>ASR 识别文本：' + escapeHtml(candidate || '-') + '</span><span>请说当前设备绑定的唤醒词。</span>';
+          }
+          return;
+        }
+        if (eventType === 'asr.done' || String(eventType).includes('completed') || String(eventType).includes('finished') || eventType === 'asr.error') {
+          stopWakeWordAsrTest({ closeSocket: eventType === 'asr.error', skipFinish: true, silent: true });
+          if (eventType === 'asr.error') setStatus('真实 ASR 唤醒失败', 'error');
+        }
+      }
+
+      async function speakWakePrompt() {
+        const result = document.getElementById('wakeResult');
+        const text = String(document.getElementById('wakeSpeakText').value || '').trim();
+        if (!text) throw new Error('请输入唤醒后播报文本');
+        setStatus('正在播报唤醒提示...', 'warn');
+        const response = await apiRequest('/ai-models/tts/runtime/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, wrapWav: true }) }, '唤醒后播报');
+        if (response.body instanceof Blob) {
+          const audio = document.getElementById('wakeAudio');
+          const url = playAudioBlob(audio, response.body);
+          result.className = 'wake-result awake';
+          result.innerHTML = '<strong>已播报</strong><span>' + escapeHtml(text) + '</span><span>音频地址：' + linkOrDash(url) + '</span>';
+          setStatus('唤醒提示已播报', 'ok');
+        } else {
+          result.className = 'wake-result miss';
+          result.innerHTML = '<strong>播报失败</strong><span>' + escapeHtml(pretty(response.body)) + '</span>';
+          setStatus('播报失败', 'error');
+        }
+      }
+
+      function writeWakeWordsRequestDetail() {
+        writeRequestDetail({
+          label: '唤醒词测试',
+          method: 'GET',
+          url: state.apiBaseUrl + '/device-runtime/config/',
+          path: '/device-runtime/config/',
+          headers: previewHeaders(),
+          body: null,
+          docKey: 'wakeWords',
+          note: '唤醒词来自运行时配置，仅返回当前设备绑定且启用的唤醒词；真实唤醒通过 ASR WebSocket 识别后匹配，播报按钮会额外调用 TTS HTTP。',
+        });
       }
 
       function renderApplication() {
@@ -2450,6 +2665,8 @@
             ['resources.scrollingTexts', '滚动文本数组。'],
             ['resources.models', '数字人模型数组。'],
             ['resources.videos', '视频数组。'],
+            ['wakeWords', '当前设备绑定且启用的唤醒词数组。'],
+            ['wakeWordLines', '设备端可直接使用的唤醒词配置行数组。'],
           ],
           responseExample: {
             requestId: '<requestId>',
@@ -2473,6 +2690,23 @@
               models: [{ id: 3, name: '数字人 A', modelType: 'human', url: 'https://example.com/model.glb' }],
               videos: [{ id: 4, name: '宣传片', url: 'https://example.com/video.mp4' }],
             },
+            wakeWords: [{ id: 1, text: '你好小德', keywordLine: 'n ǐ h ǎo x iǎo d é @你好小德 :2.0 #0.25' }],
+            wakeWordLines: ['n ǐ h ǎo x iǎo d é @你好小德 :2.0 #0.25'],
+          },
+          errors: runtimeDeviceErrors([['403 / 44021 / DEVICE_AGENT_UNBOUND', '设备未绑定可用智能体。']]),
+        };
+        if (detail.docKey === 'wakeWords') return {
+          summary: '唤醒词测试使用运行时配置接口读取当前设备绑定的唤醒词；页面通过真实麦克风 ASR WebSocket 获取识别文本，命中后显示已唤醒，可选调用 TTS HTTP 播放提示语。',
+          query: null,
+          headers: deviceHeadersDoc(),
+          body: null,
+          response: [
+            ['wakeWords', '唤醒词数组；关键字段：text、keywordLine、boost、threshold。'],
+            ['wakeWordLines', '配置行数组；设备端可按行读取。'],
+          ],
+          responseExample: {
+            wakeWords: [{ id: 1, text: '你好小德', keywordLine: 'n ǐ h ǎo x iǎo d é @你好小德 :2.0 #0.25' }],
+            wakeWordLines: ['n ǐ h ǎo x iǎo d é @你好小德 :2.0 #0.25'],
           },
           errors: runtimeDeviceErrors([['403 / 44021 / DEVICE_AGENT_UNBOUND', '设备未绑定可用智能体。']]),
         };

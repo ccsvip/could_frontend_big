@@ -112,6 +112,18 @@ _Avoid_: realtime interruption, direct voice message, device ASR runtime
 A company-scoped document uploaded to the knowledge base and optionally bound to an Agent Application as its available reference material.
 _Avoid_: dataset, knowledge collection, vector store
 
+**Wake Word**:
+A company-scoped Chinese phrase that starts with 你好, contains four to six Chinese characters including 你好, and can wake one or more runtime devices through sherpa-onnx keyword spotting.
+_Avoid_: hotword, keyword, command phrase, device name
+
+**Wake Word Keyword Line**:
+The sherpa-onnx keyword spotting line generated from a Wake Word, containing the encoded token sequence, original Chinese phrase, boosting score, and trigger threshold.
+_Avoid_: raw pinyin, display label, runtime-only string
+
+**Wake Word Binding**:
+The company-scoped assignment between Wake Words and Devices; each Wake Word can be assigned to multiple Devices, and each Device can have multiple Wake Words.
+_Avoid_: single device wake word, application wake word, global wake word
+
 **Knowledge Media Asset**:
 A Resource Library Item bound to a Knowledge Base, and optionally later to a Knowledge Document, as supporting reference material for Agent Application answers.
 _Avoid_: duplicated knowledge upload, global media match, raw media URL, manual link

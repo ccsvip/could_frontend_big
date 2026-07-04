@@ -18,7 +18,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.models import AgentAnnotation, AgentApplication, LLMModel, LLMProvider, TenantLLMModelGrant, TenantLLMSettings, TTSProvider, TTSVoice
-from apps.devices.models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup
+from apps.devices.models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup, WakeWord
 from apps.devices.services.authorization import record_device_authorization_action
 from apps.devices.services.queries import device_authorization_requests_queryset
 from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device
@@ -179,6 +179,109 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(log.device_info['agentApplicationId'], self.agent_application.id)
         self.assertEqual(log.device_info['authorizationType'], Device.AUTHORIZATION_TRIAL)
         self.assertTrue(log.device_info['isEnabled'])
+
+
+    @patch('apps.devices.serializers.encode_wake_word_text', return_value='n ǐ h ǎo x iǎo d é')
+    def test_create_wake_word_persists_encoded_keyword_line_and_bindings(self, mock_encode):
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            code='WAKE-DEVICE-001',
+            name='Wake Device',
+        )
+
+        response = self.client.post(
+            '/api/v1/wake-words/',
+            {
+                'text': '你好小德',
+                'boost': '2.5',
+                'threshold': '0.35',
+                'deviceIds': [device.id],
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['text'], '你好小德')
+        self.assertEqual(response.data['encodedText'], 'n ǐ h ǎo x iǎo d é')
+        self.assertEqual(response.data['keywordLine'], 'n ǐ h ǎo x iǎo d é @你好小德 :2.5 #0.35')
+        self.assertEqual(response.data['deviceIds'], [device.id])
+        self.assertEqual(response.data['devices'][0]['deviceCode'], 'WAKE-DEVICE-001')
+        mock_encode.assert_called_once_with('你好小德')
+        wake_word = WakeWord.objects.get(text='你好小德')
+        self.assertEqual(wake_word.tenant, self.tenant)
+        self.assertEqual(list(wake_word.devices.values_list('id', flat=True)), [device.id])
+
+    @patch('apps.devices.serializers.encode_wake_word_text', return_value='n ǐ h ǎo x iǎo d é')
+    def test_wake_word_rejects_invalid_text_and_duplicate_in_same_tenant(self, _mock_encode):
+        invalid_response = self.client.post('/api/v1/wake-words/', {'text': '小德你好'}, format='json')
+        self.assertEqual(invalid_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('你好', str(invalid_response.data))
+
+        first_response = self.client.post('/api/v1/wake-words/', {'text': '你好小德'}, format='json')
+        self.assertEqual(first_response.status_code, status.HTTP_201_CREATED)
+        duplicate_response = self.client.post('/api/v1/wake-words/', {'text': '你好小德'}, format='json')
+        self.assertEqual(duplicate_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('不能重复', str(duplicate_response.data))
+
+    @patch('apps.devices.serializers.encode_wake_word_text', return_value='n ǐ h ǎo x iǎo d é')
+    def test_wake_word_rejects_cross_tenant_device_binding(self, _mock_encode):
+        other_tenant = Tenant.objects.create(name='Other Tenant', code='other-tenant')
+        other_device = Device.objects.create(
+            tenant=other_tenant,
+            code='OTHER-WAKE-DEVICE',
+            name='Other Device',
+        )
+
+        response = self.client.post(
+            '/api/v1/wake-words/',
+            {'text': '你好小德', 'deviceIds': [other_device.id]},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('同公司', str(response.data))
+        self.assertFalse(WakeWord.objects.filter(text='你好小德').exists())
+
+    @patch('apps.devices.serializers.encode_wake_word_text', side_effect=['n ǐ h ǎo x iǎo d é', 'n ǐ h ǎo x iǎo zh ì'])
+    def test_device_runtime_config_returns_bound_wake_word_lines(self, _mock_encode):
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            code='RUNTIME-WAKE-001',
+            name='Runtime Wake Device',
+            is_enabled=True,
+        )
+        first = WakeWord.objects.create(
+            tenant=self.tenant,
+            text='你好小德',
+            encoded_text='n ǐ h ǎo x iǎo d é',
+            boost='2.0',
+            threshold='0.25',
+        )
+        second = WakeWord.objects.create(
+            tenant=self.tenant,
+            text='你好小智',
+            encoded_text='n ǐ h ǎo x iǎo zh ì',
+            boost='2.5',
+            threshold='0.35',
+        )
+        first.devices.add(device)
+        second.devices.add(device)
+
+        response = self.client.get('/api/v1/device-runtime/config/', HTTP_X_DEVICE_CODE='RUNTIME-WAKE-001')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['wakeWordLines'],
+            [
+                'n ǐ h ǎo x iǎo d é @你好小德 :2.0 #0.25',
+                'n ǐ h ǎo x iǎo zh ì @你好小智 :2.5 #0.35',
+            ],
+        )
+        self.assertEqual(response.data['wakeWords'][0]['text'], '你好小德')
+        self.assertEqual(response.data['wakeWords'][1]['keywordLine'], 'n ǐ h ǎo x iǎo zh ì @你好小智 :2.5 #0.35')
 
     def test_authorization_log_serializer_uses_agent_application_snapshot(self):
         original_agent = self.agent_application
