@@ -821,6 +821,63 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(chat_log.answer_text, '欢迎来到数字人展厅。')
         self.assertEqual(chat_log.model_name, 'qwen/qwen3-32b')
 
+    def test_device_voice_chat_generates_server_session_id_before_first_turn_and_reuses_history(self):
+        provider = LLMProvider.objects.create(
+            name='OpenAI compatible',
+            provider_type='openai',
+            api_base_url='https://example.com/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='qwen/qwen3-32b', is_active=True)
+        self.agent_application.llm_model = model
+        self.agent_application.save(update_fields=['llm_model', 'updated_at'])
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Voice Device',
+            code='ANDROID-VOICE-SESSION-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        captured_messages = []
+
+        def fake_run_llm_chat_completion(**kwargs):
+            captured_messages.append([dict(message) for message in kwargs['messages']])
+            return '第一轮回答' if len(captured_messages) == 1 else '第二轮回答'
+
+        with (
+            patch('apps.devices.views.llm_services.run_llm_chat_completion', fake_run_llm_chat_completion),
+            patch.object(DeviceVoiceChatView, '_synthesize_answer_audio', return_value=''),
+        ):
+            first_response = self.client.post(
+                '/api/v1/device/voice-chat',
+                {'text': '介绍一下展厅'},
+                format='json',
+                HTTP_X_DEVICE_CODE='ANDROID-VOICE-SESSION-001',
+            )
+            returned_session_id = first_response.data.get('sessionId')
+            second_response = self.client.post(
+                '/api/v1/device/voice-chat',
+                {'text': '继续介绍', 'sessionId': returned_session_id},
+                format='json',
+                HTTP_X_DEVICE_CODE='ANDROID-VOICE-SESSION-001',
+            )
+
+        self.assertEqual(first_response.status_code, status.HTTP_200_OK)
+        self.assertTrue(returned_session_id)
+        self.assertNotEqual(returned_session_id, 'None')
+        self.assertEqual(second_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(second_response.data['sessionId'], returned_session_id)
+        self.assertEqual(len(captured_messages), 2)
+        self.assertEqual(captured_messages[0][-1], {'role': 'user', 'content': '介绍一下展厅'})
+        self.assertIn({'role': 'user', 'content': '介绍一下展厅'}, captured_messages[1])
+        self.assertIn({'role': 'assistant', 'content': '第一轮回答'}, captured_messages[1])
+        self.assertEqual(captured_messages[1][-1], {'role': 'user', 'content': '继续介绍'})
+
     def test_device_voice_chat_returns_media_annotation_blocks_with_absolute_urls(self):
         image = Resource.objects.create(
             tenant=self.tenant,

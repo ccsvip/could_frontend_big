@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import uuid
 from typing import Any, Awaitable, Callable
 
 from asgiref.sync import sync_to_async
@@ -69,6 +70,7 @@ class RealtimeConnection:
         self.agent_trace_id = None
         self.agent_latest_text = ''
         self.agent_conversation_id = None
+        self.agent_runtime_session_id = None
         self.agent_tts_queue = None
         self.agent_tts_worker = None
 
@@ -144,6 +146,7 @@ class RealtimeConnection:
         self.agent_trace_id = None
         self.agent_latest_text = ''
         self.agent_conversation_id = None
+        self.agent_runtime_session_id = None
         self.agent_tts_queue = None
         self.agent_tts_worker = None
 
@@ -500,6 +503,13 @@ async def _handle_agent_session_start(send, connection: RealtimeConnection, mess
     request_id = _request_id_from_payload(payload)
     trace_id = _trace_id_from_payload(payload, request_id)
     mode = 'text' if input_text else 'voice'
+    incoming_session_id = str(
+        payload.get('sessionId')
+        or payload.get('session_id')
+        or payload.get('conversationId')
+        or payload.get('conversation_id')
+        or ''
+    ).strip()
     if not device_code:
         await _send_json(send, _trace_payload('agent.error', command_id, request_id, trace_id, message='Device code is required'))
         return
@@ -516,6 +526,7 @@ async def _handle_agent_session_start(send, connection: RealtimeConnection, mess
     connection.agent_request_id = request_id
     connection.agent_trace_id = trace_id
     connection.agent_latest_text = input_text
+    connection.agent_runtime_session_id = payload.get('sessionId') or payload.get('session_id')
     connection.agent_conversation_id = payload.get('conversationId') or payload.get('conversation_id')
     connection.agent_tts_queue = asyncio.Queue()
     connection.agent_tts_worker = asyncio.create_task(
@@ -600,11 +611,31 @@ async def _run_llm_session_body(
         await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message='Question text is required'))
         return None
 
+    incoming_session_id = str(
+        payload.get('sessionId')
+        or payload.get('session_id')
+        or payload.get('conversationId')
+        or payload.get('conversation_id')
+        or ''
+    ).strip()
+
     try:
         session = await sync_to_async(_prepare_device_llm_session, thread_sensitive=True)(device_code, question_text, payload)
     except Exception as exc:
         await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, **_realtime_error_payload(exc)))
         return None
+
+    if session.get('backendType') == RUNTIME_BACKEND_PLATFORM_LLM:
+        logger.info(
+            '[VOICE-SESSION-DIAG] 当前问题：%s 会话ID变量名：incoming_session_id 会话ID：%s',
+            question_text,
+            incoming_session_id or None,
+        )
+        logger.info(
+            '[VOICE-SESSION-DIAG] 当前问题：%s 会话ID变量名：session.sessionId 会话ID：%s',
+            question_text,
+            session.get('sessionId'),
+        )
 
     started_payload = {
         'type': 'llm.started',
@@ -618,6 +649,7 @@ async def _run_llm_session_body(
             'agentApplicationName': session['agentApplicationName'],
             'applicationId': session['applicationId'],
             'applicationName': session['applicationName'],
+            'sessionId': session.get('sessionId'),
             'conversationId': session.get('conversationId'),
         },
     }
@@ -710,6 +742,12 @@ async def _run_llm_session_body(
         answer_blocks = [*text_to_blocks(answer_text), *knowledge_media_blocks]
 
     conversation_id = session.get('conversationId')
+    if session.get('backendType') == RUNTIME_BACKEND_PLATFORM_LLM:
+        logger.info(
+            '[VOICE-SESSION-DIAG] 当前问题：%s 会话ID变量名：session.sessionId 会话ID：%s',
+            question_text,
+            session.get('sessionId'),
+        )
     if conversation_id is not None:
         await sync_to_async(_append_runtime_conversation_messages, thread_sensitive=True)(conversation_id, question_text, answer_text, answer_blocks)
     else:
@@ -734,6 +772,7 @@ async def _run_llm_session_body(
         'agentApplicationName': session['agentApplicationName'],
         'applicationId': session['applicationId'],
         'applicationName': session['applicationName'],
+        'sessionId': session.get('sessionId'),
         'conversationId': conversation_id,
     }
     if _has_media_reply_blocks(answer_blocks):
@@ -1021,7 +1060,9 @@ async def _run_agent_llm_and_finish(send, connection: RealtimeConnection, questi
             'traceId': trace_id,
         },
     }
-    if connection.agent_conversation_id not in (None, ''):
+    if connection.agent_runtime_session_id not in (None, ''):
+        message['payload']['sessionId'] = connection.agent_runtime_session_id
+    elif connection.agent_conversation_id not in (None, ''):
         message['payload']['conversationId'] = connection.agent_conversation_id
 
     try:
@@ -1179,15 +1220,45 @@ def _has_media_reply_blocks(blocks) -> bool:
     return any(isinstance(block, dict) and block.get('type') in {'image', 'video'} for block in blocks or [])
 
 
+def _payload_session_id(payload: dict[str, Any] | None) -> str | None:
+    if not isinstance(payload, dict):
+        return None
+    raw_id = payload.get('sessionId') or payload.get('session_id')
+    if raw_id in (None, ''):
+        return None
+    session_id = str(raw_id).strip()
+    return session_id or None
+
+
+def _new_runtime_session_id() -> str:
+    return str(uuid.uuid4())
+
+
+def _conversation_session_id(conversation) -> str | None:
+    if conversation is None:
+        return None
+    external_session = conversation.external_session if isinstance(conversation.external_session, dict) else {}
+    session_id = str(external_session.get('runtimeSessionId') or '').strip()
+    return session_id or None
+
+
+def _ensure_runtime_session_id(conversation) -> str | None:
+    if conversation is None:
+        return None
+    session_id = _conversation_session_id(conversation)
+    if session_id:
+        return session_id
+    external_session = conversation.external_session if isinstance(conversation.external_session, dict) else {}
+    session_id = _new_runtime_session_id()
+    conversation.external_session = {**external_session, 'runtimeSessionId': session_id}
+    conversation.save(update_fields=['external_session'])
+    return session_id
+
+
 def _payload_conversation_id(payload: dict[str, Any] | None) -> int | None:
     if not isinstance(payload, dict):
         return None
-    raw_id = (
-        payload.get('conversationId')
-        or payload.get('conversation_id')
-        or payload.get('sessionId')
-        or payload.get('session_id')
-    )
+    raw_id = payload.get('conversationId') or payload.get('conversation_id')
     if raw_id in (None, ''):
         return None
     try:
@@ -1197,7 +1268,6 @@ def _payload_conversation_id(payload: dict[str, Any] | None) -> int | None:
     if conversation_id <= 0:
         raise RuntimeError('conversationId 必须是有效整数')
     return conversation_id
-
 
 def _runtime_conversation_user(agent_application, tenant):
     if getattr(agent_application, 'created_by_id', None):
@@ -1225,6 +1295,22 @@ def _resolve_runtime_conversation(
 ):
     from apps.ai_models.models import ChatConversation
 
+    session_id = _payload_session_id(payload)
+    if session_id is not None:
+        conversation = (
+            ChatConversation.objects
+            .select_related('llm_model__provider', 'third_party_chatbot__provider', 'application')
+            .filter(
+                tenant=device.tenant,
+                application=agent_application,
+                external_session__runtimeSessionId=session_id,
+            )
+            .first()
+        )
+        if conversation is None:
+            raise RuntimeError('sessionId 不存在或不属于当前设备智能体')
+        return conversation
+
     conversation_id = _payload_conversation_id(payload)
     if conversation_id is not None:
         conversation = (
@@ -1235,6 +1321,7 @@ def _resolve_runtime_conversation(
         )
         if conversation is None:
             raise RuntimeError('conversationId 不存在或不属于当前设备智能体')
+        _ensure_runtime_session_id(conversation)
         return conversation
 
     user = _runtime_conversation_user(agent_application, device.tenant)
@@ -1244,6 +1331,7 @@ def _resolve_runtime_conversation(
         llm_model=model,
         runtime_backend_type=runtime_config.get('runtime_backend_type') or RUNTIME_BACKEND_PLATFORM_LLM,
         third_party_chatbot=third_party_chatbot,
+        external_session={'runtimeSessionId': _new_runtime_session_id()},
         summary='',
         system_prompt=runtime_config.get('system_prompt') or '',
         temperature=runtime_config.get('temperature', 0.7),
@@ -1252,7 +1340,6 @@ def _resolve_runtime_conversation(
         application=agent_application,
         tenant=device.tenant,
     )
-
 
 def _append_runtime_conversation_messages(conversation_id: int | None, question_text: str, answer_text: str, answer_blocks=None) -> None:
     if conversation_id is None:
@@ -1293,7 +1380,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
     model = None
     chatbot = None
     conversation = None
-    has_conversation_id = _payload_conversation_id(payload) is not None if payload is not None else False
+    has_legacy_conversation_id = _payload_conversation_id(payload) is not None if payload is not None else False
     if runtime_backend_type == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
         from apps.ai_models.models import ThirdPartyChatbotApplication
 
@@ -1304,7 +1391,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
             chatbot = agent_application.third_party_chatbot
         if not third_party_chatbots.is_chatbot_effective_for_tenant(device.tenant, chatbot):
             raise RuntimeError('请先为设备绑定智能体配置可用第三方会话机器人')
-        if has_conversation_id:
+        if has_legacy_conversation_id:
             conversation = _resolve_runtime_conversation(
                 device,
                 agent_application,
@@ -1327,8 +1414,13 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
             model = settings.default_model if settings is not None else None
         if not llm_services.is_llm_model_effective_for_tenant(device.tenant, model):
             raise RuntimeError('请先为设备绑定智能体配置可用 LLM 模型')
-        if has_conversation_id:
-            conversation = _resolve_runtime_conversation(device, agent_application, model, runtime_config, payload)
+        conversation = _resolve_runtime_conversation(device, agent_application, model, runtime_config, payload)
+    if runtime_backend_type == RUNTIME_BACKEND_PLATFORM_LLM:
+        logger.info(
+            '[VOICE-SESSION-DIAG] 当前问题：%s 会话ID变量名：runtime_session_id 会话ID：%s',
+            question_text,
+            _conversation_session_id(conversation),
+        )
 
     annotation = DeviceVoiceChatView._find_annotation(agent_application, question_text)
     if annotation is not None:
@@ -1356,6 +1448,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
         'deviceCode': device.code,
         'backendType': runtime_backend_type,
         'memoryKey': memory_key,
+        'sessionId': _conversation_session_id(conversation),
         'conversationId': conversation.id if conversation is not None else None,
         'annotationAnswer': annotation_answer,
         'annotationBlocks': annotation_blocks,

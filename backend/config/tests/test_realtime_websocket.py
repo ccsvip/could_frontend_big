@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import json
+import uuid
 from types import SimpleNamespace
 from unittest.mock import ANY, patch
 
@@ -1578,6 +1579,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                             'agentApplicationName': 'Runtime Agent',
                             'applicationId': device_application.id,
                             'applicationName': 'Runtime LLM App',
+                            'sessionId': ANY,
                             'conversationId': ANY,
                         },
                     },
@@ -1631,6 +1633,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                             'agentApplicationName': 'Runtime Agent',
                             'applicationId': device_application.id,
                             'applicationName': 'Runtime LLM App',
+                            'sessionId': ANY,
                             'conversationId': ANY,
                         },
                     },
@@ -1640,7 +1643,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 self.assertEqual(call_kwargs['temperature'], 0.2)
                 self.assertEqual(call_kwargs['max_tokens'], 256)
                 self.assertEqual(call_kwargs['messages'][0]['role'], 'system')
-                self.assertIn('Runtime Agent', call_kwargs['messages'][0]['content'])
+                self.assertIn('你是设备助手。', call_kwargs['messages'][0]['content'])
                 self.assertEqual(call_kwargs['messages'][1], {'role': 'user', 'content': '介绍一下展厅'})
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
@@ -1691,7 +1694,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         )
         captured_messages = []
         answers = ['第一轮回答。', '第二轮回答。']
-        conversation_ids = []
+        session_ids = []
 
         async def stream_answer(**kwargs):
             captured_messages.append(kwargs['messages'])
@@ -1713,15 +1716,15 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
             response = await communicator.receive_output(timeout=1)
             self.assertEqual(response['type'], 'websocket.accept')
 
-            async def send_question(command_id, text, conversation_id=None):
+            async def send_question(command_id, text, session_id=None):
                 payload = {
                     'deviceCode': 'ANDROID-LLM-CONV-001',
                     'text': text,
                     'requestId': f'req-{command_id}',
                     'traceId': f'trace-{command_id}',
                 }
-                if conversation_id is not None:
-                    payload['conversationId'] = conversation_id
+                if session_id is not None:
+                    payload['sessionId'] = session_id
                 await communicator.send_input({
                     'type': 'websocket.receive',
                     'text': json.dumps({
@@ -1739,14 +1742,17 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 self.assertEqual(tts_segment['type'], 'llm.tts_segment')
                 self.assertEqual(done['type'], 'llm.done')
                 self.assertEqual(started['payload']['conversationId'], done['payload']['conversationId'])
-                return started['payload']['conversationId']
+                self.assertEqual(started['payload']['sessionId'], done['payload']['sessionId'])
+                self.assertIsNotNone(started['payload']['conversationId'])
+                uuid.UUID(started['payload']['sessionId'])
+                return started['payload']['sessionId']
 
             with patch('apps.ai_models.llm_services.stream_llm_chat_completion', side_effect=stream_answer):
-                conversation_id = await send_question('llm-conv-1', '第一问')
-                conversation_ids.append(conversation_id)
-                reused_conversation_id = await send_question('llm-conv-2', '第二问', conversation_id)
+                session_id = await send_question('llm-conv-1', '第一问')
+                session_ids.append(session_id)
+                reused_session_id = await send_question('llm-conv-2', '第二问', session_id)
 
-            self.assertEqual(reused_conversation_id, conversation_ids[0])
+            self.assertEqual(reused_session_id, session_ids[0])
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)
 
@@ -1754,7 +1760,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
 
         self.assertEqual(ChatConversation.objects.count(), 1)
         conversation = ChatConversation.objects.get()
-        self.assertEqual(conversation.id, conversation_ids[0])
+        self.assertEqual(conversation.external_session.get('runtimeSessionId'), session_ids[0])
         self.assertEqual(conversation.application_id, agent_application.id)
         self.assertEqual(conversation.user_id, self.user.id)
         self.assertEqual(
@@ -1981,15 +1987,15 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
             response = await communicator.receive_output(timeout=1)
             self.assertEqual(response['type'], 'websocket.accept')
 
-            async def send_agent_question(command_id, text, conversation_id=None):
+            async def send_agent_question(command_id, text, session_id=None):
                 payload = {
                     'deviceCode': 'ANDROID-AGENT-CONV-001',
                     'text': text,
                     'requestId': f'req-{command_id}',
                     'traceId': f'trace-{command_id}',
                 }
-                if conversation_id is not None:
-                    payload['conversationId'] = conversation_id
+                if session_id is not None:
+                    payload['sessionId'] = session_id
                 await communicator.send_input({
                     'type': 'websocket.receive',
                     'text': json.dumps({
@@ -2011,18 +2017,20 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 started = next(event for event in events if event['type'] == 'llm.started')
                 done = next(event for event in events if event['type'] == 'llm.done')
                 self.assertEqual(started['payload']['conversationId'], done['payload']['conversationId'])
+                self.assertEqual(started['payload']['sessionId'], done['payload']['sessionId'])
+                uuid.UUID(started['payload']['sessionId'])
                 self.assertEqual(events[-1]['type'], 'agent.done')
-                return started['payload']['conversationId']
+                return started['payload']['sessionId']
 
             with (
                 patch('apps.ai_models.llm_services.stream_llm_chat_completion', side_effect=stream_answer),
                 patch('config.realtime._run_agent_tts_stream', side_effect=fake_tts_stream),
             ):
-                conversation_id = await send_agent_question('agent-conv-1', '第一问')
-                conversation_ids.append(conversation_id)
-                reused_conversation_id = await send_agent_question('agent-conv-2', '第二问', conversation_id)
+                session_id = await send_agent_question('agent-conv-1', '第一问')
+                conversation_ids.append(session_id)
+                reused_session_id = await send_agent_question('agent-conv-2', '第二问', session_id)
 
-            self.assertEqual(reused_conversation_id, conversation_ids[0])
+            self.assertEqual(reused_session_id, conversation_ids[0])
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)
 
@@ -2030,7 +2038,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
 
         self.assertEqual(ChatConversation.objects.count(), 1)
         conversation = ChatConversation.objects.get()
-        self.assertEqual(conversation.id, conversation_ids[0])
+        self.assertEqual(conversation.external_session.get('runtimeSessionId'), conversation_ids[0])
         self.assertEqual(conversation.application_id, agent_application.id)
         self.assertEqual(conversation.user_id, self.user.id)
         self.assertEqual(captured_messages[1][1], {'role': ChatMessage.ROLE_USER, 'content': '第一问'})
@@ -2296,6 +2304,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                             'agentApplicationName': 'Cancelable Agent',
                             'applicationId': device_application.id,
                             'applicationName': 'Cancelable LLM App',
+                            'sessionId': ANY,
                             'conversationId': ANY,
                         },
                     },

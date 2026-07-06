@@ -823,8 +823,21 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             if not question_text:
                 return Response({'message': 'ASR 没有识别出有效内容'}, status=status.HTTP_400_BAD_REQUEST)
 
+        runtime_config = device.effective_agent_application.runtime_config() if device.effective_agent_application is not None else {}
+        is_standard_voice_backend = runtime_config.get('runtime_backend_type') != RUNTIME_BACKEND_THIRD_PARTY_CHATBOT
+
         # --- session management ---------------------------------------------------
-        session_id = str(request.data.get('sessionId') or '').strip() or None
+        # The backend owns the voice-chat session id.  The first request from the
+        # device intentionally omits sessionId; generate it before answering so
+        # the first turn is stored under the same id that is returned to Android.
+        incoming_session_id = str(request.data.get('sessionId') or '').strip()
+        session_id = incoming_session_id or str(uuid.uuid4())
+        if is_standard_voice_backend:
+            logger.info(
+                '[VOICE-SESSION-DIAG] 当前问题：%s 会话ID变量名：session_id 会话ID：%s',
+                question_text,
+                session_id,
+            )
 
         try:
             answer_text, answer_blocks = self._generate_answer(
@@ -834,9 +847,20 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
 
         # Persist conversation turns so the next request can load history.
-        if session_id:
-            session_store.append_turn(device.code, session_id, 'user', question_text)
-            session_store.append_turn(device.code, session_id, 'assistant', answer_text)
+        if is_standard_voice_backend:
+            logger.info(
+                '[VOICE-SESSION-DIAG] 当前问题：%s 会话ID变量名：session_id 会话ID：%s',
+                question_text,
+                session_id,
+            )
+        session_store.append_turn(device.code, session_id, 'user', question_text)
+        session_store.append_turn(device.code, session_id, 'assistant', answer_text)
+        if is_standard_voice_backend:
+            logger.info(
+                '[VOICE-SESSION-DIAG] 当前问题：%s 会话ID变量名：session_id 会话ID：%s',
+                question_text,
+                session_id,
+            )
 
         try:
             runtime_agent = device.effective_agent_application
@@ -871,8 +895,14 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         except Exception:
             logger.exception('device.voice_chat.log_failed device_code=%s', device.code)
 
+        if is_standard_voice_backend:
+            logger.info(
+                '[VOICE-SESSION-DIAG] 当前问题：%s 会话ID变量名：payload.sessionId 会话ID：%s',
+                question_text,
+                session_id,
+            )
         payload = {
-            'sessionId': session_id or str(uuid.uuid4()),
+            'sessionId': session_id,
             'requestId': get_request_id(request),
             'traceId': get_trace_id(request),
             'deviceCode': device.code,
@@ -965,6 +995,11 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         # Load conversation history from Redis when a sessionId is provided.
         if session_id:
             history = session_store.get_history(device.code, session_id)
+            logger.info(
+                '[VOICE-SESSION-DIAG] 当前问题：%s 会话ID变量名：_generate_answer.session_id 会话ID：%s',
+                question_text,
+                session_id,
+            )
             messages.extend(history)
         media_blocks: list[dict] = []
         if agent_application is not None:
