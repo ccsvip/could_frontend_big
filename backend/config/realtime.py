@@ -1380,7 +1380,6 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
     model = None
     chatbot = None
     conversation = None
-    has_legacy_conversation_id = _payload_conversation_id(payload) is not None if payload is not None else False
     if runtime_backend_type == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
         from apps.ai_models.models import ThirdPartyChatbotApplication
 
@@ -1391,15 +1390,14 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
             chatbot = agent_application.third_party_chatbot
         if not third_party_chatbots.is_chatbot_effective_for_tenant(device.tenant, chatbot):
             raise RuntimeError('请先为设备绑定智能体配置可用第三方会话机器人')
-        if has_legacy_conversation_id:
-            conversation = _resolve_runtime_conversation(
-                device,
-                agent_application,
-                None,
-                runtime_config,
-                payload,
-                third_party_chatbot=chatbot,
-            )
+        conversation = _resolve_runtime_conversation(
+            device,
+            agent_application,
+            None,
+            runtime_config,
+            payload,
+            third_party_chatbot=chatbot,
+        )
     else:
         runtime_backend_type = RUNTIME_BACKEND_PLATFORM_LLM
         runtime_model_id = runtime_config.get('llm_model_id')

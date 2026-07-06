@@ -16,7 +16,7 @@ from django.test import TestCase, override_settings
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import AgentApplication, ChatConversation, ChatMessage, LLMModel, LLMProvider, TenantLLMModelGrant
+from apps.ai_models.models import AgentApplication, ChatConversation, ChatMessage, LLMModel, LLMProvider, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, TenantLLMModelGrant, TenantThirdPartyChatbotGrant, ThirdPartyChatbotApplication, ThirdPartyChatbotIntegration, ThirdPartyChatbotProvider
 from apps.devices.models import Device, DeviceApplication, DeviceChatLog
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
@@ -2051,6 +2051,94 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 ('第二问', conversation.id),
             ],
         )
+
+    def test_realtime_third_party_backend_reuses_runtime_conversation(self):
+        from config import realtime
+
+        provider = ThirdPartyChatbotProvider.objects.create(
+            name='华鹏 AI',
+            provider_type='ihuapeng_chatbot',
+            api_base_url='https://ai.ihuapeng.cn/api',
+            api_key='application-key',
+            is_active=True,
+        )
+        chatbot = ThirdPartyChatbotApplication.objects.create(
+            provider=provider,
+            name='售前',
+            external_application_id='8d697146-f9a2-11ef-89c4-86dcb2923f74',
+            is_active=True,
+        )
+        TenantThirdPartyChatbotGrant.objects.create(tenant=self.tenant, chatbot=chatbot, is_active=True)
+        ThirdPartyChatbotIntegration.objects.create(
+            scheme_type='scheme_a',
+            name='华鹏方案A',
+            provider=provider,
+            chatbot=chatbot,
+            config={
+                'steps': [
+                    {
+                        'key': 'open_chat',
+                        'name': '打开会话',
+                        'method': 'GET',
+                        'path': '/application/{{externalApplicationId}}/chat/open',
+                        'headers': [{'key': 'AUTHORIZATION', 'value': '{{apiKey}}'}],
+                        'body': {},
+                        'extract': [{'name': 'chat_id', 'path': '$.data'}],
+                        'success': {'httpStatus': '200-299', 'bodyPath': '$.code', 'equals': 200},
+                    },
+                    {
+                        'key': 'send_message',
+                        'name': '发送消息',
+                        'method': 'POST',
+                        'path': '/application/chat_message/{{chat_id}}',
+                        'headers': [{'key': 'AUTHORIZATION', 'value': '{{apiKey}}'}],
+                        'body': {'message': '{{message}}', 'stream': False},
+                        'extract': [{'name': 'chat_id', 'path': '$.data.chat_id'}],
+                        'success': {'httpStatus': '200-299', 'bodyPath': '$.code', 'equals': 200},
+                    },
+                ],
+                'answerPaths': ['$.data.content'],
+            },
+            is_active=True,
+        )
+        agent_application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime Third Party Agent',
+            runtime_backend_type=RUNTIME_BACKEND_THIRD_PARTY_CHATBOT,
+            third_party_chatbot=chatbot,
+            created_by=self.user,
+        )
+        device_application = DeviceApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime Third Party App',
+            code='runtime-third-party-app',
+            agent_application=agent_application,
+        )
+        Device.objects.create(
+            tenant=self.tenant,
+            application=device_application,
+            name='Runtime Third Party Device',
+            code='ANDROID-AGENT-THIRD-PARTY-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+
+        first_session = realtime._prepare_device_llm_session(
+            'ANDROID-AGENT-THIRD-PARTY-001',
+            '第一问',
+            {},
+        )
+        second_session = realtime._prepare_device_llm_session(
+            'ANDROID-AGENT-THIRD-PARTY-001',
+            '第二问',
+            {'sessionId': first_session['sessionId']},
+        )
+
+        self.assertEqual(first_session['backendType'], RUNTIME_BACKEND_THIRD_PARTY_CHATBOT)
+        self.assertEqual(first_session['sessionId'], second_session['sessionId'])
+        self.assertEqual(first_session['conversationId'], second_session['conversationId'])
+        conversation = ChatConversation.objects.get(pk=first_session['conversationId'])
+        self.assertEqual(conversation.external_session.get('runtimeSessionId'), first_session['sessionId'])
+        self.assertEqual(conversation.third_party_chatbot_id, chatbot.id)
 
     def test_unified_realtime_websocket_runs_agent_voice_session_with_tts(self):
         provider = LLMProvider.objects.create(

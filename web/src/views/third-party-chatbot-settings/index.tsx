@@ -80,6 +80,7 @@ const FLOWMESH_STREAMING_CONFIG = {
     ],
     body: {},
     extract: [{ name: 'sessionId', path: '$.data.sessionId' }],
+    skipWhenVariableExists: 'sessionId',
     success: { httpStatus: '200-299', bodyPath: '$.code', equals: 1 },
     errorMessagePath: '$.message',
   },
@@ -158,6 +159,7 @@ const createSchemeAValues = (): IntegrationFormValues => ({
         stream: false,
         hasStreamField: false,
         extract: [{ name: 'chat_id', path: '$.data' }],
+        skipWhenVariableExists: 'chat_id',
         success: { httpStatus: '200-299', bodyPath: '$.code', equals: 200 },
         errorMessagePath: '$.message',
       },
@@ -208,7 +210,8 @@ const createSchemeBValues = (): IntegrationFormValues => ({
           { key: 'Accept', value: 'application/json' },
           { key: 'Content-Type', value: 'application/json' },
         ],
-        bodyText: JSON.stringify({ query: '{{message}}' }, null, 2),
+        bodyText: JSON.stringify({ query: '{{message}}', sessionId: '{{sessionId}}' }, null, 2),
+        nullWhenMissingVariables: ['sessionId'],
         stream: false,
         hasStreamField: false,
         extract: [{ name: 'sessionId', path: '$.data.sessionId' }],
@@ -275,6 +278,7 @@ const formStepFromConfig = (step: ThirdPartyChatbotApiStep): StepFormValue => {
     hasStreamField,
     headers: step.headers || [],
     extract: step.extract || [],
+    skipWhenVariableExists: step.skipWhenVariableExists || '',
     success: step.success || { httpStatus: '200-299' },
     errorMessagePath: step.errorMessagePath || '$.message',
   };
@@ -323,6 +327,10 @@ const normalizePayload = (values: IntegrationFormValues): ThirdPartyChatbotInteg
       extract: (step.extract || [])
         .map((item) => ({ name: String(item.name || '').trim(), path: String(item.path || '').trim() }))
         .filter((item) => item.name && item.path),
+      skipWhenVariableExists: String(step.skipWhenVariableExists || '').trim() || undefined,
+      nullWhenMissingVariables: (step.nullWhenMissingVariables || [])
+        .map((item) => String(item || '').trim())
+        .filter(Boolean),
       success: {
         httpStatus: String(step.success?.httpStatus || '200-299').trim(),
         bodyPath: String(step.success?.bodyPath || '').trim(),
@@ -573,6 +581,13 @@ export const ThirdPartyChatbotSettingsPage = () => {
         </div>
         <Form.Item name={[field.name, 'path']} label="请求路径" rules={[{ required: true, message: '请输入请求路径' }]}>
           <Input placeholder="/application/{{externalApplicationId}}/chat/open" />
+        </Form.Item>
+        <Form.Item
+          name={[field.name, 'skipWhenVariableExists']}
+          label="已有变量时跳过"
+          tooltip="例如 chat_id 或 sessionId。该变量从第三方响应提取并保存；后续会话已有该值时跳过本步骤，不会重新创建第三方会话。"
+        >
+          <Input placeholder="chat_id" />
         </Form.Item>
 
         <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">

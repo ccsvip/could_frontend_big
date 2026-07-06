@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import logging
 import re
 from urllib.parse import urljoin
 
@@ -14,6 +15,9 @@ from apps.ai_models.models import (
     TenantThirdPartyChatbotGrant,
     ThirdPartyChatbotApplication,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_effective_chatbots_for_tenant(tenant):
@@ -68,6 +72,7 @@ def send_chatbot_message(
             conversation=conversation,
             initial_variables={
                 'chatbotId': chatbot.id,
+                'chatbotName': chatbot.name,
                 'externalApplicationId': chatbot.external_application_id,
             },
             timeout=timeout,
@@ -85,6 +90,7 @@ def normalize_chatbot_api_key(value: str) -> str:
 
 SENSITIVE_KEYWORDS = ('authorization', 'api-key', 'api_key', 'apikey', 'token', 'secret', 'password', 'key')
 TEMPLATE_PATTERN = re.compile(r'\{\{\s*([A-Za-z0-9_.-]+)\s*\}\}')
+FULL_TEMPLATE_PATTERN = re.compile(r'^\s*\{\{\s*([A-Za-z0-9_.-]+)\s*\}\}\s*$')
 
 
 class ThirdPartyChatbotIntegrationError(RuntimeError):
@@ -110,6 +116,7 @@ def default_scheme_a_config() -> dict:
                 'extract': [
                     {'name': 'chat_id', 'path': '$.data'},
                 ],
+                'skipWhenVariableExists': 'chat_id',
                 'success': {'httpStatus': '200-299', 'bodyPath': '$.code', 'equals': 200},
                 'errorMessagePath': '$.message',
             },
@@ -150,7 +157,8 @@ def default_scheme_b_config() -> dict:
                 'method': 'POST',
                 'path': '/apps/{{externalApplicationId}}/chat',
                 'headers': copy.deepcopy(common_headers),
-                'body': {'query': '{{message}}'},
+                'body': {'query': '{{message}}', 'sessionId': '{{sessionId}}'},
+                'nullWhenMissingVariables': ['sessionId'],
                 'extract': [
                     {'name': 'sessionId', 'path': '$.data.sessionId'},
                 ],
@@ -168,6 +176,7 @@ def default_scheme_b_config() -> dict:
                 'headers': copy.deepcopy(common_headers),
                 'body': {},
                 'extract': [{'name': 'sessionId', 'path': '$.data.sessionId'}],
+                'skipWhenVariableExists': 'sessionId',
                 'success': {'httpStatus': '200-299', 'bodyPath': '$.code', 'equals': 1},
                 'errorMessagePath': '$.message',
             },
@@ -355,6 +364,40 @@ def _store_external_session(conversation, session_key: str, runtime: dict) -> No
         conversation.save(update_fields=['external_session', 'updated_at'])
 
 
+def _third_party_session_log_field(config: dict, runtime: dict) -> tuple[str, object]:
+    for step in config.get('steps') or []:
+        variable_name = _step_session_variable(step)
+        if variable_name and runtime.get(variable_name) not in (None, ''):
+            return variable_name, variable_name
+    streaming = config.get('streaming') if isinstance(config.get('streaming'), dict) else {}
+    session_step = streaming.get('sessionStep') if isinstance(streaming.get('sessionStep'), dict) else {}
+    variable_name = _step_session_variable(session_step)
+    if variable_name and runtime.get(variable_name) not in (None, ''):
+        return variable_name, variable_name
+    for step in list(config.get('steps') or []) + [session_step]:
+        if not isinstance(step, dict):
+            continue
+        for item in step.get('extract') or []:
+            if not isinstance(item, dict):
+                continue
+            variable_name = str(item.get('name') or '').strip()
+            if variable_name and runtime.get(variable_name) not in (None, ''):
+                return str(item.get('path') or variable_name), variable_name
+    return '未配置', ''
+
+
+def _log_third_party_chatbot_session(config: dict, runtime: dict) -> None:
+    variable_name, runtime_key = _third_party_session_log_field(config, runtime)
+    session_value = runtime.get(runtime_key)
+    logger.info(
+        '[THIRD-PARTY-SESSION-DIAG] 第三方会话机器人名称：%s 用户的问题：%s 变量名称：%s 会话ID：%s',
+        runtime.get('chatbotName') or '',
+        runtime.get('message') or '',
+        variable_name,
+        session_value or None,
+    )
+
+
 def run_chatbot_integration_config(
     *,
     provider,
@@ -374,6 +417,8 @@ def run_chatbot_integration_config(
     try:
         with httpx.Client(timeout=timeout) as client:
             for step in config.get('steps') or []:
+                if _should_skip_step(step, runtime):
+                    continue
                 step_summary = {
                     'key': step.get('key') or '',
                     'name': step.get('name') or '',
@@ -407,6 +452,7 @@ def run_chatbot_integration_config(
         raise ThirdPartyChatbotIntegrationError('第三方机器人连接失败', steps=step_results) from exc
 
     _store_external_session(conversation, session_key, runtime)
+    _log_third_party_chatbot_session(config, runtime)
 
     answer = ''
     for path in config.get('answerPaths') or []:
@@ -464,7 +510,7 @@ async def stream_chatbot_message(
 
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
-            if session_step and not runtime.get('sessionId'):
+            if session_step and not _should_skip_step(session_step, runtime):
                 step_summary = _build_step_summary(session_step)
                 try:
                     response = await _execute_config_step_async(client, provider.api_base_url, session_step, runtime)
@@ -565,7 +611,46 @@ def normalize_integration_config(config: dict | None, *, scheme_type: str | None
         result['answerPaths'] = copy.deepcopy(base['answerPaths'])
     if not result.get('streaming') and base.get('streaming'):
         result['streaming'] = copy.deepcopy(base['streaming'])
+    _normalize_session_body_templates(result)
     return result
+
+
+def _normalize_session_body_templates(config: dict) -> None:
+    for step in config.get('steps') or []:
+        if not _looks_like_single_step_session_chat(step):
+            continue
+        session_variable = _first_extracted_variable(step, {'sessionId', 'session_id'})
+        if not session_variable:
+            continue
+        body = step.get('body')
+        if not isinstance(body, dict):
+            continue
+        if body.get(session_variable) in (None, ''):
+            body[session_variable] = f'{{{{{session_variable}}}}}'
+        null_when_missing = step.get('nullWhenMissingVariables')
+        if not isinstance(null_when_missing, list):
+            null_when_missing = []
+        if session_variable not in null_when_missing:
+            null_when_missing.append(session_variable)
+        step['nullWhenMissingVariables'] = null_when_missing
+
+
+def _looks_like_single_step_session_chat(step: dict) -> bool:
+    if not isinstance(step, dict):
+        return False
+    method = str(step.get('method') or 'POST').upper()
+    path = str(step.get('path') or '').strip().lower()
+    return method == 'POST' and path.endswith('/chat') and '/sessions/' not in path
+
+
+def _first_extracted_variable(step: dict, names: set[str]) -> str:
+    for item in step.get('extract') or []:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get('name') or '').strip()
+        if name in names:
+            return name
+    return ''
 
 
 def _build_step_summary(step: dict) -> dict:
@@ -586,12 +671,42 @@ def _build_config_step_request(base_url: str, step: dict, variables: dict) -> tu
         key = str(header.get('key') or '').strip()
         if key:
             headers[key] = render_template(header.get('value') or '', variables)
-    body = render_value(step.get('body'), variables)
+    body = render_value(step.get('body'), variables, step.get('nullWhenMissingVariables') or [])
     kwargs = {'headers': headers}
     method = str(step.get('method') or 'GET').upper()
     if method not in {'GET', 'HEAD'}:
         kwargs['json'] = body if isinstance(body, (dict, list)) else {}
     return url, kwargs
+
+
+def _should_skip_step(step: dict, variables: dict) -> bool:
+    variable_name = _step_session_variable(step)
+    return bool(variable_name and variables.get(variable_name) not in (None, ''))
+
+
+def _step_session_variable(step: dict) -> str:
+    if not isinstance(step, dict):
+        return ''
+    variable_name = str(step.get('skipWhenVariableExists') or '').strip()
+    if variable_name:
+        return variable_name
+    if not _looks_like_session_creation_step(step):
+        return ''
+    for item in step.get('extract') or []:
+        if not isinstance(item, dict):
+            continue
+        variable_name = str(item.get('name') or '').strip()
+        if variable_name:
+            return variable_name
+    return ''
+
+
+def _looks_like_session_creation_step(step: dict) -> bool:
+    key = str(step.get('key') or '').strip().lower()
+    path = str(step.get('path') or '').strip().lower()
+    if key in {'open_chat', 'create_session', 'open_session'}:
+        return True
+    return path.endswith('/chat/open') or path.endswith('/sessions')
 
 
 def _execute_config_step(client: httpx.Client, base_url: str, step: dict, variables: dict) -> httpx.Response:
@@ -612,13 +727,17 @@ def _build_step_url(base_url: str, path: str) -> str:
     return urljoin(f'{str(base_url or "").rstrip("/")}/', str(path or '').lstrip('/'))
 
 
-def render_value(value, variables: dict):
+def render_value(value, variables: dict, null_when_missing_variables=None):
+    null_when_missing_variables = set(null_when_missing_variables or [])
     if isinstance(value, str):
+        full_template = FULL_TEMPLATE_PATTERN.match(value)
+        if full_template and full_template.group(1) in null_when_missing_variables:
+            return variables.get(full_template.group(1))
         return render_template(value, variables)
     if isinstance(value, list):
-        return [render_value(item, variables) for item in value]
+        return [render_value(item, variables, null_when_missing_variables) for item in value]
     if isinstance(value, dict):
-        return {key: render_value(item, variables) for key, item in value.items()}
+        return {key: render_value(item, variables, null_when_missing_variables) for key, item in value.items()}
     return value
 
 

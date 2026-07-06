@@ -238,6 +238,8 @@ export type ThirdPartyChatbotApiStep = {
   headers: ThirdPartyChatbotApiHeader[];
   body: Record<string, unknown> | unknown[];
   extract: ThirdPartyChatbotApiExtract[];
+  skipWhenVariableExists?: string;
+  nullWhenMissingVariables?: string[];
   success?: {
     httpStatus?: string;
     bodyPath?: string;

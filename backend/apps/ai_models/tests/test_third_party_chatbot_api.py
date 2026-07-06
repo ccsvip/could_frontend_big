@@ -282,6 +282,7 @@ class ThirdPartyChatbotApiTests(TenantTestMixin, APITestCase):
                         'headers': [{'key': 'AUTHORIZATION', 'value': '{{apiKey}}'}],
                         'body': {},
                         'extract': [{'name': 'chat_id', 'path': '$.data'}],
+                        'skipWhenVariableExists': 'chat_id',
                         'success': {'httpStatus': '200-299', 'bodyPath': '$.code', 'equals': 200},
                         'errorMessagePath': '$.message',
                     },
@@ -328,7 +329,8 @@ class ThirdPartyChatbotApiTests(TenantTestMixin, APITestCase):
                             {'key': 'Authorization', 'value': 'Bearer {{apiKey}}'},
                             {'key': 'Content-Type', 'value': 'application/json'},
                         ],
-                        'body': {'query': '{{message}}'},
+                        'body': {'query': '{{message}}', 'sessionId': '{{sessionId}}'},
+                        'nullWhenMissingVariables': ['sessionId'],
                         'extract': [{'name': 'sessionId', 'path': '$.data.sessionId'}],
                         'success': {'httpStatus': '200-299', 'bodyPath': '$.code', 'equals': 1},
                         'errorMessagePath': '$.message',
@@ -410,7 +412,7 @@ class ThirdPartyChatbotApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['schemeType'], 'scheme_b')
         self.assertEqual(response.data['schemeTypeLabel'], '方案B')
         self.assertEqual(response.data['config']['answerPaths'], ['$.data.answer'])
-        self.assertEqual(response.data['config']['steps'][0]['body'], {'query': '{{message}}'})
+        self.assertEqual(response.data['config']['steps'][0]['body'], {'query': '{{message}}', 'sessionId': '{{sessionId}}'})
         integration = self.integration_model().objects.select_related('provider', 'chatbot').get(pk=response.data['id'])
         self.assertEqual(integration.provider.provider_type, 'configured_api_chatbot')
         self.assertEqual(integration.chatbot.external_application_id, 'zy-assistant')
@@ -436,7 +438,7 @@ class ThirdPartyChatbotApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(len(response.data['steps']), 1)
         self.assertEqual(DummyThirdPartyClient.calls[0]['method'], 'POST')
         self.assertTrue(DummyThirdPartyClient.calls[0]['url'].endswith('/apps/zy-assistant/chat'))
-        self.assertEqual(DummyThirdPartyClient.calls[0]['kwargs']['json'], {'query': '你好'})
+        self.assertEqual(DummyThirdPartyClient.calls[0]['kwargs']['json'], {'query': '你好', 'sessionId': None})
         self.assertEqual(DummyThirdPartyClient.calls[0]['kwargs']['headers']['Authorization'], 'Bearer flowmesh-key')
 
 
@@ -460,6 +462,37 @@ class ThirdPartyChatbotApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(DummyThirdPartyClient.calls[1]['kwargs']['json'], {'message': '介绍一下', 'stream': True})
         conversation.refresh_from_db()
         self.assertIn('runtime-chat', str(conversation.external_session))
+
+    def test_runtime_reuses_scheme_a_third_party_chat_id(self):
+        from apps.ai_models.models import ChatConversation
+        from apps.ai_models.services.third_party_chatbots import send_chatbot_message
+
+        chatbot = self.create_chatbot(tenant=self.tenant)
+        integration = chatbot.integration
+        config = integration.config
+        config['steps'][0].pop('skipWhenVariableExists', None)
+        integration.config = config
+        integration.save(update_fields=['config', 'updated_at'])
+        conversation = ChatConversation.objects.create(user=self.tenant_user, tenant=self.tenant, third_party_chatbot=chatbot)
+        DummyThirdPartyClient.calls = []
+        responses = [
+            httpx.Response(200, json={'code': 200, 'data': 'third-party-chat'}),
+            httpx.Response(200, json={'code': 200, 'data': {'chat_id': 'third-party-chat', 'content': '第一轮回复'}}),
+            httpx.Response(200, json={'code': 200, 'data': {'chat_id': 'third-party-chat', 'content': '第二轮回复'}}),
+        ]
+
+        with patch('apps.ai_models.services.third_party_chatbots.httpx.Client', return_value=DummyThirdPartyClient(responses)):
+            first_answer = send_chatbot_message(chatbot, '一句话介绍你自己。', conversation=conversation)
+            second_answer = send_chatbot_message(chatbot, '我问了你什么问题？', conversation=conversation)
+
+        self.assertEqual(first_answer, '第一轮回复')
+        self.assertEqual(second_answer, '第二轮回复')
+        self.assertEqual(len(DummyThirdPartyClient.calls), 3)
+        self.assertTrue(DummyThirdPartyClient.calls[0]['url'].endswith('/chat/open'))
+        self.assertTrue(DummyThirdPartyClient.calls[1]['url'].endswith('/application/chat_message/third-party-chat'))
+        self.assertTrue(DummyThirdPartyClient.calls[2]['url'].endswith('/application/chat_message/third-party-chat'))
+        conversation.refresh_from_db()
+        self.assertIn('third-party-chat', str(conversation.external_session))
 
     def test_scheme_b_draft_test_uses_streaming_when_enabled(self):
         self.client.force_authenticate(self.superuser)
@@ -545,13 +578,81 @@ class ThirdPartyChatbotApiTests(TenantTestMixin, APITestCase):
             httpx.Response(200, json={'code': 1, 'data': {'sessionId': 'session-2', 'answer': '运行时 FlowMesh 回复'}}),
         ]
 
-        with patch('apps.ai_models.services.third_party_chatbots.httpx.Client', return_value=DummyThirdPartyClient(responses)):
+        with (
+            patch('apps.ai_models.services.third_party_chatbots.httpx.Client', return_value=DummyThirdPartyClient(responses)),
+            self.assertLogs('apps.ai_models.services.third_party_chatbots', level='INFO') as logs,
+        ):
             answer = send_chatbot_message(chatbot, '介绍一下', conversation=conversation)
 
         self.assertEqual(answer, '运行时 FlowMesh 回复')
-        self.assertEqual(DummyThirdPartyClient.calls[0]['kwargs']['json'], {'query': '介绍一下'})
+        joined_logs = '\n'.join(logs.output)
+        self.assertIn('[THIRD-PARTY-SESSION-DIAG]', joined_logs)
+        self.assertIn('第三方会话机器人名称：FlowMesh 助手', joined_logs)
+        self.assertIn('用户的问题：介绍一下', joined_logs)
+        self.assertIn('变量名称：sessionId', joined_logs)
+        self.assertIn('会话ID：session-2', joined_logs)
+        self.assertEqual(DummyThirdPartyClient.calls[0]['kwargs']['json'], {'query': '介绍一下', 'sessionId': None})
         conversation.refresh_from_db()
         self.assertIn('session-2', str(conversation.external_session))
+
+    def test_runtime_reuses_scheme_b_third_party_session_id(self):
+        from apps.ai_models.models import ChatConversation
+        from apps.ai_models.services.third_party_chatbots import send_chatbot_message
+
+        self.client.force_authenticate(self.superuser)
+        create_response = self.client.post(
+            '/api/v1/settings/third-party-chatbots/integrations/',
+            self.scheme_b_payload(),
+            format='json',
+        )
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        chatbot = self.chatbot_model().objects.get(pk=create_response.data['chatbotId'])
+        conversation = ChatConversation.objects.create(user=self.tenant_user, tenant=self.tenant, third_party_chatbot=chatbot)
+        DummyThirdPartyClient.calls = []
+        responses = [
+            httpx.Response(200, json={'code': 1, 'data': {'sessionId': 'third-party-session', 'answer': '第一轮 FlowMesh 回复'}}),
+            httpx.Response(200, json={'code': 1, 'data': {'sessionId': 'third-party-session', 'answer': '第二轮 FlowMesh 回复'}}),
+        ]
+
+        with patch('apps.ai_models.services.third_party_chatbots.httpx.Client', return_value=DummyThirdPartyClient(responses)):
+            first_answer = send_chatbot_message(chatbot, '一句话介绍你自己。', conversation=conversation)
+            second_answer = send_chatbot_message(chatbot, '我问了你什么问题？', conversation=conversation)
+
+        self.assertEqual(first_answer, '第一轮 FlowMesh 回复')
+        self.assertEqual(second_answer, '第二轮 FlowMesh 回复')
+        self.assertEqual(DummyThirdPartyClient.calls[0]['kwargs']['json'], {'query': '一句话介绍你自己。', 'sessionId': None})
+        self.assertEqual(DummyThirdPartyClient.calls[1]['kwargs']['json'], {'query': '我问了你什么问题？', 'sessionId': 'third-party-session'})
+        conversation.refresh_from_db()
+        self.assertIn('third-party-session', str(conversation.external_session))
+
+    def test_runtime_reuses_scheme_b_legacy_null_session_body(self):
+        from apps.ai_models.models import ChatConversation
+        from apps.ai_models.services.third_party_chatbots import send_chatbot_message
+
+        self.client.force_authenticate(self.superuser)
+        payload = self.scheme_b_payload()
+        payload['config']['steps'][0]['body']['sessionId'] = None
+        payload['config']['steps'][0].pop('nullWhenMissingVariables', None)
+        create_response = self.client.post(
+            '/api/v1/settings/third-party-chatbots/integrations/',
+            payload,
+            format='json',
+        )
+        self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
+        chatbot = self.chatbot_model().objects.get(pk=create_response.data['chatbotId'])
+        conversation = ChatConversation.objects.create(user=self.tenant_user, tenant=self.tenant, third_party_chatbot=chatbot)
+        DummyThirdPartyClient.calls = []
+        responses = [
+            httpx.Response(200, json={'code': 1, 'data': {'sessionId': 'legacy-session', 'answer': '第一轮回复'}}),
+            httpx.Response(200, json={'code': 1, 'data': {'sessionId': 'legacy-session', 'answer': '第二轮回复'}}),
+        ]
+
+        with patch('apps.ai_models.services.third_party_chatbots.httpx.Client', return_value=DummyThirdPartyClient(responses)):
+            send_chatbot_message(chatbot, '第一问', conversation=conversation)
+            send_chatbot_message(chatbot, '第二问', conversation=conversation)
+
+        self.assertEqual(DummyThirdPartyClient.calls[0]['kwargs']['json'], {'query': '第一问', 'sessionId': None})
+        self.assertEqual(DummyThirdPartyClient.calls[1]['kwargs']['json'], {'query': '第二问', 'sessionId': 'legacy-session'})
 
 
     def test_scheme_b_streaming_config_masks_and_preserves_sensitive_values(self):

@@ -17,7 +17,7 @@ from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import AgentAnnotation, AgentApplication, LLMModel, LLMProvider, TenantLLMModelGrant, TenantLLMSettings, TTSProvider, TTSVoice
+from apps.ai_models.models import AgentAnnotation, AgentApplication, ChatConversation, LLMModel, LLMProvider, TenantLLMModelGrant, TenantLLMSettings, TTSProvider, TTSVoice
 from apps.devices.models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup, WakeWord
 from apps.devices.services.authorization import record_device_authorization_action
 from apps.devices.services.queries import device_authorization_requests_queryset
@@ -975,6 +975,52 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['answerBlocks'], [{'type': 'text', 'text': '第三方机器人回答'}])
         self.assertNotIn('chat_id', str(response.data))
         send_chatbot_message.assert_called_once()
+
+    def test_device_voice_chat_third_party_backend_reuses_runtime_conversation(self):
+        chatbot = self.create_third_party_chatbot()
+        self.agent_application.runtime_backend_type = 'third_party_chatbot'
+        self.agent_application.third_party_chatbot = chatbot
+        self.agent_application.save(update_fields=['runtime_backend_type', 'third_party_chatbot', 'updated_at'])
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Third-party Voice Device',
+            code='ANDROID-THIRD-PARTY-VOICE-002',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        conversations = []
+
+        def fake_send_chatbot_message(*args, **kwargs):
+            conversations.append(kwargs.get('conversation'))
+            return '第三方机器人回答'
+
+        with patch('apps.devices.views.third_party_chatbots.send_chatbot_message', fake_send_chatbot_message):
+            first_response = self.client.post(
+                '/api/v1/device/voice-chat',
+                {'text': '一句话介绍你自己。'},
+                format='json',
+                HTTP_X_DEVICE_CODE='ANDROID-THIRD-PARTY-VOICE-002',
+            )
+            returned_session_id = first_response.data.get('sessionId')
+            second_response = self.client.post(
+                '/api/v1/device/voice-chat',
+                {'text': '我问了你什么问题？', 'sessionId': returned_session_id},
+                format='json',
+                HTTP_X_DEVICE_CODE='ANDROID-THIRD-PARTY-VOICE-002',
+            )
+
+        self.assertEqual(first_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(second_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(second_response.data['sessionId'], returned_session_id)
+        self.assertEqual(len(conversations), 2)
+        self.assertIsNotNone(conversations[0])
+        self.assertEqual(conversations[0].id, conversations[1].id)
+        conversation = ChatConversation.objects.get(pk=conversations[0].id)
+        self.assertEqual(conversation.external_session.get('runtimeSessionId'), returned_session_id)
+        self.assertEqual(conversation.third_party_chatbot_id, chatbot.id)
 
     def test_device_voice_chat_uses_published_agent_knowledge_base(self):
         provider = LLMProvider.objects.create(

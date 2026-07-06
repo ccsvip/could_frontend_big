@@ -58,6 +58,16 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'apps.ai_models.services.third_party_chatbots': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'drf_spectacular': {
+            'handlers': ['console'],
+            'level': 'CRITICAL',
+            'propagate': False,
+        },
     },
 }
 

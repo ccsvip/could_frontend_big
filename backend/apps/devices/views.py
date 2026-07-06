@@ -20,7 +20,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from apps.accounts.permissions import CanCreateDevices, CanDeleteDevices, CanUpdateDevices, CanViewDevices, IsSuperUser
 from apps.ai_models import llm_services
-from apps.ai_models.models import AgentAnnotation, LLMModel, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, ThirdPartyChatbotApplication
+from apps.ai_models.models import AgentAnnotation, ChatConversation, LLMModel, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, ThirdPartyChatbotApplication
 from apps.ai_models.services.annotations import find_matching_annotation, find_matching_published_annotation
 from apps.ai_models.services.reply_blocks import blocks_to_text, serialize_published_annotation_blocks, serialize_reply_blocks, text_to_blocks
 from apps.ai_models.services import asr as asr_services
@@ -971,7 +971,14 @@ class DeviceVoiceChatView(DeviceRuntimeView):
                 chatbot = agent_application.third_party_chatbot
             if not third_party_chatbots.is_chatbot_effective_for_tenant(device.tenant, chatbot):
                 raise RuntimeError('请先为设备绑定智能体配置可用第三方会话机器人')
-            answer_text = third_party_chatbots.send_chatbot_message(chatbot, question_text)
+            conversation = DeviceVoiceChatView._resolve_third_party_conversation(
+                device,
+                agent_application,
+                chatbot,
+                runtime_config,
+                session_id,
+            )
+            answer_text = third_party_chatbots.send_chatbot_message(chatbot, question_text, conversation=conversation)
             return answer_text, serialize_reply_blocks(text_to_blocks(answer_text), tenant=device.tenant)
 
         model = None
@@ -1027,6 +1034,55 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             tenant=device.tenant,
             request=request,
         )
+
+    @staticmethod
+    def _resolve_third_party_conversation(device: Device, agent_application, chatbot, runtime_config: dict, session_id: str | None):
+        if not session_id:
+            return None
+        conversation = (
+            ChatConversation.objects
+            .select_related('third_party_chatbot__provider', 'application')
+            .filter(
+                tenant=device.tenant,
+                application=agent_application,
+                external_session__runtimeSessionId=session_id,
+            )
+            .first()
+        )
+        if conversation is not None:
+            return conversation
+
+        user = DeviceVoiceChatView._runtime_conversation_user(agent_application, device.tenant)
+        return ChatConversation.objects.create(
+            title=f'{runtime_config.get("name") or agent_application.name} 语音会话',
+            user=user,
+            runtime_backend_type=RUNTIME_BACKEND_THIRD_PARTY_CHATBOT,
+            third_party_chatbot=chatbot,
+            external_session={'runtimeSessionId': session_id},
+            summary='',
+            system_prompt=runtime_config.get('system_prompt') or '',
+            temperature=runtime_config.get('temperature', 0.7),
+            max_tokens=runtime_config.get('max_tokens', 1000),
+            max_tokens_unlimited=runtime_config.get('max_tokens_unlimited', False),
+            application=agent_application,
+            tenant=device.tenant,
+        )
+
+    @staticmethod
+    def _runtime_conversation_user(agent_application, tenant):
+        if getattr(agent_application, 'created_by_id', None):
+            return agent_application.created_by
+
+        from django.contrib.auth import get_user_model
+
+        User = get_user_model()
+        user = User.objects.filter(membership__tenant=tenant).order_by('-membership__is_tenant_admin', 'id').first()
+        if user is not None:
+            return user
+
+        username = f'runtime_tenant_{tenant.id}'
+        user, _ = User.objects.get_or_create(username=username, defaults={'is_active': False})
+        return user
 
     @staticmethod
     def _find_annotation(agent_application, question_text: str):
