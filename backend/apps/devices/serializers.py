@@ -354,22 +354,27 @@ class WakeWordSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('唤醒词必须为 4-6 个汉字（含“你好”）')
         if not all('\u4e00' <= char <= '\u9fff' for char in text):
             raise serializers.ValidationError('唤醒词只能包含汉字')
-        tenant = _tenant_from_context(self)
-        queryset = WakeWord.objects.filter(tenant=tenant, text=text)
-        if self.instance is not None:
-            queryset = queryset.exclude(pk=self.instance.pk)
-        if queryset.exists():
-            raise serializers.ValidationError('同一公司内唤醒词不能重复')
         return text
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
         tenant = _tenant_from_context(self)
-        devices = attrs.get('devices')
-        if devices is not None:
-            invalid = [device for device in devices if device.tenant_id != getattr(tenant, 'id', None)]
+        submitted_devices = attrs.get('devices')
+        if submitted_devices is not None:
+            invalid = [device for device in submitted_devices if device.tenant_id != getattr(tenant, 'id', None)]
             if invalid:
                 raise serializers.ValidationError({'deviceIds': '只能绑定同公司的设备'})
+
+        text = attrs.get('text', getattr(self.instance, 'text', None))
+        devices = submitted_devices
+        if devices is None and self.instance is not None and 'text' in attrs:
+            devices = list(self.instance.devices.all())
+        if text and devices:
+            queryset = WakeWord.objects.filter(tenant=tenant, text=text, devices__in=devices)
+            if self.instance is not None:
+                queryset = queryset.exclude(pk=self.instance.pk)
+            if queryset.exists():
+                raise serializers.ValidationError({'deviceIds': '同一设备内唤醒词不能重复'})
         return attrs
 
     def _encode_text(self, text: str) -> str:

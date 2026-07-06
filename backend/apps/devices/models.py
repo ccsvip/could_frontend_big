@@ -210,10 +210,6 @@ class WakeWord(models.Model):
         ordering = ['text', 'id']
         verbose_name = '唤醒词'
         verbose_name_plural = '唤醒词'
-        constraints = [
-            models.UniqueConstraint(fields=['tenant', 'text'], name='unique_wake_word_text_per_tenant'),
-        ]
-
     def __str__(self) -> str:
         return self.text
 

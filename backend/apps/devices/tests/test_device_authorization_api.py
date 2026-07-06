@@ -213,16 +213,60 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(list(wake_word.devices.values_list('id', flat=True)), [device.id])
 
     @patch('apps.devices.serializers.encode_wake_word_text', return_value='n ǐ h ǎo x iǎo d é')
-    def test_wake_word_rejects_invalid_text_and_duplicate_in_same_tenant(self, _mock_encode):
+    def test_wake_word_allows_same_text_for_different_devices_in_same_tenant(self, _mock_encode):
         invalid_response = self.client.post('/api/v1/wake-words/', {'text': '小德你好'}, format='json')
         self.assertEqual(invalid_response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('你好', str(invalid_response.data))
 
-        first_response = self.client.post('/api/v1/wake-words/', {'text': '你好小德'}, format='json')
+        first_device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            code='WAKE-DUP-DEVICE-001',
+            name='Wake Duplicate Device 1',
+        )
+        second_device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            code='WAKE-DUP-DEVICE-002',
+            name='Wake Duplicate Device 2',
+        )
+
+        first_response = self.client.post(
+            '/api/v1/wake-words/',
+            {'text': '你好小德', 'deviceIds': [first_device.id]},
+            format='json',
+        )
         self.assertEqual(first_response.status_code, status.HTTP_201_CREATED)
-        duplicate_response = self.client.post('/api/v1/wake-words/', {'text': '你好小德'}, format='json')
-        self.assertEqual(duplicate_response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('不能重复', str(duplicate_response.data))
+        duplicate_for_other_device_response = self.client.post(
+            '/api/v1/wake-words/',
+            {'text': '你好小德', 'deviceIds': [second_device.id]},
+            format='json',
+        )
+        self.assertEqual(duplicate_for_other_device_response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(WakeWord.objects.filter(tenant=self.tenant, text='你好小德').count(), 2)
+
+    @patch('apps.devices.serializers.encode_wake_word_text', return_value='n ǐ h ǎo x iǎo d é')
+    def test_wake_word_rejects_duplicate_text_on_same_device(self, _mock_encode):
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            code='WAKE-DUP-SAME-DEVICE-001',
+            name='Wake Duplicate Same Device',
+        )
+
+        first_response = self.client.post(
+            '/api/v1/wake-words/',
+            {'text': '你好小德', 'deviceIds': [device.id]},
+            format='json',
+        )
+        self.assertEqual(first_response.status_code, status.HTTP_201_CREATED)
+        duplicate_for_same_device_response = self.client.post(
+            '/api/v1/wake-words/',
+            {'text': '你好小德', 'deviceIds': [device.id]},
+            format='json',
+        )
+        self.assertEqual(duplicate_for_same_device_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('同一设备内唤醒词不能重复', str(duplicate_for_same_device_response.data))
 
     @patch('apps.devices.serializers.encode_wake_word_text', return_value='n ǐ h ǎo x iǎo d é')
     def test_wake_word_rejects_cross_tenant_device_binding(self, _mock_encode):
