@@ -72,6 +72,39 @@ class OneShotTTSUpstream:
             raise StopAsyncIteration
 
 
+class ErrorTTSUpstream:
+    def __init__(self):
+        self.messages = []
+        self._events = iter([
+            json.dumps({
+                'event_id': 'event_error_1',
+                'type': 'error',
+                'error': {
+                    'code': 'rate_limit_exceeded',
+                    'message': 'Too many characters in realtime TTS request.',
+                },
+            }),
+        ])
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+    async def send(self, message):
+        self.messages.append(json.loads(message))
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        try:
+            return next(self._events)
+        except StopIteration:
+            raise StopAsyncIteration
+
+
 class TTSRealtimeTests(TenantTestMixin, TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='tts-ws-user', password='test123456')
@@ -175,6 +208,72 @@ class TTSRealtimeTests(TenantTestMixin, TestCase):
         sent_types = [message.get('type') for message in upstream.messages]
         self.assertIn('input_text_buffer.append', sent_types)
         self.assertIn('session.finish', sent_types)
+
+    def test_tts_realtime_logs_upstream_error_details(self):
+        self.grant_permissions('ai_models.tts.view')
+        token = str(RefreshToken.for_user(self.user).access_token)
+
+        config = SimpleNamespace(
+            is_active=True,
+            api_key='test-api-key',
+            base_url='wss://tts.example/realtime',
+            model='qwen3-tts-flash-realtime',
+            sample_rate=24000,
+            default_test_text='默认测试文本',
+        )
+        upstream = ErrorTTSUpstream()
+
+        async def run_websocket():
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            response = await communicator.receive_output(timeout=1)
+            self.assertEqual(response, {'type': 'websocket.accept'})
+
+            with (
+                patch(
+                    'apps.ai_models.realtime_tts.resolve_tts_realtime_connection',
+                    return_value={'user_id': self.user.id, 'tenant_id': self.tenant.id, 'is_superuser': False},
+                ),
+                patch('apps.ai_models.realtime_tts.get_effective_tts_config', return_value=config),
+                patch('apps.ai_models.realtime_tts.is_tts_configured', return_value=True),
+                patch('apps.ai_models.realtime_tts.build_tts_ws_url', return_value='wss://tts.example/realtime?model=test'),
+                patch('apps.ai_models.realtime_tts.websockets.connect', return_value=upstream),
+            ):
+                with self.assertLogs('apps.ai_models.realtime_tts', level='ERROR') as logs:
+                    await communicator.send_input({
+                        'type': 'websocket.receive',
+                        'text': json.dumps({
+                            'type': 'tts.session.start',
+                            'id': 'tts-error-1',
+                            'payload': {'token': token, 'text': '很长的测试文本', 'voiceId': self.voice.id},
+                        }),
+                    })
+                    ready = await communicator.receive_output(timeout=1)
+                    self.assertEqual(json.loads(ready['text'])['type'], 'tts.ready')
+                    error = await communicator.receive_output(timeout=1)
+                    payload = json.loads(error['text'])
+                    self.assertEqual(payload['type'], 'tts.error')
+                    self.assertIn('Too many characters', payload['message'])
+
+                combined_logs = '\n'.join(logs.output)
+                self.assertIn('tts.realtime.upstream_error', combined_logs)
+                self.assertIn('rate_limit_exceeded', combined_logs)
+                self.assertIn('Too many characters', combined_logs)
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
 
     def test_tts_realtime_allows_superuser_without_tenant_permission(self):
         from apps.ai_models.realtime_tts import resolve_tts_realtime_connection

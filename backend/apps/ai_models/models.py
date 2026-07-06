@@ -661,7 +661,7 @@ class AgentApplication(models.Model):
     suggested_questions = models.JSONField('建议问题', blank=True, default=list)
     voice_input_enabled = models.BooleanField('是否启用语音输入', default=False)
     reply_playback_enabled = models.BooleanField('是否自动播报回复', default=False)
-    tts_filter_punctuation = models.CharField('TTS 过滤标点', max_length=64, blank=True, default='。！？!?；;、')
+    tts_filter_punctuation = models.CharField('TTS 过滤标点', max_length=64, blank=True, default='。！？!?；;、-')
     tts_filter_emoji = models.BooleanField('TTS 过滤表情', default=True)
     tts_filter_exclude_patterns = models.JSONField('TTS 排除文本', blank=True, default=list)
     knowledge_documents = models.ManyToManyField(

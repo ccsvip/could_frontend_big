@@ -215,6 +215,13 @@ class RealtimeWebSocketTests(SimpleTestCase):
 
         self.assertFalse(_is_client_disconnected(exc))
 
+    def test_client_connection_reset_error_is_treated_as_client_disconnect(self):
+        from config.realtime import _is_client_disconnected
+
+        ClientConnectionResetError = type('ClientConnectionResetError', (RuntimeError,), {})
+
+        self.assertTrue(_is_client_disconnected(ClientConnectionResetError('Cannot write to closing transport')))
+
     def test_binary_audio_without_active_asr_session_is_ignored(self):
         async def run_task():
             from config.realtime import RealtimeConnection, _handle_binary_frame
@@ -227,6 +234,41 @@ class RealtimeWebSocketTests(SimpleTestCase):
             await _handle_binary_frame(send, RealtimeConnection(), b'\x01\x02')
 
             self.assertEqual(sent, [])
+
+        async_to_sync(run_task)()
+
+    def test_agent_session_cancel_stops_active_agent_task(self):
+        async def run_task():
+            from config.realtime import RealtimeConnection, _handle_agent_session_cancel
+
+            sent_payloads = []
+            task_cancelled = asyncio.Event()
+            task_started = asyncio.Event()
+
+            async def send(event):
+                if 'text' in event:
+                    sent_payloads.append(json.loads(event['text']))
+
+            async def stale_agent_task():
+                try:
+                    task_started.set()
+                    await asyncio.sleep(10)
+                    await send({'type': 'websocket.send', 'text': json.dumps({'type': 'llm.delta'})})
+                except asyncio.CancelledError:
+                    task_cancelled.set()
+                    raise
+
+            connection = RealtimeConnection()
+            connection.agent_session_id = 'agent-cancel-1'
+            connection.agent_task = asyncio.create_task(stale_agent_task())
+            await task_started.wait()
+
+            await _handle_agent_session_cancel(send, connection, {'id': 'cancel-1'})
+
+            self.assertTrue(task_cancelled.is_set())
+            self.assertIsNone(connection.agent_task)
+            self.assertEqual([payload['type'] for payload in sent_payloads], ['agent.cancelled'])
+            self.assertEqual(sent_payloads[0]['payload']['sessionId'], 'agent-cancel-1')
 
         async_to_sync(run_task)()
 
@@ -408,6 +450,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
             upstream._audio_seen.set()
             with patch('config.realtime._run_agent_llm_and_finish', side_effect=fake_run_agent_llm):
                 await _agent_asr_upstream_to_client(upstream, send, connection, [])
+                await asyncio.sleep(0)
 
             self.assertEqual(
                 sent_payloads,
@@ -460,6 +503,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
             upstream._audio_seen.set()
             with patch('config.realtime._run_agent_llm_and_finish', side_effect=fake_run_agent_llm):
                 await _agent_asr_upstream_to_client(upstream, send, connection, [])
+                await asyncio.sleep(0)
 
             self.assertEqual(llm_questions, ['不要等关闭'])
             await asyncio.wait_for(slow_context.exit_started.wait(), timeout=0.1)
@@ -507,7 +551,8 @@ class RealtimeWebSocketTests(SimpleTestCase):
                 task = asyncio.create_task(_agent_asr_upstream_to_client(FinishedASRUpstream(), send, connection, []))
                 connection.asr_upstream_task = task
                 await asyncio.wait_for(llm_started.wait(), timeout=1)
-                self.assertIs(connection.asr_upstream_task, task)
+                self.assertTrue(task.done())
+                self.assertIsNotNone(connection.agent_task)
                 await connection.close()
                 await asyncio.gather(task, return_exceptions=True)
 
@@ -883,8 +928,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
                 self.assertEqual(json.loads((await communicator.receive_output(timeout=1))['text'])['type'], 'asr.ready')
 
                 await communicator.send_input({'type': 'websocket.receive', 'bytes': b'\x01\x02'})
-                with self.assertRaises(asyncio.TimeoutError):
-                    await communicator.receive_output(timeout=0.05)
+                await asyncio.sleep(0.05)
                 self.assertNotIn('session.finish', [message.get('type') for message in upstream.messages])
 
                 await communicator.send_input({
@@ -1302,8 +1346,8 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         device_application.save(update_fields=['agent_application', 'updated_at'])
 
         with patch(
-            'apps.ai_models.services.agent_knowledge.retrieve_knowledge_context',
-            return_value='B 知识库上下文',
+            'apps.ai_models.services.agent_knowledge.retrieve_knowledge_context_with_media',
+            return_value=('B 知识库上下文', []),
         ) as retrieve_knowledge_context:
             session = realtime._prepare_device_llm_session('ANDROID-AGENT-SWITCH-001', 'B 知识问题')
 

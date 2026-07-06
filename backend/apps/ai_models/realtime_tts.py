@@ -3,10 +3,13 @@ from __future__ import annotations
 import asyncio
 import base64
 import json
+import logging
+import time
 from typing import Any, AsyncIterable
 
 import websockets
 from django.conf import settings
+from websockets.exceptions import ConnectionClosed
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.accounts.services.permissions import get_active_permission_codes_for_user
@@ -30,6 +33,8 @@ from .services.tts import (
     _text_append_event,
     _text_commit_event,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def resolve_tts_realtime_connection(token: str, *, query_params: dict[str, list[str]] | None = None) -> dict[str, Any] | None:
@@ -138,69 +143,101 @@ async def _stream_tts_audio(
     session_config: dict | None = None,
     exclude_patterns: list[str] | tuple[str, ...] | None = None,
 ) -> None:
+    stats = _new_tts_stream_stats('single')
     session_event = _session_update_event(config, voice, session_config)
     tts_session = session_event['session']
-    async with websockets.connect(
-        build_tts_ws_url(config, tts_session.get('model')),
-        additional_headers=[
-            ('Authorization', f'Bearer {config.api_key}'),
-            ('OpenAI-Beta', 'realtime=v1'),
-        ],
-        user_agent_header='solin-admin/1.0',
-        **_tts_ws_connect_options(),
-    ) as upstream:
-        await upstream.send(json.dumps({
-            'event_id': 'event_tts_session_update',
-            'type': 'session.update',
-            'session': tts_session,
-        }))
-        await send({
-            'type': 'websocket.send',
-            'text': json.dumps({
-                'type': 'tts.ready',
-                'sampleRate': tts_session.get('sample_rate') or config.sample_rate,
-                'responseFormat': tts_session.get('response_format') or 'pcm',
-                'voice': voice.voice_code,
-            }),
-        })
-        for chunk in split_tts_text(text, exclude_patterns=exclude_patterns):
-            await upstream.send(json.dumps(_text_append_event(chunk)))
-            await asyncio.sleep(0)
-        await upstream.send(json.dumps(_text_commit_event()))
-        await upstream.send(json.dumps(_session_finish_event()))
+    ws_url = build_tts_ws_url(config, tts_session.get('model'))
+    connect_options = _tts_ws_connect_options()
+    logger.info(
+        'tts.realtime.connecting mode=single model=%s voice=%s sample_rate=%s text_chars=%s options=%s',
+        tts_session.get('model'),
+        voice.voice_code,
+        tts_session.get('sample_rate') or config.sample_rate,
+        len(text or ''),
+        connect_options,
+    )
+    try:
+        async with websockets.connect(
+            ws_url,
+            additional_headers=[
+                ('Authorization', f'Bearer {config.api_key}'),
+                ('OpenAI-Beta', 'realtime=v1'),
+            ],
+            user_agent_header='solin-admin/1.0',
+            **connect_options,
+        ) as upstream:
+            logger.info('tts.realtime.connected %s', _tts_stats_summary(stats))
+            await upstream.send(json.dumps({
+                'event_id': 'event_tts_session_update',
+                'type': 'session.update',
+                'session': tts_session,
+            }))
+            await send({
+                'type': 'websocket.send',
+                'text': json.dumps({
+                    'type': 'tts.ready',
+                    'sampleRate': tts_session.get('sample_rate') or config.sample_rate,
+                    'responseFormat': tts_session.get('response_format') or 'pcm',
+                    'voice': voice.voice_code,
+                }),
+            })
+            chunks = split_tts_text(text, exclude_patterns=exclude_patterns)
+            stats['segments'] = 1 if text else 0
+            stats['chunks'] = len(chunks)
+            stats['text_chars'] = len(text or '')
+            logger.info('tts.realtime.text_prepared mode=single chunks=%s text_chars=%s %s', len(chunks), len(text or ''), _tts_stats_summary(stats))
+            for chunk in chunks:
+                await upstream.send(json.dumps(_text_append_event(chunk)))
+                await asyncio.sleep(0)
+            await upstream.send(json.dumps(_text_commit_event()))
+            await upstream.send(json.dumps(_session_finish_event()))
 
-        active_segment_index = 1 if text else None
-        active_segment_started = False
+            active_segment_index = 1 if text else None
+            active_segment_started = False
 
-        async for raw_message in upstream:
-            try:
-                event = json.loads(raw_message)
-            except (TypeError, json.JSONDecodeError):
-                continue
-            if not isinstance(event, dict):
-                continue
+            async for raw_message in upstream:
+                try:
+                    event = json.loads(raw_message)
+                except (TypeError, json.JSONDecodeError):
+                    logger.warning('tts.realtime.invalid_event raw_type=%s %s', type(raw_message).__name__, _tts_stats_summary(stats))
+                    continue
+                if not isinstance(event, dict):
+                    continue
 
-            event_type = str(event.get('type') or '')
-            if event_type == 'response.audio.delta':
-                delta = event.get('delta')
-                if isinstance(delta, str) and delta:
-                    if active_segment_index is not None and not active_segment_started:
-                        await _send_tts_segment_start(send, active_segment_index, text)
-                        active_segment_started = True
-                    await send({'type': 'websocket.send', 'bytes': base64.b64decode(delta)})
-                continue
-            if event_type in {'error', 'session.error'}:
-                raise RuntimeError(_extract_upstream_error_message(event))
-            if event_type in {'response.audio.done', 'response.output_audio.done', 'response.done'}:
-                if active_segment_index is not None and active_segment_started:
-                    await _send_tts_segment_end(send, active_segment_index)
-                    active_segment_index = None
-                continue
-            if event_type == 'session.finished':
-                if active_segment_index is not None and active_segment_started:
-                    await _send_tts_segment_end(send, active_segment_index)
-                await send({'type': 'websocket.send', 'text': json.dumps({'type': 'tts.done'})})
-                return
+                event_type = str(event.get('type') or '')
+                _record_tts_event(stats, event_type)
+                if event_type == 'response.audio.delta':
+                    delta = event.get('delta')
+                    if isinstance(delta, str) and delta:
+                        if active_segment_index is not None and not active_segment_started:
+                            await _send_tts_segment_start(send, active_segment_index, text)
+                            active_segment_started = True
+                        audio = base64.b64decode(delta)
+                        _record_tts_audio(stats, len(audio))
+                        await send({'type': 'websocket.send', 'bytes': audio})
+                    continue
+                if event_type in {'error', 'session.error'}:
+                    logger.error('tts.realtime.upstream_error error=%s event=%s %s', _extract_upstream_error_message(event), _safe_tts_event(event), _tts_stats_summary(stats))
+                    raise RuntimeError(_extract_upstream_error_message(event))
+                if event_type in {'response.audio.done', 'response.output_audio.done', 'response.done'}:
+                    if active_segment_index is not None and active_segment_started:
+                        await _send_tts_segment_end(send, active_segment_index)
+                        active_segment_index = None
+                    logger.info('tts.realtime.upstream_event type=%s %s', event_type, _tts_stats_summary(stats))
+                    continue
+                if event_type == 'session.finished':
+                    if active_segment_index is not None and active_segment_started:
+                        await _send_tts_segment_end(send, active_segment_index)
+                    await send({'type': 'websocket.send', 'text': json.dumps({'type': 'tts.done'})})
+                    logger.info('tts.realtime.finished %s', _tts_stats_summary(stats))
+                    return
+            logger.warning('tts.realtime.upstream_ended_without_session_finished %s', _tts_stats_summary(stats))
+    except ConnectionClosed as exc:
+        logger.error('tts.realtime.connection_closed code=%s reason=%s %s', getattr(exc, 'code', None), getattr(exc, 'reason', None), _tts_stats_summary(stats))
+        raise
+    except Exception:
+        logger.exception('tts.realtime.failed %s', _tts_stats_summary(stats))
+        raise
 
 
 async def _stream_tts_segments_audio(
@@ -212,65 +249,93 @@ async def _stream_tts_segments_audio(
     session_config: dict | None = None,
     exclude_patterns: list[str] | tuple[str, ...] | None = None,
 ) -> None:
+    stats = _new_tts_stream_stats('segments')
     session_event = _session_update_event(config, voice, session_config)
     tts_session = session_event['session']
-    async with websockets.connect(
-        build_tts_ws_url(config, tts_session.get('model')),
-        additional_headers=[
-            ('Authorization', f'Bearer {config.api_key}'),
-            ('OpenAI-Beta', 'realtime=v1'),
-        ],
-        user_agent_header='solin-admin/1.0',
-        **_tts_ws_connect_options(),
-    ) as upstream:
-        await upstream.send(json.dumps({
-            'event_id': 'event_tts_session_update',
-            'type': 'session.update',
-            'session': tts_session,
-        }))
-        await send({
-            'type': 'websocket.send',
-            'text': json.dumps({
-                'type': 'tts.ready',
-                'sampleRate': tts_session.get('sample_rate') or config.sample_rate,
-                'responseFormat': tts_session.get('response_format') or 'pcm',
-                'voice': voice.voice_code,
-            }),
-        })
+    ws_url = build_tts_ws_url(config, tts_session.get('model'))
+    connect_options = _tts_ws_connect_options()
+    logger.info(
+        'tts.realtime.connecting mode=segments model=%s voice=%s sample_rate=%s options=%s',
+        tts_session.get('model'),
+        voice.voice_code,
+        tts_session.get('sample_rate') or config.sample_rate,
+        connect_options,
+    )
+    try:
+        async with websockets.connect(
+            ws_url,
+            additional_headers=[
+                ('Authorization', f'Bearer {config.api_key}'),
+                ('OpenAI-Beta', 'realtime=v1'),
+            ],
+            user_agent_header='solin-admin/1.0',
+            **connect_options,
+        ) as upstream:
+            logger.info('tts.realtime.connected %s', _tts_stats_summary(stats))
+            await upstream.send(json.dumps({
+                'event_id': 'event_tts_session_update',
+                'type': 'session.update',
+                'session': tts_session,
+            }))
+            await send({
+                'type': 'websocket.send',
+                'text': json.dumps({
+                    'type': 'tts.ready',
+                    'sampleRate': tts_session.get('sample_rate') or config.sample_rate,
+                    'responseFormat': tts_session.get('response_format') or 'pcm',
+                    'voice': voice.voice_code,
+                }),
+            })
 
-        segment_queue: asyncio.Queue[dict[str, Any] | None] = asyncio.Queue()
-        reader_task = asyncio.create_task(_forward_tts_upstream_audio(upstream, send, segment_queue=segment_queue))
-        try:
-            segment_index = 0
-            async for segment in segments:
-                text = normalize_tts_text(segment, config)
-                if not text:
-                    continue
-                chunks = split_tts_text(text, exclude_patterns=exclude_patterns)
-                if not chunks:
-                    continue
-                segment_index += 1
-                await segment_queue.put({'index': segment_index, 'text': text})
-                for chunk in chunks:
-                    await upstream.send(json.dumps(_text_append_event(chunk)))
+            segment_queue: asyncio.Queue[dict[str, Any] | None] = asyncio.Queue()
+            reader_task = asyncio.create_task(_forward_tts_upstream_audio(upstream, send, segment_queue=segment_queue, stats=stats))
+            try:
+                segment_index = 0
+                async for segment in segments:
+                    text = normalize_tts_text(segment, config)
+                    if not text:
+                        continue
+                    chunks = split_tts_text(text, exclude_patterns=exclude_patterns)
+                    if not chunks:
+                        continue
+                    segment_index += 1
+                    stats['segments'] = segment_index
+                    stats['chunks'] += len(chunks)
+                    stats['text_chars'] += len(text)
+                    logger.info('tts.realtime.segment_prepared index=%s text_chars=%s chunks=%s %s', segment_index, len(text), len(chunks), _tts_stats_summary(stats))
+                    await segment_queue.put({'index': segment_index, 'text': text})
+                    for chunk_index, chunk in enumerate(chunks, start=1):
+                        await upstream.send(json.dumps(_text_append_event(chunk)))
+                        if chunk_index == 1 or chunk_index == len(chunks):
+                            logger.info('tts.realtime.text_chunk_sent segment=%s chunk=%s/%s chars=%s %s', segment_index, chunk_index, len(chunks), len(chunk), _tts_stats_summary(stats))
+                        await asyncio.sleep(0)
+                    await upstream.send(json.dumps(_text_commit_event()))
                     await asyncio.sleep(0)
-                await upstream.send(json.dumps(_text_commit_event()))
-                await asyncio.sleep(0)
 
-            await segment_queue.put(None)
-            await upstream.send(json.dumps(_session_finish_event()))
-            await reader_task
-        except asyncio.CancelledError:
-            reader_task.cancel()
-            await asyncio.gather(reader_task, return_exceptions=True)
-            raise
-        except Exception:
-            reader_task.cancel()
-            await asyncio.gather(reader_task, return_exceptions=True)
-            raise
+                await segment_queue.put(None)
+                await upstream.send(json.dumps(_session_finish_event()))
+                logger.info('tts.realtime.session_finish_sent %s', _tts_stats_summary(stats))
+                await reader_task
+            except asyncio.CancelledError:
+                logger.warning('tts.realtime.cancelled %s', _tts_stats_summary(stats))
+                reader_task.cancel()
+                await asyncio.gather(reader_task, return_exceptions=True)
+                raise
+            except Exception:
+                logger.exception('tts.realtime.stream_loop_failed %s', _tts_stats_summary(stats))
+                reader_task.cancel()
+                await asyncio.gather(reader_task, return_exceptions=True)
+                raise
+    except ConnectionClosed as exc:
+        logger.error('tts.realtime.connection_closed code=%s reason=%s %s', getattr(exc, 'code', None), getattr(exc, 'reason', None), _tts_stats_summary(stats))
+        raise
+    except Exception:
+        logger.exception('tts.realtime.failed %s', _tts_stats_summary(stats))
+        raise
 
 
-async def _forward_tts_upstream_audio(upstream, send, *, segment_queue: asyncio.Queue | None = None) -> None:
+async def _forward_tts_upstream_audio(upstream, send, *, segment_queue: asyncio.Queue | None = None, stats: dict[str, Any] | None = None) -> None:
+    stats = stats if stats is not None else _new_tts_stream_stats('forward')
     active_segment: dict[str, Any] | None = None
     segments_finished = False
 
@@ -292,30 +357,97 @@ async def _forward_tts_upstream_audio(upstream, send, *, segment_queue: asyncio.
         await _send_tts_segment_end(send, int(active_segment['index']))
         active_segment = None
 
-    async for raw_message in upstream:
-        try:
-            event = json.loads(raw_message)
-        except (TypeError, json.JSONDecodeError):
-            continue
-        if not isinstance(event, dict):
-            continue
+    try:
+        async for raw_message in upstream:
+            try:
+                event = json.loads(raw_message)
+            except (TypeError, json.JSONDecodeError):
+                logger.warning('tts.realtime.invalid_event raw_type=%s %s', type(raw_message).__name__, _tts_stats_summary(stats))
+                continue
+            if not isinstance(event, dict):
+                continue
 
-        event_type = str(event.get('type') or '')
-        if event_type == 'response.audio.delta':
-            delta = event.get('delta')
-            if isinstance(delta, str) and delta:
-                await ensure_segment_started()
-                await send({'type': 'websocket.send', 'bytes': base64.b64decode(delta)})
-            continue
-        if event_type in {'error', 'session.error'}:
-            raise RuntimeError(_extract_upstream_error_message(event))
-        if event_type in {'response.audio.done', 'response.output_audio.done', 'response.done'}:
-            await finish_active_segment()
-            continue
-        if event_type == 'session.finished':
-            await finish_active_segment()
-            await send({'type': 'websocket.send', 'text': json.dumps({'type': 'tts.done'})})
-            return
+            event_type = str(event.get('type') or '')
+            _record_tts_event(stats, event_type)
+            if event_type == 'response.audio.delta':
+                delta = event.get('delta')
+                if isinstance(delta, str) and delta:
+                    await ensure_segment_started()
+                    audio = base64.b64decode(delta)
+                    _record_tts_audio(stats, len(audio))
+                    await send({'type': 'websocket.send', 'bytes': audio})
+                continue
+            if event_type in {'error', 'session.error'}:
+                logger.error('tts.realtime.upstream_error error=%s event=%s %s', _extract_upstream_error_message(event), _safe_tts_event(event), _tts_stats_summary(stats))
+                raise RuntimeError(_extract_upstream_error_message(event))
+            if event_type in {'response.audio.done', 'response.output_audio.done', 'response.done'}:
+                await finish_active_segment()
+                logger.info('tts.realtime.upstream_event type=%s %s', event_type, _tts_stats_summary(stats))
+                continue
+            if event_type == 'session.finished':
+                await finish_active_segment()
+                await send({'type': 'websocket.send', 'text': json.dumps({'type': 'tts.done'})})
+                logger.info('tts.realtime.finished %s', _tts_stats_summary(stats))
+                return
+            if event_type and event_type != 'response.audio.delta':
+                logger.debug('tts.realtime.upstream_event type=%s %s', event_type, _tts_stats_summary(stats))
+        logger.warning('tts.realtime.upstream_ended_without_session_finished %s', _tts_stats_summary(stats))
+    except ConnectionClosed as exc:
+        logger.error('tts.realtime.reader_connection_closed code=%s reason=%s %s', getattr(exc, 'code', None), getattr(exc, 'reason', None), _tts_stats_summary(stats))
+        raise
+
+
+def _new_tts_stream_stats(mode: str) -> dict[str, Any]:
+    return {
+        'mode': mode,
+        'started_at': time.monotonic(),
+        'segments': 0,
+        'chunks': 0,
+        'text_chars': 0,
+        'audio_chunks': 0,
+        'audio_bytes': 0,
+        'last_event_type': None,
+        'response_done': False,
+        'session_finished': False,
+    }
+
+
+def _record_tts_event(stats: dict[str, Any], event_type: str) -> None:
+    stats['last_event_type'] = event_type
+    if event_type == 'response.done':
+        stats['response_done'] = True
+    elif event_type == 'session.finished':
+        stats['session_finished'] = True
+
+
+def _record_tts_audio(stats: dict[str, Any], byte_count: int) -> None:
+    stats['audio_chunks'] += 1
+    stats['audio_bytes'] += byte_count
+    if stats['audio_chunks'] in {1, 10} or stats['audio_chunks'] % 50 == 0:
+        logger.info('tts.realtime.audio_chunk chunk=%s bytes=%s %s', stats['audio_chunks'], byte_count, _tts_stats_summary(stats))
+
+
+def _tts_stats_summary(stats: dict[str, Any]) -> str:
+    elapsed = time.monotonic() - float(stats.get('started_at') or time.monotonic())
+    return (
+        f'mode={stats.get("mode")} '
+        f'elapsed={elapsed:.3f} '
+        f'segments={stats.get("segments")} '
+        f'chunks={stats.get("chunks")} '
+        f'text_chars={stats.get("text_chars")} '
+        f'audio_chunks={stats.get("audio_chunks")} '
+        f'audio_bytes={stats.get("audio_bytes")} '
+        f'last_event_type={stats.get("last_event_type")} '
+        f'response_done={stats.get("response_done")} '
+        f'session_finished={stats.get("session_finished")}'
+    )
+
+
+def _safe_tts_event(event: dict[str, Any]) -> dict[str, Any]:
+    safe = {key: value for key, value in event.items() if key != 'delta'}
+    if 'error' in safe:
+        return safe
+    return {key: safe.get(key) for key in ('event_id', 'type', 'response_id', 'item_id') if key in safe}
 
 
 async def _send_tts_segment_start(send, index: int, text: str) -> None:

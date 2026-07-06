@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import time
 import uuid
 from typing import Any, Awaitable, Callable
 
@@ -73,6 +74,7 @@ class RealtimeConnection:
         self.agent_runtime_session_id = None
         self.agent_tts_queue = None
         self.agent_tts_worker = None
+        self.agent_task = None
 
     async def close(self) -> None:
         await self.close_agent_session()
@@ -134,6 +136,18 @@ class RealtimeConnection:
         self.tts_session_id = None
 
     async def close_agent_session(self) -> None:
+        current_task = asyncio.current_task()
+        session_id = self.agent_session_id
+        request_id = self.agent_request_id
+        trace_id = self.agent_trace_id
+        device_code = self.agent_device_code
+        had_agent_task = self.agent_task is not None
+        had_tts_worker = self.agent_tts_worker is not None
+        if self.agent_task is not None and self.agent_task is not current_task:
+            if not self.agent_task.done():
+                self.agent_task.cancel()
+            await asyncio.gather(self.agent_task, return_exceptions=True)
+        self.agent_task = None
         if self.agent_tts_worker is not None:
             if not self.agent_tts_worker.done():
                 self.agent_tts_worker.cancel()
@@ -149,12 +163,23 @@ class RealtimeConnection:
         self.agent_runtime_session_id = None
         self.agent_tts_queue = None
         self.agent_tts_worker = None
+        if session_id or had_agent_task or had_tts_worker:
+            logger.info(
+                'realtime.agent.session_closed agent_session=%s request_id=%s trace_id=%s device_code=%s had_agent_task=%s had_tts_worker=%s',
+                session_id,
+                request_id,
+                trace_id,
+                device_code,
+                had_agent_task,
+                had_tts_worker,
+            )
 
 
 async def realtime_websocket_application(scope, receive, send):
     await send({'type': 'websocket.accept'})
-    send = _locked_send(send, asyncio.Lock())
     connection = RealtimeConnection()
+    send_monitor = _RealtimeSendMonitor(send, asyncio.Lock(), connection)
+    send = send_monitor
     receive_task = asyncio.create_task(receive())
 
     try:
@@ -187,12 +212,15 @@ async def realtime_websocket_application(scope, receive, send):
     finally:
         if not receive_task.done():
             receive_task.cancel()
+        logger.info('realtime.websocket.closed %s', send_monitor.summary())
         await connection.close()
 
 
 async def _handle_client_event(event, send, connection: RealtimeConnection) -> bool:
     event_type = event.get('type')
     if event_type == 'websocket.disconnect':
+        summary = send.summary() if hasattr(send, 'summary') else ''
+        logger.info('realtime.websocket.disconnect code=%s %s', event.get('code'), summary)
         return True
     if event_type != 'websocket.receive':
         return False
@@ -543,7 +571,7 @@ async def _handle_agent_session_start(send, connection: RealtimeConnection, mess
         ),
     )
     if input_text:
-        await _run_agent_llm_and_finish(send, connection, input_text)
+        _start_agent_llm_task(send, connection, input_text)
         return
 
     await _start_agent_asr_session(send, connection, message)
@@ -556,7 +584,7 @@ async def _handle_agent_session_finish(send, connection: RealtimeConnection, mes
     if connection.asr_upstream is None:
         text = connection.agent_latest_text.strip()
         if text:
-            await _run_agent_llm_and_finish(send, connection, text)
+            _start_agent_llm_task(send, connection, text)
             return
         await _send_json(send, {'type': 'agent.error', 'id': connection.agent_session_id, 'message': 'ASR session is not started'})
         return
@@ -566,6 +594,16 @@ async def _handle_agent_session_finish(send, connection: RealtimeConnection, mes
 
 async def _handle_agent_session_cancel(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:
     session_id = connection.agent_session_id
+    request_id = connection.agent_request_id
+    trace_id = connection.agent_trace_id
+    device_code = connection.agent_device_code
+    logger.info(
+        'realtime.agent.cancel_requested agent_session=%s request_id=%s trace_id=%s device_code=%s',
+        session_id,
+        request_id,
+        trace_id,
+        device_code,
+    )
     await connection.close_asr_session()
     await connection.close_llm_session()
     await connection.close_tts_session()
@@ -578,6 +616,13 @@ async def _handle_agent_session_cancel(send, connection: RealtimeConnection, mes
             'payload': {'sessionId': session_id},
         },
     )
+
+
+def _start_agent_llm_task(send, connection: RealtimeConnection, text: str) -> asyncio.Task | None:
+    if connection.agent_task is not None and not connection.agent_task.done():
+        return connection.agent_task
+    connection.agent_task = asyncio.create_task(_run_agent_llm_and_finish(send, connection, text))
+    return connection.agent_task
 
 
 async def _run_llm_session(send, connection: RealtimeConnection, command_id, message: dict[str, Any]) -> None:
@@ -904,7 +949,7 @@ def _send_third_party_session_message(session: dict[str, Any], question_text: st
 def _is_client_disconnected(exc: BaseException) -> bool:
     if isinstance(exc, ConnectionClosed):
         return True
-    return exc.__class__.__name__ == 'ClientDisconnected'
+    return exc.__class__.__name__ in {'ClientDisconnected', 'ClientConnectionResetError'}
 
 
 async def _start_agent_asr_session(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:
@@ -1018,7 +1063,8 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
                 text = connection.agent_latest_text.strip()
                 await _clear_finished_asr_session(connection, keep_current_task=True)
                 if text:
-                    await _run_agent_llm_and_finish(send, connection, text)
+                    _start_agent_llm_task(send, connection, text)
+                    await asyncio.sleep(0)
                 else:
                     await connection.close_agent_session()
                 return
@@ -1047,6 +1093,7 @@ async def _clear_finished_asr_session(connection: RealtimeConnection, *, keep_cu
 
 
 async def _run_agent_llm_and_finish(send, connection: RealtimeConnection, question_text: str) -> None:
+    current_task = asyncio.current_task()
     command_id = connection.agent_session_id
     request_id = connection.agent_request_id or make_request_id()
     trace_id = connection.agent_trace_id or request_id
@@ -1092,7 +1139,8 @@ async def _run_agent_llm_and_finish(send, connection: RealtimeConnection, questi
         if not _is_client_disconnected(exc):
             raise
     finally:
-        await connection.close_agent_session()
+        if connection.agent_task in (None, current_task):
+            await connection.close_agent_session()
 
 
 def _validate_agent_runtime_start(device_code: str) -> None:
@@ -1119,7 +1167,7 @@ async def _agent_tts_worker(send, connection: RealtimeConnection, command_id, de
         first_segment = await queue.get()
         if first_segment is None:
             return
-        await _run_agent_tts_stream(send, command_id, queue, device_code, first_segment, payload)
+        await _run_agent_tts_stream(send, command_id, queue, device_code, request_id, trace_id, first_segment, payload)
     except asyncio.CancelledError:
         raise
     except Exception as exc:
@@ -1136,7 +1184,15 @@ async def _agent_tts_worker(send, connection: RealtimeConnection, command_id, de
         )
 
 
-async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_code: str, first_segment: str, payload: dict[str, Any]) -> None:
+async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_code: str, request_id: str, trace_id: str, first_segment: str, payload: dict[str, Any]) -> None:
+    logger.info(
+        'realtime.agent.tts_started agent_session=%s request_id=%s trace_id=%s device_code=%s first_segment_length=%s',
+        command_id,
+        request_id,
+        trace_id,
+        device_code,
+        len(first_segment or ''),
+    )
     query_params = _payload_query_params({'deviceCode': device_code}, 'deviceCode')
     session_config = payload.get('sessionConfig') or payload.get('ttsSessionConfig')
     resolved_connection = await sync_to_async(realtime_tts.resolve_tts_realtime_connection, thread_sensitive=True)(
@@ -1173,6 +1229,13 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
         session_config=session_config,
         exclude_patterns=payload.get('ttsFilterExcludePatterns') or [],
         send=_with_command_id(send, command_id),
+    )
+    logger.info(
+        'realtime.agent.tts_done agent_session=%s request_id=%s trace_id=%s device_code=%s',
+        command_id,
+        request_id,
+        trace_id,
+        device_code,
     )
 
 
@@ -1750,9 +1813,70 @@ async def _send_json(send, payload: dict[str, Any]) -> None:
     await send({'type': 'websocket.send', 'text': json.dumps(payload, ensure_ascii=False)})
 
 
-def _locked_send(send, lock: asyncio.Lock):
-    async def send_locked(event):
-        async with lock:
-            await send(event)
+class _RealtimeSendMonitor:
+    def __init__(self, send, lock: asyncio.Lock, connection: RealtimeConnection):
+        self._send = send
+        self._lock = lock
+        self._connection = connection
+        self.connected_at = time.monotonic()
+        self.last_send_at = self.connected_at
+        self.last_event_type = None
+        self.last_text_event_type = None
+        self.text_count = 0
+        self.binary_count = 0
+        self.binary_bytes = 0
+        self.tts_started = False
+        self.tts_done = False
+        self.agent_done = False
 
-    return send_locked
+    async def __call__(self, event):
+        self._record_event(event)
+        async with self._lock:
+            try:
+                await self._send(event)
+            except Exception as exc:
+                logger.warning('realtime.websocket.send_failed %s exception=%s', self.summary(), repr(exc))
+                raise
+
+    def _record_event(self, event) -> None:
+        self.last_send_at = time.monotonic()
+        if 'bytes' in event:
+            self.last_event_type = 'binary'
+            self.binary_count += 1
+            self.binary_bytes += len(event.get('bytes') or b'')
+            return
+        if 'text' in event:
+            self.last_event_type = 'text'
+            self.text_count += 1
+            try:
+                payload = json.loads(event.get('text') or '')
+            except json.JSONDecodeError:
+                return
+            if isinstance(payload, dict):
+                event_type = str(payload.get('type') or '') or None
+                self.last_text_event_type = event_type
+                if event_type == 'tts.segment_start':
+                    self.tts_started = True
+                elif event_type == 'tts.done':
+                    self.tts_done = True
+                elif event_type == 'agent.done':
+                    self.agent_done = True
+
+    def summary(self) -> str:
+        now = time.monotonic()
+        return (
+            f'agent_session={self._connection.agent_session_id} '
+            f'requestId={self._connection.agent_request_id} '
+            f'traceId={self._connection.agent_trace_id} '
+            f'device_code={self._connection.agent_device_code} '
+            f'connected_age={now - self.connected_at:.3f} '
+            f'last_send_age={now - self.last_send_at:.3f} '
+            f'last_event_type={self.last_event_type} '
+            f'last_text_event_type={self.last_text_event_type} '
+            f'tx_text={self.text_count} '
+            f'tx_binary={self.binary_count} '
+            f'tx_binary_bytes={self.binary_bytes} '
+            f'tts_started={self.tts_started} '
+            f'tts_done={self.tts_done} '
+            f'agent_done={self.agent_done}'
+        )
