@@ -33,6 +33,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { changePasswordRequest, type ChangePasswordPayload } from '../api/modules/auth';
 import { fetchTenants, type TenantRecord } from '../api/modules/tenants';
 import { BrandMark } from '../components/brand-mark';
+import { PasswordStrength } from '../components/password-strength';
 import { useAuthStore, type AppMenu } from '../store/auth';
 import { useTenantScopeStore } from '../store/tenant-scope';
 
@@ -562,6 +563,22 @@ export const DashboardLayout = () => {
 
   const handleChangePassword = async () => {
     const values = await passwordForm.validateFields();
+
+    // Block weak/medium passwords per spec
+    const pwd = values.newPassword || '';
+    const checks = [
+      pwd.length >= 8,
+      /[A-Z]/.test(pwd),
+      /[a-z]/.test(pwd),
+      /[0-9]/.test(pwd),
+      /[^A-Za-z0-9]/.test(pwd),
+    ];
+    const passed = checks.filter(Boolean).length;
+    if (passed <= 2) {
+      message.warning('密码强度不够，建议包含大小写字母和特殊字符');
+      return;
+    }
+
     setPasswordSubmitting(true);
     try {
       await changePasswordRequest({
@@ -743,6 +760,12 @@ export const DashboardLayout = () => {
             ]}
           >
             <Input.Password autoComplete="new-password" placeholder="请输入新密码" />
+          </Form.Item>
+
+          <Form.Item shouldUpdate noStyle>
+            {({ getFieldValue }) => (
+              <PasswordStrength password={getFieldValue('newPassword') || ''} />
+            )}
           </Form.Item>
 
           <Form.Item

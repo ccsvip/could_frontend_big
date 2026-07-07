@@ -2,6 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===================================================================
+   Design Tokens — responsive breakpoints & layout variables
+   All layout dimensions use CSS variables (no hardcoded px in components).
+   =================================================================== */
+:root {
+  /* Sidebar */
+  --sidebar-width-expanded: 17.875rem;   /* 286px */
+  --sidebar-width-collapsed: 5rem;       /* 80px  */
+
+  /* Content area */
+  --content-padding: 1.5rem;             /* 24px  */
+  --content-padding-tablet: 1rem;        /* 16px  */
+  --content-padding-phone: 0.75rem;      /* 12px  */
+  --content-padding-extreme: 0.5rem;     /* 8px   */
+  --content-max-width: 75rem;            /* 1200px */
+
+  /* Breakpoints (for JS reference; media queries use raw px) */
+  --bp-tablet: 768px;
+  --bp-phone: 480px;
+  --bp-extreme: 320px;
+}
+
+/* --- Tablet (≤768px) --- */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width-expanded: 15rem;
+    --content-padding: var(--content-padding-tablet);
+  }
+}
+
+/* --- Phone (≤480px) --- */
+@media (max-width: 480px) {
+  :root {
+    --content-padding: var(--content-padding-phone);
+  }
+}
+
+/* --- Extreme (≤320px) --- */
+@media (max-width: 320px) {
+  :root {
+    --content-padding: var(--content-padding-extreme);
+  }
+}
+
 html,
 body,
 #root {
@@ -633,5 +677,93 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+/* ===================================================================
+   Responsive: Modal fullscreen on phone
+   =================================================================== */
+@media (max-width: 480px) {
+  .ant-modal {
+    margin: 0 !important;
+    max-width: 100vw !important;
+    padding: 0 !important;
+  }
+
+  .ant-modal-content {
+    border-radius: 0 !important;
+    min-height: 100vh;
+  }
+}
+
+/* ===================================================================
+   Password Strength Indicator
+   =================================================================== */
+.password-strength {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.375rem;
+}
+
+.password-strength__bar {
+  display: flex;
+  gap: 3px;
+  flex: 1;
+}
+
+.password-strength__segment {
+  height: 4px;
+  flex: 1;
+  border-radius: 2px;
+  background: #e2e8f0;
+  transition: background-color 0.2s ease;
+}
+
+.password-strength__segment--active.password-strength__segment--weak {
+  background: #ff4d4f;
+}
+
+.password-strength__segment--active.password-strength__segment--medium {
+  background: #faad14;
+}
+
+.password-strength__segment--active.password-strength__segment--good {
+  background: #fadb14;
+}
+
+.password-strength__segment--active.password-strength__segment--strong {
+  background: #52c41a;
+}
+
+.password-strength__label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  min-width: 1.5rem;
+  text-align: right;
+}
+
+.password-strength__label--weak { color: #ff4d4f; }
+.password-strength__label--medium { color: #faad14; }
+.password-strength__label--good { color: #d4a800; }
+.password-strength__label--strong { color: #52c41a; }
+
+/* ===================================================================
+   Responsive: Sidebar uses CSS variable for width
+   =================================================================== */
+.app-sidebar {
+  width: var(--sidebar-width-expanded);
+  transition: width 0.3s ease;
+}
+
+.app-sidebar--collapsed {
+  width: var(--sidebar-width-collapsed);
+}
+
+/* ===================================================================
+   Responsive: Content padding
+   =================================================================== */
+.app-content {
+  padding-left: var(--content-padding);
+  padding-right: var(--content-padding);
 }
 
