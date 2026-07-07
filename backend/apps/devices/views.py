@@ -33,6 +33,7 @@ from apps.tenants.services import get_request_tenant
 from config.request_id import get_request_id, get_trace_id
 
 from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup, WakeWord
+from .realtime import publish_device_event_sync
 from .services.chat_logs import record_device_chat_log
 from .services import session_store
 from .services.authorization import (
@@ -462,6 +463,76 @@ class DeviceActivationView(APIView):
 class WakeWordViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin, viewsets.ModelViewSet):
     queryset = WakeWord.objects.prefetch_related('devices').all()
     serializer_class = WakeWordSerializer
+
+    @staticmethod
+    def _wake_word_devices_payload(wake_word: WakeWord) -> tuple[list[int], list[str]]:
+        devices = list(wake_word.devices.order_by('id').values_list('id', 'code'))
+        return [device_id for device_id, _ in devices], [code for _, code in devices]
+
+    @staticmethod
+    def _publish_wake_word_changed(
+        wake_word: WakeWord,
+        action: str,
+        *,
+        device_ids: list[int] | None = None,
+        device_codes: list[str] | None = None,
+    ) -> None:
+        if device_ids is None or device_codes is None:
+            device_ids, device_codes = WakeWordViewSet._wake_word_devices_payload(wake_word)
+        payload = {
+            'type': 'device.wake_words.changed',
+            'action': action,
+            'resource': 'wakeWords',
+            'tenantId': wake_word.tenant_id,
+            'wakeWordId': wake_word.id,
+            'text': wake_word.text,
+            'deviceIds': device_ids,
+            'deviceCodes': device_codes,
+            'refresh': {
+                'endpoint': '/api/v1/device-runtime/config/',
+                'reason': 'wakeWordsChanged',
+            },
+        }
+        transaction.on_commit(lambda: publish_device_event_sync(payload))
+
+    def perform_create(self, serializer):
+        wake_word = serializer.save()
+        self._publish_wake_word_changed(wake_word, 'create')
+
+    def perform_update(self, serializer):
+        old_device_ids, old_device_codes = self._wake_word_devices_payload(serializer.instance)
+        wake_word = serializer.save()
+        new_device_ids, new_device_codes = self._wake_word_devices_payload(wake_word)
+        device_ids = sorted(set(old_device_ids) | set(new_device_ids))
+        device_codes = sorted(set(old_device_codes) | set(new_device_codes))
+        self._publish_wake_word_changed(
+            wake_word,
+            'update',
+            device_ids=device_ids,
+            device_codes=device_codes,
+        )
+
+    def perform_destroy(self, instance):
+        device_ids, device_codes = self._wake_word_devices_payload(instance)
+        tenant_id = instance.tenant_id
+        wake_word_id = instance.id
+        text = instance.text
+        instance.delete()
+        payload = {
+            'type': 'device.wake_words.changed',
+            'action': 'delete',
+            'resource': 'wakeWords',
+            'tenantId': tenant_id,
+            'wakeWordId': wake_word_id,
+            'text': text,
+            'deviceIds': device_ids,
+            'deviceCodes': device_codes,
+            'refresh': {
+                'endpoint': '/api/v1/device-runtime/config/',
+                'reason': 'wakeWordsChanged',
+            },
+        }
+        transaction.on_commit(lambda: publish_device_event_sync(payload))
 
     def get_queryset(self):
         queryset = super().get_queryset()

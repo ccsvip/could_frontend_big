@@ -23,6 +23,7 @@ from apps.devices.realtime import (
     publish_device_event,
     remove_device_event_subscriber,
     resolve_device_event_subscription,
+    resolve_runtime_config_event_subscription,
 )
 from apps.devices.websocket import (
     mark_device_offline_for_websocket,
@@ -254,6 +255,12 @@ async def _handle_client_event(event, send, connection: RealtimeConnection) -> b
     if command_type == 'devices.events.unsubscribe':
         await _handle_device_events_unsubscribe(send, connection, message)
         return False
+    if command_type == 'device.runtime_config.subscribe':
+        await _handle_runtime_config_events_subscribe(send, connection, message)
+        return False
+    if command_type == 'device.runtime_config.unsubscribe':
+        await _handle_runtime_config_events_unsubscribe(send, connection, message)
+        return False
     if command_type == 'device.status.start':
         await _handle_device_status_start(send, connection, message)
         return False
@@ -346,6 +353,46 @@ async def _handle_device_events_unsubscribe(send, connection: RealtimeConnection
     )
 
 
+async def _handle_runtime_config_events_subscribe(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:
+    command_id = message.get('id')
+    payload = message.get('payload') if isinstance(message.get('payload'), dict) else {}
+    device_code = str(payload.get('deviceCode') or payload.get('device_code') or '').strip()
+    subscription = await sync_to_async(resolve_runtime_config_event_subscription, thread_sensitive=True)(device_code)
+    if subscription is None:
+        await _send_error(send, command_id, 'device_not_found', 'Device is not available')
+        return
+
+    connection.close_device_events()
+    connection.device_events_subscriber = add_device_event_subscriber(
+        subscription['tenant_id'],
+        device_code=subscription['device_code'],
+    )
+    connection.device_events_command_id = command_id
+    await _send_json(
+        send,
+        {
+            'type': 'device.runtime_config.subscribed',
+            'id': command_id,
+            'payload': {
+                'deviceCode': subscription['device_code'],
+                'tenantId': subscription['tenant_id'],
+            },
+        },
+    )
+
+
+async def _handle_runtime_config_events_unsubscribe(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:
+    connection.close_device_events()
+    await _send_json(
+        send,
+        {
+            'type': 'device.runtime_config.unsubscribed',
+            'id': message.get('id'),
+            'payload': {},
+        },
+    )
+
+
 async def _handle_device_status_start(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:
     command_id = message.get('id')
     payload = message.get('payload') if isinstance(message.get('payload'), dict) else {}
@@ -355,6 +402,8 @@ async def _handle_device_status_start(send, connection: RealtimeConnection, mess
         return
 
     await _clear_device_status(connection)
+    connection.close_device_events()
+
     device = await sync_to_async(mark_device_online_for_websocket, thread_sensitive=True)(device_code)
     if device is None:
         await _send_error(send, command_id, 'device_not_found', 'Device is not available')
@@ -363,6 +412,13 @@ async def _handle_device_status_start(send, connection: RealtimeConnection, mess
     connection.device_status_device_id = device.id
     connection.device_status_device_code = device.code
     connection.device_status_command_id = command_id
+    if device.tenant_id is not None:
+        connection.device_events_subscriber = add_device_event_subscriber(
+            device.tenant_id,
+            device_code=device.code,
+        )
+        connection.device_events_command_id = command_id
+
     await publish_device_event(
         {
             'type': 'device.status',

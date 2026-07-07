@@ -268,6 +268,94 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(duplicate_for_same_device_response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('同一设备内唤醒词不能重复', str(duplicate_for_same_device_response.data))
 
+    @patch('apps.devices.views.publish_device_event_sync')
+    @patch('apps.devices.serializers.encode_wake_word_text', return_value='n ǐ h ǎo x iǎo d é')
+    def test_wake_word_create_publishes_runtime_config_change_event(self, _mock_encode, mock_publish):
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            code='WAKE-EVENT-CREATE-001',
+            name='Wake Event Create Device',
+        )
+
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(
+                '/api/v1/wake-words/',
+                {'text': '你好小德', 'deviceIds': [device.id]},
+                format='json',
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        mock_publish.assert_called_once()
+        payload = mock_publish.call_args.args[0]
+        self.assertEqual(payload['type'], 'device.wake_words.changed')
+        self.assertEqual(payload['action'], 'create')
+        self.assertEqual(payload['tenantId'], self.tenant.id)
+        self.assertEqual(payload['deviceCodes'], [device.code])
+        self.assertEqual(payload['refresh']['endpoint'], '/api/v1/device-runtime/config/')
+
+    @patch('apps.devices.views.publish_device_event_sync')
+    @patch('apps.devices.serializers.encode_wake_word_text', return_value='n ǐ h ǎo x iǎo d é')
+    def test_wake_word_update_notifies_old_and_new_bound_devices(self, _mock_encode, mock_publish):
+        old_device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            code='WAKE-EVENT-OLD-001',
+            name='Wake Event Old Device',
+        )
+        new_device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            code='WAKE-EVENT-NEW-001',
+            name='Wake Event New Device',
+        )
+        wake_word = WakeWord.objects.create(
+            tenant=self.tenant,
+            text='你好小德',
+            encoded_text='n ǐ h ǎo x iǎo d é',
+        )
+        wake_word.devices.add(old_device)
+
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.patch(
+                f'/api/v1/wake-words/{wake_word.id}/',
+                {'deviceIds': [new_device.id]},
+                format='json',
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        payload = mock_publish.call_args.args[0]
+        self.assertEqual(payload['type'], 'device.wake_words.changed')
+        self.assertEqual(payload['action'], 'update')
+        self.assertEqual(set(payload['deviceCodes']), {old_device.code, new_device.code})
+
+    @patch('apps.devices.views.publish_device_event_sync')
+    def test_wake_word_delete_publishes_runtime_config_change_event(self, mock_publish):
+        self.grant_permissions('devices.view', 'devices.create', 'devices.update', 'devices.delete')
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            code='WAKE-EVENT-DELETE-001',
+            name='Wake Event Delete Device',
+        )
+        wake_word = WakeWord.objects.create(
+            tenant=self.tenant,
+            text='你好小德',
+            encoded_text='n ǐ h ǎo x iǎo d é',
+        )
+        wake_word.devices.add(device)
+
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.delete(f'/api/v1/wake-words/{wake_word.id}/')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        payload = mock_publish.call_args.args[0]
+        self.assertEqual(payload['type'], 'device.wake_words.changed')
+        self.assertEqual(payload['action'], 'delete')
+        self.assertEqual(payload['tenantId'], self.tenant.id)
+        self.assertEqual(payload['deviceCodes'], [device.code])
+        self.assertEqual(payload['refresh']['endpoint'], '/api/v1/device-runtime/config/')
+
     @patch('apps.devices.serializers.encode_wake_word_text', return_value='n ǐ h ǎo x iǎo d é')
     def test_wake_word_rejects_cross_tenant_device_binding(self, _mock_encode):
         other_tenant = Tenant.objects.create(name='Other Tenant', code='other-tenant')
@@ -1898,6 +1986,82 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         device.refresh_from_db()
         self.assertEqual(device.status, Device.STATUS_OFFLINE)
 
+    def test_device_status_command_receives_runtime_config_change_events(self):
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Runtime Config Online Android',
+            code='ANDROID-RUNTIME-CONFIG-WS-001',
+            status=Device.STATUS_OFFLINE,
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        async def run_websocket():
+            from apps.devices.realtime import publish_device_event
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            response = await communicator.receive_output(timeout=1)
+            self.assertEqual(response['type'], 'websocket.accept')
+
+            await communicator.send_input({
+                'type': 'websocket.receive',
+                'text': json.dumps({
+                    'type': 'device.status.start',
+                    'id': 'device-status-runtime-config',
+                    'payload': {'deviceCode': device.code},
+                }),
+            })
+            started = json.loads((await communicator.receive_output(timeout=1))['text'])
+            self.assertEqual(started['type'], 'device.status.started')
+
+            await publish_device_event(
+                {
+                    'type': 'device.wake_words.changed',
+                    'action': 'update',
+                    'tenantId': self.tenant.id,
+                    'deviceCodes': ['ANDROID-RUNTIME-CONFIG-OTHER'],
+                    'refresh': {'endpoint': '/api/v1/device-runtime/config/'},
+                }
+            )
+            await publish_device_event(
+                {
+                    'type': 'device.wake_words.changed',
+                    'action': 'update',
+                    'tenantId': self.tenant.id,
+                    'deviceCodes': [device.code],
+                    'refresh': {
+                        'endpoint': '/api/v1/device-runtime/config/',
+                        'reason': 'wakeWordsChanged',
+                    },
+                }
+            )
+
+            message = await communicator.receive_output(timeout=1)
+            self.assertEqual(message['type'], 'websocket.send')
+            payload = json.loads(message['text'])
+            self.assertEqual(payload['type'], 'devices.event')
+            self.assertEqual(payload['id'], 'device-status-runtime-config')
+            self.assertEqual(payload['payload']['type'], 'device.wake_words.changed')
+            self.assertEqual(payload['payload']['deviceCodes'], [device.code])
+            self.assertEqual(payload['payload']['refresh']['endpoint'], '/api/v1/device-runtime/config/')
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
     def test_llm_session_start_streams_agent_answer_deltas(self):
         provider = LLMProvider.objects.create(
             name='OpenAI compatible',
@@ -2136,6 +2300,78 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             payload = json.loads(message['text'])
             self.assertEqual(payload['payload']['deviceCode'], 'ANDROID-SAME-001')
             self.assertNotEqual(payload['payload']['deviceCode'], 'ANDROID-OTHER-001')
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
+    def test_runtime_config_events_command_filters_by_device_code(self):
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Runtime Config Event Device',
+            code='RUNTIME-CONFIG-EVENT-001',
+            status=Device.STATUS_OFFLINE,
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        async def run_websocket():
+            from apps.devices.realtime import publish_device_event
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            response = await communicator.receive_output(timeout=1)
+            self.assertEqual(response['type'], 'websocket.accept')
+
+            await communicator.send_input({
+                'type': 'websocket.receive',
+                'text': json.dumps({
+                    'type': 'device.runtime_config.subscribe',
+                    'id': 'runtime-config-sub',
+                    'payload': {'deviceCode': device.code},
+                }),
+            })
+            subscribed = json.loads((await communicator.receive_output(timeout=1))['text'])
+            self.assertEqual(subscribed['type'], 'device.runtime_config.subscribed')
+            self.assertEqual(subscribed['payload']['deviceCode'], device.code)
+
+            await publish_device_event(
+                {
+                    'type': 'device.wake_words.changed',
+                    'action': 'update',
+                    'tenantId': self.tenant.id,
+                    'deviceCodes': ['RUNTIME-CONFIG-OTHER-001'],
+                }
+            )
+            await publish_device_event(
+                {
+                    'type': 'device.wake_words.changed',
+                    'action': 'update',
+                    'tenantId': self.tenant.id,
+                    'deviceCodes': [device.code],
+                    'refresh': {'endpoint': '/api/v1/device-runtime/config/'},
+                }
+            )
+
+            message = await communicator.receive_output(timeout=1)
+            self.assertEqual(message['type'], 'websocket.send')
+            payload = json.loads(message['text'])
+            self.assertEqual(payload['type'], 'devices.event')
+            self.assertEqual(payload['payload']['type'], 'device.wake_words.changed')
+            self.assertEqual(payload['payload']['deviceCodes'], [device.code])
+            self.assertEqual(payload['payload']['refresh']['endpoint'], '/api/v1/device-runtime/config/')
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)
