@@ -18,6 +18,15 @@
   --content-padding-extreme: 0.5rem;     /* 8px   */
   --content-max-width: 75rem;            /* 1200px */
 
+  /* Button spacing */
+  --btn-gap: 0.5rem;                     /* 8px   */
+  --btn-gap-inline: 0.25rem;             /* 4px   */
+
+  /* Border radius */
+  --radius-sm: 0.25rem;                  /* 4px   */
+  --radius-md: 0.5rem;                   /* 8px   */
+  --radius-lg: 0.75rem;                  /* 12px  */
+
   /* Breakpoints (for JS reference; media queries use raw px) */
   --bp-tablet: 768px;
   --bp-phone: 480px;
