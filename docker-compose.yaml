@@ -1,6 +1,8 @@
 x-backend-build: &backend-build
   context: ./backend
   args:
+    # 基础镜像默认走可配置镜像源，避免 Docker Hub 在受限网络下拉取超时。
+    PYTHON_BASE_IMAGE: ${PYTHON_BASE_IMAGE:-docker.m.daocloud.io/library/python:3.13}
     # Linux 服务器默认使用国内 Debian 镜像；如需切换可在根目录 .env 配置 APT_MIRROR / APT_SECURITY_MIRROR。
     APT_MIRROR: ${APT_MIRROR:-https://mirrors.aliyun.com/debian}
     APT_SECURITY_MIRROR: ${APT_SECURITY_MIRROR:-https://mirrors.aliyun.com/debian-security}
@@ -10,7 +12,7 @@ x-backend-build: &backend-build
 services:
   # 所有服务统一使用 always 重启策略，确保 Docker 或宿主机重启后自动恢复。
   db:
-    image: postgres:16-alpine
+    image: ${POSTGRES_IMAGE:-docker.m.daocloud.io/library/postgres:16-alpine}
     container_name: solin_db
     restart: always
     env_file:
@@ -27,7 +29,7 @@ services:
       start_period: 10s
 
   redis:
-    image: redis:7-alpine
+    image: ${REDIS_IMAGE:-docker.m.daocloud.io/library/redis:7-alpine}
     container_name: solin_redis
     restart: always
     ports:
@@ -99,6 +101,8 @@ services:
   web:
     build:
       context: ./web
+      args:
+        NODE_BASE_IMAGE: ${NODE_BASE_IMAGE:-docker.m.daocloud.io/library/node:20-alpine}
     env_file:
       - ./web/.env
     container_name: solin_web

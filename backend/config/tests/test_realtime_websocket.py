@@ -237,6 +237,39 @@ class RealtimeWebSocketTests(SimpleTestCase):
 
         async_to_sync(run_task)()
 
+    def test_runtime_config_subscribed_failure_returns_error(self):
+        async def run_task():
+            from config.realtime import _send_runtime_config_subscribed
+
+            sent_payloads = []
+
+            async def send(event):
+                if 'text' in event:
+                    sent_payloads.append(json.loads(event['text']))
+
+            with (
+                patch('config.realtime.build_device_runtime_config_event', side_effect=RuntimeError('broken config')),
+                patch('config.realtime.logger.exception') as log_exception,
+            ):
+                await _send_runtime_config_subscribed(send, 1, 'runtime-config-sub', 'initial')
+
+            log_exception.assert_called_once()
+            self.assertEqual(
+                sent_payloads,
+                [
+                    {
+                        'type': 'error',
+                        'id': 'runtime-config-sub',
+                        'error': {
+                            'code': 'runtime_config_subscribed_failed',
+                            'message': 'Device runtime config subscription failed',
+                        },
+                    }
+                ],
+            )
+
+        async_to_sync(run_task)()
+
     def test_agent_session_cancel_stops_active_agent_task(self):
         async def run_task():
             from config.realtime import RealtimeConnection, _handle_agent_session_cancel

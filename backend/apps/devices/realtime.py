@@ -53,7 +53,28 @@ def resolve_runtime_config_event_subscription(device_code: str) -> dict | None:
     device = get_runtime_device_or_none(device_code, require_tenant=True)
     if device is None:
         return None
-    return {'tenant_id': device.tenant_id, 'device_code': device.code}
+    return {'tenant_id': device.tenant_id, 'device_code': device.code, 'device_id': device.id}
+
+
+def build_device_runtime_config_event(device_id: int, command_id: str | None, action: str) -> dict | None:
+    from apps.devices.models import Device
+    from apps.devices.views import DeviceRuntimeConfigView
+
+    device = Device.objects.select_related('tenant', 'application', 'agent_application').filter(id=device_id).first()
+    if device is None:
+        return None
+    return {
+        'type': 'device.runtime_config.subscribed',
+        'id': command_id,
+        'payload': {
+            'deviceCode': device.code,
+            'tenantId': device.tenant_id,
+            'action': action,
+            'config': DeviceRuntimeConfigView._config_payload(
+                device, include_resources=False, include_scrolling_texts=True
+            ),
+        },
+    }
 
 
 def add_device_event_subscriber(tenant_id: int | None, device_code: str | None = None) -> DeviceEventSubscriber:
@@ -84,15 +105,33 @@ def _put_event(queue: asyncio.Queue, event: dict) -> None:
         queue.put_nowait(event)
 
 
+_RUNTIME_CONFIG_EVENT_TYPES = frozenset({
+    'device.wake_words.changed',
+    'device.voice_configuration.changed',
+    'device.scrolling_texts.changed',
+})
+
+
 def _event_targets_device(event: dict, device_code: str) -> bool:
     device_code = str(device_code or '').strip()
     if not device_code:
         return False
 
+    event_type = str(event.get('type') or '')
+    has_refresh = bool(event.get('refresh'))
+    is_runtime_config_event = event_type in _RUNTIME_CONFIG_EVENT_TYPES
+
     # Device-code subscribers are runtime devices. They should receive only
     # runtime-config invalidation events, not the management/status firehose.
-    if not event.get('refresh') and str(event.get('type') or '') != 'device.wake_words.changed':
+    if not has_refresh and not is_runtime_config_event:
         return False
+
+    # Tenant-level runtime config events (voice tones / scrolling texts) do not
+    # carry device codes: tenant alignment is already enforced by
+    # publish_device_event, so any device-code subscriber in the same tenant
+    # is a target.
+    if event_type in ('device.voice_configuration.changed', 'device.scrolling_texts.changed'):
+        return True
 
     event_device_code = str(event.get('deviceCode') or event.get('device_code') or '').strip()
     if event_device_code == device_code:

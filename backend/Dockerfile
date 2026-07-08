@@ -1,4 +1,5 @@
-FROM python:3.13
+ARG PYTHON_BASE_IMAGE=docker.m.daocloud.io/library/python:3.13
+FROM ${PYTHON_BASE_IMAGE}
 
 ARG APT_MIRROR=https://mirrors.aliyun.com/debian
 ARG APT_SECURITY_MIRROR=https://mirrors.aliyun.com/debian-security

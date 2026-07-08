@@ -263,7 +263,7 @@
       <nav class="nav" aria-label="接口菜单">
         <button class="active" type="button" data-section="device"><span>设备与公司</span><span class="method post">POST/GET</span></button>
         <button type="button" data-section="runtimeConfig"><span>运行时配置</span><span class="method">GET</span></button>
-        <button type="button" data-section="runtimeEvents"><span>配置变更通知</span><span class="method ws">WS</span></button>
+        <button type="button" data-section="runtimeEvents"><span>配置快照订阅</span><span class="method ws">WS</span></button>
         <button type="button" data-section="wakeWords"><span>唤醒词测试</span><span class="method">GET/TTS</span></button>
         <button type="button" data-section="application"><span>应用</span><span class="method post">POST</span></button>
         <button type="button" data-section="voiceTones"><span>获取音色列表</span><span class="method">GET</span></button>
@@ -394,7 +394,7 @@
       const sections = {
         device: { title: '设备与公司', description: '设备启动或首次联网时调用 /device-auth/activate/ 上报一次；设备名称可在后台编辑，后续直接通过 /device-runtime/config/ 获取最新公司、授权和应用配置。' },
         runtimeConfig: { title: '运行时配置', description: 'GET /device-runtime/config/：设备端启动业务前拉取完整配置，包括设备名称、资源应用、智能体应用和资源列表。' },
-        runtimeEvents: { title: '配置变更通知', description: '真实设备通过 device.status.start 的在线 WebSocket 自动接收当前设备的运行时配置变更；收到 device.wake_words.changed 后应重新拉取 /device-runtime/config/。' },
+        runtimeEvents: { title: '配置订阅', description: '通过 device.runtime_config.subscribe 订阅当前设备配置；首次订阅和后续配置变化都会收到 device.runtime_config.subscribed（payload 直接带完整 config 和 action），不需要再额外 GET /device-runtime/config/。' },
         wakeWords: { title: '唤醒词测试', description: '从运行时配置读取当前设备绑定的唤醒词，在页面内模拟输入命中后的已唤醒提示，并可调用 TTS 播报一段提示语。' },
         application: { title: '应用', description: '通过设备码读取资源应用与完整智能体配置，包括开场白、建议问题和语音播报开关。' },
         voiceTones: { title: '获取音色列表', description: '通过固定设备码读取 /ai-models/tts/options/ 返回的 TTS 音色列表，并可直接测试合成。' },
@@ -402,7 +402,7 @@
         scrollingTexts: { title: '获取滚动文本', description: '通过固定设备码读取当前公司在资源管理/滚动文本维护的数据。' },
         models: { title: '获取数字人模型', description: '通过固定设备码读取当前公司在资源管理/模型管理维护的数据。' },
         videos: { title: '获取视频', description: '通过固定设备码读取当前公司在资源管理/视频管理维护的数据。' },
-        deviceStatus: { title: '在线状态 WebSocket', description: '设备在线 / 离线由统一 /ws/realtime/ 的 device.status.start、device.status.ping 和连接断开决定；该连接也会自动收到当前设备的运行时配置变更通知。' },
+        deviceStatus: { title: '在线状态 WebSocket', description: '设备在线 / 离线由统一 /ws/realtime/ 的 device.status.start、device.status.ping 和连接断开决定；运行时配置快照请使用 device.runtime_config.subscribe。' },
         heartbeat: { title: '兼容心跳', description: 'POST /device-runtime/heartbeat/ 只兼容旧端刷新 lastHeartbeat 和版本信息，不决定设备 online / offline。' },
         asr: { title: 'ASR 单步调试', description: '只用于单独验证 ASR 阶段：发送 asr.session.start 和 PCM，实时预览使用上游 text + stash，最终结果使用 completed/transcript。' },
         llmWs: { title: 'LLM 单步调试', description: '只用于单独验证 LLM 阶段：llm.session.start 流式返回 llm.started、llm.delta、llm.done；llm.session.cancel 只打断当前会话。' },
@@ -950,7 +950,7 @@
       }
 
       function renderDeviceStatus() {
-        els.contentBody.innerHTML = '<div class="toolbar"><button class="button" id="deviceStatusStartBtn" type="button">连接并置为在线</button><button class="button secondary" id="deviceStatusStopBtn" type="button">断开并置为离线</button></div><div class="detail-block"><strong>事件输出</strong><pre id="deviceStatusOutput">等待连接</pre></div><div class="note">当前在线状态以 WebSocket 连接生命周期为准：连接后发送 device.status.start，保持连接期间定时发送 device.status.ping，断开后后端发布 offline。device.status.start 成功后，同一连接会自动接收当前设备的运行时配置变更通知。</div>';
+        els.contentBody.innerHTML = '<div class="toolbar"><button class="button" id="deviceStatusStartBtn" type="button">连接并置为在线</button><button class="button secondary" id="deviceStatusStopBtn" type="button">断开并置为离线</button></div><div class="detail-block"><strong>事件输出</strong><pre id="deviceStatusOutput">等待连接</pre></div><div class="note">当前在线状态以 WebSocket 连接生命周期为准：连接后发送 device.status.start，保持连接期间定时发送 device.status.ping，断开后后端发布 offline。运行时配置快照请在“配置快照订阅”页使用 device.runtime_config.subscribe。</div>';
         writeRequestDetail({
           label: '在线状态 WebSocket',
           method: 'WS',
@@ -963,7 +963,7 @@
             payload: { deviceCode: state.deviceCode || '<deviceCode>' },
             keepalive: { type: 'device.status.ping', id: 'device-ping-<timestamp>' },
           },
-          note: '设备在线 / 离线由统一 WebSocket 决定；HTTP heartbeat 只兼容旧端字段更新。device.status.start 成功后，同一连接会自动接收 device.wake_words.changed 等配置变更通知。',
+          note: '设备在线 / 离线由统一 WebSocket 决定；HTTP heartbeat 只兼容旧端字段更新。配置同步请使用 device.runtime_config.subscribe。',
         });
         writeResponse({ ok: false, status: '-', body: { message: '等待 WebSocket 连接' } });
         const output = document.getElementById('deviceStatusOutput');
@@ -987,7 +987,7 @@
           path: '/ws/realtime/',
           headers: {},
           body: { type: 'device.status.start', id: 'device-status-<timestamp>', payload: { deviceCode: state.deviceCode } },
-          note: '连接成功后服务端将设备置为 online；关闭连接后服务端将设备置为 offline；后台更换该设备唤醒词时，同一连接会收到 devices.event。',
+          note: '连接成功后服务端将设备置为 online；关闭连接后服务端将设备置为 offline。运行时配置快照请使用 device.runtime_config.subscribe 单独订阅。',
         });
         socket.addEventListener('open', () => {
           const command = { type: 'device.status.start', id: createCommandId('device-status'), payload: { deviceCode: state.deviceCode } };
@@ -1008,17 +1008,6 @@
           events.push(payload);
           output.textContent = pretty(events);
           writeResponse({ ok: true, status: 'WS', body: events });
-          if (payload && payload.payload && payload.payload.type === 'device.wake_words.changed') {
-            fetchRuntimeConfig()
-              .then(() => {
-                events.push({ type: 'client.runtime_config.refetched', wakeWords: currentWakeWords(), wakeWordLines: (state.runtimeConfig && state.runtimeConfig.wakeWordLines) || [] });
-                output.textContent = pretty(events);
-              })
-              .catch((error) => {
-                events.push({ type: 'client.runtime_config.refetch_failed', message: error.message });
-                output.textContent = pretty(events);
-              });
-          }
         });
         socket.addEventListener('error', () => {
           events.push({ type: 'client.error', message: 'WebSocket 连接失败' });
@@ -1055,9 +1044,9 @@
       }
 
       function renderRuntimeEvents() {
-        els.contentBody.innerHTML = '<div class="toolbar"><button class="button" id="runtimeEventsStartBtn" type="button">订阅配置变更</button><button class="button secondary" id="runtimeEventsStopBtn" type="button">停止订阅</button><button class="button secondary" id="runtimeEventsRefreshBtn" type="button">手动拉取配置</button></div><div class="detail-block"><strong>事件输出</strong><pre id="runtimeEventsOutput">等待订阅</pre></div><div class="note">后台新增、修改、删除当前设备绑定的唤醒词后，会推送 device.wake_words.changed。真实设备不需要另开网页订阅：device.status.start 在线连接会自动接收；本页按钮只用于单独调试事件通道。设备收到后不要只改本地字段，应重新 GET /device-runtime/config/，以同步 wakeWords 与 wakeWordLines。</div>';
+        els.contentBody.innerHTML = '<div class="toolbar"><button class="button" id="runtimeEventsStartBtn" type="button">订阅配置</button><button class="button secondary" id="runtimeEventsStopBtn" type="button">停止订阅</button><button class="button secondary" id="runtimeEventsRefreshBtn" type="button">手动拉取完整配置</button></div><div class="detail-block"><strong>订阅输出</strong><pre id="runtimeEventsOutput">等待订阅</pre></div><div class="note">设备只需要发送 <code>device.runtime_config.subscribe</code>。服务端会在订阅成功后立刻返回 <code>action=initial</code> 的 <code>device.runtime_config.subscribed</code>（payload 直接带完整 config）；后续唤醒词 / 音色 / 滚动文本等配置变化时，继续返回同一种 subscribed，<code>action</code> 标明变更原因，页面直接用 <code>payload.config</code> 更新本地运行时配置，不再自动发 HTTP 请求。</div>';
         writeRequestDetail({
-          label: '配置变更通知 WebSocket',
+          label: '运行时配置快照 WebSocket',
           method: 'WS',
           url: realtimeWsUrl(),
           path: '/ws/realtime/',
@@ -1066,17 +1055,26 @@
             type: 'device.runtime_config.subscribe',
             id: 'runtime-config-sub-<timestamp>',
             payload: { deviceCode: state.deviceCode || '<deviceCode>' },
-            event: {
-              type: 'devices.event',
+            subscribed: {
+              type: 'device.runtime_config.subscribed',
+              id: 'runtime-config-sub-<timestamp>',
               payload: {
-                type: 'device.wake_words.changed',
-                action: 'create|update|delete',
-                deviceCodes: [state.deviceCode || '<deviceCode>'],
-                refresh: { endpoint: '/api/v1/device-runtime/config/', reason: 'wakeWordsChanged' },
+                deviceCode: state.deviceCode || '<deviceCode>',
+                tenantId: 1,
+                action: 'initial|wakeWordsChanged|voiceConfigurationChanged|scrollingTextsChanged',
+                config: {
+                  device: {},
+                  application: {},
+                  agentApplication: {},
+                  wakeWords: [],
+                  wakeWordLines: [],
+                  voiceConfiguration: { voiceTones: [] },
+                  scrollingTexts: [],
+                },
               },
             },
           },
-          note: '真实设备通常直接使用 device.status.start 在线连接接收配置变更；device.runtime_config.subscribe 仅用于不维护在线状态连接时的单独调试。收到 payload.type=device.wake_words.changed 后重新拉取 /device-runtime/config/。',
+          note: '订阅后收到 <code>device.runtime_config.subscribed</code>，payload 直接带 config + action（不再单独发 snapshot）。config 与 /device-runtime/config/ 同源，但不包含 resources；含 voiceConfiguration 和 scrollingTexts；后续变化继续推同一种 subscribed，action 表示触发原因。',
         });
         writeResponse({ ok: false, status: '-', body: { message: '等待 WebSocket 订阅' } });
         const output = document.getElementById('runtimeEventsOutput');
@@ -1104,19 +1102,16 @@
         socket.addEventListener('message', (event) => {
           const payload = parseJson(event.data) || event.data;
           events.push(payload);
+          if (payload && payload.type === 'device.runtime_config.subscribed' && payload.payload && payload.payload.config) {
+            state.runtimeConfig = payload.payload.config;
+            state.runtimeConfig.snapshotAction = payload.payload.action || '';
+            state.runtimeConfig.snapshotDeviceCode = payload.payload.deviceCode || '';
+            events.push({ type: 'client.runtime_config.subscribed_applied', action: payload.payload.action || '-', wakeWords: currentWakeWords(), wakeWordLines: state.runtimeConfig.wakeWordLines || [] });
+            setStatus('配置已更新：' + (payload.payload.action || '-'), 'ok');
+            if (state.activeSection === 'runtimeConfig' || state.activeSection === 'wakeWords') renderActiveSection();
+          }
           output.textContent = pretty(events);
           writeResponse({ ok: true, status: 'WS', body: events });
-          if (payload && payload.payload && payload.payload.type === 'device.wake_words.changed') {
-            fetchRuntimeConfig()
-              .then(() => {
-                events.push({ type: 'client.runtime_config.refetched', wakeWords: currentWakeWords(), wakeWordLines: (state.runtimeConfig && state.runtimeConfig.wakeWordLines) || [] });
-                output.textContent = pretty(events);
-              })
-              .catch((error) => {
-                events.push({ type: 'client.runtime_config.refetch_failed', message: error.message });
-                output.textContent = pretty(events);
-              });
-          }
         });
         socket.addEventListener('error', () => {
           events.push({ type: 'client.error', message: 'WebSocket 连接失败' });
@@ -2950,51 +2945,48 @@
           errors: runtimeDeviceErrors([['400', '文本为空或音色参数不合法。']]),
         };
         if (detail.method === 'WS' && state.activeSection === 'runtimeEvents') return {
-          summary: detail.note || '设备端运行时配置变更通知；真实设备通过 device.status.start 在线连接自动接收。',
+          summary: detail.note || '设备端运行时配置快照订阅；订阅后和后续配置变化都会下发完整 snapshot。',
           query: null,
           headers: [
             ['无业务必填 Header', '设备码在 WebSocket command 的 <code>payload.deviceCode</code> 中传递。'],
           ],
           body: [
-            ['type', '真实设备发送 <code>device.status.start</code> 后自动订阅当前设备的运行时配置变更；<code>device.runtime_config.subscribe</code> 仅作为单独调试订阅，<code>device.runtime_config.unsubscribe</code> 取消该调试订阅。'],
+            ['type', '<code>device.runtime_config.subscribe</code> 订阅当前设备的运行时配置快照；<code>device.runtime_config.unsubscribe</code> 取消订阅。'],
             ['id', '客户端生成的 command id。'],
-            ['payload.deviceCode', '必填；后端按设备码解析公司，只向该设备推送命中的配置变更。'],
+            ['payload.deviceCode', '必填；后端按设备码解析公司，只向该设备推送配置快照。'],
           ],
           response: [
-            ['device.status.started / device.runtime_config.subscribed', '在线连接自动订阅成功，或单独调试订阅成功。payload 返回 deviceCode。'],
-            ['devices.event', '配置变更事件统一用该 envelope 下发，真实业务事件在 <code>payload</code> 内。'],
-            ['payload.type=device.wake_words.changed', '后台新增、修改、删除该设备绑定的唤醒词后推送。'],
-            ['payload.deviceCodes', '受影响设备码数组；设备端通常只会收到包含自己的事件。'],
-            ['payload.refresh.endpoint', '收到后应重新 GET <code>/api/v1/device-runtime/config/</code>，不要只局部修改本地 wakeWords。'],
+            ['device.runtime_config.subscribed', '订阅确认 + 配置推送（合并为单条消息）。payload 带 deviceCode、tenantId、action、config。首次订阅 action=initial；唤醒词变化 action=wakeWordsChanged；音色变化 action=voiceConfigurationChanged；滚动文本变化 action=scrollingTextsChanged。'],
+            ['payload.config', '最新运行时配置对象，与 /device-runtime/config/ 同源，但不包含 resources；含 voiceConfiguration 和 scrollingTexts。'],
+            ['payload.config.voiceConfiguration', '运行时音色配置块（应用绑定的可用 TTS 音色）。'],
+            ['payload.config.scrollingTexts', '租户级启用滚动文本列表（中英明细）。'],
           ],
           responseExample: [
-            { type: 'device.runtime_config.subscribed', id: '<commandId>', payload: { deviceCode: '<deviceCode>', tenantId: 1 } },
-            { type: 'devices.event', id: '<commandId>', payload: { type: 'device.wake_words.changed', action: 'update', tenantId: 1, deviceCodes: ['<deviceCode>'], refresh: { endpoint: '/api/v1/device-runtime/config/', reason: 'wakeWordsChanged' } } },
+            { type: 'device.runtime_config.subscribed', id: '<commandId>', payload: { deviceCode: '<deviceCode>', tenantId: 1, action: 'initial', config: { device: {}, application: {}, agentApplication: {}, wakeWords: [], wakeWordLines: [], voiceConfiguration: { voiceTones: [] }, scrollingTexts: [] } } },
+            { type: 'device.runtime_config.subscribed', id: '<commandId>', payload: { deviceCode: '<deviceCode>', tenantId: 1, action: 'wakeWordsChanged', config: { device: {}, application: {}, agentApplication: {}, wakeWords: [], wakeWordLines: [], voiceConfiguration: { voiceTones: [] }, scrollingTexts: [] } } },
           ],
           errors: runtimeDeviceErrors([['device_not_found', '设备不存在、未绑定公司、已停用或已过期。']]),
         };
         if (detail.method === 'WS' && state.activeSection === 'deviceStatus') return {
-          summary: detail.note || '统一 WebSocket 在线状态命令接口；同一连接自动下发当前设备的运行时配置变更。',
+          summary: detail.note || '统一 WebSocket 在线状态命令接口；配置快照使用 device.runtime_config.subscribe。',
           query: null,
           headers: [
             ['无业务必填 Header', '设备码在 WebSocket command 的 <code>payload.deviceCode</code> 中传递。'],
           ],
           body: [
-            ['type', '<code>device.status.start</code> 建立在线状态会话并自动订阅当前设备配置变更；<code>device.status.ping</code> 刷新 lastHeartbeat。'],
+            ['type', '<code>device.status.start</code> 建立在线状态会话；<code>device.status.ping</code> 刷新 lastHeartbeat。'],
             ['id', '客户端生成的 command id。'],
             ['payload.deviceCode', '<code>device.status.start</code> 必填；用于解析设备。'],
           ],
           response: [
             ['device.status.started', '服务端确认设备已进入 online。'],
             ['device.status.pong', '服务端确认 ping，刷新 lastHeartbeat。'],
-            ['devices.event', '后台更换当前设备唤醒词后，同一在线连接收到 payload.type=device.wake_words.changed。'],
             ['close / disconnect', '连接断开后服务端将设备置为 offline，并发布设备状态事件。'],
             ['error', '设备码无效或设备不可用。'],
           ],
           responseExample: [
             { type: 'device.status.started', id: '<commandId>', payload: { deviceCode: '<deviceCode>', status: 'online' } },
             { type: 'device.status.pong', id: '<commandId>', payload: { deviceCode: '<deviceCode>' } },
-            { type: 'devices.event', id: '<commandId>', payload: { type: 'device.wake_words.changed', action: 'update', deviceCodes: ['<deviceCode>'], refresh: { endpoint: '/api/v1/device-runtime/config/', reason: 'wakeWordsChanged' } } },
           ],
           errors: runtimeDeviceErrors([['device_not_found', '设备不存在、未授权或不可用。']]),
         };

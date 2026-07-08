@@ -8,6 +8,7 @@ import uuid
 from typing import Any, Awaitable, Callable
 
 from asgiref.sync import sync_to_async
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import F
 from django.utils import timezone
 from websockets.exceptions import ConnectionClosed
@@ -20,6 +21,7 @@ from apps.devices.services.runtime import RuntimeDeviceError, validate_runtime_a
 from apps.devices.views import DeviceVoiceChatView
 from apps.devices.realtime import (
     add_device_event_subscriber,
+    build_device_runtime_config_event,
     publish_device_event,
     remove_device_event_subscriber,
     resolve_device_event_subscription,
@@ -52,6 +54,7 @@ class RealtimeConnection:
     def __init__(self):
         self.device_events_subscriber = None
         self.device_events_command_id = None
+        self.runtime_config_device_id = None
         self.device_status_device_id = None
         self.device_status_device_code = None
         self.device_status_command_id = None
@@ -106,6 +109,7 @@ class RealtimeConnection:
             remove_device_event_subscriber(self.device_events_subscriber)
             self.device_events_subscriber = None
             self.device_events_command_id = None
+            self.runtime_config_device_id = None
 
     async def close_asr_session(self) -> None:
         if self.asr_upstream_task is not None:
@@ -196,6 +200,15 @@ async def realtime_websocket_application(scope, receive, send):
                     task.cancel()
 
             for task in queue_tasks:
+                if connection.runtime_config_device_id is not None:
+                    event = task.result()
+                    await _send_runtime_config_subscribed(
+                        send,
+                        connection.runtime_config_device_id,
+                        connection.device_events_command_id,
+                        _runtime_config_action(event),
+                    )
+                    continue
                 await _send_json(
                     send,
                     {
@@ -215,6 +228,26 @@ async def realtime_websocket_application(scope, receive, send):
             receive_task.cancel()
         logger.info('realtime.websocket.closed %s', send_monitor.summary())
         await connection.close()
+
+
+async def _send_runtime_config_subscribed(send, device_id: int, command_id, action: str) -> None:
+    try:
+        event = await sync_to_async(build_device_runtime_config_event, thread_sensitive=True)(
+            device_id,
+            command_id,
+            action,
+        )
+    except Exception:
+        logger.exception('realtime.runtime_config.subscribed_failed device_id=%s action=%s', device_id, action)
+        await _send_error(
+            send,
+            command_id,
+            'runtime_config_subscribed_failed',
+            'Device runtime config subscription failed',
+        )
+        return
+    if event is not None:
+        await _send_json(send, event)
 
 
 async def _handle_client_event(event, send, connection: RealtimeConnection) -> bool:
@@ -307,6 +340,17 @@ async def _handle_client_event(event, send, connection: RealtimeConnection) -> b
     return False
 
 
+def _runtime_config_action(event: dict[str, Any]) -> str:
+    event_type = str(event.get('type') or '')
+    if event_type == 'device.wake_words.changed':
+        return 'wakeWordsChanged'
+    if event_type == 'device.voice_configuration.changed':
+        return 'voiceConfigurationChanged'
+    if event_type == 'device.scrolling_texts.changed':
+        return 'scrollingTextsChanged'
+    return str(event.get('action') or 'runtimeAvailabilityChanged')
+
+
 async def _handle_binary_frame(send, connection: RealtimeConnection, audio_bytes: bytes) -> None:
     if not audio_bytes:
         return
@@ -368,17 +412,8 @@ async def _handle_runtime_config_events_subscribe(send, connection: RealtimeConn
         device_code=subscription['device_code'],
     )
     connection.device_events_command_id = command_id
-    await _send_json(
-        send,
-        {
-            'type': 'device.runtime_config.subscribed',
-            'id': command_id,
-            'payload': {
-                'deviceCode': subscription['device_code'],
-                'tenantId': subscription['tenant_id'],
-            },
-        },
-    )
+    connection.runtime_config_device_id = subscription['device_id']
+    await _send_runtime_config_subscribed(send, subscription['device_id'], command_id, 'initial')
 
 
 async def _handle_runtime_config_events_unsubscribe(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:
@@ -1866,7 +1901,7 @@ async def _send_error(send, command_id, code: str, message: str) -> None:
 
 
 async def _send_json(send, payload: dict[str, Any]) -> None:
-    await send({'type': 'websocket.send', 'text': json.dumps(payload, ensure_ascii=False)})
+    await send({'type': 'websocket.send', 'text': json.dumps(payload, ensure_ascii=False, cls=DjangoJSONEncoder)})
 
 
 class _RealtimeSendMonitor:

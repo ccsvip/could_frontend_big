@@ -1,0 +1,14 @@
+.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+media/
+staticfiles/
+celerybeat-schedule
+test_*.sqlite3
+*.log
+*.tmp

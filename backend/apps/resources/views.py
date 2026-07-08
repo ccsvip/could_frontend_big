@@ -52,6 +52,7 @@ from apps.tenants.models import Tenant
 from apps.tenants.services import get_request_tenant, resolve_member_or_public_tenant, scope_queryset_member_or_public
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from apps.devices.realtime import publish_device_event_sync
 from .models import CommandGroup, ControlCommand, MinioConfig, ModelAsset, Resource, ScrollingText, ScrollingTextItem, TaskCommand, TaskCommandStep, TenantVideoQuota, VoiceTone
 from .serializers import (
     AliyunCommandItemSerializer,
@@ -556,6 +557,21 @@ SCROLLING_TEXT_CONTENT_REQUEST_EXAMPLE = OpenApiExample(
 )
 
 
+def _publish_runtime_config_changed(tenant_id, event_type: str, reason: str) -> None:
+    """后台资源变更后通知运行时设备刷新配置（统一走 device.runtime_config 订阅）。"""
+    if tenant_id is None:
+        return
+    payload = {
+        'type': event_type,
+        'tenantId': tenant_id,
+        'refresh': {
+            'endpoint': '/api/v1/device-runtime/config/',
+            'reason': reason,
+        },
+    }
+    transaction.on_commit(lambda: publish_device_event_sync(payload))
+
+
 @extend_schema_view(
     list=extend_schema(
         tags=['Resources'],
@@ -639,10 +655,22 @@ class ScrollingTextViewSet(CachedBusinessResponseMixin, PermissionMappedModelVie
     def perform_create(self, serializer):
         tenant = resolve_member_or_public_tenant(self.request)
         if tenant is not None:
-            serializer.save(tenant=tenant)
+            instance = serializer.save(tenant=tenant)
         else:
-            serializer.save()
+            instance = serializer.save()
         self.clear_cached_business_responses()
+        _publish_runtime_config_changed(getattr(instance, 'tenant_id', None), 'device.scrolling_texts.changed', 'scrollingTextsChanged')
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        self.clear_cached_business_responses()
+        _publish_runtime_config_changed(getattr(instance, 'tenant_id', None), 'device.scrolling_texts.changed', 'scrollingTextsChanged')
+
+    def perform_destroy(self, instance):
+        tenant_id = getattr(instance, 'tenant_id', None)
+        super().perform_destroy(instance)
+        self.clear_cached_business_responses()
+        _publish_runtime_config_changed(tenant_id, 'device.scrolling_texts.changed', 'scrollingTextsChanged')
 
     def list(self, request, *args, **kwargs):
         if not request.query_params:
@@ -731,6 +759,22 @@ class VoiceToneViewSet(CachedBusinessResponseMixin, TenantScopedQuerysetMixin, P
         if is_active in {'true', 'false'}:
             queryset = queryset.filter(is_active=is_active == 'true')
         return self.apply_tenant_scope(queryset)
+
+    def perform_create(self, serializer):
+        super().perform_create(serializer)
+        self.clear_cached_business_responses()
+        _publish_runtime_config_changed(getattr(serializer.instance, 'tenant_id', None), 'device.voice_configuration.changed', 'voiceConfigurationChanged')
+
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        self.clear_cached_business_responses()
+        _publish_runtime_config_changed(getattr(serializer.instance, 'tenant_id', None), 'device.voice_configuration.changed', 'voiceConfigurationChanged')
+
+    def perform_destroy(self, instance):
+        tenant_id = getattr(instance, 'tenant_id', None)
+        super().perform_destroy(instance)
+        self.clear_cached_business_responses()
+        _publish_runtime_config_changed(tenant_id, 'device.voice_configuration.changed', 'voiceConfigurationChanged')
 
 
 @extend_schema_view(

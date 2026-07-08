@@ -470,6 +470,24 @@ class WakeWordViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin, viewsets
         return [device_id for device_id, _ in devices], [code for _, code in devices]
 
     @staticmethod
+    def _wake_word_target_devices(
+        tenant_id: int | None,
+        device_ids: list[int],
+        device_codes: list[str],
+    ) -> tuple[list[int], list[str]]:
+        filters = Q()
+        if device_ids:
+            filters |= Q(id__in=device_ids)
+        if device_codes:
+            filters |= Q(code__in=device_codes)
+        if not filters:
+            return [], []
+
+        devices = Device.objects.filter(filters, tenant_id=tenant_id).order_by('id')
+        target_devices = [(device.id, device.code) for device in devices]
+        return [device_id for device_id, _ in target_devices], [code for _, code in target_devices]
+
+    @staticmethod
     def _publish_wake_word_changed(
         wake_word: WakeWord,
         action: str,
@@ -479,9 +497,15 @@ class WakeWordViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin, viewsets
     ) -> None:
         if device_ids is None or device_codes is None:
             device_ids, device_codes = WakeWordViewSet._wake_word_devices_payload(wake_word)
+        device_ids, device_codes = WakeWordViewSet._wake_word_target_devices(
+            wake_word.tenant_id,
+            device_ids,
+            device_codes,
+        )
         payload = {
             'type': 'device.wake_words.changed',
-            'action': action,
+            'action': 'wakeWordsChanged',
+            'operation': action,
             'resource': 'wakeWords',
             'tenantId': wake_word.tenant_id,
             'wakeWordId': wake_word.id,
@@ -518,9 +542,15 @@ class WakeWordViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin, viewsets
         wake_word_id = instance.id
         text = instance.text
         instance.delete()
+        device_ids, device_codes = self._wake_word_target_devices(
+            tenant_id,
+            device_ids,
+            device_codes,
+        )
         payload = {
             'type': 'device.wake_words.changed',
-            'action': 'delete',
+            'action': 'wakeWordsChanged',
+            'operation': 'delete',
             'resource': 'wakeWords',
             'tenantId': tenant_id,
             'wakeWordId': wake_word_id,
@@ -597,22 +627,85 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
             {
                 'requestId': get_request_id(request),
                 'traceId': get_trace_id(request),
-                'device': DeviceSerializer(device, context={'request': request}).data,
-                'application': (
-                    {
-                        'id': application.id,
-                        'name': application.name,
-                        'code': application.code,
-                    }
-                    if application is not None
-                    else None
-                ),
-                'agentApplication': DeviceActivationView._agent_application_payload(agent_application),
-                'resources': self._resources_payload(device, request),
-                **self._wake_words_payload(device),
+                **self._config_payload(device, request=request, include_resources=True),
             },
             status=status.HTTP_200_OK,
         )
+
+    @staticmethod
+    def _config_payload(device: Device, request=None, *, include_resources: bool = False, include_scrolling_texts: bool = False):
+        application = device.application
+        agent_application = device.effective_agent_application
+        payload = {
+            'device': DeviceSerializer(device, context={'request': request}).data,
+            'application': (
+                {
+                    'id': application.id,
+                    'name': application.name,
+                    'code': application.code,
+                }
+                if application is not None
+                else None
+            ),
+            'agentApplication': DeviceActivationView._agent_application_payload(agent_application),
+            **DeviceRuntimeConfigView._wake_words_payload(device),
+        }
+        if include_resources:
+            payload['resources'] = DeviceRuntimeConfigView._resources_payload(device, request)
+        else:
+            payload['voiceConfiguration'] = DeviceRuntimeConfigView._voice_configuration_payload(device)
+        if include_scrolling_texts:
+            payload['scrollingTexts'] = DeviceRuntimeConfigView._scrolling_texts_payload(device)
+        return payload
+
+    @staticmethod
+    def _voice_configuration_payload(device: Device):
+        application = device.application
+        application_is_active = application is not None and application.is_active
+        return {
+            'voiceTones': [
+                {
+                    'id': item.id,
+                    'name': item.display_name,
+                    'voiceCode': item.voice_code,
+                    'audioUrl': '',
+                    'iconUrl': item.avatar_path,
+                }
+                for item in (
+                    application.tts_voices.filter(is_active=True, is_visible=True, provider__is_active=True)
+                    if application_is_active
+                    else []
+                )
+            ],
+        }
+
+    @staticmethod
+    def _scrolling_texts_payload(device: Device):
+        tenant = device.tenant
+        if tenant is None:
+            return []
+        scrolling_texts = (
+            ScrollingText.objects.filter(tenant=tenant, is_active=True)
+            .prefetch_related('items')
+            .order_by('-updated_at', '-id')
+        )
+        return [
+            {
+                'id': item.id,
+                'title': item.title,
+                'i18nScheme': item.i18n_scheme,
+                'items': [
+                    {
+                        'id': text_item.id,
+                        'order': text_item.order,
+                        'zh': text_item.zh_text,
+                        'en': text_item.en_text,
+                    }
+                    for text_item in item.items.all()
+                ],
+            }
+            for item in scrolling_texts
+        ]
 
     @staticmethod
     def _resources_payload(device: Device, request):
