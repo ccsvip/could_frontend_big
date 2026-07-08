@@ -2217,6 +2217,109 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         self.assertEqual(conversation.external_session.get('runtimeSessionId'), first_session['sessionId'])
         self.assertEqual(conversation.third_party_chatbot_id, chatbot.id)
 
+    def test_realtime_third_party_backend_streams_deltas_with_runtime_conversation(self):
+        from apps.ai_models.services import third_party_chatbots
+        from config import realtime
+
+        provider = ThirdPartyChatbotProvider.objects.create(
+            name='FlowMesh',
+            provider_type='flowmesh',
+            api_base_url='https://flowmesh-api.kmyszkj.com/api/open/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        chatbot = ThirdPartyChatbotApplication.objects.create(
+            provider=provider,
+            name='FlowMesh 助手',
+            external_application_id='e7415175ac7c',
+            is_active=True,
+        )
+        TenantThirdPartyChatbotGrant.objects.create(tenant=self.tenant, chatbot=chatbot, is_active=True)
+        ThirdPartyChatbotIntegration.objects.create(
+            scheme_type='scheme_b',
+            name='FlowMesh 方案B',
+            provider=provider,
+            chatbot=chatbot,
+            config=third_party_chatbots.default_scheme_b_config(),
+            is_active=True,
+        )
+        agent_application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime Third Party Streaming Agent',
+            runtime_backend_type=RUNTIME_BACKEND_THIRD_PARTY_CHATBOT,
+            third_party_chatbot=chatbot,
+            created_by=self.user,
+        )
+        device_application = DeviceApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime Third Party Streaming App',
+            code='runtime-third-party-streaming-app',
+            agent_application=agent_application,
+        )
+        Device.objects.create(
+            tenant=self.tenant,
+            application=device_application,
+            name='Runtime Third Party Streaming Device',
+            code='ANDROID-AGENT-THIRD-PARTY-STREAM-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+
+        stream_calls = []
+
+        async def fake_stream_chatbot_message(chatbot_arg, message, *, conversation=None, timeout=120):
+            stream_calls.append({
+                'chatbot_id': chatbot_arg.id,
+                'message': message,
+                'conversation_id': conversation.id if conversation is not None else None,
+                'runtime_session_id': (
+                    (conversation.external_session or {}).get('runtimeSessionId')
+                    if conversation is not None
+                    else None
+                ),
+            })
+            yield '第一段'
+            yield '第二段'
+
+        async def run_llm():
+            messages = []
+
+            async def send(event):
+                messages.append(json.loads(event['text']))
+
+            with (
+                patch('config.realtime.third_party_chatbots.stream_chatbot_message', new=fake_stream_chatbot_message),
+                patch('config.realtime.third_party_chatbots.send_chatbot_message') as send_chatbot_message,
+            ):
+                answer = await realtime._run_llm_session_body(
+                    send,
+                    'third-party-stream',
+                    {
+                        'id': 'third-party-stream',
+                        'payload': {
+                            'deviceCode': 'ANDROID-AGENT-THIRD-PARTY-STREAM-001',
+                            'text': '请流式回答',
+                            'requestId': 'req-third-party-stream',
+                            'traceId': 'trace-third-party-stream',
+                        },
+                    },
+                )
+                send_chatbot_message.assert_not_called()
+            return answer, messages
+
+        answer, messages = async_to_sync(run_llm)()
+
+        self.assertEqual(answer, '第一段第二段')
+        delta_texts = [item['payload']['text'] for item in messages if item['type'] == 'llm.delta']
+        self.assertEqual(delta_texts, ['第一段', '第二段'])
+        done = next(item for item in messages if item['type'] == 'llm.done')
+        self.assertEqual(done['payload']['answerText'], '第一段第二段')
+        self.assertEqual(stream_calls[0]['chatbot_id'], chatbot.id)
+        self.assertEqual(stream_calls[0]['message'], '请流式回答')
+        self.assertTrue(stream_calls[0]['conversation_id'])
+        self.assertTrue(stream_calls[0]['runtime_session_id'])
+        conversation = ChatConversation.objects.get(pk=stream_calls[0]['conversation_id'])
+        self.assertEqual(conversation.messages.count(), 2)
+
     def test_unified_realtime_websocket_runs_agent_voice_session_with_tts(self):
         provider = LLMProvider.objects.create(
             name='Runtime Agent Voice Provider',

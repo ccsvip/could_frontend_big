@@ -818,25 +818,55 @@ async def _run_llm_session_body(
                 await on_tts_segment(segment)
     else:
         if session.get('backendType') == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
-            try:
-                answer_text = await sync_to_async(_send_third_party_session_message, thread_sensitive=True)(session, question_text)
-                await _send_json(
-                    send,
-                    {
-                        'type': 'llm.delta',
-                        'id': command_id,
-                        'requestId': request_id,
-                        'traceId': trace_id,
-                        'payload': {'text': answer_text},
-                    },
-                )
-                for segment in _split_llm_tts_segments(answer_text, session):
+            tts_buffer = ''
+            if session.get('thirdPartySupportsStreaming'):
+                try:
+                    async for delta in _stream_third_party_session_message(session, question_text):
+                        answer_text += delta
+                        await _send_json(
+                            send,
+                            {
+                                'type': 'llm.delta',
+                                'id': command_id,
+                                'requestId': request_id,
+                                'traceId': trace_id,
+                                'payload': {'text': delta},
+                            },
+                        )
+                        tts_buffer += delta
+                        segments, tts_buffer = _pop_llm_tts_segments(tts_buffer, session)
+                        for segment in segments:
+                            await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
+                            if on_tts_segment is not None:
+                                await on_tts_segment(segment)
+                except Exception as exc:
+                    await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message=str(exc)[:200]))
+                    return None
+                final_segments, _ = _pop_llm_tts_segments(tts_buffer, session, flush=True)
+                for segment in final_segments:
                     await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
                     if on_tts_segment is not None:
                         await on_tts_segment(segment)
-            except Exception as exc:
-                await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message=str(exc)[:200]))
-                return None
+            else:
+                try:
+                    answer_text = await sync_to_async(_send_third_party_session_message, thread_sensitive=True)(session, question_text)
+                    await _send_json(
+                        send,
+                        {
+                            'type': 'llm.delta',
+                            'id': command_id,
+                            'requestId': request_id,
+                            'traceId': trace_id,
+                            'payload': {'text': answer_text},
+                        },
+                    )
+                    for segment in _split_llm_tts_segments(answer_text, session):
+                        await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
+                        if on_tts_segment is not None:
+                            await on_tts_segment(segment)
+                except Exception as exc:
+                    await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message=str(exc)[:200]))
+                    return None
         else:
             tts_buffer = ''
             try:
@@ -1017,11 +1047,16 @@ def _record_realtime_device_chat_log(
 
 
 def _send_third_party_session_message(session: dict[str, Any], question_text: str) -> str:
+    chatbot, conversation = _resolve_third_party_session_context(session)
+    return third_party_chatbots.send_chatbot_message(chatbot, question_text, conversation=conversation)
+
+
+def _resolve_third_party_session_context(session: dict[str, Any]):
     from apps.ai_models.models import ChatConversation, ThirdPartyChatbotApplication
 
     chatbot = (
         ThirdPartyChatbotApplication.objects
-        .select_related('provider')
+        .select_related('provider', 'integration')
         .filter(id=session.get('thirdPartyChatbotId'))
         .first()
     )
@@ -1037,7 +1072,14 @@ def _send_third_party_session_message(session: dict[str, Any], question_text: st
             .filter(id=conversation_id, third_party_chatbot=chatbot)
             .first()
         )
-    return third_party_chatbots.send_chatbot_message(chatbot, question_text, conversation=conversation)
+    return chatbot, conversation
+
+
+async def _stream_third_party_session_message(session: dict[str, Any], question_text: str):
+    chatbot, conversation = await sync_to_async(_resolve_third_party_session_context, thread_sensitive=True)(session)
+    async for text in third_party_chatbots.stream_chatbot_message(chatbot, question_text, conversation=conversation):
+        if text:
+            yield str(text)
 
 
 def _is_client_disconnected(exc: BaseException) -> bool:
@@ -1542,7 +1584,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
 
         runtime_chatbot_id = runtime_config.get('third_party_chatbot_id')
         if runtime_chatbot_id:
-            chatbot = ThirdPartyChatbotApplication.objects.select_related('provider').filter(id=runtime_chatbot_id).first()
+            chatbot = ThirdPartyChatbotApplication.objects.select_related('provider', 'integration').filter(id=runtime_chatbot_id).first()
         if chatbot is None:
             chatbot = agent_application.third_party_chatbot
         if not third_party_chatbots.is_chatbot_effective_for_tenant(device.tenant, chatbot):
@@ -1621,6 +1663,9 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
         return {
             **base_session,
             'thirdPartyChatbotId': chatbot.id,
+            'thirdPartySupportsStreaming': third_party_chatbots.supports_streaming(
+                chatbot.integration.config if getattr(chatbot, 'integration', None) is not None else None
+            ),
             'modelName': chatbot.name,
         }
 
