@@ -315,6 +315,23 @@ def _select_company_tts_voice(tenant, provider, raw_voice_id=None, *, model_code
     return tts_services.get_effective_tts_voice_for_tenant(tenant, provider, model_code=model_code)
 
 
+def _select_device_runtime_tts_voice(device, provider, raw_voice_id=None, *, model_code: str | None = None) -> TTSVoice | None:
+    if raw_voice_id not in (None, ''):
+        return _select_company_tts_voice(device.tenant, provider, raw_voice_id, model_code=model_code)
+
+    device_voice = getattr(device, 'tts_voice', None)
+    if device_voice is not None:
+        if (
+            device_voice.provider_id == provider.id
+            and tts_services.is_voice_available(device_voice)
+            and (model_code is None or tts_services.is_tts_voice_supported_by_model_code(device_voice, model_code))
+        ):
+            return device_voice
+        return None
+
+    return tts_services.get_effective_tts_voice_for_tenant(device.tenant, provider, model_code=model_code)
+
+
 def _company_tts_session_config(tenant, config, request_data=None) -> dict:
     settings_obj = tts_services.get_tenant_tts_settings(tenant)
     session_config = dict(settings_obj.tts_session_config if settings_obj is not None else config.tts_session_config)
@@ -483,7 +500,7 @@ class TTSRuntimeView(APIView):
         config = tts_services.get_effective_tts_config(provider)
         session_config = _company_tts_session_config(device.tenant, config, request.data)
         model_code = tts_services.get_tts_model_profile_code_from_session(session_config, config.model)
-        voice = _select_company_tts_voice(device.tenant, provider, request.data.get('voiceId'), model_code=model_code)
+        voice = _select_device_runtime_tts_voice(device, provider, request.data.get('voiceId'), model_code=model_code)
         if voice is None:
             return Response({'voiceId': '请先配置默认音色或当前模型不支持该音色'}, status=status.HTTP_400_BAD_REQUEST)
         text = tts_services.normalize_tts_text(request.data.get('text'), config)

@@ -14,10 +14,10 @@ from django.utils import timezone
 from websockets.exceptions import ConnectionClosed
 
 from apps.ai_models import llm_services, realtime_asr, realtime_tts
-from apps.ai_models.models import RUNTIME_BACKEND_PLATFORM_LLM, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT
+from apps.ai_models.models import RUNTIME_BACKEND_PLATFORM_LLM, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, TTSVoice
 from apps.ai_models.services import third_party_chatbots
 from apps.ai_models.services import tts as tts_services
-from apps.devices.services.runtime import RuntimeDeviceError, validate_runtime_application_active
+from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device_or_none, validate_runtime_application_active
 from apps.devices.views import DeviceVoiceChatView
 from apps.devices.realtime import (
     add_device_event_subscriber,
@@ -299,6 +299,9 @@ async def _handle_client_event(event, send, connection: RealtimeConnection) -> b
         return False
     if command_type == 'device.status.ping':
         await _handle_device_status_ping(send, connection, message)
+        return False
+    if command_type == 'device.voice.bind':
+        await _handle_device_voice_bind(send, connection, message)
         return False
     if command_type == 'asr.session.start':
         await _handle_asr_session_start(send, connection, message)
@@ -1863,6 +1866,71 @@ async def _handle_device_status_ping(send, connection: RealtimeConnection, messa
             'payload': {'deviceCode': connection.device_status_device_code},
         },
     )
+
+
+async def _handle_device_voice_bind(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:
+    command_id = message.get('id')
+    payload = message.get('payload') if isinstance(message.get('payload'), dict) else {}
+    device_code = str(payload.get('deviceCode') or payload.get('device_code') or '').strip()
+    voice_payload = payload.get('voice')
+
+    if not device_code:
+        await _send_error(send, command_id, 'invalid_device', 'Device code is required')
+        return
+
+    device = await sync_to_async(get_runtime_device_or_none, thread_sensitive=True)(device_code, require_tenant=True)
+    if device is None:
+        await _send_error(send, command_id, 'device_not_found', 'Device is not available')
+        return
+
+    voice_id = None
+    if isinstance(voice_payload, dict):
+        raw_id = voice_payload.get('id')
+        voice_id = int(raw_id) if isinstance(raw_id, (int, float)) and raw_id > 0 else None
+    elif isinstance(voice_payload, (int, float)) and voice_payload > 0:
+        voice_id = int(voice_payload)
+
+    bound_voice = None
+    if voice_id is not None:
+        bound_voice = await sync_to_async(
+            lambda: TTSVoice.objects.select_related('provider').filter(
+                id=voice_id, is_active=True, is_visible=True, provider__is_active=True,
+            ).first(),
+            thread_sensitive=True,
+        )()
+        if bound_voice is None:
+            await _send_error(send, command_id, 'voice_not_found', 'Voice is not available')
+            return
+
+    previous_voice_id = device.tts_voice_id
+    device.tts_voice = bound_voice
+    await sync_to_async(device.save, thread_sensitive=True)(update_fields=['tts_voice'])
+
+    if previous_voice_id != device.tts_voice_id:
+        await publish_device_event({
+            'type': 'device.voice_configuration.changed',
+            'action': 'voiceConfigurationChanged',
+            'operation': 'update',
+            'resource': 'voiceConfiguration',
+            'tenantId': device.tenant_id,
+            'deviceCode': device.code,
+            'deviceCodes': [device.code],
+            'refresh': {
+                'endpoint': '/api/v1/device-runtime/config/',
+                'reason': 'voiceConfigurationChanged',
+            },
+        })
+
+    await _send_json(send, {
+        'type': 'device.voice.bound',
+        'id': command_id,
+        'payload': {
+            'deviceCode': device.code,
+            'voiceId': bound_voice.id if bound_voice else None,
+            'voiceName': bound_voice.display_name if bound_voice else '',
+            'voiceCode': bound_voice.voice_code if bound_voice else '',
+        },
+    })
 
 
 async def _clear_device_status(connection: RealtimeConnection) -> None:

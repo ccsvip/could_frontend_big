@@ -791,6 +791,154 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(voice_tones[0]['id'], voice.id)
         self.assertEqual(voice_tones[0]['voiceCode'], 'Cherry')
 
+    def test_websocket_device_voice_bind_binds_voice_from_android_voice_object(self):
+        self.agent_application.publish()
+        tts_provider = TTSProvider.objects.get(code='aliyun')
+        voice = TTSVoice.objects.get(provider=tts_provider, voice_code='Cherry')
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='WS Voice Bind Device',
+            code='ANDROID-WS-VOICE-BIND-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        async def run_websocket():
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {'type': 'websocket', 'path': '/ws/realtime/', 'query_string': b'', 'headers': []},
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            self.assertEqual((await communicator.receive_output(timeout=1))['type'], 'websocket.accept')
+
+            await communicator.send_input({
+                'type': 'websocket.receive',
+                'text': json.dumps({
+                    'type': 'device.voice.bind',
+                    'id': 'voice-bind-1',
+                    'payload': {
+                        'deviceCode': device.code,
+                        'voice': {
+                            'id': voice.id,
+                            'name': voice.display_name,
+                            'voiceCode': voice.voice_code,
+                            'audioUrl': '',
+                            'iconUrl': voice.avatar_path,
+                        },
+                    },
+                }),
+            })
+            response = await communicator.receive_output(timeout=1)
+            payload = json.loads(response['text'])
+            self.assertEqual(payload['type'], 'device.voice.bound')
+            self.assertEqual(payload['id'], 'voice-bind-1')
+            self.assertEqual(payload['payload']['deviceCode'], device.code)
+            self.assertEqual(payload['payload']['voiceId'], voice.id)
+            self.assertEqual(payload['payload']['voiceCode'], 'Cherry')
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+        device.refresh_from_db()
+        self.assertEqual(device.tts_voice_id, voice.id)
+
+    def test_websocket_device_voice_bind_with_null_voice_unbinds(self):
+        self.agent_application.publish()
+        tts_provider = TTSProvider.objects.get(code='aliyun')
+        voice = TTSVoice.objects.get(provider=tts_provider, voice_code='Cherry')
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            tts_voice=voice,
+            name='WS Voice Unbind Device',
+            code='ANDROID-WS-VOICE-UNBIND-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        async def run_websocket():
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {'type': 'websocket', 'path': '/ws/realtime/', 'query_string': b'', 'headers': []},
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            self.assertEqual((await communicator.receive_output(timeout=1))['type'], 'websocket.accept')
+
+            await communicator.send_input({
+                'type': 'websocket.receive',
+                'text': json.dumps({
+                    'type': 'device.voice.bind',
+                    'id': 'voice-unbind-1',
+                    'payload': {'deviceCode': device.code, 'voice': None},
+                }),
+            })
+            response = await communicator.receive_output(timeout=1)
+            payload = json.loads(response['text'])
+            self.assertEqual(payload['type'], 'device.voice.bound')
+            self.assertEqual(payload['payload']['voiceId'], None)
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+        device.refresh_from_db()
+        self.assertIsNone(device.tts_voice_id)
+
+    def test_websocket_device_voice_bind_rejects_inactive_voice(self):
+        self.agent_application.publish()
+        tts_provider = TTSProvider.objects.get(code='aliyun')
+        voice = TTSVoice.objects.get(provider=tts_provider, voice_code='Cherry')
+        voice.is_active = False
+        voice.save(update_fields=['is_active'])
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='WS Voice Inactive Device',
+            code='ANDROID-WS-VOICE-INACTIVE-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        async def run_websocket():
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {'type': 'websocket', 'path': '/ws/realtime/', 'query_string': b'', 'headers': []},
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            self.assertEqual((await communicator.receive_output(timeout=1))['type'], 'websocket.accept')
+
+            await communicator.send_input({
+                'type': 'websocket.receive',
+                'text': json.dumps({
+                    'type': 'device.voice.bind',
+                    'id': 'voice-inactive-1',
+                    'payload': {'deviceCode': device.code, 'voice': {'id': voice.id}},
+                }),
+            })
+            response = await communicator.receive_output(timeout=1)
+            payload = json.loads(response['text'])
+            self.assertEqual(payload['type'], 'error')
+            self.assertEqual(payload['id'], 'voice-inactive-1')
+            self.assertEqual(payload['error']['code'], 'voice_not_found')
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+        device.refresh_from_db()
+        self.assertIsNone(device.tts_voice_id)
+
     def test_runtime_resources_post_returns_bound_application_resource_slices_by_device_code(self):
         self.application.agent_application = self.agent_application
         self.application.save(update_fields=['agent_application', 'updated_at'])
@@ -1067,6 +1215,49 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(chat_log.question_text, '介绍一下展厅')
         self.assertEqual(chat_log.answer_text, '欢迎来到数字人展厅。')
         self.assertEqual(chat_log.model_name, 'qwen/qwen3-32b')
+
+    def test_device_voice_chat_uses_bound_device_voice_before_company_default(self):
+        provider = LLMProvider.objects.create(
+            name='OpenAI compatible',
+            provider_type='openai',
+            api_base_url='https://example.com/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='qwen/qwen3-32b', is_active=True)
+        self.agent_application.llm_model = model
+        self.agent_application.save(update_fields=['llm_model', 'updated_at'])
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        TenantLLMSettings.objects.create(tenant=self.tenant, default_model=model)
+        tts_provider = TTSProvider.objects.get(code='aliyun')
+        default_voice = TTSVoice.objects.get(provider=tts_provider, voice_code='Cherry')
+        device_voice = TTSVoice.objects.get(provider=tts_provider, voice_code='Elias')
+        TenantTTSSettings.objects.create(tenant=self.tenant, default_voice=default_voice)
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Voice Bound Device',
+            code='ANDROID-VOICE-BOUND-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+            tts_voice=device_voice,
+        )
+
+        with (
+            patch('apps.devices.views.llm_services.run_llm_chat_completion', return_value='设备绑定音色回答'),
+            patch('apps.devices.views.tts_services.synthesize_tts_pcm', return_value=b'\x01\x02') as synthesize_tts_pcm,
+        ):
+            response = self.client.post(
+                '/api/v1/device/voice-chat',
+                {'text': '使用哪个音色？'},
+                format='json',
+                HTTP_X_DEVICE_CODE='ANDROID-VOICE-BOUND-001',
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(synthesize_tts_pcm.call_args.kwargs['voice'].id, device_voice.id)
+        self.assertEqual(synthesize_tts_pcm.call_args.kwargs['voice'].voice_code, 'Elias')
 
     def test_device_voice_chat_generates_server_session_id_before_first_turn_and_reuses_history(self):
         provider = LLMProvider.objects.create(

@@ -267,6 +267,7 @@
         <button type="button" data-section="wakeWords"><span>唤醒词测试</span><span class="method">GET/TTS</span></button>
         <button type="button" data-section="application"><span>应用</span><span class="method post">POST</span></button>
         <button type="button" data-section="voiceTones"><span>获取音色列表</span><span class="method">GET</span></button>
+        <button type="button" data-section="voiceBind"><span>绑定设备音色</span><span class="method ws">WS</span></button>
         <button type="button" data-section="images"><span>获取背景图片</span><span class="method post">POST</span></button>
         <button type="button" data-section="scrollingTexts"><span>获取滚动文本</span><span class="method post">POST</span></button>
         <button type="button" data-section="models"><span>获取数字人模型</span><span class="method post">POST</span></button>
@@ -398,6 +399,7 @@
         wakeWords: { title: '唤醒词测试', description: '从运行时配置读取当前设备绑定的唤醒词，在页面内模拟输入命中后的已唤醒提示，并可调用 TTS 播报一段提示语。' },
         application: { title: '应用', description: '通过设备码读取资源应用与完整智能体配置，包括开场白、建议问题和语音播报开关。' },
         voiceTones: { title: '获取音色列表', description: '/ai-models/tts/options/ 是公司可选音色目录和公司默认音色；设备运行时实际音色请看 /device-runtime/config/ 的 resources.voiceTones。' },
+        voiceBind: { title: '绑定设备音色', description: '安卓通过统一 WebSocket 发送 device.voice.bind，传入完整音色对象（含 id），后端按 id 绑定到设备；传 voice=null 解绑。绑定后自动推送 device.voice_configuration.changed。' },
         images: { title: '获取背景图片', description: '通过固定设备码读取当前公司在资源管理/背景图片管理维护的数据。' },
         scrollingTexts: { title: '获取滚动文本', description: '通过固定设备码读取当前公司在资源管理/滚动文本维护的数据。' },
         models: { title: '获取数字人模型', description: '通过固定设备码读取当前公司在资源管理/模型管理维护的数据。' },
@@ -540,6 +542,7 @@
         if (state.activeSection === 'device') return renderDevice();
         if (state.activeSection === 'application') return fetchResourceSlice('application').then(renderApplication).catch(showError);
         if (state.activeSection === 'voiceTones') return fetchTtsOptions().then(renderVoiceTones).catch(showError);
+        if (state.activeSection === 'voiceBind') return fetchTtsOptions().then(renderVoiceBind).catch(showError);
         if (state.activeSection === 'images') return fetchResourceSlice('images').then(() => renderResourceCards('images')).catch(showError);
         if (state.activeSection === 'scrollingTexts') return fetchResourceSlice('scrollingTexts').then(renderScrollingTexts).catch(showError);
         if (state.activeSection === 'models') return fetchResourceSlice('models').then(() => renderResourceCards('models')).catch(showError);
@@ -907,6 +910,62 @@
           button.addEventListener('click', () => testVoiceTone(button.dataset.voiceTest));
         }
         writeResourceSliceDetail('voiceTones');
+      }
+
+      function renderVoiceBind() {
+        const items = resourceList('voiceTones');
+        const voiceOptions = items.map((item) => '<option value="' + escapeAttr(item.id) + '">' + escapeHtml(item.name || item.displayName || item.voiceCode || '-') + '</option>').join('');
+        els.contentBody.innerHTML = '<div class="note">安卓端通过统一 WebSocket 发送 <code>device.voice.bind</code> 命令，payload 携带 <code>deviceCode</code> 和完整音色对象 <code>voice</code>（至少含 <code>id</code>）。后端按 id 查找可用音色并绑定到设备；传 <code>voice: null</code> 可解绑。绑定成功后后端自动发布 <code>device.voice_configuration.changed</code> 事件，已订阅 runtime_config 的设备会收到完整配置推送。</div><div class="field"><label for="voiceBindSelect">选择音色</label><select id="voiceBindSelect" class="input"><option value="">不绑定音色（解绑）</option>' + voiceOptions + '</select></div><div class="toolbar"><button class="button" id="voiceBindBtn" type="button">发送 device.voice.bind</button></div><div class="detail-block"><strong>事件输出</strong><pre id="voiceBindOutput">等待请求</pre></div>';
+        document.getElementById('voiceBindBtn').addEventListener('click', testVoiceBind);
+        writeRequestDetail({
+          label: '绑定设备音色 WebSocket',
+          method: 'WS',
+          url: realtimeWsUrl(),
+          path: '/ws/realtime/',
+          headers: {},
+          body: {
+            type: 'device.voice.bind',
+            id: 'voice-bind-<timestamp>',
+            payload: {
+              deviceCode: state.deviceCode || '<deviceCode>',
+              voice: { id: '<voiceId>', name: '<displayName>', voiceCode: '<voiceCode>', audioUrl: '', iconUrl: '<avatarPath>' },
+            },
+          },
+          note: '安卓端发送完整音色对象，后端取 voice.id 绑定；voice=null 时解绑。绑定成功返回 device.voice.bound，同时发布 device.voice_configuration.changed 通知已订阅设备刷新配置。',
+        });
+      }
+
+      async function testVoiceBind() {
+        if (!state.deviceCode) return showError(new Error('请输入设备码'));
+        const select = document.getElementById('voiceBindSelect');
+        const output = document.getElementById('voiceBindOutput');
+        const voiceId = select.value ? Number(select.value) : null;
+        const items = resourceList('voiceTones');
+        const voice = voiceId ? items.find((item) => item.id === voiceId) : null;
+        const command = {
+          type: 'device.voice.bind',
+          id: createCommandId('voice-bind'),
+          payload: {
+            deviceCode: state.deviceCode,
+            voice: voice ? { id: voice.id, name: voice.name || voice.displayName || '', voiceCode: voice.voiceCode || '', audioUrl: '', iconUrl: voice.avatarPath || voice.iconUrl || '' } : null,
+          },
+        };
+        output.textContent = 'connecting ' + realtimeWsUrl();
+        try {
+          const socket = new WebSocket(realtimeWsUrl());
+          state.sockets.push(socket);
+          await new Promise((resolve, reject) => {
+            socket.addEventListener('open', () => { socket.send(JSON.stringify(command)); resolve(); });
+            socket.addEventListener('error', reject);
+          });
+          const message = await new Promise((resolve) => {
+            socket.addEventListener('message', (event) => resolve(JSON.parse(event.data)));
+          });
+          output.textContent = pretty(message);
+          socket.close();
+        } catch (exc) {
+          output.textContent = String(exc);
+        }
       }
 
       function renderResourceCards(type) {
@@ -3001,6 +3060,33 @@
             { type: 'device.status.pong', id: '<commandId>', payload: { deviceCode: '<deviceCode>' } },
           ],
           errors: runtimeDeviceErrors([['device_not_found', '设备不存在、未授权或不可用。']]),
+        };
+        if (detail.method === 'WS' && state.activeSection === 'voiceBind') return {
+          summary: detail.note || '安卓端通过统一 WebSocket 绑定或解绑设备音色。',
+          query: null,
+          headers: [
+            ['无业务必填 Header', '设备码在 WebSocket command 的 <code>payload.deviceCode</code> 中传递。'],
+          ],
+          body: [
+            ['type', '<code>device.voice.bind</code>'],
+            ['id', '客户端生成的 command id。'],
+            ['payload.deviceCode', '必填；后端按设备码解析设备。'],
+            ['payload.voice', '完整音色对象（至少含 <code>id</code>）；传 <code>null</code> 解绑当前设备音色。'],
+            ['payload.voice.id', '音色 ID；后端校验 <code>is_active & is_visible & provider.is_active</code>。'],
+          ],
+          response: [
+            ['device.voice.bound', '绑定成功。payload 带 deviceCode、voiceId、voiceName、voiceCode；解绑时 voiceId=null。'],
+            ['device.voice_configuration.changed', '绑定/解绑后自动发布；已订阅 runtime_config 的设备会收到完整配置推送（action=voiceConfigurationChanged）。'],
+            ['error', '设备不存在、音色不可用等。'],
+          ],
+          responseExample: [
+            { type: 'device.voice.bound', id: '<commandId>', payload: { deviceCode: '<deviceCode>', voiceId: 12, voiceName: 'Roy（闽南语）', voiceCode: 'Roy' } },
+            { type: 'device.voice.bound', id: '<commandId>', payload: { deviceCode: '<deviceCode>', voiceId: null, voiceName: '', voiceCode: '' } },
+          ],
+          errors: runtimeDeviceErrors([
+            ['device_not_found', '设备不存在、未绑定公司、已停用或已过期。'],
+            ['voice_not_found', '音色不存在或已停用/隐藏。'],
+          ]),
         };
         if (detail.method === 'WS' && state.activeSection === 'agentChat') return {
           summary: detail.note || '智能体回答主链路。',

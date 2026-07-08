@@ -629,6 +629,30 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.content, b'\x03\x04')
         self.assertEqual(synthesize_tts_pcm.call_args.kwargs['text'], '设备端测试')
 
+    @patch('apps.ai_models.services.tts.synthesize_tts_pcm', return_value=b'\x07\x08')
+    def test_device_runtime_uses_bound_device_voice_before_company_default(self, synthesize_tts_pcm):
+        other_voice = TTSVoice.objects.get(provider=self.provider, voice_code='Elias')
+        Device.objects.create(
+            tenant=self.tenant,
+            name='TTS Runtime Bound Voice Device',
+            code='ANDROID-TTS-BOUND-VOICE-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            tts_voice=other_voice,
+        )
+        TenantTTSSettings.objects.create(tenant=self.tenant, default_voice=self.cherry)
+        self.client.force_authenticate(user=None)
+
+        response = self.client.post(
+            '/api/v1/ai-models/tts/runtime/',
+            {'text': '设备绑定音色测试'},
+            format='json',
+            HTTP_X_DEVICE_CODE='ANDROID-TTS-BOUND-VOICE-001',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response['X-TTS-Voice'], 'Elias')
+        self.assertEqual(synthesize_tts_pcm.call_args.kwargs['voice'].id, other_voice.id)
+
     @patch('apps.ai_models.services.tts.synthesize_tts_pcm', return_value=b'\x03\x04')
     def test_device_runtime_can_wrap_pcm_as_wav_for_browser_playback(self, synthesize_tts_pcm):
         Device.objects.create(

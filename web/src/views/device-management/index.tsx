@@ -262,16 +262,23 @@ export const DeviceManagementPage = () => {
     setCommandGroupOptions(toSelectOptions(commandGroupsResult.results));
   };
 
+  const refreshVoiceToneOptions = async () => {
+    const ttsOptionsResponse = await fetchCompanyTtsOptions();
+    const nextOptions = ttsOptionsResponse.voices.map((item) => ({ label: `${item.displayName}（${item.voiceCode}）`, value: item.id }));
+    setVoiceToneOptions(nextOptions);
+    return nextOptions;
+  };
+
   const loadData = async (query: DeviceListQuery = filters, page = devicePage) => {
     setLoading(true);
     try {
-      const [deviceResponse, statsResponse, applicationResponse, agentApplicationResponse, wakeWordResponse, ttsOptionsResponse] = await Promise.all([
+      const [deviceResponse, statsResponse, applicationResponse, agentApplicationResponse, wakeWordResponse, nextVoiceToneOptions] = await Promise.all([
         fetchDevices({ ...query, keyword, page }),
         fetchDeviceStats(),
         fetchDeviceApplications(),
         fetchAgentApplications({ page: 1 }),
         fetchWakeWords({ keyword: keyword || undefined }),
-        fetchCompanyTtsOptions().catch(() => ({ voices: [] })),
+        refreshVoiceToneOptions().catch(() => []),
       ]);
       setDevices(deviceResponse.results);
       setDeviceTotal(deviceResponse.count);
@@ -280,7 +287,7 @@ export const DeviceManagementPage = () => {
       setApplications(applicationResponse.results);
       setAgentApplications(agentApplicationResponse.results);
       setWakeWords(wakeWordResponse.results);
-      setVoiceToneOptions(ttsOptionsResponse.voices.map((item) => ({ label: `${item.displayName}（${item.voiceCode}）`, value: item.id })));
+      setVoiceToneOptions(nextVoiceToneOptions);
       setSelectedApplicationId((current) => current ?? applicationResponse.results[0]?.id ?? null);
     } catch {
       // Global interceptor displays request errors.
@@ -424,7 +431,12 @@ export const DeviceManagementPage = () => {
   };
 
 
-  const openDeviceEdit = (record: DeviceRecord) => {
+  const openDeviceEdit = async (record: DeviceRecord) => {
+    try {
+      await refreshVoiceToneOptions();
+    } catch {
+      message.warning('音色列表刷新失败，将使用当前已加载的选项');
+    }
     setEditingDevice(record);
     deviceForm.setFieldsValue({
       name: record.name,
@@ -624,7 +636,7 @@ export const DeviceManagementPage = () => {
         <Space size={6}>
           {canUpdateDevice ? (
             <Tooltip title="编辑设备名称和资源应用">
-              <Button size="small" icon={<IconEdit />} onClick={() => openDeviceEdit(record)}>
+              <Button size="small" icon={<IconEdit />} onClick={() => { void openDeviceEdit(record); }}>
                 编辑
               </Button>
             </Tooltip>
