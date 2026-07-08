@@ -60,7 +60,7 @@ def build_device_runtime_config_event(device_id: int, command_id: str | None, ac
     from apps.devices.models import Device
     from apps.devices.views import DeviceRuntimeConfigView
 
-    device = Device.objects.select_related('tenant', 'application', 'agent_application').filter(id=device_id).first()
+    device = Device.objects.select_related('tenant', 'application', 'agent_application', 'tts_voice__provider').filter(id=device_id).first()
     if device is None:
         return None
     return {
@@ -126,18 +126,18 @@ def _event_targets_device(event: dict, device_code: str) -> bool:
     if not has_refresh and not is_runtime_config_event:
         return False
 
-    # Tenant-level runtime config events (voice tones / scrolling texts) do not
-    # carry device codes: tenant alignment is already enforced by
-    # publish_device_event, so any device-code subscriber in the same tenant
-    # is a target.
-    if event_type in ('device.voice_configuration.changed', 'device.scrolling_texts.changed'):
+    event_device_code = str(event.get('deviceCode') or event.get('device_code') or '').strip()
+    raw_codes = event.get('deviceCodes') or event.get('device_codes') or []
+
+    # Tenant-level runtime config events (for example global voice tone or
+    # scrolling text catalog changes) do not carry device codes: tenant
+    # alignment is already enforced by publish_device_event.
+    if event_type in ('device.voice_configuration.changed', 'device.scrolling_texts.changed') and not event_device_code and not raw_codes:
         return True
 
-    event_device_code = str(event.get('deviceCode') or event.get('device_code') or '').strip()
     if event_device_code == device_code:
         return True
 
-    raw_codes = event.get('deviceCodes') or event.get('device_codes') or []
     if not isinstance(raw_codes, (list, tuple, set)):
         return False
     return device_code in {str(code).strip() for code in raw_codes}

@@ -138,6 +138,14 @@ class Device(models.Model):
         null=True,
         blank=True,
     )
+    tts_voice = models.ForeignKey(
+        'ai_models.TTSVoice',
+        on_delete=models.SET_NULL,
+        related_name='bound_devices',
+        verbose_name='当前音色',
+        null=True,
+        blank=True,
+    )
     group = models.ForeignKey(
         DeviceGroup,
         on_delete=models.SET_NULL,

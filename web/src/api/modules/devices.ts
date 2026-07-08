@@ -19,6 +19,9 @@ export type DeviceRecord = {
   applicationName: string;
   agentApplicationId: number | null;
   agentApplicationName: string;
+  voiceToneId: number | null;
+  voiceToneName: string;
+  voiceToneCode: string;
   authorizationType: DeviceAuthorizationType;
   authorizationTypeLabel: string;
   expiresAt: string | null;
@@ -95,6 +98,7 @@ export type DeviceUpdatePayload = {
   location?: string;
   applicationId?: number | null;
   groupId?: number | null;
+  voiceToneId?: number | null;
 };
 
 export type DeviceGroupRecord = {

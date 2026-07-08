@@ -62,12 +62,14 @@ import {
 } from '../../api/modules/devices';
 import { fetchCommandGroups } from '../../api/modules/commands';
 import { fetchAgentApplications, type AgentApplicationRecord } from '../../api/modules/applications';
+import { fetchCompanyTtsOptions } from '../../api/modules/tts';
 import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
 
 type DeviceEditForm = {
   name: string;
   applicationId?: number | null;
+  voiceToneId?: number | null;
 };
 
 type ApplicationForm = DeviceApplicationPayload;
@@ -156,6 +158,7 @@ const isDeviceRealtimePayload = (payload: unknown): payload is { type: string } 
 
 const emptyApplicationOption = [{ label: '待绑定资源应用', value: null as number | null }];
 const emptyAgentApplicationOption = [{ label: '待绑定智能体', value: null as number | null }];
+const emptyVoiceToneOption = [{ label: '暂不绑定音色', value: null as number | null }];
 
 type DeviceWakeWordRow = {
   device: DeviceRecord;
@@ -171,6 +174,7 @@ export const DeviceManagementPage = () => {
   const [wakeWords, setWakeWords] = useState<WakeWordRecord[]>([]);
   const [agentApplications, setAgentApplications] = useState<AgentApplicationRecord[]>([]);
   const [commandGroupOptions, setCommandGroupOptions] = useState<ResourceOption[]>([]);
+  const [voiceToneOptions, setVoiceToneOptions] = useState<ResourceOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState('');
   const [filters, setFilters] = useState<DeviceListQuery>({
@@ -261,12 +265,13 @@ export const DeviceManagementPage = () => {
   const loadData = async (query: DeviceListQuery = filters, page = devicePage) => {
     setLoading(true);
     try {
-      const [deviceResponse, statsResponse, applicationResponse, agentApplicationResponse, wakeWordResponse] = await Promise.all([
+      const [deviceResponse, statsResponse, applicationResponse, agentApplicationResponse, wakeWordResponse, ttsOptionsResponse] = await Promise.all([
         fetchDevices({ ...query, keyword, page }),
         fetchDeviceStats(),
         fetchDeviceApplications(),
         fetchAgentApplications({ page: 1 }),
         fetchWakeWords({ keyword: keyword || undefined }),
+        fetchCompanyTtsOptions().catch(() => ({ voices: [] })),
       ]);
       setDevices(deviceResponse.results);
       setDeviceTotal(deviceResponse.count);
@@ -275,6 +280,7 @@ export const DeviceManagementPage = () => {
       setApplications(applicationResponse.results);
       setAgentApplications(agentApplicationResponse.results);
       setWakeWords(wakeWordResponse.results);
+      setVoiceToneOptions(ttsOptionsResponse.voices.map((item) => ({ label: `${item.displayName}（${item.voiceCode}）`, value: item.id })));
       setSelectedApplicationId((current) => current ?? applicationResponse.results[0]?.id ?? null);
     } catch {
       // Global interceptor displays request errors.
@@ -423,6 +429,7 @@ export const DeviceManagementPage = () => {
     deviceForm.setFieldsValue({
       name: record.name,
       applicationId: record.applicationId ?? null,
+      voiceToneId: record.voiceToneId ?? null,
     });
   };
 
@@ -580,6 +587,13 @@ export const DeviceManagementPage = () => {
       key: 'applicationName',
       width: '10%',
       render: (value: string) => (value ? <Tag color="cyan">{value}</Tag> : <Tag color="default">未绑定资源</Tag>),
+    },
+    {
+      title: '当前音色',
+      dataIndex: 'voiceToneName',
+      key: 'voiceToneName',
+      width: '10%',
+      render: (value: string, record) => (value ? <Tag color="blue">{record.voiceToneCode || value}</Tag> : <Tag color="default">未绑定音色</Tag>),
     },
     {
       title: '授权',
@@ -1056,6 +1070,9 @@ export const DeviceManagementPage = () => {
           </Form.Item>
           <Form.Item label="资源应用" name="applicationId">
             <Select options={[...emptyApplicationOption, ...applicationOptions]} optionFilterProp="label" showSearch />
+          </Form.Item>
+          <Form.Item label="当前音色" name="voiceToneId" extra="运行时配置只会返回该设备当前绑定的音色。">
+            <Select options={[...emptyVoiceToneOption, ...voiceToneOptions]} optionFilterProp="label" showSearch />
           </Form.Item>
         </Form>
       </Modal>

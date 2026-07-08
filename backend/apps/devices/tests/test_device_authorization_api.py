@@ -17,7 +17,8 @@ from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import AgentAnnotation, AgentApplication, ChatConversation, LLMModel, LLMProvider, TenantLLMModelGrant, TenantLLMSettings, TTSProvider, TTSVoice
+from apps.ai_models.models import AgentAnnotation, AgentApplication, ChatConversation, LLMModel, LLMProvider, TenantLLMModelGrant, TenantLLMSettings, TenantTTSSettings, TTSProvider, TTSVoice
+from apps.ai_models import realtime_tts
 from apps.devices.models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup, WakeWord
 from apps.devices.services.authorization import record_device_authorization_action
 from apps.devices.services.queries import device_authorization_requests_queryset
@@ -647,9 +648,11 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(scrolling_texts[0]['title'], '大厅公告')
         self.assertEqual(scrolling_texts[0]['items'][0]['zh'], '欢迎光临')
 
-    def test_application_can_bind_tts_voices_and_runtime_config_returns_them(self):
+    def test_device_can_bind_tts_voice_and_runtime_config_returns_current_voice(self):
         tts_provider = TTSProvider.objects.get(code='aliyun')
         voice = TTSVoice.objects.get(provider=tts_provider, voice_code='Cherry')
+        other_voice = TTSVoice.objects.get(provider=tts_provider, voice_code='Dylan')
+        TenantTTSSettings.objects.create(tenant=self.tenant, default_voice=other_voice)
 
         create_response = self.client.post(
             '/api/v1/device-applications/',
@@ -657,17 +660,18 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
                 'name': 'Lobby Voice App',
                 'code': 'lobby-voice-app',
                 'agentApplicationId': self.agent_application.id,
-                'voiceToneIds': [voice.id],
+                'voiceToneIds': [other_voice.id],
             },
             format='json',
         )
 
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(create_response.data.get('voiceToneIds'), [voice.id])
+        self.assertEqual(create_response.data.get('voiceToneIds'), [other_voice.id])
         application = DeviceApplication.objects.get(code='lobby-voice-app', tenant=self.tenant)
         Device.objects.create(
             tenant=self.tenant,
             application=application,
+            tts_voice=voice,
             name='Lobby Voice Device',
             code='ANDROID-VOICE-CONFIG-001',
             authorization_type=Device.AUTHORIZATION_PERMANENT,
@@ -685,6 +689,106 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(len(voice_tones), 1)
         self.assertEqual(voice_tones[0]['id'], voice.id)
         self.assertEqual(voice_tones[0]['name'], 'Cherry')
+        self.assertEqual(voice_tones[0]['voiceCode'], 'Cherry')
+
+    def test_runtime_config_uses_company_default_voice_when_device_has_no_voice(self):
+        tts_provider = TTSProvider.objects.get(code='aliyun')
+        default_voice = TTSVoice.objects.get(provider=tts_provider, voice_code='Dylan')
+        TenantTTSSettings.objects.create(tenant=self.tenant, default_voice=default_voice)
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Default Voice Device',
+            code='ANDROID-DEFAULT-VOICE-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        config_response = self.client.get(
+            '/api/v1/device-runtime/config/',
+            format='json',
+            HTTP_X_DEVICE_CODE='ANDROID-DEFAULT-VOICE-001',
+        )
+
+        self.assertEqual(config_response.status_code, status.HTTP_200_OK)
+        voice_tones = config_response.data['resources']['voiceTones']
+        self.assertEqual(len(voice_tones), 1)
+        self.assertEqual(voice_tones[0]['id'], default_voice.id)
+        self.assertEqual(voice_tones[0]['voiceCode'], 'Dylan')
+
+    def test_realtime_tts_voice_resolution_uses_device_voice_before_default_voice(self):
+        tts_provider = TTSProvider.objects.get(code='aliyun')
+        device_voice = TTSVoice.objects.get(provider=tts_provider, voice_code='Cherry')
+        default_voice = TTSVoice.objects.get(provider=tts_provider, voice_code='Dylan')
+        TenantTTSSettings.objects.create(tenant=self.tenant, default_voice=default_voice)
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            tts_voice=device_voice,
+            name='Realtime Device Voice',
+            code='ANDROID-REALTIME-VOICE-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        resolved_voice = realtime_tts.resolve_tts_voice(
+            {
+                'device_id': device.id,
+                'device_code': device.code,
+                'tenant_id': self.tenant.id,
+                'is_superuser': False,
+            },
+            None,
+            tts_provider,
+        )
+
+        self.assertEqual(resolved_voice.id, device_voice.id)
+
+    @patch('apps.devices.views.publish_device_event_sync')
+    def test_device_voice_update_publishes_full_runtime_config_change_event(self, mock_publish):
+        self.agent_application.publish()
+        tts_provider = TTSProvider.objects.get(code='aliyun')
+        voice = TTSVoice.objects.get(provider=tts_provider, voice_code='Cherry')
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Runtime Voice Device',
+            code='ANDROID-VOICE-UPDATE-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            registered_at=timezone.now(),
+        )
+
+        with self.captureOnCommitCallbacks(execute=True):
+            update_response = self.client.patch(
+                f'/api/v1/devices/{device.code}/',
+                {'voiceToneId': voice.id},
+                format='json',
+            )
+
+        self.assertEqual(update_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(update_response.data['voiceToneId'], voice.id)
+        self.assertEqual(update_response.data['voiceToneCode'], 'Cherry')
+        mock_publish.assert_called_once()
+        payload = mock_publish.call_args.args[0]
+        self.assertEqual(payload['type'], 'device.voice_configuration.changed')
+        self.assertEqual(payload['action'], 'voiceConfigurationChanged')
+        self.assertEqual(payload['deviceCode'], device.code)
+        self.assertEqual(payload['deviceCodes'], [device.code])
+        self.assertEqual(payload['refresh']['endpoint'], '/api/v1/device-runtime/config/')
+
+        config_response = self.client.get(
+            '/api/v1/device-runtime/config/',
+            format='json',
+            HTTP_X_DEVICE_CODE=device.code,
+        )
+
+        self.assertEqual(config_response.status_code, status.HTTP_200_OK)
+        voice_tones = config_response.data['resources']['voiceTones']
+        self.assertEqual(len(voice_tones), 1)
+        self.assertEqual(voice_tones[0]['id'], voice.id)
         self.assertEqual(voice_tones[0]['voiceCode'], 'Cherry')
 
     def test_runtime_resources_post_returns_bound_application_resource_slices_by_device_code(self):
@@ -719,6 +823,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         Device.objects.create(
             tenant=self.tenant,
             application=self.application,
+            tts_voice=voice,
             name='Runtime Resource Device',
             code='ANDROID-RUNTIME-RESOURCES-001',
             authorization_type=Device.AUTHORIZATION_PERMANENT,

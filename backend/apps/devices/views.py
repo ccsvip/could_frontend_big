@@ -121,7 +121,7 @@ class CompanyDeviceWritePermission(BasePermission):
     destroy=extend_schema(tags=['Devices']),
 )
 class DeviceViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin, viewsets.ModelViewSet):
-    queryset = Device.objects.select_related('application__agent_application', 'agent_application', 'group').all()
+    queryset = Device.objects.select_related('application__agent_application', 'agent_application', 'tts_voice__provider', 'group').all()
     lookup_field = 'code'
 
     def get_serializer_class(self):
@@ -152,6 +152,29 @@ class DeviceViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin, viewsets.M
         if application_id.isdigit():
             queryset = queryset.filter(application_id=int(application_id))
         return queryset
+
+    @staticmethod
+    def _publish_runtime_config_changed(device: Device, action: str) -> None:
+        payload = {
+            'type': 'device.voice_configuration.changed',
+            'action': action,
+            'operation': 'update',
+            'resource': 'voiceConfiguration',
+            'tenantId': device.tenant_id,
+            'deviceCode': device.code,
+            'deviceCodes': [device.code],
+            'refresh': {
+                'endpoint': '/api/v1/device-runtime/config/',
+                'reason': action,
+            },
+        }
+        transaction.on_commit(lambda: publish_device_event_sync(payload))
+
+    def perform_update(self, serializer):
+        previous_voice_id = serializer.instance.tts_voice_id
+        device = serializer.save()
+        if previous_voice_id != device.tts_voice_id:
+            self._publish_runtime_config_changed(device, 'voiceConfigurationChanged')
 
     @extend_schema(responses=DeviceStatsSerializer, tags=['Devices'])
     @action(detail=False, methods=['get'], url_path='stats')
@@ -660,23 +683,32 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
 
     @staticmethod
     def _voice_configuration_payload(device: Device):
-        application = device.application
-        application_is_active = application is not None and application.is_active
+        voice = DeviceRuntimeConfigView._device_voice(device)
         return {
-            'voiceTones': [
-                {
-                    'id': item.id,
-                    'name': item.display_name,
-                    'voiceCode': item.voice_code,
-                    'audioUrl': '',
-                    'iconUrl': item.avatar_path,
-                }
-                for item in (
-                    application.tts_voices.filter(is_active=True, is_visible=True, provider__is_active=True)
-                    if application_is_active
-                    else []
-                )
-            ],
+            'voiceTones': [DeviceRuntimeConfigView._voice_payload(voice)] if voice is not None else [],
+        }
+
+    @staticmethod
+    def _device_voice(device: Device):
+        voice = getattr(device, 'tts_voice', None)
+        if voice is None:
+            return tts_services.get_effective_tts_voice_for_tenant(device.tenant)
+        provider = getattr(voice, 'provider', None)
+        if not voice.is_active or not voice.is_visible or provider is None or not provider.is_active:
+            return None
+        return voice
+
+    @staticmethod
+    def _voice_payload(voice, request=None):
+        icon_url = voice.avatar_path
+        if request is not None and icon_url.startswith('/'):
+            icon_url = request.build_absolute_uri(icon_url)
+        return {
+            'id': voice.id,
+            'name': voice.display_name,
+            'voiceCode': voice.voice_code,
+            'audioUrl': '',
+            'iconUrl': icon_url,
         }
 
     @staticmethod
@@ -731,6 +763,7 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
         models = ModelAsset.objects.filter(tenant=tenant, is_visible=True).order_by('-updated_at', '-id')
         scrolling_texts = ScrollingText.objects.filter(tenant=tenant, is_active=True).prefetch_related('items').order_by('-updated_at', '-id')
         application_is_active = application is not None and application.is_active
+        voice = DeviceRuntimeConfigView._device_voice(device)
 
         def resource_url(item):
             if item.cloud_url:
@@ -776,18 +809,8 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
                 for item in scrolling_texts
             ],
             'voiceTones': [
-                {
-                    'id': item.id,
-                    'name': item.display_name,
-                    'voiceCode': item.voice_code,
-                    'audioUrl': '',
-                    'iconUrl': request.build_absolute_uri(item.avatar_path) if item.avatar_path.startswith('/') else item.avatar_path,
-                }
-                for item in (
-                    application.tts_voices.filter(is_active=True, is_visible=True, provider__is_active=True)
-                    if application_is_active
-                    else []
-                )
+                DeviceRuntimeConfigView._voice_payload(voice, request)
+                for voice in ([voice] if voice is not None else [])
             ],
             'models': [
                 {
@@ -1260,7 +1283,11 @@ class DeviceVoiceChatView(DeviceRuntimeView):
     def _synthesize_answer_audio(device: Device, answer_text: str) -> str:
         provider = tts_services.get_aliyun_tts_provider()
         config = tts_services.get_effective_tts_config(provider)
-        voice = tts_services.get_effective_tts_voice_for_tenant(device.tenant, provider)
+        device_voice = getattr(device, 'tts_voice', None)
+        if device_voice is not None:
+            voice = device_voice if device_voice.provider_id == provider.id and tts_services.is_voice_available(device_voice) else None
+        else:
+            voice = tts_services.get_effective_tts_voice_for_tenant(device.tenant, provider)
         if voice is None:
             raise RuntimeError('请先配置默认音色')
         pcm = tts_services.synthesize_tts_pcm(text=answer_text, voice=voice, config=config)

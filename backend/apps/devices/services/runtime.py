@@ -50,7 +50,7 @@ def get_runtime_device(device_code: str, *, require_tenant: bool = False) -> Dev
         raise runtime_device_error('设备码不能为空', status.HTTP_400_BAD_REQUEST, RUNTIME_ERROR_EMPTY_DEVICE_CODE)
 
     devices = list(
-        Device.objects.select_related('tenant', 'application__agent_application', 'agent_application')
+        Device.objects.select_related('tenant', 'application__agent_application', 'agent_application', 'tts_voice__provider')
         .filter(code=device_code)
         .order_by('id')[:2]
     )

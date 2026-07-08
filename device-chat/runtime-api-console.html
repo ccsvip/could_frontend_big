@@ -243,7 +243,7 @@
   <header class="topbar">
     <div class="brand">
       <h1>设备运行时接口控制台</h1>
-      <p>HTTP 接口统一使用 X-Device-Code，请求体只放业务参数；WebSocket 命令在 payload 中携带 deviceCode；所有运行时数据按设备所属公司隔离。</p>
+      <p>HTTP 接口统一使用 X-Device-Code；WebSocket 命令在 payload 中携带 deviceCode；运行时音色按“设备绑定音色优先，未绑定才使用公司默认音色”解析。</p>
     </div>
     <div class="field">
       <label for="apiBaseInput">API Base URL</label>
@@ -393,11 +393,11 @@
 
       const sections = {
         device: { title: '设备与公司', description: '设备启动或首次联网时调用 /device-auth/activate/ 上报一次；设备名称可在后台编辑，后续直接通过 /device-runtime/config/ 获取最新公司、授权和应用配置。' },
-        runtimeConfig: { title: '运行时配置', description: 'GET /device-runtime/config/：设备端启动业务前拉取完整配置，包括设备名称、资源应用、智能体应用和资源列表。' },
-        runtimeEvents: { title: '配置订阅', description: '通过 device.runtime_config.subscribe 订阅当前设备配置；首次订阅和后续配置变化都会收到 device.runtime_config.subscribed（payload 直接带完整 config 和 action），不需要再额外 GET /device-runtime/config/。' },
+        runtimeConfig: { title: '运行时配置', description: 'GET /device-runtime/config/：设备端启动业务前拉取完整配置，包括设备名称、资源应用、智能体应用、资源列表和当前设备实际使用的音色。' },
+        runtimeEvents: { title: '配置订阅', description: '通过 device.runtime_config.subscribe 订阅当前设备配置；首次订阅和后续配置变化都会收到 device.runtime_config.subscribed（payload 直接带完整 config 和 action），音色变更也推完整配置。' },
         wakeWords: { title: '唤醒词测试', description: '从运行时配置读取当前设备绑定的唤醒词，在页面内模拟输入命中后的已唤醒提示，并可调用 TTS 播报一段提示语。' },
         application: { title: '应用', description: '通过设备码读取资源应用与完整智能体配置，包括开场白、建议问题和语音播报开关。' },
-        voiceTones: { title: '获取音色列表', description: '通过固定设备码读取 /ai-models/tts/options/ 返回的 TTS 音色列表，并可直接测试合成。' },
+        voiceTones: { title: '获取音色列表', description: '/ai-models/tts/options/ 是公司可选音色目录和公司默认音色；设备运行时实际音色请看 /device-runtime/config/ 的 resources.voiceTones。' },
         images: { title: '获取背景图片', description: '通过固定设备码读取当前公司在资源管理/背景图片管理维护的数据。' },
         scrollingTexts: { title: '获取滚动文本', description: '通过固定设备码读取当前公司在资源管理/滚动文本维护的数据。' },
         models: { title: '获取数字人模型', description: '通过固定设备码读取当前公司在资源管理/模型管理维护的数据。' },
@@ -406,9 +406,9 @@
         heartbeat: { title: '兼容心跳', description: 'POST /device-runtime/heartbeat/ 只兼容旧端刷新 lastHeartbeat 和版本信息，不决定设备 online / offline。' },
         asr: { title: 'ASR 单步调试', description: '只用于单独验证 ASR 阶段：发送 asr.session.start 和 PCM，实时预览使用上游 text + stash，最终结果使用 completed/transcript。' },
         llmWs: { title: 'LLM 单步调试', description: '只用于单独验证 LLM 阶段：llm.session.start 流式返回 llm.started、llm.delta、llm.done；llm.session.cancel 只打断当前会话。' },
-        ttsWs: { title: 'TTS 单步调试', description: '只用于单独验证 TTS 阶段：tts.session.start 返回 ready、audio/pcm、done，tts.session.cancel 返回 cancelled。' },
-        agentChat: { title: '智能体回答', description: '一个 RuntimeAgentRealtimeManager 负责完整回答：ASR、LLM、TTS 只是同一会话的内部阶段，不是三个独立业务模块。' },
-        ttsHttp: { title: 'TTS HTTP', description: '设备码免登录 TTS 入口：POST /ai-models/tts/runtime/。' },
+        ttsWs: { title: 'TTS 单步调试', description: '只用于单独验证 TTS 阶段：不传 voiceId 时后端按设备码取设备绑定音色；设备未绑定音色才回退公司默认音色。' },
+        agentChat: { title: '智能体回答', description: '一个 RuntimeAgentRealtimeManager 负责完整回答；内部 TTS 播报同样按设备绑定音色优先、公司默认音色兜底。' },
+        ttsHttp: { title: 'TTS HTTP', description: '设备码免登录 TTS 入口：POST /ai-models/tts/runtime/；不传 voiceId 时设备绑定音色优先。' },
       };
 
       init();
@@ -619,6 +619,8 @@
         const application = config.application || null;
         const agentApplication = config.agentApplication || null;
         const resources = config.resources || {};
+        const voiceTones = Array.isArray(resources.voiceTones) ? resources.voiceTones : [];
+        const currentVoice = voiceTones[0] || null;
         els.contentBody.innerHTML = '<div class="toolbar"><button class="button secondary" id="runtimeConfigFetchBtn" type="button">重新拉取运行时配置</button></div>' + cardGrid([
           infoCard('设备校验结果', [
             ['设备码', code(device.deviceCode || device.code || state.deviceCode || '-')],
@@ -645,7 +647,14 @@
             ['音色', code(resourceCount(resources.voiceTones))],
             ['指令组', code(resourceCount(resources.commandGroups))],
           ]),
-        ]) + '<div class="detail-block"><strong>完整返回</strong><pre>' + escapeHtml(pretty(config)) + '</pre></div>';
+          infoCard('当前设备音色', [
+            ['设备绑定音色 ID', code(device.voiceToneId || '-')],
+            ['设备绑定音色编码', code(device.voiceToneCode || '-')],
+            ['实际下发音色', currentVoice ? escapeHtml(currentVoice.name || currentVoice.displayName || currentVoice.voiceCode || '-') : '-'],
+            ['实际 voiceCode', code(currentVoice && currentVoice.voiceCode || '-')],
+            ['回退规则', escapeHtml(device.voiceToneId ? '已选择设备音色，/ai-models/tts 默认音色失效' : '设备未选择音色，使用 /ai-models/tts 公司默认音色')],
+          ]),
+        ]) + '<div class="note">音色字段只表示当前设备实际使用的一个音色：后台设备页选择了音色时返回设备绑定音色；设备未选择任何音色时才返回 /ai-models/tts 保存的公司默认音色。不会返回候选音色列表。</div><div class="detail-block"><strong>完整返回</strong><pre>' + escapeHtml(pretty(config)) + '</pre></div>';
         document.getElementById('runtimeConfigFetchBtn').addEventListener('click', () => fetchRuntimeConfig().then(renderRuntimeConfig).catch(showError));
       }
 
@@ -891,9 +900,9 @@
       function renderVoiceTones() {
         const items = resourceList('voiceTones');
         if (!items.length) return renderResourceEmpty('voiceTones');
-        els.contentBody.innerHTML = '<div class="table-wrap"><table><thead><tr><th>头像</th><th>名称</th><th>voiceCode</th><th>示例内容</th><th>测试</th></tr></thead><tbody>' +
+        els.contentBody.innerHTML = '<div class="note warn">这里展示的是 /ai-models/tts/options/ 返回的公司可选音色目录和公司默认音色配置，不等于当前设备正在使用的音色。当前设备实际音色请看“运行时配置”的 resources.voiceTones：设备已绑定音色时只显示设备音色；设备未绑定时才显示公司默认音色。</div><div class="table-wrap"><table><thead><tr><th>头像</th><th>名称</th><th>voiceCode</th><th>示例内容</th><th>测试</th></tr></thead><tbody>' +
           items.map((item) => '<tr><td>' + voiceAvatar(item) + '</td><td>' + escapeHtml(item.name || item.displayName || '-') + '</td><td><span class="code-chip">' + escapeHtml(item.voiceCode || '-') + '</span></td><td>' + escapeHtml(item.content || item.exampleText || item.defaultTestText || '你好，我是数字人设备。') + '</td><td><button class="button secondary" type="button" data-voice-test="' + escapeAttr(item.id) + '">测试</button></td></tr>').join('') +
-          '</tbody></table></div><audio id="voiceToneAudio" controls preload="none" hidden></audio><div class="note">特殊说明：本页“测试”按钮会在 /ai-models/tts/runtime/ 请求体里传 wrapWav=true，让浏览器收到 audio/wav 并直接播放；安卓端正常调用不传该字段，默认返回 audio/pcm raw PCM，请按 X-Audio-Sample-Rate 和 X-Audio-Channels 播放。</div><div class="detail-block"><strong>测试结果</strong><pre id="voiceToneOutput">等待测试</pre></div>';
+          '</tbody></table></div><audio id="voiceToneAudio" controls preload="none" hidden></audio><div class="note">特殊说明：本页“测试”按钮会显式传 voiceId，因此用于试听目录里的指定音色；安卓端正常运行时如果不传 voiceId，则后端按设备码优先使用设备绑定音色，设备没有绑定音色才回退公司默认音色。</div><div class="detail-block"><strong>测试结果</strong><pre id="voiceToneOutput">等待测试</pre></div>';
         for (const button of Array.from(els.contentBody.querySelectorAll('[data-voice-test]'))) {
           button.addEventListener('click', () => testVoiceTone(button.dataset.voiceTest));
         }
@@ -1540,6 +1549,7 @@
       function renderAgentChat() {
         const suggested = (((state.runtimeConfig || {}).agentApplication || {}).suggestedQuestions || [])[0] || '你好，请介绍一下你自己。';
         els.contentBody.innerHTML = '<div class="note warn">主链路是一个 RuntimeAgentRealtimeManager 负责完整智能体回答；ASR、LLM、TTS 是 manager 内部阶段。左侧 ASR/LLM/TTS 菜单只用于单步调试，不代表设备端需要拆成三个独立业务模块。</div><div class="table-wrap"><table><thead><tr><th>阶段</th><th>manager 内部动作</th></tr></thead><tbody><tr><td>开始会话</td><td>前端只发送 <code>agent.session.start</code>；文字问题放在 payload.text，语音问题随后推送 16k mono PCM。</td></tr><tr><td>ASR 完成</td><td>前端发送 <code>agent.session.finish</code> 后，后端自动使用最终纠错文本续接 LLM。</td></tr><tr><td>LLM 回复</td><td>同一连接返回 <code>llm.started</code>、<code>llm.delta</code>、<code>llm.tts_segment</code>、<code>llm.done</code>。</td></tr><tr><td>TTS 合成</td><td>后端收到可播报片段后自动排队调用 TTS，并在同一连接返回 <code>tts.ready</code>、<code>tts.segment_start</code>、binary PCM、<code>tts.segment_end</code>、<code>tts.done</code>。</td></tr><tr><td>TTS 播放</td><td>前端只播放同一 agent 会话返回的 PCM；实时播报期间禁用底部 audio，结束后生成完整回放。</td></tr><tr><td>DTO</td><td>命令、payload、event 可统一放在 bean/runtime/agent 这一类包下。</td></tr></tbody></table></div><div class="field"><label for="llmText">实时问题</label><textarea id="llmText" class="textarea">' + escapeHtml(suggested) + '</textarea></div><div class="toolbar"><button class="button" id="llmVoiceStartBtn" type="button">开始问答</button><button class="button secondary" id="llmVoiceStopBtn" type="button" disabled>停止识别</button><button class="button secondary" id="llmBtn" type="button">用当前问题发送</button><button class="button secondary" id="llmTtsInterruptBtn" type="button" disabled>打断播报</button><label class="code-chip"><input id="llmAutoPlay" type="checkbox" checked> 自动播放</label></div><div class="grid"><article class="card"><h3>问题识别</h3><div id="llmAsrState" class="code-chip">等待录音</div></article><article class="card"><h3>完整回答</h3><div id="llmAnswerText" class="code-chip">等待回复</div></article><article class="card"><h3>回答播报</h3><div id="llmTtsState" class="code-chip">等待合成</div></article><article class="card"><h3>阶段首包耗时</h3><div id="llmTimingStats" class="timing-list">等待计时</div></article><article class="card"><h3>TTS 发送文本</h3><div id="llmTtsSegments" class="tts-debug-list"><span class="tts-debug-empty">等待片段</span></div></article></div><audio id="llmAudio" controls preload="none" hidden></audio><div class="detail-block"><strong>链路结果</strong><pre id="llmOutput">等待请求</pre></div><div class="note">特殊说明：智能体回答主链路统一使用 /ws/realtime/ 的 <code>agent.session.start</code>/<code>agent.session.finish</code>/<code>agent.session.cancel</code>；前端不拆分或清洗 TTS 文本，不再为每段 TTS 单独开 WebSocket；打断播报会停止本地 Web Audio 并取消当前 agent 会话。</div>';
+        els.contentBody.insertAdjacentHTML('afterbegin', '<div class="note">音色规则：智能体回答链路里的 TTS 不单独传 voiceId；后端按 payload.deviceCode 找到设备，优先使用后台设备页绑定的当前音色。设备未绑定音色时，才使用 /ai-models/tts 保存的公司默认音色。</div>');
         const questionInput = document.getElementById('llmText');
         if (questionInput) {
           fitTextareaContent(questionInput);
@@ -1549,7 +1559,7 @@
         document.getElementById('llmVoiceStopBtn').addEventListener('click', () => stopAgentVoiceQuestion({ ask: true }));
         document.getElementById('llmBtn').addEventListener('click', () => sendLlmText({ source: 'manual' }));
         document.getElementById('llmTtsInterruptBtn').addEventListener('click', () => interruptAgentTtsPlayback('用户打断播报'));
-        writeRequestDetail({ label: '智能体回答链路', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { manager: 'RuntimeAgentRealtimeManager', start: { type: 'agent.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: '<optional text>' } }, finish: { type: 'agent.session.finish' }, cancel: { type: 'agent.session.cancel' }, callbacks: ['asr.transcript', 'asr.done', 'llm.delta', 'llm.tts_segment', 'tts.ready', 'tts.segment_start', 'binary PCM', 'tts.segment_end', 'tts.done', 'agent.done'], dtoPackage: 'bean/runtime/agent' }, note: 'ASR、LLM、TTS 由后端在同一个 agent 会话内自动串联；前端只负责开始/结束/取消会话和播放同一连接返回的 PCM。' });
+        writeRequestDetail({ label: '智能体回答链路', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { manager: 'RuntimeAgentRealtimeManager', start: { type: 'agent.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: '<optional text>' } }, finish: { type: 'agent.session.finish' }, cancel: { type: 'agent.session.cancel' }, callbacks: ['asr.transcript', 'asr.done', 'llm.delta', 'llm.tts_segment', 'tts.ready', 'tts.segment_start', 'binary PCM', 'tts.segment_end', 'tts.done', 'agent.done'], dtoPackage: 'bean/runtime/agent' }, note: 'ASR、LLM、TTS 由后端在同一个 agent 会话内自动串联；内部 TTS 不传 voiceId 时设备绑定音色优先，设备无绑定音色才使用公司默认音色。' });
       }
 
       async function startAgentVoiceQuestion() {
@@ -2597,9 +2607,9 @@
 
       function renderTtsWs() {
         const voiceOptions = resourceList('voiceTones').map((item) => '<option value="' + escapeHtml(item.id) + '">' + escapeHtml(item.name || item.voiceCode || item.id) + '</option>').join('');
-        els.contentBody.innerHTML = '<div class="field"><label for="ttsWsText">合成文本</label><textarea id="ttsWsText" class="textarea">你好，我是数字人设备。</textarea></div><div class="field"><label for="ttsWsVoice">音色 voiceId（可选）</label><select id="ttsWsVoice" class="input"><option value="">使用公司默认音色</option>' + voiceOptions + '</select></div><div class="toolbar"><button class="button secondary" id="ttsWsBtn" type="button">测试 tts.session.start</button></div><div class="detail-block"><strong>事件输出</strong><pre id="ttsWsOutput">等待请求</pre></div><div class="note">设备码放在 tts.session.start payload.deviceCode 中；页面会用 Web Audio 播放返回的 audio/pcm 二进制分片。tts.session.cancel 用于彻底停止当前合成并返回 tts.cancelled；后台智能体页的“打断播报”只停止本地已排队音频，不主动断开 WebSocket。</div>';
+        els.contentBody.innerHTML = '<div class="field"><label for="ttsWsText">合成文本</label><textarea id="ttsWsText" class="textarea">你好，我是数字人设备。</textarea></div><div class="field"><label for="ttsWsVoice">音色 voiceId（可选）</label><select id="ttsWsVoice" class="input"><option value="">不传 voiceId：设备音色优先，未绑定才用公司默认音色</option>' + voiceOptions + '</select></div><div class="toolbar"><button class="button secondary" id="ttsWsBtn" type="button">测试 tts.session.start</button></div><div class="detail-block"><strong>事件输出</strong><pre id="ttsWsOutput">等待请求</pre></div><div class="note">设备码放在 tts.session.start payload.deviceCode 中；不传 voiceId 时，后端先读取该设备在后台设备页绑定的音色，只有设备没有绑定任何音色才使用 /ai-models/tts 的公司默认音色。页面会用 Web Audio 播放返回的 audio/pcm 二进制分片。</div>';
         document.getElementById('ttsWsBtn').addEventListener('click', testTtsWebSocket);
-        writeRequestDetail({ label: 'TTS WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { start: { type: 'tts.session.start', id: 'tts-session-<timestamp>', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: '你好，我是数字人设备。', voiceId: '<optional voice id>' } }, cancel: { type: 'tts.session.cancel', id: 'tts-cancel-<timestamp>' } }, note: '统一实时 TTS 命令，使用 payload.deviceCode 解析公司上下文；tts.session.cancel 取消当前合成会话，返回 tts.cancelled。' });
+        writeRequestDetail({ label: 'TTS WebSocket', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { start: { type: 'tts.session.start', id: 'tts-session-<timestamp>', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: '你好，我是数字人设备。', voiceId: '<optional voice id>' } }, cancel: { type: 'tts.session.cancel', id: 'tts-cancel-<timestamp>' } }, note: '统一实时 TTS 命令，使用 payload.deviceCode 解析设备和公司；不传 voiceId 时设备绑定音色优先，设备无绑定音色才使用公司默认音色。' });
       }
 
       function testTtsWebSocket() {
@@ -2612,9 +2622,9 @@
       }
 
       function renderTtsHttp() {
-        els.contentBody.innerHTML = '<div class="field"><label for="ttsHttpText">合成文本</label><textarea id="ttsHttpText" class="textarea">你好，我是数字人设备。</textarea></div><div class="toolbar"><button class="button" id="ttsHttpBtn" type="button">合成语音</button></div><audio id="ttsHttpAudio" controls preload="none" hidden></audio><div class="note">特殊说明：本页为了浏览器播放会传 wrapWav=true，响应为 audio/wav；安卓端默认不传 wrapWav，响应为 audio/pcm raw PCM，采样率见 X-Audio-Sample-Rate，声道见 X-Audio-Channels。</div><div class="detail-block"><strong>返回结果</strong><pre id="ttsHttpOutput">等待请求</pre></div>';
+        els.contentBody.innerHTML = '<div class="field"><label for="ttsHttpText">合成文本</label><textarea id="ttsHttpText" class="textarea">你好，我是数字人设备。</textarea></div><div class="toolbar"><button class="button" id="ttsHttpBtn" type="button">合成语音</button></div><audio id="ttsHttpAudio" controls preload="none" hidden></audio><div class="note">特殊说明：本页为了浏览器播放会传 wrapWav=true，响应为 audio/wav；不传 voiceId 时后端按设备码优先使用设备绑定音色，设备没有绑定音色才使用公司默认音色。安卓端默认不传 wrapWav，响应为 audio/pcm raw PCM。</div><div class="detail-block"><strong>返回结果</strong><pre id="ttsHttpOutput">等待请求</pre></div>';
         document.getElementById('ttsHttpBtn').addEventListener('click', sendTtsHttp);
-        writeRequestDetail({ label: 'TTS HTTP', method: 'POST', url: state.apiBaseUrl + '/ai-models/tts/runtime/', path: '/ai-models/tts/runtime/', headers: previewHeaders('application/json'), body: { text: '你好，我是数字人设备。', wrapWav: true }, note: '设备码免登录 TTS 入口；HTML 测试请求 wrapWav=true，返回 audio/wav 便于浏览器直接播放。' });
+        writeRequestDetail({ label: 'TTS HTTP', method: 'POST', url: state.apiBaseUrl + '/ai-models/tts/runtime/', path: '/ai-models/tts/runtime/', headers: previewHeaders('application/json'), body: { text: '你好，我是数字人设备。', wrapWav: true }, note: '设备码免登录 TTS 入口；不传 voiceId 时设备绑定音色优先，未绑定才使用公司默认音色。HTML 测试请求 wrapWav=true，返回 audio/wav 便于浏览器播放。' });
       }
 
       async function sendTtsHttp() {
@@ -2695,7 +2705,7 @@
           headers: previewHeaders(isDeviceActivation || isRuntimeResource ? 'application/json' : undefined),
           body: isDeviceActivation ? activationBody : isTtsOptions || !isRuntimeResource ? null : { resourceType: type },
           docKey: type,
-          note: isDeviceActivation ? '新增/上报设备入口；通常在设备启动、首次联网或需要刷新设备版本/诊断信息时调用，不是每个业务接口前都调用。设备码放 X-Device-Code，body 只放设备版本和诊断信息。' : isTtsOptions ? '真实来源：GET /ai-models/tts/options/，带 X-Device-Code 时按设备所属公司返回 TTS voices。' : isRuntimeResource ? '设备端通过免登录运行时入口请求：' + (sliceMap[type] || type) + '；背景图片、滚动文本、数字人模型、视频的数据来源分别是资源管理下对应菜单。' : '当前真实来源：GET /device-runtime/config/，设备码放在 X-Device-Code。',
+          note: isDeviceActivation ? '新增/上报设备入口；通常在设备启动、首次联网或需要刷新设备版本/诊断信息时调用，不是每个业务接口前都调用。设备码放 X-Device-Code，body 只放设备版本和诊断信息。' : isTtsOptions ? '真实来源：GET /ai-models/tts/options/，这是公司可选音色目录和默认音色，不代表当前设备实际使用音色。' : isRuntimeResource ? '设备端通过免登录运行时入口请求：' + (sliceMap[type] || type) + '；voiceTones 只返回当前设备实际音色，不返回候选列表。' : '当前真实来源：GET /device-runtime/config/，设备码放在 X-Device-Code；resources.voiceTones 是当前设备实际音色。',
         });
         writeResponse({ ok: Boolean(state.runtimeConfig || state.activation), status: state.runtimeConfig || state.activation ? 'cached' : '-', body: previewSlice(type) });
       }
@@ -2763,7 +2773,7 @@
           ],
         };
         if (path.includes('/device-runtime/config/')) return {
-          summary: '运行时完整配置接口。只读接口，不新增设备；设备必须已经登记、启用、绑定公司，并绑定可用智能体。',
+          summary: '运行时完整配置接口。只读接口，不新增设备；设备必须已经登记、启用、绑定公司，并绑定可用智能体。resources.voiceTones 只表示当前设备实际使用的音色。',
           query: null,
           headers: deviceHeadersDoc(),
           body: null,
@@ -2775,6 +2785,7 @@
             ['resources.scrollingTexts', '滚动文本数组。'],
             ['resources.models', '数字人模型数组。'],
             ['resources.videos', '视频数组。'],
+            ['resources.voiceTones', '当前设备实际使用音色数组，最多一个。设备绑定了音色时返回设备音色；设备未绑定时返回 /ai-models/tts 公司默认音色；不返回候选音色列表。'],
             ['wakeWords', '当前设备绑定且启用的唤醒词数组。'],
             ['wakeWordLines', '设备端可直接使用的唤醒词配置行数组。'],
           ],
@@ -2799,6 +2810,7 @@
               scrollingTexts: [{ id: 2, content: '欢迎参观', speed: 40 }],
               models: [{ id: 3, name: '数字人 A', modelType: 'human', url: 'https://example.com/model.glb' }],
               videos: [{ id: 4, name: '宣传片', url: 'https://example.com/video.mp4' }],
+              voiceTones: [{ id: 5, name: '设备讲解音色', voiceCode: 'Cherry' }],
             },
             wakeWords: [{ id: 1, text: '你好小德', keywordLine: 'n ǐ h ǎo x iǎo d é @你好小德 :2.0 #0.25' }],
             wakeWordLines: ['n ǐ h ǎo x iǎo d é @你好小德 :2.0 #0.25'],
@@ -2845,13 +2857,13 @@
         };
         if (path.includes('/device-runtime/resources/')) return resourceEndpointDoc(docKey);
         if (path.includes('/ai-models/tts/options/')) return {
-          summary: 'TTS 音色列表接口。按 X-Device-Code 解析公司，只返回设备所属公司可用音色；普通公司账号不能通过 tenant 参数读取其他公司音色。',
+          summary: 'TTS 音色列表接口。按 X-Device-Code 解析公司，返回设备所属公司的可选音色目录和公司默认音色；它不是当前设备实际音色。当前设备实际音色以 /device-runtime/config/ 的 resources.voiceTones 为准。',
           query: null,
           headers: deviceHeadersDoc(),
           body: null,
           response: [
             ['voices', '音色数组。页面主要使用 id、name/displayName、voiceCode、content/exampleText、iconUrl/avatarPath。'],
-            ['defaultVoiceId', '公司默认音色 ID，存在时用于 TTS 默认合成。'],
+            ['defaultVoiceId', '公司默认音色 ID。仅当设备没有绑定任何音色时，运行时 TTS 才使用它作为兜底。'],
           ],
           responseExample: {
             defaultVoiceId: 1,
@@ -2923,12 +2935,12 @@
           errors: runtimeDeviceErrors([['403 / 44021 / DEVICE_AGENT_UNBOUND', '设备未绑定可用智能体。']]),
         };
         if (path.includes('/ai-models/tts/runtime/')) return {
-          summary: '设备端 TTS HTTP 合成接口。按设备码解析公司默认音色；浏览器测试传 wrapWav=true 便于播放。',
+          summary: '设备端 TTS HTTP 合成接口。按设备码解析设备和公司；不传 voiceId 时设备绑定音色优先，设备未绑定音色才使用公司默认音色。浏览器测试传 wrapWav=true 便于播放。',
           query: null,
           headers: deviceJsonHeadersDoc(),
           body: [
             ['text', '必填；需要合成的文本。'],
-            ['voiceId', '可选；指定音色 ID，不传则使用公司默认音色。'],
+            ['voiceId', '可选；显式指定音色 ID 时使用该音色。不传则设备绑定音色优先，设备未绑定才使用公司默认音色。'],
             ['wrapWav', '可选；true 返回 audio/wav，安卓端通常不传，默认 raw PCM。'],
           ],
           response: [
@@ -2957,8 +2969,8 @@
           ],
           response: [
             ['device.runtime_config.subscribed', '订阅确认 + 配置推送（合并为单条消息）。payload 带 deviceCode、tenantId、action、config。首次订阅 action=initial；唤醒词变化 action=wakeWordsChanged；音色变化 action=voiceConfigurationChanged；滚动文本变化 action=scrollingTextsChanged。'],
-            ['payload.config', '最新运行时配置对象，与 /device-runtime/config/ 同源，但不包含 resources；含 voiceConfiguration 和 scrollingTexts。'],
-            ['payload.config.voiceConfiguration', '运行时音色配置块（应用绑定的可用 TTS 音色）。'],
+            ['payload.config', '最新运行时配置对象，与 /device-runtime/config/ 同源，但 WebSocket 快照不包含完整 resources；含 voiceConfiguration 和 scrollingTexts。音色变化也推整份 config，不推增量字段。'],
+            ['payload.config.voiceConfiguration', '运行时音色配置块，voiceTones 最多一个：设备绑定音色优先；设备未绑定时使用公司默认音色。'],
             ['payload.config.scrollingTexts', '租户级启用滚动文本列表（中英明细）。'],
           ],
           responseExample: [
@@ -3002,7 +3014,7 @@
             ['phases.asrPreview', '接收 <code>asr.transcript</code> 的实时预览；上游原始事件是 <code>conversation.item.input_audio_transcription.text</code>，预览语义为 <code>text + stash</code>。'],
             ['phases.asrDone', '接收 <code>asr.transcript final=true</code>/<code>asr.done</code>，使用纠错后的最终 <code>text</code> 作为问题；上游最终事件是 <code>conversation.item.input_audio_transcription.completed</code> 的 <code>transcript</code>。'],
             ['phases.llmReply', '发送 <code>llm.session.start</code>。第一轮请求不传 <code>payload.conversationId</code>；保存 <code>llm.started.payload.conversationId</code> 或 <code>llm.done.payload.conversationId</code>；同一对话的后续文本问题再把它带回。处理 <code>llm.started</code>/<code>llm.delta</code>/<code>llm.tts_segment</code>/<code>llm.done</code>；标注命中时 <code>llm.done.payload.blocks</code>/<code>answerBlocks</code> 携带文本、图片、视频块。'],
-            ['phases.ttsSpeak', '后端在同一 agent 会话内维护一个上游 TTS WebSocket，持续写入多个 <code>llm.tts_segment</code>；每段音频输出前后会返回 <code>tts.segment_start</code>/<code>tts.segment_end</code>，中间是 binary PCM。'],
+            ['phases.ttsSpeak', '后端在同一 agent 会话内维护一个上游 TTS WebSocket，持续写入多个 <code>llm.tts_segment</code>；TTS 音色按设备绑定音色优先，设备未绑定音色才回退 /ai-models/tts 公司默认音色。'],
             ['callbacks', '对外继续映射现有 <code>OnAiDialogueListener</code> 或本页实时播报/最终回放。'],
             ['dtoPackage', '安卓端建议将 command、payload、event DTO 统一放在 <code>bean/runtime/agent</code>。'],
           ],
@@ -3010,7 +3022,7 @@
             ['ASR 阶段', '<code>asr.ready</code>、<code>asr.transcript</code>、<code>asr.done</code>。实时预览看 <code>final=false</code>，最终问题看 <code>final=true</code>。'],
             ['LLM 阶段', '<code>llm.started</code>、<code>llm.delta</code>、<code>llm.tts_segment</code>、<code>llm.done</code>；<code>llm.started.payload.conversationId</code> 是服务端创建的数字会话 ID，安卓应立即保存。富媒体标注回复在完成事件中返回 <code>payload.blocks</code>/<code>answerBlocks</code>，客户端按顺序渲染 text/image/video。'],
             ['富媒体块', '<code>text</code> 块渲染文本；<code>image</code> 块渲染图片；<code>video</code> 块渲染视频控件。媒体块字段包含 <code>resourceId</code>、<code>resourceName</code>、<code>url</code>、<code>missing</code>；<code>missing=true</code> 时展示占位提示。TTS 只使用文本块拼出的 <code>answerText</code>。'],
-            ['TTS 阶段', '<code>tts.ready</code>、<code>tts.segment_start</code>、binary PCM、<code>tts.segment_end</code>、<code>tts.done</code>；一个 agent 会话内只应出现一次 ready/done，中间可有多个可播报片段对应的 PCM。<code>tts.segment_start.payload</code> 包含 <code>index</code> 和 <code>text</code>，<code>tts.segment_end.payload</code> 包含 <code>index</code>。'],
+            ['TTS 阶段', '<code>tts.ready</code>、<code>tts.segment_start</code>、binary PCM、<code>tts.segment_end</code>、<code>tts.done</code>；<code>tts.ready</code> 带 <code>voice</code>，应是当前设备绑定音色，只有设备未绑定时才是公司默认音色。'],
             ['打断播报', '停止本地 Web Audio 队列，并发送 <code>agent.session.cancel</code> 取消当前 agent 会话；这只是打断当前回答，不代表用户要新建 LLM 对话，安卓本地保存的 <code>conversationId</code> 不应因此清空。'],
             ['停止', '才 cancel/abort 当前 LLM/TTS 或关闭当前流。'],
           ],
@@ -3039,6 +3051,7 @@
             ['payload.conversationId', '<code>number</code>，仅 LLM 续聊使用。第一轮 <code>llm.session.start</code> 必须省略；服务端会创建并返回。第二轮及以后如果要保持同一段上下文，必须把之前保存的值原样放回这里。该 ID 必须属于当前设备绑定的公司/智能体，跨设备、跨公司或无效 ID 会返回错误。'],
             ['payload.token / tenantId', '后台登录态页面使用；普通公司账号会被限制在自己所属公司，不能通过 tenantId 越权。'],
             ['payload.requestId / traceId', '可选；链路追踪。'],
+            ['payload.voiceId', '仅 TTS 调试可选；显式传入时使用该音色。不传时按设备码优先使用设备绑定音色，设备未绑定才使用公司默认音色。'],
           ],
           response: [
             ['asr.ready', 'ASR 会话已建立；客户端收到后开始发送 16k mono pcm_s16le 二进制音频。'],
@@ -3050,7 +3063,7 @@
             ['llm.delta', 'LLM 文字增量。用于实时上屏；完整回复以 <code>llm.done.payload.answerText</code> 为准。'],
             ['llm.tts_segment', '可播报句子片段。完整 agent 链路会把这些片段送入 TTS。'],
             ['llm.done', 'LLM 完成。<code>payload.answerText</code> 是完整回复，<code>payload.blocks</code>/<code>payload.answerBlocks</code> 是可选富媒体块数组，<code>payload.conversationId</code> 与 <code>llm.started</code> 相同，也可以作为兜底保存。'],
-            ['tts.ready / tts.segment_start / audio/pcm / tts.segment_end / tts.done', 'TTS 就绪、分段边界事件、二进制 PCM 分片和完成事件；tts.ready 带 sampleRate/voice。<code>tts.segment_start.payload</code> 包含 <code>index</code> 和 <code>text</code>，随后输出该段 binary PCM，<code>tts.segment_end.payload</code> 包含同一个 <code>index</code>。'],
+            ['tts.ready / tts.segment_start / audio/pcm / tts.segment_end / tts.done', 'TTS 就绪、分段边界事件、二进制 PCM 分片和完成事件；tts.ready 带 sampleRate/voice。voice 应遵循设备绑定音色优先、公司默认音色兜底。'],
             ['*.cancelled', '会话取消事件，只表示当前 ASR/LLM/TTS session 被取消；WebSocket 不应因为 cancel 被动断开，可继续发下一轮命令。取消 LLM 当前生成不等于新建对话，安卓不要自动清空 <code>conversationId</code>。'],
             ['close / disconnect', '客户端主动关闭 WebSocket 才会彻底结束连接；在线状态连接断开还会触发 offline。'],
             ['*.error', '失败事件，包含 message。'],
@@ -3191,13 +3204,13 @@
 
       function endpointNote(path) {
         if (path.includes('/device-auth/activate/')) return '设备首次/重复上报，HTTP 设备码统一放在 X-Device-Code 请求头，body 只放设备版本和诊断信息。';
-        if (path.includes('/device-runtime/config/')) return '当前真实来源：HTTP 设备码放 X-Device-Code，返回 device、application、agentApplication、resources.*。';
+        if (path.includes('/device-runtime/config/')) return '当前真实来源：HTTP 设备码放 X-Device-Code，返回 device、application、agentApplication、resources.*；resources.voiceTones 是当前设备实际音色。';
         if (path.includes('/device-runtime/heartbeat/')) return '兼容心跳接口；HTTP 设备码放 X-Device-Code，body 可选传 softwareVersion、systemVersion、deviceInfo，不决定在线状态。';
         if (path.includes('/device-runtime/resources/')) return '设备码免登录资源切片接口；images/scrollingTexts/models/videos 分别读取资源管理下对应菜单。';
-        if (path.includes('/ai-models/tts/options/')) return 'TTS 音色 options 列表；带 X-Device-Code 时按设备所属公司返回 voices。';
+        if (path.includes('/ai-models/tts/options/')) return 'TTS 音色 options 列表；带 X-Device-Code 时按设备所属公司返回 voices 和 defaultVoiceId，这是候选目录/公司默认音色，不是设备当前音色。';
         if (path.includes('/ai-models/asr/device-status/')) return '设备码免登录 ASR 状态检查。';
         if (path.includes('/device/voice-chat')) return '真实设备问答入口，HTTP 设备码放 X-Device-Code，body 支持 text 或 multipart audio。';
-        if (path.includes('/ai-models/tts/runtime/')) return '设备码免登录 TTS 合成入口；HTML 测试会传 wrapWav=true 以便浏览器播放。';
+        if (path.includes('/ai-models/tts/runtime/')) return '设备码免登录 TTS 合成入口；不传 voiceId 时设备绑定音色优先，设备未绑定才用公司默认音色。';
         return '真实请求详情。';
       }
 

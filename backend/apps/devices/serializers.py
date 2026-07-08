@@ -127,6 +127,14 @@ class DeviceSerializer(serializers.ModelSerializer):
         allow_null=True,
     )
     applicationName = serializers.CharField(source='application.name', read_only=True, default='')
+    voiceToneId = AvailableTTSVoicePrimaryKeyField(
+        source='tts_voice',
+        queryset=TTSVoice.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    voiceToneName = serializers.CharField(source='tts_voice.display_name', read_only=True, default='')
+    voiceToneCode = serializers.CharField(source='tts_voice.voice_code', read_only=True, default='')
     agentApplicationId = serializers.SerializerMethodField()
     agentApplicationName = serializers.SerializerMethodField()
     authorizationType = serializers.ChoiceField(
@@ -160,6 +168,9 @@ class DeviceSerializer(serializers.ModelSerializer):
             'groupName',
             'applicationId',
             'applicationName',
+            'voiceToneId',
+            'voiceToneName',
+            'voiceToneCode',
             'agentApplicationId',
             'agentApplicationName',
             'authorizationType',
@@ -237,7 +248,7 @@ class DeviceSerializer(serializers.ModelSerializer):
 
     def update(self, instance: Device, validated_data):
         allowed = {}
-        for key in ('name', 'location', 'application', 'group'):
+        for key in ('name', 'location', 'application', 'group', 'tts_voice'):
             if key in validated_data:
                 allowed[key] = validated_data[key]
         application = allowed.get('application')

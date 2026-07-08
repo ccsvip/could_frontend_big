@@ -13,6 +13,7 @@ from websockets.exceptions import ConnectionClosed
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.accounts.services.permissions import get_active_permission_codes_for_user
+from apps.devices.models import Device
 from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device
 from apps.tenants.models import Tenant
 from apps.tenants.services import get_user_tenant
@@ -102,6 +103,21 @@ def resolve_tts_voice(
         ):
             return voice
         return None
+
+    device_id = connection.get('device_id')
+    if device_id:
+        device = Device.objects.select_related('tts_voice__provider').filter(id=device_id).first()
+        device_voice = getattr(device, 'tts_voice', None)
+        if device_voice is not None:
+            if (
+                device_voice.provider_id == provider.id
+                and device_voice.is_active
+                and device_voice.is_visible
+                and device_voice.provider.is_active
+                and (model_code is None or is_tts_voice_supported_by_model_code(device_voice, model_code))
+            ):
+                return device_voice
+            return None
 
     if connection.get('tenant_id'):
         tenant = Tenant.objects.filter(id=connection['tenant_id'], is_active=True).first()
