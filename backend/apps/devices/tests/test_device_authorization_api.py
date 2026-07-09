@@ -672,6 +672,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             tenant=self.tenant,
             application=application,
             tts_voice=voice,
+            tts_voice_config={'speech_rate': 1.35, 'pitch_rate': 0.9, 'volume': 72},
             name='Lobby Voice Device',
             code='ANDROID-VOICE-CONFIG-001',
             authorization_type=Device.AUTHORIZATION_PERMANENT,
@@ -690,6 +691,9 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(voice_tones[0]['id'], voice.id)
         self.assertEqual(voice_tones[0]['name'], 'Cherry')
         self.assertEqual(voice_tones[0]['voiceCode'], 'Cherry')
+        self.assertEqual(voice_tones[0]['speechRate'], 1.35)
+        self.assertEqual(voice_tones[0]['pitchRate'], 0.9)
+        self.assertEqual(voice_tones[0]['volume'], 72)
 
     def test_runtime_config_uses_company_default_voice_when_device_has_no_voice(self):
         tts_provider = TTSProvider.objects.get(code='aliyun')
@@ -764,13 +768,23 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         with self.captureOnCommitCallbacks(execute=True):
             update_response = self.client.patch(
                 f'/api/v1/devices/{device.code}/',
-                {'voiceToneId': voice.id},
+                {
+                    'voiceToneId': voice.id,
+                    'voiceToneConfig': {
+                        'speechRate': 1.25,
+                        'pitchRate': 0.85,
+                        'volume': 66,
+                    },
+                },
                 format='json',
             )
 
         self.assertEqual(update_response.status_code, status.HTTP_200_OK)
         self.assertEqual(update_response.data['voiceToneId'], voice.id)
         self.assertEqual(update_response.data['voiceToneCode'], 'Cherry')
+        self.assertEqual(update_response.data['voiceToneConfig']['speechRate'], 1.25)
+        self.assertEqual(update_response.data['voiceToneConfig']['pitchRate'], 0.85)
+        self.assertEqual(update_response.data['voiceToneConfig']['volume'], 66)
         mock_publish.assert_called_once()
         payload = mock_publish.call_args.args[0]
         self.assertEqual(payload['type'], 'device.voice_configuration.changed')
@@ -790,6 +804,9 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(len(voice_tones), 1)
         self.assertEqual(voice_tones[0]['id'], voice.id)
         self.assertEqual(voice_tones[0]['voiceCode'], 'Cherry')
+        self.assertEqual(voice_tones[0]['speechRate'], 1.25)
+        self.assertEqual(voice_tones[0]['pitchRate'], 0.85)
+        self.assertEqual(voice_tones[0]['volume'], 66)
 
     def test_websocket_device_voice_bind_binds_voice_from_android_voice_object(self):
         self.agent_application.publish()
@@ -828,6 +845,9 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
                             'voiceCode': voice.voice_code,
                             'audioUrl': '',
                             'iconUrl': voice.avatar_path,
+                            'speechRate': 1.45,
+                            'pitchRate': 0.75,
+                            'volume': 88,
                         },
                     },
                 }),
@@ -839,6 +859,9 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             self.assertEqual(payload['payload']['deviceCode'], device.code)
             self.assertEqual(payload['payload']['voiceId'], voice.id)
             self.assertEqual(payload['payload']['voiceCode'], 'Cherry')
+            self.assertEqual(payload['payload']['voiceConfig']['speechRate'], 1.45)
+            self.assertEqual(payload['payload']['voiceConfig']['pitchRate'], 0.75)
+            self.assertEqual(payload['payload']['voiceConfig']['volume'], 88)
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)
@@ -846,6 +869,9 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         async_to_sync(run_websocket)()
         device.refresh_from_db()
         self.assertEqual(device.tts_voice_id, voice.id)
+        self.assertEqual(device.tts_voice_config['speech_rate'], 1.45)
+        self.assertEqual(device.tts_voice_config['pitch_rate'], 0.75)
+        self.assertEqual(device.tts_voice_config['volume'], 88)
 
     def test_websocket_device_voice_bind_with_null_voice_unbinds(self):
         self.agent_application.publish()
@@ -856,6 +882,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             application=self.application,
             agent_application=self.agent_application,
             tts_voice=voice,
+            tts_voice_config={'speech_rate': 1.2, 'pitch_rate': 0.8, 'volume': 60},
             name='WS Voice Unbind Device',
             code='ANDROID-WS-VOICE-UNBIND-001',
             authorization_type=Device.AUTHORIZATION_PERMANENT,
@@ -891,6 +918,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         async_to_sync(run_websocket)()
         device.refresh_from_db()
         self.assertIsNone(device.tts_voice_id)
+        self.assertEqual(device.tts_voice_config, {})
 
     def test_websocket_device_voice_bind_rejects_inactive_voice(self):
         self.agent_application.publish()

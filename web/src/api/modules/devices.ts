@@ -22,6 +22,7 @@ export type DeviceRecord = {
   voiceToneId: number | null;
   voiceToneName: string;
   voiceToneCode: string;
+  voiceToneConfig: DeviceVoiceToneConfig;
   authorizationType: DeviceAuthorizationType;
   authorizationTypeLabel: string;
   expiresAt: string | null;
@@ -35,6 +36,12 @@ export type DeviceRecord = {
   ignoredAt: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type DeviceVoiceToneConfig = {
+  speechRate: number;
+  pitchRate: number;
+  volume: number;
 };
 
 
@@ -99,6 +106,7 @@ export type DeviceUpdatePayload = {
   applicationId?: number | null;
   groupId?: number | null;
   voiceToneId?: number | null;
+  voiceToneConfig?: DeviceVoiceToneConfig;
 };
 
 export type DeviceGroupRecord = {

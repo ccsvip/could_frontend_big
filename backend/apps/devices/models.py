@@ -146,6 +146,7 @@ class Device(models.Model):
         null=True,
         blank=True,
     )
+    tts_voice_config = models.JSONField('当前音色配置', blank=True, default=dict)
     group = models.ForeignKey(
         DeviceGroup,
         on_delete=models.SET_NULL,

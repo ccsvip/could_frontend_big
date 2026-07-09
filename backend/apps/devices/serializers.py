@@ -9,6 +9,7 @@ from apps.ai_models.models import AgentApplication, TTSVoice
 from apps.resources.models import CommandGroup, ModelAsset, Resource, ScrollingText
 from apps.tenants.models import Tenant
 from .services.wake_words import WakeWordEncodingError, encode_wake_word_text
+from .tts_voice_config import normalize_device_tts_voice_config, public_device_tts_voice_config
 
 from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup, WakeWord
 
@@ -135,6 +136,7 @@ class DeviceSerializer(serializers.ModelSerializer):
     )
     voiceToneName = serializers.CharField(source='tts_voice.display_name', read_only=True, default='')
     voiceToneCode = serializers.CharField(source='tts_voice.voice_code', read_only=True, default='')
+    voiceToneConfig = serializers.JSONField(source='tts_voice_config', required=False)
     agentApplicationId = serializers.SerializerMethodField()
     agentApplicationName = serializers.SerializerMethodField()
     authorizationType = serializers.ChoiceField(
@@ -171,6 +173,7 @@ class DeviceSerializer(serializers.ModelSerializer):
             'voiceToneId',
             'voiceToneName',
             'voiceToneCode',
+            'voiceToneConfig',
             'agentApplicationId',
             'agentApplicationName',
             'authorizationType',
@@ -215,6 +218,14 @@ class DeviceSerializer(serializers.ModelSerializer):
         agent_application = obj.effective_agent_application
         return agent_application.name if agent_application else ''
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['voiceToneConfig'] = public_device_tts_voice_config(instance)
+        return data
+
+    def validate_voiceToneConfig(self, value):
+        return normalize_device_tts_voice_config(value)
+
     def validate(self, attrs):
         attrs = super().validate(attrs)
         if not attrs.get('code'):
@@ -248,9 +259,20 @@ class DeviceSerializer(serializers.ModelSerializer):
 
     def update(self, instance: Device, validated_data):
         allowed = {}
-        for key in ('name', 'location', 'application', 'group', 'tts_voice'):
+        for key in ('name', 'location', 'application', 'group', 'tts_voice', 'tts_voice_config'):
             if key in validated_data:
                 allowed[key] = validated_data[key]
+        if allowed.get('tts_voice') is None and 'tts_voice' in allowed:
+            allowed['tts_voice_config'] = {}
+        elif (
+            'tts_voice' in allowed
+            and allowed['tts_voice'] is not None
+            and allowed['tts_voice'].id != instance.tts_voice_id
+            and 'tts_voice_config' not in allowed
+        ):
+            allowed['tts_voice_config'] = {}
+        elif 'tts_voice_config' in allowed and 'tts_voice' not in allowed and instance.tts_voice_id is None:
+            allowed['tts_voice_config'] = {}
         application = allowed.get('application')
         if application is not None and instance.tenant_id is None:
             allowed['tenant'] = application.tenant

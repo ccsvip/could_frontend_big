@@ -59,6 +59,7 @@ from .services.runtime import (
     runtime_device_error,
     validate_runtime_application_active,
 )
+from .tts_voice_config import device_tts_session_config, public_device_tts_voice_config
 from .serializers import (
     DeviceApplicationSerializer,
     DeviceActivationLogSerializer,
@@ -172,8 +173,9 @@ class DeviceViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin, viewsets.M
 
     def perform_update(self, serializer):
         previous_voice_id = serializer.instance.tts_voice_id
+        previous_voice_config = dict(serializer.instance.tts_voice_config or {})
         device = serializer.save()
-        if previous_voice_id != device.tts_voice_id:
+        if previous_voice_id != device.tts_voice_id or previous_voice_config != dict(device.tts_voice_config or {}):
             self._publish_runtime_config_changed(device, 'voiceConfigurationChanged')
 
     @extend_schema(responses=DeviceStatsSerializer, tags=['Devices'])
@@ -685,7 +687,9 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
     def _voice_configuration_payload(device: Device):
         voice = DeviceRuntimeConfigView._device_voice(device)
         return {
-            'voiceTones': [DeviceRuntimeConfigView._voice_payload(voice)] if voice is not None else [],
+            'voiceTones': [
+                DeviceRuntimeConfigView._voice_payload(voice, config=public_device_tts_voice_config(device, getattr(voice, 'provider', None)))
+            ] if voice is not None else [],
         }
 
     @staticmethod
@@ -699,7 +703,7 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
         return voice
 
     @staticmethod
-    def _voice_payload(voice, request=None):
+    def _voice_payload(voice, request=None, config=None):
         icon_url = voice.avatar_path
         if request is not None and icon_url.startswith('/'):
             icon_url = request.build_absolute_uri(icon_url)
@@ -709,6 +713,7 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
             'voiceCode': voice.voice_code,
             'audioUrl': '',
             'iconUrl': icon_url,
+            **(config or {}),
         }
 
     @staticmethod
@@ -809,7 +814,11 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
                 for item in scrolling_texts
             ],
             'voiceTones': [
-                DeviceRuntimeConfigView._voice_payload(voice, request)
+                DeviceRuntimeConfigView._voice_payload(
+                    voice,
+                    request,
+                    public_device_tts_voice_config(device, getattr(voice, 'provider', None)),
+                )
                 for voice in ([voice] if voice is not None else [])
             ],
             'models': [
@@ -1290,6 +1299,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             voice = tts_services.get_effective_tts_voice_for_tenant(device.tenant, provider)
         if voice is None:
             raise RuntimeError('请先配置默认音色')
-        pcm = tts_services.synthesize_tts_pcm(text=answer_text, voice=voice, config=config)
-        wav = tts_services.pcm_to_wav(pcm, sample_rate=config.sample_rate)
+        session_config = device_tts_session_config(device, provider)
+        pcm = tts_services.synthesize_tts_pcm(text=answer_text, voice=voice, config=config, session_config=session_config)
+        wav = tts_services.pcm_to_wav(pcm, sample_rate=session_config.get('sample_rate') or config.sample_rate)
         return base64.b64encode(wav).decode('ascii')

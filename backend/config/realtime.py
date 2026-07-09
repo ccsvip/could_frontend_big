@@ -27,6 +27,12 @@ from apps.devices.realtime import (
     resolve_device_event_subscription,
     resolve_runtime_config_event_subscription,
 )
+from apps.devices.tts_voice_config import (
+    device_tts_session_config,
+    has_device_tts_voice_config,
+    normalize_device_tts_voice_config,
+    public_device_tts_voice_config,
+)
 from apps.devices.websocket import (
     mark_device_offline_for_websocket,
     mark_device_online_for_websocket,
@@ -1376,6 +1382,14 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
 
 
 def _resolve_connection_tts_session_config(connection: dict[str, Any], config) -> dict[str, Any]:
+    device_id = connection.get('device_id')
+    if device_id:
+        from apps.devices.models import Device
+
+        device = Device.objects.select_related('tenant').filter(id=device_id).first()
+        if device is not None:
+            return device_tts_session_config(device, config.provider)
+
     tenant_id = connection.get('tenant_id')
     if not tenant_id:
         return config.tts_session_config
@@ -1948,10 +1962,20 @@ async def _handle_device_voice_bind(send, connection: RealtimeConnection, messag
             return
 
     previous_voice_id = device.tts_voice_id
-    device.tts_voice = bound_voice
-    await sync_to_async(device.save, thread_sensitive=True)(update_fields=['tts_voice'])
+    previous_voice_config = dict(device.tts_voice_config or {})
+    next_voice_config = previous_voice_config
+    if bound_voice is None:
+        next_voice_config = {}
+    elif isinstance(voice_payload, dict) and has_device_tts_voice_config(voice_payload):
+        next_voice_config = normalize_device_tts_voice_config(voice_payload)
+    elif previous_voice_id != bound_voice.id:
+        next_voice_config = {}
 
-    if previous_voice_id != device.tts_voice_id:
+    device.tts_voice = bound_voice
+    device.tts_voice_config = next_voice_config
+    await sync_to_async(device.save, thread_sensitive=True)(update_fields=['tts_voice', 'tts_voice_config'])
+
+    if previous_voice_id != device.tts_voice_id or previous_voice_config != dict(device.tts_voice_config or {}):
         await publish_device_event({
             'type': 'device.voice_configuration.changed',
             'action': 'voiceConfigurationChanged',
@@ -1966,6 +1990,13 @@ async def _handle_device_voice_bind(send, connection: RealtimeConnection, messag
             },
         })
 
+    voice_config_payload = None
+    if bound_voice is not None:
+        voice_config_payload = await sync_to_async(public_device_tts_voice_config, thread_sensitive=True)(
+            device,
+            bound_voice.provider,
+        )
+
     await _send_json(send, {
         'type': 'device.voice.bound',
         'id': command_id,
@@ -1974,6 +2005,7 @@ async def _handle_device_voice_bind(send, connection: RealtimeConnection, messag
             'voiceId': bound_voice.id if bound_voice else None,
             'voiceName': bound_voice.display_name if bound_voice else '',
             'voiceCode': bound_voice.voice_code if bound_voice else '',
+            'voiceConfig': voice_config_payload,
         },
     })
 

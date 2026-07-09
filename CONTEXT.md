@@ -28,6 +28,10 @@ _Avoid_: runtime synthesis, device playback
 Text-to-speech audio generated for a bound runtime device, delivered as raw PCM audio with explicit audio metadata.
 _Avoid_: admin preview audio, WAV test audio
 
+**Device TTS Voice Configuration**:
+The current Provider Voice bound to a runtime Device, plus device-level playback controls such as speech rate, pitch, and volume. When the device voice is unbound, these playback controls are cleared and the device falls back to the Company Default TTS Voice configuration.
+_Avoid_: provider voice default, global TTS settings, Android-only voice preferences
+
 **Company User**:
 A user operating inside a company workspace; company administrators and employees share the same business feature access, except that only company administrators can manage employees.
 _Avoid_: tenant admin feature split, employee-only business access

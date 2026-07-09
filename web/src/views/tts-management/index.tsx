@@ -35,32 +35,15 @@ const DEFAULT_TTS_SESSION_CONFIG: TtsSessionConfig = {
   instructions: '',
   optimize_instructions: false,
 };
-const TTS_LANGUAGE_OPTIONS = [
-  { label: '自动识别', value: 'Auto' },
-  { label: '中文', value: 'Chinese' },
-  { label: '英语', value: 'English' },
-  { label: '德语', value: 'German' },
-  { label: '意大利语', value: 'Italian' },
-  { label: '葡萄牙语', value: 'Portuguese' },
-  { label: '西班牙语', value: 'Spanish' },
-  { label: '日语', value: 'Japanese' },
-  { label: '韩语', value: 'Korean' },
-  { label: '法语', value: 'French' },
-  { label: '俄语', value: 'Russian' },
-] satisfies Array<{ label: string; value: TtsSessionConfig['language_type'] }>;
-const TTS_RESPONSE_FORMAT_OPTIONS = [
-  { label: 'PCM', value: 'pcm' },
-  { label: 'WAV', value: 'wav' },
-  { label: 'MP3', value: 'mp3' },
-  { label: 'OPUS', value: 'opus' },
-] satisfies Array<{ label: string; value: TtsSessionConfig['response_format'] }>;
-const TTS_SAMPLE_RATE_OPTIONS: Array<{ label: string; value: TtsSessionConfig['sample_rate'] }> = [8000, 16000, 24000, 48000].map((value) => ({ label: `${value} Hz`, value: value as TtsSessionConfig['sample_rate'] }));
-const OPTIMIZE_INSTRUCTIONS_TOOLTIP = '开启后会在有指令控制文本时自动优化表达，让语气、情绪和播报风格更清晰；不支持指令控制的模型或音色不会生效。';
+const OPTIMIZE_INSTRUCTIONS_TOOLTIP = '开启后会在有指令控制文本时自动优化表达，让语气、情绪和播报风格更清晰；不支持该能力的播报风格或音色不会生效。';
 
 const normalizeTtsSessionConfig = (config?: Partial<TtsSessionConfig> | null): TtsSessionConfig => ({
   ...DEFAULT_TTS_SESSION_CONFIG,
   ...(config || {}),
   mode: 'server_commit',
+  language_type: DEFAULT_TTS_SESSION_CONFIG.language_type,
+  response_format: DEFAULT_TTS_SESSION_CONFIG.response_format,
+  sample_rate: DEFAULT_TTS_SESSION_CONFIG.sample_rate,
   bit_rate: config?.bit_rate ?? DEFAULT_TTS_SESSION_CONFIG.bit_rate,
   instructions: (config?.instructions || '').trim(),
 });
@@ -113,11 +96,8 @@ export const TtsManagementPage = () => {
     [options?.voices, selectedVoiceId],
   );
   const modelCapability = useMemo(() => getTtsModelCapability(selectedModelCode), [selectedModelCode]);
-  const selectedModelOption = useMemo(
-    () => options?.provider.modelOptions.find((item) => item.code === selectedModelCode) ?? null,
-    [options?.provider.modelOptions, selectedModelCode],
-  );
   const instructionDisabledReason = getTtsInstructionDisabledReason(selectedModelCode, selectedVoice?.voiceCode);
+  const instructionDisabledMessage = instructionDisabledReason ? '当前音色或播报风格不支持指令控制。' : '';
   const availableVoices = useMemo(
     () => (options?.voices ?? []).filter((voice) => isTtsVoiceSupportedByModel(selectedModelCode, voice.voiceCode)),
     [selectedModelCode, options?.voices],
@@ -245,12 +225,12 @@ export const TtsManagementPage = () => {
             <span className="truncate text-sm font-semibold text-slate-900">{voice.displayName}</span>
             {voice.isDefault ? <Tag color="success" className="m-0 border-0 rounded-md px-2 py-0.5">当前默认</Tag> : null}
             <Tag color={supported ? 'green' : 'default'} className="m-0 border-0 rounded-md px-2 py-0.5">
-              {supported ? '可用' : '当前模型不可用'}
+              {supported ? '可用' : '当前风格不可用'}
             </Tag>
             {supported && modelCapability.supportsInstructionControl ? (
               <Tag color="blue" className="m-0 border-0 rounded-md px-2 py-0.5">支持指令</Tag>
             ) : (
-              <Tooltip title={getTtsInstructionDisabledReason(selectedModelCode, voice.voiceCode) || '当前音色不支持指令控制'}>
+              <Tooltip title="当前音色或播报风格不支持指令控制">
                 <Tag color="orange" className="m-0 border-0 rounded-md px-2 py-0.5">不支持指令</Tag>
               </Tooltip>
             )}
@@ -290,11 +270,8 @@ export const TtsManagementPage = () => {
                     {options?.provider.isActive ? '服务启用' : '服务停用'}
                   </Tag>
                   <Tag color={modelCapability.supportsInstructionControl ? 'blue' : 'orange'} className="m-0 border-0 rounded-md px-2 py-0.5">
-                    {modelCapability.supportsInstructionControl ? '模型支持指令' : '模型不支持指令'}
+                    {modelCapability.supportsInstructionControl ? '支持指令控制' : '不支持指令控制'}
                   </Tag>
-                </div>
-                <div className="text-xs text-slate-500 font-mono">
-                  {options?.provider.name || '阿里云 TTS'} · {selectedModelOption?.label || '情感增强'} · {ttsSessionConfig.sample_rate || options?.sampleRate || 24000}Hz · {ttsSessionConfig.response_format.toUpperCase()}
                 </div>
               </div>
             </div>
@@ -340,11 +317,11 @@ export const TtsManagementPage = () => {
               </div>
             </Card>
 
-            <Card title="Qwen TTS Realtime 参数" className="rounded-xl border border-slate-100 shadow-card">
+            <Card title="播报参数" className="rounded-xl border border-slate-100 shadow-card">
               <div className="space-y-4">
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="grid gap-3">
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-slate-500">播报模型</span>
+                    <span className="text-xs font-medium text-slate-500">播报风格</span>
                     <Select
                       value={selectedModelCode}
                       options={(options?.provider.modelOptions ?? []).map((item) => ({
@@ -353,18 +330,6 @@ export const TtsManagementPage = () => {
                       }))}
                       onChange={(value: string) => setSelectedModelCode(value)}
                     />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-slate-500">语种</span>
-                    <Select value={ttsSessionConfig.language_type} options={TTS_LANGUAGE_OPTIONS} onChange={(value: TtsSessionConfig['language_type']) => updateTtsSessionConfig('language_type', value)} />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-slate-500">音频格式</span>
-                    <Select value={ttsSessionConfig.response_format} options={TTS_RESPONSE_FORMAT_OPTIONS} onChange={(value: TtsSessionConfig['response_format']) => updateTtsSessionConfig('response_format', value)} />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-xs font-medium text-slate-500">采样率</span>
-                    <Select value={ttsSessionConfig.sample_rate} options={TTS_SAMPLE_RATE_OPTIONS} onChange={(value: TtsSessionConfig['sample_rate']) => updateTtsSessionConfig('sample_rate', value)} />
                   </div>
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -388,13 +353,13 @@ export const TtsManagementPage = () => {
                     rows={3}
                     maxLength={4000}
                     showCount
-                    placeholder="例如：用温柔、自然、略带微笑的语气朗读。仅情感增强系列生效。"
+                    placeholder="例如：用温柔、自然、略带微笑的语气朗读。支持该能力的播报风格生效。"
                     disabled={Boolean(instructionDisabledReason)}
                     onChange={(event) => updateTtsSessionConfig('instructions', event.target.value)}
                   />
                   {instructionDisabledReason ? (
                     <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
-                      {instructionDisabledReason}
+                      {instructionDisabledMessage}
                     </div>
                   ) : null}
                   <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50/60 px-3 py-2">

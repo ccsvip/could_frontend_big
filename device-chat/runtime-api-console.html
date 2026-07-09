@@ -394,12 +394,12 @@
 
       const sections = {
         device: { title: '设备与公司', description: '设备启动或首次联网时调用 /device-auth/activate/ 上报一次；设备名称可在后台编辑，后续直接通过 /device-runtime/config/ 获取最新公司、授权和应用配置。' },
-        runtimeConfig: { title: '运行时配置', description: 'GET /device-runtime/config/：设备端启动业务前拉取完整配置，包括设备名称、资源应用、智能体应用、资源列表和当前设备实际使用的音色。' },
+        runtimeConfig: { title: '运行时配置', description: 'GET /device-runtime/config/：设备端启动业务前拉取完整配置，包括设备名称、资源应用、智能体应用、资源列表和当前设备实际使用的音色及语速/语调/音量。' },
         runtimeEvents: { title: '配置订阅', description: '通过 device.runtime_config.subscribe 订阅当前设备配置；首次订阅和后续配置变化都会收到 device.runtime_config.subscribed（payload 直接带完整 config 和 action），音色变更也推完整配置。' },
         wakeWords: { title: '唤醒词测试', description: '从运行时配置读取当前设备绑定的唤醒词，在页面内模拟输入命中后的已唤醒提示，并可调用 TTS 播报一段提示语。' },
         application: { title: '应用', description: '通过设备码读取资源应用与完整智能体配置，包括开场白、建议问题和语音播报开关。' },
         voiceTones: { title: '获取音色列表', description: '/ai-models/tts/options/ 是公司可选音色目录和公司默认音色；设备运行时实际音色请看 /device-runtime/config/ 的 resources.voiceTones。' },
-        voiceBind: { title: '绑定设备音色', description: '安卓通过统一 WebSocket 发送 device.voice.bind，传入完整音色对象（含 id），后端按 id 绑定到设备；传 voice=null 解绑。绑定后自动推送 device.voice_configuration.changed。' },
+        voiceBind: { title: '绑定设备音色', description: '安卓通过统一 WebSocket 发送 device.voice.bind，传入完整音色对象（含 id、speechRate、pitchRate、volume），后端按 id 绑定到设备；传 voice=null 解绑并清空设备级音色参数。绑定后自动推送 device.voice_configuration.changed。' },
         images: { title: '获取背景图片', description: '通过固定设备码读取当前公司在资源管理/背景图片管理维护的数据。' },
         scrollingTexts: { title: '获取滚动文本', description: '通过固定设备码读取当前公司在资源管理/滚动文本维护的数据。' },
         models: { title: '获取数字人模型', description: '通过固定设备码读取当前公司在资源管理/模型管理维护的数据。' },
@@ -655,6 +655,7 @@
             ['设备绑定音色编码', code(device.voiceToneCode || '-')],
             ['实际下发音色', currentVoice ? escapeHtml(currentVoice.name || currentVoice.displayName || currentVoice.voiceCode || '-') : '-'],
             ['实际 voiceCode', code(currentVoice && currentVoice.voiceCode || '-')],
+            ['音色参数', currentVoice ? '语速 ' + code(currentVoice.speechRate || 1) + ' / 语调 ' + code(currentVoice.pitchRate || 1) + ' / 音量 ' + code(currentVoice.volume || 50) : '-'],
             ['回退规则', escapeHtml(device.voiceToneId ? '已选择设备音色，/ai-models/tts 默认音色失效' : '设备未选择音色，使用 /ai-models/tts 公司默认音色')],
           ]),
         ]) + '<div class="note">音色字段只表示当前设备实际使用的一个音色：后台设备页选择了音色时返回设备绑定音色；设备未选择任何音色时才返回 /ai-models/tts 保存的公司默认音色。不会返回候选音色列表。</div><div class="detail-block"><strong>完整返回</strong><pre>' + escapeHtml(pretty(config)) + '</pre></div>';
@@ -915,7 +916,8 @@
       function renderVoiceBind() {
         const items = resourceList('voiceTones');
         const voiceOptions = items.map((item) => '<option value="' + escapeAttr(item.id) + '">' + escapeHtml(item.name || item.displayName || item.voiceCode || '-') + '</option>').join('');
-        els.contentBody.innerHTML = '<div class="note">安卓端通过统一 WebSocket 发送 <code>device.voice.bind</code> 命令，payload 携带 <code>deviceCode</code> 和完整音色对象 <code>voice</code>（至少含 <code>id</code>）。后端按 id 查找可用音色并绑定到设备；传 <code>voice: null</code> 可解绑。绑定成功后后端自动发布 <code>device.voice_configuration.changed</code> 事件，已订阅 runtime_config 的设备会收到完整配置推送。</div><div class="field"><label for="voiceBindSelect">选择音色</label><select id="voiceBindSelect" class="input"><option value="">不绑定音色（解绑）</option>' + voiceOptions + '</select></div><div class="toolbar"><button class="button" id="voiceBindBtn" type="button">发送 device.voice.bind</button></div><div class="detail-block"><strong>事件输出</strong><pre id="voiceBindOutput">等待请求</pre></div>';
+        const defaultConfig = defaultVoiceBindConfig();
+        els.contentBody.innerHTML = '<div class="note">安卓端通过统一 WebSocket 发送 <code>device.voice.bind</code> 命令，payload 携带 <code>deviceCode</code> 和完整音色对象 <code>voice</code>（至少含 <code>id</code>）。音色对象可同时携带 <code>speechRate</code>、<code>pitchRate</code>、<code>volume</code>；传 <code>voice: null</code> 解绑并清空设备级音色参数，运行时回落公司默认配置。绑定成功后后端自动发布 <code>device.voice_configuration.changed</code> 事件，已订阅 runtime_config 的设备会收到完整配置推送。</div><div class="field"><label for="voiceBindSelect">选择音色</label><select id="voiceBindSelect" class="input"><option value="">不绑定音色（解绑）</option>' + voiceOptions + '</select></div><div class="grid two"><div class="field"><label for="voiceBindSpeechRate">语速 0.5-2.0</label><input id="voiceBindSpeechRate" class="input" type="number" min="0.5" max="2" step="0.05" value="' + escapeAttr(defaultConfig.speechRate) + '"></div><div class="field"><label for="voiceBindPitchRate">语调 0.5-2.0</label><input id="voiceBindPitchRate" class="input" type="number" min="0.5" max="2" step="0.05" value="' + escapeAttr(defaultConfig.pitchRate) + '"></div><div class="field"><label for="voiceBindVolume">音量大小 0-100</label><input id="voiceBindVolume" class="input" type="number" min="0" max="100" step="1" value="' + escapeAttr(defaultConfig.volume) + '"></div></div><div class="toolbar"><button class="button" id="voiceBindBtn" type="button">发送 device.voice.bind</button></div><div class="detail-block"><strong>事件输出</strong><pre id="voiceBindOutput">等待请求</pre></div>';
         document.getElementById('voiceBindBtn').addEventListener('click', testVoiceBind);
         writeRequestDetail({
           label: '绑定设备音色 WebSocket',
@@ -928,11 +930,26 @@
             id: 'voice-bind-<timestamp>',
             payload: {
               deviceCode: state.deviceCode || '<deviceCode>',
-              voice: { id: '<voiceId>', name: '<displayName>', voiceCode: '<voiceCode>', audioUrl: '', iconUrl: '<avatarPath>' },
+              voice: { id: '<voiceId>', name: '<displayName>', voiceCode: '<voiceCode>', audioUrl: '', iconUrl: '<avatarPath>', speechRate: 1.0, pitchRate: 1.0, volume: 50 },
             },
           },
-          note: '安卓端发送完整音色对象，后端取 voice.id 绑定；voice=null 时解绑。绑定成功返回 device.voice.bound，同时发布 device.voice_configuration.changed 通知已订阅设备刷新配置。',
+          note: '安卓端发送完整音色对象，后端取 voice.id 绑定；voice 内的 speechRate/pitchRate/volume 作为设备级音色参数保存。voice=null 时解绑并清空设备级参数。绑定成功返回 device.voice.bound，同时发布 device.voice_configuration.changed 通知已订阅设备刷新配置。',
         });
+      }
+
+      function defaultVoiceBindConfig() {
+        const config = state.ttsOptions && state.ttsOptions.ttsSessionConfig || {};
+        return {
+          speechRate: Number(config.speechRate || config.speech_rate || 1),
+          pitchRate: Number(config.pitchRate || config.pitch_rate || 1),
+          volume: Number(config.volume || 50),
+        };
+      }
+
+      function numberInputValue(id, fallback) {
+        const input = document.getElementById(id);
+        const value = input ? Number(input.value) : NaN;
+        return Number.isFinite(value) ? value : fallback;
       }
 
       async function testVoiceBind() {
@@ -942,12 +959,18 @@
         const voiceId = select.value ? Number(select.value) : null;
         const items = resourceList('voiceTones');
         const voice = voiceId ? items.find((item) => item.id === voiceId) : null;
+        const defaultConfig = defaultVoiceBindConfig();
+        const voiceConfig = {
+          speechRate: numberInputValue('voiceBindSpeechRate', defaultConfig.speechRate),
+          pitchRate: numberInputValue('voiceBindPitchRate', defaultConfig.pitchRate),
+          volume: numberInputValue('voiceBindVolume', defaultConfig.volume),
+        };
         const command = {
           type: 'device.voice.bind',
           id: createCommandId('voice-bind'),
           payload: {
             deviceCode: state.deviceCode,
-            voice: voice ? { id: voice.id, name: voice.name || voice.displayName || '', voiceCode: voice.voiceCode || '', audioUrl: '', iconUrl: voice.avatarPath || voice.iconUrl || '' } : null,
+            voice: voice ? { id: voice.id, name: voice.name || voice.displayName || '', voiceCode: voice.voiceCode || '', audioUrl: '', iconUrl: voice.avatarPath || voice.iconUrl || '', ...voiceConfig } : null,
           },
         };
         output.textContent = 'connecting ' + realtimeWsUrl();
@@ -1136,13 +1159,13 @@
                   agentApplication: {},
                   wakeWords: [],
                   wakeWordLines: [],
-                  voiceConfiguration: { voiceTones: [{ id: 5, name: '设备讲解音色', voiceCode: 'Cherry' }] },
+                  voiceConfiguration: { voiceTones: [{ id: 5, name: '设备讲解音色', voiceCode: 'Cherry', speechRate: 1.0, pitchRate: 1.0, volume: 50 }] },
                   scrollingTexts: [],
                 },
               },
             },
           },
-          note: '订阅后收到 <code>device.runtime_config.subscribed</code>，payload 直接带完整 config + action。config 与 /device-runtime/config/ 同源，但不包含 resources；含 voiceConfiguration 和 scrollingTexts；音色修改也推同一种 subscribed 完整配置，voiceConfiguration.voiceTones 只表示当前设备实际音色。',
+          note: '订阅后收到 <code>device.runtime_config.subscribed</code>，payload 直接带完整 config + action。config 与 /device-runtime/config/ 同源，但不包含 resources；含 voiceConfiguration 和 scrollingTexts；音色修改也推同一种 subscribed 完整配置，voiceConfiguration.voiceTones 只表示当前设备实际音色和设备级 speechRate/pitchRate/volume。',
         });
         writeResponse({ ok: false, status: '-', body: { message: '等待 WebSocket 订阅' } });
         const output = document.getElementById('runtimeEventsOutput');
@@ -2844,7 +2867,7 @@
             ['resources.scrollingTexts', '滚动文本数组。'],
             ['resources.models', '数字人模型数组。'],
             ['resources.videos', '视频数组。'],
-            ['resources.voiceTones', '当前设备实际使用音色数组，最多一个。设备绑定了音色时返回设备音色；设备未绑定时返回 /ai-models/tts 公司默认音色；不返回候选音色列表。'],
+            ['resources.voiceTones', '当前设备实际使用音色数组，最多一个。设备绑定了音色时返回设备音色；设备未绑定时返回 /ai-models/tts 公司默认音色；不返回候选音色列表。音色对象带 speechRate、pitchRate、volume。'],
             ['wakeWords', '当前设备绑定且启用的唤醒词数组。'],
             ['wakeWordLines', '设备端可直接使用的唤醒词配置行数组。'],
           ],
@@ -2869,7 +2892,7 @@
               scrollingTexts: [{ id: 2, content: '欢迎参观', speed: 40 }],
               models: [{ id: 3, name: '数字人 A', modelType: 'human', url: 'https://example.com/model.glb' }],
               videos: [{ id: 4, name: '宣传片', url: 'https://example.com/video.mp4' }],
-              voiceTones: [{ id: 5, name: '设备讲解音色', voiceCode: 'Cherry' }],
+              voiceTones: [{ id: 5, name: '设备讲解音色', voiceCode: 'Cherry', speechRate: 1.0, pitchRate: 1.0, volume: 50 }],
             },
             wakeWords: [{ id: 1, text: '你好小德', keywordLine: 'n ǐ h ǎo x iǎo d é @你好小德 :2.0 #0.25' }],
             wakeWordLines: ['n ǐ h ǎo x iǎo d é @你好小德 :2.0 #0.25'],
@@ -3029,12 +3052,12 @@
           response: [
             ['device.runtime_config.subscribed', '订阅确认 + 配置推送（合并为单条消息）。payload 带 deviceCode、tenantId、action、config。首次订阅 action=initial；唤醒词变化 action=wakeWordsChanged；音色变化 action=voiceConfigurationChanged；滚动文本变化 action=scrollingTextsChanged。'],
             ['payload.config', '最新运行时配置对象，与 /device-runtime/config/ 同源，但 WebSocket 快照不包含完整 resources；含 voiceConfiguration 和 scrollingTexts。音色变化也推整份 config，不推增量字段。'],
-            ['payload.config.voiceConfiguration', '运行时音色配置块，voiceTones 最多一个：设备绑定音色优先；设备未绑定时使用公司默认音色。'],
+            ['payload.config.voiceConfiguration', '运行时音色配置块，voiceTones 最多一个：设备绑定音色优先；设备未绑定时使用公司默认音色。音色对象带 speechRate、pitchRate、volume。'],
             ['payload.config.scrollingTexts', '租户级启用滚动文本列表（中英明细）。'],
           ],
           responseExample: [
-            { type: 'device.runtime_config.subscribed', id: '<commandId>', payload: { deviceCode: '<deviceCode>', tenantId: 1, action: 'initial', config: { device: {}, application: {}, agentApplication: {}, wakeWords: [], wakeWordLines: [], voiceConfiguration: { voiceTones: [{ id: 5, name: '设备讲解音色', voiceCode: 'Cherry' }] }, scrollingTexts: [] } } },
-            { type: 'device.runtime_config.subscribed', id: '<commandId>', payload: { deviceCode: '<deviceCode>', tenantId: 1, action: 'voiceConfigurationChanged', config: { device: {}, application: {}, agentApplication: {}, wakeWords: [], wakeWordLines: [], voiceConfiguration: { voiceTones: [{ id: 6, name: '默认讲解音色', voiceCode: 'Dylan' }] }, scrollingTexts: [] } } },
+            { type: 'device.runtime_config.subscribed', id: '<commandId>', payload: { deviceCode: '<deviceCode>', tenantId: 1, action: 'initial', config: { device: {}, application: {}, agentApplication: {}, wakeWords: [], wakeWordLines: [], voiceConfiguration: { voiceTones: [{ id: 5, name: '设备讲解音色', voiceCode: 'Cherry', speechRate: 1.0, pitchRate: 1.0, volume: 50 }] }, scrollingTexts: [] } } },
+            { type: 'device.runtime_config.subscribed', id: '<commandId>', payload: { deviceCode: '<deviceCode>', tenantId: 1, action: 'voiceConfigurationChanged', config: { device: {}, application: {}, agentApplication: {}, wakeWords: [], wakeWordLines: [], voiceConfiguration: { voiceTones: [{ id: 6, name: '默认讲解音色', voiceCode: 'Dylan', speechRate: 1.0, pitchRate: 1.0, volume: 50 }] }, scrollingTexts: [] } } },
           ],
           errors: runtimeDeviceErrors([['device_not_found', '设备不存在、未绑定公司、已停用或已过期。']]),
         };
@@ -3073,15 +3096,18 @@
             ['payload.deviceCode', '必填；后端按设备码解析设备。'],
             ['payload.voice', '完整音色对象（至少含 <code>id</code>）；传 <code>null</code> 解绑当前设备音色。'],
             ['payload.voice.id', '音色 ID；后端校验 <code>is_active & is_visible & provider.is_active</code>。'],
+            ['payload.voice.speechRate', '可选；设备级语速，范围 0.5 到 2.0。绑定新音色未传时使用公司默认。'],
+            ['payload.voice.pitchRate', '可选；设备级语调，范围 0.5 到 2.0。绑定新音色未传时使用公司默认。'],
+            ['payload.voice.volume', '可选；设备级音量大小，范围 0 到 100。绑定新音色未传时使用公司默认。'],
           ],
           response: [
-            ['device.voice.bound', '绑定成功。payload 带 deviceCode、voiceId、voiceName、voiceCode；解绑时 voiceId=null。'],
+            ['device.voice.bound', '绑定成功。payload 带 deviceCode、voiceId、voiceName、voiceCode、voiceConfig；解绑时 voiceId=null 且 voiceConfig=null。'],
             ['device.voice_configuration.changed', '绑定/解绑后自动发布；已订阅 runtime_config 的设备会收到完整配置推送（action=voiceConfigurationChanged）。'],
             ['error', '设备不存在、音色不可用等。'],
           ],
           responseExample: [
-            { type: 'device.voice.bound', id: '<commandId>', payload: { deviceCode: '<deviceCode>', voiceId: 12, voiceName: 'Roy（闽南语）', voiceCode: 'Roy' } },
-            { type: 'device.voice.bound', id: '<commandId>', payload: { deviceCode: '<deviceCode>', voiceId: null, voiceName: '', voiceCode: '' } },
+            { type: 'device.voice.bound', id: '<commandId>', payload: { deviceCode: '<deviceCode>', voiceId: 12, voiceName: 'Roy（闽南语）', voiceCode: 'Roy', voiceConfig: { speechRate: 1.0, pitchRate: 1.0, volume: 50 } } },
+            { type: 'device.voice.bound', id: '<commandId>', payload: { deviceCode: '<deviceCode>', voiceId: null, voiceName: '', voiceCode: '', voiceConfig: null } },
           ],
           errors: runtimeDeviceErrors([
             ['device_not_found', '设备不存在、未绑定公司、已停用或已过期。'],

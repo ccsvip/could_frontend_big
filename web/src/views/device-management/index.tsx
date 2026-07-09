@@ -21,6 +21,7 @@ import {
   Popconfirm,
   Row,
   Select,
+  Slider,
   Space,
   Switch,
   Table,
@@ -57,6 +58,7 @@ import {
   type DeviceAuthorizationType,
   type DeviceListQuery,
   type DeviceRecord,
+  type DeviceVoiceToneConfig,
   type WakeWordPayload,
   type WakeWordRecord,
 } from '../../api/modules/devices';
@@ -70,6 +72,7 @@ type DeviceEditForm = {
   name: string;
   applicationId?: number | null;
   voiceToneId?: number | null;
+  voiceToneConfig: DeviceVoiceToneConfig;
 };
 
 type ApplicationForm = DeviceApplicationPayload;
@@ -159,6 +162,11 @@ const isDeviceRealtimePayload = (payload: unknown): payload is { type: string } 
 const emptyApplicationOption = [{ label: '待绑定资源应用', value: null as number | null }];
 const emptyAgentApplicationOption = [{ label: '待绑定智能体', value: null as number | null }];
 const emptyVoiceToneOption = [{ label: '暂不绑定音色', value: null as number | null }];
+const DEFAULT_VOICE_TONE_CONFIG: DeviceVoiceToneConfig = {
+  speechRate: 1,
+  pitchRate: 1,
+  volume: 50,
+};
 
 type DeviceWakeWordRow = {
   device: DeviceRecord;
@@ -175,6 +183,7 @@ export const DeviceManagementPage = () => {
   const [agentApplications, setAgentApplications] = useState<AgentApplicationRecord[]>([]);
   const [commandGroupOptions, setCommandGroupOptions] = useState<ResourceOption[]>([]);
   const [voiceToneOptions, setVoiceToneOptions] = useState<ResourceOption[]>([]);
+  const [defaultVoiceToneConfig, setDefaultVoiceToneConfig] = useState<DeviceVoiceToneConfig>(DEFAULT_VOICE_TONE_CONFIG);
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState('');
   const [filters, setFilters] = useState<DeviceListQuery>({
@@ -264,6 +273,12 @@ export const DeviceManagementPage = () => {
 
   const refreshVoiceToneOptions = async () => {
     const ttsOptionsResponse = await fetchCompanyTtsOptions();
+    const sessionConfig = ttsOptionsResponse.ttsSessionConfig;
+    setDefaultVoiceToneConfig({
+      speechRate: sessionConfig.speech_rate ?? DEFAULT_VOICE_TONE_CONFIG.speechRate,
+      pitchRate: sessionConfig.pitch_rate ?? DEFAULT_VOICE_TONE_CONFIG.pitchRate,
+      volume: sessionConfig.volume ?? DEFAULT_VOICE_TONE_CONFIG.volume,
+    });
     const nextOptions = ttsOptionsResponse.voices.map((item) => ({ label: `${item.displayName}（${item.voiceCode}）`, value: item.id }));
     setVoiceToneOptions(nextOptions);
     return nextOptions;
@@ -442,6 +457,7 @@ export const DeviceManagementPage = () => {
       name: record.name,
       applicationId: record.applicationId ?? null,
       voiceToneId: record.voiceToneId ?? null,
+      voiceToneConfig: record.voiceToneConfig ?? defaultVoiceToneConfig,
     });
   };
 
@@ -1085,6 +1101,36 @@ export const DeviceManagementPage = () => {
           </Form.Item>
           <Form.Item label="当前音色" name="voiceToneId" extra="运行时配置只会返回该设备当前绑定的音色。">
             <Select options={[...emptyVoiceToneOption, ...voiceToneOptions]} optionFilterProp="label" showSearch />
+          </Form.Item>
+          <Form.Item noStyle shouldUpdate={(prev, next) => prev.voiceToneId !== next.voiceToneId}>
+            {({ getFieldValue }) => {
+              const voiceToneSelected = Boolean(getFieldValue('voiceToneId'));
+              return (
+                <div className="grid gap-x-6 md:grid-cols-2">
+                  <Form.Item
+                    label="语速"
+                    name={['voiceToneConfig', 'speechRate']}
+                    rules={[{ required: voiceToneSelected, message: '请设置语速' }]}
+                  >
+                    <Slider min={0.5} max={2} step={0.05} disabled={!voiceToneSelected} />
+                  </Form.Item>
+                  <Form.Item
+                    label="语调"
+                    name={['voiceToneConfig', 'pitchRate']}
+                    rules={[{ required: voiceToneSelected, message: '请设置语调' }]}
+                  >
+                    <Slider min={0.5} max={2} step={0.05} disabled={!voiceToneSelected} />
+                  </Form.Item>
+                  <Form.Item
+                    label="音量大小"
+                    name={['voiceToneConfig', 'volume']}
+                    rules={[{ required: voiceToneSelected, message: '请设置音量大小' }]}
+                  >
+                    <Slider min={0} max={100} step={1} disabled={!voiceToneSelected} />
+                  </Form.Item>
+                </div>
+              );
+            }}
           </Form.Item>
         </Form>
       </Modal>
