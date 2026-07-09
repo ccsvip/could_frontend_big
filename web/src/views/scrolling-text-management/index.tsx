@@ -31,18 +31,11 @@ import {
   type ScrollingTextListQuery,
   type ScrollingTextPayload,
   type ScrollingTextRecord,
-  type ScrollingTextStatusFilter,
   updateScrollingText,
 } from '../../api/modules/scrolling-texts';
 import { useAuthStore } from '../../store/auth';
 
 type ScrollingTextFormValues = Pick<ScrollingTextPayload, 'i18nScheme' | 'items'>;
-
-const statusOptions = [
-  { label: '全部状态', value: 'all' },
-  { label: '仅看启用', value: 'active' },
-  { label: '仅看停用', value: 'inactive' },
-] as const;
 
 const i18nSchemeOptions = [
   { label: '中英', value: 'zh_en' },
@@ -70,8 +63,6 @@ export const ScrollingTextManagementPage = () => {
   const [items, setItems] = useState<ScrollingTextRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [existingRecordCount, setExistingRecordCount] = useState<number | null>(null);
-  const [keyword, setKeyword] = useState('');
-  const [statusFilter, setStatusFilter] = useState<ScrollingTextStatusFilter>('all');
   const [previewItem, setPreviewItem] = useState<ScrollingTextRecord | null>(null);
   const [editingItem, setEditingItem] = useState<ScrollingTextRecord | null>(null);
   const [formVisible, setFormVisible] = useState(false);
@@ -81,8 +72,8 @@ export const ScrollingTextManagementPage = () => {
   const titleFilter = searchParams.get('title')?.trim() || '';
 
   const query = useMemo<ScrollingTextListQuery>(
-    () => ({ page: 1, title: titleFilter, keyword, status: statusFilter, lang: 'zh' }),
-    [titleFilter, keyword, statusFilter],
+    () => ({ page: 1, title: titleFilter, status: 'all', lang: 'zh' }),
+    [titleFilter],
   );
   const canOpenCreate = existingRecordCount === null || existingRecordCount === 0;
 
@@ -286,22 +277,6 @@ export const ScrollingTextManagementPage = () => {
             ) : null}
           </div>
           <Space wrap>
-            <Input.Search
-              allowClear
-              placeholder="搜索标题或文本"
-              onSearch={(value) => {
-                setKeyword(value.trim());
-              }}
-              className="w-60"
-            />
-            <Select
-              value={statusFilter}
-              options={statusOptions as unknown as { label: string; value: string }[]}
-              onChange={(value) => {
-                setStatusFilter(value as ScrollingTextStatusFilter);
-              }}
-              className="w-36"
-            />
             <Button icon={<IconReload />} onClick={() => void loadData()}>
               刷新
             </Button>

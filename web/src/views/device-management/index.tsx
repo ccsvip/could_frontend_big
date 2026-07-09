@@ -1,13 +1,13 @@
 import {
   IconApps,
   IconMicrophone,
-  IconTrash,
   IconDeviceDesktop,
   IconEdit,
   IconPlus,
   IconReload,
   IconSearch,
   IconSettings,
+  IconTrash,
 } from '@tabler/icons-react';
 import {
   Button,
@@ -185,7 +185,6 @@ export const DeviceManagementPage = () => {
   const [realtimeConnected, setRealtimeConnected] = useState(false);
   const [applicationModalOpen, setApplicationModalOpen] = useState(false);
   const [wakeWordModalOpen, setWakeWordModalOpen] = useState(false);
-  const [selectedWakeWordDeviceId, setSelectedWakeWordDeviceId] = useState<number | null>(null);
   const [selectedDeviceCode, setSelectedDeviceCode] = useState<string | null>(null);
   const [deviceForm] = Form.useForm<DeviceEditForm>();
   const [applicationForm] = Form.useForm<ApplicationForm>();
@@ -273,10 +272,10 @@ export const DeviceManagementPage = () => {
         width: 240,
         render: (_: unknown, record: R) => (
           <div className="flex flex-col gap-0.5">
-            <div className="truncate text-[13px] text-slate-600">
+            <div className="truncate text-fluid-base text-slate-600">
               {record.description || <span className="italic text-slate-400">未填写说明</span>}
             </div>
-            <div className="text-[11px] text-slate-400 tabular-nums">
+            <div className="text-fluid-xs text-slate-400 tabular-nums">
               {record.updated_at ?? '-'}
             </div>
           </div>
@@ -290,7 +289,7 @@ export const DeviceManagementPage = () => {
           canUpdateDevice ? (
             <button
               type="button"
-              className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[12px] text-slate-600 transition hover:bg-slate-50 hover:text-brand-700"
+              className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-fluid-sm text-slate-600 transition hover:bg-slate-50 hover:text-brand-700"
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 openApplicationConfig(record);
@@ -319,14 +318,6 @@ export const DeviceManagementPage = () => {
     });
     return devices.map((device) => ({ device, wakeWords: wakeWordsByDeviceId.get(device.recordId) ?? [] }));
   }, [devices, wakeWords]);
-
-  const selectedDeviceWakeWordRow = useMemo(
-    () =>
-      deviceWakeWordRows.find((item) => item.device.recordId === selectedWakeWordDeviceId) ??
-      deviceWakeWordRows[0] ??
-      null,
-    [deviceWakeWordRows, selectedWakeWordDeviceId],
-  );
 
   const loadApplicationConfigOptions = async () => {
     const commandGroupsResult = await fetchCommandGroups({ pageSize: 100 });
@@ -610,189 +601,174 @@ export const DeviceManagementPage = () => {
     await loadData(filters, devicePage);
   };
 
-  const renderWakeWordActions = (wakeWord: WakeWordRecord) => (
-    <Space size={6}>
-      {canUpdateDevice ? (
-        <Button size="small" icon={<IconEdit size={14} />} onClick={() => openWakeWordModal(wakeWord)}>
-          编辑
-        </Button>
-      ) : null}
-      {canDeleteDevice ? (
-        <Popconfirm title="确认删除该唤醒词？" onConfirm={() => handleWakeWordDelete(wakeWord)}>
-          <Button size="small" danger icon={<IconTrash size={14} />}>
-            删除
+  const renderWakeWordsByDevice = () => (
+    <Space direction="vertical" size={16} className="w-full">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Typography.Title level={5} className="mb-0 text-fluid-lg">
+          唤醒词管理
+        </Typography.Title>
+        {canCreateDevice ? (
+          <Button type="primary" icon={<IconPlus size={16} />} onClick={() => openWakeWordModal()}>
+            新建唤醒词
           </Button>
-        </Popconfirm>
-      ) : null}
-    </Space>
-  );
+        ) : null}
+      </div>
 
-  const renderWakeWordPills = (items: WakeWordRecord[]) => {
-    if (!items.length) {
-      return <Tag color="warning">未添加唤醒词</Tag>;
-    }
-    return (
-      <Space size={[6, 6]} wrap>
-        {items.map((item) => (
-          <Tag key={item.id} color={item.isActive ? 'success' : 'default'} className="rounded-full px-3 py-1 text-sm">
-            {item.text}
-          </Tag>
-        ))}
-      </Space>
-    );
-  };
-
-  const renderDeviceIdentity = (device: DeviceRecord) => (
-    <Space direction="vertical" size={2} className="min-w-0">
-      <Typography.Text strong className="truncate text-slate-900">
-        {device.name || device.deviceCode}
-      </Typography.Text>
-      <Typography.Text className="text-xs text-slate-500">{device.deviceCode}</Typography.Text>
-    </Space>
-  );
-
-  const renderDeviceRuntimeTags = (device: DeviceRecord) => {
-    const diagnostic = resolveDeviceRuntimeDiagnostic(device);
-    return (
-      <Space size={[4, 4]} wrap>
-        <Tag color={statusMap[device.status].color}>{statusMap[device.status].text}</Tag>
-        <Tag color={diagnostic.color}>{diagnostic.label}</Tag>
-      </Space>
-    );
-  };
-
-  const renderWakeWordPhraseList = (items: WakeWordRecord[], emptyDescription: string, presetDeviceId?: number) => {
-    if (!items.length) {
-      return (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center">
-          <Typography.Text type="secondary">{emptyDescription}</Typography.Text>
-          {canCreateDevice ? (
-            <div className="mt-3">
-              <Button icon={<IconPlus size={14} />} onClick={() => openWakeWordModal(undefined, presetDeviceId)}>
-                添加唤醒词
-              </Button>
-            </div>
-          ) : null}
-        </div>
-      );
-    }
-
-    return (
-      <Space direction="vertical" size={8} className="w-full">
-        {items.map((wakeWord) => (
-          <div key={wakeWord.id} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <Typography.Text strong className="text-base text-slate-900">
-                {wakeWord.text}
-              </Typography.Text>
-            </div>
-            {renderWakeWordActions(wakeWord)}
-          </div>
-        ))}
-      </Space>
-    );
-  };
-
-  const renderWakeWordsHeader = () => {
-    const configuredDeviceCount = deviceWakeWordRows.filter((item) => item.wakeWords.length > 0).length;
-    const activeWakeWordCount = wakeWords.filter((item) => item.isActive).length;
-    return (
-      <Card className="rounded-xl border border-slate-200/70 shadow-card">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="min-w-0">
-            <Typography.Title level={4} className="mb-1 flex items-center gap-2">
-              <IconMicrophone size={22} /> 按设备查看唤醒词
-            </Typography.Title>
-            <Typography.Text type="secondary">
-              只展示用户添加的中文唤醒词，按设备确认哪些已经配置、哪些还需要补齐。
-            </Typography.Text>
-          </div>
-          <div className="grid grid-cols-3 gap-2 sm:min-w-[24rem]">
-            {[
-              ['设备', deviceWakeWordRows.length, 'text-slate-900'],
-              ['已配置', configuredDeviceCount, 'text-brand-700'],
-              ['唤醒词', activeWakeWordCount, 'text-sky-700'],
-            ].map(([label, value, color]) => (
-              <div key={label} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-                <div className="text-xs text-slate-500">{label}</div>
-                <div className={`mt-1 text-2xl font-semibold tabular-nums ${color}`}>{value}</div>
-              </div>
-            ))}
-          </div>
-          {canCreateDevice ? (
-            <Button type="primary" icon={<IconPlus size={16} />} onClick={() => openWakeWordModal()}>
-              新建唤醒词
-            </Button>
-          ) : null}
-        </div>
-      </Card>
-    );
-  };
-
-  const renderWakeWordsByDevice = () => {
-    const selectedRow = selectedDeviceWakeWordRow;
-    const selectedDeviceId = selectedRow?.device.recordId ?? null;
-    return (
-      <Space direction="vertical" size={16} className="w-full">
-        {renderWakeWordsHeader()}
-        {deviceWakeWordRows.length === 0 ? (
-          <Empty description="暂无设备" />
-        ) : (
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
-            <Card className="rounded-xl border border-slate-200/70 shadow-card">
-              <Space direction="vertical" size={8} className="w-full">
-                <Typography.Text strong>选择设备</Typography.Text>
-                {deviceWakeWordRows.map((row) => {
-                  const active = row.device.recordId === selectedDeviceId;
-                  return (
-                    <button
-                      key={row.device.recordId}
-                      type="button"
-                      className={`w-full rounded-xl border px-3 py-3 text-left transition ${
-                        active ? 'border-brand-200 bg-brand-50' : 'border-slate-200 bg-white hover:bg-slate-50'
-                      }`}
-                      onClick={() => setSelectedWakeWordDeviceId(row.device.recordId)}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="truncate font-medium text-slate-900">{row.device.name || row.device.deviceCode}</span>
-                        <Tag color={row.wakeWords.length ? 'success' : 'warning'}>{row.wakeWords.length} 个</Tag>
-                      </div>
-                      <div className="mt-2">{renderWakeWordPills(row.wakeWords.slice(0, 3))}</div>
-                    </button>
-                  );
-                })}
-              </Space>
-            </Card>
-            <Card className="rounded-xl border border-slate-200/70 shadow-card">
-              {selectedRow ? (
-                <Space direction="vertical" size={16} className="w-full">
-                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                    <div>{renderDeviceIdentity(selectedRow.device)}</div>
-                    <Space size={[6, 6]} wrap>
-                      {renderDeviceRuntimeTags(selectedRow.device)}
-                      {canCreateDevice ? (
-                        <Button icon={<IconPlus size={14} />} onClick={() => openWakeWordModal(undefined, selectedRow.device.recordId)}>
+      {deviceWakeWordRows.length === 0 ? (
+        <Typography.Text type="secondary">暂无设备</Typography.Text>
+      ) : (
+        <Table
+          dataSource={deviceWakeWordRows}
+          rowKey={(r) => r.device.recordId}
+          size="middle"
+          pagination={{ pageSize: 20, showSizeChanger: true, showTotal: (t) => `共 ${t} 台设备` }}
+          scroll={{ x: 800 }}
+          expandable={{
+            expandedRowRender: (row) => {
+              if (!row.wakeWords.length) {
+                return (
+                  <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center">
+                    <Typography.Text type="secondary">该设备还没有唤醒词</Typography.Text>
+                    {canCreateDevice ? (
+                      <div className="mt-3">
+                        <Button
+                          size="small"
+                          icon={<IconPlus size={14} />}
+                          onClick={() => openWakeWordModal(undefined, row.device.recordId)}
+                        >
                           添加唤醒词
                         </Button>
-                      ) : null}
-                    </Space>
+                      </div>
+                    ) : null}
                   </div>
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <Typography.Title level={5} className="mb-3">
-                      当前设备唤醒词
-                    </Typography.Title>
-                    {renderWakeWordPhraseList(selectedRow.wakeWords, '这台设备还没有添加唤醒词', selectedRow.device.recordId)}
-                  </div>
+                );
+              }
+              return (
+                <Table
+                  dataSource={row.wakeWords}
+                  rowKey="id"
+                  size="small"
+                  pagination={false}
+                  showHeader={false}
+                  columns={[
+                    {
+                      title: '唤醒词',
+                      dataIndex: 'text',
+                      key: 'text',
+                      render: (text: string) => (
+                        <Typography.Text strong className="text-slate-900">{text}</Typography.Text>
+                      ),
+                    },
+                    {
+                      title: '状态',
+                      dataIndex: 'isActive',
+                      key: 'isActive',
+                      width: 80,
+                      render: (active: boolean) => (
+                        <Tag color={active ? 'success' : 'default'}>{active ? '启用' : '停用'}</Tag>
+                      ),
+                    },
+                    {
+                      title: '操作',
+                      key: 'actions',
+                      width: 140,
+                      render: (_: unknown, w: WakeWordRecord) => (
+                        <Space size={4}>
+                          {canUpdateDevice ? (
+                            <Button size="small" icon={<IconEdit size={14} />} onClick={() => openWakeWordModal(w)}>
+                              编辑
+                            </Button>
+                          ) : null}
+                          {canDeleteDevice ? (
+                            <Popconfirm title="确认删除该唤醒词？" onConfirm={() => handleWakeWordDelete(w)}>
+                              <Button size="small" danger icon={<IconTrash size={14} />}>
+                                删除
+                              </Button>
+                            </Popconfirm>
+                          ) : null}
+                        </Space>
+                      ),
+                    },
+                  ]}
+                />
+              );
+            },
+            rowExpandable: () => true,
+          }}
+          columns={[
+            {
+              title: '设备名称',
+              dataIndex: ['device', 'name'],
+              key: 'name',
+              width: 200,
+              render: (name: string, record: DeviceWakeWordRow) => (
+                <Space size={8}>
+                  <span
+                    className={`inline-block h-2.5 w-2.5 shrink-0 rounded-full ${
+                      record.device.status === 'online' ? 'bg-brand-500' : 'bg-slate-300'
+                    }`}
+                  />
+                  <Typography.Text strong className="text-slate-800">
+                    {name || record.device.deviceCode}
+                  </Typography.Text>
                 </Space>
-              ) : (
-                <Empty description="请选择设备" />
-              )}
-            </Card>
-          </div>
-        )}
-      </Space>
-    );
-  };
+              ),
+            },
+            {
+              title: '设备码',
+              dataIndex: ['device', 'deviceCode'],
+              key: 'deviceCode',
+              width: 180,
+              render: (code: string) => (
+                <Typography.Text className="font-mono text-fluid-xs text-slate-500" copyable>
+                  {code}
+                </Typography.Text>
+              ),
+            },
+            {
+              title: '状态',
+              key: 'status',
+              width: 80,
+              render: (_: unknown, record: DeviceWakeWordRow) => (
+                <Tag color={statusMap[record.device.status].color}>
+                  {statusMap[record.device.status].text}
+                </Tag>
+              ),
+            },
+            {
+              title: '唤醒词数',
+              key: 'count',
+              width: 100,
+              sorter: (a: DeviceWakeWordRow, b: DeviceWakeWordRow) => a.wakeWords.length - b.wakeWords.length,
+              render: (_: unknown, record: DeviceWakeWordRow) => (
+                <Tag color={record.wakeWords.length ? 'success' : 'warning'}>
+                  {record.wakeWords.length} 个
+                </Tag>
+              ),
+            },
+            {
+              title: '唤醒词预览',
+              key: 'preview',
+              render: (_: unknown, record: DeviceWakeWordRow) => {
+                if (!record.wakeWords.length) {
+                  return <Typography.Text type="secondary" className="text-fluid-xs">—</Typography.Text>;
+                }
+                return (
+                  <Space size={[4, 4]} wrap>
+                    {record.wakeWords.map((w) => (
+                      <Tag key={w.id} color={w.isActive ? 'success' : 'default'} className="rounded-full">
+                        {w.text}
+                      </Tag>
+                    ))}
+                  </Space>
+                );
+              },
+            },
+          ]}
+        />
+      )}
+    </Space>
+  );
 
   if (!canUseDeviceWorkspace) {
     return <Empty description="请先进入公司租户范围后再管理设备、应用和唤醒词" />;
@@ -813,10 +789,10 @@ export const DeviceManagementPage = () => {
               <Tag color="default">离线 {runtimeDiagnosticCounts.offline}</Tag>
               <Tag color="warning">无资源包 {runtimeDiagnosticCounts.warning}</Tag>
             </div>
-            <Typography.Title level={4} className="mb-1 font-semibold text-slate-900">
+            <Typography.Title level={4} className="mb-1 font-semibold text-slate-900 text-fluid-xl">
               设备与应用
             </Typography.Title>
-            <Typography.Text className="text-[13px] text-slate-500">
+            <Typography.Text className="text-fluid-base text-slate-500">
               设备码、授权状态、资源应用和智能体运行链路集中维护。
             </Typography.Text>
           </div>
@@ -828,8 +804,8 @@ export const DeviceManagementPage = () => {
               ['应用数', applications.length, 'text-sky-700'],
             ].map(([label, value, color]) => (
               <div key={label} className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                <div className="text-xs text-slate-500">{label}</div>
-                <div className={`mt-1 text-2xl font-semibold tabular-nums ${color}`}>{value}</div>
+                <div className="text-fluid-xs text-slate-500">{label}</div>
+                <div className={`mt-1 text-fluid-stat font-semibold tabular-nums ${color}`}>{value}</div>
               </div>
             ))}
           </div>
@@ -855,7 +831,7 @@ export const DeviceManagementPage = () => {
             ),
             children: (
               <Space direction="vertical" size={16} className="w-full">
-                <div className="flex flex-wrap items-center gap-2 text-[13px]">
+                <div className="flex flex-wrap items-center gap-2 text-fluid-base">
                   <Tag color={realtimeConnected ? 'success' : 'default'}>
                     {realtimeConnected ? '● 实时同步中' : '○ 实时未连接'}
                   </Tag>
@@ -909,14 +885,14 @@ export const DeviceManagementPage = () => {
                 ) : devices.length === 0 ? (
                   <Empty description="暂无设备" />
                 ) : (
-                  <div className="flex h-[520px] gap-4">
+                  <div className="flex h-[clamp(380px,50vh,600px)] gap-4">
                     {/* Left panel */}
-                    <div className="flex w-72 shrink-0 flex-col rounded-xl border border-slate-200/70 bg-white shadow-sm">
+                    <div className="flex w-56 shrink-0 flex-col rounded-xl border border-slate-200/70 bg-white shadow-sm sm:w-72">
                       <div className="border-b border-slate-100 px-3 py-2.5">
-                        <Typography.Text strong className="text-[13px] text-slate-700">
+                        <Typography.Text className="text-fluid-lg text-slate-700">
                           设备列表
                         </Typography.Text>
-                        <Typography.Text className="ml-1 text-[12px] text-slate-400">
+                        <Typography.Text className="ml-1 text-fluid-sm text-slate-400">
                           {devices.length}
                         </Typography.Text>
                       </div>
@@ -937,12 +913,12 @@ export const DeviceManagementPage = () => {
                             >
                               <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${record.status === 'online' ? 'bg-brand-500' : 'bg-slate-300'}`} />
                               <div className="min-w-0 flex-1">
-                                <div className="truncate text-[13px] font-medium text-slate-800">
+                                <div className="truncate text-fluid-base font-medium text-slate-800">
                                   {record.name || record.deviceCode}
                                 </div>
-                                <div className="truncate text-[11px] text-slate-400 font-mono">{record.deviceCode}</div>
+                                <div className="truncate text-fluid-xs text-slate-400 font-mono">{record.deviceCode}</div>
                               </div>
-                              <Tag className="shrink-0 text-[11px] py-0" color={diag.color} bordered={false}>
+                              <Tag className="shrink-0 text-fluid-xs py-0" color={diag.color} bordered={false}>
                                 {diag.label}
                               </Tag>
                             </div>
@@ -958,10 +934,10 @@ export const DeviceManagementPage = () => {
                           {/* Header */}
                           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
                             <div>
-                              <Typography.Title level={5} className="mb-0.5">
+                              <Typography.Title level={5} className="mb-0.5 text-fluid-lg">
                                 {selectedDevice.name || selectedDevice.deviceCode}
                               </Typography.Title>
-                              <Typography.Text className="font-mono text-[13px] text-slate-400" copyable>
+                              <Typography.Text className="font-mono text-fluid-base text-slate-400" copyable>
                                 {selectedDevice.deviceCode}
                               </Typography.Text>
                             </div>
@@ -971,7 +947,7 @@ export const DeviceManagementPage = () => {
                               {canUpdateDevice && (
                                 <button
                                   type="button"
-                                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[13px] text-slate-600 transition hover:bg-slate-50 hover:text-brand-700"
+                                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-fluid-base text-slate-600 transition hover:bg-slate-50 hover:text-brand-700"
                                   onClick={() => openDeviceEdit(selectedDevice)}
                                 >
                                   <IconEdit size={15} />
@@ -988,12 +964,12 @@ export const DeviceManagementPage = () => {
                               return (
                                 <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 xl:col-span-1">
                                   <div className="flex items-center justify-between gap-2">
-                                    <Typography.Text strong className="text-[13px] text-slate-700">运行诊断</Typography.Text>
-                                    <Tag className="shrink-0 text-[11px]" color={sd.color} bordered={false}>{sd.label}</Tag>
+                                    <Typography.Text className="text-fluid-lg text-slate-700">运行诊断</Typography.Text>
+                                    <Tag className="shrink-0 text-fluid-xs" color={sd.color} bordered={false}>{sd.label}</Tag>
                                   </div>
                                   <div className="mt-2 flex items-center gap-2">
                                     <span className={`inline-block h-3 w-3 rounded-full ${sd.level === 'ready' ? 'bg-brand-500' : 'bg-amber-400'}`} />
-                                    <span className="text-[13px] text-slate-600">{sd.hint}</span>
+                                    <span className="text-fluid-base text-slate-600">{sd.hint}</span>
                                   </div>
                                 </div>
                               );
@@ -1001,20 +977,20 @@ export const DeviceManagementPage = () => {
 
                             <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 xl:col-span-1">
                               <div className="flex items-center justify-between gap-2">
-                                <Typography.Text strong className="text-[13px] text-slate-700">授权信息</Typography.Text>
-                                <Tag className="shrink-0 text-[11px]" color="default" bordered={false}>{selectedDevice.authorizationTypeLabel}</Tag>
+                                <Typography.Text className="text-fluid-lg text-slate-700">授权信息</Typography.Text>
+                                <Tag className="shrink-0 text-fluid-xs" color="default" bordered={false}>{selectedDevice.authorizationTypeLabel}</Tag>
                               </div>
-                              <div className="mt-2 text-[13px] text-slate-600">
+                              <div className="mt-2 text-fluid-base text-slate-600">
                                 {selectedDevice.authorizationType === 'permanent' ? '永久' : `到期 ${selectedDevice.expiresAt ?? '-'}`}
                               </div>
                             </div>
 
                             <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 xl:col-span-1">
                               <div className="flex items-center justify-between gap-2">
-                                <Typography.Text strong className="text-[13px] text-slate-700">资源绑定</Typography.Text>
-                                <Tag className="shrink-0 text-[11px]" color="default" bordered={false}>{selectedDevice.applicationName || '未绑定资源'}</Tag>
+                                <Typography.Text className="text-fluid-lg text-slate-700">资源绑定</Typography.Text>
+                                <Tag className="shrink-0 text-fluid-xs" color="default" bordered={false}>{selectedDevice.applicationName || '未绑定资源'}</Tag>
                               </div>
-                              <div className="mt-2 flex items-center gap-1 text-[13px]">
+                              <div className="mt-2 flex items-center gap-1 text-fluid-base">
                                 <span className={`rounded-md px-1.5 py-0.5 ${selectedDevice.agentApplicationName ? 'bg-purple-50 text-purple-700' : 'bg-amber-50 text-amber-700'}`}>
                                   {selectedDevice.agentApplicationName || '待绑定智能体'}
                                 </span>
@@ -1023,26 +999,26 @@ export const DeviceManagementPage = () => {
 
                             <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 xl:col-span-1">
                               <div className="flex items-center justify-between gap-2">
-                                <Typography.Text strong className="text-[13px] text-slate-700">音色</Typography.Text>
-                                <Tag className="shrink-0 text-[11px]" color="default" bordered={false}>{selectedDevice.voiceToneName || '未绑定'}</Tag>
+                                <Typography.Text className="text-fluid-lg text-slate-700">音色</Typography.Text>
+                                <Tag className="shrink-0 text-fluid-xs" color="default" bordered={false}>{selectedDevice.voiceToneName || '未绑定'}</Tag>
                               </div>
-                              <div className="mt-2 text-[13px] text-slate-600 font-mono">{selectedDevice.voiceToneCode || '-'}</div>
+                              <div className="mt-2 text-fluid-base text-slate-600 font-mono">{selectedDevice.voiceToneCode || '-'}</div>
                             </div>
 
                             <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 xl:col-span-1">
                               <div className="flex items-center justify-between gap-2">
-                                <Typography.Text strong className="text-[13px] text-slate-700">系统信息</Typography.Text>
-                                <Tag className="shrink-0 text-[11px]" color="default" bordered={false}>{selectedDevice.softwareVersion || '-'}</Tag>
+                                <Typography.Text className="text-fluid-lg text-slate-700">系统信息</Typography.Text>
+                                <Tag className="shrink-0 text-fluid-xs" color="default" bordered={false}>{selectedDevice.softwareVersion || '-'}</Tag>
                               </div>
-                              <div className="mt-2 text-[13px] text-slate-600 break-all">{selectedDevice.systemVersion || '-'}</div>
+                              <div className="mt-2 text-fluid-base text-slate-600 break-all">{selectedDevice.systemVersion || '-'}</div>
                             </div>
 
                             <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 xl:col-span-1">
                               <div className="flex items-center justify-between gap-2">
-                                <Typography.Text strong className="text-[13px] text-slate-700">心跳</Typography.Text>
-                                <Tag className="shrink-0 text-[11px]" color="default" bordered={false}>{selectedDevice.lastHeartbeat || '-'}</Tag>
+                                <Typography.Text className="text-fluid-lg text-slate-700">心跳</Typography.Text>
+                                <Tag className="shrink-0 text-fluid-xs" color="default" bordered={false}>{selectedDevice.lastHeartbeat || '-'}</Tag>
                               </div>
-                              <div className="mt-2 text-[13px] text-slate-600">{selectedDevice.registeredAt ? `注册于 ${selectedDevice.registeredAt.slice(0, 10)}` : '-'}</div>
+                              <div className="mt-2 text-fluid-base text-slate-600">{selectedDevice.registeredAt ? `注册于 ${selectedDevice.registeredAt.slice(0, 10)}` : '-'}</div>
                             </div>
                           </div>
                         </div>
@@ -1068,13 +1044,13 @@ export const DeviceManagementPage = () => {
             children: (
               <Space direction="vertical" size={16} className="w-full">
                 <div className="flex items-center justify-between">
-                  <Typography.Text className="text-[13px] text-slate-500">
+                  <Typography.Text className="text-fluid-base text-slate-500">
                     共 {applications.length} 个应用
                   </Typography.Text>
                   {canCreateDevice ? (
                     <button
                       type="button"
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-brand-700 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-brand-800"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-brand-700 px-4 py-1.5 text-fluid-sm font-medium text-white transition hover:bg-brand-800"
                       onClick={openApplicationCreate}
                     >
                       <IconPlus size={16} />

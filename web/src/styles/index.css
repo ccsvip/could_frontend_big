@@ -635,3 +635,15 @@ body {
   min-height: 0;
 }
 
+/* 流体排版阶梯：clamp(min, preferred-vw, max)
+   1K (1366px) → 接近最小值
+   2K (2560px) → 中间值
+   4K (3840px) → 接近最大值
+   保证不同分辨率下文字比例一致 */
+.text-fluid-xs   { font-size: clamp(10px, 0.52vw + 6px, 14px); }
+.text-fluid-sm   { font-size: clamp(12px, 0.52vw + 8px, 16px); }
+.text-fluid-base { font-size: clamp(13px, 0.52vw + 9px, 18px); }
+.text-fluid-lg   { font-size: clamp(14px, 0.62vw + 10px, 20px); font-weight: 600; }
+.text-fluid-xl   { font-size: clamp(18px, 0.83vw + 12px, 28px); }
+.text-fluid-stat { font-size: clamp(22px, 1.04vw + 14px, 36px); }
+
