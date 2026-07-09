@@ -1,4 +1,4 @@
-import {
+﻿import {
   IconApps,
   IconMicrophone,
   IconTrash,
@@ -446,6 +446,7 @@ export const DeviceManagementPage = () => {
   };
 
 
+
   const openDeviceEdit = async (record: DeviceRecord) => {
     try {
       await refreshVoiceToneOptions();
@@ -548,50 +549,74 @@ export const DeviceManagementPage = () => {
     await loadData(filters, devicePage);
   };
 
+  const renderDeviceExpandedDetails = (record: DeviceRecord) => {
+    const details = [
+      {
+        label: '授权类型',
+        value: <Tag color={authorizationMap[record.authorizationType].color}>{authorizationMap[record.authorizationType].text}</Tag>,
+      },
+      {
+        label: '到期时间',
+        value: record.authorizationType === 'permanent' ? '永久' : record.expiresAt || '-',
+      },
+      { label: '软件版本', value: record.softwareVersion || '-' },
+      {
+        label: '系统版本',
+        value: record.systemVersion ? (
+          <Typography.Text className="text-sm text-slate-900" copyable>
+            {record.systemVersion}
+          </Typography.Text>
+        ) : (
+          '-'
+        ),
+      },
+      { label: '主板信息', value: record.mainboardInfo || '-' },
+    ];
+
+    return (
+      <div className="grid gap-3 px-2 py-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+        {details.map((item) => (
+          <div key={item.label} className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+            <div className="text-xs text-slate-500">{item.label}</div>
+            <div className="mt-1 min-w-0 break-words text-sm text-slate-900">{item.value}</div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const deviceColumns: ColumnsType<DeviceRecord> = [
     {
-      title: '设备名称',
-      dataIndex: 'name',
-      key: 'name',
+      title: '设备/设备码',
+      key: 'device',
       fixed: 'left',
-      width: '10%',
-    },
-    {
-      title: '设备码',
-      dataIndex: 'deviceCode',
-      key: 'deviceCode',
-      width: '12%',
-      render: (value: string) => (
-        <Typography.Text className="text-xs" copyable>
-          {value}
-        </Typography.Text>
+      width: 220,
+      render: (_, record) => (
+        <Space direction="vertical" size={2} className="min-w-0">
+          <Typography.Text strong className="truncate text-slate-900">
+            {record.name || record.deviceCode}
+          </Typography.Text>
+          <Typography.Text className="text-xs text-slate-500" copyable>
+            {record.deviceCode}
+          </Typography.Text>
+        </Space>
       ),
     },
     {
-      title: '运行',
-      dataIndex: 'status',
-      key: 'status',
-      width: '7%',
-      render: (value: DeviceRecord['status']) => <Tag color={statusMap[value].color}>{statusMap[value].text}</Tag>,
-    },
-    {
-      title: '授权状态',
-      dataIndex: 'isEnabled',
-      key: 'isEnabled',
-      width: '8%',
-      render: (value: boolean) => <Tag color={value ? 'success' : 'error'}>{value ? '正常' : '停用'}</Tag>,
-    },
-    {
-      title: '绑定智能体',
-      dataIndex: 'agentApplicationName',
-      key: 'agentApplicationName',
-      width: '10%',
-      render: (value: string) => (value ? <Tag color="purple">{value}</Tag> : <Tag color="warning">待绑定智能体</Tag>),
+      title: '运行状态',
+      key: 'runtimeStatus',
+      width: 150,
+      render: (_, record) => (
+        <Space size={[4, 4]} wrap>
+          <Tag color={statusMap[record.status].color}>{statusMap[record.status].text}</Tag>
+          <Tag color={record.isEnabled ? 'success' : 'error'}>{record.isEnabled ? '正常' : '停用'}</Tag>
+        </Space>
+      ),
     },
     {
       title: '运行诊断',
       key: 'runtimeDiagnostic',
-      width: '11%',
+      width: 150,
       render: (_, record) => {
         const diagnostic = resolveDeviceRuntimeDiagnostic(record);
 
@@ -610,44 +635,37 @@ export const DeviceManagementPage = () => {
       },
     },
     {
-      title: '资源应用',
-      dataIndex: 'applicationName',
-      key: 'applicationName',
-      width: '10%',
-      render: (value: string) => (value ? <Tag color="cyan">{value}</Tag> : <Tag color="default">未绑定资源</Tag>),
+      title: '资源绑定',
+      key: 'resourceBinding',
+      width: 260,
+      render: (_, record) => (
+        <Space size={[4, 4]} wrap>
+          <Tag color={record.applicationName ? 'cyan' : 'default'}>{record.applicationName || '未绑定资源'}</Tag>
+          <Tag color={record.agentApplicationName ? 'purple' : 'warning'}>
+            {record.agentApplicationName || '待绑定智能体'}
+          </Tag>
+        </Space>
+      ),
     },
     {
       title: '当前音色',
       dataIndex: 'voiceToneName',
       key: 'voiceToneName',
-      width: '10%',
+      width: 160,
       render: (value: string, record) => (value ? <Tag color="blue">{record.voiceToneCode || value}</Tag> : <Tag color="default">未绑定音色</Tag>),
     },
     {
-      title: '授权',
-      dataIndex: 'authorizationType',
-      key: 'authorizationType',
-      width: '8%',
-      render: (value: DeviceAuthorizationType) => (
-        <Tag color={authorizationMap[value].color}>{authorizationMap[value].text}</Tag>
-      ),
+      title: '最近心跳',
+      dataIndex: 'lastHeartbeat',
+      key: 'lastHeartbeat',
+      width: 180,
+      render: (value) => value || '-',
     },
-    {
-      title: '到期时间',
-      dataIndex: 'expiresAt',
-      key: 'expiresAt',
-      width: '10%',
-      render: (value: string | null, record) => (record.authorizationType === 'permanent' ? '永久' : value || '-'),
-    },
-    { title: '软件版本', dataIndex: 'softwareVersion', key: 'softwareVersion', width: '8%', render: (value) => value || '-' },
-    { title: '系统版本', dataIndex: 'systemVersion', key: 'systemVersion', width: '9%', render: (value) => value || '-' },
-    { title: '主板信息', dataIndex: 'mainboardInfo', key: 'mainboardInfo', width: '10%', render: (value) => value || '-' },
-    { title: '最近心跳', dataIndex: 'lastHeartbeat', key: 'lastHeartbeat', width: '10%', render: (value) => value || '-' },
     {
       title: '操作',
       key: 'action',
       fixed: 'right',
-      width: '12%',
+      width: 150,
       render: (_, record) => (
         <Space size={6}>
           {canUpdateDevice ? (
@@ -675,7 +693,6 @@ export const DeviceManagementPage = () => {
       ),
     },
   ];
-
   const renderWakeWordActions = (wakeWord: WakeWordRecord) => (
     <Space size={6}>
       {canUpdateDevice ? (
@@ -866,8 +883,9 @@ export const DeviceManagementPage = () => {
 
   return (
     <Space direction="vertical" size={16} className="w-full">
+      <div className="grid w-full gap-5">
       <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="min-w-0">
             <div className="mb-2 flex flex-wrap items-center gap-2">
               <Tag color={realtimeConnected ? 'success' : 'default'}>
@@ -885,26 +903,28 @@ export const DeviceManagementPage = () => {
               设备码、授权状态、资源应用和智能体运行链路集中维护。
             </Typography.Text>
           </div>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:min-w-[34rem]">
+          <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4 xl:max-w-[34rem]">
             {[
               ['设备总数', stats.total, 'text-slate-900'],
               ['在线', stats.online, 'text-brand-700'],
               ['待绑定', unboundDeviceCount, 'text-amber-600'],
               ['应用数', applications.length, 'text-sky-700'],
             ].map(([label, value, color]) => (
-              <div key={label} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+              <div key={label} className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                 <div className="text-xs text-slate-500">{label}</div>
                 <div className={`mt-1 text-2xl font-semibold tabular-nums ${color}`}>{value}</div>
               </div>
             ))}
           </div>
-          <Button icon={<IconReload />} onClick={() => loadData()}>
+          <Button className="self-start" icon={<IconReload />} onClick={() => loadData()}>
             刷新
           </Button>
         </div>
       </Card>
 
+      <div className="min-w-0">
       <Tabs
+        className="rounded-xl border border-slate-200/70 bg-white px-4 pt-2 shadow-card"
         activeKey={activeTabKey}
         onChange={handleMainTabChange}
         items={[
@@ -917,9 +937,11 @@ export const DeviceManagementPage = () => {
               </Space>
             ),
             children: (
-              <Space direction="vertical" size={12} className="w-full">
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(220px,1fr)_140px_140px_160px_auto]">
+              <Space direction="vertical" size={16} className="w-full">
+                <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(260px,1fr)_minmax(150px,180px)_minmax(150px,180px)_minmax(180px,220px)_auto]">
                   <Input
+                    className="w-full"
                     value={keyword}
                     prefix={<IconSearch />}
                     placeholder="按设备名称或设备码搜索"
@@ -927,6 +949,7 @@ export const DeviceManagementPage = () => {
                     onPressEnter={handleSearch}
                   />
                   <Select
+                    className="w-full"
                     value={filters.status}
                     onChange={(value) => handleFilterChange('status', value)}
                     options={[
@@ -936,6 +959,7 @@ export const DeviceManagementPage = () => {
                     ]}
                   />
                   <Select
+                    className="w-full"
                     value={filters.enabledStatus}
                     onChange={(value) => handleFilterChange('enabledStatus', value)}
                     options={[
@@ -945,20 +969,26 @@ export const DeviceManagementPage = () => {
                     ]}
                   />
                   <Select
+                    className="w-full"
                     value={filters.applicationId}
                     onChange={(value) => handleFilterChange('applicationId', value)}
                     options={[{ label: '全部资源应用', value: 'all' }, ...applicationOptions]}
                   />
-                  <Button type="primary" icon={<IconSearch />} onClick={handleSearch}>
+                  <Button className="w-full xl:w-auto" type="primary" icon={<IconSearch />} onClick={handleSearch}>
                     查询
                   </Button>
                 </div>
+                </div>
                 <Table
+                  className="rounded-xl"
                   columns={deviceColumns}
                   dataSource={devices}
                   rowKey="deviceCode"
                   loading={loading}
+                  size="middle"
+                  scroll={{ x: 1120 }}
                   tableLayout="fixed"
+                  expandable={{ expandedRowRender: renderDeviceExpandedDetails }}
                   pagination={{
                     current: devicePage,
                     pageSize: 10,
@@ -979,7 +1009,7 @@ export const DeviceManagementPage = () => {
               </Space>
             ),
             children: (
-              <Space direction="vertical" size={14} className="w-full">
+              <Space direction="vertical" size={18} className="w-full">
                 <div className="flex justify-end">
                   {canCreateDevice ? (
                     <Button type="primary" icon={<IconPlus />} onClick={openApplicationCreate}>
@@ -990,17 +1020,17 @@ export const DeviceManagementPage = () => {
                 {applications.length === 0 ? (
                   <Empty description="暂无应用" />
                 ) : (
-                  <Row gutter={[12, 12]}>
+                  <Row gutter={[16, 16]}>
                     {applications.map((item) => (
-                      <Col xs={24} md={12} xl={8} key={item.id}>
+                      <Col xs={24} lg={12} xxl={8} key={item.id}>
                         <Card
                           variant="borderless"
-                          className={`h-full rounded-xl border shadow-card ${
-                            selectedApplication?.id === item.id ? 'border-brand-300' : 'border-slate-200/70'
+                          className={`h-full cursor-pointer rounded-xl border shadow-card transition hover:border-brand-200 hover:shadow-md ${
+                            selectedApplication?.id === item.id ? 'border-brand-300 bg-brand-50/50' : 'border-slate-200/70 bg-white'
                           }`}
                           onClick={() => setSelectedApplicationId(item.id)}
                         >
-                          <Space direction="vertical" size={10} className="w-full">
+                          <Space direction="vertical" size={12} className="w-full">
                             <div className="flex items-start justify-between gap-3">
                               <div className="min-w-0">
                                 <Typography.Title level={5} className="mb-1 truncate">
@@ -1030,7 +1060,7 @@ export const DeviceManagementPage = () => {
                   </Row>
                 )}
                 {selectedApplication ? (
-                  <div className="rounded-xl border border-slate-200/70 bg-white p-4 shadow-card">
+                  <div className="rounded-xl border border-slate-200/70 bg-white p-5 shadow-card">
                     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                       <div>
                         <Typography.Title level={5} className="mb-1">
@@ -1077,6 +1107,8 @@ export const DeviceManagementPage = () => {
           },
         ]}
       />
+      </div>
+      </div>
 
       <Modal
         title="编辑设备"
@@ -1198,7 +1230,6 @@ export const DeviceManagementPage = () => {
           </Form.Item>
         </Form>
       </Modal>
-
     </Space>
   );
 };
