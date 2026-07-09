@@ -44,11 +44,8 @@ import { ChatMarkdown } from '../../components/chat-markdown';
 import { normalizeMediaAssetUrl } from '../../api/client';
 import { useAuthStore } from '../../store/auth';
 import { useAgentAudio } from './use-agent-audio';
+import { ApplicationMonitorDashboard } from './monitor-dashboard';
 import dayjs from 'dayjs';
-import * as echarts from 'echarts/core';
-import { BarChart } from 'echarts/charts';
-import { GridComponent, TooltipComponent } from 'echarts/components';
-import { CanvasRenderer } from 'echarts/renderers';
 import { 
   Select, 
   Spin, 
@@ -287,10 +284,6 @@ const getLogConversationDetailId = (conversation: LogConversationItem) => (
   conversation.source === 'device' && conversation.id > 0 ? -conversation.id : conversation.id
 );
 
-echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer]);
-
-
-
 const fetchAllKnowledgeBases = async () => {
   const firstPage = await fetchKnowledgeBases({ page: 1 });
   const bases = [...firstPage.results];
@@ -376,112 +369,6 @@ const getTemplateIcon = (iconName: string) => {
     default:
       return <IconRobot size={24} />;
   }
-};
-
-const TrendChart = ({ dailyTrends }: { dailyTrends: { date: string; count: number }[] }) => {
-  const chartRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!chartRef.current) return;
-    const chartDom = chartRef.current;
-    const myChart = echarts.init(chartDom);
-    
-    const option = {
-      grid: {
-        top: '12%',
-        left: '2%',
-        right: '2%',
-        bottom: '4%',
-        containLabel: true,
-      },
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'shadow',
-        },
-        backgroundColor: '#1e293b',
-        borderWidth: 0,
-        borderRadius: 8,
-        padding: [8, 12],
-        textStyle: {
-          color: '#ffffff',
-          fontSize: 12,
-        },
-        formatter: (params: any) => {
-          const item = params[0];
-          return `<div style="font-size: 11px; color: #94a3b8; margin-bottom: 4px;">${item.name}</div>
-            <div style="font-weight: bold; font-size: 14px; color: #14b8a6;">${item.value} <span style="font-size: 11px; font-weight: normal; color: #cbd5e1;">次会话</span></div>`;
-        },
-      },
-      xAxis: {
-        type: 'category',
-        data: dailyTrends.map((d) => d.date),
-        axisLine: {
-          lineStyle: {
-            color: '#e2e8f0',
-          },
-        },
-        axisLabel: {
-          color: '#64748b',
-          fontSize: 11,
-          fontFamily: 'monospace',
-        },
-        axisTick: {
-          show: false,
-        },
-      },
-      yAxis: {
-        type: 'value',
-        splitLine: {
-          lineStyle: {
-            color: '#f1f5f9',
-          },
-        },
-        axisLabel: {
-          color: '#64748b',
-          fontSize: 11,
-          fontFamily: 'monospace',
-        },
-      },
-      series: [
-        {
-          name: '会话数',
-          type: 'bar',
-          data: dailyTrends.map((d) => d.count),
-          barWidth: '30%',
-          itemStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: '#0d9488' },
-              { offset: 1, color: '#0f766e' },
-            ]),
-            borderRadius: [4, 4, 0, 0],
-          },
-          emphasis: {
-            itemStyle: {
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: '#0f766e' },
-                { offset: 1, color: '#115e59' },
-              ]),
-            },
-          },
-        },
-      ],
-    };
-
-    myChart.setOption(option);
-
-    const handleResize = () => {
-      myChart.resize();
-    };
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      myChart.dispose();
-    };
-  }, [dailyTrends]);
-
-  return <div ref={chartRef} className="w-full h-full min-h-[240px] flex-1" />;
 };
 
 export const ApplicationManagementPage = () => {
@@ -1141,6 +1028,7 @@ export const ApplicationManagementPage = () => {
       void loadLogConversations();
     } else if (activeTab === 'monitor') {
       void loadStats();
+      void loadAnnotations();
     }
   }, [activeTab, loadAnnotations, loadLogConversations, loadStats]);
 
@@ -2987,95 +2875,15 @@ export const ApplicationManagementPage = () => {
     </Spin>
   );
 
-  const renderMonitorTab = () => {
-    if (statsLoading) {
-      return (
-        <Card variant="borderless" className="flex h-full items-center justify-center bg-white border border-slate-200/50 shadow-sm h-full">
-          <Spin size="large" />
-        </Card>
-      );
-    }
-
-    if (!stats) {
-      return (
-        <Card variant="borderless" className="flex h-full flex-col items-center justify-center bg-white border border-slate-200/50 shadow-sm text-slate-400 h-full" styles={{ body: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%' } }}>
-          <Empty description="暂无监测数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-        </Card>
-      );
-    }
-
-
-
-    return (
-      <div className="flex flex-col gap-4 h-full min-h-0 overflow-y-auto pr-1 custom-scrollbar">
-        {/* Metric Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
-          <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm hover:shadow transition-shadow rounded-2xl">
-            <div className="flex flex-col gap-1">
-              <span className="text-xs text-slate-400 font-medium">调试会话总数</span>
-              <div className="flex items-baseline gap-1 mt-1.5">
-                <span className="text-3xl font-bold font-mono text-slate-800">{stats.conversationCount}</span>
-                <span className="text-xs text-slate-500">次</span>
-              </div>
-              <span className="text-[10px] text-slate-400 mt-2">智能体开启的调试会话总计</span>
-            </div>
-          </Card>
-
-          <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm hover:shadow transition-shadow rounded-2xl">
-            <div className="flex flex-col gap-1">
-              <span className="text-xs text-slate-400 font-medium">交流消息总量</span>
-              <div className="flex items-baseline gap-1 mt-1.5">
-                <span className="text-3xl font-bold font-mono text-slate-800">{stats.messageCount}</span>
-                <span className="text-xs text-slate-500">条</span>
-              </div>
-              <div className="flex justify-between items-center mt-2 text-[10px] text-slate-400 font-medium font-mono">
-                <span>用户: <span className="font-bold text-slate-600">{stats.userMessageCount}</span></span>
-                <span>助手: <span className="font-bold text-slate-600">{stats.assistantMessageCount}</span></span>
-              </div>
-            </div>
-          </Card>
-
-          <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm hover:shadow transition-shadow rounded-2xl">
-            <div className="flex flex-col gap-1">
-              <span className="text-xs text-slate-400 font-medium">用户满意好评率</span>
-              <div className="flex items-baseline gap-1 mt-1.5">
-                <span className="text-3xl font-bold font-mono text-slate-800">
-                  {(stats.upCount + stats.downCount) > 0 ? `${Math.round((stats.upCount / (stats.upCount + stats.downCount)) * 100)}%` : '--'}
-                </span>
-                <span className="text-xs text-slate-500">赞同比例</span>
-              </div>
-              <div className="flex justify-between items-center mt-2 text-[10px] font-mono">
-                <span className="text-emerald-600 font-bold">点赞: {stats.upCount}</span>
-                <span className="text-red-500 font-bold">点踩: {stats.downCount}</span>
-              </div>
-            </div>
-          </Card>
-
-          <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm hover:shadow transition-shadow rounded-2xl">
-            <div className="flex flex-col gap-1">
-              <span className="text-xs text-slate-400 font-medium">统计最近更新</span>
-              <span className="text-base font-bold text-slate-800 mt-2 truncate">
-                {dayjs(stats.updatedAt).format('YYYY-MM-DD')}
-              </span>
-              <span className="text-[10px] text-slate-400 font-mono mt-1.5">
-                {dayjs(stats.updatedAt).format('HH:mm:ss')} (最近更新时间)
-              </span>
-            </div>
-          </Card>
-        </div>
-
-        {/* 7-Day Trend Chart */}
-        <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm flex-1 min-h-[340px] rounded-2xl" styles={{ body: { height: '100%', display: 'flex', flexDirection: 'column', padding: '20px 24px' } }}>
-          <div className="flex flex-col gap-4 h-full flex-1">
-            <div className="text-lg font-bold text-slate-800 shrink-0">最近 7 天会话数趋势</div>
-            <div className="flex-1 min-h-0 w-full flex items-center justify-center">
-              <TrendChart dailyTrends={stats.dailyTrends} />
-            </div>
-          </div>
-        </Card>
-      </div>
-    );
-  };
+  const renderMonitorTab = () => (
+    <ApplicationMonitorDashboard
+      selectedApplication={selectedApplication}
+      stats={stats}
+      statsLoading={statsLoading}
+      annotations={annotations}
+      annotationsLoading={annotationsLoading}
+    />
+  );
 
   const renderTabButton = (tabKey: typeof activeTab, icon: React.ReactNode, label: string, badgeCount = 0) => {
     const isActive = activeTab === tabKey;
