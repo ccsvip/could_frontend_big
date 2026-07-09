@@ -1,4 +1,4 @@
-﻿import {
+import {
   IconApps,
   IconMicrophone,
   IconTrash,
@@ -12,14 +12,11 @@
 import {
   Button,
   Card,
-  Col,
-  Divider,
   Empty,
   Form,
   Input,
   Modal,
   Popconfirm,
-  Row,
   Select,
   Slider,
   Space,
@@ -27,11 +24,9 @@ import {
   Table,
   Tabs,
   Tag,
-  Tooltip,
   Typography,
   message,
 } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import {
@@ -44,7 +39,6 @@ import {
 import {
   createDeviceApplication,
   createWakeWord,
-  deleteDevice,
   deleteWakeWord,
   fetchDeviceApplications,
   fetchDeviceStats,
@@ -55,7 +49,6 @@ import {
   updateWakeWord,
   type DeviceApplicationPayload,
   type DeviceApplicationRecord,
-  type DeviceAuthorizationType,
   type DeviceListQuery,
   type DeviceRecord,
   type DeviceVoiceToneConfig,
@@ -146,11 +139,6 @@ const statusMap: Record<DeviceRecord['status'], { color: string; text: string }>
   offline: { color: 'default', text: '离线' },
 };
 
-const authorizationMap: Record<DeviceAuthorizationType, { color: string; text: string }> = {
-  permanent: { color: 'geekblue', text: '永久' },
-  trial: { color: 'gold', text: '试用' },
-};
-
 const toSelectOptions = <T extends { id: number; name: string }>(items: T[]) =>
   items.map((item) => ({ label: item.name, value: item.id }));
 
@@ -175,7 +163,6 @@ type DeviceWakeWordRow = {
 
 export const DeviceManagementPage = () => {
   const [devices, setDevices] = useState<DeviceRecord[]>([]);
-  const [deviceTotal, setDeviceTotal] = useState(0);
   const [devicePage, setDevicePage] = useState(1);
   const [stats, setStats] = useState({ total: 0, online: 0, offline: 0, trial: 0, permanent: 0 });
   const [applications, setApplications] = useState<DeviceApplicationRecord[]>([]);
@@ -199,6 +186,7 @@ export const DeviceManagementPage = () => {
   const [applicationModalOpen, setApplicationModalOpen] = useState(false);
   const [wakeWordModalOpen, setWakeWordModalOpen] = useState(false);
   const [selectedWakeWordDeviceId, setSelectedWakeWordDeviceId] = useState<number | null>(null);
+  const [selectedDeviceCode, setSelectedDeviceCode] = useState<string | null>(null);
   const [deviceForm] = Form.useForm<DeviceEditForm>();
   const [applicationForm] = Form.useForm<ApplicationForm>();
   const [wakeWordForm] = Form.useForm<WakeWordForm>();
@@ -224,11 +212,8 @@ export const DeviceManagementPage = () => {
   const applicationOptions = useMemo(() => toSelectOptions(applications), [applications]);
   const deviceOptions = useMemo(() => devices.map((item) => ({ label: `${item.name}（${item.deviceCode}）`, value: item.recordId })), [devices]);
   const agentApplicationOptions = useMemo(() => toSelectOptions(agentApplications), [agentApplications]);
-  const selectedApplication = useMemo(
-    () => applications.find((item) => item.id === selectedApplicationId) ?? applications[0] ?? null,
-    [applications, selectedApplicationId],
-  );
   const unboundDeviceCount = useMemo(() => devices.filter((item) => !item.agentApplicationId).length, [devices]);
+  const selectedDevice = useMemo(() => devices.find((d) => d.deviceCode === selectedDeviceCode) ?? null, [devices, selectedDeviceCode]);
   const runtimeDiagnosticCounts = useMemo(
     () =>
       devices.reduce<Record<DeviceRuntimeDiagnostic['level'], number>>(
@@ -241,6 +226,83 @@ export const DeviceManagementPage = () => {
       ),
     [devices],
   );
+
+  const applicationColumns = useMemo(() => {
+    type R = DeviceApplicationRecord;
+    return [
+      {
+        title: '应用名称',
+        dataIndex: 'name',
+        key: 'name',
+        width: 200,
+        render: (name: string) => (
+          <span className="font-medium text-slate-800">{name}</span>
+        ),
+      },
+      {
+        title: '状态',
+        dataIndex: 'isActive',
+        key: 'isActive',
+        width: 80,
+        render: (active: boolean) => (
+          <Tag color={active ? 'success' : 'default'}>{active ? '启用' : '停用'}</Tag>
+        ),
+      },
+      {
+        title: '智能体',
+        dataIndex: 'agentApplicationName',
+        key: 'agent',
+        width: 180,
+        render: (name: string | null, record: R) => (
+          <Tag color={record.agentApplicationId ? 'purple' : 'warning'}>
+            {name || '待绑定智能体'}
+          </Tag>
+        ),
+      },
+      {
+        title: '指令',
+        key: 'commands',
+        width: 80,
+        render: (_: unknown, record: R) => (
+          <span className="tabular-nums text-slate-600">{record.commandGroupIds.length}</span>
+        ),
+      },
+      {
+        title: '说明 / 更新时间',
+        key: 'meta',
+        width: 240,
+        render: (_: unknown, record: R) => (
+          <div className="flex flex-col gap-0.5">
+            <div className="truncate text-[13px] text-slate-600">
+              {record.description || <span className="italic text-slate-400">未填写说明</span>}
+            </div>
+            <div className="text-[11px] text-slate-400 tabular-nums">
+              {record.updated_at ?? '-'}
+            </div>
+          </div>
+        ),
+      },
+      {
+        title: '操作',
+        key: 'actions',
+        width: 100,
+        render: (_: unknown, record: R) =>
+          canUpdateDevice ? (
+            <button
+              type="button"
+              className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[12px] text-slate-600 transition hover:bg-slate-50 hover:text-brand-700"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                openApplicationConfig(record);
+              }}
+            >
+              <IconSettings size={14} />
+              配置
+            </button>
+          ) : null,
+      },
+    ];
+  }, [canUpdateDevice]);
 
   const tabParam = searchParams.get('tab');
   const activeTabKey = tabParam === 'applications' || tabParam === 'wakeWords' ? tabParam : 'devices';
@@ -296,7 +358,6 @@ export const DeviceManagementPage = () => {
         refreshVoiceToneOptions().catch(() => []),
       ]);
       setDevices(deviceResponse.results);
-      setDeviceTotal(deviceResponse.count);
       setDevicePage(page);
       setStats(statsResponse);
       setApplications(applicationResponse.results);
@@ -332,6 +393,12 @@ export const DeviceManagementPage = () => {
     void loadData();
     void loadApplicationConfigOptions();
   }, [canUseDeviceWorkspace]);
+
+  useEffect(() => {
+    if (devices.length > 0 && !selectedDeviceCode) {
+      setSelectedDeviceCode(devices[0].deviceCode);
+    }
+  }, [devices, selectedDeviceCode]);
 
   useEffect(() => {
     if (!canUseDeviceWorkspace || !token || (isTenantScopedRoute && realtimeTenantId == null)) {
@@ -471,12 +538,6 @@ export const DeviceManagementPage = () => {
     message.success('设备信息已更新');
   };
 
-  const handleDeviceDelete = async (record: DeviceRecord) => {
-    await deleteDevice(record.deviceCode);
-    message.success('设备已删除');
-    void loadData(filters, devicePage);
-  };
-
   const openApplicationCreate = () => {
     setEditingApplication(null);
     applicationForm.resetFields();
@@ -549,150 +610,6 @@ export const DeviceManagementPage = () => {
     await loadData(filters, devicePage);
   };
 
-  const renderDeviceExpandedDetails = (record: DeviceRecord) => {
-    const details = [
-      {
-        label: '授权类型',
-        value: <Tag color={authorizationMap[record.authorizationType].color}>{authorizationMap[record.authorizationType].text}</Tag>,
-      },
-      {
-        label: '到期时间',
-        value: record.authorizationType === 'permanent' ? '永久' : record.expiresAt || '-',
-      },
-      { label: '软件版本', value: record.softwareVersion || '-' },
-      {
-        label: '系统版本',
-        value: record.systemVersion ? (
-          <Typography.Text className="text-sm text-slate-900" copyable>
-            {record.systemVersion}
-          </Typography.Text>
-        ) : (
-          '-'
-        ),
-      },
-      { label: '主板信息', value: record.mainboardInfo || '-' },
-    ];
-
-    return (
-      <div className="grid gap-3 px-2 py-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
-        {details.map((item) => (
-          <div key={item.label} className="min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-            <div className="text-xs text-slate-500">{item.label}</div>
-            <div className="mt-1 min-w-0 break-words text-sm text-slate-900">{item.value}</div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const deviceColumns: ColumnsType<DeviceRecord> = [
-    {
-      title: '设备/设备码',
-      key: 'device',
-      fixed: 'left',
-      width: 220,
-      render: (_, record) => (
-        <Space direction="vertical" size={2} className="min-w-0">
-          <Typography.Text strong className="truncate text-slate-900">
-            {record.name || record.deviceCode}
-          </Typography.Text>
-          <Typography.Text className="text-xs text-slate-500" copyable>
-            {record.deviceCode}
-          </Typography.Text>
-        </Space>
-      ),
-    },
-    {
-      title: '运行状态',
-      key: 'runtimeStatus',
-      width: 150,
-      render: (_, record) => (
-        <Space size={[4, 4]} wrap>
-          <Tag color={statusMap[record.status].color}>{statusMap[record.status].text}</Tag>
-          <Tag color={record.isEnabled ? 'success' : 'error'}>{record.isEnabled ? '正常' : '停用'}</Tag>
-        </Space>
-      ),
-    },
-    {
-      title: '运行诊断',
-      key: 'runtimeDiagnostic',
-      width: 150,
-      render: (_, record) => {
-        const diagnostic = resolveDeviceRuntimeDiagnostic(record);
-
-        return (
-          <Tooltip
-            title={
-              <div>
-                <div>{diagnostic.detail}</div>
-                <div className="mt-1">下一步：{diagnostic.hint}</div>
-              </div>
-            }
-          >
-            <Tag color={diagnostic.color}>{diagnostic.label}</Tag>
-          </Tooltip>
-        );
-      },
-    },
-    {
-      title: '资源绑定',
-      key: 'resourceBinding',
-      width: 260,
-      render: (_, record) => (
-        <Space size={[4, 4]} wrap>
-          <Tag color={record.applicationName ? 'cyan' : 'default'}>{record.applicationName || '未绑定资源'}</Tag>
-          <Tag color={record.agentApplicationName ? 'purple' : 'warning'}>
-            {record.agentApplicationName || '待绑定智能体'}
-          </Tag>
-        </Space>
-      ),
-    },
-    {
-      title: '当前音色',
-      dataIndex: 'voiceToneName',
-      key: 'voiceToneName',
-      width: 160,
-      render: (value: string, record) => (value ? <Tag color="blue">{record.voiceToneCode || value}</Tag> : <Tag color="default">未绑定音色</Tag>),
-    },
-    {
-      title: '最近心跳',
-      dataIndex: 'lastHeartbeat',
-      key: 'lastHeartbeat',
-      width: 180,
-      render: (value) => value || '-',
-    },
-    {
-      title: '操作',
-      key: 'action',
-      fixed: 'right',
-      width: 150,
-      render: (_, record) => (
-        <Space size={6}>
-          {canUpdateDevice ? (
-            <Tooltip title="编辑设备名称和资源应用">
-              <Button size="small" icon={<IconEdit />} onClick={() => { void openDeviceEdit(record); }}>
-                编辑
-              </Button>
-            </Tooltip>
-          ) : null}
-          {canDeleteDevice ? (
-            <Popconfirm
-              title="删除设备"
-              description={`确认删除「${record.name || record.deviceCode}」？同设备码再次上报后会重新进入待绑定。`}
-              okText="删除"
-              cancelText="取消"
-              okButtonProps={{ danger: true }}
-              onConfirm={() => void handleDeviceDelete(record)}
-            >
-              <Button size="small" danger icon={<IconTrash />}>
-                删除
-              </Button>
-            </Popconfirm>
-          ) : null}
-        </Space>
-      ),
-    },
-  ];
   const renderWakeWordActions = (wakeWord: WakeWordRecord) => (
     <Space size={6}>
       {canUpdateDevice ? (
@@ -938,65 +855,205 @@ export const DeviceManagementPage = () => {
             ),
             children: (
               <Space direction="vertical" size={16} className="w-full">
-                <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(260px,1fr)_minmax(150px,180px)_minmax(150px,180px)_minmax(180px,220px)_auto]">
-                  <Input
-                    className="w-full"
-                    value={keyword}
-                    prefix={<IconSearch />}
-                    placeholder="按设备名称或设备码搜索"
-                    onChange={(event) => setKeyword(event.target.value)}
-                    onPressEnter={handleSearch}
-                  />
-                  <Select
-                    className="w-full"
-                    value={filters.status}
-                    onChange={(value) => handleFilterChange('status', value)}
-                    options={[
-                      { label: '全部状态', value: 'all' },
-                      { label: '在线', value: 'online' },
-                      { label: '离线', value: 'offline' },
-                    ]}
-                  />
-                  <Select
-                    className="w-full"
-                    value={filters.enabledStatus}
-                    onChange={(value) => handleFilterChange('enabledStatus', value)}
-                    options={[
-                      { label: '全部授权', value: 'all' },
-                      { label: '正常', value: 'enabled' },
-                      { label: '停用', value: 'disabled' },
-                    ]}
-                  />
-                  <Select
-                    className="w-full"
-                    value={filters.applicationId}
-                    onChange={(value) => handleFilterChange('applicationId', value)}
-                    options={[{ label: '全部资源应用', value: 'all' }, ...applicationOptions]}
-                  />
-                  <Button className="w-full xl:w-auto" type="primary" icon={<IconSearch />} onClick={handleSearch}>
-                    查询
-                  </Button>
+                <div className="flex flex-wrap items-center gap-2 text-[13px]">
+                  <Tag color={realtimeConnected ? 'success' : 'default'}>
+                    {realtimeConnected ? '● 实时同步中' : '○ 实时未连接'}
+                  </Tag>
+                  <span className="text-slate-400">|</span>
+                  <span className="text-slate-500">设备 <strong className="text-slate-800">{stats.total}</strong></span>
+                  <span className="text-brand-700">在线 <strong>{stats.online}</strong></span>
                 </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+                  <div className="flex flex-wrap items-end gap-2">
+                    <Input
+                      className="w-full min-w-[200px] sm:w-auto sm:min-w-[240px] sm:flex-1"
+                      value={keyword}
+                      prefix={<IconSearch />}
+                      placeholder="按设备名称或设备码搜索"
+                      onChange={(e) => setKeyword(e.target.value)}
+                      onPressEnter={handleSearch}
+                    />
+                    <Select
+                      className="w-full sm:w-[130px]"
+                      value={filters.status}
+                      onChange={(v) => handleFilterChange('status', v)}
+                      options={[
+                        { label: '全部状态', value: 'all' },
+                        { label: '在线', value: 'online' },
+                        { label: '离线', value: 'offline' },
+                      ]}
+                    />
+                    <Select
+                      className="w-full sm:w-[120px]"
+                      value={filters.enabledStatus}
+                      onChange={(v) => handleFilterChange('enabledStatus', v)}
+                      options={[
+                        { label: '全部授权', value: 'all' },
+                        { label: '正常', value: 'enabled' },
+                        { label: '停用', value: 'disabled' },
+                      ]}
+                    />
+                    <Select
+                      className="w-full min-w-[130px] sm:w-[160px]"
+                      value={filters.applicationId}
+                      onChange={(v) => handleFilterChange('applicationId', v)}
+                      options={[{ label: '全部资源应用', value: 'all' }, ...applicationOptions]}
+                    />
+                    <Button type="primary" icon={<IconSearch />} onClick={handleSearch}>
+                      查询
+                    </Button>
+                  </div>
                 </div>
-                <Table
-                  className="rounded-xl"
-                  columns={deviceColumns}
-                  dataSource={devices}
-                  rowKey="deviceCode"
-                  loading={loading}
-                  size="middle"
-                  scroll={{ x: 1120 }}
-                  tableLayout="fixed"
-                  expandable={{ expandedRowRender: renderDeviceExpandedDetails }}
-                  pagination={{
-                    current: devicePage,
-                    pageSize: 10,
-                    total: deviceTotal,
-                    showSizeChanger: false,
-                    onChange: (page) => void loadData(filters, page),
-                  }}
-                />
+                {loading ? (
+                  <div className="flex items-center justify-center py-20 text-slate-400">加载中...</div>
+                ) : devices.length === 0 ? (
+                  <Empty description="暂无设备" />
+                ) : (
+                  <div className="flex h-[520px] gap-4">
+                    {/* Left panel */}
+                    <div className="flex w-72 shrink-0 flex-col rounded-xl border border-slate-200/70 bg-white shadow-sm">
+                      <div className="border-b border-slate-100 px-3 py-2.5">
+                        <Typography.Text strong className="text-[13px] text-slate-700">
+                          设备列表
+                        </Typography.Text>
+                        <Typography.Text className="ml-1 text-[12px] text-slate-400">
+                          {devices.length}
+                        </Typography.Text>
+                      </div>
+                      <div className="flex-1 overflow-y-auto">
+                        {devices.map((record) => {
+                          const isSelected = selectedDevice?.deviceCode === record.deviceCode;
+                          const diag = resolveDeviceRuntimeDiagnostic(record);
+                          return (
+                            <div
+                              key={record.deviceCode}
+                              className={`flex cursor-pointer items-center gap-2.5 border-b border-slate-50 px-3 py-2.5 transition last:border-0 ${
+                                isSelected ? 'bg-brand-50' : 'hover:bg-slate-50'
+                              }`}
+                              onClick={() => setSelectedDeviceCode(record.deviceCode)}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) => { if (e.key === 'Enter') setSelectedDeviceCode(record.deviceCode); }}
+                            >
+                              <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${record.status === 'online' ? 'bg-brand-500' : 'bg-slate-300'}`} />
+                              <div className="min-w-0 flex-1">
+                                <div className="truncate text-[13px] font-medium text-slate-800">
+                                  {record.name || record.deviceCode}
+                                </div>
+                                <div className="truncate text-[11px] text-slate-400 font-mono">{record.deviceCode}</div>
+                              </div>
+                              <Tag className="shrink-0 text-[11px] py-0" color={diag.color} bordered={false}>
+                                {diag.label}
+                              </Tag>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Right panel */}
+                    <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-slate-200/70 bg-white shadow-sm">
+                      {selectedDevice ? (
+                        <div className="flex flex-1 flex-col overflow-y-auto">
+                          {/* Header */}
+                          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                            <div>
+                              <Typography.Title level={5} className="mb-0.5">
+                                {selectedDevice.name || selectedDevice.deviceCode}
+                              </Typography.Title>
+                              <Typography.Text className="font-mono text-[13px] text-slate-400" copyable>
+                                {selectedDevice.deviceCode}
+                              </Typography.Text>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Tag color={statusMap[selectedDevice.status].color}>{statusMap[selectedDevice.status].text}</Tag>
+                              <Tag color={selectedDevice.isEnabled ? 'success' : 'error'}>{selectedDevice.isEnabled ? '已授权' : '已停用'}</Tag>
+                              {canUpdateDevice && (
+                                <button
+                                  type="button"
+                                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[13px] text-slate-600 transition hover:bg-slate-50 hover:text-brand-700"
+                                  onClick={() => openDeviceEdit(selectedDevice)}
+                                >
+                                  <IconEdit size={15} />
+                                  编辑
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Detail grid */}
+                          <div className="grid grid-cols-2 gap-4 p-5">
+                            {(() => {
+                              const sd = resolveDeviceRuntimeDiagnostic(selectedDevice);
+                              return (
+                                <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 xl:col-span-1">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <Typography.Text strong className="text-[13px] text-slate-700">运行诊断</Typography.Text>
+                                    <Tag className="shrink-0 text-[11px]" color={sd.color} bordered={false}>{sd.label}</Tag>
+                                  </div>
+                                  <div className="mt-2 flex items-center gap-2">
+                                    <span className={`inline-block h-3 w-3 rounded-full ${sd.level === 'ready' ? 'bg-brand-500' : 'bg-amber-400'}`} />
+                                    <span className="text-[13px] text-slate-600">{sd.hint}</span>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+
+                            <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 xl:col-span-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <Typography.Text strong className="text-[13px] text-slate-700">授权信息</Typography.Text>
+                                <Tag className="shrink-0 text-[11px]" color="default" bordered={false}>{selectedDevice.authorizationTypeLabel}</Tag>
+                              </div>
+                              <div className="mt-2 text-[13px] text-slate-600">
+                                {selectedDevice.authorizationType === 'permanent' ? '永久' : `到期 ${selectedDevice.expiresAt ?? '-'}`}
+                              </div>
+                            </div>
+
+                            <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 xl:col-span-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <Typography.Text strong className="text-[13px] text-slate-700">资源绑定</Typography.Text>
+                                <Tag className="shrink-0 text-[11px]" color="default" bordered={false}>{selectedDevice.applicationName || '未绑定资源'}</Tag>
+                              </div>
+                              <div className="mt-2 flex items-center gap-1 text-[13px]">
+                                <span className={`rounded-md px-1.5 py-0.5 ${selectedDevice.agentApplicationName ? 'bg-purple-50 text-purple-700' : 'bg-amber-50 text-amber-700'}`}>
+                                  {selectedDevice.agentApplicationName || '待绑定智能体'}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 xl:col-span-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <Typography.Text strong className="text-[13px] text-slate-700">音色</Typography.Text>
+                                <Tag className="shrink-0 text-[11px]" color="default" bordered={false}>{selectedDevice.voiceToneName || '未绑定'}</Tag>
+                              </div>
+                              <div className="mt-2 text-[13px] text-slate-600 font-mono">{selectedDevice.voiceToneCode || '-'}</div>
+                            </div>
+
+                            <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 xl:col-span-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <Typography.Text strong className="text-[13px] text-slate-700">系统信息</Typography.Text>
+                                <Tag className="shrink-0 text-[11px]" color="default" bordered={false}>{selectedDevice.softwareVersion || '-'}</Tag>
+                              </div>
+                              <div className="mt-2 text-[13px] text-slate-600 break-all">{selectedDevice.systemVersion || '-'}</div>
+                            </div>
+
+                            <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 xl:col-span-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <Typography.Text strong className="text-[13px] text-slate-700">心跳</Typography.Text>
+                                <Tag className="shrink-0 text-[11px]" color="default" bordered={false}>{selectedDevice.lastHeartbeat || '-'}</Tag>
+                              </div>
+                              <div className="mt-2 text-[13px] text-slate-600">{selectedDevice.registeredAt ? `注册于 ${selectedDevice.registeredAt.slice(0, 10)}` : '-'}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-1 items-center justify-center">
+                          <Empty description="选择一个设备查看详情" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </Space>
             ),
           },
@@ -1009,88 +1066,41 @@ export const DeviceManagementPage = () => {
               </Space>
             ),
             children: (
-              <Space direction="vertical" size={18} className="w-full">
-                <div className="flex justify-end">
+              <Space direction="vertical" size={16} className="w-full">
+                <div className="flex items-center justify-between">
+                  <Typography.Text className="text-[13px] text-slate-500">
+                    共 {applications.length} 个应用
+                  </Typography.Text>
                   {canCreateDevice ? (
-                    <Button type="primary" icon={<IconPlus />} onClick={openApplicationCreate}>
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-brand-700 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-brand-800"
+                      onClick={openApplicationCreate}
+                    >
+                      <IconPlus size={16} />
                       新建应用
-                    </Button>
+                    </button>
                   ) : null}
                 </div>
                 {applications.length === 0 ? (
                   <Empty description="暂无应用" />
                 ) : (
-                  <Row gutter={[16, 16]}>
-                    {applications.map((item) => (
-                      <Col xs={24} lg={12} xxl={8} key={item.id}>
-                        <Card
-                          variant="borderless"
-                          className={`h-full cursor-pointer rounded-xl border shadow-card transition hover:border-brand-200 hover:shadow-md ${
-                            selectedApplication?.id === item.id ? 'border-brand-300 bg-brand-50/50' : 'border-slate-200/70 bg-white'
-                          }`}
-                          onClick={() => setSelectedApplicationId(item.id)}
-                        >
-                          <Space direction="vertical" size={12} className="w-full">
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0">
-                                <Typography.Title level={5} className="mb-1 truncate">
-                                  {item.name}
-                                </Typography.Title>
-                              </div>
-                              <Tag color={item.isActive ? 'success' : 'default'}>{item.isActive ? '启用' : '停用'}</Tag>
-                            </div>
-                            <Typography.Paragraph className="mb-0 min-h-[40px] text-[13px] text-slate-500">
-                              {item.description || '未填写说明'}
-                            </Typography.Paragraph>
-                            <Space size={[4, 4]} wrap>
-                              <Tag color={item.agentApplicationId ? 'purple' : 'warning'}>
-                                {item.agentApplicationName || '待绑定智能体'}
-                              </Tag>
-                              <Tag>指令 {item.commandGroupIds.length}</Tag>
-                            </Space>
-                            {canUpdateDevice ? (
-                              <Button icon={<IconSettings />} onClick={() => openApplicationConfig(item)}>
-                                配置
-                              </Button>
-                            ) : null}
-                          </Space>
-                        </Card>
-                      </Col>
-                    ))}
-                  </Row>
+                  <Table
+                    dataSource={applications}
+                    columns={applicationColumns}
+                    rowKey="id"
+                    size="small"
+                    pagination={false}
+                    showHeader
+                    rowClassName={(record) =>
+                      `cursor-pointer transition ${selectedApplicationId === record.id ? 'bg-brand-50/60' : ''}`
+                    }
+                    onRow={(record) => ({
+                      onClick: () => setSelectedApplicationId(record.id),
+                    })}
+                    scroll={{ x: 760 }}
+                  />
                 )}
-                {selectedApplication ? (
-                  <div className="rounded-xl border border-slate-200/70 bg-white p-5 shadow-card">
-                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                      <div>
-                        <Typography.Title level={5} className="mb-1">
-                          {selectedApplication.name}
-                        </Typography.Title>
-                        <Typography.Text type="secondary">当前应用绑定概览</Typography.Text>
-                      </div>
-                      {canUpdateDevice ? (
-                        <Button icon={<IconSettings />} onClick={() => openApplicationConfig(selectedApplication)}>
-                          打开配置
-                        </Button>
-                      ) : null}
-                    </div>
-                    <Divider className="my-4" />
-                    <Row gutter={[10, 10]}>
-                      {[
-                        ['智能体', selectedApplication.agentApplicationName || '未绑定', '应用运行时使用的智能体'],
-                        ['指令组', selectedApplication.commandGroupIds.length, '控制与任务指令'],
-                      ].map(([label, count, desc]) => (
-                        <Col xs={24} md={12} key={label}>
-                          <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
-                            <Typography.Text type="secondary">{label}</Typography.Text>
-                            <div className="mt-1 truncate text-2xl font-semibold tabular-nums">{count}</div>
-                            <div className="mt-1 text-xs text-slate-500">{desc}</div>
-                          </div>
-                        </Col>
-                      ))}
-                    </Row>
-                  </div>
-                ) : null}
               </Space>
             ),
           },
