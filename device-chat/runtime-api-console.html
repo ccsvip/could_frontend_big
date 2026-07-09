@@ -1136,13 +1136,13 @@
                   agentApplication: {},
                   wakeWords: [],
                   wakeWordLines: [],
-                  voiceConfiguration: { voiceTones: [] },
+                  voiceConfiguration: { voiceTones: [{ id: 5, name: '设备讲解音色', voiceCode: 'Cherry' }] },
                   scrollingTexts: [],
                 },
               },
             },
           },
-          note: '订阅后收到 <code>device.runtime_config.subscribed</code>，payload 直接带 config + action（不再单独发 snapshot）。config 与 /device-runtime/config/ 同源，但不包含 resources；含 voiceConfiguration 和 scrollingTexts；后续变化继续推同一种 subscribed，action 表示触发原因。',
+          note: '订阅后收到 <code>device.runtime_config.subscribed</code>，payload 直接带完整 config + action。config 与 /device-runtime/config/ 同源，但不包含 resources；含 voiceConfiguration 和 scrollingTexts；音色修改也推同一种 subscribed 完整配置，voiceConfiguration.voiceTones 只表示当前设备实际音色。',
         });
         writeResponse({ ok: false, status: '-', body: { message: '等待 WebSocket 订阅' } });
         const output = document.getElementById('runtimeEventsOutput');
@@ -3016,7 +3016,7 @@
           errors: runtimeDeviceErrors([['400', '文本为空或音色参数不合法。']]),
         };
         if (detail.method === 'WS' && state.activeSection === 'runtimeEvents') return {
-          summary: detail.note || '设备端运行时配置快照订阅；订阅后和后续配置变化都会下发完整 snapshot。',
+          summary: detail.note || '设备端运行时配置订阅；订阅后和后续配置变化都会下发完整 config。',
           query: null,
           headers: [
             ['无业务必填 Header', '设备码在 WebSocket command 的 <code>payload.deviceCode</code> 中传递。'],
@@ -3033,8 +3033,8 @@
             ['payload.config.scrollingTexts', '租户级启用滚动文本列表（中英明细）。'],
           ],
           responseExample: [
-            { type: 'device.runtime_config.subscribed', id: '<commandId>', payload: { deviceCode: '<deviceCode>', tenantId: 1, action: 'initial', config: { device: {}, application: {}, agentApplication: {}, wakeWords: [], wakeWordLines: [], voiceConfiguration: { voiceTones: [] }, scrollingTexts: [] } } },
-            { type: 'device.runtime_config.subscribed', id: '<commandId>', payload: { deviceCode: '<deviceCode>', tenantId: 1, action: 'wakeWordsChanged', config: { device: {}, application: {}, agentApplication: {}, wakeWords: [], wakeWordLines: [], voiceConfiguration: { voiceTones: [] }, scrollingTexts: [] } } },
+            { type: 'device.runtime_config.subscribed', id: '<commandId>', payload: { deviceCode: '<deviceCode>', tenantId: 1, action: 'initial', config: { device: {}, application: {}, agentApplication: {}, wakeWords: [], wakeWordLines: [], voiceConfiguration: { voiceTones: [{ id: 5, name: '设备讲解音色', voiceCode: 'Cherry' }] }, scrollingTexts: [] } } },
+            { type: 'device.runtime_config.subscribed', id: '<commandId>', payload: { deviceCode: '<deviceCode>', tenantId: 1, action: 'voiceConfigurationChanged', config: { device: {}, application: {}, agentApplication: {}, wakeWords: [], wakeWordLines: [], voiceConfiguration: { voiceTones: [{ id: 6, name: '默认讲解音色', voiceCode: 'Dylan' }] }, scrollingTexts: [] } } },
           ],
           errors: runtimeDeviceErrors([['device_not_found', '设备不存在、未绑定公司、已停用或已过期。']]),
         };
