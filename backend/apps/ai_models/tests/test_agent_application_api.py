@@ -1,8 +1,10 @@
 import json
+import datetime
 
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.utils import timezone
 from asgiref.sync import async_to_sync
 from unittest.mock import patch
 from rest_framework import status
@@ -933,6 +935,88 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['upCount'], 1)
         self.assertEqual(response.data['downCount'], 0)
         self.assertIn('dailyTrends', response.data)
+
+    def test_agent_application_stats_includes_device_runtime_logs_without_chat_conversation(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.create', 'ai_models.chat.view')
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Runtime Stats Agent',
+        )
+        device_application = DeviceApplication.objects.create(
+            tenant=self.tenant,
+            name='Runtime Device App',
+            code='runtime-stats-device-app',
+            agent_application=application,
+        )
+        DeviceChatLog.objects.create(
+            tenant=self.tenant,
+            application=device_application,
+            agent_application=application,
+            conversation=None,
+            code='ANDROID-RUNTIME-STATS-001',
+            source=DeviceChatLog.SOURCE_WEBSOCKET,
+            question_text='设备问题',
+            answer_text='设备回答',
+        )
+
+        response = self.client.get(f'/api/v1/ai-models/applications/{application.id}/stats/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['conversationCount'], 1)
+        self.assertEqual(response.data['messageCount'], 2)
+        self.assertEqual(response.data['userMessageCount'], 1)
+        self.assertEqual(response.data['assistantMessageCount'], 1)
+        self.assertEqual(response.data['dailyTrends'][-1]['count'], 1)
+
+    def test_agent_application_stats_range_filters_counts_and_trends(self):
+        self.grant_permissions('agent_applications.view', 'agent_applications.create', 'ai_models.chat.view')
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Ranged Stats Agent',
+        )
+
+        current_conversation = ChatConversation.objects.create(
+            title='Current conversation',
+            user=self.user,
+            application=application,
+            tenant=self.tenant,
+        )
+        old_conversation = ChatConversation.objects.create(
+            title='Old conversation',
+            user=self.user,
+            application=application,
+            tenant=self.tenant,
+        )
+        ChatMessage.objects.create(
+            conversation=current_conversation,
+            role=ChatMessage.ROLE_USER,
+            content='Current message',
+        )
+        old_message = ChatMessage.objects.create(
+            conversation=old_conversation,
+            role=ChatMessage.ROLE_USER,
+            content='Old message',
+        )
+
+        old_at = timezone.now() - datetime.timedelta(days=10)
+        ChatConversation.objects.filter(id=old_conversation.id).update(created_at=old_at, updated_at=old_at)
+        ChatMessage.objects.filter(id=old_message.id).update(created_at=old_at)
+
+        response_7d = self.client.get(f'/api/v1/ai-models/applications/{application.id}/stats/', {'range': '7d'})
+        response_30d = self.client.get(f'/api/v1/ai-models/applications/{application.id}/stats/', {'range': '30d'})
+
+        self.assertEqual(response_7d.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_7d.data['conversationCount'], 1)
+        self.assertEqual(response_7d.data['messageCount'], 1)
+        self.assertEqual(len(response_7d.data['dailyTrends']), 7)
+        self.assertEqual(response_30d.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_30d.data['conversationCount'], 2)
+        self.assertEqual(response_30d.data['messageCount'], 2)
+        self.assertEqual(len(response_30d.data['dailyTrends']), 30)
 
     def test_list_conversations_filtered_by_application(self):
         self.grant_permissions('agent_applications.view', 'ai_models.chat.view')

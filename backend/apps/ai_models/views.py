@@ -37,7 +37,7 @@ from apps.accounts.permissions import (
     CanViewTTS,
     IsSuperUser,
 )
-from apps.devices.models import Device
+from apps.devices.models import Device, DeviceChatLog
 from apps.devices.services.runtime import (
     RUNTIME_ERROR_EMPTY_DEVICE_CODE,
     RuntimeDeviceError,
@@ -1701,30 +1701,83 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         from django.utils import timezone
         
         application = self.get_object()
+        stats_range = request.query_params.get('range', '7d')
+        if stats_range not in {'24h', '7d', '30d'}:
+            stats_range = '7d'
+
+        now = timezone.now()
+        current_tz = timezone.get_current_timezone()
+        if stats_range == '24h':
+            start_at = now - datetime.timedelta(hours=24)
+        else:
+            days = 30 if stats_range == '30d' else 7
+            start_date = timezone.localdate() - datetime.timedelta(days=days - 1)
+            start_at = timezone.make_aware(
+                datetime.datetime.combine(start_date, datetime.time.min),
+                current_tz,
+            )
         
-        conversations = ChatConversation.objects.filter(application=application, tenant=application.tenant)
-        messages = ChatMessage.objects.filter(conversation__application=application, conversation__tenant=application.tenant)
+        conversations = ChatConversation.objects.filter(
+            application=application,
+            tenant=application.tenant,
+            created_at__gte=start_at,
+        )
+        messages = ChatMessage.objects.filter(
+            conversation__application=application,
+            conversation__tenant=application.tenant,
+            created_at__gte=start_at,
+        )
+        device_logs = DeviceChatLog.objects.filter(
+            agent_application=application,
+            tenant=application.tenant,
+            created_at__gte=start_at,
+        )
+        standalone_device_logs = device_logs.filter(conversation__isnull=True)
         
         user_message_count = messages.filter(role=ChatMessage.ROLE_USER).count()
         assistant_message_count = messages.filter(role=ChatMessage.ROLE_ASSISTANT).count()
+        device_message_count = device_logs.count()
         up_count = messages.filter(role=ChatMessage.ROLE_ASSISTANT, feedback=ChatMessage.FEEDBACK_UP).count()
         down_count = messages.filter(role=ChatMessage.ROLE_ASSISTANT, feedback=ChatMessage.FEEDBACK_DOWN).count()
         
-        today = timezone.localdate()
         daily_trends = []
-        for i in range(6, -1, -1):
-            date = today - datetime.timedelta(days=i)
-            count = conversations.filter(created_at__date=date).count()
-            daily_trends.append({
-                'date': date.strftime('%m-%d'),
-                'count': count
-            })
+        if stats_range == '24h':
+            current_hour = timezone.localtime(now).replace(minute=0, second=0, microsecond=0)
+            for i in range(23, -1, -1):
+                bucket_start = current_hour - datetime.timedelta(hours=i)
+                bucket_end = bucket_start + datetime.timedelta(hours=1)
+                count = (
+                    conversations.filter(created_at__gte=bucket_start, created_at__lt=bucket_end).count()
+                    + standalone_device_logs.filter(created_at__gte=bucket_start, created_at__lt=bucket_end).count()
+                )
+                daily_trends.append({
+                    'date': bucket_start.isoformat(),
+                    'count': count,
+                })
+        else:
+            days = 30 if stats_range == '30d' else 7
+            today = timezone.localdate()
+            for i in range(days - 1, -1, -1):
+                date = today - datetime.timedelta(days=i)
+                bucket_start = timezone.make_aware(
+                    datetime.datetime.combine(date, datetime.time.min),
+                    current_tz,
+                )
+                bucket_end = bucket_start + datetime.timedelta(days=1)
+                count = (
+                    conversations.filter(created_at__gte=bucket_start, created_at__lt=bucket_end).count()
+                    + standalone_device_logs.filter(created_at__gte=bucket_start, created_at__lt=bucket_end).count()
+                )
+                daily_trends.append({
+                    'date': date.isoformat(),
+                    'count': count
+                })
             
         data = {
-            'conversationCount': conversations.count(),
-            'messageCount': messages.count(),
-            'userMessageCount': user_message_count,
-            'assistantMessageCount': assistant_message_count,
+            'conversationCount': conversations.count() + standalone_device_logs.count(),
+            'messageCount': messages.count() + device_message_count * 2,
+            'userMessageCount': user_message_count + device_message_count,
+            'assistantMessageCount': assistant_message_count + device_message_count,
             'upCount': up_count,
             'downCount': down_count,
             'dailyTrends': daily_trends,

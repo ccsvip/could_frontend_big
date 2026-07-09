@@ -18,6 +18,7 @@ import {
   updateAgentApplication,
   type AgentApplicationRecord,
   type AgentApplicationStats,
+  type AgentApplicationStatsRange,
   type AgentApplicationPayload,
 } from '../../api/modules/applications';
 import {
@@ -475,6 +476,7 @@ export const ApplicationManagementPage = () => {
   // Monitor stats state (Monitor Tab)
   const [stats, setStats] = useState<AgentApplicationStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
+  const [statsRange, setStatsRange] = useState<AgentApplicationStatsRange>('7d');
 
   const selectedApplicationId = useMemo(() => {
     if (!applicationId) return null;
@@ -1011,14 +1013,14 @@ export const ApplicationManagementPage = () => {
     if (!selectedApplicationId) return;
     setStatsLoading(true);
     try {
-      const data = await fetchAgentApplicationStats(selectedApplicationId);
+      const data = await fetchAgentApplicationStats(selectedApplicationId, statsRange);
       setStats(data);
     } catch {
       message.error('监测数据加载失败');
     } finally {
       setStatsLoading(false);
     }
-  }, [selectedApplicationId]);
+  }, [selectedApplicationId, statsRange]);
 
   // Load tab-specific data
   useEffect(() => {
@@ -2880,6 +2882,8 @@ export const ApplicationManagementPage = () => {
       selectedApplication={selectedApplication}
       stats={stats}
       statsLoading={statsLoading}
+      statsRange={statsRange}
+      onStatsRangeChange={setStatsRange}
       annotations={annotations}
       annotationsLoading={annotationsLoading}
     />

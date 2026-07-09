@@ -147,8 +147,16 @@ export type AgentApplicationStats = {
   updatedAt: string;
 };
 
-export const fetchAgentApplicationStats = async (id: number) => {
-  const response = await httpClient.get<AgentApplicationStats>(`/ai-models/applications/${id}/stats/`);
+export type AgentApplicationStatsRange = '24h' | '7d' | '30d';
+
+export const fetchAgentApplicationStats = async (
+  id: number,
+  range: AgentApplicationStatsRange = '7d',
+) => {
+  const response = await httpClient.get<AgentApplicationStats>(
+    `/ai-models/applications/${id}/stats/`,
+    { params: { range } },
+  );
   return response.data;
 };
 
