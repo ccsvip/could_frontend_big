@@ -2105,6 +2105,8 @@ export const ApplicationManagementPage = () => {
               </div>
             )}
 
+            {runtimeBackendType === 'platform_llm' ? (
+              <>
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-1.5">
                 <span className="text-sm font-bold text-slate-700">系统提示词 (System Prompt)</span>
@@ -2220,6 +2222,8 @@ export const ApplicationManagementPage = () => {
                 max={320000}
               />
             </div>
+              </>
+            ) : null}
 
             <div className="flex items-center gap-3 mt-2 mb-4">
               <span className="text-sm font-bold text-slate-700">启用此智能体</span>
