@@ -22,6 +22,8 @@ import {
   type AgentApplicationPayload,
 } from '../../api/modules/applications';
 import {
+  clearApplicationWebConversationHistory,
+  deleteConversation,
   fetchConversation,
   fetchConversations,
   sendMessageStream,
@@ -39,7 +41,14 @@ import {
 } from '../../api/modules/llm-settings';
 import { fetchAsrStatus, type AsrStatusRecord } from '../../api/modules/asr';
 import { fetchCompanyTtsOptions, type CompanyTtsOptions } from '../../api/modules/tts';
-import { fetchDeviceChatLogs, type DeviceChatLogRecord } from '../../api/modules/devices';
+import {
+  clearDeviceChatSessions,
+  deleteDeviceChatSession,
+  fetchDeviceChatSession,
+  fetchDeviceChatSessions,
+  type DeviceChatSessionDetail,
+  type DeviceChatSessionRecord,
+} from '../../api/modules/devices';
 import { fetchImageResources, fetchVideoResources, type ResourceRecord, type ResourceType } from '../../api/modules/resources';
 import { ChatMarkdown } from '../../components/chat-markdown';
 import { normalizeMediaAssetUrl } from '../../api/client';
@@ -129,7 +138,6 @@ type LogConversationItem = {
 type LogConversationCategory = 'chat' | 'device';
 
 const PAGE_SIZE = 10;
-const LOG_CONVERSATION_PAGE_SIZE = 100;
 const DEFAULT_TEMPERATURE = 0.7;
 const DEFAULT_MAX_TOKENS = 1000;
 const DEFAULT_TTS_FILTER_PUNCTUATION = '。！？!?；;、-';
@@ -169,97 +177,23 @@ const normalizeAnnotationEditorBlocks = (blocks: AgentReplyBlock[] | undefined, 
   return [textBlock(text), ...mediaBlocks];
 };
 
-const toDeviceChatConversationDetail = (logs: DeviceChatLogRecord[]): ChatConversationDetail => {
-  const orderedLogs = [...logs].sort((a, b) => {
-    const byTime = dayjs(a.createdAt).valueOf() - dayjs(b.createdAt).valueOf();
-    return byTime || a.id - b.id;
-  });
-  const firstLog = orderedLogs[0];
-  const lastLog = orderedLogs[orderedLogs.length - 1];
-  const conversationId = firstLog.conversationId ? -firstLog.conversationId : -firstLog.id;
-  const title = `${firstLog.deviceName || firstLog.code || '设备'} 设备运行时`;
-  const messages = orderedLogs.flatMap<ChatMessage>((log) => [
-    {
-      id: log.id * 2,
-      conversationId,
-      role: 'user',
-      content: log.questionText,
-      contentBlocks: [textBlock(log.questionText)],
-      feedback: 'none',
-      created_at: log.createdAt,
-    },
-    {
-      id: log.id * 2 + 1,
-      conversationId,
-      role: 'assistant',
-      content: log.answerText,
-      contentBlocks: [textBlock(log.answerText)],
-      feedback: 'none',
-      created_at: log.createdAt,
-    },
-  ]);
+const toDeviceChatSessionItem = (session: DeviceChatSessionRecord): LogConversationItem => ({
+  ...session,
+  key: `device-${session.id}`,
+  source: 'device',
+  created_at: session.createdAt,
+  updated_at: session.updatedAt,
+});
 
-  return {
-    id: conversationId,
-    title,
-    applicationId: firstLog.agentApplicationId,
-    runtimeBackendType: 'platform_llm',
-    llmModelId: null,
-    llmModelName: lastLog.modelName,
-    llmModelDisplayName: lastLog.modelName,
-    llmProviderName: null,
-    thirdPartyChatbotId: null,
-    thirdPartyChatbotName: '',
-    thirdPartyChatbotProviderName: null,
-    summary: firstLog.questionText,
-    systemPrompt: '',
-    temperature: 0,
-    maxTokens: 0,
-    maxTokensUnlimited: false,
-    messages,
-    created_at: firstLog.createdAt,
-    updated_at: lastLog.createdAt,
-  };
-};
-
-const toDeviceChatLogItem = (logs: DeviceChatLogRecord[]): LogConversationItem => {
-  const orderedLogs = [...logs].sort((a, b) => {
-    const byTime = dayjs(a.createdAt).valueOf() - dayjs(b.createdAt).valueOf();
-    return byTime || a.id - b.id;
-  });
-  const firstLog = orderedLogs[0];
-  const lastLog = orderedLogs[orderedLogs.length - 1];
-  const detail = toDeviceChatConversationDetail(orderedLogs);
-  return {
-    key: firstLog.conversationId ? `device-conversation-${firstLog.conversationId}` : `device-${firstLog.id}`,
-    source: 'device',
-    id: firstLog.conversationId ? -firstLog.conversationId : firstLog.id,
-    title: detail.title,
-    summary: firstLog.questionText,
-    lastMessage: lastLog.answerText,
-    messageCount: detail.messages.length,
-    runtimeBackendType: 'platform_llm',
-    llmModelName: lastLog.modelName,
-    llmModelDisplayName: lastLog.modelName || '运行时设备',
-    llmProviderName: null,
-    thirdPartyChatbotName: '',
-    thirdPartyChatbotProviderName: null,
-    created_at: firstLog.createdAt,
-    updated_at: lastLog.createdAt,
-    detail,
-  };
-};
-
-const toDeviceChatLogItems = (logs: DeviceChatLogRecord[]): LogConversationItem[] => {
-  const groups = new Map<string, DeviceChatLogRecord[]>();
-  for (const log of logs) {
-    const key = log.conversationId ? `conversation-${log.conversationId}` : `log-${log.id}`;
-    const group = groups.get(key) || [];
-    group.push(log);
-    groups.set(key, group);
-  }
-  return Array.from(groups.values()).map(toDeviceChatLogItem);
-};
+const toDeviceChatConversationDetail = (session: DeviceChatSessionDetail): ChatConversationDetail => ({
+  ...session,
+  messages: session.messages.map(({ createdAt, ...chatMessage }) => ({
+    ...chatMessage,
+    created_at: createdAt,
+  })),
+  created_at: session.createdAt,
+  updated_at: session.updatedAt,
+});
 
 const toChatConversationItem = (conversation: ChatConversationRecord): LogConversationItem => ({
   ...conversation,
@@ -281,9 +215,7 @@ const getRuntimeBackendDisplay = (
   return item.llmProviderName ? `${item.llmProviderName} / ${modelName}` : modelName;
 };
 
-const getLogConversationDetailId = (conversation: LogConversationItem) => (
-  conversation.source === 'device' && conversation.id > 0 ? -conversation.id : conversation.id
-);
+const getLogConversationDetailId = (conversation: LogConversationItem) => conversation.id;
 
 const fetchAllKnowledgeBases = async () => {
   const firstPage = await fetchKnowledgeBases({ page: 1 });
@@ -453,6 +385,10 @@ export const ApplicationManagementPage = () => {
   const [logConversationsLoading, setLogConversationsLoading] = useState(false);
   const [logConversationTotal, setLogConversationTotal] = useState(0);
   const [logConversationCategory, setLogConversationCategory] = useState<LogConversationCategory>('chat');
+  const [logConversationPage, setLogConversationPage] = useState(1);
+  const [logConversationPageSize, setLogConversationPageSize] = useState(10);
+  const [deletingLogConversationKey, setDeletingLogConversationKey] = useState<string | null>(null);
+  const [clearingLogConversations, setClearingLogConversations] = useState(false);
   const [selectedLogConversation, setSelectedLogConversation] = useState<ChatConversationDetail | null>(null);
   const [selectedLogConversationLoading, setSelectedLogConversationLoading] = useState(false);
 
@@ -781,6 +717,7 @@ export const ApplicationManagementPage = () => {
     setSelectedLogConversation(null);
     setLogConversations([]);
     setLogConversationTotal(0);
+    setLogConversationPage(1);
     setAnnotations([]);
     setAnnotationKeyword('');
     setAnnotationSearchValue('');
@@ -795,44 +732,53 @@ export const ApplicationManagementPage = () => {
       if (logConversationCategory === 'chat') {
         const chatData = await fetchConversations({
           application: selectedApplicationId,
-          pageSize: LOG_CONVERSATION_PAGE_SIZE,
+          page: logConversationPage,
+          pageSize: logConversationPageSize,
           excludeDeviceRuntime: true,
         });
         const items = chatData.results.map(toChatConversationItem);
         setLogConversations(items);
         setLogConversationTotal(chatData.count);
-        if (items.length > 0 && !selectedLogConversation) {
+        if (items.length > 0 && !items.some((item) => item.id === selectedLogConversation?.id)) {
           void loadSelectedLogConversation(items[0]);
+        } else if (items.length === 0) {
+          setSelectedLogConversation(null);
         }
         return;
       }
 
-      const deviceLogData = await fetchDeviceChatLogs({
+      const deviceSessionData = await fetchDeviceChatSessions({
         agentApplicationId: selectedApplicationId,
-        pageSize: LOG_CONVERSATION_PAGE_SIZE,
+        page: logConversationPage,
+        pageSize: logConversationPageSize,
       });
-      const deviceLogItems = toDeviceChatLogItems(deviceLogData.results);
-      const items = deviceLogItems.sort((a, b) => dayjs(b.updated_at).valueOf() - dayjs(a.updated_at).valueOf());
+      const items = deviceSessionData.results.map(toDeviceChatSessionItem);
       setLogConversations(items);
-      setLogConversationTotal(deviceLogItems.length);
-      if (items.length > 0 && !selectedLogConversation) {
+      setLogConversationTotal(deviceSessionData.count);
+      if (items.length > 0 && !items.some((item) => item.id === selectedLogConversation?.id)) {
         void loadSelectedLogConversation(items[0]);
+      } else if (items.length === 0) {
+        setSelectedLogConversation(null);
       }
     } catch {
       message.error('日志会话加载失败');
     } finally {
       setLogConversationsLoading(false);
     }
-  }, [logConversationCategory, selectedApplicationId, selectedLogConversation]);
+  }, [
+    logConversationCategory,
+    logConversationPage,
+    logConversationPageSize,
+    selectedApplicationId,
+    selectedLogConversation,
+  ]);
 
   const loadSelectedLogConversation = async (conversation: LogConversationItem) => {
     setSelectedLogConversationLoading(true);
     try {
-      if (conversation.source === 'device' && conversation.detail) {
-        setSelectedLogConversation(conversation.detail);
-        return;
-      }
-      const detail = await fetchConversation(conversation.id);
+      const detail = conversation.source === 'device'
+        ? toDeviceChatConversationDetail(await fetchDeviceChatSession(conversation.id))
+        : await fetchConversation(conversation.id);
       setSelectedLogConversation(detail);
     } catch {
       message.error('日志详情加载失败');
@@ -845,7 +791,64 @@ export const ApplicationManagementPage = () => {
     setLogConversationCategory(value);
     setLogConversations([]);
     setLogConversationTotal(0);
+    setLogConversationPage(1);
     setSelectedLogConversation(null);
+  };
+
+  const handleDeleteLogConversation = async (item: LogConversationItem) => {
+    setDeletingLogConversationKey(item.key);
+    try {
+      const deletingSelectedConversation = selectedLogConversation?.id === item.id;
+      if (item.source === 'chat') {
+        await deleteConversation(item.id);
+        if (conversation?.id === item.id) {
+          setConversation(null);
+          setMessages([]);
+          setStreamingContent('');
+          setStreamingBlocks([]);
+        }
+      } else {
+        await deleteDeviceChatSession(item.id);
+      }
+      message.success('历史会话已删除');
+      if (deletingSelectedConversation) {
+        setSelectedLogConversation(null);
+      }
+      if (logConversations.length === 1 && logConversationPage > 1) {
+        setLogConversationPage((page) => page - 1);
+      } else {
+        await loadLogConversations();
+      }
+    } catch {
+      message.error('历史会话删除失败，请稍后重试');
+    } finally {
+      setDeletingLogConversationKey(null);
+    }
+  };
+
+  const handleClearLogConversations = async () => {
+    if (!selectedApplicationId) return;
+    setClearingLogConversations(true);
+    try {
+      if (logConversationCategory === 'chat') {
+        await clearApplicationWebConversationHistory(selectedApplicationId);
+        setConversation(null);
+        setMessages([]);
+        setStreamingContent('');
+        setStreamingBlocks([]);
+      } else {
+        await clearDeviceChatSessions(selectedApplicationId);
+      }
+      message.success(logConversationCategory === 'chat' ? '网页调试历史已清空' : '设备运行时历史已清空');
+      setLogConversations([]);
+      setLogConversationTotal(0);
+      setSelectedLogConversation(null);
+      setLogConversationPage(1);
+    } catch {
+      message.error('历史会话清空失败，请稍后重试');
+    } finally {
+      setClearingLogConversations(false);
+    }
   };
 
   const loadAnnotations = useCallback(async () => {
@@ -1253,27 +1256,15 @@ export const ApplicationManagementPage = () => {
     }
   };
 
-  const startNewConversation = async () => {
-    if (!selectedApplication || streaming || chatLoading) return null;
+  const startNewConversation = () => {
+    if (!selectedApplication || streaming || chatLoading) return;
     abortRef.current?.abort();
     setConversation(null);
     setMessages([]);
     setStreamingContent('');
     setStreamingBlocks([]);
     setInputValue('');
-    setChatLoading(true);
-    try {
-      const nextConversation = await createAgentApplicationConversation(selectedApplication.id);
-      setConversation(nextConversation);
-      setMessages(nextConversation.messages);
-      message.success('已创建新对话');
-      return nextConversation;
-    } catch {
-      message.error('新对话创建失败');
-      return null;
-    } finally {
-      setChatLoading(false);
-    }
+    message.success('已开始新对话，发送首条消息后将保存到历史');
   };
 
   const refreshConversation = async (conversationId: number) => {
@@ -2725,13 +2716,36 @@ export const ApplicationManagementPage = () => {
 
   const renderLogsTab = () => (
     <Spin spinning={logConversationsLoading} className="h-full min-h-0" wrapperClassName="h-full-spin min-h-0">
-      <div className="grid grid-cols-1 grid-rows-[minmax(0,_1fr)_minmax(0,_1fr)] xl:grid-cols-[380px_minmax(0,_1fr)] xl:grid-rows-1 gap-4 h-full min-h-0 overflow-hidden">
+      <div className="grid grid-cols-1 grid-rows-[minmax(0,_1fr)_minmax(0,_1fr)] gap-4 h-full min-h-0 overflow-hidden xl:grid-cols-[minmax(18rem,24rem)_minmax(0,_1fr)] xl:grid-rows-1">
         {/* Conversation List */}
         <Card variant="borderless" className="flex flex-col bg-white border border-slate-200/50 shadow-sm h-full min-h-0 overflow-hidden" styles={{ body: { padding: '16px', height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' } }}>
           <div className="flex flex-col gap-3 border-b border-slate-100 pb-3 mb-3 shrink-0">
-            <div className="flex justify-between items-center">
-              <div className="text-base font-bold text-slate-800">历史会话记录</div>
-              <Tag color="default">{logConversationTotal || logConversations.length} 会话</Tag>
+            <div className="flex flex-wrap justify-between items-center gap-2">
+              <div className="text-fluid-base font-bold text-slate-800">历史会话记录</div>
+              <div className="flex items-center gap-2">
+                <Tag color="default" className="text-fluid-xs">{logConversationTotal} 会话</Tag>
+                <Popconfirm
+                  title={`清空${logConversationCategory === 'chat' ? '网页调试' : '设备运行时'}历史？`}
+                  description="仅清空当前应用、当前分类，删除后不可恢复。"
+                  okText="确认清空"
+                  cancelText="取消"
+                  okButtonProps={{ danger: true, loading: clearingLogConversations }}
+                  disabled={logConversationTotal === 0 || clearingLogConversations}
+                  onConfirm={() => void handleClearLogConversations()}
+                >
+                  <Button
+                    danger
+                    type="text"
+                    icon={<IconTrash size={16} />}
+                    loading={clearingLogConversations}
+                    disabled={logConversationTotal === 0}
+                    className="min-h-11 text-fluid-sm"
+                    aria-label={`清空${logConversationCategory === 'chat' ? '网页调试' : '设备运行时'}历史`}
+                  >
+                    清空
+                  </Button>
+                </Popconfirm>
+              </div>
             </div>
             <Segmented<LogConversationCategory>
               block
@@ -2750,46 +2764,90 @@ export const ApplicationManagementPage = () => {
               logConversations.map((conv) => (
                 <div
                   key={conv.key}
-                  onClick={() => void loadSelectedLogConversation(conv)}
-                  className={`py-3 px-3 cursor-pointer rounded-xl transition-all duration-200 border ${
+                  className={`flex items-stretch rounded-xl transition-all duration-200 border ${
                     selectedLogConversation?.id === getLogConversationDetailId(conv)
                       ? 'bg-brand-50/50 border-brand-200 shadow-sm'
                       : 'border-transparent hover:bg-slate-50'
                   }`}
                 >
-                  <div className="flex justify-between items-start gap-2 mb-1">
-                    <span className="text-sm font-bold text-slate-800 truncate max-w-[190px]">
-                      {conv.title}
+                  <button
+                    type="button"
+                    onClick={() => void loadSelectedLogConversation(conv)}
+                    className="min-w-0 flex-1 cursor-pointer px-3 py-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-inset"
+                    aria-label={`查看会话：${conv.title}`}
+                  >
+                    <div className="flex justify-between items-start gap-2 mb-1">
+                      <span className="text-fluid-sm font-bold text-slate-800 truncate">
+                        {conv.title}
+                      </span>
+                      <span className="text-fluid-xs text-slate-500 shrink-0 font-mono">
+                        {dayjs(conv.updated_at).format('MM-DD HH:mm')}
+                      </span>
+                    </div>
+                    <span className="text-fluid-xs text-slate-600 line-clamp-1 block mb-2">
+                      {conv.summary || conv.lastMessage || '暂无对话文本记录'}
                     </span>
-                    <span className="text-xs text-slate-400 shrink-0 font-mono">
-                      {dayjs(conv.updated_at).format('MM-DD HH:mm')}
-                    </span>
-                  </div>
-                  <span className="text-xs text-slate-500 line-clamp-1 block mb-2">
-                    {conv.summary || conv.lastMessage || '暂无对话文本记录'}
-                  </span>
-                  <div className="flex justify-between items-center text-[10px]">
-                    <Tag
-                      color={conv.runtimeBackendType === 'third_party_chatbot' ? 'purple' : 'cyan'}
-                      className="m-0 scale-90 origin-left"
-                    >
-                      {getRuntimeBackendDisplay(conv)}
-                    </Tag>
-                    {conv.source === 'device' && (
-                      <Tag color="gold" className="m-0 scale-90 origin-left">设备运行时</Tag>
-                    )}
-                    <span className="flex items-center gap-1 text-slate-400">
-                      <IconMessage size={11} /> {conv.messageCount} 消息
-                    </span>
-                  </div>
+                    <div className="flex flex-wrap justify-between items-center gap-2 text-fluid-xs">
+                      <div className="flex flex-wrap items-center gap-1">
+                        <Tag color={conv.runtimeBackendType === 'third_party_chatbot' ? 'purple' : 'cyan'} className="m-0">
+                          {getRuntimeBackendDisplay(conv)}
+                        </Tag>
+                        {conv.source === 'device' && <Tag color="gold" className="m-0">设备运行时</Tag>}
+                      </div>
+                      <span className="flex items-center gap-1 text-slate-500">
+                        <IconMessage size={14} /> {conv.messageCount} 消息
+                      </span>
+                    </div>
+                  </button>
+                  <Popconfirm
+                    title="删除这条历史会话？"
+                    description="该会话及其历史内容将被删除，且不可恢复。"
+                    okText="删除"
+                    cancelText="取消"
+                    okButtonProps={{ danger: true, loading: deletingLogConversationKey === conv.key }}
+                    onConfirm={() => void handleDeleteLogConversation(conv)}
+                  >
+                    <Button
+                      danger
+                      type="text"
+                      icon={<IconTrash size={16} />}
+                      loading={deletingLogConversationKey === conv.key}
+                      disabled={deletingLogConversationKey !== null && deletingLogConversationKey !== conv.key}
+                      className="m-1 min-h-11 min-w-11 self-start"
+                      aria-label={`删除会话：${conv.title}`}
+                    />
+                  </Popconfirm>
                 </div>
               ))
             ) : (
               <div className="flex-1 flex items-center justify-center py-12">
-                <Empty description="暂无任何调试会话" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                <Empty
+                  description={logConversationCategory === 'chat' ? '暂无网页调试会话' : '暂无设备运行时会话'}
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                />
               </div>
             )}
           </div>
+          {logConversationTotal > 0 && (
+            <div className="shrink-0 border-t border-slate-100 pt-3 mt-3">
+              <Pagination
+                current={logConversationPage}
+                pageSize={logConversationPageSize}
+                total={logConversationTotal}
+                pageSizeOptions={[10, 20, 50]}
+                showSizeChanger
+                showLessItems
+                responsive
+                size="small"
+                className="flex flex-wrap justify-center gap-y-2"
+                onChange={(page, pageSize) => {
+                  setSelectedLogConversation(null);
+                  setLogConversationPage(pageSize === logConversationPageSize ? page : 1);
+                  setLogConversationPageSize(pageSize);
+                }}
+              />
+            </div>
+          )}
         </Card>
 
         {/* Selected Conversation Detail */}

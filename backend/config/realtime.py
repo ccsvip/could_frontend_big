@@ -1048,6 +1048,7 @@ def _record_realtime_device_chat_log(
         trace_id=trace_id,
         model_name=str(session.get('modelName') or ''),
         conversation_id=session.get('conversationId'),
+        runtime_session_id=str(session.get('sessionId') or ''),
         answer_blocks=answer_blocks,
     )
 

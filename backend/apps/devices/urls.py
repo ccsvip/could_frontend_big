@@ -6,6 +6,8 @@ from .views import (
     DeviceApplicationViewSet,
     DeviceAuthorizationCodeViewSet,
     DeviceAuthorizationRequestViewSet,
+    DeviceChatSessionCollectionView,
+    DeviceChatSessionDetailView,
     DeviceGroupViewSet,
     DeviceRuntimeConfigView,
     DeviceRuntimeHeartbeatView,
@@ -24,6 +26,8 @@ router.register('device-authorization-requests', DeviceAuthorizationRequestViewS
 router.register('wake-words', WakeWordViewSet, basename='wake-word')
 
 urlpatterns = [
+    path('device-chat-sessions/', DeviceChatSessionCollectionView.as_view(), name='device-chat-session-list'),
+    path('device-chat-sessions/<int:pk>/', DeviceChatSessionDetailView.as_view(), name='device-chat-session-detail'),
     path('device-auth/activate/', DeviceActivationView.as_view(), name='device-auth-activate'),
     path('device-runtime/config/', DeviceRuntimeConfigView.as_view(), name='device-runtime-config'),
     path('device-runtime/resources/', DeviceRuntimeResourcesView.as_view(), name='device-runtime-resources'),

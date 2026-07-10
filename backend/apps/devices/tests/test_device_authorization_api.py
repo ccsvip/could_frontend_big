@@ -1343,6 +1343,14 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertIn({'role': 'user', 'content': '介绍一下展厅'}, captured_messages[1])
         self.assertIn({'role': 'assistant', 'content': '第一轮回答'}, captured_messages[1])
         self.assertEqual(captured_messages[1][-1], {'role': 'user', 'content': '继续介绍'})
+        self.assertEqual(
+            set(
+                DeviceChatLog.objects
+                .filter(code='ANDROID-VOICE-SESSION-001')
+                .values_list('runtime_session_id', flat=True)
+            ),
+            {returned_session_id},
+        )
 
     def test_device_voice_chat_returns_media_annotation_blocks_with_absolute_urls(self):
         image = Resource.objects.create(

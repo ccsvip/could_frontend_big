@@ -7,7 +7,7 @@ from asgiref.sync import async_to_sync, sync_to_async
 from django.core.cache import cache
 from django.db import transaction
 from django.db import connections
-from django.db.models import F, Q
+from django.db.models import Exists, F, Min, OuterRef, Q
 from django.utils import timezone
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -38,6 +38,7 @@ from apps.accounts.permissions import (
     IsSuperUser,
 )
 from apps.devices.models import Device, DeviceChatLog
+from apps.devices.services.chat_sessions import device_chat_session_groups
 from apps.devices.services.runtime import (
     RUNTIME_ERROR_EMPTY_DEVICE_CODE,
     RuntimeDeviceError,
@@ -1517,6 +1518,7 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         'create_annotation': [CanUpdateAgentApplications],
         'update_annotation': [CanUpdateAgentApplications],
         'create_conversation': [CanViewAgentApplications, CanCreateChat],
+        'clear_web_conversation_history': [CanDeleteChat],
     }
 
     def get_queryset(self):
@@ -1608,6 +1610,28 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             tenant=application.tenant,
         )
         return Response(ChatConversationDetailSerializer(conversation).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['delete'], url_path='web-conversation-history')
+    def clear_web_conversation_history(self, request, pk=None):
+        application = self.get_object()
+        user_messages = ChatMessage.objects.filter(
+            conversation_id=OuterRef('pk'),
+            role=ChatMessage.ROLE_USER,
+        )
+        conversations = (
+            ChatConversation.objects
+            .filter(
+                application=application,
+                tenant=application.tenant,
+                user=request.user,
+                device_chat_logs__isnull=True,
+            )
+            .exclude(external_session__has_key='runtimeSessionId')
+            .annotate(has_user_activity=Exists(user_messages))
+            .filter(has_user_activity=True)
+        )
+        conversations.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['post'], url_path='publish')
     def publish(self, request, pk=None):
@@ -1717,22 +1741,35 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                 current_tz,
             )
         
-        conversations = ChatConversation.objects.filter(
-            application=application,
-            tenant=application.tenant,
-            created_at__gte=start_at,
+        web_conversations = (
+            ChatConversation.objects
+            .filter(
+                application=application,
+                tenant=application.tenant,
+                device_chat_logs__isnull=True,
+            )
+            .exclude(external_session__has_key='runtimeSessionId')
+            .annotate(
+                first_user_activity_at=Min(
+                    'messages__created_at',
+                    filter=Q(messages__role=ChatMessage.ROLE_USER),
+                ),
+            )
+            .filter(first_user_activity_at__isnull=False)
         )
+        conversations = web_conversations.filter(first_user_activity_at__gte=start_at)
         messages = ChatMessage.objects.filter(
-            conversation__application=application,
-            conversation__tenant=application.tenant,
+            conversation__in=web_conversations,
             created_at__gte=start_at,
         )
-        device_logs = DeviceChatLog.objects.filter(
+        all_device_logs = DeviceChatLog.objects.filter(
             agent_application=application,
             tenant=application.tenant,
+        )
+        device_logs = all_device_logs.filter(
             created_at__gte=start_at,
         )
-        standalone_device_logs = device_logs.filter(conversation__isnull=True)
+        device_sessions = device_chat_session_groups(all_device_logs).filter(first_activity_at__gte=start_at)
         
         user_message_count = messages.filter(role=ChatMessage.ROLE_USER).count()
         assistant_message_count = messages.filter(role=ChatMessage.ROLE_ASSISTANT).count()
@@ -1747,8 +1784,8 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                 bucket_start = current_hour - datetime.timedelta(hours=i)
                 bucket_end = bucket_start + datetime.timedelta(hours=1)
                 count = (
-                    conversations.filter(created_at__gte=bucket_start, created_at__lt=bucket_end).count()
-                    + standalone_device_logs.filter(created_at__gte=bucket_start, created_at__lt=bucket_end).count()
+                    conversations.filter(first_user_activity_at__gte=bucket_start, first_user_activity_at__lt=bucket_end).count()
+                    + device_sessions.filter(first_activity_at__gte=bucket_start, first_activity_at__lt=bucket_end).count()
                 )
                 daily_trends.append({
                     'date': bucket_start.isoformat(),
@@ -1765,8 +1802,8 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                 )
                 bucket_end = bucket_start + datetime.timedelta(days=1)
                 count = (
-                    conversations.filter(created_at__gte=bucket_start, created_at__lt=bucket_end).count()
-                    + standalone_device_logs.filter(created_at__gte=bucket_start, created_at__lt=bucket_end).count()
+                    conversations.filter(first_user_activity_at__gte=bucket_start, first_user_activity_at__lt=bucket_end).count()
+                    + device_sessions.filter(first_activity_at__gte=bucket_start, first_activity_at__lt=bucket_end).count()
                 )
                 daily_trends.append({
                     'date': date.isoformat(),
@@ -1774,7 +1811,7 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                 })
             
         data = {
-            'conversationCount': conversations.count() + standalone_device_logs.count(),
+            'conversationCount': conversations.count() + device_sessions.count(),
             'messageCount': messages.count() + device_message_count * 2,
             'userMessageCount': user_message_count + device_message_count,
             'assistantMessageCount': assistant_message_count + device_message_count,
@@ -1811,12 +1848,24 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
 
     def get_queryset(self):
         qs = super().get_queryset().filter(user=self.request.user)
+        if self.action == 'list':
+            user_messages = ChatMessage.objects.filter(
+                conversation_id=OuterRef('pk'),
+                role=ChatMessage.ROLE_USER,
+            )
+            qs = (
+                qs.annotate(has_user_activity=Exists(user_messages))
+                .filter(has_user_activity=True)
+            )
         application_id = self.request.query_params.get('application')
         if application_id:
             qs = qs.filter(application_id=application_id)
         exclude_device_runtime = self.request.query_params.get('excludeDeviceRuntime', '').strip().lower()
         if exclude_device_runtime in {'1', 'true', 'yes'}:
-            qs = qs.filter(device_chat_logs__isnull=True)
+            qs = (
+                qs.filter(device_chat_logs__isnull=True)
+                .exclude(external_session__has_key='runtimeSessionId')
+            )
         keyword = self.request.query_params.get('keyword', '').strip()
         if keyword:
             qs = qs.filter(

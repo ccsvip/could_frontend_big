@@ -376,6 +376,7 @@ class DeviceChatLog(models.Model):
         blank=True,
         verbose_name='智能体会话',
     )
+    runtime_session_id = models.CharField('本地运行时会话 ID', max_length=128, blank=True, default='', db_index=True)
     code = models.CharField('设备码', max_length=128, blank=True, default='')
     source = models.CharField('来源', max_length=32, choices=SOURCE_CHOICES)
     question_text = models.TextField('问题')

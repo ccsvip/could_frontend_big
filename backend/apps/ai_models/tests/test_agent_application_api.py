@@ -970,6 +970,92 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['assistantMessageCount'], 1)
         self.assertEqual(response.data['dailyTrends'][-1]['count'], 1)
 
+    def test_agent_application_stats_counts_non_empty_web_and_distinct_device_sessions(self):
+        self.grant_permissions('agent_applications.view', 'ai_models.chat.view')
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Consistent stats agent',
+        )
+        ChatConversation.objects.create(
+            title='Empty draft',
+            user=self.user,
+            application=application,
+            tenant=self.tenant,
+        )
+        web_conversation = ChatConversation.objects.create(
+            title='Active web conversation',
+            user=self.user,
+            application=application,
+            tenant=self.tenant,
+        )
+        ChatMessage.objects.create(
+            conversation=web_conversation,
+            role=ChatMessage.ROLE_USER,
+            content='Web question',
+        )
+        device_application = DeviceApplication.objects.create(
+            tenant=self.tenant,
+            name='Consistent stats device app',
+            code='consistent-stats-device-app',
+            agent_application=application,
+        )
+        for session_id, question in [
+            ('device-session-a', 'A1'),
+            ('device-session-a', 'A2'),
+            ('device-session-b', 'B1'),
+        ]:
+            DeviceChatLog.objects.create(
+                tenant=self.tenant,
+                application=device_application,
+                agent_application=application,
+                runtime_session_id=session_id,
+                code='ANDROID-CONSISTENT-STATS',
+                source=DeviceChatLog.SOURCE_HTTP,
+                question_text=question,
+                answer_text=f'{question} answer',
+            )
+
+        response = self.client.get(f'/api/v1/ai-models/applications/{application.id}/stats/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['conversationCount'], 3)
+        self.assertEqual(response.data['messageCount'], 7)
+        self.assertEqual(response.data['dailyTrends'][-1]['count'], 3)
+
+    def test_agent_application_stats_uses_first_user_activity_for_web_conversations(self):
+        self.grant_permissions('agent_applications.view', 'ai_models.chat.view')
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='First activity stats agent',
+        )
+        conversation = ChatConversation.objects.create(
+            title='Old draft used today',
+            user=self.user,
+            application=application,
+            tenant=self.tenant,
+        )
+        old_at = timezone.now() - datetime.timedelta(days=10)
+        ChatConversation.objects.filter(id=conversation.id).update(created_at=old_at, updated_at=old_at)
+        ChatMessage.objects.create(
+            conversation=conversation,
+            role=ChatMessage.ROLE_USER,
+            content='First activity today',
+        )
+
+        response = self.client.get(
+            f'/api/v1/ai-models/applications/{application.id}/stats/',
+            {'range': '7d'},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['conversationCount'], 1)
+        self.assertEqual(response.data['messageCount'], 1)
+        self.assertEqual(response.data['dailyTrends'][-1]['count'], 1)
+
     def test_agent_application_stats_range_filters_counts_and_trends(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.create', 'ai_models.chat.view')
         AgentApplication = self.agent_application_model()
@@ -1026,6 +1112,8 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
 
         conv1 = ChatConversation.objects.create(user=self.user, application=app1, tenant=self.tenant)
         conv2 = ChatConversation.objects.create(user=self.user, application=app2, tenant=self.tenant)
+        ChatMessage.objects.create(conversation=conv1, role=ChatMessage.ROLE_USER, content='App 1 question')
+        ChatMessage.objects.create(conversation=conv2, role=ChatMessage.ROLE_USER, content='App 2 question')
 
         # Filter by app1
         response = self.client.get('/api/v1/ai-models/chat/conversations/', {'application': app1.id})
@@ -1034,12 +1122,55 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertIn(conv1.id, ids)
         self.assertNotIn(conv2.id, ids)
 
+    def test_list_conversations_excludes_empty_drafts(self):
+        self.grant_permissions('agent_applications.view', 'ai_models.chat.view')
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='History App',
+        )
+        empty_draft = ChatConversation.objects.create(
+            user=self.user,
+            application=application,
+            tenant=self.tenant,
+            title='Empty draft',
+        )
+        active_conversation = ChatConversation.objects.create(
+            user=self.user,
+            application=application,
+            tenant=self.tenant,
+            title='Active conversation',
+        )
+        ChatMessage.objects.create(
+            conversation=active_conversation,
+            role=ChatMessage.ROLE_USER,
+            content='Hello',
+        )
+
+        response = self.client.get(
+            '/api/v1/ai-models/chat/conversations/',
+            {'application': application.id, 'excludeDeviceRuntime': 'true'},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual([item['id'] for item in response.data['results']], [active_conversation.id])
+        self.assertFalse(any(item['id'] == empty_draft.id for item in response.data['results']))
+
     def test_list_conversations_can_exclude_device_runtime_conversations(self):
         self.grant_permissions('agent_applications.view', 'ai_models.chat.view')
         AgentApplication = self.agent_application_model()
         application = AgentApplication.objects.create(tenant=self.tenant, created_by=self.user, name='Runtime App')
         web_conversation = ChatConversation.objects.create(user=self.user, application=application, tenant=self.tenant, title='网页调试会话')
-        runtime_conversation = ChatConversation.objects.create(user=self.user, application=application, tenant=self.tenant, title='运行时会话')
+        runtime_conversation = ChatConversation.objects.create(
+            user=self.user,
+            application=application,
+            tenant=self.tenant,
+            title='运行时会话',
+            external_session={'runtimeSessionId': 'runtime-session-list-filter'},
+        )
+        ChatMessage.objects.create(conversation=web_conversation, role=ChatMessage.ROLE_USER, content='网页问题')
+        ChatMessage.objects.create(conversation=runtime_conversation, role=ChatMessage.ROLE_USER, content='设备问题')
         device_application = DeviceApplication.objects.create(
             tenant=self.tenant,
             name='Runtime Device App',
@@ -1066,6 +1197,89 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         ids = [item['id'] for item in response.data['results']]
         self.assertIn(web_conversation.id, ids)
         self.assertNotIn(runtime_conversation.id, ids)
+
+    def test_clear_web_conversation_history_deletes_only_current_users_web_conversations(self):
+        self.grant_permissions(
+            'agent_applications.view',
+            'ai_models.chat.view',
+            'ai_models.chat.delete',
+        )
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Clear web history app',
+        )
+        own_web_conversation = ChatConversation.objects.create(
+            user=self.user,
+            application=application,
+            tenant=self.tenant,
+            title='Own web conversation',
+        )
+        ChatMessage.objects.create(
+            conversation=own_web_conversation,
+            role=ChatMessage.ROLE_USER,
+            content='Delete this web conversation',
+        )
+        other_user = User.objects.create_user(username='other-history-user', password='test123456')
+        other_web_conversation = ChatConversation.objects.create(
+            user=other_user,
+            application=application,
+            tenant=self.tenant,
+            title='Other user web conversation',
+        )
+        ChatMessage.objects.create(
+            conversation=other_web_conversation,
+            role=ChatMessage.ROLE_USER,
+            content='Keep this web conversation',
+        )
+        runtime_conversation = ChatConversation.objects.create(
+            user=self.user,
+            application=application,
+            tenant=self.tenant,
+            title='Active device runtime conversation',
+            external_session={'runtimeSessionId': 'runtime-session-active'},
+        )
+        ChatMessage.objects.create(
+            conversation=runtime_conversation,
+            role=ChatMessage.ROLE_USER,
+            content='Keep active device context',
+        )
+
+        response = self.client.delete(
+            f'/api/v1/ai-models/applications/{application.id}/web-conversation-history/',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(ChatConversation.objects.filter(id=own_web_conversation.id).exists())
+        self.assertTrue(ChatConversation.objects.filter(id=other_web_conversation.id).exists())
+        self.assertTrue(ChatConversation.objects.filter(id=runtime_conversation.id).exists())
+
+    def test_delete_web_conversation_removes_one_conversation_and_its_messages(self):
+        self.grant_permissions('ai_models.chat.view', 'ai_models.chat.delete')
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Single delete web history app',
+        )
+        conversation = ChatConversation.objects.create(
+            user=self.user,
+            application=application,
+            tenant=self.tenant,
+            title='Delete one web conversation',
+        )
+        ChatMessage.objects.create(
+            conversation=conversation,
+            role=ChatMessage.ROLE_USER,
+            content='Delete this conversation',
+        )
+
+        response = self.client.delete(f'/api/v1/ai-models/chat/conversations/{conversation.id}/')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(ChatConversation.objects.filter(id=conversation.id).exists())
+        self.assertFalse(ChatMessage.objects.filter(conversation_id=conversation.id).exists())
 
     def test_knowledge_base_retrieval_and_injection(self):
         from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context, inject_knowledge_context

@@ -231,3 +231,11 @@ export const fetchConversations = async (params?: ChatConversationListQuery) => 
   });
   return response.data;
 };
+
+export const deleteConversation = async (id: number) => {
+  await httpClient.delete(`/ai-models/chat/conversations/${id}/`);
+};
+
+export const clearApplicationWebConversationHistory = async (applicationId: number) => {
+  await httpClient.delete(`/ai-models/applications/${applicationId}/web-conversation-history/`);
+};

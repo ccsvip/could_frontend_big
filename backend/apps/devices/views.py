@@ -8,17 +8,18 @@ from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Count, F, Q
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import status, viewsets
+from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.permissions import SAFE_METHODS, AllowAny, BasePermission
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
-from apps.accounts.permissions import CanCreateDevices, CanDeleteDevices, CanUpdateDevices, CanViewDevices, IsSuperUser
+from apps.accounts.permissions import CanCreateDevices, CanDeleteChat, CanDeleteDevices, CanUpdateDevices, CanViewChat, CanViewDevices, IsSuperUser
 from apps.ai_models import llm_services
 from apps.ai_models.models import AgentAnnotation, ChatConversation, LLMModel, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, ThirdPartyChatbotApplication
 from apps.ai_models.services.annotations import find_matching_annotation, find_matching_published_annotation
@@ -35,6 +36,12 @@ from config.request_id import get_request_id, get_trace_id
 from .models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup, WakeWord
 from .realtime import publish_device_event_sync
 from .services.chat_logs import record_device_chat_log
+from .services.chat_sessions import (
+    device_chat_session_groups,
+    device_chat_session_logs,
+    serialize_device_chat_session,
+    serialize_device_chat_session_groups,
+)
 from .services import session_store
 from .services.authorization import (
     bind_device_authorization,
@@ -82,6 +89,68 @@ def _client_ip(request) -> str | None:
     if forwarded:
         return forwarded.split(',')[0].strip()
     return request.META.get('REMOTE_ADDR')
+
+
+class DeviceChatSessionCollectionView(TenantScopedQuerysetMixin, generics.GenericAPIView):
+    permission_classes = [CanViewChat]
+
+    def get_permissions(self):
+        permission_class = CanDeleteChat if self.request.method == 'DELETE' else CanViewChat
+        return [permission_class()]
+
+    def get_queryset(self):
+        return self.apply_tenant_scope(device_chat_logs_queryset(self.request.query_params))
+
+    def validate_application_scope(self):
+        application_id = str(self.request.query_params.get('agentApplicationId') or '').strip()
+        if not application_id.isdigit():
+            raise ValidationError({'agentApplicationId': '设备运行时历史必须指定智能体应用'})
+
+    def get(self, request):
+        self.validate_application_scope()
+        queryset = self.get_queryset()
+        groups = device_chat_session_groups(queryset)
+        page = self.paginate_queryset(groups)
+        if page is not None:
+            data = serialize_device_chat_session_groups(list(page), queryset)
+            return self.get_paginated_response(data)
+        return Response(serialize_device_chat_session_groups(list(groups), queryset))
+
+    def delete(self, request):
+        self.validate_application_scope()
+        self.get_queryset().delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class DeviceChatSessionDetailView(TenantScopedQuerysetMixin, generics.GenericAPIView):
+    permission_classes = [CanViewChat]
+
+    def get_permissions(self):
+        permission_class = CanDeleteChat if self.request.method == 'DELETE' else CanViewChat
+        return [permission_class()]
+
+    def get_queryset(self):
+        return self.apply_tenant_scope(device_chat_logs_queryset())
+
+    def get(self, request, pk: int):
+        queryset = self.get_queryset()
+        seed = get_object_or_404(queryset, id=pk)
+        logs = list(
+            device_chat_session_logs(queryset, seed).select_related(
+                'tenant',
+                'device',
+                'conversation__llm_model__provider',
+                'conversation__third_party_chatbot__provider',
+            )
+        )
+        return Response(serialize_device_chat_session(logs, request=request))
+
+    def delete(self, request, pk: int):
+        queryset = self.get_queryset()
+        seed = get_object_or_404(queryset, id=pk)
+        with transaction.atomic():
+            device_chat_session_logs(queryset, seed).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class DevicePermissionMixin:
@@ -1086,6 +1155,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
                 request_id=get_request_id(request),
                 trace_id=get_trace_id(request),
                 model_name=runtime_model_name,
+                runtime_session_id=session_id,
                 answer_blocks=answer_blocks,
             )
         except Exception:

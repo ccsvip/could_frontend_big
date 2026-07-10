@@ -1738,6 +1738,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         self.assertEqual(chat_log.request_id, 'req-llm-1')
         self.assertEqual(chat_log.trace_id, 'trace-llm-1')
         self.assertEqual(chat_log.model_name, 'runtime-model')
+        self.assertTrue(chat_log.runtime_session_id)
 
     def test_unified_realtime_websocket_reuses_conversation_id_for_device_llm_history(self):
         provider = LLMProvider.objects.create(

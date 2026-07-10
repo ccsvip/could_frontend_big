@@ -84,6 +84,22 @@ _Avoid_: device settings, user preferences, prompt variables
 A conversation that belongs to an Agent Application and is removed when that Agent Application is deleted.
 _Avoid_: standalone chat, retained history, shared log
 
+**Agent Conversation History**:
+The reviewable record of non-empty web debugging conversations and device runtime conversations for an Agent Application. A conversation enters history once it contains user activity; empty draft conversations are excluded.
+_Avoid_: empty conversation list, all created conversations, conversation drafts
+
+**Web Debugging Conversation**:
+An Agent Application Conversation started in the administration UI to test an Agent Application before or alongside runtime use.
+_Avoid_: device conversation, standalone chat, preview log
+
+**Device Runtime Conversation**:
+A conversational thread between a runtime Device and an Agent Application, containing one or more device interactions that belong to the same thread.
+_Avoid_: device log row, request log, web debugging conversation
+
+**Device Runtime Session ID**:
+A backend-owned identifier scoped to a Device that groups HTTP and WebSocket interactions into one Device Runtime Conversation. It is distinct from any upstream conversation identifier returned by a Third-Party Chatbot Interface.
+_Avoid_: upstream chat ID, third-party session ID, database conversation ID
+
 **Agent Opening Message**:
 A greeting configured on an Agent Application and shown when a user starts a new conversation with that application.
 _Avoid_: system prompt, first assistant answer, default reply

@@ -1,4 +1,5 @@
 import { httpClient } from '../client';
+import type { ChatMessage } from './chat';
 
 export type DeviceStatus = 'online' | 'offline';
 export type DeviceAuthorizationType = 'permanent' | 'trial';
@@ -197,6 +198,7 @@ export type DeviceChatLogRecord = {
   agentApplicationId: number | null;
   agentApplicationName: string;
   conversationId: number | null;
+  runtimeSessionId: string;
   deviceName: string;
   questionText: string;
   answerText: string;
@@ -204,6 +206,37 @@ export type DeviceChatLogRecord = {
   traceId: string;
   modelName: string;
   createdAt: string;
+};
+
+export type DeviceChatSessionRecord = {
+  id: number;
+  deviceCode: string;
+  deviceName: string;
+  conversationId: number | null;
+  runtimeSessionId: string;
+  title: string;
+  summary: string;
+  lastMessage: string | null;
+  messageCount: number;
+  runtimeBackendType: 'platform_llm' | 'third_party_chatbot';
+  llmModelName: string;
+  llmModelDisplayName: string;
+  llmProviderName: string | null;
+  thirdPartyChatbotName: string;
+  thirdPartyChatbotProviderName: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type DeviceChatSessionDetail = DeviceChatSessionRecord & {
+  applicationId: number | null;
+  llmModelId: number | null;
+  thirdPartyChatbotId: number | null;
+  systemPrompt: string;
+  temperature: number;
+  maxTokens: number;
+  maxTokensUnlimited: boolean;
+  messages: Array<Omit<ChatMessage, 'created_at'> & { createdAt: string }>;
 };
 
 export type DeviceAuthorizationRequestQuery = {
@@ -313,6 +346,36 @@ export const fetchDeviceChatLogs = async (query?: {
     },
   });
   return response.data;
+};
+
+export const fetchDeviceChatSessions = async (query: {
+  agentApplicationId: number;
+  page: number;
+  pageSize: number;
+}) => {
+  const response = await httpClient.get<PaginatedResponse<DeviceChatSessionRecord>>('/device-chat-sessions/', {
+    params: {
+      agentApplicationId: query.agentApplicationId,
+      page: query.page,
+      page_size: query.pageSize,
+    },
+  });
+  return response.data;
+};
+
+export const fetchDeviceChatSession = async (id: number) => {
+  const response = await httpClient.get<DeviceChatSessionDetail>(`/device-chat-sessions/${id}/`);
+  return response.data;
+};
+
+export const deleteDeviceChatSession = async (id: number) => {
+  await httpClient.delete(`/device-chat-sessions/${id}/`);
+};
+
+export const clearDeviceChatSessions = async (agentApplicationId: number) => {
+  await httpClient.delete('/device-chat-sessions/', {
+    params: { agentApplicationId },
+  });
 };
 
 export const bindDeviceAuthorizationRequest = async (deviceCode: string, payload: DeviceBindPayload) => {
