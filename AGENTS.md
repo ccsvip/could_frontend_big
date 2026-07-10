@@ -215,12 +215,14 @@ Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agent
 
 仅当 MCP 工具不可用或图谱范围不足时，使用 CLI：
 
-- `codegraph query <symbol>` — 搜索符号
-- `codegraph callers <symbol>` / `codegraph callees <symbol>` — 追踪调用链
-- `codegraph explore <query>` — 一次性输出相关符号源码 + 调用路径
-- `codegraph node <name>` — 单符号源码 + caller/callee 轨迹
-- `codegraph impact <symbol>` — 变更影响面分析
-- `codegraph files` — 查看项目文件结构
+- Windows PowerShell 下优先使用 `codegraph.cmd`，避免 npm 生成的 `codegraph.ps1` 被 Execution Policy 拦截。
+
+- `codegraph.cmd query <symbol>` — 搜索符号
+- `codegraph.cmd callers <symbol>` / `codegraph.cmd callees <symbol>` — 追踪调用链
+- `codegraph.cmd explore <query>` — 一次性输出相关符号源码 + 调用路径
+- `codegraph.cmd node <name>` — 单符号源码 + caller/callee 轨迹
+- `codegraph.cmd impact <symbol>` — 变更影响面分析
+- `codegraph.cmd files` — 查看项目文件结构
 
 ### 第三优先级：源码搜索与阅读（降级方案）
 
@@ -236,9 +238,9 @@ Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agent
 - **修改后自动同步**：知识图谱通过 git hooks 自动增量同步。
 - **手动重建**：若索引明显过期或查询结果异常，执行：
   ```bash
-  codegraph index
+  codegraph.cmd index
   ```
-  （注意：当前版本不支持 `--index-tier` 参数，直接使用裸 `codegraph index`）
+  （注意：当前版本不支持 `--index-tier` 参数，Windows PowerShell 下使用 `codegraph.cmd index`）
 - 仅修改函数内部实现且不再使用图谱工具时，不需要重建索引。
 - 修改函数签名、类结构、导入关系、新建/删除文件后，如果后续需要图谱查询，先重建索引。
 
