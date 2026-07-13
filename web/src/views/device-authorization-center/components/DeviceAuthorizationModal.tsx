@@ -36,7 +36,15 @@ export const DeviceAuthorizationModal = ({
       confirmLoading={saving}
       destroyOnHidden
     >
-      <Form<BindForm> form={form} layout="vertical">
+      <Form<BindForm>
+        form={form}
+        layout="vertical"
+        onValuesChange={(changedValues) => {
+          if (changedValues.authorizationType === 'permanent') {
+            form.setFieldValue('isSoftwareTrial', false);
+          }
+        }}
+      >
         <Form.Item label="所属公司" name="tenantId" rules={[{ required: true, message: '请选择公司' }]}>
           <Select options={tenantOptions} />
         </Form.Item>
@@ -62,6 +70,13 @@ export const DeviceAuthorizationModal = ({
               </Form.Item>
             ) : null
           }
+        </Form.Item>
+        <Form.Item dependencies={['authorizationType']} noStyle>
+          {({ getFieldValue }) => (
+            <Form.Item label="软件试用" name="isSoftwareTrial" valuePropName="checked">
+              <Switch disabled={getFieldValue('authorizationType') !== 'trial'} />
+            </Form.Item>
+          )}
         </Form.Item>
         <Form.Item label="启用设备" name="isEnabled" valuePropName="checked">
           <Switch />

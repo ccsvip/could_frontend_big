@@ -38,11 +38,12 @@ class DeviceAdmin(admin.ModelAdmin):
         'status',
         'authorization_type',
         'expires_at',
+        'is_software_trial',
         'software_version',
         'system_version',
         'last_heartbeat',
     )
-    list_filter = ('tenant', 'status', 'authorization_type', 'application', 'agent_application', 'tts_voice', 'group', 'is_enabled')
+    list_filter = ('tenant', 'status', 'authorization_type', 'is_software_trial', 'application', 'agent_application', 'tts_voice', 'group', 'is_enabled')
     search_fields = ('code', 'name', 'software_version', 'system_version', 'mainboard_info')
     autocomplete_fields = ('application', 'agent_application', 'tts_voice', 'group')
 

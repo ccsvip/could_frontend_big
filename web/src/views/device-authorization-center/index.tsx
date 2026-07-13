@@ -155,6 +155,7 @@ export const DeviceAuthorizationCenterPage = () => {
       tenantId,
       authorizationType: record.authorizationType,
       expiresAt: record.expiresAt ? dayjs(record.expiresAt) : null,
+      isSoftwareTrial: record.authorizationType === 'trial' ? record.isSoftwareTrial : false,
       isEnabled: record.isEnabled,
     });
   };

@@ -60,6 +60,7 @@ import { fetchAgentApplications, type AgentApplicationRecord } from '../../api/m
 import { fetchCompanyTtsOptions } from '../../api/modules/tts';
 import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
+import { resolveDeviceExpirationDisplay } from './device-expiration-display';
 
 type DeviceEditForm = {
   name: string;
@@ -213,6 +214,7 @@ export const DeviceManagementPage = () => {
   const agentApplicationOptions = useMemo(() => toSelectOptions(agentApplications), [agentApplications]);
   const unboundDeviceCount = useMemo(() => devices.filter((item) => !item.agentApplicationId).length, [devices]);
   const selectedDevice = useMemo(() => devices.find((d) => d.deviceCode === selectedDeviceCode) ?? null, [devices, selectedDeviceCode]);
+  const selectedDeviceExpiration = selectedDevice ? resolveDeviceExpirationDisplay(selectedDevice) : null;
   const runtimeDiagnosticCounts = useMemo(
     () =>
       devices.reduce<Record<DeviceRuntimeDiagnostic['level'], number>>(
@@ -976,12 +978,16 @@ export const DeviceManagementPage = () => {
                             })()}
 
                             <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 xl:col-span-1">
-                              <div className="flex items-center justify-between gap-2">
-                                <Typography.Text className="text-fluid-lg text-slate-700">授权信息</Typography.Text>
-                                <Tag className="shrink-0 text-fluid-xs" color="default" bordered={false}>{selectedDevice.authorizationTypeLabel}</Tag>
-                              </div>
+                              <Typography.Text className="text-fluid-lg text-slate-700">软件到期时间</Typography.Text>
                               <div className="mt-2 text-fluid-base text-slate-600">
-                                {selectedDevice.authorizationType === 'permanent' ? '永久' : `到期 ${selectedDevice.expiresAt ?? '-'}`}
+                                {selectedDeviceExpiration?.softwareExpiration ?? '-'}
+                              </div>
+                            </div>
+
+                            <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 xl:col-span-1">
+                              <Typography.Text className="text-fluid-lg text-slate-700">大模型到期时间</Typography.Text>
+                              <div className="mt-2 text-fluid-base text-slate-600">
+                                {selectedDeviceExpiration?.modelExpiration ?? '-'}
                               </div>
                             </div>
 

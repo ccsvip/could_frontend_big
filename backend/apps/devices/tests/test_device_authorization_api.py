@@ -395,6 +395,9 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             code='RUNTIME-WAKE-001',
             name='Runtime Wake Device',
             is_enabled=True,
+            authorization_type=Device.AUTHORIZATION_TRIAL,
+            expires_at=timezone.now() + timedelta(days=30),
+            is_software_trial=True,
         )
         first = WakeWord.objects.create(
             tenant=self.tenant,
@@ -424,6 +427,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             ],
         )
         self.assertEqual(response.data['wakeWords'][0]['text'], '你好小德')
+        self.assertIs(response.data['device']['isSoftwareTrial'], True)
         self.assertEqual(response.data['wakeWords'][1]['keywordLine'], 'n ǐ h ǎo x iǎo zh ì @你好小智 :2.5 #0.35')
 
     def test_authorization_log_serializer_uses_agent_application_snapshot(self):
@@ -516,6 +520,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             is_enabled=True,
             authorization_type=Device.AUTHORIZATION_TRIAL,
             expires_at=timezone.now() - timedelta(days=1),
+            is_software_trial=True,
         )
 
         response = self.client.get(
@@ -2149,6 +2154,62 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         actions = [item['action'] for item in logs.data['results']]
         self.assertIn('bind', actions)
 
+    def test_superuser_can_bind_software_trial_indicator(self):
+        device_code = 'ANDROID-SOFTWARE-TRIAL-001'
+        self.client.post('/api/v1/device-auth/activate/', {'deviceCode': device_code}, format='json')
+        superuser = User.objects.create_superuser(
+            username='platform-software-trial-binder',
+            password='test123456',
+            email='platform-software-trial-binder@example.com',
+        )
+        self.client.force_authenticate(user=superuser)
+
+        response = self.client.post(
+            f'/api/v1/device-authorization-requests/{device_code}/bind/',
+            {
+                'tenantId': self.tenant.id,
+                'authorizationType': Device.AUTHORIZATION_TRIAL,
+                'expiresAt': (timezone.now() + timedelta(days=30)).isoformat(),
+                'isSoftwareTrial': True,
+                'isEnabled': True,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIs(response.data['isSoftwareTrial'], True)
+
+        list_response = self.client.get(
+            '/api/v1/device-authorization-requests/authorizations/',
+            {'keyword': device_code},
+        )
+        self.assertEqual(list_response.status_code, status.HTTP_200_OK)
+        self.assertIs(list_response.data['results'][0]['isSoftwareTrial'], True)
+
+    def test_permanent_authorization_forces_software_trial_indicator_off(self):
+        device_code = 'ANDROID-PERMANENT-SOFTWARE-TRIAL-001'
+        self.client.post('/api/v1/device-auth/activate/', {'deviceCode': device_code}, format='json')
+        superuser = User.objects.create_superuser(
+            username='platform-permanent-software-trial-binder',
+            password='test123456',
+            email='platform-permanent-software-trial-binder@example.com',
+        )
+        self.client.force_authenticate(user=superuser)
+
+        response = self.client.post(
+            f'/api/v1/device-authorization-requests/{device_code}/bind/',
+            {
+                'tenantId': self.tenant.id,
+                'authorizationType': Device.AUTHORIZATION_PERMANENT,
+                'isSoftwareTrial': True,
+                'isEnabled': True,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIs(response.data['isSoftwareTrial'], False)
+
     def test_superuser_updates_authorization_request_device_name(self):
         self.client.post(
             '/api/v1/device-auth/activate/',
@@ -2643,6 +2704,84 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             payload = json.loads(message['text'])
             self.assertEqual(payload['payload']['deviceCode'], 'ANDROID-SAME-001')
             self.assertNotEqual(payload['payload']['deviceCode'], 'ANDROID-OTHER-001')
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
+    def test_reauthorization_pushes_software_trial_indicator_in_full_runtime_config(self):
+        self.agent_application.publish()
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Software Trial Reauthorization Device',
+            code='SOFTWARE-TRIAL-REAUTHORIZE-001',
+            status=Device.STATUS_OFFLINE,
+            authorization_type=Device.AUTHORIZATION_TRIAL,
+            expires_at=timezone.now() + timedelta(days=7),
+            registered_at=timezone.now(),
+        )
+        superuser = User.objects.create_superuser(
+            username='platform-software-trial-reauthorizer',
+            password='test123456',
+            email='platform-software-trial-reauthorizer@example.com',
+        )
+        self.client.force_authenticate(user=superuser)
+
+        async def run_websocket():
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            response = await communicator.receive_output(timeout=1)
+            self.assertEqual(response['type'], 'websocket.accept')
+
+            await communicator.send_input({
+                'type': 'websocket.receive',
+                'text': json.dumps({
+                    'type': 'device.runtime_config.subscribe',
+                    'id': 'software-trial-runtime-config-sub',
+                    'payload': {'deviceCode': device.code},
+                }),
+            })
+            initial_message = await communicator.receive_output(timeout=1)
+            initial_payload = json.loads(initial_message['text'])
+            self.assertIs(initial_payload['payload']['config']['device']['isSoftwareTrial'], False)
+
+            authorize_response = await sync_to_async(self.client.post, thread_sensitive=True)(
+                f'/api/v1/device-authorization-requests/{device.code}/authorize/',
+                {
+                    'tenantId': self.tenant.id,
+                    'authorizationType': Device.AUTHORIZATION_TRIAL,
+                    'expiresAt': (timezone.now() + timedelta(days=30)).isoformat(),
+                    'isSoftwareTrial': True,
+                    'isEnabled': True,
+                },
+                format='json',
+            )
+            self.assertEqual(authorize_response.status_code, status.HTTP_200_OK)
+
+            changed_message = await communicator.receive_output(timeout=1)
+            changed_payload = json.loads(changed_message['text'])
+            self.assertEqual(changed_payload['type'], 'device.runtime_config.subscribed')
+            self.assertEqual(changed_payload['payload']['action'], DeviceAuthLog.ACTION_AUTHORIZE)
+            config = changed_payload['payload']['config']
+            self.assertIs(config['device']['isSoftwareTrial'], True)
+            self.assertIn('application', config)
+            self.assertIn('agentApplication', config)
+            self.assertIn('wakeWords', config)
+            self.assertIn('voiceConfiguration', config)
+            self.assertIn('scrollingTexts', config)
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)

@@ -5,6 +5,7 @@ export const buildBindPayload = (values: BindForm) => ({
   tenantId: values.tenantId,
   authorizationType: values.authorizationType,
   expiresAt: values.authorizationType === 'trial' ? values.expiresAt?.toISOString() : null,
+  isSoftwareTrial: values.authorizationType === 'trial' ? values.isSoftwareTrial : false,
   isEnabled: values.isEnabled,
 });
 

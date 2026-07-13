@@ -5,6 +5,7 @@ export type BindForm = {
   tenantId: number;
   authorizationType: DeviceAuthorizationType;
   expiresAt?: Dayjs | null;
+  isSoftwareTrial: boolean;
   isEnabled: boolean;
 };
 

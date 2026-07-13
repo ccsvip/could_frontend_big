@@ -162,6 +162,7 @@ class Device(models.Model):
         default=AUTHORIZATION_PERMANENT,
     )
     expires_at = models.DateTimeField('到期时间', null=True, blank=True)
+    is_software_trial = models.BooleanField('是否软件试用', default=False)
     software_version = models.CharField('软件版本', max_length=64, blank=True, default='')
     system_version = models.CharField('系统版本', max_length=128, blank=True, default='')
     mainboard_info = models.CharField('主板信息', max_length=255, blank=True, default='')

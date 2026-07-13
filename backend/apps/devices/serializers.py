@@ -146,6 +146,7 @@ class DeviceSerializer(serializers.ModelSerializer):
     )
     authorizationTypeLabel = serializers.CharField(source='get_authorization_type_display', read_only=True)
     expiresAt = serializers.DateTimeField(source='expires_at', required=False, allow_null=True)
+    isSoftwareTrial = serializers.BooleanField(source='is_software_trial', read_only=True)
     softwareVersion = serializers.CharField(source='software_version', read_only=True)
     systemVersion = serializers.CharField(source='system_version', read_only=True)
     mainboardInfo = serializers.CharField(source='mainboard_info', read_only=True)
@@ -179,6 +180,7 @@ class DeviceSerializer(serializers.ModelSerializer):
             'authorizationType',
             'authorizationTypeLabel',
             'expiresAt',
+            'isSoftwareTrial',
             'softwareVersion',
             'systemVersion',
             'mainboardInfo',
@@ -585,6 +587,7 @@ class DeviceBindSerializer(serializers.Serializer):
         default=Device.AUTHORIZATION_PERMANENT,
     )
     expiresAt = serializers.DateTimeField(required=False, allow_null=True)
+    isSoftwareTrial = serializers.BooleanField(required=False, default=False)
     isEnabled = serializers.BooleanField(required=False, default=True)
 
     def validate(self, attrs):
@@ -609,12 +612,18 @@ class DeviceBindSerializer(serializers.Serializer):
             if device.authorization_type == Device.AUTHORIZATION_TRIAL
             else None
         )
+        device.is_software_trial = (
+            self.validated_data.get('isSoftwareTrial', False)
+            if device.authorization_type == Device.AUTHORIZATION_TRIAL
+            else False
+        )
         device.is_enabled = self.validated_data.get('isEnabled', True)
         device.save(update_fields=[
             'tenant',
             'authorization_ignored_at',
             'authorization_type',
             'expires_at',
+            'is_software_trial',
             'is_enabled',
             'updated_at',
         ])

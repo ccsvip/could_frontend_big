@@ -147,3 +147,11 @@ _Avoid_: single device wake word, application wake word, global wake word
 **Knowledge Media Asset**:
 A Resource Library Item bound to a Knowledge Base, and optionally later to a Knowledge Document, as supporting reference material for Agent Application answers.
 _Avoid_: duplicated knowledge upload, global media match, raw media URL, manual link
+
+**Software Trial Indicator**:
+A presentation-only marker available only for a trial Device authorization. It determines whether software expiration mirrors the Device Authorization Expiration or is shown as permanent; a permanent Device authorization always has this marker disabled, and the marker never limits runtime authorization or causes the Device to expire.
+_Avoid_: device trial authorization, authorization type, runtime expiration flag
+
+**Device Authorization Expiration**:
+The enforced expiration of a trial Device authorization, presented as the large-model expiration; it is the single date that software expiration may mirror for display.
+_Avoid_: software authorization expiration, software trial expiration, display-only expiration

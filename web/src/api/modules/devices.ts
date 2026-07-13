@@ -27,6 +27,7 @@ export type DeviceRecord = {
   authorizationType: DeviceAuthorizationType;
   authorizationTypeLabel: string;
   expiresAt: string | null;
+  isSoftwareTrial: boolean;
   softwareVersion: string;
   systemVersion: string;
   mainboardInfo: string;
@@ -250,6 +251,7 @@ export type DeviceBindPayload = {
   tenantId: number;
   authorizationType?: DeviceAuthorizationType;
   expiresAt?: string | null;
+  isSoftwareTrial?: boolean;
   isEnabled?: boolean;
 };
 

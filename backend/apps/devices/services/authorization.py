@@ -74,5 +74,9 @@ def publish_device_authorization_event(device: Device, action: str) -> None:
             'deviceCode': device.code,
             'status': device.status,
             'isEnabled': device.is_enabled,
+            'refresh': {
+                'endpoint': '/api/v1/device-runtime/config/',
+                'reason': 'authorizationChanged',
+            },
         }
     )
