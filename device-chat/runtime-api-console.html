@@ -1641,7 +1641,7 @@
         document.getElementById('llmVoiceStopBtn').addEventListener('click', () => stopAgentVoiceQuestion({ ask: true }));
         document.getElementById('llmBtn').addEventListener('click', () => sendLlmText({ source: 'manual' }));
         document.getElementById('llmTtsInterruptBtn').addEventListener('click', () => interruptAgentTtsPlayback('用户打断播报'));
-        writeRequestDetail({ label: '智能体回答链路', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { manager: 'RuntimeAgentRealtimeManager', start: { type: 'agent.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: '<optional text>' } }, finish: { type: 'agent.session.finish' }, cancel: { type: 'agent.session.cancel' }, callbacks: ['asr.transcript', 'asr.done', 'llm.delta', 'llm.tts_segment', 'tts.ready', 'tts.segment_start', 'binary PCM', 'tts.segment_end', 'tts.done', 'agent.done'], dtoPackage: 'bean/runtime/agent' }, note: 'ASR、LLM、TTS 由后端在同一个 agent 会话内自动串联；内部 TTS 不传 voiceId 时设备绑定音色优先，设备无绑定音色才使用公司默认音色。' });
+        writeRequestDetail({ label: '智能体回答链路', method: 'WS', url: realtimeWsUrl(), path: '/ws/realtime/', headers: {}, body: { manager: 'RuntimeAgentRealtimeManager', start: { type: 'agent.session.start', payload: { deviceCode: state.deviceCode || '<deviceCode>', text: '<optional text>' } }, finish: { type: 'agent.session.finish' }, cancel: { type: 'agent.session.cancel' }, callbacks: ['asr.input_stopped', 'asr.transcript', 'asr.done', 'llm.delta', 'llm.tts_segment', 'tts.ready', 'tts.segment_start', 'binary PCM', 'tts.segment_end', 'tts.done', 'agent.done'], dtoPackage: 'bean/runtime/agent' }, note: 'ASR、LLM、TTS 由后端在同一个 agent 会话内自动串联；asr.input_stopped 只停止麦克风与 PCM 上送，不关闭当前 WebSocket；内部 TTS 不传 voiceId 时设备绑定音色优先，设备无绑定音色才使用公司默认音色。' });
       }
 
       async function startAgentVoiceQuestion() {
@@ -1708,6 +1708,12 @@
             if (eventType === 'asr.ready') {
               if (asrState) asrState.textContent = '正在识别';
               startMicrophonePcmPump(state.agentRecorder);
+            }
+            if (eventType === 'asr.input_stopped') {
+              if (state.agentRecorder === recorder) {
+                stopAgentVoiceQuestion({ skipFinish: true, silent: true, keepSession: true });
+              }
+              if (asrState) asrState.textContent = '输入已停止，等待最终识别';
             }
             if (eventType === 'asr.transcript') {
               updateAgentQuestionFromAsr(payload);
@@ -2144,6 +2150,7 @@
           audioBytes: session.bytes,
         });
         if (payload.type === 'asr.ready') markAgentTiming(session, 'asrReadyAt');
+        if (payload.type === 'asr.input_stopped') markAgentTiming(session, 'asrInputStoppedAt');
         if (payload.type === 'asr.transcript') markAgentTiming(session, 'asrTranscriptAt');
         if (payload.type === 'asr.done') markAgentTiming(session, 'asrDoneAt');
         if (payload.type === 'llm.started') markAgentTiming(session, 'llmStartedAt');
@@ -3124,6 +3131,7 @@
             ['manager', '<code>RuntimeAgentRealtimeManager</code>；负责完整智能体回答。'],
             ['phases.sendAsr', '发送 <code>asr.session.start</code>，然后发送 16k mono pcm_s16le 二进制音频。'],
             ['phases.asrPreview', '接收 <code>asr.transcript</code> 的实时预览；上游原始事件是 <code>conversation.item.input_audio_transcription.text</code>，预览语义为 <code>text + stash</code>。'],
+            ['phases.asrInputStopped', '接收 <code>asr.input_stopped</code> 后立即停止麦克风、PCM 上送和录音 UI；不得发送 <code>agent.session.finish</code>、不得关闭统一 WebSocket，继续等待最终转写与后续回答。<code>reason=vad</code> 表示由上游 VAD 确认本次输入结束。'],
             ['phases.asrDone', '接收 <code>asr.transcript final=true</code>/<code>asr.done</code>，使用纠错后的最终 <code>text</code> 作为问题；上游最终事件是 <code>conversation.item.input_audio_transcription.completed</code> 的 <code>transcript</code>。'],
             ['phases.llmReply', '发送 <code>llm.session.start</code>。第一轮请求不传 <code>payload.conversationId</code>；保存 <code>llm.started.payload.conversationId</code> 或 <code>llm.done.payload.conversationId</code>；同一对话的后续文本问题再把它带回。处理 <code>llm.started</code>/<code>llm.delta</code>/<code>llm.tts_segment</code>/<code>llm.done</code>；标注命中时 <code>llm.done.payload.blocks</code>/<code>answerBlocks</code> 携带文本、图片、视频块。'],
             ['phases.ttsSpeak', '后端在同一 agent 会话内维护一个上游 TTS WebSocket，持续写入多个 <code>llm.tts_segment</code>；TTS 音色按设备绑定音色优先，设备未绑定音色才回退 /ai-models/tts 公司默认音色。'],
@@ -3131,7 +3139,7 @@
             ['dtoPackage', '安卓端建议将 command、payload、event DTO 统一放在 <code>bean/runtime/agent</code>。'],
           ],
           response: [
-            ['ASR 阶段', '<code>asr.ready</code>、<code>asr.transcript</code>、<code>asr.done</code>。实时预览看 <code>final=false</code>，最终问题看 <code>final=true</code>。'],
+            ['ASR 阶段', '<code>asr.ready</code>、<code>asr.input_stopped</code>、<code>asr.transcript</code>、<code>asr.done</code>。收到 input_stopped 后只停止采集并保持连接；实时预览看 <code>final=false</code>，最终问题看 <code>final=true</code>。'],
             ['LLM 阶段', '<code>llm.started</code>、<code>llm.delta</code>、<code>llm.tts_segment</code>、<code>llm.done</code>；<code>llm.started.payload.conversationId</code> 是服务端创建的数字会话 ID，安卓应立即保存。富媒体标注回复在完成事件中返回 <code>payload.blocks</code>/<code>answerBlocks</code>，客户端按顺序渲染 text/image/video。'],
             ['富媒体块', '<code>text</code> 块渲染文本；<code>image</code> 块渲染图片；<code>video</code> 块渲染视频控件。媒体块字段包含 <code>resourceId</code>、<code>resourceName</code>、<code>url</code>、<code>missing</code>；<code>missing=true</code> 时展示占位提示。TTS 只使用文本块拼出的 <code>answerText</code>。'],
             ['TTS 阶段', '<code>tts.ready</code>、<code>tts.segment_start</code>、binary PCM、<code>tts.segment_end</code>、<code>tts.done</code>；<code>tts.ready</code> 带 <code>voice</code>，应是当前设备绑定音色，只有设备未绑定时才是公司默认音色。'],
@@ -3140,6 +3148,7 @@
           ],
           responseExample: [
             { manager: 'RuntimeAgentRealtimeManager', phase: 'asrPreview', event: 'asr.transcript', final: false, text: '介绍一下', sourceEventType: 'conversation.item.input_audio_transcription.text' },
+            { manager: 'RuntimeAgentRealtimeManager', phase: 'asrInputStopped', event: 'asr.input_stopped', id: '<commandId>', requestId: '<requestId>', traceId: '<traceId>', reason: 'vad' },
             { manager: 'RuntimeAgentRealtimeManager', phase: 'asrDone', event: 'asr.transcript', final: true, text: '介绍一下展厅', sourceEventType: 'conversation.item.input_audio_transcription.completed' },
             { manager: 'RuntimeAgentRealtimeManager', phase: 'llmStarted', event: 'llm.started', payload: { questionText: '介绍一下展厅', conversationId: 123 } },
             { manager: 'RuntimeAgentRealtimeManager', phase: 'llmReply', event: 'llm.tts_segment', text: '这是展厅介绍。' },

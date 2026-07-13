@@ -666,7 +666,7 @@
           "实时 WebSocket"
         ],
         "summary": "统一实时 WebSocket",
-        "description": "WebSocket 地址通常为 ws://localhost:8880/ws/realtime/。通过消息 type 区分 ASR、LLM、TTS。OpenAPI 对 WebSocket 支持有限，导入 Apifox 后建议将该接口切换为 WebSocket 请求并使用下方消息示例。",
+        "description": "WebSocket 地址通常为 ws://localhost:8880/ws/realtime/。通过消息 type 区分 Agent、ASR、LLM、TTS。Agent 语音链路收到 asr.input_stopped 后只停止麦克风和 PCM 上送，保持当前连接等待最终转写及后续 LLM/TTS。OpenAPI 对 WebSocket 支持有限，导入 Apifox 后建议将该接口切换为 WebSocket 请求并使用下方消息示例。",
         "operationId": "realtimeWebSocket",
         "servers": [
           {
@@ -680,6 +680,26 @@
           }
         },
         "x-websocket-message-examples": {
+          "agent.session.start": {
+            "type": "agent.session.start",
+            "id": "agent-session-001",
+            "payload": {
+              "deviceCode": "DEVICE_001",
+              "requestId": "req-001",
+              "traceId": "trace-001"
+            }
+          },
+          "server.asr.input_stopped": {
+            "type": "asr.input_stopped",
+            "id": "agent-session-001",
+            "requestId": "req-001",
+            "traceId": "trace-001",
+            "reason": "vad"
+          },
+          "agent.session.cancel": {
+            "type": "agent.session.cancel",
+            "id": "agent-cancel-001"
+          },
           "asr.session.start": {
             "type": "asr.session.start",
             "id": "asr-session-001",

@@ -41,6 +41,8 @@ const requiredSnippets = [
   'expiresAt',
   'asr.session.start',
   'asr.session.finish',
+  'asr.input_stopped',
+  '输入已停止，等待最终识别',
   'getUserMedia',
   'pcm_s16le',
   'originalText',
@@ -66,8 +68,9 @@ const forbiddenSnippets = [
 
 const missing = requiredSnippets.filter((snippet) => !html.includes(snippet));
 const forbidden = forbiddenSnippets.filter((snippet) => html.includes(snippet));
+const inputStoppedHandler = /if \(eventType === 'asr\.input_stopped'\) \{[\s\S]*?stopAgentVoiceQuestion\(\{ skipFinish: true, silent: true, keepSession: true \}\);[\s\S]*?\n\s*\}/.test(html);
 
-if (missing.length || forbidden.length) {
+if (missing.length || forbidden.length || !inputStoppedHandler) {
   if (missing.length) {
     console.error('Missing required runtime console snippets:');
     for (const snippet of missing) console.error(`- ${snippet}`);
@@ -75,6 +78,9 @@ if (missing.length || forbidden.length) {
   if (forbidden.length) {
     console.error('Forbidden snippets found in runtime console:');
     for (const snippet of forbidden) console.error(`- ${snippet}`);
+  }
+  if (!inputStoppedHandler) {
+    console.error('Missing asr.input_stopped handler that stops capture without finishing or closing the agent WebSocket');
   }
   process.exit(1);
 }
