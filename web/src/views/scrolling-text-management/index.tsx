@@ -21,7 +21,7 @@ import {
   Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   createScrollingText,
@@ -67,7 +67,9 @@ export const ScrollingTextManagementPage = () => {
   const [editingItem, setEditingItem] = useState<ScrollingTextRecord | null>(null);
   const [formVisible, setFormVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [pendingItemFocus, setPendingItemFocus] = useState<number | null>(null);
   const [form] = Form.useForm<ScrollingTextFormValues>();
+  const itemsContainerRef = useRef<HTMLDivElement>(null);
   const [searchParams] = useSearchParams();
   const titleFilter = searchParams.get('title')?.trim() || '';
 
@@ -109,6 +111,29 @@ export const ScrollingTextManagementPage = () => {
     void refreshRecordLimit();
   }, [refreshRecordLimit]);
 
+  useEffect(() => {
+    if (pendingItemFocus === null) {
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      const container = itemsContainerRef.current;
+      const target = container?.querySelector<HTMLElement>(`[data-scrolling-text-index="${pendingItemFocus}"]`);
+      if (!container || !target) {
+        setPendingItemFocus(null);
+        return;
+      }
+
+      const targetTop = target.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop;
+      const stickyHeaderHeight = container.firstElementChild?.getBoundingClientRect().height ?? 0;
+      container.scrollTo({ top: Math.max(0, targetTop - stickyHeaderHeight), behavior: 'smooth' });
+      target.querySelector<HTMLTextAreaElement>('textarea')?.focus();
+      setPendingItemFocus(null);
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [pendingItemFocus]);
+
   const openCreateModal = () => {
     if (!canOpenCreate) {
       return;
@@ -137,6 +162,7 @@ export const ScrollingTextManagementPage = () => {
   const closeFormModal = () => {
     setFormVisible(false);
     setEditingItem(null);
+    setPendingItemFocus(null);
     form.resetFields();
   };
 
@@ -321,61 +347,77 @@ export const ScrollingTextManagementPage = () => {
 
           <Form.List name="items">
             {(fields, { add, remove }) => (
-              <Space direction="vertical" size={12} className="w-full">
-                <div className="flex items-center justify-between">
+              <div ref={itemsContainerRef} className="max-h-96 overflow-y-auto sm:max-h-[32rem]">
+                <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white py-2">
                   <Typography.Text strong>滚动文本内容</Typography.Text>
-                  <Button icon={<IconPlus />} onClick={() => add({ order: fields.length + 1, zh: '', en: '' })}>
+                  <Button
+                    icon={<IconPlus />}
+                    onClick={() => {
+                      setPendingItemFocus(fields.length);
+                      add({ order: fields.length + 1, zh: '', en: '' });
+                    }}
+                  >
                     新增文本
                   </Button>
                 </div>
-                {fields.map((field, index) => {
-                  const { key: fieldKey, name: fieldName } = field;
-                  return (
-                  <Card
-                    key={fieldKey}
-                    size="small"
-                    className="rounded-lg border border-slate-200"
-                    title={
-                      <Space>
-                        <IconMenu2 className="text-slate-400" />
-                        <span>第 {index + 1} 条</span>
-                      </Space>
-                    }
-                    extra={
-                      <Space size={4} wrap>
-                        {index > 0 ? (
-                          <Button type="link" icon={<IconPlus />} onClick={() => add({ order: index + 1, zh: '', en: '' }, index)}>
-                            向上插入
-                          </Button>
-                        ) : null}
-                        {fields.length > 1 ? (
-                          <Button danger type="link" icon={<IconTrash />} onClick={() => remove(fieldName)}>
-                            删除
-                          </Button>
-                        ) : null}
-                      </Space>
-                    }
-                  >
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                      <Form.Item
-                        label="中文"
-                        name={[fieldName, 'zh']}
-                        rules={[{ required: true, whitespace: true, message: '请输入中文文本' }]}
-                      >
-                        <Input.TextArea rows={3} placeholder="请输入中文滚动文本" />
-                      </Form.Item>
-                      <Form.Item
-                        label="英文"
-                        name={[fieldName, 'en']}
-                        rules={[{ required: true, whitespace: true, message: '请输入英文文本' }]}
-                      >
-                        <Input.TextArea rows={3} placeholder="请输入英文滚动文本" />
-                      </Form.Item>
-                    </div>
-                  </Card>
-                  );
-                })}
-              </Space>
+                <Space direction="vertical" size={12} className="w-full pt-3">
+                  {fields.map((field, index) => {
+                    const { key: fieldKey, name: fieldName } = field;
+                    return (
+                      <div key={fieldKey} data-scrolling-text-index={index}>
+                        <Card
+                          size="small"
+                          className="rounded-lg border border-slate-200"
+                          title={
+                            <Space>
+                              <IconMenu2 className="text-slate-400" />
+                              <span>第 {index + 1} 条</span>
+                            </Space>
+                          }
+                          extra={
+                            <Space size={4} wrap>
+                              {index > 0 ? (
+                                <Button
+                                  type="link"
+                                  icon={<IconPlus />}
+                                  onClick={() => {
+                                    setPendingItemFocus(index);
+                                    add({ order: index + 1, zh: '', en: '' }, index);
+                                  }}
+                                >
+                                  向上插入
+                                </Button>
+                              ) : null}
+                              {fields.length > 1 ? (
+                                <Button danger type="link" icon={<IconTrash />} onClick={() => remove(fieldName)}>
+                                  删除
+                                </Button>
+                              ) : null}
+                            </Space>
+                          }
+                        >
+                          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                            <Form.Item
+                              label="中文"
+                              name={[fieldName, 'zh']}
+                              rules={[{ required: true, whitespace: true, message: '请输入中文文本' }]}
+                            >
+                              <Input.TextArea rows={3} placeholder="请输入中文滚动文本" />
+                            </Form.Item>
+                            <Form.Item
+                              label="英文"
+                              name={[fieldName, 'en']}
+                              rules={[{ required: true, whitespace: true, message: '请输入英文文本' }]}
+                            >
+                              <Input.TextArea rows={3} placeholder="请输入英文滚动文本" />
+                            </Form.Item>
+                          </div>
+                        </Card>
+                      </div>
+                    );
+                  })}
+                </Space>
+              </div>
             )}
           </Form.List>
         </Form>

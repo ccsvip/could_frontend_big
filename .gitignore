@@ -172,3 +172,5 @@ docker-compose.override.yaml
 !.codex/prompts/**
 
 wiki/
+
+.mimocode/*
