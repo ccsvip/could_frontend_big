@@ -429,7 +429,7 @@ export const ScrollingTextManagementPage = () => {
         footer={null}
         onCancel={() => setPreviewItem(null)}
         destroyOnHidden
-        width={720}
+        width="min(92vw, 45rem)"
       >
         {previewItem ? (
           <Space direction="vertical" size={12} className="w-full">
@@ -439,19 +439,23 @@ export const ScrollingTextManagementPage = () => {
                 {previewItem.isActive ? '启用中' : '已停用'}
               </Tag>
             </Space>
-            {previewItem.items.map((item, index) => (
-              <Card key={item.id ?? index} size="small" className="rounded-lg border border-slate-200">
-                <Space direction="vertical" size={6} className="w-full">
-                  <Typography.Text strong>第 {index + 1} 条</Typography.Text>
-                  <Typography.Paragraph className="mb-0 text-slate-700">
-                    中文：{item.zh}
-                  </Typography.Paragraph>
-                  <Typography.Paragraph className="mb-0 text-slate-500">
-                    英文：{item.en}
-                  </Typography.Paragraph>
-                </Space>
-              </Card>
-            ))}
+            <div className="max-h-[calc(100dvh-14rem)] overflow-y-scroll pr-2">
+              <Space direction="vertical" size={12} className="w-full">
+                {previewItem.items.map((item, index) => (
+                  <Card key={item.id ?? index} size="small" className="rounded-lg border border-slate-200">
+                    <Space direction="vertical" size={6} className="w-full">
+                      <Typography.Text strong>第 {index + 1} 条</Typography.Text>
+                      <Typography.Paragraph className="mb-0 text-slate-700">
+                        中文：{item.zh}
+                      </Typography.Paragraph>
+                      <Typography.Paragraph className="mb-0 text-slate-500">
+                        英文：{item.en}
+                      </Typography.Paragraph>
+                    </Space>
+                  </Card>
+                ))}
+              </Space>
+            </div>
           </Space>
         ) : null}
       </Modal>
