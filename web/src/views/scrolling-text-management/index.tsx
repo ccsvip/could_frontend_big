@@ -439,7 +439,7 @@ export const ScrollingTextManagementPage = () => {
                 {previewItem.isActive ? '启用中' : '已停用'}
               </Tag>
             </Space>
-            <div className="max-h-[calc(100dvh-14rem)] overflow-y-scroll pr-2">
+            <div className="max-h-[calc(66.667dvh-9.334rem)] overflow-y-scroll pr-2">
               <Space direction="vertical" size={12} className="w-full">
                 {previewItem.items.map((item, index) => (
                   <Card key={item.id ?? index} size="small" className="rounded-lg border border-slate-200">

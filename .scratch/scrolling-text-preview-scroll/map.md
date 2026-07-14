@@ -13,6 +13,7 @@ Label: wayfinder:map
 ## Decisions so far
 
 - [确定查看弹窗长列表滚动容器](issues/01-preview-scroll-container.md) - 标题与状态固定在容器外，文本列表按视口高度独立滚动，并始终显示纵向滚动条。
+- [缩减查看文本列表高度](issues/02-reduce-preview-list-height.md) - 文本列表最大高度固定为当前可滚动区域的约 2/3；标题、状态和滚动条策略保持不变。
 
 ## Not yet specified
 
