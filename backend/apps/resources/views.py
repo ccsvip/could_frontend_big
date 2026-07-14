@@ -34,7 +34,6 @@ from apps.accounts.permissions import (
     CanUpdateTaskCommands,
     CanUpdateVideoResources,
     CanUpdateVoiceTones,
-    CanViewAliyunCommands,
     CanViewCommandGroups,
     CanViewControlCommands,
     CanViewImageResources,
@@ -53,11 +52,11 @@ from apps.tenants.services import get_request_tenant, resolve_member_or_public_t
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from apps.devices.realtime import publish_device_event_sync
-from .models import CommandGroup, ControlCommand, MinioConfig, ModelAsset, Resource, ScrollingText, ScrollingTextItem, TaskCommand, TaskCommandStep, TenantVideoQuota, VoiceTone
+from .models import CommandGroup, ControlCommand, ControlCommandRecognitionPolicy, MinioConfig, ModelAsset, Resource, ScrollingText, ScrollingTextItem, TaskCommand, TaskCommandStep, TenantVideoQuota, VoiceTone
 from .serializers import (
-    AliyunCommandItemSerializer,
     CommandGroupSerializer,
     ControlCommandSerializer,
+    ControlCommandRecognitionPolicySerializer,
     ModelAssetSerializer,
     MinioConfigSerializer,
     TenantVideoQuotaSerializer,
@@ -67,11 +66,6 @@ from .serializers import (
     VoiceToneSerializer,
     build_task_command_list,
     build_task_step_runtime_data,
-)
-from .services.aliyun_commands import (
-    AliyunCommandConfigError,
-    AliyunCommandServiceError,
-    fetch_aliyun_commands,
 )
 from .services.minio_client import (
     MinioConfigError,
@@ -101,6 +95,43 @@ def get_business_write_tenant(request):
             return Tenant.objects.filter(id=int(raw), is_active=True).first()
         return None
     return get_request_tenant(request)
+
+
+@extend_schema(tags=['Commands'])
+class ControlCommandRecognitionPolicyView(APIView):
+    def get_permissions(self):
+        permission = CanUpdateControlCommands if self.request.method in {'PATCH', 'DELETE'} else CanViewControlCommands
+        return [permission()]
+
+    @staticmethod
+    def _policy_or_error(request):
+        tenant = get_business_write_tenant(request)
+        if tenant is None:
+            return None, Response({'message': '当前请求缺少公司范围'}, status=status.HTTP_400_BAD_REQUEST)
+        policy, _ = ControlCommandRecognitionPolicy.objects.get_or_create(tenant=tenant)
+        return policy, None
+
+    def get(self, request):
+        policy, error_response = self._policy_or_error(request)
+        if error_response is not None:
+            return error_response
+        return Response(ControlCommandRecognitionPolicySerializer(policy).data)
+
+    def patch(self, request):
+        policy, error_response = self._policy_or_error(request)
+        if error_response is not None:
+            return error_response
+        serializer = ControlCommandRecognitionPolicySerializer(policy, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request):
+        policy, error_response = self._policy_or_error(request)
+        if error_response is not None:
+            return error_response
+        policy.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CanCreateAnyResource:
@@ -174,45 +205,6 @@ class BaseResourceViewSet(CachedBusinessResponseMixin, TenantScopedQuerysetMixin
                 if isinstance(annotation, dict) and blocks_reference_resource(annotation.get('answerBlocks')):
                     count += 1
         return count
-
-
-@extend_schema(tags=['Commands'])
-class AliyunCommandListView(APIView):
-    permission_classes = [CanViewAliyunCommands]
-
-    def get(self, request):
-        try:
-            items = fetch_aliyun_commands()
-        except AliyunCommandConfigError as exc:
-            return Response(
-                {
-                    'status': 'error',
-                    'message': str(exc),
-                    'code': status.HTTP_500_INTERNAL_SERVER_ERROR,
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-        except AliyunCommandServiceError as exc:
-            return Response(
-                {
-                    'status': 'error',
-                    'message': str(exc),
-                    'code': status.HTTP_502_BAD_GATEWAY,
-                },
-                status=status.HTTP_502_BAD_GATEWAY,
-            )
-
-        serializer = AliyunCommandItemSerializer(items, many=True)
-        return Response(
-            {
-                'status': 'success',
-                'message': '获取阿里云指令列表成功',
-                'data': {
-                    'items': serializer.data,
-                },
-            },
-            status=status.HTTP_200_OK,
-        )
 
 
 @extend_schema_view(

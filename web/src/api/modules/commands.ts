@@ -3,6 +3,7 @@ import { httpClient } from '../client';
 export type CommandGroupType = 'control' | 'task';
 export type CommandCallMethod = 'UDP' | 'TCP';
 export type CommandValueType = 'string' | 'hex' | 'ascii';
+export type ControlCommandReplyStrategy = 'fixed' | 'generated';
 export type TaskStepType = 'command' | 'text' | 'image' | 'video' | 'navigation';
 
 export type CommandGroupRecord = {
@@ -41,6 +42,9 @@ export type ControlCommandRecord = {
   ip: string;
   port: number;
   callMethod: CommandCallMethod;
+  backendSendEnabled: boolean;
+  executionReply: string;
+  replyStrategy: ControlCommandReplyStrategy;
   isActive: boolean;
   created_at: string;
   updated_at: string;
@@ -54,6 +58,9 @@ export type ControlCommandPayload = {
   ip: string;
   port: number;
   callMethod: CommandCallMethod;
+  backendSendEnabled: boolean;
+  executionReply: string;
+  replyStrategy: ControlCommandReplyStrategy;
   isActive: boolean;
 };
 
@@ -64,6 +71,13 @@ export type ControlCommandListQuery = {
   groupId?: number | 'all';
   isActive?: 'all' | 'active' | 'inactive';
 };
+
+export type ControlCommandRecognitionPolicy = {
+  directExecutionThreshold: string;
+  llmConfirmationThreshold: string;
+};
+
+export type ControlCommandRecognitionPolicyPayload = ControlCommandRecognitionPolicy;
 
 export type TaskCommandStepRecord = {
   id: number;
@@ -192,6 +206,20 @@ export const updateControlCommand = async (id: number, payload: Partial<ControlC
 
 export const deleteControlCommand = async (id: number) => {
   await httpClient.delete(`/commands/control/${id}/`);
+};
+
+export const fetchControlCommandRecognitionPolicy = async () => {
+  const response = await httpClient.get<ControlCommandRecognitionPolicy>('/commands/control-recognition-policy/');
+  return response.data;
+};
+
+export const updateControlCommandRecognitionPolicy = async (payload: ControlCommandRecognitionPolicyPayload) => {
+  const response = await httpClient.patch<ControlCommandRecognitionPolicy>('/commands/control-recognition-policy/', payload);
+  return response.data;
+};
+
+export const restoreControlCommandRecognitionPolicyDefaults = async () => {
+  await httpClient.delete('/commands/control-recognition-policy/');
 };
 
 export const fetchTaskCommands = async (query?: TaskCommandListQuery) => {

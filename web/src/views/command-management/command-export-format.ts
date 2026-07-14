@@ -9,7 +9,8 @@ type ExportableCommandRecord = {
 export type CommandToolExportPayload = Array<{
   tool_set_name: string;
   tools: Array<{
-    tool_definition: {
+    type: 'function';
+    function: {
       name: string;
       description: string;
       parameters: {
@@ -26,16 +27,6 @@ export type CommandToolExportPayload = Array<{
         };
       };
     };
-    response_type: 'ON_EXECUTION_RESULT';
-    usage_examples: Array<{
-      text: string;
-      tool_call: {
-        arguments: {
-          title: string;
-          content: string;
-        };
-      };
-    }>;
   }>;
 }>;
 
@@ -52,9 +43,10 @@ const buildExportTool = (command: ExportableCommandRecord): CommandToolExportPay
   const commandName = command.command.trim();
   const description = command.name.trim();
 
-  // 导出结构必须严格对齐 指令/base.json，字段名和层级不能增删。
+  // 导出结构对齐 OpenAI tool calling 规范，字段名和层级不能增删。
   return {
-    tool_definition: {
+    type: 'function',
+    function: {
       name: commandName,
       description,
       parameters: {
@@ -71,18 +63,6 @@ const buildExportTool = (command: ExportableCommandRecord): CommandToolExportPay
         },
       },
     },
-    response_type: 'ON_EXECUTION_RESULT',
-    usage_examples: [
-      {
-        text: `请执行${description}`,
-        tool_call: {
-          arguments: {
-            title: description,
-            content: description,
-          },
-        },
-      },
-    ],
   };
 };
 

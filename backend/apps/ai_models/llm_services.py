@@ -274,6 +274,117 @@ async def stream_llm_chat_completion(
         raise RuntimeError('LLM 连接失败') from exc
 
 
+async def stream_llm_chat_completion_with_tools(
+    *,
+    model_config: dict,
+    messages: list[dict],
+    tools: list[dict],
+    tool_choice: str = 'auto',
+    temperature: float = 0.3,
+    max_tokens: int = 500,
+    timeout: int = 30,
+):
+    """Stream an OpenAI-compatible chat completion with function tools.
+
+    Yields event dicts:
+        - {'type': 'delta', 'text': str}        # assistant content delta
+        - {'type': 'tool_calls', 'tool_calls': list[dict]}  # merged tool calls at finish
+        - {'type': 'done'}                      # stream finished
+    """
+    api_url = _build_chat_completions_url(model_config['apiBaseUrl'])
+    payload = {
+        'model': model_config['name'],
+        'messages': messages,
+        'stream': True,
+        'temperature': temperature,
+        'max_tokens': max_tokens,
+        'tools': tools,
+        'tool_choice': tool_choice,
+    }
+    if model_config.get('enableWebSearch'):
+        payload['enable_search'] = True
+        payload['search_options'] = {'forced_search': True}
+
+    merged_tool_calls: dict[int, dict] = {}
+    try:
+        client = _get_stream_llm_client()
+        async with client.stream(
+            'POST',
+            api_url,
+            json=payload,
+            headers={
+                'Authorization': f"Bearer {model_config['apiKey']}",
+                'Accept': 'text/event-stream',
+                'Content-Type': 'application/json',
+            },
+            timeout=timeout,
+        ) as response:
+            if response.status_code != 200:
+                raise RuntimeError(f'LLM 请求失败 (HTTP {response.status_code})')
+
+            async for line in response.aiter_lines():
+                if not line:
+                    continue
+                data_str = _parse_sse_data_line(line)
+                if data_str is None:
+                    continue
+                if data_str.strip() == '[DONE]':
+                    break
+                try:
+                    chunk = json.loads(data_str)
+                except json.JSONDecodeError:
+                    continue
+                error_message = _extract_openai_error_message(chunk)
+                if error_message:
+                    raise RuntimeError(error_message[:200])
+                choices = chunk.get('choices')
+                if not isinstance(choices, list) or not choices:
+                    continue
+                first_choice = choices[0] if isinstance(choices[0], dict) else {}
+                delta = first_choice.get('delta') if isinstance(first_choice.get('delta'), dict) else {}
+                content = _coerce_openai_content_to_text(delta.get('content'))
+                if content:
+                    yield {'type': 'delta', 'text': content}
+                _merge_tool_calls_delta(merged_tool_calls, delta.get('tool_calls'))
+
+            if merged_tool_calls:
+                yield {'type': 'tool_calls', 'tool_calls': list(merged_tool_calls.values())}
+            yield {'type': 'done'}
+    except httpx.TimeoutException as exc:
+        raise RuntimeError('LLM 请求超时') from exc
+    except httpx.HTTPError as exc:
+        raise RuntimeError('LLM 连接失败') from exc
+
+
+def _merge_tool_calls_delta(merged: dict[int, dict], delta_calls: list[dict] | None) -> None:
+    """Accumulate streaming tool_calls deltas into complete tool_call objects."""
+    if not isinstance(delta_calls, list):
+        return
+    for call in delta_calls:
+        if not isinstance(call, dict):
+            continue
+        index = call.get('index')
+        if index is None:
+            index = len(merged)
+        index = int(index)
+        current = merged.setdefault(
+            index,
+            {'id': '', 'type': 'function', 'function': {'name': '', 'arguments': ''}},
+        )
+        if call.get('id'):
+            current['id'] = call['id']
+        if call.get('type'):
+            current['type'] = call['type']
+        function = call.get('function')
+        if isinstance(function, dict):
+            name = function.get('name')
+            if isinstance(name, str) and name:
+                current['function']['name'] = current['function']['name'] + name if current['function']['name'] else name
+            arguments = function.get('arguments')
+            if isinstance(arguments, str):
+                current['function']['arguments'] += arguments
+
+
 def _parse_sse_data_line(line: str) -> str | None:
     if line.startswith('data:'):
         return line[5:].strip()

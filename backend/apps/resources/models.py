@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models
 from django.db.models import Q
 
@@ -238,6 +240,8 @@ class ModelAsset(models.Model):
 class ControlCommand(models.Model):
     PROTOCOL_UDP = 'UDP'
     PROTOCOL_TCP = 'TCP'
+    REPLY_STRATEGY_FIXED = 'fixed'
+    REPLY_STRATEGY_GENERATED = 'generated'
     COMMAND_VALUE_TYPE_STRING = 'string'
     COMMAND_VALUE_TYPE_HEX = 'hex'
     COMMAND_VALUE_TYPE_ASCII = 'ascii'
@@ -249,6 +253,10 @@ class ControlCommand(models.Model):
         (COMMAND_VALUE_TYPE_STRING, '字符串'),
         (COMMAND_VALUE_TYPE_HEX, '16进制'),
         (COMMAND_VALUE_TYPE_ASCII, 'ascii'),
+    ]
+    REPLY_STRATEGY_CHOICES = [
+        (REPLY_STRATEGY_FIXED, '固定回复'),
+        (REPLY_STRATEGY_GENERATED, '智能生成'),
     ]
 
     group = models.ForeignKey(
@@ -263,8 +271,16 @@ class ControlCommand(models.Model):
     command_code = models.CharField('指令', max_length=128)
     command_value_type = models.CharField('指令类型', max_length=16, choices=COMMAND_VALUE_TYPE_CHOICES, default=COMMAND_VALUE_TYPE_STRING)
     protocol = models.CharField('调用方式', max_length=16, choices=PROTOCOL_CHOICES, default=PROTOCOL_UDP)
+    backend_send_enabled = models.BooleanField('后端发送', default=False)
     host = models.GenericIPAddressField('IP')
     port = models.PositiveIntegerField('端口')
+    execution_reply = models.TextField('执行回复', blank=True, default='')
+    reply_strategy = models.CharField(
+        '未填写时回复方式',
+        max_length=16,
+        choices=REPLY_STRATEGY_CHOICES,
+        default=REPLY_STRATEGY_FIXED,
+    )
     is_active = models.BooleanField('是否启用', default=True)
     tenant = _tenant_fk()
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
@@ -282,6 +298,42 @@ class ControlCommand(models.Model):
 
     def __str__(self) -> str:
         return f'{self.name} ({self.command_code})'
+
+
+class ControlCommandRecognitionPolicy(models.Model):
+    """公司范围的控制指令识别阈值。"""
+
+    DIRECT_EXECUTION_THRESHOLD_DEFAULT = Decimal('0.90')
+    LLM_CONFIRMATION_THRESHOLD_DEFAULT = Decimal('0.70')
+
+    tenant = models.OneToOneField(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='control_command_recognition_policy',
+        verbose_name='所属公司',
+    )
+    direct_execution_threshold = models.DecimalField(
+        '直接执行阈值',
+        max_digits=3,
+        decimal_places=2,
+        default=DIRECT_EXECUTION_THRESHOLD_DEFAULT,
+    )
+    llm_confirmation_threshold = models.DecimalField(
+        'LLM 确认阈值',
+        max_digits=3,
+        decimal_places=2,
+        default=LLM_CONFIRMATION_THRESHOLD_DEFAULT,
+    )
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        verbose_name = '控制指令识别策略'
+        verbose_name_plural = '控制指令识别策略'
+
+    def __str__(self) -> str:
+        return f'{self.tenant}: {self.direct_execution_threshold}/{self.llm_confirmation_threshold}'
 
 
 class TaskCommand(models.Model):

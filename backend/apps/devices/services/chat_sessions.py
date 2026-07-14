@@ -137,6 +137,7 @@ def serialize_device_chat_session(logs: list[DeviceChatLog], *, request=None) ->
                     tenant=log.tenant,
                     request=request,
                 ),
+                'commandDispatch': log.command_dispatch_diagnostics,
                 'feedback': 'none',
                 'createdAt': log.created_at,
             },

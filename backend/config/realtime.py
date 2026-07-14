@@ -725,6 +725,69 @@ def _start_agent_llm_task(send, connection: RealtimeConnection, text: str) -> as
     return connection.agent_task
 
 
+async def _try_dispatch_command_for_session(
+    send,
+    session: dict[str, Any],
+    question_text: str,
+    command_id,
+    request_id: str,
+    trace_id: str,
+    on_tts_segment,
+    error_event_type: str,
+):
+    """Attempt local command dispatch before normal chat completion."""
+    from apps.resources.services.command_dispatch import try_dispatch_command
+
+    async def on_delta(text: str) -> None:
+        await _send_json(
+            send,
+            {
+                'type': 'llm.delta',
+                'id': command_id,
+                'requestId': request_id,
+                'traceId': trace_id,
+                'payload': {'text': text},
+            },
+        )
+
+    async def on_tts(text: str) -> None:
+        await _send_llm_tts_segment(send, command_id, request_id, trace_id, text)
+        if on_tts_segment is not None:
+            await on_tts_segment(text)
+
+    try:
+        return await try_dispatch_command(
+            session=session,
+            question_text=question_text,
+            on_delta=on_delta,
+            on_tts_segment=on_tts,
+            error_event_type=error_event_type,
+            command_id=command_id,
+            request_id=request_id,
+            trace_id=trace_id,
+        )
+    except Exception as exc:
+        logger.warning(
+            'realtime.command_dispatch_failed device_code=%s request_id=%s error=%s',
+            session.get('deviceCode'),
+            request_id,
+            exc,
+        )
+        return None
+
+
+async def _stream_runtime_answer_deltas(session: dict[str, Any], dispatch_outcome):
+    if dispatch_outcome is not None and dispatch_outcome.hit:
+        return
+    async for delta in llm_services.stream_llm_chat_completion(
+        model_config=session['modelConfig'],
+        messages=session['messages'],
+        temperature=session['temperature'],
+        max_tokens=session['maxTokens'],
+    ):
+        yield delta
+
+
 async def _run_llm_session(send, connection: RealtimeConnection, command_id, message: dict[str, Any]) -> None:
     try:
         await _run_llm_session_body(send, command_id, message)
@@ -801,6 +864,7 @@ async def _run_llm_session_body(
     await _send_json(send, started_payload)
 
     answer_text = ''
+    dispatch_outcome = None
     answer_blocks = session.get('annotationBlocks') or None
     knowledge_media_blocks = session.get('knowledgeMediaBlocks') or []
     if session.get('annotationAnswer') is not None:
@@ -874,14 +938,14 @@ async def _run_llm_session_body(
                     await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message=str(exc)[:200]))
                     return None
         else:
+            dispatch_outcome = await _try_dispatch_command_for_session(
+                send, session, question_text, command_id, request_id, trace_id, on_tts_segment, error_event_type
+            )
+            if dispatch_outcome is not None and dispatch_outcome.hit:
+                answer_text = dispatch_outcome.reply_text
             tts_buffer = ''
             try:
-                async for delta in llm_services.stream_llm_chat_completion(
-                    model_config=session['modelConfig'],
-                    messages=session['messages'],
-                    temperature=session['temperature'],
-                    max_tokens=session['maxTokens'],
-                ):
+                async for delta in _stream_runtime_answer_deltas(session, dispatch_outcome):
                     answer_text += delta
                     await _send_json(
                         send,
@@ -916,6 +980,15 @@ async def _run_llm_session_body(
 
         answer_blocks = [*text_to_blocks(answer_text), *knowledge_media_blocks]
 
+    command_dispatch_diagnostics = _command_dispatch_diagnostics(dispatch_outcome)
+    command_dispatch_snapshots: list[dict[str, Any]] = []
+    if dispatch_outcome is not None and dispatch_outcome.hit:
+        from apps.resources.services.command_dispatch import build_command_dispatch_snapshots
+
+        command_dispatch_snapshots = await build_command_dispatch_snapshots(
+            tenant_id=session.get('tenantId'),
+            command_metas=dispatch_outcome.matched_command_metas,
+        )
     conversation_id = session.get('conversationId')
     if session.get('backendType') == RUNTIME_BACKEND_PLATFORM_LLM:
         logger.info(
@@ -935,6 +1008,7 @@ async def _run_llm_session_body(
             request_id,
             trace_id,
             answer_blocks,
+            command_dispatch_diagnostics,
         )
     except Exception:
         logger.exception('realtime.agent_chat.log_failed device_code=%s request_id=%s', session.get('deviceCode'), request_id)
@@ -952,6 +1026,15 @@ async def _run_llm_session_body(
     }
     if _has_media_reply_blocks(answer_blocks):
         done_payload['answerBlocks'] = answer_blocks
+    if dispatch_outcome is not None:
+        done_payload['commandDispatch'] = {
+            'hit': bool(dispatch_outcome.hit),
+            'mode': dispatch_outcome.mode,
+            'replySource': dispatch_outcome.reply_source,
+            'toolCalls': dispatch_outcome.tool_calls_summary or [],
+            'commands': command_dispatch_snapshots,
+        }
+        done_payload['commandDispatch'].update(command_dispatch_diagnostics)
     await _send_json(
         send,
         {
@@ -1033,6 +1116,7 @@ def _record_realtime_device_chat_log(
     request_id: str,
     trace_id: str,
     answer_blocks: list[dict] | None = None,
+    command_dispatch_diagnostics: dict[str, Any] | None = None,
 ) -> None:
     from apps.devices.models import DeviceChatLog
     from apps.devices.services.chat_logs import record_device_chat_log
@@ -1050,7 +1134,21 @@ def _record_realtime_device_chat_log(
         conversation_id=session.get('conversationId'),
         runtime_session_id=str(session.get('sessionId') or ''),
         answer_blocks=answer_blocks,
+        command_dispatch_diagnostics=command_dispatch_diagnostics,
     )
+
+
+def _command_dispatch_diagnostics(dispatch_outcome) -> dict[str, Any]:
+    if dispatch_outcome is None or dispatch_outcome.route is None:
+        return {}
+    return {
+        'highestScore': dispatch_outcome.highest_score,
+        'secondHighestScore': dispatch_outcome.second_highest_score,
+        'candidateCount': dispatch_outcome.candidate_count,
+        'route': dispatch_outcome.route,
+        'confirmationOutcome': dispatch_outcome.confirmation_outcome,
+        'executionOutcome': dispatch_outcome.execution_outcome,
+    }
 
 
 def _send_third_party_session_message(session: dict[str, Any], question_text: str) -> str:

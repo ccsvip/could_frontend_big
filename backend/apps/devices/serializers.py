@@ -542,6 +542,7 @@ class DeviceChatLogSerializer(serializers.ModelSerializer):
     questionText = serializers.CharField(source='question_text', read_only=True)
     answerText = serializers.CharField(source='answer_text', read_only=True)
     answerBlocks = serializers.SerializerMethodField()
+    commandDispatch = serializers.JSONField(source='command_dispatch_diagnostics', read_only=True)
     requestId = serializers.CharField(source='request_id', read_only=True)
     traceId = serializers.CharField(source='trace_id', read_only=True)
     modelName = serializers.CharField(source='model_name', read_only=True)
@@ -565,6 +566,7 @@ class DeviceChatLogSerializer(serializers.ModelSerializer):
             'questionText',
             'answerText',
             'answerBlocks',
+            'commandDispatch',
             'requestId',
             'traceId',
             'modelName',

@@ -257,10 +257,6 @@ class CanDownloadCommandExports(HasPermissionCode):
     required_permission = 'commands.export.download'
 
 
-class CanViewAliyunCommands(HasPermissionCode):
-    required_permission = 'commands.aliyun.view'
-
-
 class CanViewPoints(HasPermissionCode):
     required_permission = 'commands.points.view'
 

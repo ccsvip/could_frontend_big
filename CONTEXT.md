@@ -128,6 +128,18 @@ _Avoid_: user input playback, suggested question playback, TTS configuration tes
 Speech-to-text input for an Agent Application conversation, where recorded user audio is transcribed into editable message text before the user sends it.
 _Avoid_: realtime interruption, direct voice message, device ASR runtime
 
+**Control Command Recognition Policy**:
+A company-scoped policy that maps a locally calculated Control Command Match Confidence to one of three outcomes: direct execution, LLM confirmation, or ordinary conversation. It applies only to active Control Commands.
+_Avoid_: ASR confidence, task-command policy, global command threshold
+
+**Control Command Match Confidence**:
+A deterministic score from 0 to 1 calculated by comparing normalized ASR text with a Control Command's name and command code. It is not an ASR or LLM probability.
+_Avoid_: ASR confidence, LLM confidence, semantic similarity probability
+
+**Command Dispatch Snapshot**:
+A complete runtime definition of a matched command, including `backendSendEnabled`, supplied with the execution outcome. When that flag is false the backend does not send TCP/UDP and the runtime client owns delivery; the configured reply and TTS still continue immediately.
+_Avoid_: candidate command catalog, client execution result callback, tool result summary
+
 **Knowledge Document**:
 A company-scoped document uploaded to the knowledge base and optionally bound to an Agent Application as its available reference material.
 _Avoid_: dataset, knowledge collection, vector store

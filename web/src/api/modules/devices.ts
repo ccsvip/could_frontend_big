@@ -203,6 +203,7 @@ export type DeviceChatLogRecord = {
   deviceName: string;
   questionText: string;
   answerText: string;
+  commandDispatch: ControlCommandDispatchDiagnostics;
   requestId: string;
   traceId: string;
   modelName: string;
@@ -229,6 +230,20 @@ export type DeviceChatSessionRecord = {
   updatedAt: string;
 };
 
+export type ControlCommandDispatchDiagnostics = {
+  highestScore?: number | null;
+  secondHighestScore?: number | null;
+  candidateCount?: number | null;
+  route?: 'direct_execution' | 'llm_confirmation' | 'ordinary_conversation';
+  confirmationOutcome?: 'not_required' | 'selected' | 'not_selected' | 'unavailable';
+  executionOutcome?: 'succeeded' | 'failed' | 'not_executed';
+};
+
+export type DeviceChatSessionMessage = Omit<ChatMessage, 'created_at'> & {
+  createdAt: string;
+  commandDispatch: ControlCommandDispatchDiagnostics;
+};
+
 export type DeviceChatSessionDetail = DeviceChatSessionRecord & {
   applicationId: number | null;
   llmModelId: number | null;
@@ -237,7 +252,7 @@ export type DeviceChatSessionDetail = DeviceChatSessionRecord & {
   temperature: number;
   maxTokens: number;
   maxTokensUnlimited: boolean;
-  messages: Array<Omit<ChatMessage, 'created_at'> & { createdAt: string }>;
+  messages: DeviceChatSessionMessage[];
 };
 
 export type DeviceAuthorizationRequestQuery = {

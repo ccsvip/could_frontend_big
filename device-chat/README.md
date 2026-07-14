@@ -38,6 +38,41 @@ ASR 替换词纠错由后端按设备所属公司自动应用。`asr.transcript`
 - `text` 是替换词纠错后的文本，安卓端应使用这个字段进入后续 LLM/TTS。
 - `replacementApplied` 表示本次文本是否命中替换词。
 
+### 指令命中事件
+
+三合一语音链路中的指令命中会在最终 `llm.done.payload.commandDispatch` 中返回完整运行时指令快照，前端如何消费该字段由客户端自行决定。每条控制指令都有 `backendSendEnabled` 开关，默认 `false`：关闭时后端不发送 TCP/UDP 指令，但仍会立即按配置回复并触发 TTS；开启时后端按 `callMethod` 发送，UDP 发出后继续回复与播报，TCP 等待本次连接/发送结果后再继续。
+
+```json
+{
+  "type": "llm.done",
+  "id": "当前请求 ID",
+  "requestId": "req-...",
+  "traceId": "trace-...",
+  "payload": {
+    "answerText": "客厅灯已打开。",
+    "commandDispatch": {
+      "hit": true,
+      "mode": "local",
+      "replySource": "fixed",
+      "commands": [
+        {
+          "commandType": "control",
+          "name": "开灯",
+          "command": "open_light",
+          "commandValueType": "string",
+          "callMethod": "UDP",
+          "backendSendEnabled": false,
+          "ip": "192.168.1.10",
+          "port": 9000
+        }
+      ]
+    }
+  }
+}
+```
+
+任务指令的 `commandDispatch.commands[i]` 还包含完整的递归 `tasks` 和 `command_list`。未命中、低置信度或歧义命中保持原有普通对话流程，不返回候选指令。
+
 ### TTS HTTP 音频格式说明
 
 `POST /api/v1/ai-models/tts/runtime/` 默认面向安卓设备返回 `audio/pcm` raw PCM，并通过响应头说明播放参数：

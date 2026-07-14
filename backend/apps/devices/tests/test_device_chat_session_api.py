@@ -57,7 +57,15 @@ class DeviceChatSessionApiTests(TenantTestMixin, APITestCase):
         self.role.permission_points.set(permission_points)
         self.tenant.permission_points.set(permission_points)
 
-    def create_log(self, *, question: str, answer: str, conversation=None, runtime_session_id=''):
+    def create_log(
+        self,
+        *,
+        question: str,
+        answer: str,
+        conversation=None,
+        runtime_session_id='',
+        command_dispatch_diagnostics=None,
+    ):
         return DeviceChatLog.objects.create(
             tenant=self.tenant,
             application=self.device_application,
@@ -69,6 +77,7 @@ class DeviceChatSessionApiTests(TenantTestMixin, APITestCase):
             source=DeviceChatLog.SOURCE_WEBSOCKET,
             question_text=question,
             answer_text=answer,
+            command_dispatch_diagnostics=command_dispatch_diagnostics or {},
         )
 
     def test_list_paginates_device_runtime_conversations_after_grouping(self):
@@ -198,6 +207,38 @@ class DeviceChatSessionApiTests(TenantTestMixin, APITestCase):
                 ('user', 'Turn two'),
                 ('assistant', 'Answer two'),
             ],
+        )
+
+    def test_retrieve_exposes_safe_command_dispatch_diagnostics_on_assistant_message(self):
+        self.grant_permissions('ai_models.chat.view')
+        log = self.create_log(
+            question='请打开大厅灯光',
+            answer='已为您打开大厅灯光。',
+            runtime_session_id='runtime-session-command-dispatch',
+            command_dispatch_diagnostics={
+                'highestScore': 0.94,
+                'secondHighestScore': 0.21,
+                'candidateCount': 2,
+                'route': 'direct_execution',
+                'confirmationOutcome': 'not_required',
+                'executionOutcome': 'succeeded',
+            },
+        )
+
+        response = self.client.get(f'/api/v1/device-chat-sessions/{log.id}/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotIn('commandDispatch', response.data['messages'][0])
+        self.assertEqual(
+            response.data['messages'][1]['commandDispatch'],
+            {
+                'highestScore': 0.94,
+                'secondHighestScore': 0.21,
+                'candidateCount': 2,
+                'route': 'direct_execution',
+                'confirmationOutcome': 'not_required',
+                'executionOutcome': 'succeeded',
+            },
         )
 
     def test_delete_removes_one_device_runtime_conversation(self):

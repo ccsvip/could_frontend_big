@@ -377,18 +377,6 @@ ALIYUN_RERANK_BASE_URL = (
     or 'https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank'
 ).strip()
 ALIYUN_RERANK_MODEL = os.getenv('ALIYUN_RERANK_MODEL', 'qwen3-vl-rerank').strip()
-ALIYUN_MM_APP_ID = os.getenv('ALIYUN_MM_APP_ID', '').strip()
-ALIYUN_MM_DOMAIN_CODE = os.getenv('ALIYUN_MM_DOMAIN_CODE', '').strip()
-ALIYUN_MM_ACCESS_KEY_ID = os.getenv('ALIYUN_MM_ACCESS_KEY_ID', '').strip()
-ALIYUN_MM_ACCESS_KEY_SECRET = os.getenv('ALIYUN_MM_ACCESS_KEY_SECRET', '').strip()
-ALIYUN_MM_REGION = os.getenv('ALIYUN_MM_REGION', 'cn-beijing').strip() or 'cn-beijing'
-ALIYUN_MM_ENDPOINT = (
-    os.getenv('ALIYUN_MM_ENDPOINT', '').strip()
-    or f'https://sfmmultimodalapp.{ALIYUN_MM_REGION}.aliyuncs.com'
-)
-ALIYUN_MM_API_VERSION = os.getenv('ALIYUN_MM_API_VERSION', '2025-09-09').strip() or '2025-09-09'
-ALIYUN_MM_LIST_TOOLS_ACTION = os.getenv('ALIYUN_MM_LIST_TOOLS_ACTION', 'ListCommand').strip() or 'ListCommand'
-ALIYUN_MM_TIMEOUT_SECONDS = float(os.getenv('ALIYUN_MM_TIMEOUT_SECONDS', '15'))
 
 # 飞书自定义机器人 Webhook 配置（用于控制指令变更通知等场景）
 # 在飞书群里 -> 设置 -> 群机器人 -> 添加机器人 -> 自定义机器人 中获取 webhook 地址。

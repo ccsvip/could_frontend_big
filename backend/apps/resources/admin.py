@@ -28,9 +28,9 @@ class CommandGroupAdmin(admin.ModelAdmin):
 
 @admin.register(ControlCommand)
 class ControlCommandAdmin(admin.ModelAdmin):
-    list_display = ('name', 'group', 'command_code', 'command_value_type', 'protocol', 'host', 'port', 'is_active', 'updated_at')
+    list_display = ('name', 'group', 'command_code', 'command_value_type', 'protocol', 'backend_send_enabled', 'host', 'port', 'is_active', 'updated_at')
     search_fields = ('name', 'command_code', 'host')
-    list_filter = ('group', 'command_value_type', 'protocol', 'is_active', 'updated_at')
+    list_filter = ('group', 'command_value_type', 'protocol', 'backend_send_enabled', 'is_active', 'updated_at')
     readonly_fields = ('created_at', 'updated_at')
     autocomplete_fields = ('group',)
     list_per_page = 20

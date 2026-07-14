@@ -1,13 +1,17 @@
 ﻿from __future__ import annotations
 
+from decimal import Decimal
 from pathlib import Path
 
 from django.db import transaction
 from rest_framework import serializers
 
+from apps.tenants.services import get_request_tenant
+
 from .models import (
     CommandGroup,
     ControlCommand,
+    ControlCommandRecognitionPolicy,
     ModelAsset,
     MinioConfig,
     Resource,
@@ -652,6 +656,14 @@ class ControlCommandSerializer(serializers.ModelSerializer):
     commandValueType = serializers.CharField(source='command_value_type', required=False, default=ControlCommand.COMMAND_VALUE_TYPE_STRING)
     ip = serializers.IPAddressField(source='host')
     callMethod = serializers.CharField(source='protocol')
+    backendSendEnabled = serializers.BooleanField(source='backend_send_enabled', required=False, default=False)
+    executionReply = serializers.CharField(source='execution_reply', required=False, allow_blank=True, trim_whitespace=True)
+    replyStrategy = serializers.ChoiceField(
+        source='reply_strategy',
+        choices=ControlCommand.REPLY_STRATEGY_CHOICES,
+        required=False,
+        default=ControlCommand.REPLY_STRATEGY_FIXED,
+    )
     isActive = serializers.BooleanField(source='is_active', required=False, default=True)
 
     class Meta:
@@ -666,6 +678,9 @@ class ControlCommandSerializer(serializers.ModelSerializer):
             'ip',
             'port',
             'callMethod',
+            'backendSendEnabled',
+            'executionReply',
+            'replyStrategy',
             'isActive',
             'created_at',
             'updated_at',
@@ -678,9 +693,16 @@ class ControlCommandSerializer(serializers.ModelSerializer):
         if group is None or group.group_type != CommandGroup.TYPE_CONTROL:
             raise serializers.ValidationError({'groupId': '请选择控制指令类型的指令管理'})
 
+        request_tenant = get_request_tenant(self.context.get('request'))
+        if request_tenant is not None and group.tenant_id != request_tenant.id:
+            raise serializers.ValidationError({'groupId': '请选择当前公司的控制指令管理'})
+
         command_code = attrs.get('command_code')
         if command_code:
-            queryset = self.Meta.model.objects.filter(command_code=command_code)
+            queryset = self.Meta.model.objects.filter(
+                tenant_id=group.tenant_id,
+                command_code=command_code,
+            )
             if self.instance is not None:
                 queryset = queryset.exclude(pk=self.instance.pk)
             if queryset.exists():
@@ -699,6 +721,41 @@ class ControlCommandSerializer(serializers.ModelSerializer):
             ControlCommand.COMMAND_VALUE_TYPE_ASCII,
         }:
             raise serializers.ValidationError({'commandValueType': '请选择字符串、16进制或 ascii'})
+        return attrs
+
+
+class ControlCommandRecognitionPolicySerializer(serializers.ModelSerializer):
+    directExecutionThreshold = serializers.DecimalField(
+        source='direct_execution_threshold',
+        max_digits=3,
+        decimal_places=2,
+        min_value=Decimal('0.90'),
+        max_value=Decimal('1.00'),
+    )
+    llmConfirmationThreshold = serializers.DecimalField(
+        source='llm_confirmation_threshold',
+        max_digits=3,
+        decimal_places=2,
+        min_value=Decimal('0.50'),
+        max_value=Decimal('1.00'),
+    )
+
+    class Meta:
+        model = ControlCommandRecognitionPolicy
+        fields = ('directExecutionThreshold', 'llmConfirmationThreshold')
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        direct_threshold = attrs.get(
+            'direct_execution_threshold',
+            self.instance.direct_execution_threshold if self.instance else None,
+        )
+        confirmation_threshold = attrs.get(
+            'llm_confirmation_threshold',
+            self.instance.llm_confirmation_threshold if self.instance else None,
+        )
+        if confirmation_threshold is not None and direct_threshold is not None and confirmation_threshold > direct_threshold:
+            raise serializers.ValidationError({'llmConfirmationThreshold': 'LLM 确认阈值不能高于直接执行阈值'})
         return attrs
 
 
@@ -940,6 +997,7 @@ def build_task_step_content(request, step: TaskCommandStep) -> dict:
             'commandType': 'control',
             'commandValueType': command.command_value_type,
             'callMethod': command.protocol,
+            'backendSendEnabled': command.backend_send_enabled,
             'ip': command.host,
             'port': command.port,
         }
@@ -1020,13 +1078,3 @@ class CommandDataLookupSerializer(serializers.Serializer):
     name = serializers.CharField()
     command = serializers.CharField()
     tasks = serializers.ListField(child=serializers.DictField(), required=False)
-
-
-class AliyunCommandItemSerializer(serializers.Serializer):
-    domainCode = serializers.CharField()
-    domainName = serializers.CharField(allow_blank=True)
-    toolId = serializers.CharField()
-    toolName = serializers.CharField()
-    description = serializers.CharField(allow_blank=True)
-    toolExamples = serializers.ListField(child=serializers.JSONField(), required=False)
-    toolParams = serializers.ListField(child=serializers.JSONField(), required=False)

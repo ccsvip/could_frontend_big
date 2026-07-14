@@ -46,6 +46,7 @@ import {
   deleteDeviceChatSession,
   fetchDeviceChatSession,
   fetchDeviceChatSessions,
+  type ControlCommandDispatchDiagnostics,
   type DeviceChatSessionDetail,
   type DeviceChatSessionRecord,
 } from '../../api/modules/devices';
@@ -136,6 +137,8 @@ type LogConversationItem = {
 };
 
 type LogConversationCategory = 'chat' | 'device';
+type LogChatMessage = ChatMessage & { commandDispatch?: ControlCommandDispatchDiagnostics };
+type LogConversationDetail = Omit<ChatConversationDetail, 'messages'> & { messages: LogChatMessage[] };
 
 const PAGE_SIZE = 10;
 const DEFAULT_TEMPERATURE = 0.7;
@@ -185,7 +188,7 @@ const toDeviceChatSessionItem = (session: DeviceChatSessionRecord): LogConversat
   updated_at: session.updatedAt,
 });
 
-const toDeviceChatConversationDetail = (session: DeviceChatSessionDetail): ChatConversationDetail => ({
+const toDeviceChatConversationDetail = (session: DeviceChatSessionDetail): LogConversationDetail => ({
   ...session,
   messages: session.messages.map(({ createdAt, ...chatMessage }) => ({
     ...chatMessage,
@@ -194,6 +197,38 @@ const toDeviceChatConversationDetail = (session: DeviceChatSessionDetail): ChatC
   created_at: session.createdAt,
   updated_at: session.updatedAt,
 });
+
+const getCommandDispatchRouteLabel = (route: ControlCommandDispatchDiagnostics['route']) => {
+  switch (route) {
+    case 'direct_execution': return '直接执行';
+    case 'llm_confirmation': return 'LLM 确认';
+    case 'ordinary_conversation': return '普通对话';
+    default: return route || '';
+  }
+};
+
+const getCommandDispatchConfirmationLabel = (outcome: ControlCommandDispatchDiagnostics['confirmationOutcome']) => {
+  switch (outcome) {
+    case 'not_required': return '无需确认';
+    case 'selected': return '已确认';
+    case 'not_selected': return '未确认';
+    case 'unavailable': return '确认不可用';
+    default: return outcome || '未记录';
+  }
+};
+
+const getCommandDispatchExecutionLabel = (outcome: ControlCommandDispatchDiagnostics['executionOutcome']) => {
+  switch (outcome) {
+    case 'succeeded': return '执行成功';
+    case 'failed': return '执行失败';
+    case 'not_executed': return '未执行';
+    default: return outcome || '未记录';
+  }
+};
+
+const formatCommandDispatchScore = (score: number | null | undefined) => (
+  typeof score === 'number' ? score.toFixed(2) : '-'
+);
 
 const toChatConversationItem = (conversation: ChatConversationRecord): LogConversationItem => ({
   ...conversation,
@@ -389,7 +424,7 @@ export const ApplicationManagementPage = () => {
   const [logConversationPageSize, setLogConversationPageSize] = useState(10);
   const [deletingLogConversationKey, setDeletingLogConversationKey] = useState<string | null>(null);
   const [clearingLogConversations, setClearingLogConversations] = useState(false);
-  const [selectedLogConversation, setSelectedLogConversation] = useState<ChatConversationDetail | null>(null);
+  const [selectedLogConversation, setSelectedLogConversation] = useState<LogConversationDetail | null>(null);
   const [selectedLogConversationLoading, setSelectedLogConversationLoading] = useState(false);
 
   // Annotation state
@@ -2886,6 +2921,19 @@ export const ApplicationManagementPage = () => {
                                   <span className="whitespace-pre-wrap break-words">{msg.content}</span>
                                 ) : renderReplyBlocks(msg.contentBlocks, msg.content)}
                               </div>
+                              {!isUser && msg.commandDispatch?.route && (
+                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 px-1 text-fluid-xs text-slate-500">
+                                  <Tag color="processing" className="m-0 text-fluid-xs">
+                                    分流：{getCommandDispatchRouteLabel(msg.commandDispatch.route)}
+                                  </Tag>
+                                  <span>分数：{formatCommandDispatchScore(msg.commandDispatch.highestScore)} / {formatCommandDispatchScore(msg.commandDispatch.secondHighestScore)}</span>
+                                  {typeof msg.commandDispatch.candidateCount === 'number' && (
+                                    <span>候选：{msg.commandDispatch.candidateCount}</span>
+                                  )}
+                                  <span>确认：{getCommandDispatchConfirmationLabel(msg.commandDispatch.confirmationOutcome)}</span>
+                                  <span>结果：{getCommandDispatchExecutionLabel(msg.commandDispatch.executionOutcome)}</span>
+                                </div>
+                              )}
                               <div className="flex items-center gap-2 text-[10px] text-slate-400 px-1 mt-0.5 justify-start">
                                 <span className="font-mono">{dayjs(msg.created_at).format('HH:mm:ss')}</span>
                                 {!isUser && msg.feedback !== 'none' && (

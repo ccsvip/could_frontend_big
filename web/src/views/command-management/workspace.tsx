@@ -15,6 +15,7 @@ import {
   message,
   Modal,
   Pagination,
+  Radio,
   Select,
   Space,
   Switch,
@@ -51,6 +52,8 @@ import {
 import { fetchPoints, type PointRecord } from '../../api/modules/point-management';
 import { fetchImageResources, fetchVideoResources, type ResourceRecord } from '../../api/modules/resources';
 import { useAuthStore } from '../../store/auth';
+import { ControlCommandRecognitionPolicyPanel } from './control-command-recognition-policy';
+import { normalizeControlCommandReplyPreferences } from './control-command-reply-preferences';
 import {
   buildStepPayload,
   mapStepRecordToFormValue,
@@ -91,7 +94,7 @@ const groupTypeColors: Record<CommandGroupRecord['groupType'], string> = {
 
 const callMethodOptions: Array<{ label: string; value: CommandCallMethod }> = [
   { label: 'UDP', value: 'UDP' },
-  // { label: 'TCP', value: 'TCP' },
+  { label: 'TCP', value: 'TCP' },
 ];
 
 const commandValueTypeOptions: Array<{ label: string; value: CommandValueType }> = [
@@ -441,6 +444,9 @@ export const CommandWorkspacePage = () => {
       groupId: selectedGroup.id,
       commandValueType: 'string',
       callMethod: 'UDP',
+      backendSendEnabled: false,
+      executionReply: '',
+      replyStrategy: 'fixed',
       isActive: true,
     } as Partial<ControlCommandPayload>);
     setControlModalOpen(true);
@@ -456,6 +462,8 @@ export const CommandWorkspacePage = () => {
       ip: item.ip,
       port: item.port,
       callMethod: item.callMethod,
+      backendSendEnabled: item.backendSendEnabled,
+      ...normalizeControlCommandReplyPreferences(item),
       isActive: item.isActive,
     });
     setControlModalOpen(true);
@@ -471,6 +479,7 @@ export const CommandWorkspacePage = () => {
     try {
       const values = await controlForm.validateFields();
       setSubmitting(true);
+      const replyPreferences = normalizeControlCommandReplyPreferences(values);
       const payload: ControlCommandPayload = {
         groupId: values.groupId,
         name: values.name.trim(),
@@ -479,6 +488,8 @@ export const CommandWorkspacePage = () => {
         ip: values.ip.trim(),
         port: Number(values.port),
         callMethod: values.callMethod,
+        backendSendEnabled: values.backendSendEnabled,
+        ...replyPreferences,
         isActive: values.isActive,
       };
 
@@ -836,6 +847,8 @@ export const CommandWorkspacePage = () => {
               ip: item.ip,
               port: item.port,
               callMethod: item.callMethod,
+              backendSendEnabled: item.backendSendEnabled,
+              ...normalizeControlCommandReplyPreferences(item),
               isActive: item.isActive,
             });
           } else {
@@ -917,6 +930,7 @@ export const CommandWorkspacePage = () => {
               </Typography.Title>
               <Tag color="blue">{item.command}</Tag>
               <Tag color={item.isActive ? 'green' : 'default'}>{item.isActive ? '启用' : '停用'}</Tag>
+              <Tag color={item.backendSendEnabled ? 'orange' : 'default'}>{item.backendSendEnabled ? '后端发送' : '前端发送'}</Tag>
             </div>
           </div>
           <Space size={8} wrap>
@@ -940,13 +954,19 @@ export const CommandWorkspacePage = () => {
             <div className="text-xs text-slate-500">调用方式</div>
             <div className="mt-1 text-sm text-slate-700">{item.callMethod}</div>
           </div>
-          <div className="rounded-lg bg-slate-50 px-3 py-2">
-            <div className="text-xs text-slate-500">指令类型</div>
-            <div className="mt-1 text-sm text-slate-700">
-              {commandValueTypeLabels[item.commandValueType ?? 'string']}
+            <div className="rounded-lg bg-slate-50 px-3 py-2">
+              <div className="text-xs text-slate-500">指令类型</div>
+              <div className="mt-1 text-sm text-slate-700">
+                {commandValueTypeLabels[item.commandValueType ?? 'string']}
+              </div>
+            </div>
+            <div className="rounded-lg bg-slate-50 px-3 py-2 md:col-span-4">
+              <div className="text-xs text-slate-500">执行回复</div>
+              <div className="mt-1 break-words text-sm text-slate-700">
+                {item.executionReply || (item.replyStrategy === 'generated' ? '智能生成' : `已执行：${item.name}。`)}
+              </div>
             </div>
           </div>
-        </div>
       </article>
         ))}
         {commandTotal > COMMAND_CARD_PAGE_SIZE ? (
@@ -1112,6 +1132,9 @@ export const CommandWorkspacePage = () => {
         </aside>
 
         <section className="rounded-xl border border-slate-200/70 bg-white shadow-card">
+          {selectedGroup?.groupType === 'control' ? (
+            <ControlCommandRecognitionPolicyPanel canUpdate={canUpdateControl} />
+          ) : null}
           <div className="flex flex-col gap-4 border-b border-slate-100 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
@@ -1240,6 +1263,23 @@ export const CommandWorkspacePage = () => {
               <Select options={commandValueTypeOptions} />
             </Form.Item>
           </div>
+          <Form.Item label="执行回复" name="executionReply">
+            <Input.TextArea rows={3} placeholder="例如：会议室屏幕已打开。" />
+          </Form.Item>
+          <Typography.Paragraph type="secondary">
+            填写后优先使用此回复；未填写时，按下方策略向用户播报执行结果。
+          </Typography.Paragraph>
+          <Form.Item label="未填写时回复方式" name="replyStrategy">
+            <Radio.Group
+              options={[
+                { label: '固定回复：已执行：具体指令。', value: 'fixed' },
+                { label: '智能生成：执行后生成一句自然播报', value: 'generated' },
+              ]}
+            />
+          </Form.Item>
+          <Form.Item label="后端发送" name="backendSendEnabled" valuePropName="checked">
+            <Switch checkedChildren="开启" unCheckedChildren="关闭" />
+          </Form.Item>
           <Form.Item label="是否启用" name="isActive" valuePropName="checked">
             <Switch checkedChildren="启用" unCheckedChildren="停用" />
           </Form.Item>

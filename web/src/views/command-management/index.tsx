@@ -16,6 +16,7 @@ import {
   InputNumber,
   Modal,
   Popconfirm,
+  Radio,
   Select,
   Space,
   Switch,
@@ -39,6 +40,7 @@ import {
   updateControlCommand,
 } from '../../api/modules/commands';
 import { useAuthStore } from '../../store/auth';
+import { normalizeControlCommandReplyPreferences } from './control-command-reply-preferences';
 
 type ControlCommandFormValues = ControlCommandPayload;
 
@@ -50,7 +52,7 @@ const activeOptions = [
 
 const callMethodOptions: Array<{ label: string; value: CommandCallMethod }> = [
   { label: 'UDP', value: 'UDP' },
-  // { label: 'TCP', value: 'TCP' },
+  { label: 'TCP', value: 'TCP' },
 ];
 
 const commandValueTypeOptions: Array<{ label: string; value: CommandValueType }> = [
@@ -128,6 +130,9 @@ export const ControlCommandManagementPage = () => {
       groupId: groups[0]?.id,
       commandValueType: 'string',
       callMethod: 'UDP',
+      backendSendEnabled: false,
+      executionReply: '',
+      replyStrategy: 'fixed',
       isActive: true,
     } as Partial<ControlCommandFormValues>);
     setFormVisible(true);
@@ -143,6 +148,8 @@ export const ControlCommandManagementPage = () => {
       ip: item.ip,
       port: item.port,
       callMethod: item.callMethod,
+      backendSendEnabled: item.backendSendEnabled,
+      ...normalizeControlCommandReplyPreferences(item),
       isActive: item.isActive,
     });
     setFormVisible(true);
@@ -171,6 +178,7 @@ export const ControlCommandManagementPage = () => {
     try {
       const values = await form.validateFields();
       setSubmitting(true);
+      const replyPreferences = normalizeControlCommandReplyPreferences(values);
       const payload: ControlCommandPayload = {
         groupId: values.groupId,
         name: values.name.trim(),
@@ -179,6 +187,8 @@ export const ControlCommandManagementPage = () => {
         ip: values.ip.trim(),
         port: Number(values.port),
         callMethod: values.callMethod,
+        backendSendEnabled: values.backendSendEnabled,
+        ...replyPreferences,
         isActive: values.isActive,
       };
 
@@ -228,6 +238,7 @@ export const ControlCommandManagementPage = () => {
         <Space size={6} wrap>
           <Tag color={item.callMethod === 'UDP' ? 'cyan' : 'geekblue'}>{item.callMethod}</Tag>
           <Tag color="purple">{commandValueTypeLabels[item.commandValueType ?? 'string']}</Tag>
+          <Tag color={item.backendSendEnabled ? 'orange' : 'default'}>{item.backendSendEnabled ? '后端发送' : '前端发送'}</Tag>
           <Typography.Text>{item.ip}:{item.port}</Typography.Text>
         </Space>
       ),
@@ -303,6 +314,21 @@ export const ControlCommandManagementPage = () => {
             <Form.Item label="调用方式" name="callMethod" rules={[{ required: true, message: '请选择调用方式' }]}><Select options={callMethodOptions} /></Form.Item>
             <Form.Item label="指令类型" name="commandValueType" rules={[{ required: true, message: '请选择指令类型' }]}><Select options={commandValueTypeOptions} /></Form.Item>
           </div>
+          <Form.Item label="执行回复" name="executionReply">
+            <Input.TextArea rows={3} placeholder="例如：会议室屏幕已打开。" />
+          </Form.Item>
+          <Typography.Paragraph type="secondary">
+            填写后优先使用此回复；未填写时，按下方策略向用户播报执行结果。
+          </Typography.Paragraph>
+          <Form.Item label="未填写时回复方式" name="replyStrategy">
+            <Radio.Group
+              options={[
+                { label: '固定回复：已执行：具体指令。', value: 'fixed' },
+                { label: '智能生成：执行后生成一句自然播报', value: 'generated' },
+              ]}
+            />
+          </Form.Item>
+          <Form.Item label="后端发送" name="backendSendEnabled" valuePropName="checked"><Switch checkedChildren="开启" unCheckedChildren="关闭" /></Form.Item>
           <Form.Item label="是否启用" name="isActive" valuePropName="checked"><Switch checkedChildren="启用" unCheckedChildren="停用" /></Form.Item>
         </Form>
       </Modal>
