@@ -124,8 +124,9 @@ class DeviceSerializer(serializers.ModelSerializer):
     applicationId = TenantOwnedPrimaryKeyField(
         source='application',
         queryset=DeviceApplication.objects.all(),
-        required=False,
+        required=True,
         allow_null=True,
+        error_messages={'required': '新建授权码必须绑定设备应用'},
     )
     applicationName = serializers.CharField(source='application.name', read_only=True, default='')
     voiceToneId = AvailableTTSVoicePrimaryKeyField(
@@ -297,7 +298,12 @@ class DeviceAuthorizationCodeSerializer(serializers.ModelSerializer):
         trim_whitespace=True,
         error_messages={'required': '请输入授权码', 'blank': '请输入授权码'},
     )
-    applicationId = TenantOwnedPrimaryKeyField(source='application', queryset=DeviceApplication.objects.all())
+    applicationId = TenantOwnedPrimaryKeyField(
+        source='application',
+        queryset=DeviceApplication.objects.all(),
+        required=False,
+        allow_null=True,
+    )
     applicationName = serializers.CharField(source='application.name', read_only=True)
     authorizationType = serializers.ChoiceField(
         source='authorization_type',
@@ -330,6 +336,8 @@ class DeviceAuthorizationCodeSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
+        if self.instance is None and not attrs.get('application'):
+            raise serializers.ValidationError({'applicationId': '新建授权码必须绑定设备应用'})
         if attrs.get('authorization_type') == Device.AUTHORIZATION_TRIAL and not attrs.get('expires_at'):
             raise serializers.ValidationError({'expiresAt': '试用授权必须设置到期时间'})
         return attrs

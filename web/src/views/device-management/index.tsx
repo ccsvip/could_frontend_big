@@ -38,9 +38,11 @@ import {
 } from '../../api/realtime';
 import {
   createDeviceApplication,
+  deleteDeviceApplication,
   createWakeWord,
   deleteWakeWord,
   fetchDeviceApplications,
+  fetchDeviceApplicationDeletionImpact,
   fetchDeviceStats,
   fetchWakeWords,
   fetchDevices,
@@ -228,6 +230,30 @@ export const DeviceManagementPage = () => {
     [devices],
   );
 
+  const handleApplicationDelete = async (record: DeviceApplicationRecord) => {
+    const impact = await fetchDeviceApplicationDeletionImpact(record.id);
+    Modal.confirm({
+      title: `删除应用「${record.name}」`,
+      content: (
+        <div className="space-y-2 text-fluid-base text-slate-600">
+          <p>将解除 {impact.deviceCount} 台设备的应用绑定。</p>
+          <p>{impact.authorizationCodeCount} 条历史授权码将变为未分配状态。</p>
+          <p>设备需要重新绑定应用；授权码需要重新分配应用后才能恢复关联。</p>
+        </div>
+      ),
+      okText: '删除应用',
+      cancelText: '取消',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        await deleteDeviceApplication(record.id);
+        setApplications((current) => current.filter((item) => item.id !== record.id));
+        setSelectedApplicationId((current) => (current === record.id ? null : current));
+        message.success('应用已删除');
+        await loadDataRef.current?.(filtersRef.current, devicePageRef.current);
+      },
+    });
+  };
+
   const applicationColumns = useMemo(() => {
     type R = DeviceApplicationRecord;
     return [
@@ -288,22 +314,39 @@ export const DeviceManagementPage = () => {
         key: 'actions',
         width: 100,
         render: (_: unknown, record: R) =>
-          canUpdateDevice ? (
-            <button
-              type="button"
-              className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-fluid-sm text-slate-600 transition hover:bg-slate-50 hover:text-brand-700"
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                openApplicationConfig(record);
-              }}
-            >
-              <IconSettings size={14} />
-              配置
-            </button>
+          canUpdateDevice || canDeleteDevice ? (
+            <Space size={8}>
+              {canUpdateDevice ? (
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-fluid-sm text-slate-600 transition hover:bg-slate-50 hover:text-brand-700"
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    openApplicationConfig(record);
+                  }}
+                >
+                  <IconSettings size={14} />
+                  配置
+                </button>
+              ) : null}
+              {canDeleteDevice ? (
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-white px-2.5 py-1 text-fluid-sm text-red-600 transition hover:bg-red-50"
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    void handleApplicationDelete(record);
+                  }}
+                >
+                  <IconTrash size={14} />
+                  删除
+                </button>
+              ) : null}
+            </Space>
           ) : null,
       },
     ];
-  }, [canUpdateDevice]);
+  }, [canDeleteDevice, canUpdateDevice, handleApplicationDelete]);
 
   const tabParam = searchParams.get('tab');
   const activeTabKey = tabParam === 'applications' || tabParam === 'wakeWords' ? tabParam : 'devices';

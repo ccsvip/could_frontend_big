@@ -250,9 +250,11 @@ class DeviceAuthorizationCode(models.Model):
     tenant = _tenant_fk()
     application = models.ForeignKey(
         DeviceApplication,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='authorization_codes',
         verbose_name='绑定应用',
+        null=True,
+        blank=True,
     )
     code = models.CharField('授权码', max_length=64, unique=True)
     status = models.CharField('状态', max_length=20, choices=STATUS_CHOICES, default=STATUS_UNUSED)

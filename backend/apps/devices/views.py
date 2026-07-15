@@ -311,6 +311,51 @@ class DeviceApplicationViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin,
     ).all()
     serializer_class = DeviceApplicationSerializer
 
+    def get_permissions(self):
+        if self.action == 'deletion_impact':
+            return [CompanyDeviceWritePermission(), CanDeleteDevices()]
+        return super().get_permissions()
+
+    @action(detail=True, methods=['get'], url_path='deletion-impact')
+    def deletion_impact(self, request, pk=None):
+        application = self.get_object()
+        return Response({
+            'deviceCount': application.devices.filter(tenant_id=application.tenant_id).count(),
+            'authorizationCodeCount': application.authorization_codes.filter(tenant_id=application.tenant_id).count(),
+        })
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        application = self.get_object()
+        application = self.apply_tenant_scope(DeviceApplication.objects.all()).select_for_update().get(pk=application.pk)
+        devices = list(Device.objects.select_for_update().filter(application=application, tenant_id=application.tenant_id))
+        authorization_codes = DeviceAuthorizationCode.objects.select_for_update().filter(
+            application=application,
+            tenant_id=application.tenant_id,
+        )
+        device_codes = [device.code for device in devices]
+        tenant_id = application.tenant_id
+
+        Device.objects.filter(id__in=[device.id for device in devices], tenant_id=tenant_id).update(application=None)
+        authorization_codes.update(application=None)
+        application.delete()
+
+        if device_codes:
+            payload = {
+                'type': 'device.application.changed',
+                'action': 'applicationDeleted',
+                'operation': 'update',
+                'resource': 'application',
+                'tenantId': tenant_id,
+                'deviceCodes': device_codes,
+                'refresh': {
+                    'endpoint': '/api/v1/device-runtime/config/',
+                    'reason': 'applicationDeleted',
+                },
+            }
+            transaction.on_commit(lambda: publish_device_event_sync(payload))
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class DeviceAuthorizationCodeViewSet(DevicePermissionMixin, TenantScopedQuerysetMixin, viewsets.ModelViewSet):
     queryset = DeviceAuthorizationCode.objects.select_related('application', 'used_by_device').all()

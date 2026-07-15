@@ -154,6 +154,11 @@ export type DeviceApplicationPayload = {
   commandGroupIds?: number[];
 };
 
+export type DeviceApplicationDeletionImpact = {
+  deviceCount: number;
+  authorizationCodeCount: number;
+};
+
 export type PaginatedResponse<T> = {
   count: number;
   next: string | null;
@@ -462,6 +467,15 @@ export const createDeviceApplication = async (payload: DeviceApplicationPayload)
 export const updateDeviceApplication = async (id: number, payload: DeviceApplicationPayload) => {
   const response = await httpClient.patch<DeviceApplicationRecord>(`/device-applications/${id}/`, payload);
   return response.data;
+};
+
+export const fetchDeviceApplicationDeletionImpact = async (id: number) => {
+  const response = await httpClient.get<DeviceApplicationDeletionImpact>(`/device-applications/${id}/deletion-impact/`);
+  return response.data;
+};
+
+export const deleteDeviceApplication = async (id: number) => {
+  await httpClient.delete(`/device-applications/${id}/`);
 };
 
 
