@@ -78,9 +78,6 @@ export const DeviceAuthorizationModal = ({
             </Form.Item>
           )}
         </Form.Item>
-        <Form.Item label="启用设备" name="isEnabled" valuePropName="checked">
-          <Switch />
-        </Form.Item>
       </Form>
     </Modal>
   );

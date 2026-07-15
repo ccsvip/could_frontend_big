@@ -6,7 +6,6 @@ export const buildBindPayload = (values: BindForm) => ({
   authorizationType: values.authorizationType,
   expiresAt: values.authorizationType === 'trial' ? values.expiresAt?.toISOString() : null,
   isSoftwareTrial: values.authorizationType === 'trial' ? values.isSoftwareTrial : false,
-  isEnabled: values.isEnabled,
 });
 
 export const buildTenantOptions = (tenants: TenantRecord[]) => tenants.map((item) => ({ label: item.name, value: item.id }));

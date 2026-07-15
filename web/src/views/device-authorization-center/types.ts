@@ -6,7 +6,6 @@ export type BindForm = {
   authorizationType: DeviceAuthorizationType;
   expiresAt?: Dayjs | null;
   isSoftwareTrial: boolean;
-  isEnabled: boolean;
 };
 
 export type BindMode = 'bind' | 'authorize';

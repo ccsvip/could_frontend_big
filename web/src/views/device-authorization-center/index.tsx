@@ -157,8 +157,6 @@ export const DeviceAuthorizationCenterPage = () => {
       authorizationType: record.authorizationType,
       expiresAt: record.expiresAt ? dayjs(record.expiresAt) : null,
       isSoftwareTrial: record.authorizationType === 'trial' ? record.isSoftwareTrial : false,
-      // Reauthorization is the recovery path after a revocation, so reopen it enabled by default.
-      isEnabled: mode === 'authorize' ? true : record.isEnabled,
     });
   };
 
