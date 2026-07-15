@@ -430,6 +430,10 @@ export const revokeDeviceAuthorization = async (deviceCode: string) => {
   return response.data;
 };
 
+export const deleteDeviceAuthorization = async (deviceCode: string) => {
+  await httpClient.delete(`/device-authorization-requests/${encodeURIComponent(deviceCode)}/`);
+};
+
 export const fetchDeviceGroups = async (params?: { tenant?: number }) => {
   const response = await httpClient.get<PaginatedResponse<DeviceGroupRecord> | DeviceGroupRecord[]>('/device-groups/', {
     params,

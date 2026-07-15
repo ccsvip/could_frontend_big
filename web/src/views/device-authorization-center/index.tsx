@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   bindDeviceAuthorizationRequest,
   authorizeDevice,
+  deleteDeviceAuthorization,
   fetchDeviceActivationLogs,
   fetchDeviceAuthorizations,
   fetchDeviceAuthorizationRequests,
@@ -156,7 +157,8 @@ export const DeviceAuthorizationCenterPage = () => {
       authorizationType: record.authorizationType,
       expiresAt: record.expiresAt ? dayjs(record.expiresAt) : null,
       isSoftwareTrial: record.authorizationType === 'trial' ? record.isSoftwareTrial : false,
-      isEnabled: record.isEnabled,
+      // Reauthorization is the recovery path after a revocation, so reopen it enabled by default.
+      isEnabled: mode === 'authorize' ? true : record.isEnabled,
     });
   };
 
@@ -201,14 +203,30 @@ export const DeviceAuthorizationCenterPage = () => {
 
   const handleRevoke = (record: DeviceAuthorizationRequestRecord) => {
     Modal.confirm({
-      title: '撤销设备授权',
-      content: `撤销后 ${record.deviceCode} 将被停用，安卓端无法继续拉取配置。`,
-      okText: '撤销授权',
+      title: '停用设备',
+      content: `停用后 ${record.deviceCode} 无法继续拉取运行配置，但仍可通过恢复授权重新启用。`,
+      okText: '确认停用',
       cancelText: '取消',
       okButtonProps: { danger: true },
       onOk: async () => {
         await revokeDeviceAuthorization(record.deviceCode);
-        message.success('设备授权已撤销');
+        message.success('设备已停用');
+        void loadAuthorizations(authorizationPage);
+        void loadLogs(logPage);
+      },
+    });
+  };
+
+  const handleDelete = (record: DeviceAuthorizationRequestRecord) => {
+    Modal.confirm({
+      title: '删除设备',
+      content: `删除后将移除 ${record.deviceCode} 的设备档案和当前授权。设备重新上报后需重新授权，历史授权日志会保留。此操作不可撤销。`,
+      okText: '确认删除',
+      cancelText: '取消',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        await deleteDeviceAuthorization(record.deviceCode);
+        message.success('设备已删除');
         void loadAuthorizations(authorizationPage);
         void loadLogs(logPage);
       },
@@ -273,6 +291,7 @@ export const DeviceAuthorizationCenterPage = () => {
     openBind,
     handleIgnore,
     handleRevoke,
+    handleDelete,
   });
 
   return (

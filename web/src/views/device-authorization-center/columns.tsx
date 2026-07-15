@@ -11,6 +11,7 @@ type DeviceAuthorizationColumnsOptions = {
   openBind: (record: DeviceAuthorizationRequestRecord, mode?: 'bind' | 'authorize') => void;
   handleIgnore: (record: DeviceAuthorizationRequestRecord) => void;
   handleRevoke: (record: DeviceAuthorizationRequestRecord) => void;
+  handleDelete: (record: DeviceAuthorizationRequestRecord) => void;
 };
 
 export const useDeviceAuthorizationColumns = ({
@@ -18,6 +19,7 @@ export const useDeviceAuthorizationColumns = ({
   openBind,
   handleIgnore,
   handleRevoke,
+  handleDelete,
 }: DeviceAuthorizationColumnsOptions) => {
 const requestColumns: ColumnsType<DeviceAuthorizationRequestRecord> = [
   {
@@ -147,14 +149,17 @@ const authorizationColumns: ColumnsType<DeviceAuthorizationRequestRecord> = [
     title: '操作',
     key: 'action',
     fixed: 'right',
-    width: 170,
+    width: 240,
     render: (_, record) => (
       <Space size={6}>
         <Button size="small" type="primary" onClick={() => openBind(record, 'authorize')}>
-          再次授权
+          {record.isEnabled ? '再次授权' : '恢复授权'}
         </Button>
         <Button size="small" danger onClick={() => handleRevoke(record)}>
-          撤销
+          停用
+        </Button>
+        <Button size="small" danger onClick={() => handleDelete(record)}>
+          删除设备
         </Button>
       </Space>
     ),

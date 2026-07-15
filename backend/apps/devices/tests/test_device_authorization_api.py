@@ -2362,6 +2362,47 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertIn('authorize', actions)
         self.assertIn('revoke', actions)
 
+    def test_superuser_deletes_authorized_device_and_retains_audit_log(self):
+        device = Device.objects.create(
+            tenant=self.tenant,
+            name='Deleted Android',
+            code='ANDROID-DELETE-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+        log = DeviceAuthLog.objects.create(
+            tenant=self.tenant,
+            device=device,
+            code=device.code,
+            action=DeviceAuthLog.ACTION_AUTHORIZE,
+            result=True,
+            message='设备已再次授权',
+        )
+        superuser = User.objects.create_superuser(
+            username='platform-device-deleter',
+            password='test123456',
+            email='platform-device-deleter@example.com',
+        )
+        self.client.force_authenticate(user=superuser)
+
+        response = self.client.delete(f'/api/v1/device-authorization-requests/{device.code}/')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Device.objects.filter(code=device.code).exists())
+        log.refresh_from_db()
+        self.assertIsNone(log.device_id)
+        self.assertEqual(log.code, 'ANDROID-DELETE-001')
+
+        self.client.force_authenticate(user=None)
+        activation_response = self.client.post(
+            '/api/v1/device-auth/activate/',
+            {'deviceCode': 'ANDROID-DELETE-001'},
+            format='json',
+        )
+        self.assertEqual(activation_response.status_code, status.HTTP_200_OK)
+        recreated_device = Device.objects.get(code='ANDROID-DELETE-001')
+        self.assertIsNone(recreated_device.tenant_id)
+        self.assertTrue(recreated_device.is_enabled)
+
     def test_heartbeat_updates_last_seen_but_does_not_mark_device_online(self):
         activate_response = self.client.post(
             '/api/v1/device-auth/activate/',

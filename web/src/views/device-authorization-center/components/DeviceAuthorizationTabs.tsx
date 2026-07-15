@@ -90,7 +90,7 @@ export const DeviceAuthorizationTabs = ({
             dataSource={authorizations}
             rowKey={(record) => record.recordId}
             loading={authorizationLoading}
-            scrollX={1380}
+            scrollX={1500}
             currentPage={authorizationPage}
             total={authorizationTotal}
             emptyText="暂无授权设备"

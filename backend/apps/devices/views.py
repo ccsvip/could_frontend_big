@@ -463,6 +463,25 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
         self._publish_authorization_event(device, DeviceAuthLog.ACTION_REVOKE)
         return Response(DeviceAuthorizationRequestSerializer(device, context={'request': request}).data)
 
+    @transaction.atomic
+    def destroy(self, request, code=None):
+        device = self.get_authorization_device(code)
+        tenant_id = device.tenant_id
+        device_code = device.code
+        device.delete()
+
+        transaction.on_commit(lambda: publish_device_event_sync({
+            'type': 'device.authorization',
+            'action': 'deviceDeleted',
+            'tenantId': tenant_id,
+            'deviceCode': device_code,
+            'refresh': {
+                'endpoint': '/api/v1/device-runtime/config/',
+                'reason': 'deviceDeleted',
+            },
+        }))
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     @staticmethod
     def _log_platform_action(device, action, message, request):
         record_device_authorization_action(device, action, message, ip_address=_client_ip(request))

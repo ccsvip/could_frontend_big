@@ -19,5 +19,5 @@ export const logActionMap: Record<DeviceActivationLogRecord['action'], { color: 
   bind: { color: 'success', text: '绑定' },
   ignore: { color: 'default', text: '忽略' },
   authorize: { color: 'geekblue', text: '再次授权' },
-  revoke: { color: 'error', text: '撤销授权' },
+  revoke: { color: 'error', text: '停用设备' },
 };
