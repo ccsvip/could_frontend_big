@@ -448,6 +448,13 @@ class DeviceAuthorizationRequestViewSet(viewsets.GenericViewSet):
     @action(detail=True, methods=['post'], url_path='authorize')
     def authorize(self, request, code=None):
         device = self.get_authorization_device(code)
+        if device.tenant_id is None:
+            return Response({'tenantId': '未绑定公司的设备请使用绑定操作'}, status=status.HTTP_400_BAD_REQUEST)
+
+        requested_tenant_id = request.data.get('tenantId')
+        if str(requested_tenant_id) != str(device.tenant_id):
+            return Response({'tenantId': '再次授权不能变更所属公司'}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = DeviceBindSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         device = bind_device_authorization(device, serializer)

@@ -2362,6 +2362,63 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertIn('authorize', actions)
         self.assertIn('revoke', actions)
 
+    def test_superuser_cannot_change_tenant_when_reauthorizing_device(self):
+        other_tenant = Tenant.objects.create(name='Other Company', code='other-reauthorization-company')
+        device = Device.objects.create(
+            tenant=self.tenant,
+            name='Authorized Android',
+            code='ANDROID-AUTHZ-TENANT-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+        superuser = User.objects.create_superuser(
+            username='platform-authz-tenant',
+            password='test123456',
+            email='platform-authz-tenant@example.com',
+        )
+        self.client.force_authenticate(user=superuser)
+
+        response = self.client.post(
+            f'/api/v1/device-authorization-requests/{device.code}/authorize/',
+            {
+                'tenantId': other_tenant.id,
+                'authorizationType': Device.AUTHORIZATION_TRIAL,
+                'expiresAt': (timezone.now() + timedelta(days=10)).isoformat(),
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['tenantId'], '再次授权不能变更所属公司')
+        device.refresh_from_db()
+        self.assertEqual(device.tenant_id, self.tenant.id)
+
+    def test_superuser_cannot_reauthorize_unbound_device(self):
+        device = Device.objects.create(
+            name='Unbound Android',
+            code='ANDROID-AUTHZ-UNBOUND-001',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+        superuser = User.objects.create_superuser(
+            username='platform-authz-unbound',
+            password='test123456',
+            email='platform-authz-unbound@example.com',
+        )
+        self.client.force_authenticate(user=superuser)
+
+        response = self.client.post(
+            f'/api/v1/device-authorization-requests/{device.code}/authorize/',
+            {
+                'tenantId': self.tenant.id,
+                'authorizationType': Device.AUTHORIZATION_PERMANENT,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['tenantId'], '未绑定公司的设备请使用绑定操作')
+        device.refresh_from_db()
+        self.assertIsNone(device.tenant_id)
+
     def test_superuser_deletes_authorized_device_and_retains_audit_log(self):
         device = Device.objects.create(
             tenant=self.tenant,
