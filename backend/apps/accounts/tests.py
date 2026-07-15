@@ -218,6 +218,45 @@ class AuthApiCsrfTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['user']['username'], 'approveduser')
 
+    def test_login_rejects_user_from_inactive_tenant(self):
+        from apps.tenants.models import Membership, Tenant
+
+        user = User.objects.create_user(username='inactive-tenant-user', password='test123456')
+        tenant = Tenant.objects.create(name='已停用公司', code='inactive-tenant', is_active=False)
+        Membership.objects.create(user=user, tenant=tenant)
+
+        response = self.client.post(
+            '/api/v1/auth/login/',
+            {'username': 'inactive-tenant-user', 'password': 'test123456'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data['message'], '公司已停用，请联系管理员')
+        self.assertNotIn('access', response.data)
+
+    def test_me_rejects_existing_token_after_tenant_is_deactivated(self):
+        from apps.tenants.models import Membership, Tenant
+
+        user = User.objects.create_user(username='deactivated-token-user', password='test123456')
+        tenant = Tenant.objects.create(name='待停用公司', code='deactivated-token-tenant')
+        Membership.objects.create(user=user, tenant=tenant)
+
+        login_response = self.client.post(
+            '/api/v1/auth/login/',
+            {'username': 'deactivated-token-user', 'password': 'test123456'},
+            format='json',
+        )
+        self.assertEqual(login_response.status_code, status.HTTP_200_OK)
+
+        tenant.is_active = False
+        tenant.save(update_fields=['is_active'])
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {login_response.data['access']}")
+        response = self.client.get('/api/v1/auth/me/')
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data['message'], '公司已停用，请联系管理员')
+
     def test_resaving_approved_application_repairs_missing_login_user(self):
         from django.contrib.auth.hashers import make_password
         application = AccountApplication.objects.create(

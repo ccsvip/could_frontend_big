@@ -10,7 +10,7 @@ from typing import Any, AsyncIterable
 import websockets
 from django.conf import settings
 from websockets.exceptions import ConnectionClosed
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from apps.accounts.authentication import TenantAwareJWTAuthentication
 
 from apps.accounts.services.permissions import get_active_permission_codes_for_user
 from apps.devices.models import Device
@@ -47,7 +47,7 @@ def resolve_tts_realtime_connection(token: str, *, query_params: dict[str, list[
         return None
 
     try:
-        authentication = JWTAuthentication()
+        authentication = TenantAwareJWTAuthentication()
         validated_token = authentication.get_validated_token(token)
         user = authentication.get_user(validated_token)
     except Exception:

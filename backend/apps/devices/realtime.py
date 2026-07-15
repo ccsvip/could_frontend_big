@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 from asgiref.sync import async_to_sync
 from django.core.cache import cache
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from apps.accounts.authentication import TenantAwareJWTAuthentication
 
 from apps.accounts.services.permissions import get_active_permission_codes_for_user
 from apps.tenants.services import get_user_tenant
@@ -148,7 +148,7 @@ def _resolve_connection(token: str, tenant_id_param: str) -> dict | None:
         return None
 
     try:
-        authentication = JWTAuthentication()
+        authentication = TenantAwareJWTAuthentication()
         validated_token = authentication.get_validated_token(token)
         user = authentication.get_user(validated_token)
     except Exception:

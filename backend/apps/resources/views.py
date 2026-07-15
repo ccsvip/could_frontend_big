@@ -49,7 +49,7 @@ from config.business_cache import CachedBusinessResponseMixin
 from apps.tenants.mixins import TenantScopedQuerysetMixin
 from apps.tenants.models import Tenant
 from apps.tenants.services import get_request_tenant, resolve_member_or_public_tenant, scope_queryset_member_or_public
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from apps.accounts.authentication import TenantAwareJWTAuthentication
 
 from apps.devices.realtime import publish_device_event_sync
 from .models import CommandGroup, ControlCommand, ControlCommandRecognitionPolicy, MinioConfig, ModelAsset, Resource, ScrollingText, ScrollingTextItem, TaskCommand, TaskCommandStep, TenantVideoQuota, VoiceTone
@@ -608,7 +608,7 @@ def _publish_runtime_config_changed(tenant_id, event_type: str, reason: str) -> 
 )
 class ScrollingTextViewSet(CachedBusinessResponseMixin, PermissionMappedModelViewSet):
     # 仅启用 JWT（不禁用认证）：后台带 token 走 membership，运行时无 token 走 ?tenant=<code>。
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [TenantAwareJWTAuthentication]
     permission_classes = [AllowAny]
 
     serializer_class = ScrollingTextSerializer
@@ -1060,7 +1060,7 @@ class TaskCommandViewSet(TenantScopedQuerysetMixin, PermissionMappedModelViewSet
 @extend_schema(tags=['Commands'])
 class CommandDataLookupView(APIView):
     # 仅启用 JWT（不禁用认证）：后台带 token 走 membership，运行时无 token 走 ?tenant=<code>。
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [TenantAwareJWTAuthentication]
     permission_classes = [AllowAny]
 
     def get(self, request):

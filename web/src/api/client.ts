@@ -171,6 +171,10 @@ httpClient.interceptors.response.use(
   },
   (error) => {
     if (error?.response?.status === 401) {
+      const errorData = error?.response?.data as ApiResponse | undefined;
+      if (errorData?.message === '公司已停用，请联系管理员') {
+        message.error(errorData.message);
+      }
       handleUnauthorizedResponse();
       return Promise.reject(error);
     }

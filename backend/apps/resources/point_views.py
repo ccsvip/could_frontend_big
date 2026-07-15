@@ -1,7 +1,7 @@
 from django.db.models import Q
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from apps.accounts.authentication import TenantAwareJWTAuthentication
 from apps.tenants.services import resolve_member_or_public_tenant, scope_queryset_member_or_public
 from .point_models import Point
 from .point_serializers import PointSerializer
@@ -82,7 +82,7 @@ POINT_LIST_PARAMETERS = [
 class PointViewSet(PermissionMappedModelViewSet):
     # 仅启用 JWT 认证（不禁用）：带 token 的后台请求识别出 user 走 membership 隔离（防伪造），
     # 无 token 的数字人运行时请求仍放行，走 ?tenant=<code> 参数隔离。
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [TenantAwareJWTAuthentication]
     permission_classes = [AllowAny]
 
     serializer_class = PointSerializer

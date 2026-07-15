@@ -4,7 +4,7 @@ import base64
 from typing import Any
 
 import websockets
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from apps.accounts.authentication import TenantAwareJWTAuthentication
 
 from apps.accounts.services.permissions import get_active_permission_codes_for_user
 from apps.devices.services.runtime import get_runtime_device_or_none
@@ -38,7 +38,7 @@ def resolve_asr_realtime_connection(
         return resolve_asr_device_connection(_extract_device_code(headers, query_params))
 
     try:
-        authentication = JWTAuthentication()
+        authentication = TenantAwareJWTAuthentication()
         validated_token = authentication.get_validated_token(token)
         user = authentication.get_user(validated_token)
     except Exception:

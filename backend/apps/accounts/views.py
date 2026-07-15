@@ -48,10 +48,19 @@ class LoginView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        refresh = RefreshToken.for_user(user)
         # tenant_id 写入 JWT claim 仅作辅助；权威租户上下文始终以 DB 的 Membership 为准
         # （避免 superuser 重新归属数据后旧 token 串租户）。
         tenant = get_user_tenant(user)
+        if tenant is not None and not tenant.is_active:
+            return Response(
+                {
+                    'status': 'error',
+                    'message': '公司已停用，请联系管理员',
+                    'code': status.HTTP_403_FORBIDDEN,
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        refresh = RefreshToken.for_user(user)
         if tenant is not None:
             refresh['tenant_id'] = tenant.id
         return Response(
