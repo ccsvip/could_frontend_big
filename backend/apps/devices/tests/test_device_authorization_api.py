@@ -573,6 +573,50 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(DeviceAuthorizationCode.objects.filter(application=self.application).exists())
 
+    def test_create_authorization_requires_application(self):
+        response = self.client.post(
+            '/api/v1/device-authorization-codes/',
+            {
+                'code': 'AUTH-NO-APPLICATION-001',
+                'authorizationType': Device.AUTHORIZATION_PERMANENT,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['applicationId'], ['新建授权码必须绑定设备应用'])
+
+    def test_unassigned_authorization_code_can_be_reassigned_without_changing_usage(self):
+        used_device = Device.objects.create(
+            tenant=self.tenant,
+            code='REASSIGN-AUTH-DEVICE-001',
+            name='Reassign Authorization Device',
+        )
+        authorization_code = self.create_code(
+            code='REASSIGN-AUTH-CODE-001',
+            application=None,
+            status=DeviceAuthorizationCode.STATUS_USED,
+            used_at=timezone.now(),
+            used_by_device=used_device,
+        )
+        replacement_application = DeviceApplication.objects.create(
+            tenant=self.tenant,
+            name='Replacement App',
+            code='replacement-app',
+        )
+
+        response = self.client.patch(
+            f'/api/v1/device-authorization-codes/{authorization_code.id}/',
+            {'applicationId': replacement_application.id},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        authorization_code.refresh_from_db()
+        self.assertEqual(authorization_code.application_id, replacement_application.id)
+        self.assertEqual(authorization_code.status, DeviceAuthorizationCode.STATUS_USED)
+        self.assertEqual(authorization_code.used_by_device_id, used_device.id)
+
     def test_create_authorization_uses_user_supplied_code(self):
         expires_at = timezone.now() + timedelta(days=7)
 
