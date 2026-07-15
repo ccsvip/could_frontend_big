@@ -16,6 +16,7 @@ import {
   Form,
   Input,
   Modal,
+  Pagination,
   Popconfirm,
   Select,
   Slider,
@@ -153,6 +154,7 @@ const isDeviceRealtimePayload = (payload: unknown): payload is { type: string } 
 const emptyApplicationOption = [{ label: '待绑定资源应用', value: null as number | null }];
 const emptyAgentApplicationOption = [{ label: '待绑定智能体', value: null as number | null }];
 const emptyVoiceToneOption = [{ label: '暂不绑定音色', value: null as number | null }];
+const DEVICE_PAGE_SIZE = 10;
 const DEFAULT_VOICE_TONE_CONFIG: DeviceVoiceToneConfig = {
   speechRate: 1,
   pitchRate: 1,
@@ -167,6 +169,7 @@ type DeviceWakeWordRow = {
 export const DeviceManagementPage = () => {
   const [devices, setDevices] = useState<DeviceRecord[]>([]);
   const [devicePage, setDevicePage] = useState(1);
+  const [deviceTotal, setDeviceTotal] = useState(0);
   const [stats, setStats] = useState({ total: 0, online: 0, offline: 0, trial: 0, permanent: 0 });
   const [applications, setApplications] = useState<DeviceApplicationRecord[]>([]);
   const [wakeWords, setWakeWords] = useState<WakeWordRecord[]>([]);
@@ -386,7 +389,7 @@ export const DeviceManagementPage = () => {
     setLoading(true);
     try {
       const [deviceResponse, statsResponse, applicationResponse, agentApplicationResponse, wakeWordResponse, nextVoiceToneOptions] = await Promise.all([
-        fetchDevices({ ...query, keyword, page }),
+        fetchDevices({ ...query, keyword, page, pageSize: DEVICE_PAGE_SIZE }),
         fetchDeviceStats(),
         fetchDeviceApplications(),
         fetchAgentApplications({ page: 1 }),
@@ -395,6 +398,7 @@ export const DeviceManagementPage = () => {
       ]);
       setDevices(deviceResponse.results);
       setDevicePage(page);
+      setDeviceTotal(deviceResponse.count);
       setStats(statsResponse);
       setApplications(applicationResponse.results);
       setAgentApplications(agentApplicationResponse.results);
@@ -431,7 +435,7 @@ export const DeviceManagementPage = () => {
   }, [canUseDeviceWorkspace]);
 
   useEffect(() => {
-    if (devices.length > 0 && !selectedDeviceCode) {
+    if (devices.length > 0 && !devices.some((device) => device.deviceCode === selectedDeviceCode)) {
       setSelectedDeviceCode(devices[0].deviceCode);
     }
   }, [devices, selectedDeviceCode]);
@@ -536,6 +540,10 @@ export const DeviceManagementPage = () => {
     const nextFilters = { ...filters, [key]: value };
     setFilters(nextFilters);
     void loadData(nextFilters, 1);
+  };
+
+  const handleDevicePageChange = (page: number) => {
+    void loadData(filters, page);
   };
 
   const handleMainTabChange = (key: string) => {
@@ -666,7 +674,14 @@ export const DeviceManagementPage = () => {
           dataSource={deviceWakeWordRows}
           rowKey={(r) => r.device.recordId}
           size="middle"
-          pagination={{ pageSize: 20, showSizeChanger: true, showTotal: (t) => `共 ${t} 台设备` }}
+          pagination={{
+            current: devicePage,
+            pageSize: DEVICE_PAGE_SIZE,
+            total: deviceTotal,
+            showSizeChanger: false,
+            showTotal: (total) => `共 ${total} 台设备`,
+            onChange: handleDevicePageChange,
+          }}
           scroll={{ x: 800 }}
           expandable={{
             expandedRowRender: (row) => {
@@ -938,7 +953,7 @@ export const DeviceManagementPage = () => {
                           设备列表
                         </Typography.Text>
                         <Typography.Text className="ml-1 text-fluid-sm text-slate-400">
-                          {devices.length}
+                          {deviceTotal}
                         </Typography.Text>
                       </div>
                       <div className="flex-1 overflow-y-auto">
@@ -969,6 +984,17 @@ export const DeviceManagementPage = () => {
                             </div>
                           );
                         })}
+                      </div>
+                      <div className="border-t border-slate-100 px-2 py-2">
+                        <Pagination
+                          current={devicePage}
+                          pageSize={DEVICE_PAGE_SIZE}
+                          total={deviceTotal}
+                          size="small"
+                          showSizeChanger={false}
+                          showQuickJumper
+                          onChange={handleDevicePageChange}
+                        />
                       </div>
                     </div>
 

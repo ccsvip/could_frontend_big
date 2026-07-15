@@ -79,6 +79,7 @@ export type WakeWordPayload = {
 
 export type DeviceListQuery = {
   page?: number;
+  pageSize?: number;
   keyword?: string;
   status?: DeviceStatus | 'all';
   enabledStatus?: DeviceEnabledStatus | 'all';
@@ -284,6 +285,7 @@ const normalizeList = <T>(value: PaginatedResponse<T> | T[]): PaginatedResponse<
 
 const buildDeviceParams = (query?: DeviceListQuery) => ({
   page: query?.page,
+  page_size: query?.pageSize,
   keyword: query?.keyword || undefined,
   status: query?.status && query.status !== 'all' ? query.status : undefined,
   enabledStatus: query?.enabledStatus && query.enabledStatus !== 'all' ? query.enabledStatus : undefined,
