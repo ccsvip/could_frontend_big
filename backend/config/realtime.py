@@ -1280,6 +1280,11 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
                             'reason': 'vad',
                         },
                     )
+                    # VAD may stop accepting audio before the upstream sends its final transcript.
+                    # Explicitly finish so the ASR session cannot remain open indefinitely.
+                    if not finish_sent:
+                        finish_sent = True
+                        await upstream.send(json.dumps(realtime_asr._session_finish_event()))
                 continue
 
             transcript_payload = realtime_asr.extract_transcript_payload(
@@ -1301,11 +1306,12 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
                     await upstream.send(json.dumps(realtime_asr._session_finish_event()))
                 continue
 
-            if realtime_asr.is_final_transcript_event(event) and not finish_sent:
-                finish_sent = True
+            if realtime_asr.is_final_transcript_event(event):
                 connection.asr_accepting_audio = False
                 connection.agent_latest_text = ''
-                await upstream.send(json.dumps(realtime_asr._session_finish_event()))
+                if not finish_sent:
+                    finish_sent = True
+                    await upstream.send(json.dumps(realtime_asr._session_finish_event()))
                 continue
 
             if event.get('type') == 'session.finished':

@@ -704,7 +704,10 @@
           const line = item.keywordLine || buildWakeWordLine(item);
           return '<div class="kv-row"><span>' + escapeHtml(item.text || '-') + '</span><span>' + code(line || '-') + '</span></div>';
         }).join('') : '<div class="note warn">当前设备没有绑定启用的唤醒词。请先在后台“设备管理 / 唤醒词”里绑定设备。</div>';
-        const firstText = wakeWords[0] && wakeWords[0].text || '你好小德';
+        const firstText = wakeWords[0] && wakeWords[0].text;
+        const wakeInstruction = firstText
+          ? '点击开始后，对麦克风说“' + escapeHtml(firstText) + '”。页面只根据 ASR 返回文本判断是否已唤醒。'
+          : '当前设备没有可用于 ASR 测试的唤醒词。请先在后台绑定并启用唤醒词。';
         els.contentBody.innerHTML = ''
           + '<div class="toolbar"><button class="button secondary" id="wakeConfigFetchBtn" type="button">重新拉取配置</button></div>'
           + '<div class="grid">'
@@ -715,7 +718,7 @@
           + '<label class="check-row" style="margin-top:10px"><input id="wakeAutoSpeak" type="checkbox" /> 命中唤醒词后自动播报提示语</label>'
           + '<div class="toolbar" style="margin-top:10px"><button class="button" id="wakeAsrStartBtn" type="button">开始真实 ASR 唤醒</button><button class="button secondary" id="wakeAsrStopBtn" type="button" disabled>停止识别</button><button class="button secondary" id="wakeSpeakBtn" type="button">仅播报提示语</button></div>'
           + '<audio id="wakeAudio" controls preload="none" hidden></audio>'
-          + '<div id="wakeResult" class="wake-result" style="margin-top:10px"><strong>等待真实 ASR</strong><span>点击开始后，对麦克风说“' + escapeHtml(firstText) + '”。页面只根据 ASR 返回文本判断是否已唤醒。</span></div>'
+          + '<div id="wakeResult" class="wake-result" style="margin-top:10px"><strong>等待真实 ASR</strong><span>' + wakeInstruction + '</span></div>'
           + '<div class="detail-block" style="margin-top:10px"><strong>ASR 事件输出</strong><pre id="wakeAsrOutput">等待请求</pre></div>'
           + '</article>'
           + '</div>'

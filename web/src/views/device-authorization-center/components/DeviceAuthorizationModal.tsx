@@ -46,7 +46,7 @@ export const DeviceAuthorizationModal = ({
         }}
       >
         <Form.Item label="所属公司" name="tenantId" rules={[{ required: true, message: '请选择公司' }]}>
-          <Select options={tenantOptions} />
+          <Select options={tenantOptions} disabled={mode === 'authorize'} />
         </Form.Item>
         <Form.Item label="授权类型" name="authorizationType" rules={[{ required: true, message: '请选择授权类型' }]}>
           <Select

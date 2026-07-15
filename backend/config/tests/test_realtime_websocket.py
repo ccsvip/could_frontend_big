@@ -520,6 +520,95 @@ class RealtimeWebSocketTests(SimpleTestCase):
 
         async_to_sync(run_task)()
 
+    def test_agent_asr_vad_stop_finishes_upstream_before_final_transcript(self):
+        async def run_task():
+            from config.realtime import RealtimeConnection, _agent_asr_upstream_to_client
+
+            sent_payloads = []
+            llm_questions = []
+
+            async def send(event):
+                sent_payloads.append(json.loads(event['text']))
+
+            async def fake_run_agent_llm(send, connection, question_text):
+                llm_questions.append(question_text)
+
+            connection = RealtimeConnection()
+            connection.agent_session_id = 'agent-vad-finish-1'
+            connection.agent_request_id = 'req-agent-vad-finish-1'
+            connection.agent_trace_id = 'trace-agent-vad-finish-1'
+            connection.asr_accepting_audio = True
+            upstream = VADBoundaryASRUpstream()
+
+            with patch('config.realtime._run_agent_llm_and_finish', side_effect=fake_run_agent_llm):
+                task = asyncio.create_task(_agent_asr_upstream_to_client(upstream, send, connection, []))
+                await upstream.emit({'type': 'input_audio_buffer.speech_stopped'})
+                await asyncio.wait_for(upstream.finish_seen.wait(), timeout=1)
+                await upstream.emit({
+                    'type': 'conversation.item.input_audio_transcription.completed',
+                    'transcript': '对对对',
+                })
+                await upstream.emit({'type': 'session.finished'})
+                await asyncio.wait_for(task, timeout=1)
+                await asyncio.sleep(0)
+
+            self.assertEqual([payload['type'] for payload in sent_payloads], [
+                'asr.input_stopped',
+                'asr.transcript',
+                'asr.done',
+            ])
+            self.assertEqual(llm_questions, ['对对对'])
+            self.assertEqual(
+                [message.get('type') for message in upstream.messages].count('session.finish'),
+                1,
+            )
+
+        async_to_sync(run_task)()
+
+    def test_agent_asr_finishes_upstream_after_vad_stops_input(self):
+        async def run_task():
+            from config.realtime import RealtimeConnection, _agent_asr_upstream_to_client
+
+            sent_payloads = []
+            llm_questions = []
+
+            async def send(event):
+                sent_payloads.append(json.loads(event['text']))
+
+            async def fake_run_agent_llm(send, connection, question_text):
+                llm_questions.append(question_text)
+
+            connection = RealtimeConnection()
+            connection.agent_session_id = 'agent-vad-finish-1'
+            connection.agent_request_id = 'req-agent-vad-finish-1'
+            connection.agent_trace_id = 'trace-agent-vad-finish-1'
+            connection.asr_accepting_audio = True
+            upstream = VADBoundaryASRUpstream()
+
+            with patch('config.realtime._run_agent_llm_and_finish', side_effect=fake_run_agent_llm):
+                task = asyncio.create_task(_agent_asr_upstream_to_client(upstream, send, connection, []))
+                await upstream.emit({'type': 'input_audio_buffer.speech_stopped'})
+                await asyncio.wait_for(upstream.finish_seen.wait(), timeout=1)
+                await upstream.emit({
+                    'type': 'conversation.item.input_audio_transcription.completed',
+                    'transcript': '对对对',
+                })
+                await upstream.emit({'type': 'session.finished'})
+                await asyncio.wait_for(task, timeout=1)
+                await asyncio.sleep(0)
+
+            self.assertEqual(
+                [payload['type'] for payload in sent_payloads],
+                ['asr.input_stopped', 'asr.transcript', 'asr.done'],
+            )
+            self.assertEqual(llm_questions, ['对对对'])
+            self.assertEqual(
+                [message.get('type') for message in upstream.messages].count('session.finish'),
+                1,
+            )
+
+        async_to_sync(run_task)()
+
     def test_agent_asr_starts_llm_without_waiting_for_slow_upstream_close(self):
         async def run_task():
             from config.realtime import RealtimeConnection, _agent_asr_upstream_to_client
@@ -1475,7 +1564,10 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                     if message.get('type') == 'input_audio_buffer.append'
                 ]
                 self.assertEqual(audio_messages_after_vad, audio_messages_before_vad)
-                self.assertNotIn('session.finish', [message.get('type') for message in upstream.messages])
+                self.assertEqual(
+                    [message.get('type') for message in upstream.messages].count('session.finish'),
+                    1,
+                )
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)
