@@ -8,7 +8,6 @@ export type AsrSettingsRecord = {
   model: string;
   vadThreshold: number;
   vadSilenceDurationMs: number;
-  filterFillerWords: boolean;
   isActive: boolean;
   configured: boolean;
   updated_at: string | null;
@@ -23,7 +22,6 @@ export type AsrSettingsPayload = Partial<{
   model: string;
   vadThreshold: number;
   vadSilenceDurationMs: number;
-  filterFillerWords: boolean;
   isActive: boolean;
 }>;
 
@@ -56,6 +54,10 @@ export type AsrReplacementRulePayload = {
   isActive: boolean;
 };
 
+export type AsrFillerWordSet = {
+  fillerWords: string;
+};
+
 export const fetchAsrSettings = async () => {
   const response = await httpClient.get<AsrSettingsRecord>('/settings/asr/');
   return response.data;
@@ -85,6 +87,16 @@ export const updateAsrRuntimeConfig = async (
 
 export const testAsr = async () => {
   const response = await httpClient.post<AsrTestResult>('/ai-models/asr/test/');
+  return response.data;
+};
+
+export const fetchAsrFillerWords = async () => {
+  const response = await httpClient.get<AsrFillerWordSet>('/ai-models/asr/filler-words/');
+  return response.data;
+};
+
+export const updateAsrFillerWords = async (payload: AsrFillerWordSet) => {
+  const response = await httpClient.patch<AsrFillerWordSet>('/ai-models/asr/filler-words/', payload);
   return response.data;
 };
 

@@ -32,7 +32,6 @@ class EffectiveASRConfig:
     is_active: bool
     vad_threshold: float = 0.0
     vad_silence_duration_ms: int = 400
-    filter_filler_words: bool = True
     updated_at: object | None = None
 
 
@@ -53,7 +52,6 @@ def get_effective_asr_config() -> EffectiveASRConfig:
         model=(cfg.model or getattr(settings, 'ASR_MODEL', '')).strip(),
         vad_threshold=float(getattr(cfg, 'vad_threshold', 0.0)),
         vad_silence_duration_ms=int(getattr(cfg, 'vad_silence_duration_ms', 400)),
-        filter_filler_words=bool(getattr(cfg, 'filter_filler_words', True)),
         is_active=bool(cfg.is_active),
         updated_at=cfg.updated_at,
     )
@@ -73,7 +71,6 @@ def serialize_asr_settings(config: EffectiveASRConfig) -> dict:
         'model': config.model,
         'vadThreshold': config.vad_threshold,
         'vadSilenceDurationMs': config.vad_silence_duration_ms,
-        'filterFillerWords': config.filter_filler_words,
         'isActive': config.is_active,
         'configured': is_asr_configured(config),
         'updated_at': config.updated_at,
@@ -90,7 +87,6 @@ def serialize_asr_status(config: EffectiveASRConfig | None = None) -> dict:
         'model': effective.model,
         'vadThreshold': effective.vad_threshold,
         'vadSilenceDurationMs': effective.vad_silence_duration_ms,
-        'filterFillerWords': effective.filter_filler_words,
         'updated_at': effective.updated_at,
     }
 
@@ -99,7 +95,13 @@ def is_asr_configured(config: EffectiveASRConfig) -> bool:
     return bool(config.workspace_id and config.api_key and config.base_url and config.model)
 
 
-def transcribe_pcm_audio(*, pcm: bytes, sample_rate: int = 16000, config: EffectiveASRConfig | None = None) -> str:
+def transcribe_pcm_audio(
+    *,
+    pcm: bytes,
+    sample_rate: int = 16000,
+    config: EffectiveASRConfig | None = None,
+    tenant_id: int | None = None,
+) -> str:
     effective = config or get_effective_asr_config()
     if not effective.is_active:
         raise RuntimeError('ASR 服务未启用')
@@ -108,6 +110,9 @@ def transcribe_pcm_audio(*, pcm: bytes, sample_rate: int = 16000, config: Effect
     if not pcm:
         raise RuntimeError('音频内容为空')
 
+    from apps.ai_models.realtime_asr import is_filler_transcript_text, load_asr_filler_words
+
+    filler_words = load_asr_filler_words(tenant_id)
     ws = None
     transcript = ''
     try:
@@ -138,11 +143,8 @@ def transcribe_pcm_audio(*, pcm: bytes, sample_rate: int = 16000, config: Effect
                 message = event.get('message') or event.get('error') or 'ASR upstream error'
                 raise RuntimeError(str(message)[:200])
             text = _extract_transcript_text(event)
-            if effective.filter_filler_words:
-                from apps.ai_models.realtime_asr import is_filler_transcript_text
-
-                if is_filler_transcript_text(text):
-                    text = ''
+            if is_filler_transcript_text(text, filler_words=filler_words):
+                text = ''
             if text:
                 if event_type.endswith('.delta'):
                     transcript += text

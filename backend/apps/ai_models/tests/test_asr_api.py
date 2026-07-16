@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import ASRConfig, ASRReplacementRule
+from apps.ai_models.models import ASRConfig, ASRFillerWordSet, ASRReplacementRule
 from apps.devices.models import Device
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
@@ -56,7 +56,7 @@ class ASRApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(read_response.data['apiKey'], '********cret')
         self.assertEqual(read_response.data['vadThreshold'], 0.0)
         self.assertEqual(read_response.data['vadSilenceDurationMs'], 400)
-        self.assertTrue(read_response.data['filterFillerWords'])
+        self.assertNotIn('filterFillerWords', read_response.data)
 
         update_response = self.client.patch(
             '/api/v1/settings/asr/',
@@ -67,7 +67,6 @@ class ASRApiTests(TenantTestMixin, APITestCase):
                 'model': 'qwen3-asr-flash-realtime',
                 'vadThreshold': 0.35,
                 'vadSilenceDurationMs': 1200,
-                'filterFillerWords': False,
                 'isActive': False,
             },
             format='json',
@@ -78,7 +77,7 @@ class ASRApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(update_response.data['apiKey'], '********cret')
         self.assertEqual(update_response.data['vadThreshold'], 0.35)
         self.assertEqual(update_response.data['vadSilenceDurationMs'], 1200)
-        self.assertFalse(update_response.data['filterFillerWords'])
+        self.assertNotIn('filterFillerWords', update_response.data)
         self.assertFalse(update_response.data['isActive'])
 
     def test_asr_settings_validate_vad_range(self):
@@ -151,7 +150,7 @@ class ASRApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['model'], 'qwen3-asr-flash-realtime')
         self.assertEqual(response.data['vadThreshold'], 0.0)
         self.assertEqual(response.data['vadSilenceDurationMs'], 400)
-        self.assertTrue(response.data['filterFillerWords'])
+        self.assertNotIn('filterFillerWords', response.data)
         self.assertNotIn('apiKey', response.data)
         self.assertNotIn('env-secret', str(response.data))
 
@@ -293,6 +292,50 @@ class ASRApiTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(delete_response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(ASRReplacementRule.objects.filter(tenant=self.tenant).exists())
+
+    def test_user_with_asr_permission_can_manage_own_filler_word_set(self):
+        self.grant_permissions('ai_models.asr.view')
+
+        default_response = self.client.get('/api/v1/ai-models/asr/filler-words/')
+
+        self.assertEqual(default_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(default_response.data, {'fillerWords': ''})
+
+        update_response = self.client.patch(
+            '/api/v1/ai-models/asr/filler-words/',
+            {'fillerWords': '嗯\n啊\n\n嗯\n哦'},
+            format='json',
+        )
+
+        self.assertEqual(update_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(update_response.data, {'fillerWords': '嗯\n啊\n哦'})
+        self.assertEqual(
+            ASRFillerWordSet.objects.get(tenant=self.tenant).words_text,
+            '嗯\n啊\n哦',
+        )
+
+    def test_filler_word_set_rejects_non_single_chinese_characters(self):
+        self.grant_permissions('ai_models.asr.view')
+
+        response = self.client.patch(
+            '/api/v1/ai-models/asr/filler-words/',
+            {'fillerWords': '嗯\n好的\num'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('单个汉字', response.data['message'])
+        self.assertFalse(ASRFillerWordSet.objects.filter(tenant=self.tenant).exists())
+
+    def test_filler_word_sets_are_tenant_scoped(self):
+        self.grant_permissions('ai_models.asr.view')
+        other_tenant = Tenant.objects.create(name='其他语气词公司', code='other-filler-company')
+        ASRFillerWordSet.objects.create(tenant=other_tenant, words_text='嗯')
+
+        response = self.client.get('/api/v1/ai-models/asr/filler-words/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {'fillerWords': ''})
 
     def test_replacement_rules_are_tenant_scoped(self):
         self.grant_permissions('ai_models.asr.view')

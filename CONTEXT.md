@@ -128,6 +128,10 @@ _Avoid_: user input playback, suggested question playback, TTS configuration tes
 Speech-to-text input for an Agent Application conversation, where recorded user audio is transcribed into editable message text before the user sends it.
 _Avoid_: realtime interruption, direct voice message, device ASR runtime
 
+**Company ASR Filler Word Set**:
+A company-scoped, newline-delimited set of exact ASR transcript entries to suppress. A transcript is suppressed only when its complete text, after ignoring surrounding whitespace and punctuation, equals one configured entry; combinations or repetitions of entries remain valid transcripts. Sets are empty until their company explicitly configures entries and replace any platform-wide enable switch.
+_Avoid_: character set filter, sentence filter, platform-wide filler-word list
+
 **Control Command Recognition Policy**:
 A company-scoped policy that maps a locally calculated Control Command Match Confidence to one of three outcomes: direct execution, LLM confirmation, or ordinary conversation. It applies only to active Control Commands.
 _Avoid_: ASR confidence, task-command policy, global command threshold

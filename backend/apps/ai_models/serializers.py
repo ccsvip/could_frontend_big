@@ -14,6 +14,7 @@ from .services.tts import get_effective_tts_config, mask_api_key as mask_tts_api
 from .services import third_party_chatbots, tts as tts_services
 from .models import (
     ASRConfig,
+    ASRFillerWordSet,
     AgentAnnotation,
     ASRReplacementRule,
     AgentApplication,
@@ -646,7 +647,6 @@ class ASRConfigSerializer(serializers.ModelSerializer):
         min_value=200,
         max_value=6000,
     )
-    filterFillerWords = serializers.BooleanField(source='filter_filler_words', required=False)
     isActive = serializers.BooleanField(source='is_active', required=False)
 
     class Meta:
@@ -658,7 +658,6 @@ class ASRConfigSerializer(serializers.ModelSerializer):
             'model',
             'vadThreshold',
             'vadSilenceDurationMs',
-            'filterFillerWords',
             'isActive',
             'updated_at',
         )
@@ -682,6 +681,28 @@ class ASRVADConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = ASRConfig
         fields = ('vadThreshold', 'vadSilenceDurationMs')
+
+
+class ASRFillerWordSetSerializer(serializers.ModelSerializer):
+    fillerWords = serializers.CharField(source='words_text', allow_blank=True, max_length=1024)
+
+    class Meta:
+        model = ASRFillerWordSet
+        fields = ('fillerWords',)
+
+    def validate_fillerWords(self, value: str) -> str:
+        words: list[str] = []
+        seen: set[str] = set()
+        for line_number, raw_word in enumerate(value.splitlines(), start=1):
+            word = raw_word.strip()
+            if not word:
+                continue
+            if len(word) != 1 or not ('\u3400' <= word <= '\u9fff' or '\uf900' <= word <= '\ufaff'):
+                raise serializers.ValidationError(f'第 {line_number} 行必须是单个汉字')
+            if word not in seen:
+                words.append(word)
+                seen.add(word)
+        return '\n'.join(words)
 
 
 class ASRReplacementRuleSerializer(serializers.ModelSerializer):

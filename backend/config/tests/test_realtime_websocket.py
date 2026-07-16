@@ -16,7 +16,7 @@ from django.test import TestCase, override_settings
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import AgentApplication, ChatConversation, ChatMessage, LLMModel, LLMProvider, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, TenantLLMModelGrant, TenantThirdPartyChatbotGrant, ThirdPartyChatbotApplication, ThirdPartyChatbotIntegration, ThirdPartyChatbotProvider
+from apps.ai_models.models import ASRFillerWordSet, AgentApplication, ChatConversation, ChatMessage, LLMModel, LLMProvider, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, TenantLLMModelGrant, TenantThirdPartyChatbotGrant, ThirdPartyChatbotApplication, ThirdPartyChatbotIntegration, ThirdPartyChatbotProvider
 from apps.devices.models import Device, DeviceApplication, DeviceChatLog
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
@@ -872,6 +872,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
                 patch('apps.ai_models.realtime_asr.is_asr_configured', return_value=True),
                 patch('apps.ai_models.realtime_asr.build_asr_ws_url', return_value='ws://asr.example/realtime'),
                 patch('apps.ai_models.realtime_asr.load_asr_replacement_pairs', return_value=[]),
+                patch('apps.ai_models.realtime_asr.load_asr_filler_words', return_value=frozenset()),
                 patch('apps.ai_models.realtime_asr.websockets.connect', return_value=upstream),
             ):
                 await communicator.send_input({
@@ -968,6 +969,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
                 patch('apps.ai_models.realtime_asr.is_asr_configured', return_value=True),
                 patch('apps.ai_models.realtime_asr.build_asr_ws_url', return_value='ws://asr.example/realtime'),
                 patch('apps.ai_models.realtime_asr.load_asr_replacement_pairs', return_value=[]),
+                patch('apps.ai_models.realtime_asr.load_asr_filler_words', return_value=frozenset()),
                 patch('apps.ai_models.realtime_asr.websockets.connect', return_value=upstream),
             ):
                 await communicator.send_input({
@@ -1011,7 +1013,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
 
         async_to_sync(run_websocket)()
 
-    def test_unified_realtime_websocket_filters_filler_and_waits_for_client_finish(self):
+    def test_unified_realtime_websocket_filters_configured_filler_and_auto_finishes(self):
         async def run_websocket():
             from config.asgi import application
 
@@ -1034,7 +1036,6 @@ class RealtimeWebSocketTests(SimpleTestCase):
                 workspace_id='test-workspace',
                 vad_threshold=-0.4,
                 vad_silence_duration_ms=700,
-                filter_filler_words=True,
             )
             upstream = AutoFinishASRUpstream('嗯。')
             with (
@@ -1046,6 +1047,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
                 patch('apps.ai_models.realtime_asr.is_asr_configured', return_value=True),
                 patch('apps.ai_models.realtime_asr.build_asr_ws_url', return_value='ws://asr.example/realtime'),
                 patch('apps.ai_models.realtime_asr.load_asr_replacement_pairs', return_value=[]),
+                patch('apps.ai_models.realtime_asr.load_asr_filler_words', return_value={'嗯'}),
                 patch('apps.ai_models.realtime_asr.websockets.connect', return_value=upstream),
             ):
                 await communicator.send_input({
@@ -1062,13 +1064,6 @@ class RealtimeWebSocketTests(SimpleTestCase):
                 self.assertEqual(json.loads((await communicator.receive_output(timeout=1))['text'])['type'], 'asr.ready')
 
                 await communicator.send_input({'type': 'websocket.receive', 'bytes': b'\x01\x02'})
-                await asyncio.sleep(0.05)
-                self.assertNotIn('session.finish', [message.get('type') for message in upstream.messages])
-
-                await communicator.send_input({
-                    'type': 'websocket.receive',
-                    'text': json.dumps({'type': 'asr.session.finish', 'id': 'asr-filter-finish'}),
-                })
                 done = await communicator.receive_output(timeout=1)
                 self.assertEqual(json.loads(done['text']), {'type': 'asr.done', 'id': 'asr-filter-session'})
 
@@ -1142,6 +1137,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
                 patch('apps.ai_models.realtime_asr.get_effective_asr_config', return_value=active_config),
                 patch('apps.ai_models.realtime_asr.is_asr_configured', return_value=True),
                 patch('apps.ai_models.realtime_asr.load_asr_replacement_pairs', return_value=[]),
+                patch('apps.ai_models.realtime_asr.load_asr_filler_words', return_value=frozenset()),
                 patch('apps.ai_models.realtime_asr.build_asr_ws_url', return_value='ws://asr.example/realtime'),
                 patch('apps.ai_models.realtime_asr.websockets.connect', return_value=FailingUnifiedASRUpstream()),
             ):
@@ -1273,6 +1269,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
                 patch('apps.ai_models.realtime_asr.is_asr_configured', return_value=True),
                 patch('apps.ai_models.realtime_asr.build_asr_ws_url', return_value='ws://asr.example/realtime'),
                 patch('apps.ai_models.realtime_asr.load_asr_replacement_pairs', return_value=[]),
+                patch('apps.ai_models.realtime_asr.load_asr_filler_words', return_value=frozenset()),
                 patch('apps.ai_models.realtime_asr.websockets.connect', return_value=upstream),
             ):
                 await communicator.send_input({
@@ -1649,12 +1646,13 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         ASR_BASE_URL='wss://asr.example/realtime',
         ASR_MODEL='filler-final-model',
     )
-    def test_agent_voice_filtered_filler_final_keeps_asr_listening_without_llm(self):
+    def test_agent_voice_filtered_filler_final_finishes_upstream_without_llm(self):
         self.bind_agent_device(
             agent_name='Filtered Filler Agent',
             device_name='Filtered Filler Device',
             device_code='ANDROID-FILTERED-FILLER-001',
         )
+        ASRFillerWordSet.objects.create(tenant=self.tenant, words_text='嗯')
         upstream = VADBoundaryASRUpstream()
 
         async def run_websocket():
@@ -1700,7 +1698,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 self.assertEqual((await self.receive_realtime_json(communicator))['type'], 'pong')
                 self.assertEqual(
                     [message.get('type') for message in upstream.messages].count('session.finish'),
-                    0,
+                    1,
                 )
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})

@@ -50,7 +50,6 @@ export const AsrSettingsPage = () => {
         apiKey: '',
         baseUrl: data.baseUrl,
         model: data.model,
-        filterFillerWords: data.filterFillerWords,
         isActive: data.isActive,
       });
     } finally {
@@ -224,22 +223,6 @@ export const AsrSettingsPage = () => {
                 </div>
               </Form.Item>
 
-              <Form.Item
-                label={
-                  <span className="flex items-center gap-1.5 font-medium text-slate-700">
-                    <IconInfoCircle className="text-slate-400" /> 过滤语气词
-                  </span>
-                }
-                className="mb-5"
-                tooltip="开启后，纯语气词或纯标点的识别结果不会触发发送，如：嗯、啊、。"
-              >
-                <div className="flex items-center h-10 px-3 border border-slate-200 rounded-lg bg-slate-50/50 justify-between">
-                  <span className="text-xs text-slate-500">忽略无实际语义的 ASR 结果</span>
-                  <Form.Item name="filterFillerWords" valuePropName="checked" noStyle>
-                    <Switch checkedChildren="过滤" unCheckedChildren="不过滤" />
-                  </Form.Item>
-                </div>
-              </Form.Item>
             </div>
 
             <div className="border-t border-slate-105 pt-5 mt-2">

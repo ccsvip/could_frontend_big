@@ -60,6 +60,7 @@ from .llm_services import (
     llm_provider_has_active_company_authorization,
 )
 from .models import (
+    ASRFillerWordSet,
     ASRReplacementRule,
     AgentAnnotation,
     AgentApplication,
@@ -89,6 +90,7 @@ from .services.annotations import find_matching_annotation
 from .services.reply_blocks import blocks_to_text, serialize_reply_blocks, text_to_blocks
 from .serializers import (
     ASRConfigSerializer,
+    ASRFillerWordSetSerializer,
     ASRVADConfigSerializer,
     AgentAnnotationCreateFromMessageSerializer,
     AgentAnnotationSerializer,
@@ -204,6 +206,41 @@ class ASRConfigView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serialize_asr_status())
+
+
+class ASRFillerWordSetView(TenantScopedQuerysetMixin, APIView):
+    permission_classes = [CanViewASR]
+
+    def _get_tenant(self) -> Tenant:
+        user = self.request.user
+        if user.is_superuser:
+            tenant_id = self.superuser_tenant_filter()
+            tenant = Tenant.objects.filter(id=tenant_id, is_active=True).first() if tenant_id else None
+            if tenant is None:
+                raise ValidationError({'tenant': ['超管请先具体到某家公司后再配置语气词']})
+            return tenant
+
+        tenant = self.request_tenant
+        if tenant is None:
+            raise ValidationError({'tenant': ['当前账号未归属公司，无法配置语气词']})
+        return tenant
+
+    def get(self, request):
+        tenant = self._get_tenant()
+        instance = ASRFillerWordSet.objects.filter(tenant=tenant).first()
+        if instance is None:
+            return Response({'fillerWords': ''})
+        return Response(ASRFillerWordSetSerializer(instance).data)
+
+    def patch(self, request):
+        tenant = self._get_tenant()
+        serializer = ASRFillerWordSetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance, _ = ASRFillerWordSet.objects.update_or_create(
+            tenant=tenant,
+            defaults={'words_text': serializer.validated_data['words_text']},
+        )
+        return Response(ASRFillerWordSetSerializer(instance).data)
 
 
 class ASRDeviceStatusView(APIView):

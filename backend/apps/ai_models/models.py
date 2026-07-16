@@ -425,7 +425,6 @@ class ASRConfig(models.Model):
     model = models.CharField('模型名称', max_length=128, blank=True, default='')
     vad_threshold = models.FloatField('VAD检测阈值', default=0.0)
     vad_silence_duration_ms = models.PositiveIntegerField('VAD断句检测阈值(ms)', default=400)
-    filter_filler_words = models.BooleanField('过滤语气词', default=True)
     is_active = models.BooleanField('是否启用', default=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
 
@@ -454,11 +453,30 @@ class ASRConfig(models.Model):
                 'model': getattr(settings, 'ASR_MODEL', ''),
                 'vad_threshold': 0.0,
                 'vad_silence_duration_ms': 400,
-                'filter_filler_words': True,
                 'is_active': True,
             },
         )
         return instance
+
+
+class ASRFillerWordSet(models.Model):
+    tenant = models.OneToOneField(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='asr_filler_word_set',
+        verbose_name='所属公司',
+    )
+    words_text = models.TextField('语气词', blank=True, default='')
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        verbose_name = '公司 ASR 语气词词表'
+        verbose_name_plural = '公司 ASR 语气词词表'
+
+    def __str__(self):
+        return f'{self.tenant_id}: {self.words_text}'
 
 
 def default_tts_session_config() -> dict:

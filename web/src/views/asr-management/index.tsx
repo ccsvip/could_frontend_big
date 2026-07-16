@@ -31,8 +31,10 @@ import {
 import {
   createAsrReplacementRule,
   deleteAsrReplacementRule,
+  fetchAsrFillerWords,
   fetchAsrReplacementRules,
   fetchAsrStatus,
+  updateAsrFillerWords,
   updateAsrRuntimeConfig,
   updateAsrReplacementRule,
   type AsrReplacementRulePayload,
@@ -72,6 +74,10 @@ type ReplacementRuleFormValues = {
 type VadConfigFormValues = {
   vadThreshold: number;
   vadSilenceDurationMs: number;
+};
+
+type FillerWordFormValues = {
+  fillerWords: string;
 };
 
 const TARGET_SAMPLE_RATE = 16000;
@@ -173,6 +179,8 @@ export const AsrManagementPage = () => {
   const [serviceReady, setServiceReady] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
   const [vadSaving, setVadSaving] = useState(false);
+  const [fillerWordsLoading, setFillerWordsLoading] = useState(false);
+  const [fillerWordsSaving, setFillerWordsSaving] = useState(false);
   const [liveText, setLiveText] = useState('');
   const [finalText, setFinalText] = useState('');
   const [errorText, setErrorText] = useState('');
@@ -185,6 +193,7 @@ export const AsrManagementPage = () => {
   const [ruleSubmitting, setRuleSubmitting] = useState(false);
   const [ruleForm] = Form.useForm<ReplacementRuleFormValues>();
   const [vadForm] = Form.useForm<VadConfigFormValues>();
+  const [fillerWordForm] = Form.useForm<FillerWordFormValues>();
 
   const socketRef = useRef<WebSocket | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -225,6 +234,16 @@ export const AsrManagementPage = () => {
     }
   }, [vadForm]);
 
+  const loadFillerWords = useCallback(async () => {
+    setFillerWordsLoading(true);
+    try {
+      const data = await fetchAsrFillerWords();
+      fillerWordForm.setFieldsValue(data);
+    } finally {
+      setFillerWordsLoading(false);
+    }
+  }, [fillerWordForm]);
+
   useEffect(() => {
     void loadStatus();
   }, [loadStatus]);
@@ -232,6 +251,10 @@ export const AsrManagementPage = () => {
   useEffect(() => {
     void loadReplacementRules();
   }, [loadReplacementRules]);
+
+  useEffect(() => {
+    void loadFillerWords();
+  }, [loadFillerWords]);
 
   const stopAudio = useCallback(() => {
     workletNodeRef.current?.port.close();
@@ -335,6 +358,18 @@ export const AsrManagementPage = () => {
       message.success('ASR 断句参数已保存');
     } finally {
       setVadSaving(false);
+    }
+  };
+
+  const handleFillerWordsSave = async () => {
+    const values = await fillerWordForm.validateFields();
+    setFillerWordsSaving(true);
+    try {
+      const data = await updateAsrFillerWords(values);
+      fillerWordForm.setFieldsValue(data);
+      message.success('语气词词表已保存');
+    } finally {
+      setFillerWordsSaving(false);
     }
   };
 
@@ -785,6 +820,62 @@ export const AsrManagementPage = () => {
               >
                 保存参数
               </Button>
+            </div>
+          </Form>
+        </div>
+      </Card>
+
+      <Card className="shadow-sm border-slate-100">
+        <div className="p-6">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-700 shadow-sm">
+                <IconMicrophone size={18} />
+              </div>
+              <div>
+                <Typography.Title level={5} className="mb-0 text-fluid-lg text-slate-900">
+                  语气词词表
+                </Typography.Title>
+                <Typography.Text className="text-fluid-sm text-slate-500">
+                  每行填写一个需要忽略的汉字。仅当完整识别结果等于该字（忽略首尾空白和标点）时才过滤。
+                </Typography.Text>
+              </div>
+            </div>
+            <Button
+              icon={<IconReload size={18} />}
+              loading={fillerWordsLoading}
+              onClick={() => void loadFillerWords()}
+              className="border-slate-200 hover:border-brand-500 hover:text-brand-600"
+            >
+              刷新词表
+            </Button>
+          </div>
+
+          <Form<FillerWordFormValues> form={fillerWordForm} layout="vertical" requiredMark={false}>
+            <Form.Item
+              name="fillerWords"
+              label={<span className="text-fluid-sm font-medium text-slate-700">需要过滤的语气词</span>}
+              className="mb-4"
+            >
+              <Input.TextArea
+                autoSize={{ minRows: 4, maxRows: 8 }}
+                placeholder={'嗯\n啊\n哦'}
+                className="rounded-lg border-slate-200"
+              />
+            </Form.Item>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                type="primary"
+                icon={<IconDeviceFloppy size={18} />}
+                loading={fillerWordsSaving}
+                onClick={() => void handleFillerWordsSave()}
+                className="h-10 px-5"
+              >
+                保存词表
+              </Button>
+              <Typography.Text className="text-fluid-sm text-slate-500">
+                空行会忽略，重复字会自动合并；多字词和非汉字不能保存。
+              </Typography.Text>
             </div>
           </Form>
         </div>

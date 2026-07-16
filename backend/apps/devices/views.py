@@ -1153,6 +1153,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
                 question_text = asr_services.transcribe_pcm_audio(
                     pcm=audio_file.read(),
                     sample_rate=sample_rate,
+                    tenant_id=device.tenant_id,
                 )
             except Exception as exc:
                 return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)

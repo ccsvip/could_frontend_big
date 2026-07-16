@@ -148,20 +148,20 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
 
         self.assertEqual(text, '今天天气不错')
 
-    def test_extract_transcript_payload_filters_filler_words_when_enabled(self):
+    def test_extract_transcript_payload_filters_exact_configured_filler_word(self):
         from apps.ai_models.realtime_asr import extract_transcript_payload
 
         self.assertIsNone(
             extract_transcript_payload(
                 {
                     'type': 'conversation.item.input_audio_transcription.completed',
-                    'transcript': '嗯。',
+                    'transcript': ' 嗯。 ',
                 },
-                filter_filler_words=True,
+                filler_words={'嗯'},
             )
         )
 
-    def test_filtered_filler_final_event_is_detected(self):
+    def test_configured_filler_final_event_is_detected(self):
         from apps.ai_models.realtime_asr import is_filtered_filler_final_event
 
         self.assertTrue(
@@ -170,35 +170,38 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
                     'type': 'conversation.item.input_audio_transcription.completed',
                     'transcript': '嗯。',
                 },
-                filter_filler_words=True,
+                filler_words={'嗯'},
             )
         )
 
-    def test_meaningful_final_event_is_not_treated_as_filtered_filler(self):
+    def test_filler_word_combinations_are_not_treated_as_filtered_final_events(self):
         from apps.ai_models.realtime_asr import is_filtered_filler_final_event
 
-        self.assertFalse(
-            is_filtered_filler_final_event(
-                {
-                    'type': 'conversation.item.input_audio_transcription.completed',
-                    'transcript': '嗯好的',
-                },
-                filter_filler_words=True,
-            )
-        )
+        for transcript in ('嗯嗯', '哦呀', '嗯，好的'):
+            with self.subTest(transcript=transcript):
+                self.assertFalse(
+                    is_filtered_filler_final_event(
+                        {
+                            'type': 'conversation.item.input_audio_transcription.completed',
+                            'transcript': transcript,
+                        },
+                        filler_words={'嗯', '哦', '呀'},
+                    )
+                )
 
-    def test_extract_transcript_payload_keeps_meaningful_text_when_filter_enabled(self):
+    def test_extract_transcript_payload_keeps_filler_word_combinations(self):
         from apps.ai_models.realtime_asr import extract_transcript_payload
 
-        payload = extract_transcript_payload(
-            {
-                'type': 'conversation.item.input_audio_transcription.completed',
-                'transcript': '嗯好的',
-            },
-            filter_filler_words=True,
-        )
-
-        self.assertEqual(payload['text'], '嗯好的')
+        for transcript in ('嗯嗯', '哦呀', '嗯，好的'):
+            with self.subTest(transcript=transcript):
+                payload = extract_transcript_payload(
+                    {
+                        'type': 'conversation.item.input_audio_transcription.completed',
+                        'transcript': transcript,
+                    },
+                    filler_words={'嗯', '哦', '呀'},
+                )
+                self.assertEqual(payload['text'], transcript)
 
     def test_extract_transcript_payload_marks_delta_event(self):
         from apps.ai_models.realtime_asr import extract_transcript_payload

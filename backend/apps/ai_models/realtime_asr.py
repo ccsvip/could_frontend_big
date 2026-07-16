@@ -11,7 +11,7 @@ from apps.devices.services.runtime import get_runtime_device_or_none
 from apps.tenants.models import Tenant
 from apps.tenants.services import get_user_tenant
 
-from .models import ASRReplacementRule
+from .models import ASRFillerWordSet, ASRReplacementRule
 from .services.asr import build_asr_ws_url, get_effective_asr_config, is_asr_configured
 
 
@@ -23,8 +23,6 @@ FINAL_EVENT_TYPES = {
     'conversation.item.input_audio_transcription.completed',
     'conversation.item.input_audio_transcription.finished',
 }
-FILLER_CHARS = frozenset('嗯唔啊呃额哦喔噢诶欸哎呀')
-FILLER_WORDS = frozenset({'um', 'uh', 'er', 'ah', 'oh', 'em'})
 IGNORABLE_PUNCTUATION = frozenset('.,!?;:，。！？；：、~…·"\'`“”‘’（）()[]{}<>《》-—_+=|/\\')
 
 
@@ -114,6 +112,15 @@ def load_asr_replacement_pairs(tenant_id: int | None) -> list[tuple[str, str]]:
     )
 
 
+def load_asr_filler_words(tenant_id: int | None) -> frozenset[str]:
+    if not tenant_id:
+        return frozenset()
+    word_set = ASRFillerWordSet.objects.filter(tenant_id=tenant_id).only('words_text').first()
+    if word_set is None:
+        return frozenset()
+    return frozenset(word.strip() for word in word_set.words_text.splitlines() if word.strip())
+
+
 def apply_asr_replacement_rules(text: str, replacement_pairs: list[tuple[str, str]]) -> str:
     result = text
     for source_text, replacement_text in replacement_pairs:
@@ -127,7 +134,7 @@ def extract_transcript_payload(
     *,
     tenant_id: int | None = None,
     replacement_pairs: list[tuple[str, str]] | None = None,
-    filter_filler_words: bool = False,
+    filler_words: set[str] | frozenset[str] | None = None,
 ) -> dict[str, Any] | None:
     event_type = str(event.get('type') or '')
     if event_type not in TEXT_EVENT_TYPES and event_type not in FINAL_EVENT_TYPES:
@@ -139,7 +146,7 @@ def extract_transcript_payload(
     pairs = replacement_pairs if replacement_pairs is not None else load_asr_replacement_pairs(tenant_id)
 
     replaced_text = apply_asr_replacement_rules(text, pairs)
-    if filter_filler_words and is_filler_transcript_text(replaced_text):
+    if is_filler_transcript_text(replaced_text, filler_words=filler_words):
         return None
     return {
         'type': 'asr.transcript',
@@ -160,29 +167,23 @@ def is_filtered_filler_final_event(
     event: dict[str, Any],
     *,
     replacement_pairs: list[tuple[str, str]] | None = None,
-    filter_filler_words: bool = False,
+    filler_words: set[str] | frozenset[str] | None = None,
 ) -> bool:
-    if not filter_filler_words or not is_final_transcript_event(event):
+    if not is_final_transcript_event(event):
         return False
 
     text = _extract_text(event)
     if not text:
         return False
     replaced_text = apply_asr_replacement_rules(text, replacement_pairs or [])
-    return is_filler_transcript_text(replaced_text)
+    return is_filler_transcript_text(replaced_text, filler_words=filler_words)
 
 
-def is_filler_transcript_text(text: str) -> bool:
-    compact = ''.join(char for char in str(text or '').strip().lower() if not char.isspace())
-    if not compact:
+def is_filler_transcript_text(text: str, *, filler_words: set[str] | frozenset[str] | None = None) -> bool:
+    if not filler_words:
         return False
-
-    meaningful = ''.join(char for char in compact if char not in IGNORABLE_PUNCTUATION)
-    if not meaningful:
-        return True
-    if meaningful in FILLER_WORDS:
-        return True
-    return all(char in FILLER_CHARS for char in meaningful)
+    normalized = str(text or '').strip().strip(''.join(IGNORABLE_PUNCTUATION)).strip()
+    return bool(normalized) and normalized in filler_words
 
 
 def _session_update_event(*, vad_threshold: float = 0.0, vad_silence_duration_ms: int = 400) -> dict[str, Any]:
