@@ -185,7 +185,6 @@ class RealtimeConnection:
                 had_tts_worker,
             )
 
-
 async def realtime_websocket_application(scope, receive, send):
     await send({'type': 'websocket.accept'})
     connection = RealtimeConnection()
@@ -1194,10 +1193,29 @@ def _is_client_disconnected(exc: BaseException) -> bool:
 
 
 async def _start_agent_asr_session(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:
+    payload = message.get('payload') if isinstance(message.get('payload'), dict) else {}
+    await _open_agent_asr_session(send, connection, payload, notify_ready=True)
+
+
+async def _restart_agent_asr_session(send, connection: RealtimeConnection) -> None:
+    await _open_agent_asr_session(
+        send,
+        connection,
+        {'deviceCode': connection.agent_device_code},
+        notify_ready=False,
+    )
+
+
+async def _open_agent_asr_session(
+    send,
+    connection: RealtimeConnection,
+    payload: dict[str, Any],
+    *,
+    notify_ready: bool,
+) -> bool:
     command_id = connection.agent_session_id
     request_id = connection.agent_request_id or make_request_id()
     trace_id = connection.agent_trace_id or request_id
-    payload = message.get('payload') if isinstance(message.get('payload'), dict) else {}
     token = str(payload.get('token') or '').strip()
     query_params = _payload_query_params(payload, 'tenantId', 'tenant', 'deviceCode', 'device_code')
 
@@ -1208,12 +1226,12 @@ async def _start_agent_asr_session(send, connection: RealtimeConnection, message
     )
     if resolved_connection is None:
         await _send_json(send, _trace_payload('agent.error', command_id, request_id, trace_id, message='ASR session is not authorized'))
-        return
+        return False
 
     config = await sync_to_async(realtime_asr.get_effective_asr_config, thread_sensitive=True)()
     if not config.is_active or not realtime_asr.is_asr_configured(config):
         await _send_json(send, _trace_payload('agent.error', command_id, request_id, trace_id, message='ASR 服务未就绪'))
-        return
+        return False
 
     replacement_pairs = await sync_to_async(realtime_asr.load_asr_replacement_pairs, thread_sensitive=True)(
         resolved_connection.get('tenant_id'),
@@ -1240,7 +1258,7 @@ async def _start_agent_asr_session(send, connection: RealtimeConnection, message
         )))
     except Exception as exc:
         await _send_json(send, _trace_payload('agent.error', command_id, request_id, trace_id, message=str(exc)[:200]))
-        return
+        return False
 
     connection.asr_session_id = command_id
     connection.asr_upstream = upstream
@@ -1250,7 +1268,9 @@ async def _start_agent_asr_session(send, connection: RealtimeConnection, message
     connection.asr_upstream_task = asyncio.create_task(
         _agent_asr_upstream_to_client(upstream, send, connection, replacement_pairs),
     )
-    await _send_json(send, _trace_payload('asr.ready', command_id, request_id, trace_id))
+    if notify_ready:
+        await _send_json(send, _trace_payload('asr.ready', command_id, request_id, trace_id))
+    return True
 
 
 async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConnection, replacement_pairs: list[tuple[str, str]]) -> None:
@@ -1258,6 +1278,7 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
     request_id = connection.agent_request_id or make_request_id()
     trace_id = connection.agent_trace_id or request_id
     finish_sent = False
+    input_stopped_sent = False
     try:
         async for raw_message in upstream:
             try:
@@ -1268,8 +1289,8 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
                 continue
 
             if event.get('type') == 'input_audio_buffer.speech_stopped':
-                if connection.asr_accepting_audio:
-                    connection.asr_accepting_audio = False
+                if not input_stopped_sent:
+                    input_stopped_sent = True
                     await _send_json(
                         send,
                         {
@@ -1280,11 +1301,6 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
                             'reason': 'vad',
                         },
                     )
-                    # VAD may stop accepting audio before the upstream sends its final transcript.
-                    # Explicitly finish so the ASR session cannot remain open indefinitely.
-                    if not finish_sent:
-                        finish_sent = True
-                        await upstream.send(json.dumps(realtime_asr._session_finish_event()))
                 continue
 
             transcript_payload = realtime_asr.extract_transcript_payload(
@@ -1307,22 +1323,18 @@ async def _agent_asr_upstream_to_client(upstream, send, connection: RealtimeConn
                 continue
 
             if realtime_asr.is_final_transcript_event(event):
-                connection.asr_accepting_audio = False
                 connection.agent_latest_text = ''
-                if not finish_sent:
-                    finish_sent = True
-                    await upstream.send(json.dumps(realtime_asr._session_finish_event()))
                 continue
 
             if event.get('type') == 'session.finished':
-                await _send_json(send, {'type': 'asr.done', 'id': command_id, 'requestId': request_id, 'traceId': trace_id})
                 text = connection.agent_latest_text.strip()
                 await _clear_finished_asr_session(connection, keep_current_task=True)
                 if text:
+                    await _send_json(send, {'type': 'asr.done', 'id': command_id, 'requestId': request_id, 'traceId': trace_id})
                     _start_agent_llm_task(send, connection, text)
                     await asyncio.sleep(0)
                 else:
-                    await connection.close_agent_session()
+                    await _restart_agent_asr_session(send, connection)
                 return
     except asyncio.CancelledError:
         raise
