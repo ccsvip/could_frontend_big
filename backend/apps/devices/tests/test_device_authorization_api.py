@@ -1262,6 +1262,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             patch('apps.devices.views.asr_services.transcribe_pcm_audio', return_value='介绍一下展厅'),
             patch('apps.devices.views.llm_services.run_llm_chat_completion', fake_run_llm_chat_completion),
             patch('apps.devices.views.tts_services.synthesize_tts_pcm', return_value=b'\x01\x02'),
+            patch('apps.devices.views._log_http_voice_pipeline') as pipeline_log,
         ):
             response = self.client.post(
                 '/api/v1/device/voice-chat',
@@ -1292,6 +1293,13 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(chat_log.question_text, '介绍一下展厅')
         self.assertEqual(chat_log.answer_text, '欢迎来到数字人展厅。')
         self.assertEqual(chat_log.model_name, 'qwen/qwen3-32b')
+        stages = [call.args[0] for call in pipeline_log.call_args_list]
+        self.assertEqual(
+            stages,
+            ['http.request', 'asr.request', 'asr.response', 'llm.request', 'llm.response', 'tts.request', 'tts.response', 'http.response'],
+        )
+        llm_payload = next(call.args[2] for call in pipeline_log.call_args_list if call.args[0] == 'llm.request')
+        self.assertEqual(llm_payload['messages'][-1], {'role': 'user', 'content': '介绍一下展厅'})
 
     def test_device_voice_chat_uses_bound_device_voice_before_company_default(self):
         provider = LLMProvider.objects.create(

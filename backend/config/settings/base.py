@@ -330,6 +330,7 @@ MULTIMODAL_WORKSPACE_ID = os.getenv('MULTIMODAL_WORKSPACE_ID', '').strip()
 MULTIMODAL_API_KEY = os.getenv('MULTIMODAL_API_KEY', '').strip()
 ASR_BASE_URL = os.getenv('ASR_BASE_URL', 'wss://dashscope.aliyuncs.com/api-ws/v1/realtime').strip()
 ASR_MODEL = os.getenv('ASR_MODEL', 'qwen3-asr-flash-realtime').strip()
+AGENT_ASR_CONTINUATION_WINDOW_SECONDS = float(os.getenv('AGENT_ASR_CONTINUATION_WINDOW_SECONDS', '0.8'))
 ALIYUN_TTS_API_KEY = (
     os.getenv('ALIYUN_TTS_API_KEY')
     or os.getenv('DASHSCOPE_API_KEY')

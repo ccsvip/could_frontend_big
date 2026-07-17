@@ -468,7 +468,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
 
         async_to_sync(run_task)()
 
-    def test_agent_asr_upstream_auto_finishes_and_continues_to_llm_after_final_transcript(self):
+    def test_agent_asr_upstream_finishes_after_continuation_window_and_continues_to_llm(self):
         async def run_task():
             from config.realtime import RealtimeConnection, _agent_asr_upstream_to_client
 
@@ -488,7 +488,12 @@ class RealtimeWebSocketTests(SimpleTestCase):
 
             upstream = AutoFinishASRUpstream('自动结束问题')
             upstream._audio_seen.set()
-            with patch('config.realtime._run_agent_llm_and_finish', side_effect=fake_run_agent_llm):
+            connection.asr_upstream = upstream
+            connection.asr_accepting_audio = True
+            with (
+                patch('config.realtime._run_agent_llm_and_finish', side_effect=fake_run_agent_llm),
+                patch('config.realtime._agent_asr_continuation_window_seconds', return_value=0),
+            ):
                 await _agent_asr_upstream_to_client(upstream, send, connection, [])
                 await asyncio.sleep(0)
 
@@ -539,6 +544,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
             connection.agent_trace_id = 'trace-agent-vad-finish-1'
             connection.asr_accepting_audio = True
             upstream = VADBoundaryASRUpstream()
+            connection.asr_upstream = upstream
 
             with patch('config.realtime._run_agent_llm_and_finish', side_effect=fake_run_agent_llm):
                 task = asyncio.create_task(_agent_asr_upstream_to_client(upstream, send, connection, []))
@@ -563,7 +569,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
             self.assertEqual(llm_questions, ['对对对'])
             self.assertEqual(
                 [message.get('type') for message in upstream.messages].count('session.finish'),
-                1,
+                0,
             )
 
         async_to_sync(run_task)()
@@ -587,6 +593,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
             connection.agent_trace_id = 'trace-agent-vad-finish-1'
             connection.asr_accepting_audio = True
             upstream = VADBoundaryASRUpstream()
+            connection.asr_upstream = upstream
 
             with patch('config.realtime._run_agent_llm_and_finish', side_effect=fake_run_agent_llm):
                 task = asyncio.create_task(_agent_asr_upstream_to_client(upstream, send, connection, []))
@@ -609,7 +616,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
             self.assertEqual(llm_questions, ['对对对'])
             self.assertEqual(
                 [message.get('type') for message in upstream.messages].count('session.finish'),
-                1,
+                0,
             )
 
         async_to_sync(run_task)()
@@ -635,6 +642,8 @@ class RealtimeWebSocketTests(SimpleTestCase):
 
             upstream = AutoFinishASRUpstream('不要等关闭')
             upstream._audio_seen.set()
+            connection.asr_upstream = upstream
+            connection.asr_accepting_audio = True
             with patch('config.realtime._run_agent_llm_and_finish', side_effect=fake_run_agent_llm):
                 await _agent_asr_upstream_to_client(upstream, send, connection, [])
                 await asyncio.sleep(0)
@@ -1645,6 +1654,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         MULTIMODAL_API_KEY='filler-final-api-key',
         ASR_BASE_URL='wss://asr.example/realtime',
         ASR_MODEL='filler-final-model',
+        AGENT_ASR_CONTINUATION_WINDOW_SECONDS=0.01,
     )
     def test_agent_voice_filtered_filler_final_finishes_upstream_without_llm(self):
         self.bind_agent_device(
@@ -1691,6 +1701,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                     'type': 'conversation.item.input_audio_transcription.completed',
                     'transcript': '嗯。',
                 })
+                await asyncio.wait_for(upstream.finish_seen.wait(), timeout=1)
                 await communicator.send_input({
                     'type': 'websocket.receive',
                     'text': json.dumps({'type': 'ping', 'id': 'filtered-filler-barrier'}),
@@ -1707,10 +1718,105 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         async_to_sync(run_websocket)()
 
     @override_settings(
+        MULTIMODAL_WORKSPACE_ID='merged-final-workspace',
+        MULTIMODAL_API_KEY='merged-final-api-key',
+        ASR_BASE_URL='wss://asr.example/realtime',
+        ASR_MODEL='merged-final-model',
+        AGENT_ASR_CONTINUATION_WINDOW_SECONDS=0.1,
+    )
+    def test_agent_voice_merges_consecutive_final_transcripts_before_llm(self):
+        self.bind_agent_device(
+            agent_name='Merged Final Agent',
+            device_name='Merged Final Device',
+            device_code='ANDROID-MERGED-FINAL-001',
+        )
+        ASRFillerWordSet.objects.create(tenant=self.tenant, words_text='嗯')
+        upstream = VADBoundaryASRUpstream()
+        llm_questions = []
+
+        async def capture_llm_request(send, command_id, message, **kwargs):
+            llm_questions.append(message['payload']['text'])
+            return '已收到完整问题。'
+
+        async def run_websocket():
+            communicator = await self.open_realtime_websocket()
+
+            with (
+                patch('apps.ai_models.realtime_asr.websockets.connect', return_value=upstream),
+                patch('config.realtime._run_llm_session_body', side_effect=capture_llm_request),
+            ):
+                await self.start_agent_voice_session(
+                    communicator,
+                    session_id='agent-merged-final-1',
+                    device_code='ANDROID-MERGED-FINAL-001',
+                    request_id='req-merged-final-1',
+                    trace_id='trace-merged-final-1',
+                )
+                await communicator.send_input({'type': 'websocket.receive', 'bytes': b'question-pcm'})
+                await upstream.emit({
+                    'type': 'conversation.item.input_audio_transcription.text',
+                    'text': '第一句。',
+                })
+                first_preview = await self.receive_realtime_json(communicator)
+                self.assertEqual(first_preview['type'], 'asr.transcript')
+                self.assertEqual(first_preview['text'], '第一句。')
+                self.assertFalse(first_preview['final'])
+                await upstream.emit({
+                    'type': 'conversation.item.input_audio_transcription.completed',
+                    'transcript': '第一句。',
+                })
+                await self.send_realtime_ping(communicator, 'merged-final-before-window')
+
+                await communicator.send_input({'type': 'websocket.receive', 'bytes': b'continuation-pcm'})
+                await self.send_realtime_ping(communicator, 'merged-final-audio-barrier')
+                self.assertEqual(
+                    [message.get('type') for message in upstream.messages].count('input_audio_buffer.append'),
+                    2,
+                )
+
+                await upstream.emit({
+                    'type': 'conversation.item.input_audio_transcription.completed',
+                    'transcript': '嗯。',
+                })
+                await upstream.emit({
+                    'type': 'conversation.item.input_audio_transcription.text',
+                    'text': '第二句。',
+                })
+                second_preview = await self.receive_realtime_json(communicator)
+                self.assertEqual(second_preview['type'], 'asr.transcript')
+                self.assertEqual(second_preview['text'], '第一句。第二句。')
+                self.assertFalse(second_preview['final'])
+                await upstream.emit({
+                    'type': 'conversation.item.input_audio_transcription.completed',
+                    'transcript': '第二句。',
+                })
+
+                await asyncio.wait_for(upstream.finish_seen.wait(), timeout=1)
+                await upstream.emit({'type': 'session.finished'})
+
+                transcript = await self.receive_realtime_json(communicator)
+                self.assertEqual(transcript['type'], 'asr.transcript')
+                self.assertEqual(transcript['text'], '第一句。第二句。')
+                self.assertTrue(transcript['final'])
+                self.assertEqual((await self.receive_realtime_json(communicator))['type'], 'asr.done')
+
+                for _ in range(3):
+                    event = await self.receive_realtime_json(communicator)
+                    if event['type'] == 'agent.done':
+                        break
+
+            self.assertEqual(llm_questions, ['第一句。第二句。'])
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
+    @override_settings(
         MULTIMODAL_WORKSPACE_ID='vad-cancel-workspace',
         MULTIMODAL_API_KEY='vad-cancel-api-key',
         ASR_BASE_URL='wss://asr.example/realtime',
         ASR_MODEL='vad-cancel-model',
+        AGENT_ASR_CONTINUATION_WINDOW_SECONDS=0.2,
     )
     def test_agent_voice_cancel_after_vad_prevents_late_audio_and_completion(self):
         self.bind_agent_device(
@@ -1750,6 +1856,12 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 ]
                 self.assertEqual(len(audio_messages_before_cancel), 1)
 
+                await upstream.emit({
+                    'type': 'conversation.item.input_audio_transcription.completed',
+                    'transcript': '取消前已识别',
+                })
+                await self.send_realtime_ping(communicator, 'vad-cancel-final-barrier')
+
                 await communicator.send_input({
                     'type': 'websocket.receive',
                     'text': json.dumps({
@@ -1766,6 +1878,9 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                         'payload': {'sessionId': 'agent-vad-cancel-1'},
                     },
                 )
+
+                await asyncio.sleep(0.25)
+                self.assertNotIn('session.finish', [message.get('type') for message in upstream.messages])
 
                 await communicator.send_input({'type': 'websocket.receive', 'bytes': b'tail-after-cancel'})
                 await upstream.emit({
@@ -2968,7 +3083,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 )
                 self.assertEqual(
                     [message.get('type') for message in asr_upstream.messages].count('session.finish'),
-                    1,
+                    0,
                 )
                 stream_llm.assert_called_once()
 

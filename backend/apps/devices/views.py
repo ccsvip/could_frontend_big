@@ -66,6 +66,7 @@ from .services.runtime import (
     runtime_device_error,
     validate_runtime_application_active,
 )
+from .services.voice_pipeline_logging import log_voice_pipeline
 from .tts_voice_config import device_tts_session_config, public_device_tts_voice_config
 from .serializers import (
     DeviceApplicationSerializer,
@@ -83,6 +84,19 @@ from .serializers import (
 
 DEFAULT_DEVICE_NAME = '待修改'
 logger = logging.getLogger(__name__)
+
+
+def _log_http_voice_pipeline(stage: str, context: dict[str, str | None], payload: dict) -> None:
+    log_voice_pipeline(
+        logger,
+        'device.voice_chat.pipeline',
+        stage,
+        command_id=context.get('sessionId'),
+        request_id=context['requestId'] or '',
+        trace_id=context['traceId'] or '',
+        device_code=context['deviceCode'] or '',
+        payload=payload,
+    )
 
 def _client_ip(request) -> str | None:
     forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -1138,9 +1152,28 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             error = runtime_device_error('设备未绑定可用智能体', status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_AGENT_UNBOUND)
             return Response(error.as_payload(), status=error.status_code)
 
+        pipeline_context = {
+            'requestId': get_request_id(request),
+            'traceId': get_trace_id(request),
+            'deviceCode': device.code,
+            'sessionId': None,
+        }
+        request_input = {
+            key: request.data.get(key)
+            for key in request.data
+            if key != 'audio'
+        }
+        audio_file = request.FILES.get('audio')
+        if audio_file is not None:
+            request_input['audio'] = {
+                'name': audio_file.name,
+                'contentType': audio_file.content_type,
+                'size': audio_file.size,
+            }
+        _log_http_voice_pipeline('http.request', pipeline_context, {'request': request_input})
+
         question_text = self._request_question_text(request)
         if not question_text:
-            audio_file = request.FILES.get('audio')
             if audio_file is None:
                 return Response({'message': '请上传语音或输入文本'}, status=status.HTTP_400_BAD_REQUEST)
             audio_format = str(request.data.get('format') or 'pcm').strip().lower()
@@ -1150,15 +1183,28 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             if sample_error is not None:
                 return sample_error
             try:
+                pcm = audio_file.read()
+                _log_http_voice_pipeline(
+                    'asr.request',
+                    pipeline_context,
+                    {
+                        'format': audio_format,
+                        'sampleRate': sample_rate,
+                        'audio': {'name': audio_file.name, 'byteLength': len(pcm)},
+                    },
+                )
                 question_text = asr_services.transcribe_pcm_audio(
-                    pcm=audio_file.read(),
+                    pcm=pcm,
                     sample_rate=sample_rate,
                     tenant_id=device.tenant_id,
                 )
             except Exception as exc:
                 return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
+            _log_http_voice_pipeline('asr.response', pipeline_context, {'questionText': question_text})
             if not question_text:
                 return Response({'message': 'ASR 没有识别出有效内容'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            _log_http_voice_pipeline('asr.bypassed', pipeline_context, {'questionText': question_text})
 
         runtime_config = device.effective_agent_application.runtime_config() if device.effective_agent_application is not None else {}
         is_standard_voice_backend = runtime_config.get('runtime_backend_type') != RUNTIME_BACKEND_THIRD_PARTY_CHATBOT
@@ -1169,6 +1215,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         # the first turn is stored under the same id that is returned to Android.
         incoming_session_id = str(request.data.get('sessionId') or '').strip()
         session_id = incoming_session_id or str(uuid.uuid4())
+        pipeline_context['sessionId'] = session_id
         if is_standard_voice_backend:
             logger.info(
                 '[VOICE-SESSION-DIAG] 当前问题：%s 会话ID变量名：session_id 会话ID：%s',
@@ -1178,7 +1225,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
 
         try:
             answer_text, answer_blocks = self._generate_answer(
-                device, question_text, session_id=session_id, request=request,
+                device, question_text, session_id=session_id, request=request, pipeline_context=pipeline_context,
             )
         except Exception as exc:
             return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
@@ -1224,8 +1271,8 @@ class DeviceVoiceChatView(DeviceRuntimeView):
                 question_text,
                 answer_text,
                 source=DeviceChatLog.SOURCE_HTTP,
-                request_id=get_request_id(request),
-                trace_id=get_trace_id(request),
+                request_id=pipeline_context['requestId'],
+                trace_id=pipeline_context['traceId'],
                 model_name=runtime_model_name,
                 runtime_session_id=session_id,
                 answer_blocks=answer_blocks,
@@ -1241,8 +1288,8 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             )
         payload = {
             'sessionId': session_id,
-            'requestId': get_request_id(request),
-            'traceId': get_trace_id(request),
+            'requestId': pipeline_context['requestId'],
+            'traceId': pipeline_context['traceId'],
             'deviceCode': device.code,
             'questionText': question_text,
             'answerText': answer_text,
@@ -1251,9 +1298,11 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             'audioContentType': 'audio/wav',
         }
         try:
-            payload['audioBase64'] = self._synthesize_answer_audio(device, answer_text)
+            payload['audioBase64'] = self._synthesize_answer_audio(device, answer_text, pipeline_context=pipeline_context)
         except Exception as exc:
             payload['ttsError'] = str(exc)[:200]
+            _log_http_voice_pipeline('tts.error', pipeline_context, {'message': payload['ttsError']})
+        _log_http_voice_pipeline('http.response', pipeline_context, payload)
         return Response(payload, status=status.HTTP_200_OK)
 
     @staticmethod
@@ -1283,6 +1332,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         *,
         session_id: str | None = None,
         request=None,
+        pipeline_context: dict[str, str | None] | None = None,
     ) -> tuple[str, list[dict]]:
         agent_application = device.effective_agent_application
         annotation = DeviceVoiceChatView._find_annotation(agent_application, question_text)
@@ -1295,9 +1345,17 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             )
             if isinstance(annotation, dict):
                 blocks = annotation.get('answerBlocks') or text_to_blocks(annotation.get('answer') or '')
-                return blocks_to_text(blocks), serialize_published_annotation_blocks(annotation, tenant=agent_application.tenant, request=request)
+                answer_text = blocks_to_text(blocks)
+                if pipeline_context is not None:
+                    _log_http_voice_pipeline('llm.request', pipeline_context, {'backend': 'annotation', 'questionText': question_text, 'annotationId': annotation_id})
+                    _log_http_voice_pipeline('llm.response', pipeline_context, {'answerText': answer_text, 'answerBlocks': blocks})
+                return answer_text, serialize_published_annotation_blocks(annotation, tenant=agent_application.tenant, request=request)
             blocks = annotation.answer_blocks or text_to_blocks(annotation.answer)
-            return blocks_to_text(blocks), serialize_reply_blocks(blocks, tenant=agent_application.tenant, request=request)
+            answer_text = blocks_to_text(blocks)
+            if pipeline_context is not None:
+                _log_http_voice_pipeline('llm.request', pipeline_context, {'backend': 'annotation', 'questionText': question_text, 'annotationId': annotation_id})
+                _log_http_voice_pipeline('llm.response', pipeline_context, {'answerText': answer_text, 'answerBlocks': blocks})
+            return answer_text, serialize_reply_blocks(blocks, tenant=agent_application.tenant, request=request)
 
         runtime_config = agent_application.runtime_config() if agent_application is not None else {}
         if runtime_config.get('runtime_backend_type') == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
@@ -1316,7 +1374,21 @@ class DeviceVoiceChatView(DeviceRuntimeView):
                 runtime_config,
                 session_id,
             )
+            if pipeline_context is not None:
+                _log_http_voice_pipeline(
+                    'llm.request',
+                    pipeline_context,
+                    {
+                        'backend': 'third_party_chatbot',
+                        'chatbot': {'id': chatbot.id, 'name': chatbot.name, 'externalApplicationId': chatbot.external_application_id},
+                        'runtimeConfig': runtime_config,
+                        'questionText': question_text,
+                        'conversationId': conversation.id if conversation is not None else None,
+                    },
+                )
             answer_text = third_party_chatbots.send_chatbot_message(chatbot, question_text, conversation=conversation)
+            if pipeline_context is not None:
+                _log_http_voice_pipeline('llm.response', pipeline_context, {'answerText': answer_text})
             return answer_text, serialize_reply_blocks(text_to_blocks(answer_text), tenant=device.tenant)
 
         model = None
@@ -1359,14 +1431,30 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             if knowledge_context:
                 messages.append({'role': 'system', 'content': knowledge_context})
         messages.append({'role': 'user', 'content': question_text})
+        temperature = runtime_config.get('temperature', 0.7) if agent_application is not None else 0.7
+        max_tokens = None if agent_application is not None and runtime_config.get('max_tokens_unlimited') else (runtime_config.get('max_tokens', 1000) if agent_application is not None else 1000)
+        if pipeline_context is not None:
+            _log_http_voice_pipeline(
+                'llm.request',
+                pipeline_context,
+                {
+                    'backend': 'platform_llm',
+                    'model': {'id': model.id, 'name': model.name, 'provider': model.provider.name},
+                    'messages': messages,
+                    'temperature': temperature,
+                    'maxTokens': max_tokens,
+                },
+            )
         answer_text = llm_services.run_llm_chat_completion(
             model=model,
             messages=messages,
-            temperature=runtime_config.get('temperature', 0.7) if agent_application is not None else 0.7,
-            max_tokens=None if agent_application is not None and runtime_config.get('max_tokens_unlimited') else (runtime_config.get('max_tokens', 1000) if agent_application is not None else 1000),
+            temperature=temperature,
+            max_tokens=max_tokens,
         )
         if not answer_text:
             raise RuntimeError('LLM 没有返回有效回复')
+        if pipeline_context is not None:
+            _log_http_voice_pipeline('llm.response', pipeline_context, {'answerText': answer_text})
         return answer_text, serialize_reply_blocks(
             [*text_to_blocks(answer_text), *media_blocks],
             tenant=device.tenant,
@@ -1431,7 +1519,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         return find_matching_annotation(agent_application.annotations, question_text)
 
     @staticmethod
-    def _synthesize_answer_audio(device: Device, answer_text: str) -> str:
+    def _synthesize_answer_audio(device: Device, answer_text: str, *, pipeline_context: dict[str, str | None] | None = None) -> str:
         provider = tts_services.get_aliyun_tts_provider()
         config = tts_services.get_effective_tts_config(provider)
         device_voice = getattr(device, 'tts_voice', None)
@@ -1442,6 +1530,25 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         if voice is None:
             raise RuntimeError('请先配置默认音色')
         session_config = device_tts_session_config(device, provider)
+        if pipeline_context is not None:
+            _log_http_voice_pipeline(
+                'tts.request',
+                pipeline_context,
+                {
+                    'text': answer_text,
+                    'providerCode': provider.code,
+                    'model': config.model,
+                    'voice': {'id': voice.id, 'voiceCode': voice.voice_code},
+                    'sessionConfig': session_config,
+                },
+            )
         pcm = tts_services.synthesize_tts_pcm(text=answer_text, voice=voice, config=config, session_config=session_config)
         wav = tts_services.pcm_to_wav(pcm, sample_rate=session_config.get('sample_rate') or config.sample_rate)
-        return base64.b64encode(wav).decode('ascii')
+        audio_base64 = base64.b64encode(wav).decode('ascii')
+        if pipeline_context is not None:
+            _log_http_voice_pipeline(
+                'tts.response',
+                pipeline_context,
+                {'pcmByteLength': len(pcm), 'wavByteLength': len(wav), 'audioBase64Length': len(audio_base64)},
+            )
+        return audio_base64

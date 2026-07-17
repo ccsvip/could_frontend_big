@@ -8,6 +8,7 @@ import uuid
 from typing import Any, Awaitable, Callable
 
 from asgiref.sync import sync_to_async
+from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import F
 from django.utils import timezone
@@ -18,6 +19,7 @@ from apps.ai_models.models import RUNTIME_BACKEND_PLATFORM_LLM, RUNTIME_BACKEND_
 from apps.ai_models.services import third_party_chatbots
 from apps.ai_models.services import tts as tts_services
 from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device_or_none, validate_runtime_application_active
+from apps.devices.services.voice_pipeline_logging import log_voice_pipeline
 from apps.devices.views import DeviceVoiceChatView
 from apps.devices.realtime import (
     add_device_event_subscriber,
@@ -43,6 +45,18 @@ from config.request_id import clean_trace_value, make_request_id
 _AGENT_MEMORY_MAX_MESSAGES = 12
 _AGENT_MEMORY: dict[str, list[dict[str, str]]] = {}
 logger = logging.getLogger(__name__)
+
+def _log_agent_voice_pipeline(stage: str, *, command_id, request_id: str, trace_id: str, device_code: str, payload: dict[str, Any]) -> None:
+    log_voice_pipeline(
+        logger,
+        'realtime.agent.pipeline',
+        stage,
+        command_id=command_id,
+        request_id=request_id,
+        trace_id=trace_id,
+        device_code=device_code,
+        payload=payload,
+    )
 
 
 async def _close_asr_upstream_context(context) -> None:
@@ -79,6 +93,10 @@ class RealtimeConnection:
         self.agent_request_id = None
         self.agent_trace_id = None
         self.agent_latest_text = ''
+        self.agent_asr_final_texts: list[str] = []
+        self.agent_asr_final_payloads: list[dict[str, Any]] = []
+        self.agent_asr_finish_task = None
+        self.agent_asr_finish_generation = 0
         self.agent_conversation_id = None
         self.agent_runtime_session_id = None
         self.agent_tts_queue = None
@@ -117,6 +135,7 @@ class RealtimeConnection:
             self.runtime_config_device_id = None
 
     async def close_asr_session(self) -> None:
+        await _cancel_agent_asr_finish_task(self)
         if self.asr_upstream_task is not None:
             self.asr_upstream_task.cancel()
             await asyncio.gather(self.asr_upstream_task, return_exceptions=True)
@@ -145,6 +164,7 @@ class RealtimeConnection:
         self.tts_session_id = None
 
     async def close_agent_session(self) -> None:
+        await _cancel_agent_asr_finish_task(self)
         current_task = asyncio.current_task()
         session_id = self.agent_session_id
         request_id = self.agent_request_id
@@ -168,6 +188,8 @@ class RealtimeConnection:
         self.agent_request_id = None
         self.agent_trace_id = None
         self.agent_latest_text = ''
+        self.agent_asr_final_texts = []
+        self.agent_asr_final_payloads = []
         self.agent_conversation_id = None
         self.agent_runtime_session_id = None
         self.agent_tts_queue = None
@@ -182,6 +204,92 @@ class RealtimeConnection:
                 had_agent_task,
                 had_tts_worker,
             )
+
+
+def _agent_asr_continuation_window_seconds() -> float:
+    try:
+        return max(float(getattr(settings, 'AGENT_ASR_CONTINUATION_WINDOW_SECONDS', 0.8)), 0.0)
+    except (TypeError, ValueError):
+        return 0.8
+
+
+def _agent_asr_final_transcript_payload(
+    connection: RealtimeConnection,
+    *,
+    command_id,
+    request_id: str,
+    trace_id: str,
+    text: str,
+) -> dict[str, Any]:
+    transcripts = connection.agent_asr_final_payloads
+    return {
+        'type': 'asr.transcript',
+        'text': text,
+        'originalText': ''.join(
+            str(transcript.get('originalText') or transcript.get('text') or '').strip()
+            for transcript in transcripts
+        ),
+        'replacementApplied': any(bool(transcript.get('replacementApplied')) for transcript in transcripts),
+        'delta': False,
+        'final': True,
+        'sourceEventType': str(transcripts[-1].get('sourceEventType') or ''),
+        'id': command_id,
+        'requestId': request_id,
+        'traceId': trace_id,
+    }
+
+
+async def _cancel_agent_asr_finish_task(connection: RealtimeConnection) -> None:
+    connection.agent_asr_finish_generation += 1
+    task = connection.agent_asr_finish_task
+    connection.agent_asr_finish_task = None
+    if task is None or task is asyncio.current_task():
+        return
+    if not task.done():
+        task.cancel()
+    await asyncio.gather(task, return_exceptions=True)
+
+
+def _schedule_agent_asr_finish(upstream, connection: RealtimeConnection) -> None:
+    connection.agent_asr_finish_generation += 1
+    generation = connection.agent_asr_finish_generation
+    previous_task = connection.agent_asr_finish_task
+    if previous_task is not None and not previous_task.done():
+        previous_task.cancel()
+    connection.agent_asr_finish_task = asyncio.create_task(
+        _finish_agent_asr_after_continuation_window(upstream, connection, generation),
+    )
+
+
+async def _finish_agent_asr_after_continuation_window(
+    upstream,
+    connection: RealtimeConnection,
+    generation: int,
+) -> None:
+    current_task = asyncio.current_task()
+    try:
+        await asyncio.sleep(_agent_asr_continuation_window_seconds())
+        if (
+            connection.agent_asr_finish_generation != generation
+            or connection.asr_upstream is not upstream
+            or not connection.asr_accepting_audio
+        ):
+            return
+        connection.asr_accepting_audio = False
+        await upstream.send(json.dumps(realtime_asr._session_finish_event()))
+    except asyncio.CancelledError:
+        raise
+    except Exception:
+        logger.exception(
+            'realtime.agent.asr_finish_failed agent_session=%s request_id=%s trace_id=%s',
+            connection.agent_session_id,
+            connection.agent_request_id,
+            connection.agent_trace_id,
+        )
+    finally:
+        if connection.agent_asr_finish_task is current_task:
+            connection.agent_asr_finish_task = None
+
 
 async def realtime_websocket_application(scope, receive, send):
     await send({'type': 'websocket.accept'})
@@ -653,6 +761,8 @@ async def _handle_agent_session_start(send, connection: RealtimeConnection, mess
     connection.agent_request_id = request_id
     connection.agent_trace_id = trace_id
     connection.agent_latest_text = input_text
+    connection.agent_asr_final_texts = []
+    connection.agent_asr_final_payloads = []
     connection.agent_runtime_session_id = payload.get('sessionId') or payload.get('session_id')
     connection.agent_conversation_id = payload.get('conversationId') or payload.get('conversation_id')
     connection.agent_tts_queue = asyncio.Queue()
@@ -687,6 +797,7 @@ async def _handle_agent_session_finish(send, connection: RealtimeConnection, mes
             return
         await _send_json(send, {'type': 'agent.error', 'id': connection.agent_session_id, 'message': 'ASR session is not started'})
         return
+    await _cancel_agent_asr_finish_task(connection)
     connection.asr_accepting_audio = False
     await connection.asr_upstream.send(json.dumps(realtime_asr._session_finish_event()))
 
@@ -832,6 +943,25 @@ async def _run_llm_session_body(
         await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, **_realtime_error_payload(exc)))
         return None
 
+    model_config = session.get('modelConfig') if isinstance(session.get('modelConfig'), dict) else {}
+    _log_agent_voice_pipeline(
+        'llm.request',
+        command_id=command_id,
+        request_id=request_id,
+        trace_id=trace_id,
+        device_code=device_code,
+        payload={
+            'incomingRequest': message,
+            'backendType': session.get('backendType'),
+            'messages': session.get('messages') or [],
+            'temperature': session.get('temperature'),
+            'maxTokens': session.get('maxTokens'),
+            'model': model_config.get('model') or model_config.get('model_name') or model_config.get('name'),
+            'runtimeSessionId': session.get('sessionId'),
+            'conversationId': session.get('conversationId'),
+        },
+    )
+
     if session.get('backendType') == RUNTIME_BACKEND_PLATFORM_LLM:
         logger.info(
             '[VOICE-SESSION-DIAG] 当前问题：%s 会话ID变量名：incoming_session_id 会话ID：%s',
@@ -974,6 +1104,18 @@ async def _run_llm_session_body(
     if not answer_text:
         await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message='LLM 没有返回有效回复'))
         return None
+    _log_agent_voice_pipeline(
+        'llm.response',
+        command_id=command_id,
+        request_id=request_id,
+        trace_id=trace_id,
+        device_code=device_code,
+        payload={
+            'answerText': answer_text,
+            'answerBlocks': answer_blocks,
+            'commandDispatch': _command_dispatch_diagnostics(dispatch_outcome),
+        },
+    )
     if answer_blocks is None and knowledge_media_blocks:
         from apps.ai_models.services.reply_blocks import text_to_blocks
 
@@ -1285,7 +1427,6 @@ async def _agent_asr_upstream_to_client(
     command_id = connection.agent_session_id
     request_id = connection.agent_request_id or make_request_id()
     trace_id = connection.agent_trace_id or request_id
-    finish_sent = False
     input_stopped_sent = False
     try:
         async for raw_message in upstream:
@@ -1297,6 +1438,14 @@ async def _agent_asr_upstream_to_client(
                 continue
 
             if event.get('type') == 'input_audio_buffer.speech_stopped':
+                _log_agent_voice_pipeline(
+                    'asr.vad_stopped',
+                    command_id=command_id,
+                    request_id=request_id,
+                    trace_id=trace_id,
+                    device_code=connection.agent_device_code or '',
+                    payload={'upstreamEvent': event},
+                )
                 if not input_stopped_sent:
                     input_stopped_sent = True
                     await _send_json(
@@ -1317,31 +1466,97 @@ async def _agent_asr_upstream_to_client(
                 filler_words=filler_words,
             )
             if transcript_payload is not None:
+                if transcript_payload.get('final'):
+                    _log_agent_voice_pipeline(
+                        'asr.final',
+                        command_id=command_id,
+                        request_id=request_id,
+                        trace_id=trace_id,
+                        device_code=connection.agent_device_code or '',
+                        payload={
+                            'upstreamEvent': event,
+                            'transcript': transcript_payload,
+                            'replacementPairs': replacement_pairs,
+                            'fillerWords': sorted(filler_words),
+                        },
+                    )
                 transcript_payload['id'] = command_id
                 transcript_payload['requestId'] = request_id
                 transcript_payload['traceId'] = trace_id
-                await _send_json(send, transcript_payload)
                 text = str(transcript_payload.get('text') or '').strip()
-                if text:
-                    connection.agent_latest_text = text
-                if transcript_payload.get('final') and not finish_sent:
-                    finish_sent = True
-                    connection.asr_accepting_audio = False
-                    await upstream.send(json.dumps(realtime_asr._session_finish_event()))
+                if transcript_payload.get('final'):
+                    if text:
+                        connection.agent_asr_final_texts.append(text)
+                        connection.agent_asr_final_payloads.append(dict(transcript_payload))
+                        connection.agent_latest_text = ''.join(connection.agent_asr_final_texts)
+                    if connection.asr_accepting_audio:
+                        _schedule_agent_asr_finish(upstream, connection)
+                    continue
+                if not transcript_payload.get('delta'):
+                    confirmed_text = ''.join(connection.agent_asr_final_texts)
+                    confirmed_original_text = ''.join(
+                        str(payload.get('originalText') or payload.get('text') or '').strip()
+                        for payload in connection.agent_asr_final_payloads
+                    )
+                    transcript_payload['text'] = f'{confirmed_text}{text}'
+                    transcript_payload['originalText'] = (
+                        f'{confirmed_original_text}{transcript_payload.get("originalText") or text}'
+                    )
+                    transcript_payload['replacementApplied'] = bool(
+                        transcript_payload.get('replacementApplied')
+                        or any(payload.get('replacementApplied') for payload in connection.agent_asr_final_payloads)
+                    )
+                await _send_json(send, transcript_payload)
                 continue
 
             if realtime_asr.is_final_transcript_event(event):
-                connection.agent_latest_text = ''
-                if not finish_sent:
-                    finish_sent = True
-                    connection.asr_accepting_audio = False
-                    await upstream.send(json.dumps(realtime_asr._session_finish_event()))
+                _log_agent_voice_pipeline(
+                    'asr.final',
+                    command_id=command_id,
+                    request_id=request_id,
+                    trace_id=trace_id,
+                    device_code=connection.agent_device_code or '',
+                    payload={
+                        'upstreamEvent': event,
+                        'filteredAsFiller': realtime_asr.is_filtered_filler_final_event(
+                            event,
+                            replacement_pairs=replacement_pairs,
+                            filler_words=filler_words,
+                        ),
+                        'replacementPairs': replacement_pairs,
+                        'fillerWords': sorted(filler_words),
+                    },
+                )
+                if connection.asr_accepting_audio:
+                    _schedule_agent_asr_finish(upstream, connection)
                 continue
 
             if event.get('type') == 'session.finished':
-                text = connection.agent_latest_text.strip()
+                text = ''.join(connection.agent_asr_final_texts).strip()
+                _log_agent_voice_pipeline(
+                    'asr.handoff',
+                    command_id=command_id,
+                    request_id=request_id,
+                    trace_id=trace_id,
+                    device_code=connection.agent_device_code or '',
+                    payload={
+                        'questionText': text,
+                        'transcriptParts': connection.agent_asr_final_texts,
+                        'startsLlm': bool(text),
+                    },
+                )
                 await _clear_finished_asr_session(connection, keep_current_task=True)
                 if text:
+                    await _send_json(
+                        send,
+                        _agent_asr_final_transcript_payload(
+                            connection,
+                            command_id=command_id,
+                            request_id=request_id,
+                            trace_id=trace_id,
+                            text=text,
+                        ),
+                    )
                     await _send_json(send, {'type': 'asr.done', 'id': command_id, 'requestId': request_id, 'traceId': trace_id})
                     _start_agent_llm_task(send, connection, text)
                     await asyncio.sleep(0)
@@ -1502,8 +1717,32 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
     if voice is None:
         raise RuntimeError('TTS 音色未配置或当前模型不支持该音色')
 
+    _log_agent_voice_pipeline(
+        'tts.request',
+        command_id=command_id,
+        request_id=request_id,
+        trace_id=trace_id,
+        device_code=device_code,
+        payload={
+            'providerCode': getattr(provider, 'code', None),
+            'model': model_code,
+            'voiceId': getattr(voice, 'id', None),
+            'voiceCode': getattr(voice, 'voice_code', None),
+            'sessionConfig': session_config,
+            'excludePatterns': payload.get('ttsFilterExcludePatterns') or [],
+            'firstSegment': first_segment,
+        },
+    )
+
     await realtime_tts._stream_tts_segments_audio(
-        segments=_agent_tts_segments(first_segment, queue),
+        segments=_agent_tts_segments(
+            first_segment,
+            queue,
+            command_id=command_id,
+            request_id=request_id,
+            trace_id=trace_id,
+            device_code=device_code,
+        ),
         voice=voice,
         config=config,
         session_config=session_config,
@@ -1516,6 +1755,14 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
         request_id,
         trace_id,
         device_code,
+    )
+    _log_agent_voice_pipeline(
+        'tts.response',
+        command_id=command_id,
+        request_id=request_id,
+        trace_id=trace_id,
+        device_code=device_code,
+        payload={'status': 'completed'},
     )
 
 
@@ -1541,14 +1788,33 @@ def _resolve_connection_tts_session_config(connection: dict[str, Any], config) -
     return settings_obj.tts_session_config or config.tts_session_config
 
 
-async def _agent_tts_segments(first_segment: str, queue: asyncio.Queue):
+async def _agent_tts_segments(first_segment: str, queue: asyncio.Queue, *, command_id, request_id: str, trace_id: str, device_code: str):
+    segment_index = 0
     if first_segment:
+        segment_index += 1
+        _log_agent_voice_pipeline(
+            'tts.segment',
+            command_id=command_id,
+            request_id=request_id,
+            trace_id=trace_id,
+            device_code=device_code,
+            payload={'index': segment_index, 'text': first_segment},
+        )
         yield first_segment
     while True:
         segment = await queue.get()
         if segment is None:
             return
         if segment:
+            segment_index += 1
+            _log_agent_voice_pipeline(
+                'tts.segment',
+                command_id=command_id,
+                request_id=request_id,
+                trace_id=trace_id,
+                device_code=device_code,
+                payload={'index': segment_index, 'text': segment},
+            )
             yield segment
 
 
