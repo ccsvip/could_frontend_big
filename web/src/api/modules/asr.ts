@@ -58,6 +58,11 @@ export type AsrFillerWordSet = {
   fillerWords: string;
 };
 
+export type AsrRuntimeSettings = {
+  effectiveInputTimeoutSeconds: number;
+  usesPlatformDefault: boolean;
+};
+
 export const fetchAsrSettings = async () => {
   const response = await httpClient.get<AsrSettingsRecord>('/settings/asr/');
   return response.data;
@@ -97,6 +102,18 @@ export const fetchAsrFillerWords = async () => {
 
 export const updateAsrFillerWords = async (payload: AsrFillerWordSet) => {
   const response = await httpClient.patch<AsrFillerWordSet>('/ai-models/asr/filler-words/', payload);
+  return response.data;
+};
+
+export const fetchAsrRuntimeSettings = async () => {
+  const response = await httpClient.get<AsrRuntimeSettings>('/ai-models/asr/runtime-settings/');
+  return response.data;
+};
+
+export const updateAsrRuntimeSettings = async (effectiveInputTimeoutSeconds: number | null) => {
+  const response = await httpClient.patch<AsrRuntimeSettings>('/ai-models/asr/runtime-settings/', {
+    effectiveInputTimeoutSeconds,
+  });
   return response.data;
 };
 

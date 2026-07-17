@@ -15,6 +15,7 @@ from .services import third_party_chatbots, tts as tts_services
 from .models import (
     ASRConfig,
     ASRFillerWordSet,
+    ASRRuntimeSettings,
     AgentAnnotation,
     ASRReplacementRule,
     AgentApplication,
@@ -44,6 +45,7 @@ from .models import (
     default_tts_session_config,
 )
 from .services.annotations import normalize_annotation_question
+from .services.asr_transcripts import contains_unicode_letter_or_number, normalize_ignored_transcript
 from .services.reply_blocks import blocks_to_text, normalize_reply_blocks, serialize_reply_blocks, text_to_blocks
 from .services.third_party_chatbots import (
     default_config_for_scheme,
@@ -694,15 +696,36 @@ class ASRFillerWordSetSerializer(serializers.ModelSerializer):
         words: list[str] = []
         seen: set[str] = set()
         for line_number, raw_word in enumerate(value.splitlines(), start=1):
-            word = raw_word.strip()
-            if not word:
+            if not raw_word.strip():
                 continue
-            if len(word) != 1 or not ('\u3400' <= word <= '\u9fff' or '\uf900' <= word <= '\ufaff'):
-                raise serializers.ValidationError(f'第 {line_number} 行必须是单个汉字')
+            word = normalize_ignored_transcript(raw_word)
+            if not contains_unicode_letter_or_number(word):
+                raise serializers.ValidationError(f'第 {line_number} 行必须包含字母或数字')
+            if len(word) > 32:
+                raise serializers.ValidationError(f'第 {line_number} 行最多 32 个字符')
             if word not in seen:
                 words.append(word)
                 seen.add(word)
         return '\n'.join(words)
+
+
+class ASRRuntimeSettingsSerializer(serializers.ModelSerializer):
+    effectiveInputTimeoutSeconds = serializers.IntegerField(
+        source='effective_input_timeout_seconds',
+        allow_null=True,
+        min_value=5,
+        max_value=120,
+    )
+
+    class Meta:
+        model = ASRRuntimeSettings
+        fields = ('effectiveInputTimeoutSeconds',)
+
+    def to_internal_value(self, data):
+        raw_value = data.get('effectiveInputTimeoutSeconds')
+        if raw_value is not None and (not isinstance(raw_value, int) or isinstance(raw_value, bool)):
+            raise serializers.ValidationError({'effectiveInputTimeoutSeconds': '必须是整数'})
+        return super().to_internal_value(data)
 
 
 class ASRReplacementRuleSerializer(serializers.ModelSerializer):

@@ -11,8 +11,14 @@ from apps.devices.services.runtime import get_runtime_device_or_none
 from apps.tenants.models import Tenant
 from apps.tenants.services import get_user_tenant
 
-from .models import ASRFillerWordSet, ASRReplacementRule
+from .models import (
+    ASR_DEFAULT_EFFECTIVE_INPUT_TIMEOUT_SECONDS,
+    ASRFillerWordSet,
+    ASRReplacementRule,
+    ASRRuntimeSettings,
+)
 from .services.asr import build_asr_ws_url, get_effective_asr_config, is_asr_configured
+from .services.asr_transcripts import contains_unicode_letter_or_number, normalize_ignored_transcript
 
 
 TEXT_EVENT_TYPES = {
@@ -23,7 +29,6 @@ FINAL_EVENT_TYPES = {
     'conversation.item.input_audio_transcription.completed',
     'conversation.item.input_audio_transcription.finished',
 }
-IGNORABLE_PUNCTUATION = frozenset('.,!?;:，。！？；：、~…·"\'`“”‘’（）()[]{}<>《》-—_+=|/\\')
 
 
 def resolve_asr_realtime_connection(
@@ -118,7 +123,23 @@ def load_asr_filler_words(tenant_id: int | None) -> frozenset[str]:
     word_set = ASRFillerWordSet.objects.filter(tenant_id=tenant_id).only('words_text').first()
     if word_set is None:
         return frozenset()
-    return frozenset(word.strip() for word in word_set.words_text.splitlines() if word.strip())
+    return frozenset(
+        normalized
+        for word in word_set.words_text.splitlines()
+        if (normalized := normalize_ignored_transcript(word))
+    )
+
+
+def load_asr_effective_input_timeout_seconds(tenant_id: int | None) -> int:
+    if not tenant_id:
+        return ASR_DEFAULT_EFFECTIVE_INPUT_TIMEOUT_SECONDS
+    runtime_settings = ASRRuntimeSettings.objects.filter(tenant_id=tenant_id).only(
+        'effective_input_timeout_seconds',
+    ).first()
+    override = runtime_settings.effective_input_timeout_seconds if runtime_settings else None
+    if override is None or not 5 <= override <= 120:
+        return ASR_DEFAULT_EFFECTIVE_INPUT_TIMEOUT_SECONDS
+    return override
 
 
 def apply_asr_replacement_rules(text: str, replacement_pairs: list[tuple[str, str]]) -> str:
@@ -180,10 +201,10 @@ def is_filtered_filler_final_event(
 
 
 def is_filler_transcript_text(text: str, *, filler_words: set[str] | frozenset[str] | None = None) -> bool:
-    if not filler_words:
-        return False
-    normalized = str(text or '').strip().strip(''.join(IGNORABLE_PUNCTUATION)).strip()
-    return bool(normalized) and normalized in filler_words
+    normalized = normalize_ignored_transcript(text)
+    if not contains_unicode_letter_or_number(normalized):
+        return True
+    return bool(filler_words) and normalized in filler_words
 
 
 def _session_update_event(*, vad_threshold: float = 0.0, vad_silence_duration_ms: int = 400) -> dict[str, Any]:

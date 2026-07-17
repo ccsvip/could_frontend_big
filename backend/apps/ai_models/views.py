@@ -60,7 +60,9 @@ from .llm_services import (
     llm_provider_has_active_company_authorization,
 )
 from .models import (
+    ASR_DEFAULT_EFFECTIVE_INPUT_TIMEOUT_SECONDS,
     ASRFillerWordSet,
+    ASRRuntimeSettings,
     ASRReplacementRule,
     AgentAnnotation,
     AgentApplication,
@@ -91,6 +93,7 @@ from .services.reply_blocks import blocks_to_text, serialize_reply_blocks, text_
 from .serializers import (
     ASRConfigSerializer,
     ASRFillerWordSetSerializer,
+    ASRRuntimeSettingsSerializer,
     ASRVADConfigSerializer,
     AgentAnnotationCreateFromMessageSerializer,
     AgentAnnotationSerializer,
@@ -241,6 +244,50 @@ class ASRFillerWordSetView(TenantScopedQuerysetMixin, APIView):
             defaults={'words_text': serializer.validated_data['words_text']},
         )
         return Response(ASRFillerWordSetSerializer(instance).data)
+
+
+class ASRRuntimeSettingsView(TenantScopedQuerysetMixin, APIView):
+    permission_classes = [CanViewASR]
+
+    def _get_tenant(self) -> Tenant:
+        if self.request.user.is_superuser:
+            tenant_id = self.superuser_tenant_filter()
+            tenant = Tenant.objects.filter(id=tenant_id, is_active=True).first() if tenant_id else None
+            if tenant is None:
+                raise ValidationError({'tenant': ['超管请先具体到某家公司后再配置 ASR 运行时设置']})
+            return tenant
+
+        tenant = self.request_tenant
+        if tenant is None:
+            raise ValidationError({'tenant': ['当前账号未归属公司，无法配置 ASR 运行时设置']})
+        return tenant
+
+    @staticmethod
+    def _response_payload(instance):
+        override = instance.effective_input_timeout_seconds if instance else None
+        return {
+            'effectiveInputTimeoutSeconds': (
+                override if override is not None else ASR_DEFAULT_EFFECTIVE_INPUT_TIMEOUT_SECONDS
+            ),
+            'usesPlatformDefault': override is None,
+        }
+
+    def get(self, request):
+        tenant = self._get_tenant()
+        instance = ASRRuntimeSettings.objects.filter(tenant=tenant).first()
+        return Response(self._response_payload(instance))
+
+    def patch(self, request):
+        tenant = self._get_tenant()
+        serializer = ASRRuntimeSettingsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance, _ = ASRRuntimeSettings.objects.update_or_create(
+            tenant=tenant,
+            defaults={
+                'effective_input_timeout_seconds': serializer.validated_data['effective_input_timeout_seconds'],
+            },
+        )
+        return Response(self._response_payload(instance))
 
 
 class ASRDeviceStatusView(APIView):

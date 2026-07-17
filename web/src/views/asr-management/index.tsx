@@ -33,12 +33,15 @@ import {
   deleteAsrReplacementRule,
   fetchAsrFillerWords,
   fetchAsrReplacementRules,
+  fetchAsrRuntimeSettings,
   fetchAsrStatus,
   updateAsrFillerWords,
   updateAsrRuntimeConfig,
+  updateAsrRuntimeSettings,
   updateAsrReplacementRule,
   type AsrReplacementRulePayload,
   type AsrReplacementRuleRecord,
+  type AsrRuntimeSettings,
   type AsrStatusRecord,
 } from '../../api/modules/asr';
 import {
@@ -80,9 +83,43 @@ type FillerWordFormValues = {
   fillerWords: string;
 };
 
+type RuntimeSettingsFormValues = {
+  effectiveInputTimeoutSeconds: number;
+};
+
 const TARGET_SAMPLE_RATE = 16000;
 const RULE_PAGE_SIZE = 10;
 const AUDIO_CHUNK_SIZE = 4096;
+const ASR_SURROUNDING_SEPARATOR_PATTERN = /^[\p{P}\p{S}\s]+|[\p{P}\p{S}\s]+$/gu;
+const ASR_LETTER_OR_NUMBER_PATTERN = /[\p{L}\p{N}]/u;
+
+const normalizeIgnoredTranscript = (value: string) => value
+  .normalize('NFKC')
+  .toLocaleLowerCase()
+  .trim()
+  .replace(/\s+/gu, ' ')
+  .replace(ASR_SURROUNDING_SEPARATOR_PATTERN, '')
+  .trim();
+
+const validateIgnoredTranscripts = async (_: unknown, value = '') => {
+  if (value.length > 1024) {
+    throw new Error('忽略词条总长度不能超过 1024 个字符');
+  }
+  const lines = value.split(/\r?\n/u);
+  for (let index = 0; index < lines.length; index += 1) {
+    if (!lines[index].trim()) {
+      continue;
+    }
+    const normalized = normalizeIgnoredTranscript(lines[index]);
+    if (!ASR_LETTER_OR_NUMBER_PATTERN.test(normalized)) {
+      throw new Error(`第 ${index + 1} 行必须包含字母或数字`);
+    }
+    if (Array.from(normalized).length > 32) {
+      throw new Error(`第 ${index + 1} 行最多 32 个字符`);
+    }
+  }
+};
+
 const AUDIO_WORKLET_PROCESSOR_NAME = 'asr-pcm-capture-processor';
 const AUDIO_WORKLET_PROCESSOR_SOURCE = `
 class AsrPcmCaptureProcessor extends AudioWorkletProcessor {
@@ -181,6 +218,9 @@ export const AsrManagementPage = () => {
   const [vadSaving, setVadSaving] = useState(false);
   const [fillerWordsLoading, setFillerWordsLoading] = useState(false);
   const [fillerWordsSaving, setFillerWordsSaving] = useState(false);
+  const [runtimeSettings, setRuntimeSettings] = useState<AsrRuntimeSettings | null>(null);
+  const [runtimeSettingsLoading, setRuntimeSettingsLoading] = useState(false);
+  const [runtimeSettingsSaving, setRuntimeSettingsSaving] = useState(false);
   const [liveText, setLiveText] = useState('');
   const [finalText, setFinalText] = useState('');
   const [errorText, setErrorText] = useState('');
@@ -194,6 +234,7 @@ export const AsrManagementPage = () => {
   const [ruleForm] = Form.useForm<ReplacementRuleFormValues>();
   const [vadForm] = Form.useForm<VadConfigFormValues>();
   const [fillerWordForm] = Form.useForm<FillerWordFormValues>();
+  const [runtimeSettingsForm] = Form.useForm<RuntimeSettingsFormValues>();
 
   const socketRef = useRef<WebSocket | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -244,6 +285,19 @@ export const AsrManagementPage = () => {
     }
   }, [fillerWordForm]);
 
+  const loadRuntimeSettings = useCallback(async () => {
+    setRuntimeSettingsLoading(true);
+    try {
+      const data = await fetchAsrRuntimeSettings();
+      setRuntimeSettings(data);
+      runtimeSettingsForm.setFieldsValue({
+        effectiveInputTimeoutSeconds: data.effectiveInputTimeoutSeconds,
+      });
+    } finally {
+      setRuntimeSettingsLoading(false);
+    }
+  }, [runtimeSettingsForm]);
+
   useEffect(() => {
     void loadStatus();
   }, [loadStatus]);
@@ -255,6 +309,10 @@ export const AsrManagementPage = () => {
   useEffect(() => {
     void loadFillerWords();
   }, [loadFillerWords]);
+
+  useEffect(() => {
+    void loadRuntimeSettings();
+  }, [loadRuntimeSettings]);
 
   const stopAudio = useCallback(() => {
     workletNodeRef.current?.port.close();
@@ -367,9 +425,38 @@ export const AsrManagementPage = () => {
     try {
       const data = await updateAsrFillerWords(values);
       fillerWordForm.setFieldsValue(data);
-      message.success('语气词词表已保存');
+      message.success('ASR 忽略词条已保存');
     } finally {
       setFillerWordsSaving(false);
+    }
+  };
+
+  const handleRuntimeSettingsSave = async () => {
+    const values = await runtimeSettingsForm.validateFields();
+    setRuntimeSettingsSaving(true);
+    try {
+      const data = await updateAsrRuntimeSettings(values.effectiveInputTimeoutSeconds);
+      setRuntimeSettings(data);
+      runtimeSettingsForm.setFieldsValue({
+        effectiveInputTimeoutSeconds: data.effectiveInputTimeoutSeconds,
+      });
+      message.success('设备有效输入等待上限已保存');
+    } finally {
+      setRuntimeSettingsSaving(false);
+    }
+  };
+
+  const handleRuntimeSettingsRestore = async () => {
+    setRuntimeSettingsSaving(true);
+    try {
+      const data = await updateAsrRuntimeSettings(null);
+      setRuntimeSettings(data);
+      runtimeSettingsForm.setFieldsValue({
+        effectiveInputTimeoutSeconds: data.effectiveInputTimeoutSeconds,
+      });
+      message.success('已恢复平台默认等待上限');
+    } finally {
+      setRuntimeSettingsSaving(false);
     }
   };
 
@@ -829,15 +916,92 @@ export const AsrManagementPage = () => {
         <div className="p-6">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-700 shadow-sm">
+                <IconClock size={18} />
+              </div>
+              <div>
+                <Typography.Title level={5} className="mb-0 text-fluid-lg text-slate-900">
+                  设备语音交互
+                </Typography.Title>
+                <Typography.Text className="text-fluid-sm text-slate-500">
+                  设置设备 Agent 等待首个有效 ASR 文本的最长时间，与 VAD 静音断句时长相互独立。
+                </Typography.Text>
+              </div>
+            </div>
+            <Tag color={runtimeSettings?.usesPlatformDefault ? 'default' : 'processing'} className="px-2.5 py-1 font-medium">
+              {runtimeSettings?.usesPlatformDefault ? '平台默认' : '公司覆盖'}
+            </Tag>
+          </div>
+
+          <Form<RuntimeSettingsFormValues>
+            form={runtimeSettingsForm}
+            layout="vertical"
+            requiredMark="optional"
+          >
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
+              <Form.Item
+                label={<span className="text-fluid-sm font-medium text-slate-700">有效输入等待上限</span>}
+                className="mb-0"
+              >
+                <div className="flex items-center gap-2">
+                  <Form.Item
+                    name="effectiveInputTimeoutSeconds"
+                    rules={[
+                      { required: true, message: '请输入有效输入等待上限' },
+                      { type: 'integer', min: 5, max: 120, message: '请输入 5 到 120 之间的整数' },
+                    ]}
+                    noStyle
+                  >
+                    <InputNumber
+                      min={5}
+                      max={120}
+                      step={1}
+                      precision={0}
+                      className="min-w-0 flex-1"
+                      disabled={runtimeSettingsLoading}
+                    />
+                  </Form.Item>
+                  <span className="whitespace-nowrap rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-fluid-sm text-slate-500">
+                    秒
+                  </span>
+                </div>
+              </Form.Item>
+              <Button
+                type="primary"
+                icon={<IconDeviceFloppy size={18} />}
+                loading={runtimeSettingsSaving}
+                onClick={() => void handleRuntimeSettingsSave()}
+                className="h-10"
+              >
+                保存设置
+              </Button>
+              <Button
+                icon={<IconReload size={18} />}
+                disabled={runtimeSettingsLoading || runtimeSettings?.usesPlatformDefault !== false}
+                loading={runtimeSettingsSaving}
+                onClick={() => void handleRuntimeSettingsRestore()}
+                className="h-10"
+              >
+                恢复默认
+              </Button>
+            </div>
+          </Form>
+        </div>
+      </Card>
+
+      <Card className="shadow-sm border-slate-100">
+        <div className="p-6">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-700 shadow-sm">
                 <IconMicrophone size={18} />
               </div>
               <div>
                 <Typography.Title level={5} className="mb-0 text-fluid-lg text-slate-900">
-                  语气词词表
+                  ASR 忽略词条
                 </Typography.Title>
                 <Typography.Text className="text-fluid-sm text-slate-500">
-                  每行填写一个需要忽略的汉字。仅当完整识别结果等于该字（忽略首尾空白和标点）时才过滤。
+                  每行一条完整短文本，支持中文、英文、数字、内部空格和标点，并按规范化后的整条文本精确匹配。
                 </Typography.Text>
               </div>
             </div>
@@ -847,19 +1011,21 @@ export const AsrManagementPage = () => {
               onClick={() => void loadFillerWords()}
               className="border-slate-200 hover:border-brand-500 hover:text-brand-600"
             >
-              刷新词表
+              刷新词条
             </Button>
           </div>
 
           <Form<FillerWordFormValues> form={fillerWordForm} layout="vertical" requiredMark={false}>
             <Form.Item
               name="fillerWords"
-              label={<span className="text-fluid-sm font-medium text-slate-700">需要过滤的语气词</span>}
+              label={<span className="text-fluid-sm font-medium text-slate-700">需要忽略的 ASR 文本</span>}
+              rules={[{ validator: validateIgnoredTranscripts }]}
               className="mb-4"
             >
               <Input.TextArea
                 autoSize={{ minRows: 4, maxRows: 8 }}
-                placeholder={'嗯\n啊\n哦'}
+                maxLength={1024}
+                placeholder={'嗯\n好的\num\nyou know\n那个，嗯'}
                 className="rounded-lg border-slate-200"
               />
             </Form.Item>
@@ -871,10 +1037,10 @@ export const AsrManagementPage = () => {
                 onClick={() => void handleFillerWordsSave()}
                 className="h-10 px-5"
               >
-                保存词表
+                保存词条
               </Button>
               <Typography.Text className="text-fluid-sm text-slate-500">
-                空行会忽略，重复字会自动合并；多字词和非汉字不能保存。
+                空行会忽略，等价词条会自动合并；每条最多 32 个字符，纯标点和纯符号不能保存。
               </Typography.Text>
             </div>
           </Form>

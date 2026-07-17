@@ -5,65 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Understand Anything 使用指南</title>
     <style>
+      /* ── Design tokens ── */
       :root {
+        --brand: #0f766e;
+        --brand-deep: #0b5f58;
+        --brand-light: #dff6ef;
+        --brand-bg: rgba(15, 118, 110, 0.06);
         --ink: #14211f;
-        --muted: #5b6c67;
+        --ink-secondary: #5b6c67;
+        --ink-tertiary: #829490;
         --line: #d9e4df;
+        --line-light: #e8f0ec;
+        --surface: #ffffff;
         --paper: #f7faf8;
-        --panel: #ffffff;
-        --teal: #0f766e;
-        --teal-soft: #dff6ef;
         --amber: #c77913;
         --rose: #b9475f;
-        --shadow: 0 18px 45px rgba(18, 32, 29, 0.12);
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --shadow-sm: 0 1px 3px rgba(18, 32, 29, 0.06), 0 1px 2px rgba(18, 32, 29, 0.04);
+        --shadow-md: 0 4px 12px rgba(18, 32, 29, 0.07), 0 2px 6px rgba(18, 32, 29, 0.04);
+        --shadow-lg: 0 12px 36px rgba(18, 32, 29, 0.10), 0 4px 12px rgba(18, 32, 29, 0.06);
+        --shadow-xl: 0 20px 60px rgba(18, 32, 29, 0.13), 0 8px 20px rgba(18, 32, 29, 0.07);
       }
 
-      * {
+      *,
+      *::before,
+      *::after {
         box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
 
       body {
-        margin: 0;
         min-height: 100vh;
         font-family:
           "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC",
           -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         color: var(--ink);
         background:
+          linear-gradient(135deg, rgba(15, 118, 110, 0.04) 0%, transparent 50%),
+          linear-gradient(225deg, rgba(15, 118, 110, 0.03) 0%, transparent 50%),
           linear-gradient(90deg, rgba(15, 118, 110, 0.055) 1px, transparent 1px),
-          linear-gradient(rgba(15, 118, 110, 0.045) 1px, transparent 1px),
+          linear-gradient(rgba(15, 118, 110, 0.04) 1px, transparent 1px),
           #eef3f1;
-        background-size: 34px 34px;
+        background-size: 100% 100%, 100% 100%, 34px 34px, 34px 34px;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
 
+      /* ── Shell ── */
       .shell {
-        width: min(1180px, calc(100% - 40px));
+        width: min(1180px, calc(100% - 48px));
         margin: 0 auto;
-        padding: 34px 0 48px;
+        padding: clamp(24px, 3vw, 48px) 0 clamp(36px, 4vw, 64px);
       }
 
+      /* ── Shared panel base ── */
+      .panel {
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transition: box-shadow 0.25s ease, transform 0.25s ease;
+      }
+
+      .panel:hover {
+        box-shadow: var(--shadow-lg);
+      }
+
+      /* ── Hero ── */
       .hero {
         display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-        gap: 18px;
+        grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+        gap: 20px;
         align-items: stretch;
-        min-height: 360px;
-      }
-
-      .hero-main,
-      .map-panel,
-      .section,
-      .command-box,
-      .question-card {
-        border: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.86);
-        box-shadow: var(--shadow);
-        backdrop-filter: blur(10px);
+        min-height: 380px;
       }
 
       .hero-main {
-        padding: 34px;
-        border-radius: 8px;
+        padding: clamp(24px, 3vw, 40px);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -73,157 +96,228 @@
         display: inline-flex;
         width: fit-content;
         align-items: center;
-        gap: 8px;
-        padding: 7px 10px;
+        gap: 6px;
+        padding: 6px 14px;
         border: 1px solid #b9ded7;
         border-radius: 999px;
-        color: #0f5f58;
-        background: var(--teal-soft);
-        font-size: 13px;
+        color: var(--brand-deep);
+        background: var(--brand-light);
+        font-size: clamp(11px, 0.45vw + 7px, 13px);
         font-weight: 700;
+        letter-spacing: 0.3px;
+      }
+
+      .eyebrow::before {
+        content: "";
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--brand);
+        animation: pulse-dot 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse-dot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(0.8); }
       }
 
       h1 {
-        margin: 22px 0 14px;
-        font-size: clamp(34px, 5vw, 64px);
-        line-height: 1.03;
-        letter-spacing: 0;
+        margin: clamp(14px, 2vw, 22px) 0 clamp(8px, 1vw, 14px);
+        font-size: clamp(30px, 4.5vw, 58px);
+        font-weight: 800;
+        line-height: 1.06;
+        letter-spacing: -0.02em;
+        background: linear-gradient(135deg, var(--ink) 30%, var(--brand-deep) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
 
       .lead {
-        max-width: 680px;
-        margin: 0;
-        color: var(--muted);
-        font-size: 18px;
-        line-height: 1.8;
+        max-width: 620px;
+        color: var(--ink-secondary);
+        font-size: clamp(14px, 0.6vw + 10px, 18px);
+        line-height: 1.85;
       }
 
+      /* ── Pill tags ── */
       .hero-actions {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 28px;
+        gap: 8px;
+        margin-top: clamp(20px, 2.5vw, 32px);
       }
 
       .pill {
         display: inline-flex;
         align-items: center;
-        min-height: 38px;
-        padding: 0 13px;
+        min-height: 34px;
+        padding: 0 14px;
         border-radius: 999px;
-        border: 1px solid var(--line);
-        background: #f8fbfa;
-        color: #28413d;
-        font-size: 14px;
-        font-weight: 650;
+        border: 1px solid var(--line-light);
+        background: var(--paper);
+        color: var(--ink-secondary);
+        font-size: clamp(12px, 0.4vw + 8px, 14px);
+        font-weight: 600;
+        transition: all 0.2s ease;
+        cursor: default;
       }
 
+      .pill:hover {
+        border-color: var(--brand);
+        color: var(--brand-deep);
+        background: var(--brand-light);
+        transform: translateY(-1px);
+      }
+
+      /* ── Map panel ── */
       .map-panel {
-        border-radius: 8px;
-        padding: 24px;
-        overflow: hidden;
-        position: relative;
+        border-radius: var(--radius-lg);
+        padding: clamp(18px, 2vw, 28px);
+        box-shadow: var(--shadow-md);
+        display: flex;
+        flex-direction: column;
       }
 
       .map-title {
-        margin: 0 0 18px;
-        font-size: 15px;
-        color: var(--muted);
+        margin: 0 0 16px;
+        font-size: clamp(12px, 0.45vw + 8px, 14px);
+        color: var(--ink-tertiary);
         font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
       }
 
       .graph {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
+        gap: 10px;
+        flex: 1;
       }
 
       .node {
-        min-height: 96px;
-        padding: 16px;
-        border-radius: 8px;
+        min-height: 80px;
+        padding: clamp(12px, 1.2vw, 18px);
+        border-radius: var(--radius-sm);
         border: 1px solid #d6e5e0;
-        background: #f8fbfa;
+        background: var(--paper);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+
+      .node:hover {
+        border-color: var(--brand);
+        background: var(--brand-light);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
       }
 
       .node strong {
         display: block;
-        margin-bottom: 8px;
-        color: var(--teal);
-        font-size: 16px;
+        margin-bottom: 4px;
+        color: var(--brand);
+        font-size: clamp(14px, 0.55vw + 9px, 17px);
       }
 
       .node span {
-        color: var(--muted);
-        font-size: 13px;
+        color: var(--ink-secondary);
+        font-size: clamp(11px, 0.4vw + 7px, 13px);
         line-height: 1.6;
       }
 
       .connector {
-        margin-top: 16px;
-        padding: 15px;
-        border-left: 4px solid var(--teal);
+        margin-top: 12px;
+        padding: 14px 16px;
+        border-left: 3px solid var(--brand);
+        border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
         background: #eefaf7;
         color: #264641;
-        font-size: 14px;
-        line-height: 1.7;
+        font-size: clamp(12px, 0.45vw + 8px, 14px);
+        line-height: 1.75;
       }
 
+      /* ── Section ── */
+      .section {
+        margin-top: clamp(20px, 2.5vw, 28px);
+        border-radius: var(--radius-lg);
+        padding: clamp(20px, 2.5vw, 32px);
+        box-shadow: var(--shadow-md);
+      }
+
+      .section h2 {
+        margin: 0 0 clamp(14px, 1.5vw, 22px);
+        font-size: clamp(20px, 2vw + 4px, 30px);
+        font-weight: 750;
+        letter-spacing: -0.01em;
+        color: var(--ink);
+      }
+
+      .section h2::after {
+        content: "";
+        display: block;
+        width: clamp(40px, 4vw, 60px);
+        height: 3px;
+        margin-top: 8px;
+        border-radius: 2px;
+        background: linear-gradient(90deg, var(--brand), var(--brand-light));
+      }
+
+      /* ── Steps grid ── */
       .grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 16px;
-        margin-top: 18px;
-      }
-
-      .section {
-        margin-top: 18px;
-        border-radius: 8px;
-        padding: 24px;
-      }
-
-      .section h2 {
-        margin: 0 0 16px;
-        font-size: 24px;
-        letter-spacing: 0;
       }
 
       .step {
         display: flex;
         gap: 14px;
-        padding: 18px;
-        min-height: 150px;
-        border-radius: 8px;
-        border: 1px solid var(--line);
-        background: #fbfdfc;
+        padding: clamp(16px, 1.5vw, 22px);
+        min-height: 140px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--line-light);
+        background: var(--surface);
+        transition: all 0.25s ease;
+      }
+
+      .step:hover {
+        border-color: #b9ded7;
+        box-shadow: var(--shadow-md);
+        transform: translateY(-3px);
       }
 
       .number {
         display: grid;
         flex: 0 0 auto;
-        width: 34px;
-        height: 34px;
+        width: 36px;
+        height: 36px;
         place-items: center;
         border-radius: 50%;
-        background: var(--teal);
+        background: linear-gradient(135deg, var(--brand), var(--brand-deep));
         color: #fff;
         font-weight: 800;
+        font-size: 15px;
+        box-shadow: 0 2px 8px rgba(15, 118, 110, 0.3);
       }
 
-      .step h3,
-      .question-card h3 {
-        margin: 0 0 8px;
-        font-size: 17px;
+      .step h3 {
+        margin: 0 0 6px;
+        font-size: clamp(15px, 0.55vw + 10px, 18px);
+        font-weight: 650;
       }
 
       .step p,
-      .question-card p,
       .section p {
         margin: 0;
-        color: var(--muted);
-        line-height: 1.75;
+        color: var(--ink-secondary);
+        font-size: clamp(12px, 0.45vw + 8px, 14px);
+        line-height: 1.8;
       }
 
+      /* ── Commands ── */
       .commands {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -231,30 +325,44 @@
       }
 
       .command-box {
-        border-radius: 8px;
-        box-shadow: none;
-        padding: 18px;
-        background: #101b19;
+        border-radius: var(--radius-md);
+        padding: clamp(14px, 1.5vw, 20px);
+        background: linear-gradient(145deg, #0e1b19 0%, #162a26 100%);
         color: #e8fff8;
+        transition: all 0.25s ease;
+      }
+
+      .command-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(14, 27, 25, 0.35);
       }
 
       .command-box label {
         display: block;
-        margin-bottom: 10px;
-        color: #9ee5d6;
-        font-size: 13px;
+        margin-bottom: 8px;
+        color: #7cd4c0;
+        font-size: clamp(11px, 0.4vw + 7px, 13px);
         font-weight: 700;
+        letter-spacing: 0.3px;
       }
 
-      code {
+      .command-box code {
         display: block;
         white-space: pre-wrap;
         overflow-wrap: anywhere;
-        font-family: "Cascadia Code", Consolas, "Liberation Mono", monospace;
-        font-size: 14px;
+        font-family: "Cascadia Code", Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: clamp(12px, 0.45vw + 8px, 14px);
         line-height: 1.7;
+        color: #d4fdf2;
       }
 
+      .command-box code::before {
+        content: "$ ";
+        color: #5ea898;
+        user-select: none;
+      }
+
+      /* ── Questions ── */
       .question-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -262,76 +370,117 @@
       }
 
       .question-card {
-        border-radius: 8px;
-        box-shadow: none;
-        padding: 18px;
+        border-radius: var(--radius-md);
+        padding: clamp(16px, 1.5vw, 22px);
+        border: 1px solid var(--line-light);
+        background: var(--surface);
+        transition: all 0.25s ease;
+      }
+
+      .question-card:hover {
+        border-color: #b9ded7;
+        box-shadow: var(--shadow-md);
+        transform: translateY(-3px);
       }
 
       .tag {
         display: inline-flex;
-        margin-bottom: 12px;
-        padding: 5px 9px;
+        margin-bottom: 10px;
+        padding: 4px 12px;
         border-radius: 999px;
         color: #fff;
-        font-size: 12px;
-        font-weight: 750;
+        font-size: clamp(11px, 0.35vw + 7px, 12px);
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
       }
 
-      .tag.teal {
-        background: var(--teal);
+      .tag.teal  { background: linear-gradient(135deg, #0f766e, #0ea395); }
+      .tag.amber { background: linear-gradient(135deg, #c77913, #e8992e); }
+      .tag.rose  { background: linear-gradient(135deg, #b9475f, #d4607a); }
+      .tag.dark  { background: linear-gradient(135deg, #243833, #3a5c53); }
+
+      .question-card h3 {
+        margin: 0 0 8px;
+        font-size: clamp(14px, 0.55vw + 9px, 17px);
+        font-weight: 650;
+        line-height: 1.5;
       }
 
-      .tag.amber {
-        background: var(--amber);
-      }
-
-      .tag.rose {
-        background: var(--rose);
-      }
-
-      .tag.dark {
-        background: #243833;
-      }
-
-      .footer-note {
-        margin: 18px 0 0;
-        padding: 16px 18px;
-        border: 1px dashed #a8cfc6;
-        border-radius: 8px;
-        color: #31504b;
-        background: rgba(223, 246, 239, 0.72);
+      .question-card p {
+        margin: 0;
+        color: var(--ink-secondary);
+        font-size: clamp(12px, 0.45vw + 8px, 14px);
         line-height: 1.75;
       }
 
-      @media (max-width: 880px) {
+      /* ── Footer note ── */
+      .footer-note {
+        margin: clamp(16px, 2vw, 22px) 0 0;
+        padding: clamp(14px, 1.5vw, 18px);
+        border: 1px solid #cde6e0;
+        border-radius: var(--radius-md);
+        color: var(--brand-deep);
+        background: rgba(223, 246, 239, 0.65);
+        font-size: clamp(12px, 0.45vw + 8px, 14px);
+        line-height: 1.8;
+      }
+
+      .footer-note::before {
+        content: "💡";
+        margin-right: 6px;
+      }
+
+      /* ── Responsive ── */
+      @media (max-width: 900px) {
         .shell {
-          width: min(100% - 24px, 760px);
-          padding-top: 18px;
+          width: min(calc(100% - 32px), 680px);
         }
 
-        .hero,
-        .grid,
-        .commands,
+        .hero {
+          grid-template-columns: 1fr;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+          gap: 14px;
+        }
+
+        .commands {
+          grid-template-columns: 1fr;
+        }
+
         .question-grid {
           grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .shell {
+          width: calc(100% - 24px);
         }
 
         .hero-main,
         .section,
         .map-panel {
-          padding: 20px;
+          padding: 18px;
         }
 
         .graph {
           grid-template-columns: 1fr;
+        }
+
+        .step {
+          min-height: auto;
         }
       }
     </style>
   </head>
   <body>
     <main class="shell">
+      <!-- Hero -->
       <section class="hero" aria-labelledby="page-title">
-        <div class="hero-main">
+        <div class="hero-main panel">
           <div>
             <span class="eyebrow">AI 编程的项目地图</span>
             <h1 id="page-title">Understand Anything 使用指南</h1>
@@ -348,7 +497,7 @@
           </div>
         </div>
 
-        <aside class="map-panel" aria-label="知识图谱示意">
+        <aside class="map-panel panel" aria-label="知识图谱示意">
           <p class="map-title">它会把项目整理成这样的关系</p>
           <div class="graph">
             <div class="node">
@@ -365,7 +514,7 @@
             </div>
             <div class="node">
               <strong>问题</strong>
-              <span>你可以直接问“这个功能在哪里改”</span>
+              <span>你可以直接问"这个功能在哪里改"</span>
             </div>
           </div>
           <div class="connector">
@@ -374,21 +523,22 @@
         </aside>
       </section>
 
-      <section class="section" aria-labelledby="steps-title">
+      <!-- Steps -->
+      <section class="section panel" aria-labelledby="steps-title">
         <h2 id="steps-title">照着这 3 步用</h2>
         <div class="grid">
           <article class="step">
             <span class="number">1</span>
             <div>
               <h3>先生成项目图谱</h3>
-              <p>在项目根目录让 AI 执行 understand 分析。完成后会生成 `.understand-anything/knowledge-graph.json`。</p>
+              <p>在项目根目录让 AI 执行 understand 分析。完成后会生成 <code>.understand-anything/knowledge-graph.json</code>。</p>
             </div>
           </article>
           <article class="step">
             <span class="number">2</span>
             <div>
               <h3>再用图谱提问</h3>
-              <p>让 AI 基于知识图谱回答：“这个功能在哪”“调用链是什么”“改这里会影响谁”。</p>
+              <p>让 AI 基于知识图谱回答："这个功能在哪""调用链是什么""改这里会影响谁"。</p>
             </div>
           </article>
           <article class="step">
@@ -401,7 +551,8 @@
         </div>
       </section>
 
-      <section class="section" aria-labelledby="commands-title">
+      <!-- Commands -->
+      <section class="section panel" aria-labelledby="commands-title">
         <h2 id="commands-title">常用命令</h2>
         <div class="commands">
           <div class="command-box">
@@ -423,32 +574,33 @@
         </div>
       </section>
 
-      <section class="section" aria-labelledby="questions-title">
+      <!-- Questions -->
+      <section class="section panel" aria-labelledby="questions-title">
         <h2 id="questions-title">你可以这样问 AI</h2>
         <div class="question-grid">
           <article class="question-card">
             <span class="tag teal">找入口</span>
-            <h3>“设备管理页面的数据从哪里来？”</h3>
+            <h3>"设备管理页面的数据从哪里来？"</h3>
             <p>适合在你知道功能名，但不知道页面、API、后端接口分别在哪里时使用。</p>
           </article>
           <article class="question-card">
             <span class="tag amber">看影响</span>
-            <h3>“如果我改登录权限，会影响哪些路由？”</h3>
+            <h3>"如果我改登录权限，会影响哪些路由？"</h3>
             <p>适合改权限、路由、全局状态、API 拦截器这类容易牵连多处的代码。</p>
           </article>
           <article class="question-card">
             <span class="tag rose">读架构</span>
-            <h3>“这个项目的前端、后端、Celery 是怎么协作的？”</h3>
+            <h3>"这个项目的前端、后端、Celery 是怎么协作的？"</h3>
             <p>适合刚接手项目，或者准备改跨模块功能之前先建立整体理解。</p>
           </article>
           <article class="question-card">
             <span class="tag dark">查调用链</span>
-            <h3>“聊天功能从页面到接口的调用链是什么？”</h3>
+            <h3>"聊天功能从页面到接口的调用链是什么？"</h3>
             <p>适合排查 bug、定位接口、理解状态流转和请求路径。</p>
           </article>
         </div>
         <p class="footer-note">
-          最好先让 AI 生成图谱，再问具体问题。问题越具体，图谱越能发挥作用；例如不要只问“帮我看看项目”，而是问“知识库上传功能在哪些文件里，改上传校验会影响哪里？”
+          最好先让 AI 生成图谱，再问具体问题。问题越具体，图谱越能发挥作用；例如不要只问"帮我看看项目"，而是问"知识库上传功能在哪些文件里，改上传校验会影响哪里？"
         </p>
       </section>
     </main>

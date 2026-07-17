@@ -32,6 +32,8 @@ ASR WebSocket 能力测试会申请浏览器麦克风权限，收到 `asr.ready`
 
 Agent Application 三合一语音链路使用同一个 `/ws/realtime/`：设备发送 `agent.session.start` 后上传 PCM。服务端收到上游 VAD 停说信号时会返回 `asr.input_stopped`（携带当前命令 `id`、`requestId`、`traceId` 和 `reason: "vad"`）。客户端收到该事件后应立即停止麦克风、PCM 上送和录音 UI，但不要发送 `agent.session.finish`、不要关闭 WebSocket；继续在原连接上等待最终 `asr.transcript`、`asr.done`、LLM 与 TTS 事件。服务端会独立丢弃事件到达后的尾音 PCM，因此旧版客户端不会破坏最终问题边界。
 
+若从 `asr.ready` 开始直到公司配置的有效输入等待上限仍只有静音、噪音、纯标点或公司 ASR 忽略词条，服务端会依次发送 `asr.input_stopped`、`asr.done`、`agent.done`。三个事件都携带当前 `id`、`requestId`、`traceId` 和 `reason: "effective_input_timeout"`。这是正常的无输入完成，不会发送 `agent.error`，也不会启动 LLM/TTS；客户端收到第一个事件后立即停止麦克风与 PCM 上送，并继续消费后两个完成事件以复位会话状态。首个有效 `asr.transcript` preview 会取消该整轮上限，长发言仍由 VAD 和既有断句流程完成。
+
 ASR 替换词纠错由后端按设备所属公司自动应用。`asr.transcript` 事件里：
 
 - `originalText` 是上游原始识别文本。

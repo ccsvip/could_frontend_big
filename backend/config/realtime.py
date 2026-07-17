@@ -97,6 +97,8 @@ class RealtimeConnection:
         self.agent_asr_final_payloads: list[dict[str, Any]] = []
         self.agent_asr_finish_task = None
         self.agent_asr_finish_generation = 0
+        self.agent_asr_input_timeout_task = None
+        self.agent_asr_has_valid_input = False
         self.agent_conversation_id = None
         self.agent_runtime_session_id = None
         self.agent_tts_queue = None
@@ -135,6 +137,7 @@ class RealtimeConnection:
             self.runtime_config_device_id = None
 
     async def close_asr_session(self) -> None:
+        await _cancel_agent_asr_input_timeout_task(self)
         await _cancel_agent_asr_finish_task(self)
         if self.asr_upstream_task is not None:
             self.asr_upstream_task.cancel()
@@ -164,6 +167,7 @@ class RealtimeConnection:
         self.tts_session_id = None
 
     async def close_agent_session(self) -> None:
+        await _cancel_agent_asr_input_timeout_task(self)
         await _cancel_agent_asr_finish_task(self)
         current_task = asyncio.current_task()
         session_id = self.agent_session_id
@@ -190,6 +194,7 @@ class RealtimeConnection:
         self.agent_latest_text = ''
         self.agent_asr_final_texts = []
         self.agent_asr_final_payloads = []
+        self.agent_asr_has_valid_input = False
         self.agent_conversation_id = None
         self.agent_runtime_session_id = None
         self.agent_tts_queue = None
@@ -248,6 +253,76 @@ async def _cancel_agent_asr_finish_task(connection: RealtimeConnection) -> None:
     if not task.done():
         task.cancel()
     await asyncio.gather(task, return_exceptions=True)
+
+
+async def _cancel_agent_asr_input_timeout_task(connection: RealtimeConnection) -> None:
+    task = connection.agent_asr_input_timeout_task
+    connection.agent_asr_input_timeout_task = None
+    if task is None or task is asyncio.current_task():
+        return
+    if not task.done():
+        task.cancel()
+    await asyncio.gather(task, return_exceptions=True)
+
+
+def _schedule_agent_asr_input_timeout(
+    send,
+    connection: RealtimeConnection,
+    timeout_seconds: int,
+) -> None:
+    connection.agent_asr_input_timeout_task = asyncio.create_task(
+        _finish_agent_after_effective_input_timeout(send, connection, timeout_seconds),
+    )
+
+
+async def _finish_agent_after_effective_input_timeout(
+    send,
+    connection: RealtimeConnection,
+    timeout_seconds: int,
+) -> None:
+    current_task = asyncio.current_task()
+    command_id = connection.agent_session_id
+    request_id = connection.agent_request_id or make_request_id()
+    trace_id = connection.agent_trace_id or request_id
+    try:
+        await asyncio.sleep(timeout_seconds)
+        if (
+            connection.agent_session_id != command_id
+            or connection.agent_asr_input_timeout_task is not current_task
+            or connection.agent_asr_has_valid_input
+        ):
+            return
+
+        reason = 'effective_input_timeout'
+        await _send_json(send, {
+            'type': 'asr.input_stopped',
+            'id': command_id,
+            'requestId': request_id,
+            'traceId': trace_id,
+            'reason': reason,
+        })
+        await connection.close_asr_session()
+        await _send_json(send, {
+            'type': 'asr.done',
+            'id': command_id,
+            'requestId': request_id,
+            'traceId': trace_id,
+            'reason': reason,
+        })
+        await _send_json(send, {
+            'type': 'agent.done',
+            'id': command_id,
+            'requestId': request_id,
+            'traceId': trace_id,
+            'reason': reason,
+        })
+        await connection.close_tts_session()
+        await connection.close_agent_session()
+    except asyncio.CancelledError:
+        raise
+    finally:
+        if connection.agent_asr_input_timeout_task is current_task:
+            connection.agent_asr_input_timeout_task = None
 
 
 def _schedule_agent_asr_finish(upstream, connection: RealtimeConnection) -> None:
@@ -763,6 +838,7 @@ async def _handle_agent_session_start(send, connection: RealtimeConnection, mess
     connection.agent_latest_text = input_text
     connection.agent_asr_final_texts = []
     connection.agent_asr_final_payloads = []
+    connection.agent_asr_has_valid_input = False
     connection.agent_runtime_session_id = payload.get('sessionId') or payload.get('session_id')
     connection.agent_conversation_id = payload.get('conversationId') or payload.get('conversation_id')
     connection.agent_tts_queue = asyncio.Queue()
@@ -1414,6 +1490,12 @@ async def _open_agent_asr_session(
     )
     if notify_ready:
         await _send_json(send, _trace_payload('asr.ready', command_id, request_id, trace_id))
+        timeout_seconds = await sync_to_async(
+            realtime_asr.load_asr_effective_input_timeout_seconds,
+            thread_sensitive=True,
+        )(resolved_connection.get('tenant_id'))
+        if not connection.agent_asr_has_valid_input:
+            _schedule_agent_asr_input_timeout(send, connection, timeout_seconds)
     return True
 
 
@@ -1484,6 +1566,9 @@ async def _agent_asr_upstream_to_client(
                 transcript_payload['requestId'] = request_id
                 transcript_payload['traceId'] = trace_id
                 text = str(transcript_payload.get('text') or '').strip()
+                if text:
+                    connection.agent_asr_has_valid_input = True
+                    await _cancel_agent_asr_input_timeout_task(connection)
                 if transcript_payload.get('final'):
                     if text:
                         connection.agent_asr_final_texts.append(text)

@@ -128,9 +128,13 @@ _Avoid_: user input playback, suggested question playback, TTS configuration tes
 Speech-to-text input for an Agent Application conversation, where recorded user audio is transcribed into editable message text before the user sends it.
 _Avoid_: realtime interruption, direct voice message, device ASR runtime
 
-**Company ASR Filler Word Set**:
-A company-scoped, newline-delimited set of exact ASR transcript entries to suppress. A transcript is suppressed only when its complete text, after ignoring surrounding whitespace and punctuation, equals one configured entry; combinations or repetitions of entries remain valid transcripts. Sets are empty until their company explicitly configures entries and replace any platform-wide enable switch.
-_Avoid_: character set filter, sentence filter, platform-wide filler-word list
+**Company ASR Ignored Transcript Set**:
+A company-scoped, newline-delimited set of exact short transcript entries to suppress, empty until its company explicitly configures entries. Each trimmed entry is at most 32 characters, must contain a Unicode letter or number, and may contain internal spaces or punctuation; pure punctuation, symbols, and whitespace are invalid transcripts suppressed independently of this set. Entries are stored in their normalized form and equivalent duplicates are merged; matching uses Unicode width normalization, case-insensitive letters, collapsed internal whitespace, and ignores surrounding whitespace and punctuation while preserving internal punctuation.
+_Avoid_: filler word set, character set filter, sentence filter, platform-wide ignored transcript list
+
+**ASR Effective Input Timeout**:
+The company-configurable maximum time an automatic Device Agent voice interaction may wait for a meaningful transcript after ASR becomes ready; it is an integer from 5 to 120 seconds and falls back to a 15-second platform default. Noise, invalid transcripts, and company-ignored entries do not extend it, while the first meaningful preview cancels it so long speech can complete normally. Expiry is a normal no-input completion that stops ASR and the Agent interaction without invoking LLM or TTS; it does not limit manual Management ASR Tests and is distinct from VAD Silence Duration, which only determines when one detected speech segment ends.
+_Avoid_: VAD timeout, silence duration, segment timeout
 
 **Control Command Recognition Policy**:
 A company-scoped policy that maps a locally calculated Control Command Match Confidence to one of three outcomes: direct execution, LLM confirmation, or ordinary conversation. It applies only to active Control Commands.

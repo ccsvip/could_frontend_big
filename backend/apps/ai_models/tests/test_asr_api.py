@@ -314,17 +314,47 @@ class ASRApiTests(TenantTestMixin, APITestCase):
             '嗯\n啊\n哦',
         )
 
-    def test_filler_word_set_rejects_non_single_chinese_characters(self):
+    def test_filler_word_set_normalizes_short_transcript_entries(self):
         self.grant_permissions('ai_models.asr.view')
 
         response = self.client.patch(
             '/api/v1/ai-models/asr/filler-words/',
-            {'fillerWords': '嗯\n好的\num'},
+            {'fillerWords': 'Um\nｕｍ\num。\n好的\nyou  know\n那个，嗯'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {'fillerWords': 'um\n好的\nyou know\n那个,嗯'})
+        self.assertEqual(
+            self.client.get('/api/v1/ai-models/asr/filler-words/').data,
+            {'fillerWords': 'um\n好的\nyou know\n那个,嗯'},
+        )
+
+    def test_filler_word_set_rejects_entries_without_letters_or_numbers(self):
+        self.grant_permissions('ai_models.asr.view')
+
+        response = self.client.patch(
+            '/api/v1/ai-models/asr/filler-words/',
+            {'fillerWords': '嗯\n。\n---'},
             format='json',
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('单个汉字', response.data['message'])
+        self.assertIn('第 2 行', response.data['message'])
+        self.assertFalse(ASRFillerWordSet.objects.filter(tenant=self.tenant).exists())
+
+    def test_filler_word_set_rejects_entries_longer_than_32_characters(self):
+        self.grant_permissions('ai_models.asr.view')
+
+        response = self.client.patch(
+            '/api/v1/ai-models/asr/filler-words/',
+            {'fillerWords': '一二三四五六七八九十一二三四五六七八九十一二三四五六七八九十一二三'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('第 1 行', response.data['message'])
+        self.assertIn('最多 32 个字符', response.data['message'])
         self.assertFalse(ASRFillerWordSet.objects.filter(tenant=self.tenant).exists())
 
     def test_filler_word_sets_are_tenant_scoped(self):
@@ -336,6 +366,128 @@ class ASRApiTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'fillerWords': ''})
+
+    def test_asr_runtime_settings_use_15_second_platform_default(self):
+        self.grant_permissions('ai_models.asr.view')
+
+        response = self.client.get('/api/v1/ai-models/asr/runtime-settings/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data,
+            {
+                'effectiveInputTimeoutSeconds': 15,
+                'usesPlatformDefault': True,
+            },
+        )
+
+    def test_asr_runtime_settings_can_override_effective_input_timeout(self):
+        self.grant_permissions('ai_models.asr.view')
+
+        update_response = self.client.patch(
+            '/api/v1/ai-models/asr/runtime-settings/',
+            {'effectiveInputTimeoutSeconds': 30},
+            format='json',
+        )
+
+        self.assertEqual(update_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            update_response.data,
+            {
+                'effectiveInputTimeoutSeconds': 30,
+                'usesPlatformDefault': False,
+            },
+        )
+        self.assertEqual(
+            self.client.get('/api/v1/ai-models/asr/runtime-settings/').data,
+            update_response.data,
+        )
+
+    def test_asr_runtime_settings_can_restore_platform_default_with_null(self):
+        self.grant_permissions('ai_models.asr.view')
+        self.client.patch(
+            '/api/v1/ai-models/asr/runtime-settings/',
+            {'effectiveInputTimeoutSeconds': 30},
+            format='json',
+        )
+
+        response = self.client.patch(
+            '/api/v1/ai-models/asr/runtime-settings/',
+            {'effectiveInputTimeoutSeconds': None},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data,
+            {
+                'effectiveInputTimeoutSeconds': 15,
+                'usesPlatformDefault': True,
+            },
+        )
+
+    def test_superuser_reads_asr_runtime_settings_through_tenant_scope(self):
+        self.grant_permissions('ai_models.asr.view')
+        self.client.patch(
+            '/api/v1/ai-models/asr/runtime-settings/',
+            {'effectiveInputTimeoutSeconds': 45},
+            format='json',
+        )
+        superuser = User.objects.create_superuser(username='runtime-root', password='test123456')
+        self.client.force_authenticate(user=superuser)
+
+        response = self.client.get(
+            f'/api/v1/ai-models/asr/runtime-settings/?tenant={self.tenant.id}',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data,
+            {
+                'effectiveInputTimeoutSeconds': 45,
+                'usesPlatformDefault': False,
+            },
+        )
+
+    def test_asr_runtime_settings_validate_effective_input_timeout_range(self):
+        self.grant_permissions('ai_models.asr.view')
+        url = '/api/v1/ai-models/asr/runtime-settings/'
+
+        for valid_value in (5, 120):
+            with self.subTest(valid_value=valid_value):
+                response = self.client.patch(
+                    url,
+                    {'effectiveInputTimeoutSeconds': valid_value},
+                    format='json',
+                )
+                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                self.assertEqual(response.data['effectiveInputTimeoutSeconds'], valid_value)
+
+        for invalid_value in (4, 121, 10.5, '15'):
+            with self.subTest(invalid_value=invalid_value):
+                response = self.client.patch(
+                    url,
+                    {'effectiveInputTimeoutSeconds': invalid_value},
+                    format='json',
+                )
+                self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_company_user_cannot_switch_asr_runtime_settings_with_query_parameter(self):
+        self.grant_permissions('ai_models.asr.view')
+        other_tenant = Tenant.objects.create(name='其他 ASR 设置公司', code='other-asr-runtime-company')
+        self.client.patch(
+            '/api/v1/ai-models/asr/runtime-settings/',
+            {'effectiveInputTimeoutSeconds': 30},
+            format='json',
+        )
+
+        response = self.client.get(
+            f'/api/v1/ai-models/asr/runtime-settings/?tenant={other_tenant.id}',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['effectiveInputTimeoutSeconds'], 30)
+        self.assertFalse(response.data['usesPlatformDefault'])
 
     def test_replacement_rules_are_tenant_scoped(self):
         self.grant_permissions('ai_models.asr.view')

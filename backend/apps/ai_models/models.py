@@ -19,6 +19,7 @@ PROVIDER_TYPE_CHOICES = [
 
 RUNTIME_BACKEND_PLATFORM_LLM = 'platform_llm'
 RUNTIME_BACKEND_THIRD_PARTY_CHATBOT = 'third_party_chatbot'
+ASR_DEFAULT_EFFECTIVE_INPUT_TIMEOUT_SECONDS = 15
 RUNTIME_BACKEND_CHOICES = [
     (RUNTIME_BACKEND_PLATFORM_LLM, '平台 LLM'),
     (RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, '第三方会话机器人'),
@@ -477,6 +478,27 @@ class ASRFillerWordSet(models.Model):
 
     def __str__(self):
         return f'{self.tenant_id}: {self.words_text}'
+
+
+class ASRRuntimeSettings(models.Model):
+    tenant = models.OneToOneField(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='asr_runtime_settings',
+        verbose_name='所属公司',
+    )
+    effective_input_timeout_seconds = models.PositiveSmallIntegerField(
+        '有效输入等待上限（秒）',
+        blank=True,
+        null=True,
+    )
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        verbose_name = '公司 ASR 运行时设置'
+        verbose_name_plural = '公司 ASR 运行时设置'
 
 
 def default_tts_session_config() -> dict:

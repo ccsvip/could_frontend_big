@@ -16,7 +16,7 @@ from django.test import TestCase, override_settings
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import ASRFillerWordSet, AgentApplication, ChatConversation, ChatMessage, LLMModel, LLMProvider, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, TenantLLMModelGrant, TenantThirdPartyChatbotGrant, ThirdPartyChatbotApplication, ThirdPartyChatbotIntegration, ThirdPartyChatbotProvider
+from apps.ai_models.models import ASRFillerWordSet, ASRRuntimeSettings, AgentApplication, ChatConversation, ChatMessage, LLMModel, LLMProvider, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, TenantLLMModelGrant, TenantThirdPartyChatbotGrant, ThirdPartyChatbotApplication, ThirdPartyChatbotIntegration, ThirdPartyChatbotProvider
 from apps.devices.models import Device, DeviceApplication, DeviceChatLog
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
@@ -1643,6 +1643,149 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                     'input_audio_buffer.append',
                     [message.get('type') for message in retry_upstream.messages],
                 )
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
+    @override_settings(
+        MULTIMODAL_WORKSPACE_ID='punctuation-preview-workspace',
+        MULTIMODAL_API_KEY='punctuation-preview-api-key',
+        ASR_BASE_URL='wss://asr.example/realtime',
+        ASR_MODEL='punctuation-preview-model',
+    )
+    def test_agent_voice_suppresses_punctuation_only_preview(self):
+        self.bind_agent_device(
+            agent_name='Punctuation Preview Agent',
+            device_name='Punctuation Preview Device',
+            device_code='ANDROID-PUNCTUATION-PREVIEW-001',
+        )
+        upstream = VADBoundaryASRUpstream()
+
+        async def run_websocket():
+            communicator = await self.open_realtime_websocket()
+
+            with patch('apps.ai_models.realtime_asr.websockets.connect', return_value=upstream):
+                await self.start_agent_voice_session(
+                    communicator,
+                    session_id='agent-punctuation-preview-1',
+                    device_code='ANDROID-PUNCTUATION-PREVIEW-001',
+                    request_id='req-punctuation-preview-1',
+                    trace_id='trace-punctuation-preview-1',
+                )
+                await upstream.emit({
+                    'type': 'conversation.item.input_audio_transcription.text',
+                    'text': '。',
+                })
+
+                await self.send_realtime_ping(communicator, 'punctuation-preview-barrier')
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
+    @override_settings(
+        MULTIMODAL_WORKSPACE_ID='effective-timeout-workspace',
+        MULTIMODAL_API_KEY='effective-timeout-api-key',
+        ASR_BASE_URL='wss://asr.example/realtime',
+        ASR_MODEL='effective-timeout-model',
+    )
+    def test_agent_voice_effective_input_timeout_finishes_without_llm(self):
+        self.bind_agent_device(
+            agent_name='Effective Timeout Agent',
+            device_name='Effective Timeout Device',
+            device_code='ANDROID-EFFECTIVE-TIMEOUT-001',
+        )
+        ASRRuntimeSettings.objects.create(
+            tenant=self.tenant,
+            effective_input_timeout_seconds=5,
+        )
+        ASRFillerWordSet.objects.create(tenant=self.tenant, words_text='um')
+        upstream = VADBoundaryASRUpstream()
+
+        async def run_websocket():
+            communicator = await self.open_realtime_websocket()
+
+            with (
+                patch('apps.ai_models.realtime_asr.websockets.connect', return_value=upstream),
+                patch('config.realtime._run_llm_session_body') as run_llm,
+            ):
+                await self.start_agent_voice_session(
+                    communicator,
+                    session_id='agent-effective-timeout-1',
+                    device_code='ANDROID-EFFECTIVE-TIMEOUT-001',
+                    request_id='req-effective-timeout-1',
+                    trace_id='trace-effective-timeout-1',
+                )
+                await upstream.emit({
+                    'type': 'conversation.item.input_audio_transcription.text',
+                    'text': ' ＵＭ。 ',
+                })
+                await self.send_realtime_ping(communicator, 'effective-timeout-ignored-preview-barrier')
+
+                events = [
+                    json.loads((await communicator.receive_output(timeout=6))['text']),
+                    await self.receive_realtime_json(communicator),
+                    await self.receive_realtime_json(communicator),
+                ]
+
+                self.assertEqual(
+                    [event['type'] for event in events],
+                    ['asr.input_stopped', 'asr.done', 'agent.done'],
+                )
+                for event in events:
+                    self.assertEqual(event['id'], 'agent-effective-timeout-1')
+                    self.assertEqual(event['requestId'], 'req-effective-timeout-1')
+                    self.assertEqual(event['traceId'], 'trace-effective-timeout-1')
+                    self.assertEqual(event['reason'], 'effective_input_timeout')
+                run_llm.assert_not_called()
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
+    @override_settings(
+        MULTIMODAL_WORKSPACE_ID='effective-timeout-cancel-workspace',
+        MULTIMODAL_API_KEY='effective-timeout-cancel-api-key',
+        ASR_BASE_URL='wss://asr.example/realtime',
+        ASR_MODEL='effective-timeout-cancel-model',
+    )
+    def test_agent_voice_valid_preview_cancels_effective_input_timeout(self):
+        self.bind_agent_device(
+            agent_name='Effective Timeout Cancel Agent',
+            device_name='Effective Timeout Cancel Device',
+            device_code='ANDROID-EFFECTIVE-TIMEOUT-CANCEL-001',
+        )
+        ASRRuntimeSettings.objects.create(
+            tenant=self.tenant,
+            effective_input_timeout_seconds=5,
+        )
+        upstream = VADBoundaryASRUpstream()
+
+        async def run_websocket():
+            communicator = await self.open_realtime_websocket()
+
+            with patch('apps.ai_models.realtime_asr.websockets.connect', return_value=upstream):
+                await self.start_agent_voice_session(
+                    communicator,
+                    session_id='agent-effective-timeout-cancel-1',
+                    device_code='ANDROID-EFFECTIVE-TIMEOUT-CANCEL-001',
+                    request_id='req-effective-timeout-cancel-1',
+                    trace_id='trace-effective-timeout-cancel-1',
+                )
+                await upstream.emit({
+                    'type': 'conversation.item.input_audio_transcription.text',
+                    'text': '这是一个还没有说完的有效问题',
+                })
+                preview = await self.receive_realtime_json(communicator)
+                self.assertEqual(preview['type'], 'asr.transcript')
+                self.assertFalse(preview['final'])
+
+                await asyncio.sleep(5.1)
+                await self.send_realtime_ping(communicator, 'effective-timeout-cancel-barrier')
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)

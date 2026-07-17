@@ -5,6 +5,7 @@ from .views import (
     ASRDeviceStatusView,
     ASRConfigView,
     ASRFillerWordSetView,
+    ASRRuntimeSettingsView,
     ASRSettingsTestView,
     ASRSettingsView,
     ASRStatusView,
@@ -71,6 +72,7 @@ urlpatterns = [
     path('ai-models/asr/status/', ASRStatusView.as_view(), name='asr-status'),
     path('ai-models/asr/config/', ASRConfigView.as_view(), name='asr-config'),
     path('ai-models/asr/filler-words/', ASRFillerWordSetView.as_view(), name='asr-filler-word-set'),
+    path('ai-models/asr/runtime-settings/', ASRRuntimeSettingsView.as_view(), name='asr-runtime-settings'),
     path('ai-models/asr/device-status/', ASRDeviceStatusView.as_view(), name='asr-device-status'),
     path('ai-models/asr/test/', ASRTestView.as_view(), name='asr-test'),
 ] + router.urls
