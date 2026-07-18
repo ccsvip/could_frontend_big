@@ -10,7 +10,7 @@ from django.db.models import Count, F, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException, ValidationError
 from rest_framework.parsers import JSONParser, MultiPartParser
@@ -59,6 +59,7 @@ from .services.queries import (
 )
 from .services.runtime import (
     RUNTIME_ERROR_AGENT_UNBOUND,
+    RUNTIME_ERROR_DEVICE_EXPIRED,
     RUNTIME_ERROR_DUPLICATE_DEVICE_CODE,
     RUNTIME_ERROR_EMPTY_DEVICE_CODE,
     RuntimeDeviceError,
@@ -773,9 +774,9 @@ class DeviceRuntimeView(APIView):
             or ''
         ).strip()
 
-    def validate_device(self, request):
+    def validate_device(self, request, *, allow_expired: bool = False):
         try:
-            return get_runtime_device(self.get_device_code(request)), None
+            return get_runtime_device(self.get_device_code(request), allow_expired=allow_expired), None
         except RuntimeDeviceError as exc:
             return None, Response(exc.as_payload(), status=exc.status_code)
 
@@ -783,9 +784,19 @@ class DeviceRuntimeView(APIView):
 class DeviceRuntimeConfigView(DeviceRuntimeView):
     @extend_schema(tags=['Device Runtime'])
     def get(self, request):
-        device, error = self.validate_device(request)
+        device, error = self.validate_device(request, allow_expired=True)
         if error is not None:
             return error
+        expiration_payload = {
+            'authorizationExpired': device.is_expired,
+            'expiresAt': serializers.DateTimeField().to_representation(device.expires_at),
+        }
+        if device.is_expired and device.is_software_trial:
+            error = runtime_device_error('设备授权已过期', status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_DEVICE_EXPIRED)
+            return Response(
+                {**error.as_payload(), **expiration_payload},
+                status=error.status_code,
+            )
         application = device.application
         agent_application = device.effective_agent_application
         if agent_application is None or not agent_application.runtime_config().get('is_active'):
@@ -806,6 +817,7 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
             {
                 'requestId': get_request_id(request),
                 'traceId': get_trace_id(request),
+                **expiration_payload,
                 **self._config_payload(device, request=request, include_resources=True),
             },
             status=status.HTTP_200_OK,

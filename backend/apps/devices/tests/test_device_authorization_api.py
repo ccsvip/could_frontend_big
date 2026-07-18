@@ -12,7 +12,7 @@ from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError
 from django.utils import timezone
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -428,6 +428,8 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         )
         self.assertEqual(response.data['wakeWords'][0]['text'], '你好小德')
         self.assertIs(response.data['device']['isSoftwareTrial'], True)
+        self.assertIs(response.data['authorizationExpired'], False)
+        self.assertEqual(response.data['expiresAt'], serializers.DateTimeField().to_representation(device.expires_at))
         self.assertEqual(response.data['wakeWords'][1]['keywordLine'], 'n ǐ h ǎo x iǎo zh ì @你好小智 :2.5 #0.35')
 
     def test_authorization_log_serializer_uses_agent_application_snapshot(self):
@@ -510,8 +512,8 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(context.exception.code, 'DEVICE_TENANT_UNBOUND')
         self.assertEqual(context.exception.business_status_code, 44011)
 
-    def test_runtime_config_expired_device_returns_stable_error_code(self):
-        Device.objects.create(
+    def test_runtime_config_expired_software_trial_returns_stable_error_code(self):
+        device = Device.objects.create(
             tenant=self.tenant,
             application=self.application,
             agent_application=self.agent_application,
@@ -532,6 +534,45 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['code'], 'DEVICE_EXPIRED')
         self.assertEqual(response.data['statusCode'], 44014)
         self.assertEqual(response.data['message'], '设备授权已过期')
+        self.assertIs(response.data['authorizationExpired'], True)
+        self.assertEqual(response.data['expiresAt'], serializers.DateTimeField().to_representation(device.expires_at))
+
+    def test_runtime_config_expired_authorization_returns_full_config_when_software_trial_is_off(self):
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            agent_application=self.agent_application,
+            name='Expired Model Authorization Android',
+            code='ANDROID-EXPIRED-MODEL-001',
+            is_enabled=True,
+            authorization_type=Device.AUTHORIZATION_TRIAL,
+            expires_at=timezone.now() - timedelta(days=1),
+            is_software_trial=False,
+        )
+
+        response = self.client.get(
+            '/api/v1/device-runtime/config/',
+            HTTP_X_DEVICE_CODE=device.code,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIs(response.data['authorizationExpired'], True)
+        self.assertEqual(response.data['expiresAt'], serializers.DateTimeField().to_representation(device.expires_at))
+        self.assertEqual(response.data['device']['deviceCode'], device.code)
+        self.assertIn('application', response.data)
+        self.assertIn('agentApplication', response.data)
+        self.assertIn('wakeWords', response.data)
+        self.assertIn('resources', response.data)
+
+        heartbeat_response = self.client.post(
+            '/api/v1/device-runtime/heartbeat/',
+            {},
+            format='json',
+            HTTP_X_DEVICE_CODE=device.code,
+        )
+
+        self.assertEqual(heartbeat_response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(heartbeat_response.data['code'], 'DEVICE_EXPIRED')
 
     def test_device_status_choices_match_android_runtime_states(self):
         self.assertEqual(

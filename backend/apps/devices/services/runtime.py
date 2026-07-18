@@ -38,7 +38,12 @@ def runtime_device_error(message: str, status_code: int, error: tuple[str, int])
     return RuntimeDeviceError(message, status_code, code, business_status_code)
 
 
-def get_runtime_device(device_code: str, *, require_tenant: bool = False) -> Device:
+def get_runtime_device(
+    device_code: str,
+    *,
+    require_tenant: bool = False,
+    allow_expired: bool = False,
+) -> Device:
     """Resolve and validate an Android runtime device by deviceCode.
 
     This is the shared seam for public device runtime endpoints and realtime
@@ -66,7 +71,7 @@ def get_runtime_device(device_code: str, *, require_tenant: bool = False) -> Dev
         raise runtime_device_error('公司已停用', status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_TENANT_DISABLED)
     if not device.is_enabled:
         raise runtime_device_error('设备已停用', status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_DEVICE_DISABLED)
-    if device.is_expired:
+    if device.is_expired and not allow_expired:
         raise runtime_device_error('设备授权已过期', status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_DEVICE_EXPIRED)
     return device
 
