@@ -1092,7 +1092,12 @@ async def _run_llm_session_body(
             if on_tts_segment is not None:
                 await on_tts_segment(segment)
     else:
-        if session.get('backendType') == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
+        dispatch_outcome = await _try_dispatch_command_for_session(
+            send, session, question_text, command_id, request_id, trace_id, on_tts_segment, error_event_type
+        )
+        if dispatch_outcome is not None and dispatch_outcome.hit:
+            answer_text = dispatch_outcome.reply_text
+        elif session.get('backendType') == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
             tts_buffer = ''
             if session.get('thirdPartySupportsStreaming'):
                 try:
@@ -1143,11 +1148,6 @@ async def _run_llm_session_body(
                     await _send_json(send, _trace_payload(error_event_type, command_id, request_id, trace_id, message=str(exc)[:200]))
                     return None
         else:
-            dispatch_outcome = await _try_dispatch_command_for_session(
-                send, session, question_text, command_id, request_id, trace_id, on_tts_segment, error_event_type
-            )
-            if dispatch_outcome is not None and dispatch_outcome.hit:
-                answer_text = dispatch_outcome.reply_text
             tts_buffer = ''
             try:
                 async for delta in _stream_runtime_answer_deltas(session, dispatch_outcome):

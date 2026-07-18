@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, patch
 
 from asgiref.sync import async_to_sync
 from asgiref.testing import ApplicationCommunicator
+from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
@@ -152,6 +153,72 @@ class RealtimeCommandDispatchTests(TenantTestMixin, TestCase):
         async_to_sync(run_websocket)()
         log = DeviceChatLog.objects.get(code='ANDROID-DISPATCH-001')
         self.assertEqual(log.answer_text, '客厅灯已打开。')
+
+    def test_third_party_session_dispatches_command_before_calling_chatbot(self):
+        Provider = apps.get_model('ai_models', 'ThirdPartyChatbotProvider')
+        Chatbot = apps.get_model('ai_models', 'ThirdPartyChatbotApplication')
+        Grant = apps.get_model('ai_models', 'TenantThirdPartyChatbotGrant')
+        Integration = apps.get_model('ai_models', 'ThirdPartyChatbotIntegration')
+        provider = Provider.objects.create(
+            name='Third-party Dispatch Provider',
+            provider_type='configured_api_chatbot',
+            api_base_url='https://chatbot.example/api',
+            api_key='secret',
+            is_active=True,
+        )
+        chatbot = Chatbot.objects.create(
+            provider=provider,
+            name='Third-party Dispatch Chatbot',
+            external_application_id='dispatch-chatbot',
+            is_active=True,
+        )
+        Grant.objects.create(tenant=self.tenant, chatbot=chatbot, is_active=True)
+        Integration.objects.create(
+            scheme_type='scheme_b',
+            name='Third-party Dispatch Scheme',
+            provider=provider,
+            chatbot=chatbot,
+            config={'steps': []},
+            is_active=True,
+        )
+        agent_application = AgentApplication.objects.get(name='Dispatch Agent')
+        agent_application.runtime_backend_type = 'third_party_chatbot'
+        agent_application.third_party_chatbot = chatbot
+        agent_application.save(update_fields=['runtime_backend_type', 'third_party_chatbot', 'updated_at'])
+
+        async def run_websocket():
+            communicator = await self._open_communicator()
+
+            with (
+                patch(
+                    'apps.resources.services.command_executor.execute_control_command',
+                    new=AsyncMock(return_value=ExecutionResult(True, '指令已下发', 12, 'open_light')),
+                ) as execute_command,
+                patch(
+                    'config.realtime.third_party_chatbots.send_chatbot_message',
+                    side_effect=AssertionError('命中控制指令时不应调用第三方机器人'),
+                ) as send_chatbot_message,
+            ):
+                await self._send_question(communicator, command_id='third-party-dispatch-match', text='open_light')
+                events = []
+                for _ in range(6):
+                    event = json.loads((await communicator.receive_output(timeout=1))['text'])
+                    events.append(event)
+                    if event['type'] == 'llm.done':
+                        break
+
+                done = events[-1]
+                self.assertEqual(done['type'], 'llm.done')
+                self.assertEqual(done['payload']['answerText'], '客厅灯已打开。')
+                self.assertTrue(done['payload']['commandDispatch']['hit'])
+                self.assertEqual(done['payload']['commandDispatch']['commands'][0]['command'], 'open_light')
+                execute_command.assert_awaited_once()
+                send_chatbot_message.assert_not_called()
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
 
     def test_agent_session_keeps_dispatch_reply_and_returns_complete_command(self):
         async def run_websocket():
