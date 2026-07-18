@@ -170,6 +170,8 @@ async def try_dispatch_command(
 
     policy = await _load_control_command_recognition_policy(tenant_id)
     control_tools = [tool for tool in tools if (tool.get('_command_meta') or {}).get('kind') == 'control']
+    for tool in control_tools:
+        tool['_command_meta']['fixedExecutionReply'] = policy[2]
     task_tools = [tool for tool in tools if (tool.get('_command_meta') or {}).get('kind') == 'task']
     control_selection = _select_command_tools(control_tools, question_text, auto_execute_score=None)
 
@@ -449,15 +451,20 @@ def _select_command_tools(
     return selection
 
 
-async def _load_control_command_recognition_policy(tenant_id: Any) -> tuple[float, float]:
-    def load_policy() -> tuple[float, float]:
+async def _load_control_command_recognition_policy(tenant_id: Any) -> tuple[float, float, str]:
+    def load_policy() -> tuple[float, float, str]:
         if tenant_id is None:
             return (
                 float(ControlCommandRecognitionPolicy.DIRECT_EXECUTION_THRESHOLD_DEFAULT),
                 float(ControlCommandRecognitionPolicy.LLM_CONFIRMATION_THRESHOLD_DEFAULT),
+                '',
             )
         policy, _ = ControlCommandRecognitionPolicy.objects.get_or_create(tenant_id=tenant_id)
-        return float(policy.direct_execution_threshold), float(policy.llm_confirmation_threshold)
+        return (
+            float(policy.direct_execution_threshold),
+            float(policy.llm_confirmation_threshold),
+            policy.fixed_execution_reply.strip(),
+        )
 
     return await sync_to_async(load_policy, thread_sensitive=True)()
 
@@ -589,10 +596,10 @@ async def _resolve_local_execution_reply(
             )
             if generated_reply:
                 return generated_reply, 'generated'
-            reply_text = f'已执行：{command_name}。'
+            reply_text = str(meta.get('fixedExecutionReply') or '').strip() or f'已执行：{command_name}。'
             await _emit_reply(reply_text, on_delta, on_tts_segment)
             return reply_text, 'generated_fallback'
-        reply_text = f'已执行：{command_name}。'
+        reply_text = str(meta.get('fixedExecutionReply') or '').strip() or f'已执行：{command_name}。'
         await _emit_reply(reply_text, on_delta, on_tts_segment)
         return reply_text, 'fixed'
     reply_text = f'执行失败：{command_name}。{result.message}'

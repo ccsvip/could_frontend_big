@@ -324,6 +324,7 @@ class ControlCommandRecognitionPolicy(models.Model):
         decimal_places=2,
         default=LLM_CONFIRMATION_THRESHOLD_DEFAULT,
     )
+    fixed_execution_reply = models.TextField('固定执行回复', blank=True, default='')
     updated_at = models.DateTimeField('更新时间', auto_now=True)
 
     objects = TenantManager()

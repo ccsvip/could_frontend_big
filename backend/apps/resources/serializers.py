@@ -725,6 +725,13 @@ class ControlCommandSerializer(serializers.ModelSerializer):
 
 
 class ControlCommandRecognitionPolicySerializer(serializers.ModelSerializer):
+    fixedExecutionReply = serializers.CharField(
+        source='fixed_execution_reply',
+        required=False,
+        allow_blank=True,
+        trim_whitespace=True,
+        max_length=500,
+    )
     directExecutionThreshold = serializers.DecimalField(
         source='direct_execution_threshold',
         max_digits=3,
@@ -742,7 +749,7 @@ class ControlCommandRecognitionPolicySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ControlCommandRecognitionPolicy
-        fields = ('directExecutionThreshold', 'llmConfirmationThreshold')
+        fields = ('fixedExecutionReply', 'directExecutionThreshold', 'llmConfirmationThreshold')
 
     def validate(self, attrs):
         attrs = super().validate(attrs)

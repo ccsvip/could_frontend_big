@@ -130,7 +130,9 @@ class ControlCommandRecognitionPolicyView(APIView):
         policy, error_response = self._policy_or_error(request)
         if error_response is not None:
             return error_response
-        policy.delete()
+        policy.direct_execution_threshold = ControlCommandRecognitionPolicy.DIRECT_EXECUTION_THRESHOLD_DEFAULT
+        policy.llm_confirmation_threshold = ControlCommandRecognitionPolicy.LLM_CONFIRMATION_THRESHOLD_DEFAULT
+        policy.save(update_fields=['direct_execution_threshold', 'llm_confirmation_threshold', 'updated_at'])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

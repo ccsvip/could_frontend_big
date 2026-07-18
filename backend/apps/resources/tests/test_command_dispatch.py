@@ -4,7 +4,7 @@ from unittest.mock import patch, AsyncMock
 from asgiref.sync import async_to_sync
 from django.test import TestCase
 
-from apps.resources.models import CommandGroup, ControlCommand, TaskCommand, TaskCommandStep
+from apps.resources.models import CommandGroup, ControlCommand, ControlCommandRecognitionPolicy, TaskCommand, TaskCommandStep
 from apps.tenants.models import Tenant
 
 
@@ -295,6 +295,26 @@ class CommandDispatchTests(TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result.mode, 'local')
         self.assertEqual(result.reply_text, '已执行：开灯。')
+
+    def test_fixed_reply_uses_current_company_policy(self):
+        from apps.resources.services.command_dispatch import try_dispatch_command
+
+        ControlCommandRecognitionPolicy.objects.create(
+            tenant=self.tenant,
+            fixed_execution_reply='好的，已为您执行。',
+        )
+
+        with patch('apps.resources.services.command_executor._send_udp', new=AsyncMock(return_value=None)):
+            result = _run(try_dispatch_command(
+                session={**self.session, 'modelConfig': None},
+                question_text='开灯',
+                on_delta=None,
+                on_tts_segment=None,
+            ))
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result.reply_text, '好的，已为您执行。')
+        self.assertEqual(result.reply_source, 'fixed')
 
     def test_disabled_backend_send_skips_tcp_and_keeps_configured_reply(self):
         from apps.resources.services.command_dispatch import try_dispatch_command

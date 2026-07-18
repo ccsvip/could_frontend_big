@@ -323,7 +323,7 @@ export const ControlCommandManagementPage = () => {
           <Form.Item label="未填写时回复方式" name="replyStrategy">
             <Radio.Group
               options={[
-                { label: '固定回复：已执行：具体指令。', value: 'fixed' },
+                { label: '固定回复', value: 'fixed' },
                 { label: '智能生成：执行后生成一句自然播报', value: 'generated' },
               ]}
             />

@@ -73,11 +73,12 @@ export type ControlCommandListQuery = {
 };
 
 export type ControlCommandRecognitionPolicy = {
+  fixedExecutionReply: string;
   directExecutionThreshold: string;
   llmConfirmationThreshold: string;
 };
 
-export type ControlCommandRecognitionPolicyPayload = ControlCommandRecognitionPolicy;
+export type ControlCommandRecognitionPolicyPayload = Partial<ControlCommandRecognitionPolicy>;
 
 export type TaskCommandStepRecord = {
   id: number;

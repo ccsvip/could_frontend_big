@@ -963,7 +963,7 @@ export const CommandWorkspacePage = () => {
             <div className="rounded-lg bg-slate-50 px-3 py-2 md:col-span-4">
               <div className="text-xs text-slate-500">执行回复</div>
               <div className="mt-1 break-words text-sm text-slate-700">
-                {item.executionReply || (item.replyStrategy === 'generated' ? '智能生成' : `已执行：${item.name}。`)}
+                {item.executionReply || (item.replyStrategy === 'generated' ? '智能生成' : '固定回复')}
               </div>
             </div>
           </div>
@@ -1272,7 +1272,7 @@ export const CommandWorkspacePage = () => {
           <Form.Item label="未填写时回复方式" name="replyStrategy">
             <Radio.Group
               options={[
-                { label: '固定回复：已执行：具体指令。', value: 'fixed' },
+                { label: '固定回复', value: 'fixed' },
                 { label: '智能生成：执行后生成一句自然播报', value: 'generated' },
               ]}
             />

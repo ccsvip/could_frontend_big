@@ -1,5 +1,5 @@
 import { IconDeviceFloppy, IconReload } from '@tabler/icons-react';
-import { Button, InputNumber, message, Popconfirm, Tag, Typography } from 'antd';
+import { Button, Input, InputNumber, message, Popconfirm, Tag, Typography } from 'antd';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   fetchControlCommandRecognitionPolicy,
@@ -20,12 +20,14 @@ const toThreshold = (value: string, fallback: number) => {
 };
 
 export const ControlCommandRecognitionPolicyPanel = ({ canUpdate }: ControlCommandRecognitionPolicyPanelProps) => {
+  const [fixedExecutionReply, setFixedExecutionReply] = useState('');
   const [effectiveDirectThreshold, setEffectiveDirectThreshold] = useState(DEFAULT_DIRECT_THRESHOLD);
   const [effectiveConfirmationThreshold, setEffectiveConfirmationThreshold] = useState(DEFAULT_CONFIRMATION_THRESHOLD);
   const [directThreshold, setDirectThreshold] = useState(DEFAULT_DIRECT_THRESHOLD);
   const [confirmationThreshold, setConfirmationThreshold] = useState(DEFAULT_CONFIRMATION_THRESHOLD);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingFixedReply, setSavingFixedReply] = useState(false);
 
   const loadPolicy = useCallback(async () => {
     setLoading(true);
@@ -33,6 +35,7 @@ export const ControlCommandRecognitionPolicyPanel = ({ canUpdate }: ControlComma
       const policy = await fetchControlCommandRecognitionPolicy();
       const direct = toThreshold(policy.directExecutionThreshold, DEFAULT_DIRECT_THRESHOLD);
       const confirmation = toThreshold(policy.llmConfirmationThreshold, DEFAULT_CONFIRMATION_THRESHOLD);
+      setFixedExecutionReply(policy.fixedExecutionReply || '');
       setEffectiveDirectThreshold(direct);
       setEffectiveConfirmationThreshold(confirmation);
       setDirectThreshold(direct);
@@ -55,6 +58,24 @@ export const ControlCommandRecognitionPolicyPanel = ({ canUpdate }: ControlComma
     }
     return '';
   }, [confirmationThreshold, directThreshold]);
+
+  const saveFixedReply = async () => {
+    const value = fixedExecutionReply.trim();
+    if (!value) {
+      message.error('请输入固定回复');
+      return;
+    }
+    setSavingFixedReply(true);
+    try {
+      const policy = await updateControlCommandRecognitionPolicy({ fixedExecutionReply: value });
+      setFixedExecutionReply(policy.fixedExecutionReply);
+      message.success('固定回复已生效');
+    } catch {
+      // 请求错误由全局拦截器统一提示。
+    } finally {
+      setSavingFixedReply(false);
+    }
+  };
 
   const savePolicy = async () => {
     if (validationMessage) {
@@ -96,6 +117,24 @@ export const ControlCommandRecognitionPolicyPanel = ({ canUpdate }: ControlComma
 
   return (
     <div className="border-b border-slate-100 bg-brand-50/50 px-5 py-4">
+      <div className="mb-4 flex flex-col gap-2 border-b border-brand-100 pb-4 sm:flex-row sm:items-center">
+        <Typography.Text strong className="shrink-0 text-fluid-base text-slate-900">固定回复</Typography.Text>
+        <Input
+          aria-label="固定回复"
+          className="w-full sm:max-w-xl"
+          disabled={!canUpdate || loading}
+          maxLength={500}
+          placeholder="请输入所有控制指令共用的固定回复"
+          value={fixedExecutionReply}
+          onChange={(event) => setFixedExecutionReply(event.target.value)}
+          onPressEnter={() => void saveFixedReply()}
+        />
+        {canUpdate ? (
+          <Button type="primary" loading={savingFixedReply} onClick={() => void saveFixedReply()}>
+            确认
+          </Button>
+        ) : null}
+      </div>
       <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">

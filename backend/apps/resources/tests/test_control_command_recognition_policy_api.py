@@ -40,13 +40,29 @@ class ControlCommandRecognitionPolicyApiTests(TenantTestMixin, APITestCase):
         response = self.client.get('/api/v1/commands/control-recognition-policy/')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['fixedExecutionReply'], '')
         self.assertEqual(response.data['directExecutionThreshold'], '0.90')
         self.assertEqual(response.data['llmConfirmationThreshold'], '0.70')
 
-    def test_deleting_current_company_policy_restores_default_thresholds(self):
+    def test_updates_fixed_execution_reply_for_current_company(self):
+        response = self.client.patch(
+            '/api/v1/commands/control-recognition-policy/',
+            {'fixedExecutionReply': '好的，已为您执行。'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['fixedExecutionReply'], '好的，已为您执行。')
+        self.assertEqual(response.data['directExecutionThreshold'], '0.90')
+
+    def test_deleting_current_company_policy_restores_only_default_thresholds(self):
         update_response = self.client.patch(
             '/api/v1/commands/control-recognition-policy/',
-            {'directExecutionThreshold': '0.95', 'llmConfirmationThreshold': '0.80'},
+            {
+                'fixedExecutionReply': '好的，已为您执行。',
+                'directExecutionThreshold': '0.95',
+                'llmConfirmationThreshold': '0.80',
+            },
             format='json',
         )
         self.assertEqual(update_response.status_code, status.HTTP_200_OK)
@@ -55,6 +71,7 @@ class ControlCommandRecognitionPolicyApiTests(TenantTestMixin, APITestCase):
         read_response = self.client.get('/api/v1/commands/control-recognition-policy/')
 
         self.assertEqual(delete_response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(read_response.data['fixedExecutionReply'], '好的，已为您执行。')
         self.assertEqual(read_response.data['directExecutionThreshold'], '0.90')
         self.assertEqual(read_response.data['llmConfirmationThreshold'], '0.70')
 
@@ -79,6 +96,7 @@ class ControlCommandRecognitionPolicyApiTests(TenantTestMixin, APITestCase):
         other_tenant = Tenant.objects.create(name='其他公司', code='other-control-command-policy-tenant')
         other_policy = ControlCommandRecognitionPolicy.objects.create(
             tenant=other_tenant,
+            fixed_execution_reply='其他公司固定回复。',
             direct_execution_threshold='0.99',
             llm_confirmation_threshold='0.80',
         )
@@ -93,5 +111,6 @@ class ControlCommandRecognitionPolicyApiTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(read_response.data['directExecutionThreshold'], '0.90')
         self.assertEqual(update_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(other_policy.fixed_execution_reply, '其他公司固定回复。')
         self.assertEqual(str(other_policy.direct_execution_threshold), '0.99')
         self.assertEqual(str(other_policy.llm_confirmation_threshold), '0.80')
