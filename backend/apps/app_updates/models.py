@@ -42,6 +42,8 @@ class AppRelease(models.Model):
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
 
+    # 创建后仅允许修改 is_active / force_upgrade_version_code。
+    # 强制升级阈值由独立 threshold 接口维护，始终对比最新上传记录的 version_code。
     IMMUTABLE_FIELDS = (
         'release_id',
         'package_name',
@@ -52,7 +54,6 @@ class AppRelease(models.Model):
         'file_name',
         'file_size',
         'sha256',
-        'force_upgrade_version_code',
         'release_notes',
         'created_by_id',
     )
@@ -107,10 +108,20 @@ class AppRelease(models.Model):
         original = type(self).objects.get(pk=self.pk)
         changed = [field for field in self.IMMUTABLE_FIELDS if getattr(original, field) != getattr(self, field)]
         if changed:
-            raise ValidationError('发布记录创建后仅允许修改启用状态')
+            raise ValidationError('发布记录创建后仅允许修改启用状态或强制升级阈值')
 
     def save(self, *args, **kwargs) -> None:
         self._validate_immutable()
+        update_fields = kwargs.get('update_fields')
+        if update_fields is not None:
+            # 局部更新（启停 / 阈值）时跳过 APK 文件完整性校验。
+            allowed = {'is_active', 'force_upgrade_version_code', 'updated_at'}
+            if set(update_fields) - allowed:
+                raise ValidationError('发布记录创建后仅允许修改启用状态或强制升级阈值')
+            if 'force_upgrade_version_code' in update_fields and self.force_upgrade_version_code > self.version_code:
+                raise ValidationError({'force_upgrade_version_code': '强制升级阈值不得高于目标版本号'})
+            super().save(*args, **kwargs)
+            return
         self.full_clean(exclude=('file_name', 'file_size', 'sha256'))
         if not self.pk:
             self._populate_file_metadata()

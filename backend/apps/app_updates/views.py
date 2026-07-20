@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from urllib.parse import quote
 
+from asgiref.sync import sync_to_async
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import parsers, status, viewsets
@@ -11,6 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsSuperUser
+from apps.devices.realtime import publish_device_event_sync
 from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device
 from config.request_id import get_request_id, get_trace_id
 
@@ -77,11 +79,13 @@ class AppUpdateCheckView(APIView):
             )
 
         latest = AppRelease.objects.filter(is_active=True).order_by('-version_code').first()
+        # 强制升级阈值始终取自最新上传记录（与顶部确认逻辑一致），不依赖当前启用状态。
+        threshold_source = _latest_uploaded_release()
+        threshold = threshold_source.force_upgrade_version_code if threshold_source else 0
         if latest is None:
-            return Response(_trace_payload(request, hasUpdate=False, forceUpgradeVersionCode=0, release=None))
+            return Response(_trace_payload(request, hasUpdate=False, forceUpgradeVersionCode=threshold, release=None))
 
         current_version = serializer.validated_data['versionCode']
-        threshold = latest.force_upgrade_version_code
         if latest.version_code <= current_version:
             return Response(_trace_payload(
                 request, hasUpdate=False, forceUpgradeVersionCode=threshold, release=None,
@@ -136,16 +140,19 @@ class AppUpdateReportView(APIView):
         return Response(_trace_payload(request, eventId=event.id), status=status.HTTP_201_CREATED)
 
 
-def _file_chunks(file_field, start: int, length: int, chunk_size: int = 1024 * 1024):
-    with file_field.open('rb') as stream:
-        stream.seek(start)
+async def _file_chunks(file_field, start: int, length: int, chunk_size: int = 1024 * 1024):
+    f = await sync_to_async(file_field.open)('rb')
+    try:
+        await sync_to_async(f.seek)(start)
         remaining = length
         while remaining > 0:
-            data = stream.read(min(chunk_size, remaining))
+            data = await sync_to_async(f.read)(min(chunk_size, remaining))
             if not data:
                 break
             remaining -= len(data)
             yield data
+    finally:
+        await sync_to_async(f.close)()
 
 
 class AppReleaseDownloadView(APIView):
@@ -200,3 +207,58 @@ class AppReleaseDownloadView(APIView):
         response['Content-Range'] = f'bytes */{size}'
         response['Accept-Ranges'] = 'bytes'
         return response
+
+
+def _latest_uploaded_release():
+    """最新上传记录：按 version_code 最大优先，其次创建时间。"""
+    return AppRelease.objects.order_by('-version_code', '-created_at', '-id').first()
+
+
+class AppUpdateThresholdView(APIView):
+    permission_classes = [IsSuperUser]
+    parser_classes = [parsers.JSONParser]
+
+    def get(self, request):
+        latest = _latest_uploaded_release()
+        return Response({
+            'forceUpgradeVersionCode': latest.force_upgrade_version_code if latest else 0,
+            'latestVersionCode': latest.version_code if latest else None,
+        })
+
+    def patch(self, request):
+        threshold = request.data.get('forceUpgradeVersionCode')
+        if threshold is None or not isinstance(threshold, int) or threshold < 0:
+            return _error_response(
+                request, code='INVALID_REQUEST', message='强制升级阈值必须为非负整数',
+                http_status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # 上传时不处理阈值；只有确认时才和最新上传记录的版本号对比。
+        latest = _latest_uploaded_release()
+        if not latest:
+            return _error_response(
+                request, code='NO_RELEASE', message='没有发布记录，请先上传 APK',
+                http_status=status.HTTP_400_BAD_REQUEST,
+            )
+        if threshold > latest.version_code:
+            return _error_response(
+                request,
+                code='INVALID_THRESHOLD',
+                message=f'强制升级阈值不得高于最新上传版本号 {latest.version_code}',
+                http_status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        latest.force_upgrade_version_code = threshold
+        latest.save(update_fields=['force_upgrade_version_code', 'updated_at'])
+
+        publish_device_event_sync({
+            'type': 'app_updates.force_upgrade_threshold.changed',
+            'refresh': True,
+            'forceUpgradeVersionCode': threshold,
+            'latestVersionCode': latest.version_code,
+        })
+
+        return Response({
+            'forceUpgradeVersionCode': threshold,
+            'latestVersionCode': latest.version_code,
+        })

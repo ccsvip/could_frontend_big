@@ -2,6 +2,7 @@ import base64
 import hashlib
 import tempfile
 
+from asgiref.sync import async_to_sync
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from django.contrib import admin as django_admin
@@ -19,6 +20,13 @@ from apps.tenants.models import Membership, Tenant
 
 
 APK_BYTES = b'fake-apk-content-for-tests'
+
+
+def _consume_stream(streaming_content) -> bytes:
+    """Consume async/sync streaming content and return bytes."""
+    async def _collect():
+        return b''.join([chunk async for chunk in streaming_content])
+    return async_to_sync(_collect)()
 
 
 def private_key_base64():
@@ -64,7 +72,6 @@ class AppReleaseManagementTests(TestCase):
             'versionCode': 10002,
             'versionInfo': version_info,
             'apkFile': SimpleUploadedFile(f'{version_info}.apk', APK_BYTES, content_type='application/vnd.android.package-archive'),
-            'forceUpgradeVersionCode': 10001,
             'releaseNotes': '首个升级版本',
             'isActive': True,
         }
@@ -78,6 +85,39 @@ class AppReleaseManagementTests(TestCase):
         self.assertEqual(release.file_size, len(APK_BYTES))
         self.assertEqual(release.sha256, hashlib.sha256(APK_BYTES).hexdigest())
         self.assertEqual(release.created_by, self.superuser)
+        self.assertEqual(release.force_upgrade_version_code, 0)
+
+    def test_threshold_confirm_compares_against_latest_uploaded_release(self):
+        self.client.force_authenticate(self.superuser)
+        older = make_release(version_code=10001, version_name='1.0.1', active=True, threshold=0)
+        latest = make_release(version_code=10005, version_name='1.0.5', active=False, threshold=0)
+
+        rejected = self.client.patch(
+            '/api/v1/app-update-releases/threshold/',
+            {'forceUpgradeVersionCode': 10006},
+            format='json',
+        )
+        self.assertEqual(rejected.status_code, 400, rejected.data)
+        self.assertEqual(rejected.data['code'], 'INVALID_THRESHOLD')
+
+        accepted = self.client.patch(
+            '/api/v1/app-update-releases/threshold/',
+            {'forceUpgradeVersionCode': 10004},
+            format='json',
+        )
+        self.assertEqual(accepted.status_code, 200, accepted.data)
+        self.assertEqual(accepted.data['forceUpgradeVersionCode'], 10004)
+        self.assertEqual(accepted.data['latestVersionCode'], 10005)
+
+        older.refresh_from_db()
+        latest.refresh_from_db()
+        self.assertEqual(older.force_upgrade_version_code, 0)
+        self.assertEqual(latest.force_upgrade_version_code, 10004)
+
+        current = self.client.get('/api/v1/app-update-releases/threshold/')
+        self.assertEqual(current.status_code, 200, current.data)
+        self.assertEqual(current.data['forceUpgradeVersionCode'], 10004)
+        self.assertEqual(current.data['latestVersionCode'], 10005)
 
     def test_company_and_non_superuser_staff_cannot_access_management_api(self):
         release = make_release(created_by=self.superuser)
@@ -202,7 +242,8 @@ class AppUpdateDeviceApiTests(TestCase):
 
     def test_missing_key_returns_503_only_when_update_exists(self):
         make_release()
-        response = self.check()
+        with self.settings(APP_UPDATE_PRIVATE_KEY_BASE64=''):
+            response = self.check()
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response.data['code'], 'UPDATE_SIGNING_UNAVAILABLE')
 
@@ -222,11 +263,11 @@ class AppUpdateDeviceApiTests(TestCase):
         url = f'/api/v1/app-update-releases/{release.release_id}/apk/'
         full = self.client.get(url)
         self.assertEqual(full.status_code, 200)
-        self.assertEqual(b''.join(full.streaming_content), APK_BYTES)
+        self.assertEqual(_consume_stream(full.streaming_content), APK_BYTES)
         partial = self.client.get(url, HTTP_RANGE='bytes=5-11')
         self.assertEqual(partial.status_code, 206)
         self.assertEqual(partial['Content-Range'], f'bytes 5-11/{len(APK_BYTES)}')
-        self.assertEqual(b''.join(partial.streaming_content), APK_BYTES[5:12])
+        self.assertEqual(_consume_stream(partial.streaming_content), APK_BYTES[5:12])
         invalid = self.client.get(url, HTTP_RANGE='bytes=999-1000')
         self.assertEqual(invalid.status_code, 416)
 

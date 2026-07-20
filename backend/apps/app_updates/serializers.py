@@ -30,7 +30,7 @@ class AppReleaseManagementSerializer(serializers.ModelSerializer):
     fileName = serializers.CharField(source='file_name', read_only=True)
     downloadUrl = serializers.SerializerMethodField()
     fileSize = serializers.IntegerField(source='file_size', read_only=True)
-    forceUpgradeVersionCode = serializers.IntegerField(source='force_upgrade_version_code', min_value=0)
+    forceUpgradeVersionCode = serializers.IntegerField(source='force_upgrade_version_code', min_value=0, read_only=True)
     releaseNotes = serializers.CharField(source='release_notes', allow_blank=True, required=False)
     isActive = serializers.BooleanField(source='is_active', required=False)
     createdBy = serializers.SerializerMethodField()
@@ -62,10 +62,6 @@ class AppReleaseManagementSerializer(serializers.ModelSerializer):
         apk_file = attrs.get('apk_file')
         if apk_file and Path(apk_file.name).name != f'{version_info}.apk':
             raise serializers.ValidationError({'apkFile': f'APK 文件名必须为 {version_info}.apk'})
-        threshold = attrs.get('force_upgrade_version_code', 0)
-        version_code = attrs.get('version_code', 0)
-        if threshold > version_code:
-            raise serializers.ValidationError({'forceUpgradeVersionCode': '强制升级阈值不得高于目标版本号'})
         return attrs
 
     def validate_versionCode(self, value: int) -> int:

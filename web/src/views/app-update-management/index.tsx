@@ -27,7 +27,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   createAppRelease,
   fetchAppReleases,
+  fetchForceUpgradeThreshold,
   updateAppReleaseActive,
+  updateForceUpgradeThreshold,
   type AppReleaseRecord,
   type CreateAppReleasePayload,
 } from '../../api/modules/app-updates';
@@ -55,6 +57,11 @@ export const AppUpdateManagementPage = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [changingReleaseId, setChangingReleaseId] = useState<string | null>(null);
 
+  const [threshold, setThreshold] = useState(0);
+  const [thresholdUpdating, setThresholdUpdating] = useState(false);
+  const [thresholdDraft, setThresholdDraft] = useState(0);
+  const [latestVersionCode, setLatestVersionCode] = useState<number | null>(null);
+
   const loadReleases = useCallback(async () => {
     setLoading(true);
     try {
@@ -65,15 +72,28 @@ export const AppUpdateManagementPage = () => {
     }
   }, []);
 
+  const loadThreshold = useCallback(async () => {
+    try {
+      const data = await fetchForceUpgradeThreshold();
+      setThreshold(data.forceUpgradeVersionCode);
+      setThresholdDraft(data.forceUpgradeVersionCode);
+      setLatestVersionCode(data.latestVersionCode);
+    } catch {
+      // 没有发布记录时使用默认值 0
+      setLatestVersionCode(null);
+    }
+  }, []);
+
   useEffect(() => {
     void loadReleases();
-  }, [loadReleases]);
+    void loadThreshold();
+  }, [loadReleases, loadThreshold]);
 
   const activeRelease = useMemo(() => releases.find((release) => release.isActive) ?? null, [releases]);
 
   const openUpload = () => {
     form.resetFields();
-    form.setFieldsValue({ forceUpgradeVersionCode: 0, releaseNotes: '', isActive: true });
+    form.setFieldsValue({ releaseNotes: '', isActive: true });
     setSelectedFile(null);
     setUploadProgress(0);
     setUploadOpen(true);
@@ -91,7 +111,7 @@ export const AppUpdateManagementPage = () => {
       await createAppRelease({ ...values, apkFile: selectedFile }, setUploadProgress);
       message.success('新版本上传成功');
       setUploadOpen(false);
-      await loadReleases();
+      await Promise.all([loadReleases(), loadThreshold()]);
     } catch (error) {
       if (axios.isAxiosError<UploadErrorResponse>(error) && error.response?.data.details) {
         const { apkFile, ...fieldErrors } = error.response.data.details;
@@ -119,6 +139,35 @@ export const AppUpdateManagementPage = () => {
     }
   };
 
+  const handleThresholdConfirm = async () => {
+    if (thresholdDraft === threshold) return;
+    if (latestVersionCode == null) {
+      message.error('没有发布记录，请先上传 APK');
+      return;
+    }
+    if (thresholdDraft > latestVersionCode) {
+      message.error(`强制升级阈值不得高于最新上传版本号 ${latestVersionCode}`);
+      return;
+    }
+    setThresholdUpdating(true);
+    try {
+      const data = await updateForceUpgradeThreshold(thresholdDraft);
+      message.success('强制升级阈值已更新，已向设备发送通知');
+      setThreshold(data.forceUpgradeVersionCode);
+      setThresholdDraft(data.forceUpgradeVersionCode);
+      setLatestVersionCode(data.latestVersionCode);
+      await loadReleases();
+    } catch (error) {
+      if (axios.isAxiosError<{ message: string }>(error) && error.response?.data?.message) {
+        message.error(error.response.data.message);
+      } else {
+        message.error('更新失败');
+      }
+    } finally {
+      setThresholdUpdating(false);
+    }
+  };
+
   const fileList: UploadFile[] = selectedFile ? [{ uid: 'apk', name: selectedFile.name, status: 'done' }] : [];
 
   return (
@@ -142,6 +191,42 @@ export const AppUpdateManagementPage = () => {
           </Space>
         </div>
       </div>
+
+      <Card className="rounded-xl shadow-card">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <Typography.Text className="text-fluid-sm text-slate-500">强制升级阈值</Typography.Text>
+            <Typography.Text className="ml-2 text-fluid-xs text-slate-400">（0 表示暂不启用强制升级）</Typography.Text>
+            <div className="mt-1 space-y-1">
+              <Typography.Text className="block text-fluid-base text-slate-700">
+                当前值：<span className="font-semibold">{threshold === 0 ? '未启用' : threshold}</span>
+              </Typography.Text>
+              <Typography.Text className="block text-fluid-xs text-slate-400">
+                对比基准：最新上传版本号 {latestVersionCode ?? '暂无'}
+              </Typography.Text>
+            </div>
+          </div>
+          <Space.Compact className="w-full sm:w-auto">
+            <InputNumber
+              min={0}
+              max={latestVersionCode ?? undefined}
+              precision={0}
+              className="w-full sm:w-48"
+              value={thresholdDraft}
+              disabled={latestVersionCode == null}
+              onChange={(value) => setThresholdDraft(value ?? 0)}
+            />
+            <Button
+              type="primary"
+              loading={thresholdUpdating}
+              disabled={latestVersionCode == null || thresholdDraft === threshold}
+              onClick={() => void handleThresholdConfirm()}
+            >
+              确定
+            </Button>
+          </Space.Compact>
+        </div>
+      </Card>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card className="rounded-xl shadow-card lg:col-span-2">
@@ -286,9 +371,6 @@ export const AppUpdateManagementPage = () => {
           </div>
           <Form.Item name="versionInfo" label="完整版本标识" rules={[{ required: true, message: '请输入完整版本标识' }]}>
             <Input placeholder="solin_cloud_1.0.2_20260720_1030" />
-          </Form.Item>
-          <Form.Item name="forceUpgradeVersionCode" label="强制升级阈值" tooltip="0 表示暂不启用强制升级">
-            <InputNumber min={0} precision={0} className="w-full" />
           </Form.Item>
           <Form.Item name="releaseNotes" label="更新说明">
             <Input.TextArea rows={4} maxLength={2000} showCount placeholder="填写本次更新内容" />

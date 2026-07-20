@@ -31,7 +31,6 @@ export type CreateAppReleasePayload = {
   versionCode: number;
   versionInfo: string;
   apkFile: File;
-  forceUpgradeVersionCode: number;
   releaseNotes: string;
   isActive: boolean;
 };
@@ -52,7 +51,6 @@ export const createAppRelease = async (
   formData.append('versionCode', String(payload.versionCode));
   formData.append('versionInfo', payload.versionInfo);
   formData.append('apkFile', payload.apkFile);
-  formData.append('forceUpgradeVersionCode', String(payload.forceUpgradeVersionCode));
   formData.append('releaseNotes', payload.releaseNotes);
   formData.append('isActive', String(payload.isActive));
 
@@ -69,6 +67,21 @@ export const createAppRelease = async (
 
 export const updateAppReleaseActive = async (releaseId: string, isActive: boolean) => {
   const response = await httpClient.patch<AppReleaseRecord>(`/app-update-releases/${releaseId}/`, { isActive });
+  return response.data;
+};
+
+export type ForceUpgradeThreshold = {
+  forceUpgradeVersionCode: number;
+  latestVersionCode: number | null;
+};
+
+export const fetchForceUpgradeThreshold = async () => {
+  const response = await httpClient.get<ForceUpgradeThreshold>('/app-update-releases/threshold/');
+  return response.data;
+};
+
+export const updateForceUpgradeThreshold = async (forceUpgradeVersionCode: number) => {
+  const response = await httpClient.patch<ForceUpgradeThreshold>('/app-update-releases/threshold/', { forceUpgradeVersionCode });
   return response.data;
 };
 
