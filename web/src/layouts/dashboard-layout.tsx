@@ -22,6 +22,7 @@ import {
   IconRobot,
   IconSettings,
   IconUsers,
+  IconUpload,
   IconVideo,
   IconVolume,
 } from '@tabler/icons-react';
@@ -65,6 +66,7 @@ const menuIconMap = {
   NotificationOutlined: <IconBell size={16} />,
   EnvironmentOutlined: <IconMapPin size={16} />,
   ExportOutlined: <IconArrowBarToRight size={16} />,
+  UploadOutlined: <IconUpload size={16} />,
 } as const;
 
 const hiddenMenuPaths = new Set([
@@ -174,6 +176,12 @@ const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
         label: '存储位置',
         icon: 'CloudOutlined',
         path: '/settings/minio',
+      },
+      {
+        key: 'settings-app-updates',
+        label: '应用升级',
+        icon: 'UploadOutlined',
+        path: '/settings/app-updates',
       },
       {
         key: 'settings-asr',

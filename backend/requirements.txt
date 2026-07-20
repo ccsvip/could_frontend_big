@@ -19,3 +19,4 @@ websocket-client==1.8.0
 django-celery-beat
 minio==7.2.7
 sentry-sdk
+cryptography==45.0.7

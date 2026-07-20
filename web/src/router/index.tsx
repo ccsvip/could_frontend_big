@@ -59,6 +59,9 @@ const LogManagementPage = lazy(() =>
 const MinioSettingsPage = lazy(() =>
   import('../views/minio-settings').then((module) => ({ default: module.MinioSettingsPage })),
 );
+const AppUpdateManagementPage = lazy(() =>
+  import('../views/app-update-management').then((module) => ({ default: module.AppUpdateManagementPage })),
+);
 const AsrSettingsPage = lazy(() =>
   import('../views/asr-settings').then((module) => ({ default: module.AsrSettingsPage })),
 );
@@ -255,6 +258,15 @@ const AuditLogGuard = ({ children }: { children: ReactNode }) => {
   return <Navigate to={getFirstAccessiblePath(menus)} replace />;
 };
 
+const SuperuserGuard = ({ children }: { children: ReactNode }) => {
+  const isSuperuser = useAuthStore((state) => state.isSuperuser);
+  const menus = useAuthStore((state) => state.menus);
+  const authSyncStatus = useAuthStore((state) => state.authSyncStatus);
+
+  if (authSyncStatus !== 'ready') return <AuthSyncFallback />;
+  return isSuperuser ? <>{children}</> : <Navigate to={getFirstAccessiblePath(menus)} replace />;
+};
+
 const DefaultAuthedRoute = () => {
   const menus = useAuthStore((state) => state.menus);
   const hasPermission = useAuthStore((state) => state.hasPermission);
@@ -382,6 +394,14 @@ export const AppRouter = () => {
             <PermissionGuard permission="tenant.management.view">
               <MinioSettingsPage />
             </PermissionGuard>
+          ),
+        },
+        {
+          path: 'settings/app-updates',
+          element: (
+            <SuperuserGuard>
+              <AppUpdateManagementPage />
+            </SuperuserGuard>
           ),
         },
         {

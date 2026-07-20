@@ -92,6 +92,7 @@ INSTALLED_APPS = [
     'apps.knowledge_base',
     'apps.ai_models',
     'apps.audit',
+    'apps.app_updates',
 ]
 
 MIDDLEWARE = [
@@ -181,6 +182,11 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 SERVE_LOCAL_MEDIA = os.getenv('DJANGO_SERVE_LOCAL_MEDIA', '0') == '1'
+
+APP_UPDATE_PACKAGE_NAME = os.getenv('APP_UPDATE_PACKAGE_NAME', 'com.solin.digital')
+APP_UPDATE_PRIVATE_KEY_BASE64 = os.getenv('APP_UPDATE_PRIVATE_KEY_BASE64', '')
+APP_UPDATE_PRIVATE_KEY_FILE = os.getenv('APP_UPDATE_PRIVATE_KEY_FILE', '')
+APP_UPDATE_SIGNATURE_TTL_SECONDS = int(os.getenv('APP_UPDATE_SIGNATURE_TTL_SECONDS', str(7 * 24 * 3600)))
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

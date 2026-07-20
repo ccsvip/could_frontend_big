@@ -94,6 +94,7 @@ urlpatterns = [
     path('api/v1/', include('apps.knowledge_base.urls')),
     path('api/v1/', include('apps.ai_models.urls')),
     path('api/v1/', include('apps.audit.urls')),
+    path('api/v1/', include('apps.app_updates.urls')),
 ]
 
 if settings.DEBUG:
