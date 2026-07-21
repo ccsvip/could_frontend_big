@@ -1,0 +1,4 @@
+conai.chat {
+	tls /etc/caddy/certs/conai.chat.pem /etc/caddy/certs/conai.chat.key
+	reverse_proxy web:5173
+}

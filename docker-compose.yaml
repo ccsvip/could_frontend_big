@@ -117,18 +117,22 @@ services:
         condition: service_healthy
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
 
-  nginx:
-    image: ${NGINX_IMAGE:-docker.m.daocloud.io/library/nginx:1.27-alpine}
-    container_name: solin_nginx
+  caddy:
+    image: ${CADDY_IMAGE:-docker.m.daocloud.io/library/caddy:2-alpine}
+    container_name: solin_caddy
     restart: always
     ports:
       - "${HTTP_PORT:-80}:80"
       - "${HTTPS_PORT:-443}:443"
     volumes:
-      - ./nginx/conai.chat.conf:/etc/nginx/conf.d/default.conf:ro
-      - ${TLS_CERT_DIR:-./26179784_conai.chat_other}:/etc/nginx/certs:ro
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${TLS_CERT_DIR:-./26179784_conai.chat_other}:/etc/caddy/certs:ro
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       - web
 
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:
