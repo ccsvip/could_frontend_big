@@ -1,5 +1,6 @@
 import {
   IconTrash,
+  IconCheck,
   IconEdit,
   IconEye,
   IconPhoto,
@@ -10,6 +11,7 @@ import {
 import {
   Button,
   Card,
+  Checkbox,
   Empty,
   Form,
   Image,
@@ -31,6 +33,7 @@ import type { UploadFile } from 'antd/es/upload/interface';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   batchCreateImageResources,
+  bulkDeleteImageResources,
   createImageResource,
   createVideoResource,
   deleteImageResource,
@@ -38,6 +41,8 @@ import {
   fetchImageResources,
   fetchResourceUploadConfig,
   fetchVideoResources,
+  getDuplicateImageLocation,
+  isDuplicateImageError,
   presignResourceUpload,
   uploadFileToPresignedUrl,
   updateImageResource,
@@ -116,12 +121,18 @@ let activeVideoThumbnailTasks = 0;
 const VIDEO_THUMBNAIL_CONCURRENCY = 2;
 const VIDEO_THUMBNAIL_CAPTURE_TIME = 0.8;
 const VIDEO_THUMBNAIL_TIMEOUT_MS = 10000;
+const RESOURCE_PAGE_SIZE = 14;
 const resourceGridClassName = 'grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4';
 const imageUsageOptions = [
   { label: '数字人背景图', value: 'background' },
   { label: '图片素材', value: 'material' },
 ] as const;
 type ImageUsage = typeof imageUsageOptions[number]['value'];
+
+const calculateFileSha256 = async (file: File) => {
+  const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+};
 
 const formatFileMB = (bytes: number | null | undefined) => {
   if (bytes == null) {
@@ -512,7 +523,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
   const [items, setItems] = useState<ResourceRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(RESOURCE_PAGE_SIZE);
   const [total, setTotal] = useState(0);
   const [category, setCategory] = useState<ResourceCategory | 'all'>('all');
   const [keyword, setKeyword] = useState('');
@@ -523,6 +534,9 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
   const [imageUsage, setImageUsage] = useState<ImageUsage>('material');
   const [batchModalVisible, setBatchModalVisible] = useState(false);
   const [batchSubmitting, setBatchSubmitting] = useState(false);
+  const [bulkManageEnabled, setBulkManageEnabled] = useState(false);
+  const [selectedResourceIds, setSelectedResourceIds] = useState<number[]>([]);
+  const [bulkDeleteSubmitting, setBulkDeleteSubmitting] = useState(false);
   const [resourceUploadConfig, setResourceUploadConfig] = useState<(VideoUploadConfig & { imageDirectUploadEnabled?: boolean }) | null>(null);
   const [uploadProgress, setUploadProgress] = useState<{
     visible: boolean;
@@ -533,16 +547,23 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
     message: string;
   }>({ visible: false, percent: 0, loaded: 0, total: 0, status: 'active', message: '' });
   const uploadAbortRef = useRef<AbortController | null>(null);
+  const resourceGridRef = useRef<HTMLDivElement | null>(null);
+  const pageSizeRef = useRef(RESOURCE_PAGE_SIZE);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [form] = Form.useForm<ResourceFormValues>();
   const [batchForm] = Form.useForm<BatchUploadFormValues>();
   const batchFiles = Form.useWatch('files', batchForm) || [];
+  const selectedResourceIdSet = useMemo(() => new Set(selectedResourceIds), [selectedResourceIds]);
+  const allCurrentPageSelected = items.length > 0 && items.every((item) => selectedResourceIdSet.has(item.id));
+  const someCurrentPageSelected = items.some((item) => selectedResourceIdSet.has(item.id));
 
   const query = useMemo<ResourceListQuery>(() => ({
     page,
+    pageSize,
     category,
     keyword,
     isDigitalHumanBackground: resourceType === 'image' ? imageUsage === 'background' : undefined,
-  }), [page, category, keyword, resourceType, imageUsage]);
+  }), [page, pageSize, category, keyword, resourceType, imageUsage]);
 
   const loadData = useCallback(async (nextQuery: ResourceListQuery = query) => {
     setLoading(true);
@@ -555,11 +576,42 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
     } finally {
       setLoading(false);
     }
-  }, [config, query]);
+  }, [config, query, refreshKey]);
 
   useEffect(() => {
     void loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    setSelectedResourceIds([]);
+  }, [page, pageSize, category, keyword, imageUsage, resourceType]);
+
+  useEffect(() => {
+    const grid = resourceGridRef.current;
+    if (!grid) {
+      return;
+    }
+
+    const updatePageSize = () => {
+      const gridTemplateColumns = window.getComputedStyle(grid).gridTemplateColumns;
+      const columnCount = gridTemplateColumns === 'none'
+        ? 1
+        : Math.max(1, gridTemplateColumns.split(/\s+/).filter(Boolean).length);
+      const nextPageSize = Math.ceil(RESOURCE_PAGE_SIZE / columnCount) * columnCount;
+      if (pageSizeRef.current === nextPageSize) {
+        return;
+      }
+
+      pageSizeRef.current = nextPageSize;
+      setPage(1);
+      setPageSize(nextPageSize);
+    };
+
+    updatePageSize();
+    const observer = new ResizeObserver(updatePageSize);
+    observer.observe(grid);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     fetchResourceUploadConfig()
@@ -635,7 +687,66 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
     }
   };
 
-  const uploadResourceToObjectStorage = async (file: File): Promise<{ objectKey: string; objectSize: number; storageBackend?: string } | null> => {
+  const toggleBulkManage = () => {
+    if (bulkManageEnabled) {
+      setSelectedResourceIds([]);
+    }
+    setBulkManageEnabled(!bulkManageEnabled);
+  };
+
+  const toggleResourceSelection = (resourceId: number, checked: boolean) => {
+    setSelectedResourceIds((current) => checked
+      ? [...current, resourceId]
+      : current.filter((id) => id !== resourceId));
+  };
+
+  const toggleCurrentPageSelection = (checked: boolean) => {
+    setSelectedResourceIds(checked ? items.map((item) => item.id) : []);
+  };
+
+  const handleBulkDelete = async () => {
+    if (!selectedResourceIds.length) {
+      return;
+    }
+
+    setBulkDeleteSubmitting(true);
+    try {
+      const response = await bulkDeleteImageResources(selectedResourceIds);
+      const failedIds = new Set(response.failures.map((failure) => failure.id));
+      setSelectedResourceIds(selectedResourceIds.filter((id) => failedIds.has(id)));
+
+      if (response.deletedIds.length) {
+        message.success(`已删除 ${response.deletedIds.length} 张图片`);
+        if (response.deletedIds.length === items.length && page > 1) {
+          setPage((current) => current - 1);
+        } else {
+          await loadData();
+        }
+      }
+
+      if (response.failures.length) {
+        Modal.warning({
+          title: response.deletedIds.length ? '部分图片未删除' : '图片未删除',
+          content: (
+            <div className="max-h-72 space-y-2 overflow-y-auto custom-scrollbar">
+              {response.failures.map((failure) => (
+                <div key={failure.id} className="rounded-lg bg-slate-50 px-3 py-2">
+                  <Typography.Text strong>{failure.name || `图片 ID ${failure.id}`}</Typography.Text>
+                  <div className="text-fluid-sm text-slate-500">{failure.reason}</div>
+                </div>
+              ))}
+            </div>
+          ),
+        });
+      }
+    } catch {
+      // 错误由拦截器处理
+    } finally {
+      setBulkDeleteSubmitting(false);
+    }
+  };
+
+  const uploadResourceToObjectStorage = async (file: File, contentHash?: string): Promise<{ objectKey: string; objectSize: number; storageBackend?: string } | null> => {
     if (resourceUploadConfig && !resourceUploadConfig.enabled) {
       message.error(resourceUploadConfig.storageBackend === 'r2' ? 'R2 存储桶未配置完整，请联系超级管理员' : '视频直传未启用，请填写云端 URL 或联系超级管理员');
       return null;
@@ -668,6 +779,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         filename: file.name,
         contentType: file.type || 'application/octet-stream',
         fileSize: file.size,
+        contentHash,
       });
       setUploadProgress((prev) => ({ ...prev, message: '正在上传...' }));
       await uploadFileToPresignedUrl(presigned.uploadUrl, file, {
@@ -687,6 +799,10 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
       setUploadProgress((prev) => ({ ...prev, percent: 100, status: 'success', message: '上传完成' }));
       return { objectKey: presigned.objectKey, objectSize: presigned.objectSize ?? file.size, storageBackend: presigned.storageBackend };
     } catch (error) {
+      if (isDuplicateImageError(error)) {
+        setUploadProgress((prev) => ({ ...prev, visible: false }));
+        throw error;
+      }
       const aborted = controller.signal.aborted || (error as Error)?.name === 'CanceledError';
       setUploadProgress((prev) => ({
         ...prev,
@@ -710,6 +826,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
       const cloudUrl = showCloudUrlField ? values.cloudUrl?.trim() || '' : '';
       let objectKey = '';
       let objectSize: number | null = null;
+      let contentHash = '';
       let file = selectedFile;
 
       if (resourceType === 'video' && selectedFile && cloudUrl) {
@@ -722,7 +839,8 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
       }
 
       if (((resourceType === 'video') || (resourceType === 'image' && resourceUploadConfig?.storageBackend === 'r2')) && selectedFile) {
-        const uploaded = await uploadResourceToObjectStorage(selectedFile);
+        contentHash = resourceType === 'image' ? await calculateFileSha256(selectedFile) : '';
+        const uploaded = await uploadResourceToObjectStorage(selectedFile, contentHash || undefined);
         if (!uploaded) {
           return;
         }
@@ -740,6 +858,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         cloudUrl,
         objectKey: objectKey || undefined,
         objectSize,
+        contentHash: contentHash || undefined,
         storageBackend: form.getFieldValue('storageBackend') || undefined,
         file,
         isDigitalHumanBackground: resourceType === 'image' ? Boolean(values.isDigitalHumanBackground) : false,
@@ -774,17 +893,20 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         const nextImageUsage: ImageUsage = values.isDigitalHumanBackground ? 'background' : 'material';
         setImageUsage(nextImageUsage);
         setCategory(values.category);
-        void loadData({
-          page: 1,
-          category: values.category,
-          keyword,
-          isDigitalHumanBackground: nextImageUsage === 'background',
-        });
-      } else {
-        void loadData(editingItem ? query : { ...query, page: 1 });
       }
-    } catch {
-      // 错误由拦截器处理
+      setRefreshKey((c) => c + 1);
+    } catch (error) {
+      const duplicateLocation = resourceType === 'image' ? getDuplicateImageLocation(error) : null;
+      if (duplicateLocation) {
+        const nextImageUsage: ImageUsage = duplicateLocation.isDigitalHumanBackground ? 'background' : 'material';
+        message.info('该图片已在资源库中，已自动切换到对应分类');
+        closeFormModal();
+        setPage(1);
+        setKeyword('');
+        setImageUsage(nextImageUsage);
+        setCategory(duplicateLocation.category);
+        // 不显式调用 loadData——state 更新后 React 自然后续触发 useEffect 重新拉取
+      }
     } finally {
       setSubmitting(false);
     }
@@ -799,42 +921,74 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         return;
       }
       setBatchSubmitting(true);
+      let createdCount = 0;
+      const duplicateFileNames: string[] = [];
       if (resourceUploadConfig?.storageBackend === 'r2') {
+        const contentHashes = new Set<string>();
         for (const file of files) {
-          const uploaded = await uploadResourceToObjectStorage(file);
-          if (!uploaded) {
-            return;
+          const contentHash = await calculateFileSha256(file);
+          if (contentHashes.has(contentHash)) {
+            duplicateFileNames.push(file.name);
+            continue;
           }
-          await createImageResource({
-            name: file.name.replace(/\.[^.]+$/, '') || file.name,
-            category: values.category,
-            description: values.description,
-            objectKey: uploaded.objectKey,
-            objectSize: uploaded.objectSize,
-            storageBackend: uploaded.storageBackend,
-            isDigitalHumanBackground: Boolean(values.isDigitalHumanBackground),
-          });
+          contentHashes.add(contentHash);
+
+          try {
+            const uploaded = await uploadResourceToObjectStorage(file, contentHash);
+            if (!uploaded) {
+              return;
+            }
+            await createImageResource({
+              name: file.name.replace(/\.[^.]+$/, '') || file.name,
+              category: values.category,
+              description: values.description,
+              objectKey: uploaded.objectKey,
+              objectSize: uploaded.objectSize,
+              storageBackend: uploaded.storageBackend,
+              contentHash,
+              isDigitalHumanBackground: Boolean(values.isDigitalHumanBackground),
+            });
+            createdCount += 1;
+          } catch (error) {
+            if (!isDuplicateImageError(error)) {
+              throw error;
+            }
+            duplicateFileNames.push(file.name);
+          }
         }
       } else {
-        await batchCreateImageResources({
+        const result = await batchCreateImageResources({
           files,
           category: values.category,
           description: values.description,
           isDigitalHumanBackground: Boolean(values.isDigitalHumanBackground),
         });
+        createdCount = result.created.length;
+        duplicateFileNames.push(...result.duplicates.map((item) => item.fileName));
       }
       const nextImageUsage: ImageUsage = values.isDigitalHumanBackground ? 'background' : 'material';
-      message.success(`已上传 ${files.length} 个图片资源`);
+      if (createdCount > 0) {
+        message.success(`已上传 ${createdCount} 个图片资源`);
+      }
+      if (duplicateFileNames.length > 0) {
+        Modal.info({
+          title: `已跳过 ${duplicateFileNames.length} 个重复图片`,
+          content: (
+            <div className="max-h-60 overflow-y-auto">
+              {duplicateFileNames.map((fileName, index) => (
+                <div key={`${fileName}-${index}`} className="break-all text-fluid-sm text-slate-600">
+                  {fileName}
+                </div>
+              ))}
+            </div>
+          ),
+        });
+      }
       closeBatchModal();
       setPage(1);
       setImageUsage(nextImageUsage);
       setCategory(values.category);
-      void loadData({
-        page: 1,
-        category: values.category,
-        keyword,
-        isDigitalHumanBackground: nextImageUsage === 'background',
-      });
+      setRefreshKey((c) => c + 1);
     } catch {
       // 错误由拦截器处理
     } finally {
@@ -887,6 +1041,15 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
             <Button icon={<IconReload />} onClick={() => void loadData()}>
               刷新
             </Button>
+            {resourceType === 'image' && canDelete ? (
+              <Button
+                type={bulkManageEnabled ? 'primary' : 'default'}
+                icon={<IconCheck />}
+                onClick={toggleBulkManage}
+              >
+                {bulkManageEnabled ? '退出批量管理' : '批量管理'}
+              </Button>
+            ) : null}
             {canCreate ? (
               <>
                 {resourceType === 'image' ? (
@@ -903,36 +1066,80 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         </div>
       </Card>
 
-      <div className={resourceGridClassName}>
+      {bulkManageEnabled && resourceType === 'image' ? (
+        <div className="flex flex-col gap-3 border-y border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <Space wrap>
+            <Checkbox
+              checked={allCurrentPageSelected}
+              indeterminate={!allCurrentPageSelected && someCurrentPageSelected}
+              disabled={loading || bulkDeleteSubmitting}
+              onChange={(event) => toggleCurrentPageSelection(event.target.checked)}
+            >
+              全选当前页
+            </Checkbox>
+            <Typography.Text type="secondary">已选 {selectedResourceIds.length} 张</Typography.Text>
+          </Space>
+          <Popconfirm
+            title={`确认删除选中的 ${selectedResourceIds.length} 张图片吗？`}
+            description="删除后无法恢复，被业务引用的图片将保留并说明原因。"
+            okText="确认删除"
+            cancelText="取消"
+            okButtonProps={{ danger: true, loading: bulkDeleteSubmitting }}
+            disabled={!selectedResourceIds.length || loading}
+            onConfirm={() => handleBulkDelete()}
+          >
+            <Button
+              danger
+              icon={<IconTrash />}
+              loading={bulkDeleteSubmitting}
+              disabled={!selectedResourceIds.length || loading}
+            >
+              删除所选
+            </Button>
+          </Popconfirm>
+        </div>
+      ) : null}
+
+      <div ref={resourceGridRef} className={resourceGridClassName}>
         {items.map((item) => {
           const sourceUrl = getResourceSourceUrl(item);
           const hasSource = hasResourceSource(item);
 
           return (
-            <Card
-              key={item.id}
-              variant="borderless"
-              loading={loading}
-              className="rounded-xl border border-slate-200/70 shadow-card overflow-hidden"
-              cover={
-                hasSource ? (
-                  resourceType === 'image' ? (
-                    <div className={`relative block w-full overflow-hidden bg-slate-100 flex items-center justify-center ${item.category === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'}`}>
-                      <img src={sourceUrl} alt={item.name} className="absolute inset-0 h-full w-full object-cover" />
-                    </div>
+            <div key={item.id} className="relative">
+              {bulkManageEnabled && resourceType === 'image' ? (
+                <div className="absolute left-3 top-3 z-10 rounded-lg bg-white px-2 py-1 shadow-card">
+                  <Checkbox
+                    aria-label={`选择图片 ${item.name}`}
+                    checked={selectedResourceIdSet.has(item.id)}
+                    disabled={loading || bulkDeleteSubmitting}
+                    onChange={(event) => toggleResourceSelection(item.id, event.target.checked)}
+                  />
+                </div>
+              ) : null}
+              <Card
+                variant="borderless"
+                loading={loading}
+                className={`h-full rounded-xl border shadow-card overflow-hidden ${selectedResourceIdSet.has(item.id) ? 'border-brand-500 ring-2 ring-brand-100' : 'border-slate-200/70'}`}
+                cover={
+                  hasSource ? (
+                    resourceType === 'image' ? (
+                      <div className={`relative block w-full overflow-hidden bg-slate-100 flex items-center justify-center ${item.category === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'}`}>
+                        <img src={sourceUrl} alt={item.name} className="absolute inset-0 h-full w-full object-cover" />
+                      </div>
+                    ) : (
+                      <VideoResourceCardCover item={item} sourceUrl={sourceUrl} />
+                    )
                   ) : (
-                    <VideoResourceCardCover item={item} sourceUrl={sourceUrl} />
+                    <div className={`flex items-center justify-center bg-slate-100 text-slate-400 ${item.category === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'}`}>
+                      <Space direction="vertical" align="center">
+                        <IconPhoto className="text-4xl" />
+                        <span>{resourceType === 'image' ? '未上传图片' : '未配置视频地址'}</span>
+                      </Space>
+                    </div>
                   )
-                ) : (
-                  <div className={`flex items-center justify-center bg-slate-100 text-slate-400 ${item.category === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'}`}>
-                    <Space direction="vertical" align="center">
-                      <IconPhoto className="text-4xl" />
-                      <span>{resourceType === 'image' ? '未上传图片' : '未配置视频地址'}</span>
-                    </Space>
-                  </div>
-                )
-              }
-              actions={[
+                }
+                actions={bulkManageEnabled && resourceType === 'image' ? undefined : [
                 <Button key="preview" type="text" icon={<IconEye />} onClick={() => setPreviewItem(item)} disabled={!hasSource}>
                   预览
                 </Button>,
@@ -952,8 +1159,8 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
                 ) : (
                   <span key="delete-placeholder" />
                 ),
-              ]}
-            >
+                ]}
+              >
               <Space direction="vertical" size={10} className="w-full">
                 <div className="flex items-start justify-between gap-3">
                   <Typography.Title level={5} className="mb-0 text-slate-900">
@@ -971,7 +1178,8 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
                 </Typography.Paragraph>
                 <Typography.Text className="text-slate-400 text-xs">更新时间：{item.updated_at}</Typography.Text>
               </Space>
-            </Card>
+              </Card>
+            </div>
           );
         })}
       </div>

@@ -47,6 +47,7 @@ class Resource(models.Model):
     storage_backend = models.CharField('对象存储后端', max_length=32, blank=True, default='')
     object_key = models.CharField('MinIO 对象键', max_length=512, blank=True, default='')
     object_size = models.BigIntegerField('MinIO 对象大小', blank=True, null=True)
+    content_hash = models.CharField('内容 SHA-256', max_length=64, blank=True, default='', editable=False)
     description = models.CharField('资源说明', max_length=255, blank=True, default='')
     is_digital_human_background = models.BooleanField('是否作为数字人背景图', default=False)
     tenant = _tenant_fk()
@@ -59,6 +60,13 @@ class Resource(models.Model):
         ordering = ['-updated_at', '-id']
         verbose_name = '资源（图片/视频）'
         verbose_name_plural = '资源（图片/视频）'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['tenant', 'content_hash'],
+                condition=Q(resource_type='image') & ~Q(content_hash=''),
+                name='unique_image_content_hash_per_tenant',
+            ),
+        ]
 
     def __str__(self) -> str:
         return f'{self.get_resource_type_display()} - {self.name}'

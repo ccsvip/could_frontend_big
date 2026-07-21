@@ -182,6 +182,11 @@ httpClient.interceptors.response.use(
     const errorData = error?.response?.data as ApiResponse | undefined;
     const errorMessage = errorData?.message || error?.response?.data?.detail || '请求失败，请稍后重试';
 
+    // 图片资源冲突（重复上传/内容hash匹配）是正常业务逻辑，由业务组件自行处理，不弹错误 toast
+    if (error?.response?.status === 409 && errorData?.data?.existingResource) {
+      return Promise.reject(error);
+    }
+
     message.error(errorMessage);
     return Promise.reject(error);
   },

@@ -4,6 +4,7 @@ from django.db import transaction
 from django.db.models import Prefetch, Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -57,6 +58,7 @@ from .serializers import (
     CommandGroupSerializer,
     ControlCommandSerializer,
     ControlCommandRecognitionPolicySerializer,
+    ImageResourceBulkDeleteSerializer,
     ModelAssetSerializer,
     MinioConfigSerializer,
     TenantVideoQuotaSerializer,
@@ -76,6 +78,7 @@ from .services.minio_client import (
     presign_resource_put_url,
     presign_video_put_url,
 )
+from .services.image_hashes import DuplicateImageError, find_duplicate_image, normalize_sha256
 from .tasks import enqueue_command_change_notification, enqueue_command_notification
 
 
@@ -227,6 +230,7 @@ class ImageResourceViewSet(BaseResourceViewSet):
         'partial_update': [CanUpdateImageResources],
         'destroy': [CanDeleteImageResources],
         'bulk': [CanCreateImageResources],
+        'bulk_delete': [CanDeleteImageResources],
     }
 
     @action(detail=False, methods=['post'], url_path='bulk')
@@ -242,23 +246,72 @@ class ImageResourceViewSet(BaseResourceViewSet):
         ).strip().lower() == 'true'
 
         created_resources = []
-        with transaction.atomic():
-            for uploaded_file in files:
-                name = Path(uploaded_file.name).stem or uploaded_file.name
-                serializer = self.get_serializer(
-                    data={
-                        'name': name,
-                        'category': category,
-                        'description': description,
-                        'isDigitalHumanBackground': is_digital_human_background,
+        duplicates = []
+        for uploaded_file in files:
+            name = Path(uploaded_file.name).stem or uploaded_file.name
+            serializer = self.get_serializer(
+                data={
+                    'name': name,
+                    'category': category,
+                    'description': description,
+                    'file': uploaded_file,
+                    'isDigitalHumanBackground': is_digital_human_background,
+                }
+            )
+            try:
+                serializer.is_valid(raise_exception=True)
+                created_resources.append(serializer.save(**self.tenant_create_kwargs()))
+            except DuplicateImageError:
+                duplicates.append({'fileName': uploaded_file.name, 'reason': '该图片已存在'})
+
+        if created_resources:
+            self.clear_cached_business_responses()
+        response_serializer = self.get_serializer(created_resources, many=True)
+        response_status = status.HTTP_201_CREATED if created_resources else status.HTTP_200_OK
+        return Response(
+            {'created': response_serializer.data, 'duplicates': duplicates},
+            status=response_status,
+        )
+
+    @bulk.mapping.delete
+    def bulk_delete(self, request):
+        serializer = ImageResourceBulkDeleteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        ids = serializer.validated_data['ids']
+        resources = {resource.id: resource for resource in self.get_queryset().filter(id__in=ids)}
+        deleted_ids = []
+        failures = []
+
+        for resource_id in ids:
+            resource = resources.get(resource_id)
+            if resource is None:
+                failures.append(
+                    {
+                        'id': resource_id,
+                        'name': '',
+                        'reason': '图片不存在或无权访问',
                     }
                 )
-                serializer.is_valid(raise_exception=True)
-                created_resources.append(serializer.save(file=uploaded_file, **self.tenant_create_kwargs()))
+                continue
 
-        self.clear_cached_business_responses()
-        response_serializer = self.get_serializer(created_resources, many=True)
-        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+            try:
+                self.perform_destroy(resource)
+            except ValidationError as exc:
+                detail = exc.detail.get('message') if isinstance(exc.detail, dict) else exc.detail
+                if isinstance(detail, (list, tuple)):
+                    detail = detail[0] if detail else ''
+                failures.append(
+                    {
+                        'id': resource_id,
+                        'name': resource.name,
+                        'reason': str(detail or '图片无法删除'),
+                    }
+                )
+                continue
+
+            deleted_ids.append(resource_id)
+
+        return Response({'deletedIds': deleted_ids, 'failures': failures})
 
 
 @extend_schema_view(
@@ -319,6 +372,14 @@ class ResourceUploadPresignView(APIView):
             return Response({'fileSize': 'fileSize 必须是正整数'}, status=status.HTTP_400_BAD_REQUEST)
 
         tenant = get_business_write_tenant(request)
+        if resource_type == Resource.TYPE_IMAGE:
+            try:
+                content_hash = normalize_sha256(data.get('contentHash') or data.get('content_hash'))
+            except ValueError as exc:
+                return Response({'contentHash': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            duplicate = find_duplicate_image(tenant=tenant, content_hash=content_hash)
+            if duplicate is not None:
+                raise DuplicateImageError(duplicate)
         try:
             return Response(
                 presign_resource_put_url(
