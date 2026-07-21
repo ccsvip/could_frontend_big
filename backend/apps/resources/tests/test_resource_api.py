@@ -5,7 +5,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
+from apps.ai_models.models import AgentAnnotation, AgentApplication
 from apps.resources.models import Resource
+from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
@@ -166,6 +168,106 @@ class ResourceApiTests(TenantTestMixin, APITestCase):
         refreshed_response = self.client.get('/api/v1/resources/images/?isDigitalHumanBackground=false')
         self.assertEqual(refreshed_response.status_code, status.HTTP_200_OK)
         self.assertEqual(refreshed_response.data['count'], 2)
+
+    def test_bulk_delete_image_resources_supports_partial_success_and_tenant_isolation(self):
+        self.grant_permissions('resources.images.view', 'resources.images.delete')
+        cache.clear()
+        deletable = Resource.objects.create(
+            name='可批量删除图片',
+            resource_type=Resource.TYPE_IMAGE,
+            category=Resource.CATEGORY_HORIZONTAL,
+            tenant=self.tenant,
+        )
+        protected = Resource.objects.create(
+            name='被引用图片',
+            resource_type=Resource.TYPE_IMAGE,
+            category=Resource.CATEGORY_HORIZONTAL,
+            tenant=self.tenant,
+        )
+        video = Resource.objects.create(
+            name='不可通过图片接口删除的视频',
+            resource_type=Resource.TYPE_VIDEO,
+            category=Resource.CATEGORY_HORIZONTAL,
+            tenant=self.tenant,
+        )
+        other_tenant = Tenant.objects.create(name='其他公司', code='other-resource-tenant')
+        other_image = Resource.objects.create(
+            name='其他公司图片',
+            resource_type=Resource.TYPE_IMAGE,
+            category=Resource.CATEGORY_HORIZONTAL,
+            tenant=other_tenant,
+        )
+        application = AgentApplication.objects.create(
+            name='资源引用测试应用',
+            tenant=self.tenant,
+            created_by=self.user,
+        )
+        AgentAnnotation.objects.create(
+            application=application,
+            tenant=self.tenant,
+            question='展示被引用图片',
+            answer='图片回复',
+            answer_blocks=[{'type': 'image', 'resourceId': protected.id}],
+            created_by=self.user,
+        )
+
+        cached_response = self.client.get('/api/v1/resources/images/?isDigitalHumanBackground=false')
+        self.assertEqual(cached_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(cached_response.data['count'], 2)
+
+        response = self.client.delete(
+            '/api/v1/resources/images/bulk/',
+            {'ids': [deletable.id, protected.id, other_image.id, video.id, 999999]},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['deletedIds'], [deletable.id])
+        failures = {item['id']: item for item in response.data['failures']}
+        self.assertIn('被 1 个标注回复引用', failures[protected.id]['reason'])
+        for hidden_id in (other_image.id, video.id, 999999):
+            self.assertEqual(failures[hidden_id]['name'], '')
+            self.assertEqual(failures[hidden_id]['reason'], '图片不存在或无权访问')
+        self.assertFalse(Resource.objects.filter(id=deletable.id).exists())
+        self.assertTrue(Resource.objects.filter(id=protected.id).exists())
+        self.assertTrue(Resource.objects.filter(id=other_image.id).exists())
+        self.assertTrue(Resource.objects.filter(id=video.id).exists())
+
+        refreshed_response = self.client.get('/api/v1/resources/images/?isDigitalHumanBackground=false')
+        self.assertEqual(refreshed_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(refreshed_response.data['count'], 1)
+
+    def test_bulk_delete_image_resources_requires_delete_permission(self):
+        self.grant_permissions('resources.images.view')
+        resource = Resource.objects.create(
+            name='无权限不可删除图片',
+            resource_type=Resource.TYPE_IMAGE,
+            category=Resource.CATEGORY_HORIZONTAL,
+            tenant=self.tenant,
+        )
+
+        response = self.client.delete('/api/v1/resources/images/bulk/', {'ids': [resource.id]}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertTrue(Resource.objects.filter(id=resource.id).exists())
+
+    def test_bulk_delete_image_resources_rejects_duplicate_ids(self):
+        self.grant_permissions('resources.images.delete')
+        resource = Resource.objects.create(
+            name='重复选择图片',
+            resource_type=Resource.TYPE_IMAGE,
+            category=Resource.CATEGORY_HORIZONTAL,
+            tenant=self.tenant,
+        )
+
+        response = self.client.delete(
+            '/api/v1/resources/images/bulk/',
+            {'ids': [resource.id, resource.id]},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue(Resource.objects.filter(id=resource.id).exists())
 
     def test_update_video_resource_allows_long_oss_cloud_url(self):
         self.grant_permissions('resources.videos.view', 'resources.videos.update')

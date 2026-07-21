@@ -177,6 +177,19 @@ class ResourceSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+class ImageResourceBulkDeleteSerializer(serializers.Serializer):
+    ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+        allow_empty=False,
+        max_length=100,
+    )
+
+    def validate_ids(self, value):
+        if len(set(value)) != len(value):
+            raise serializers.ValidationError('ids 不允许重复')
+        return value
+
+
 class MinioConfigSerializer(serializers.ModelSerializer):
     storageBackend = serializers.ChoiceField(source='storage_backend', choices=MinioConfig.STORAGE_BACKEND_CHOICES, required=False)
     accessKey = serializers.CharField(source='access_key', required=False, allow_blank=True)

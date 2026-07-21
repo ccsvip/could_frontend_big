@@ -61,6 +61,17 @@ export type BatchImageResourcePayload = {
   isDigitalHumanBackground?: boolean;
 };
 
+export type BulkImageResourceDeleteFailure = {
+  id: number;
+  name: string;
+  reason: string;
+};
+
+export type BulkImageResourceDeleteResponse = {
+  deletedIds: number[];
+  failures: BulkImageResourceDeleteFailure[];
+};
+
 const buildFormData = (payload: ResourcePayload) => {
   const formData = new FormData();
   formData.append('name', payload.name);
@@ -130,6 +141,13 @@ export const updateImageResource = async (id: number, payload: ResourcePayload) 
 
 export const deleteImageResource = async (id: number) => {
   await httpClient.delete(`/resources/images/${id}/`);
+};
+
+export const bulkDeleteImageResources = async (ids: number[]) => {
+  const response = await httpClient.delete<BulkImageResourceDeleteResponse>('/resources/images/bulk/', {
+    data: { ids },
+  });
+  return response.data;
 };
 
 export const createVideoResource = async (payload: ResourcePayload) => {

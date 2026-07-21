@@ -1,5 +1,6 @@
 import {
   IconTrash,
+  IconCheck,
   IconEdit,
   IconEye,
   IconPhoto,
@@ -10,6 +11,7 @@ import {
 import {
   Button,
   Card,
+  Checkbox,
   Empty,
   Form,
   Image,
@@ -31,6 +33,7 @@ import type { UploadFile } from 'antd/es/upload/interface';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   batchCreateImageResources,
+  bulkDeleteImageResources,
   createImageResource,
   createVideoResource,
   deleteImageResource,
@@ -524,6 +527,9 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
   const [imageUsage, setImageUsage] = useState<ImageUsage>('material');
   const [batchModalVisible, setBatchModalVisible] = useState(false);
   const [batchSubmitting, setBatchSubmitting] = useState(false);
+  const [bulkManageEnabled, setBulkManageEnabled] = useState(false);
+  const [selectedResourceIds, setSelectedResourceIds] = useState<number[]>([]);
+  const [bulkDeleteSubmitting, setBulkDeleteSubmitting] = useState(false);
   const [resourceUploadConfig, setResourceUploadConfig] = useState<(VideoUploadConfig & { imageDirectUploadEnabled?: boolean }) | null>(null);
   const [uploadProgress, setUploadProgress] = useState<{
     visible: boolean;
@@ -539,6 +545,9 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
   const [form] = Form.useForm<ResourceFormValues>();
   const [batchForm] = Form.useForm<BatchUploadFormValues>();
   const batchFiles = Form.useWatch('files', batchForm) || [];
+  const selectedResourceIdSet = useMemo(() => new Set(selectedResourceIds), [selectedResourceIds]);
+  const allCurrentPageSelected = items.length > 0 && items.every((item) => selectedResourceIdSet.has(item.id));
+  const someCurrentPageSelected = items.some((item) => selectedResourceIdSet.has(item.id));
 
   const query = useMemo<ResourceListQuery>(() => ({
     page,
@@ -564,6 +573,10 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
   useEffect(() => {
     void loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    setSelectedResourceIds([]);
+  }, [page, pageSize, category, keyword, imageUsage, resourceType]);
 
   useEffect(() => {
     const grid = resourceGridRef.current;
@@ -663,6 +676,65 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
       }
     } catch {
       // 错误由拦截器处理
+    }
+  };
+
+  const toggleBulkManage = () => {
+    if (bulkManageEnabled) {
+      setSelectedResourceIds([]);
+    }
+    setBulkManageEnabled(!bulkManageEnabled);
+  };
+
+  const toggleResourceSelection = (resourceId: number, checked: boolean) => {
+    setSelectedResourceIds((current) => checked
+      ? [...current, resourceId]
+      : current.filter((id) => id !== resourceId));
+  };
+
+  const toggleCurrentPageSelection = (checked: boolean) => {
+    setSelectedResourceIds(checked ? items.map((item) => item.id) : []);
+  };
+
+  const handleBulkDelete = async () => {
+    if (!selectedResourceIds.length) {
+      return;
+    }
+
+    setBulkDeleteSubmitting(true);
+    try {
+      const response = await bulkDeleteImageResources(selectedResourceIds);
+      const failedIds = new Set(response.failures.map((failure) => failure.id));
+      setSelectedResourceIds(selectedResourceIds.filter((id) => failedIds.has(id)));
+
+      if (response.deletedIds.length) {
+        message.success(`已删除 ${response.deletedIds.length} 张图片`);
+        if (response.deletedIds.length === items.length && page > 1) {
+          setPage((current) => current - 1);
+        } else {
+          await loadData();
+        }
+      }
+
+      if (response.failures.length) {
+        Modal.warning({
+          title: response.deletedIds.length ? '部分图片未删除' : '图片未删除',
+          content: (
+            <div className="max-h-72 space-y-2 overflow-y-auto custom-scrollbar">
+              {response.failures.map((failure) => (
+                <div key={failure.id} className="rounded-lg bg-slate-50 px-3 py-2">
+                  <Typography.Text strong>{failure.name || `图片 ID ${failure.id}`}</Typography.Text>
+                  <div className="text-fluid-sm text-slate-500">{failure.reason}</div>
+                </div>
+              ))}
+            </div>
+          ),
+        });
+      }
+    } catch {
+      // 错误由拦截器处理
+    } finally {
+      setBulkDeleteSubmitting(false);
     }
   };
 
@@ -918,6 +990,15 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
             <Button icon={<IconReload />} onClick={() => void loadData()}>
               刷新
             </Button>
+            {resourceType === 'image' && canDelete ? (
+              <Button
+                type={bulkManageEnabled ? 'primary' : 'default'}
+                icon={<IconCheck />}
+                onClick={toggleBulkManage}
+              >
+                {bulkManageEnabled ? '退出批量管理' : '批量管理'}
+              </Button>
+            ) : null}
             {canCreate ? (
               <>
                 {resourceType === 'image' ? (
@@ -934,36 +1015,80 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         </div>
       </Card>
 
+      {bulkManageEnabled && resourceType === 'image' ? (
+        <div className="flex flex-col gap-3 border-y border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <Space wrap>
+            <Checkbox
+              checked={allCurrentPageSelected}
+              indeterminate={!allCurrentPageSelected && someCurrentPageSelected}
+              disabled={loading || bulkDeleteSubmitting}
+              onChange={(event) => toggleCurrentPageSelection(event.target.checked)}
+            >
+              全选当前页
+            </Checkbox>
+            <Typography.Text type="secondary">已选 {selectedResourceIds.length} 张</Typography.Text>
+          </Space>
+          <Popconfirm
+            title={`确认删除选中的 ${selectedResourceIds.length} 张图片吗？`}
+            description="删除后无法恢复，被业务引用的图片将保留并说明原因。"
+            okText="确认删除"
+            cancelText="取消"
+            okButtonProps={{ danger: true, loading: bulkDeleteSubmitting }}
+            disabled={!selectedResourceIds.length || loading}
+            onConfirm={() => handleBulkDelete()}
+          >
+            <Button
+              danger
+              icon={<IconTrash />}
+              loading={bulkDeleteSubmitting}
+              disabled={!selectedResourceIds.length || loading}
+            >
+              删除所选
+            </Button>
+          </Popconfirm>
+        </div>
+      ) : null}
+
       <div ref={resourceGridRef} className={resourceGridClassName}>
         {items.map((item) => {
           const sourceUrl = getResourceSourceUrl(item);
           const hasSource = hasResourceSource(item);
 
           return (
-            <Card
-              key={item.id}
-              variant="borderless"
-              loading={loading}
-              className="rounded-xl border border-slate-200/70 shadow-card overflow-hidden"
-              cover={
-                hasSource ? (
-                  resourceType === 'image' ? (
-                    <div className={`relative block w-full overflow-hidden bg-slate-100 flex items-center justify-center ${item.category === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'}`}>
-                      <img src={sourceUrl} alt={item.name} className="absolute inset-0 h-full w-full object-cover" />
-                    </div>
+            <div key={item.id} className="relative">
+              {bulkManageEnabled && resourceType === 'image' ? (
+                <div className="absolute left-3 top-3 z-10 rounded-lg bg-white px-2 py-1 shadow-card">
+                  <Checkbox
+                    aria-label={`选择图片 ${item.name}`}
+                    checked={selectedResourceIdSet.has(item.id)}
+                    disabled={loading || bulkDeleteSubmitting}
+                    onChange={(event) => toggleResourceSelection(item.id, event.target.checked)}
+                  />
+                </div>
+              ) : null}
+              <Card
+                variant="borderless"
+                loading={loading}
+                className={`h-full rounded-xl border shadow-card overflow-hidden ${selectedResourceIdSet.has(item.id) ? 'border-brand-500 ring-2 ring-brand-100' : 'border-slate-200/70'}`}
+                cover={
+                  hasSource ? (
+                    resourceType === 'image' ? (
+                      <div className={`relative block w-full overflow-hidden bg-slate-100 flex items-center justify-center ${item.category === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'}`}>
+                        <img src={sourceUrl} alt={item.name} className="absolute inset-0 h-full w-full object-cover" />
+                      </div>
+                    ) : (
+                      <VideoResourceCardCover item={item} sourceUrl={sourceUrl} />
+                    )
                   ) : (
-                    <VideoResourceCardCover item={item} sourceUrl={sourceUrl} />
+                    <div className={`flex items-center justify-center bg-slate-100 text-slate-400 ${item.category === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'}`}>
+                      <Space direction="vertical" align="center">
+                        <IconPhoto className="text-4xl" />
+                        <span>{resourceType === 'image' ? '未上传图片' : '未配置视频地址'}</span>
+                      </Space>
+                    </div>
                   )
-                ) : (
-                  <div className={`flex items-center justify-center bg-slate-100 text-slate-400 ${item.category === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'}`}>
-                    <Space direction="vertical" align="center">
-                      <IconPhoto className="text-4xl" />
-                      <span>{resourceType === 'image' ? '未上传图片' : '未配置视频地址'}</span>
-                    </Space>
-                  </div>
-                )
-              }
-              actions={[
+                }
+                actions={bulkManageEnabled && resourceType === 'image' ? undefined : [
                 <Button key="preview" type="text" icon={<IconEye />} onClick={() => setPreviewItem(item)} disabled={!hasSource}>
                   预览
                 </Button>,
@@ -983,8 +1108,8 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
                 ) : (
                   <span key="delete-placeholder" />
                 ),
-              ]}
-            >
+                ]}
+              >
               <Space direction="vertical" size={10} className="w-full">
                 <div className="flex items-start justify-between gap-3">
                   <Typography.Title level={5} className="mb-0 text-slate-900">
@@ -1002,7 +1127,8 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
                 </Typography.Paragraph>
                 <Typography.Text className="text-slate-400 text-xs">更新时间：{item.updated_at}</Typography.Text>
               </Space>
-            </Card>
+              </Card>
+            </div>
           );
         })}
       </div>

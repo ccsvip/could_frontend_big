@@ -4,6 +4,7 @@ from django.db import transaction
 from django.db.models import Prefetch, Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -57,6 +58,7 @@ from .serializers import (
     CommandGroupSerializer,
     ControlCommandSerializer,
     ControlCommandRecognitionPolicySerializer,
+    ImageResourceBulkDeleteSerializer,
     ModelAssetSerializer,
     MinioConfigSerializer,
     TenantVideoQuotaSerializer,
@@ -227,6 +229,7 @@ class ImageResourceViewSet(BaseResourceViewSet):
         'partial_update': [CanUpdateImageResources],
         'destroy': [CanDeleteImageResources],
         'bulk': [CanCreateImageResources],
+        'bulk_delete': [CanDeleteImageResources],
     }
 
     @action(detail=False, methods=['post'], url_path='bulk')
@@ -259,6 +262,46 @@ class ImageResourceViewSet(BaseResourceViewSet):
         self.clear_cached_business_responses()
         response_serializer = self.get_serializer(created_resources, many=True)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+    @bulk.mapping.delete
+    def bulk_delete(self, request):
+        serializer = ImageResourceBulkDeleteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        ids = serializer.validated_data['ids']
+        resources = {resource.id: resource for resource in self.get_queryset().filter(id__in=ids)}
+        deleted_ids = []
+        failures = []
+
+        for resource_id in ids:
+            resource = resources.get(resource_id)
+            if resource is None:
+                failures.append(
+                    {
+                        'id': resource_id,
+                        'name': '',
+                        'reason': '图片不存在或无权访问',
+                    }
+                )
+                continue
+
+            try:
+                self.perform_destroy(resource)
+            except ValidationError as exc:
+                detail = exc.detail.get('message') if isinstance(exc.detail, dict) else exc.detail
+                if isinstance(detail, (list, tuple)):
+                    detail = detail[0] if detail else ''
+                failures.append(
+                    {
+                        'id': resource_id,
+                        'name': resource.name,
+                        'reason': str(detail or '图片无法删除'),
+                    }
+                )
+                continue
+
+            deleted_ids.append(resource_id)
+
+        return Response({'deletedIds': deleted_ids, 'failures': failures})
 
 
 @extend_schema_view(
