@@ -8,6 +8,7 @@ from apps.resources.services.minio_client import (
     build_resource_object_key,
     build_video_object_key,
     get_minio_settings,
+    iter_object_chunks,
     presign_resource_put_url,
     presign_video_put_url,
     validate_tenant_object_key,
@@ -16,6 +17,44 @@ from apps.tenants.models import Tenant
 
 
 class MinioClientTests(TestCase):
+    def test_iter_object_chunks_releases_response(self):
+        MinioConfig.load()
+        MinioConfig.objects.update(
+            storage_backend=MinioConfig.STORAGE_BACKEND_R2,
+            r2_account_id='account-id',
+            r2_access_key_id='r2-access',
+            r2_secret_access_key='r2-secret',
+            r2_bucket_name='ai-bucket',
+            r2_public_base_url='https://cdn.example.com/ai-bucket',
+        )
+
+        class FakeResponse:
+            closed = False
+            released = False
+
+            def stream(self, chunk_size):
+                yield b'first'
+                yield b'second'
+
+            def close(self):
+                self.closed = True
+
+            def release_conn(self):
+                self.released = True
+
+        response = FakeResponse()
+
+        class FakeClient:
+            def get_object(self, bucket_name, object_key):
+                return response
+
+        with patch('apps.resources.services.minio_client._build_r2_client', return_value=FakeClient()):
+            chunks = list(iter_object_chunks('tenants/1/images/demo.png', backend='r2'))
+
+        self.assertEqual(chunks, [b'first', b'second'])
+        self.assertTrue(response.closed)
+        self.assertTrue(response.released)
+
     def test_resource_has_file_when_object_key_exists(self):
         resource = Resource(resource_type=Resource.TYPE_VIDEO, object_key='tenants/1/videos/demo.mp4')
 

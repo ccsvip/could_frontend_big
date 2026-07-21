@@ -41,6 +41,8 @@ import {
   fetchImageResources,
   fetchResourceUploadConfig,
   fetchVideoResources,
+  getDuplicateImageLocation,
+  isDuplicateImageError,
   presignResourceUpload,
   uploadFileToPresignedUrl,
   updateImageResource,
@@ -126,6 +128,11 @@ const imageUsageOptions = [
   { label: '图片素材', value: 'material' },
 ] as const;
 type ImageUsage = typeof imageUsageOptions[number]['value'];
+
+const calculateFileSha256 = async (file: File) => {
+  const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+};
 
 const formatFileMB = (bytes: number | null | undefined) => {
   if (bytes == null) {
@@ -542,6 +549,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
   const uploadAbortRef = useRef<AbortController | null>(null);
   const resourceGridRef = useRef<HTMLDivElement | null>(null);
   const pageSizeRef = useRef(RESOURCE_PAGE_SIZE);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [form] = Form.useForm<ResourceFormValues>();
   const [batchForm] = Form.useForm<BatchUploadFormValues>();
   const batchFiles = Form.useWatch('files', batchForm) || [];
@@ -568,7 +576,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
     } finally {
       setLoading(false);
     }
-  }, [config, query]);
+  }, [config, query, refreshKey]);
 
   useEffect(() => {
     void loadData();
@@ -738,7 +746,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
     }
   };
 
-  const uploadResourceToObjectStorage = async (file: File): Promise<{ objectKey: string; objectSize: number; storageBackend?: string } | null> => {
+  const uploadResourceToObjectStorage = async (file: File, contentHash?: string): Promise<{ objectKey: string; objectSize: number; storageBackend?: string } | null> => {
     if (resourceUploadConfig && !resourceUploadConfig.enabled) {
       message.error(resourceUploadConfig.storageBackend === 'r2' ? 'R2 存储桶未配置完整，请联系超级管理员' : '视频直传未启用，请填写云端 URL 或联系超级管理员');
       return null;
@@ -771,6 +779,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         filename: file.name,
         contentType: file.type || 'application/octet-stream',
         fileSize: file.size,
+        contentHash,
       });
       setUploadProgress((prev) => ({ ...prev, message: '正在上传...' }));
       await uploadFileToPresignedUrl(presigned.uploadUrl, file, {
@@ -790,6 +799,10 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
       setUploadProgress((prev) => ({ ...prev, percent: 100, status: 'success', message: '上传完成' }));
       return { objectKey: presigned.objectKey, objectSize: presigned.objectSize ?? file.size, storageBackend: presigned.storageBackend };
     } catch (error) {
+      if (isDuplicateImageError(error)) {
+        setUploadProgress((prev) => ({ ...prev, visible: false }));
+        throw error;
+      }
       const aborted = controller.signal.aborted || (error as Error)?.name === 'CanceledError';
       setUploadProgress((prev) => ({
         ...prev,
@@ -813,6 +826,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
       const cloudUrl = showCloudUrlField ? values.cloudUrl?.trim() || '' : '';
       let objectKey = '';
       let objectSize: number | null = null;
+      let contentHash = '';
       let file = selectedFile;
 
       if (resourceType === 'video' && selectedFile && cloudUrl) {
@@ -825,7 +839,8 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
       }
 
       if (((resourceType === 'video') || (resourceType === 'image' && resourceUploadConfig?.storageBackend === 'r2')) && selectedFile) {
-        const uploaded = await uploadResourceToObjectStorage(selectedFile);
+        contentHash = resourceType === 'image' ? await calculateFileSha256(selectedFile) : '';
+        const uploaded = await uploadResourceToObjectStorage(selectedFile, contentHash || undefined);
         if (!uploaded) {
           return;
         }
@@ -843,6 +858,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         cloudUrl,
         objectKey: objectKey || undefined,
         objectSize,
+        contentHash: contentHash || undefined,
         storageBackend: form.getFieldValue('storageBackend') || undefined,
         file,
         isDigitalHumanBackground: resourceType === 'image' ? Boolean(values.isDigitalHumanBackground) : false,
@@ -877,18 +893,20 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         const nextImageUsage: ImageUsage = values.isDigitalHumanBackground ? 'background' : 'material';
         setImageUsage(nextImageUsage);
         setCategory(values.category);
-        void loadData({
-          page: 1,
-          pageSize,
-          category: values.category,
-          keyword,
-          isDigitalHumanBackground: nextImageUsage === 'background',
-        });
-      } else {
-        void loadData(editingItem ? query : { ...query, page: 1 });
       }
-    } catch {
-      // 错误由拦截器处理
+      setRefreshKey((c) => c + 1);
+    } catch (error) {
+      const duplicateLocation = resourceType === 'image' ? getDuplicateImageLocation(error) : null;
+      if (duplicateLocation) {
+        const nextImageUsage: ImageUsage = duplicateLocation.isDigitalHumanBackground ? 'background' : 'material';
+        message.info('该图片已在资源库中，已自动切换到对应分类');
+        closeFormModal();
+        setPage(1);
+        setKeyword('');
+        setImageUsage(nextImageUsage);
+        setCategory(duplicateLocation.category);
+        // 不显式调用 loadData——state 更新后 React 自然后续触发 useEffect 重新拉取
+      }
     } finally {
       setSubmitting(false);
     }
@@ -903,43 +921,74 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         return;
       }
       setBatchSubmitting(true);
+      let createdCount = 0;
+      const duplicateFileNames: string[] = [];
       if (resourceUploadConfig?.storageBackend === 'r2') {
+        const contentHashes = new Set<string>();
         for (const file of files) {
-          const uploaded = await uploadResourceToObjectStorage(file);
-          if (!uploaded) {
-            return;
+          const contentHash = await calculateFileSha256(file);
+          if (contentHashes.has(contentHash)) {
+            duplicateFileNames.push(file.name);
+            continue;
           }
-          await createImageResource({
-            name: file.name.replace(/\.[^.]+$/, '') || file.name,
-            category: values.category,
-            description: values.description,
-            objectKey: uploaded.objectKey,
-            objectSize: uploaded.objectSize,
-            storageBackend: uploaded.storageBackend,
-            isDigitalHumanBackground: Boolean(values.isDigitalHumanBackground),
-          });
+          contentHashes.add(contentHash);
+
+          try {
+            const uploaded = await uploadResourceToObjectStorage(file, contentHash);
+            if (!uploaded) {
+              return;
+            }
+            await createImageResource({
+              name: file.name.replace(/\.[^.]+$/, '') || file.name,
+              category: values.category,
+              description: values.description,
+              objectKey: uploaded.objectKey,
+              objectSize: uploaded.objectSize,
+              storageBackend: uploaded.storageBackend,
+              contentHash,
+              isDigitalHumanBackground: Boolean(values.isDigitalHumanBackground),
+            });
+            createdCount += 1;
+          } catch (error) {
+            if (!isDuplicateImageError(error)) {
+              throw error;
+            }
+            duplicateFileNames.push(file.name);
+          }
         }
       } else {
-        await batchCreateImageResources({
+        const result = await batchCreateImageResources({
           files,
           category: values.category,
           description: values.description,
           isDigitalHumanBackground: Boolean(values.isDigitalHumanBackground),
         });
+        createdCount = result.created.length;
+        duplicateFileNames.push(...result.duplicates.map((item) => item.fileName));
       }
       const nextImageUsage: ImageUsage = values.isDigitalHumanBackground ? 'background' : 'material';
-      message.success(`已上传 ${files.length} 个图片资源`);
+      if (createdCount > 0) {
+        message.success(`已上传 ${createdCount} 个图片资源`);
+      }
+      if (duplicateFileNames.length > 0) {
+        Modal.info({
+          title: `已跳过 ${duplicateFileNames.length} 个重复图片`,
+          content: (
+            <div className="max-h-60 overflow-y-auto">
+              {duplicateFileNames.map((fileName, index) => (
+                <div key={`${fileName}-${index}`} className="break-all text-fluid-sm text-slate-600">
+                  {fileName}
+                </div>
+              ))}
+            </div>
+          ),
+        });
+      }
       closeBatchModal();
       setPage(1);
       setImageUsage(nextImageUsage);
       setCategory(values.category);
-      void loadData({
-        page: 1,
-        pageSize,
-        category: values.category,
-        keyword,
-        isDigitalHumanBackground: nextImageUsage === 'background',
-      });
+      setRefreshKey((c) => c + 1);
     } catch {
       // 错误由拦截器处理
     } finally {

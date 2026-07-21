@@ -16,6 +16,7 @@ export type ResourceRecord = {
   storageBackend?: string;
   objectKey?: string;
   objectSize?: number | null;
+  contentHash?: string;
   isDigitalHumanBackground: boolean;
   fileUrl: string;
   fileName: string;
@@ -41,6 +42,12 @@ export type ResourceListQuery = {
   isDigitalHumanBackground?: boolean;
 };
 
+export type DuplicateImageLocation = {
+  id: number;
+  category: ResourceCategory;
+  isDigitalHumanBackground: boolean;
+};
+
 export type ResourcePayload = {
   name: string;
   category: ResourceCategory;
@@ -49,6 +56,7 @@ export type ResourcePayload = {
   storageBackend?: string;
   objectKey?: string;
   objectSize?: number | null;
+  contentHash?: string;
   isDigitalHumanBackground?: boolean;
   file?: File;
   clearFile?: boolean;
@@ -59,6 +67,16 @@ export type BatchImageResourcePayload = {
   category: ResourceCategory;
   description?: string;
   isDigitalHumanBackground?: boolean;
+};
+
+export type BatchImageResourceDuplicate = {
+  fileName: string;
+  reason: string;
+};
+
+export type BatchImageResourceResponse = {
+  created: ResourceRecord[];
+  duplicates: BatchImageResourceDuplicate[];
 };
 
 export type BulkImageResourceDeleteFailure = {
@@ -86,6 +104,9 @@ const buildFormData = (payload: ResourcePayload) => {
   }
   if (payload.objectSize != null) {
     formData.append('objectSize', String(payload.objectSize));
+  }
+  if (payload.contentHash) {
+    formData.append('contentHash', payload.contentHash);
   }
   if (payload.isDigitalHumanBackground != null) {
     formData.append('isDigitalHumanBackground', String(payload.isDigitalHumanBackground));
@@ -130,7 +151,7 @@ export const batchCreateImageResources = async (payload: BatchImageResourcePaylo
   payload.files.forEach((file) => {
     formData.append('files', file);
   });
-  const response = await httpClient.post<ResourceRecord[]>('/resources/images/bulk/', formData);
+  const response = await httpClient.post<BatchImageResourceResponse>('/resources/images/bulk/', formData);
   return response.data;
 };
 
@@ -210,14 +231,32 @@ export const fetchResourceUploadConfig = async () => {
   return response.data;
 };
 
-export const presignResourceUpload = async (params: { resourceType: ResourceType; filename: string; contentType: string; fileSize: number }) => {
+export const presignResourceUpload = async (params: { resourceType: ResourceType; filename: string; contentType: string; fileSize: number; contentHash?: string }) => {
   const response = await httpClient.post<VideoPresignResponse>('/resources/presign/', {
     resourceType: params.resourceType,
     filename: params.filename,
     contentType: params.contentType,
     fileSize: params.fileSize,
+    contentHash: params.contentHash,
   });
   return response.data;
+};
+
+export const isDuplicateImageError = (error: unknown) => axios.isAxiosError(error) && error.response?.status === 409;
+
+export const getDuplicateImageLocation = (error: unknown): DuplicateImageLocation | null => {
+  if (!isDuplicateImageError(error) || !axios.isAxiosError(error)) {
+    return null;
+  }
+  const existingResource = error.response?.data?.data?.existingResource;
+  if (
+    typeof existingResource?.id !== 'number'
+    || !['horizontal', 'vertical', 'uncategorized'].includes(existingResource.category)
+    || typeof existingResource.isDigitalHumanBackground !== 'boolean'
+  ) {
+    return null;
+  }
+  return existingResource as DuplicateImageLocation;
 };
 
 export const presignVideoUpload = async (params: { filename: string; contentType: string; fileSize: number }) => {

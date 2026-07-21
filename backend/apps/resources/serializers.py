@@ -3,7 +3,7 @@
 from decimal import Decimal
 from pathlib import Path
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from rest_framework import serializers
 
 from apps.tenants.services import get_request_tenant
@@ -31,6 +31,12 @@ from .services.minio_client import (
     get_minio_settings,
     validate_tenant_object_key,
 )
+from .services.image_hashes import (
+    DuplicateImageError,
+    calculate_sha256,
+    find_duplicate_image,
+    normalize_sha256,
+)
 
 
 def build_absolute_file_url(request, file_field) -> str:
@@ -52,6 +58,7 @@ class ResourceSerializer(serializers.ModelSerializer):
     storageBackend = serializers.CharField(source='storage_backend', required=False, allow_blank=True, default='')
     objectKey = serializers.CharField(source='object_key', required=False, allow_blank=True, default='')
     objectSize = serializers.IntegerField(source='object_size', required=False, allow_null=True, min_value=0)
+    contentHash = serializers.CharField(source='content_hash', required=False, allow_blank=True)
     isDigitalHumanBackground = serializers.BooleanField(source='is_digital_human_background', required=False, default=False)
     clearFile = serializers.BooleanField(write_only=True, required=False, default=False)
 
@@ -70,6 +77,7 @@ class ResourceSerializer(serializers.ModelSerializer):
             'storageBackend',
             'objectKey',
             'objectSize',
+            'contentHash',
             'isDigitalHumanBackground',
             'fileUrl',
             'fileName',
@@ -132,6 +140,31 @@ class ResourceSerializer(serializers.ModelSerializer):
             if not attrs.get('storage_backend'):
                 active_backend = get_minio_settings().storage_backend
                 attrs['storage_backend'] = active_backend if active_backend == 'r2' else ''
+        if resource_type == Resource.TYPE_IMAGE:
+            uploaded_file = attrs.get('file')
+            if uploaded_file:
+                attrs['content_hash'] = calculate_sha256(uploaded_file)
+            elif object_key:
+                try:
+                    attrs['content_hash'] = normalize_sha256(attrs.get('content_hash'))
+                except ValueError as exc:
+                    raise serializers.ValidationError({'contentHash': str(exc)}) from exc
+            elif self.instance is None:
+                attrs['content_hash'] = ''
+            else:
+                attrs.pop('content_hash', None)
+
+            content_hash = attrs.get('content_hash')
+            if content_hash:
+                duplicate = find_duplicate_image(
+                    tenant=tenant,
+                    content_hash=content_hash,
+                    exclude_id=self.instance.id if self.instance else None,
+                )
+                if duplicate is not None:
+                    if object_key and not Resource.objects.filter(tenant=tenant, object_key=object_key).exists():
+                        delete_object(object_key, backend=attrs.get('storage_backend', ''))
+                    raise DuplicateImageError(duplicate)
         if resource_type == Resource.TYPE_VIDEO:
             minio_settings = get_minio_settings()
             submitted_cloud_url = (attrs.get('cloud_url') or '').strip()
@@ -163,7 +196,23 @@ class ResourceSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('_clear_file', None)
-        return super().create(validated_data)
+        instance = Resource(**validated_data)
+        try:
+            with transaction.atomic():
+                instance.save()
+        except IntegrityError as exc:
+            if instance.file:
+                instance.file.delete(save=False)
+            if instance.object_key:
+                delete_object(instance.object_key, backend=instance.storage_backend)
+            duplicate = find_duplicate_image(
+                tenant=instance.tenant,
+                content_hash=instance.content_hash,
+            )
+            if duplicate is None:
+                raise
+            raise DuplicateImageError(duplicate) from exc
+        return instance
 
     def update(self, instance: Resource, validated_data):
         clear_file = validated_data.pop('_clear_file', False)
@@ -174,6 +223,7 @@ class ResourceSerializer(serializers.ModelSerializer):
             if instance.file:
                 instance.file.delete(save=False)
             validated_data['file'] = None
+            validated_data['content_hash'] = ''
         return super().update(instance, validated_data)
 
 

@@ -20,6 +20,7 @@ This directory contains guidelines for backend development. Fill in each file wi
 | [Quality Guidelines](./quality-guidelines.md) | Code standards, forbidden patterns | ✅ Filled — superuser guard, secret loading, response signing, Range download |
 | [Logging Guidelines](./logging-guidelines.md) | Structured logging, log levels | To fill |
 | [Image Resource Bulk Delete](./image-resource-bulk-delete.md) | Tenant-safe partial-success bulk delete contract | Filled |
+| [Image Resource Hash Deduplication](./image-resource-hash-deduplication.md) | Tenant-scoped SHA-256 upload and backfill contract | Filled |
 
 ---
 

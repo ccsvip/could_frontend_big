@@ -434,6 +434,30 @@ def delete_object(object_key: str, *, backend: str = '') -> bool:
         return False
 
 
+def iter_object_chunks(object_key: str, *, backend: str = '', chunk_size: int = 1024 * 1024):
+    if not object_key:
+        raise MinioConfigError('对象键不能为空')
+
+    settings = get_minio_settings()
+    if backend == 'r2':
+        _require_r2_complete(settings)
+        client = _build_r2_client(settings)
+        bucket_name = settings.r2_bucket_name
+    else:
+        _require_complete(settings)
+        client = _build_client(settings, endpoint=settings.internal_endpoint)
+        bucket_name = settings.bucket_name
+
+    response = client.get_object(bucket_name, object_key)
+    try:
+        for chunk in response.stream(chunk_size):
+            if chunk:
+                yield chunk
+    finally:
+        response.close()
+        response.release_conn()
+
+
 def get_video_upload_config(tenant: 'Tenant' = None) -> dict:
     settings = get_minio_settings()
     enabled = settings.is_active and bool(settings.endpoint) and bool(settings.bucket_name)

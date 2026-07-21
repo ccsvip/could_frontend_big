@@ -25,6 +25,9 @@ def custom_exception_handler(exc, context):
             'message': '',
             'code': response.status_code,
         }
+        response_data = getattr(exc, 'response_data', None)
+        if response_data is not None:
+            custom_response['data'] = response_data
 
         # 提取错误信息
         if isinstance(response.data, dict):
