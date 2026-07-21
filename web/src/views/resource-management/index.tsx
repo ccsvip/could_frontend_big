@@ -879,6 +879,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         setCategory(values.category);
         void loadData({
           page: 1,
+          pageSize,
           category: values.category,
           keyword,
           isDigitalHumanBackground: nextImageUsage === 'background',
@@ -934,6 +935,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
       setCategory(values.category);
       void loadData({
         page: 1,
+        pageSize,
         category: values.category,
         keyword,
         isDigitalHumanBackground: nextImageUsage === 'background',
