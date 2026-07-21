@@ -116,6 +116,7 @@ let activeVideoThumbnailTasks = 0;
 const VIDEO_THUMBNAIL_CONCURRENCY = 2;
 const VIDEO_THUMBNAIL_CAPTURE_TIME = 0.8;
 const VIDEO_THUMBNAIL_TIMEOUT_MS = 10000;
+const RESOURCE_PAGE_SIZE = 14;
 const resourceGridClassName = 'grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4';
 const imageUsageOptions = [
   { label: '数字人背景图', value: 'background' },
@@ -512,7 +513,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
   const [items, setItems] = useState<ResourceRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(RESOURCE_PAGE_SIZE);
   const [total, setTotal] = useState(0);
   const [category, setCategory] = useState<ResourceCategory | 'all'>('all');
   const [keyword, setKeyword] = useState('');
@@ -533,16 +534,19 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
     message: string;
   }>({ visible: false, percent: 0, loaded: 0, total: 0, status: 'active', message: '' });
   const uploadAbortRef = useRef<AbortController | null>(null);
+  const resourceGridRef = useRef<HTMLDivElement | null>(null);
+  const pageSizeRef = useRef(RESOURCE_PAGE_SIZE);
   const [form] = Form.useForm<ResourceFormValues>();
   const [batchForm] = Form.useForm<BatchUploadFormValues>();
   const batchFiles = Form.useWatch('files', batchForm) || [];
 
   const query = useMemo<ResourceListQuery>(() => ({
     page,
+    pageSize,
     category,
     keyword,
     isDigitalHumanBackground: resourceType === 'image' ? imageUsage === 'background' : undefined,
-  }), [page, category, keyword, resourceType, imageUsage]);
+  }), [page, pageSize, category, keyword, resourceType, imageUsage]);
 
   const loadData = useCallback(async (nextQuery: ResourceListQuery = query) => {
     setLoading(true);
@@ -560,6 +564,33 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
   useEffect(() => {
     void loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    const grid = resourceGridRef.current;
+    if (!grid) {
+      return;
+    }
+
+    const updatePageSize = () => {
+      const gridTemplateColumns = window.getComputedStyle(grid).gridTemplateColumns;
+      const columnCount = gridTemplateColumns === 'none'
+        ? 1
+        : Math.max(1, gridTemplateColumns.split(/\s+/).filter(Boolean).length);
+      const nextPageSize = Math.ceil(RESOURCE_PAGE_SIZE / columnCount) * columnCount;
+      if (pageSizeRef.current === nextPageSize) {
+        return;
+      }
+
+      pageSizeRef.current = nextPageSize;
+      setPage(1);
+      setPageSize(nextPageSize);
+    };
+
+    updatePageSize();
+    const observer = new ResizeObserver(updatePageSize);
+    observer.observe(grid);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     fetchResourceUploadConfig()
@@ -903,7 +934,7 @@ export const ResourceManagementPage = ({ resourceType }: ResourceManagementPageP
         </div>
       </Card>
 
-      <div className={resourceGridClassName}>
+      <div ref={resourceGridRef} className={resourceGridClassName}>
         {items.map((item) => {
           const sourceUrl = getResourceSourceUrl(item);
           const hasSource = hasResourceSource(item);
