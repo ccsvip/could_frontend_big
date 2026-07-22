@@ -199,6 +199,7 @@ export const KnowledgeBasePage = () => {
   const [indexingDocumentId, setIndexingDocumentId] = useState<number | null>(null);
   const [indexingBase, setIndexingBase] = useState(false);
   const [bulkDownloading, setBulkDownloading] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [uploadTasks, setUploadTasks] = useState<UploadTask[]>([]);
   const uploadTasksRef = useRef<UploadTask[]>([]);
 
@@ -291,6 +292,10 @@ export const KnowledgeBasePage = () => {
   useEffect(() => {
     void loadMediaAssets();
   }, [loadMediaAssets]);
+
+  useEffect(() => {
+    setSelectedRowKeys([]);
+  }, [selectedBase?.id]);
 
   useEffect(() => {
     if (selectedBase) {
@@ -462,6 +467,27 @@ export const KnowledgeBasePage = () => {
       setBulkDownloading(false);
     }
   }, [loadDocuments, selectedRowKeys]);
+
+  const handleBulkDelete = useCallback(async () => {
+    if (selectedRowKeys.length === 0) return;
+    setBulkDeleting(true);
+    try {
+      const ids = selectedRowKeys.map((key) => Number(key));
+      const results = await Promise.allSettled(ids.map((id) => deleteKnowledgeDocument(id)));
+      const failed = results.filter((item) => item.status === 'rejected').length;
+      const succeeded = results.length - failed;
+      if (succeeded > 0) {
+        message.success(failed > 0 ? `已删除 ${succeeded} 个文档，${failed} 个失败` : `已删除 ${succeeded} 个文档`);
+      } else {
+        message.error('批量删除失败');
+      }
+      setSelectedRowKeys([]);
+      void loadDocuments();
+      void loadBases();
+    } finally {
+      setBulkDeleting(false);
+    }
+  }, [loadBases, loadDocuments, selectedRowKeys]);
 
   const handleDeleteDocument = useCallback(async (item: KnowledgeDocumentRecord) => {
     setDeletingDocumentId(item.id);
@@ -1030,13 +1056,70 @@ export const KnowledgeBasePage = () => {
       </div>
 
       <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
+        {selectedRowKeys.length > 0 ? (
+          <div className="mb-4 flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <Space wrap size={12} align="center">
+              <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-brand-600 px-2 text-xs font-semibold text-white">
+                {selectedRowKeys.length}
+              </span>
+              <Typography.Text className="text-sm text-slate-600">
+                已选 <span className="font-semibold text-slate-900">{selectedRowKeys.length}</span> 个文档
+              </Typography.Text>
+              <Button type="link" size="small" className="h-auto px-0 text-slate-500" onClick={() => setSelectedRowKeys([])}>
+                取消选择
+              </Button>
+            </Space>
+            <Space wrap size={8}>
+              {canBulkDownload ? (
+                <Button
+                  type="primary"
+                  icon={<IconDownload size={16} />}
+                  loading={bulkDownloading}
+                  disabled={bulkDeleting}
+                  onClick={() => void handleBulkDownload()}
+                >
+                  批量下载
+                </Button>
+              ) : null}
+              {canDelete ? (
+                <Popconfirm
+                  title={`确认删除选中的 ${selectedRowKeys.length} 个文档吗？`}
+                  description="删除后无法恢复，关联索引也会一并清理。"
+                  okText="确认删除"
+                  cancelText="取消"
+                  okButtonProps={{ danger: true, loading: bulkDeleting }}
+                  disabled={bulkDownloading || bulkDeleting}
+                  onConfirm={() => void handleBulkDelete()}
+                >
+                  <Button
+                    danger
+                    icon={<IconTrash size={16} />}
+                    loading={bulkDeleting}
+                    disabled={bulkDownloading}
+                  >
+                    批量删除
+                  </Button>
+                </Popconfirm>
+              ) : null}
+            </Space>
+          </div>
+        ) : null}
         <Table
           rowKey="id"
           loading={documentsLoading}
           columns={documentColumns}
           dataSource={documents}
-          rowSelection={canBulkDownload ? { selectedRowKeys, onChange: setSelectedRowKeys } : undefined}
-          pagination={{ pageSize: 10 }}
+          rowSelection={
+            canBulkDownload || canDelete
+              ? {
+                  selectedRowKeys,
+                  onChange: setSelectedRowKeys,
+                  preserveSelectedRowKeys: true,
+                  columnWidth: 48,
+                }
+              : undefined
+          }
+          pagination={{ pageSize: 10, showSizeChanger: false, showTotal: (total) => `共 ${total} 条` }}
           locale={{ emptyText: '当前知识库暂无文档' }}
           scroll={{ x: 900 }}
         />
@@ -1590,15 +1673,6 @@ export const KnowledgeBasePage = () => {
               onClick={() => void handleIndexBase()}
             >
               重建全库索引
-            </Button>
-            <Button
-              type="primary"
-              icon={<IconDownload />}
-              disabled={!canBulkDownload || selectedRowKeys.length === 0}
-              loading={bulkDownloading}
-              onClick={() => void handleBulkDownload()}
-            >
-              批量下载 ({selectedRowKeys.length})
             </Button>
           </Space>
         </div>

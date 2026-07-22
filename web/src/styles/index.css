@@ -81,10 +81,28 @@ body {
 .ant-table-wrapper .ant-table-tbody > tr > td {
   font-size: 14px;
   color: #1e293b;
+  transition: background-color 0.15s ease;
 }
 
 .ant-table-wrapper .ant-table-tbody > tr.ant-table-row:hover > td {
+  background: #f8fafc !important;
+}
+
+/* 选中行：浅 brand 底 + 左侧强调线，避免 Antd 默认脏灰绿 */
+.ant-table-wrapper .ant-table-tbody > tr.ant-table-row-selected > td {
   background: #f0fdfa !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr.ant-table-row-selected > td:first-child {
+  box-shadow: inset 3px 0 0 #14b8a6;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr.ant-table-row-selected:hover > td {
+  background: #ccfbf1 !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr.ant-table-row-selected:hover > td:first-child {
+  box-shadow: inset 3px 0 0 #0d9488;
 }
 
 /* 全局按钮：高度、圆角、字重统一；主按钮阴影更克制 */
