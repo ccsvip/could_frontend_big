@@ -666,8 +666,6 @@ export const KnowledgeBasePage = () => {
       render: (_, item) => (
         <Space direction="vertical" size={2}>
           <Tag color={indexStatusColor[item.indexingStatus]}>{item.indexingStatusLabel || item.indexingStatus}</Tag>
-          {item.remoteParseStatus ? <Typography.Text className="text-fluid-xs text-slate-500">百炼解析：{item.remoteParseStatus}</Typography.Text> : null}
-          <Typography.Text className="text-xs text-slate-500"><span className="font-mono font-semibold">{item.chunkCount}</span> 块</Typography.Text>
           {item.indexingStatus === 'failed' && item.indexingError ? (
             <Typography.Text className="max-w-[180px] text-xs" type="danger" ellipsis={{ tooltip: item.indexingError }}>
               {item.indexingError}
