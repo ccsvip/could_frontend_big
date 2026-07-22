@@ -213,6 +213,15 @@ class KnowledgeRecallTestSerializer(serializers.Serializer):
     topN = serializers.IntegerField(required=False, min_value=1, max_value=20)
 
 
+class KnowledgeDocumentChunkUpdateSerializer(serializers.Serializer):
+    content = serializers.CharField(min_length=10, max_length=6000, trim_whitespace=False)
+    title = serializers.CharField(required=False, allow_blank=True, max_length=50)
+    isDisplayed = serializers.BooleanField(required=False)
+
+    def validate_title(self, value: str) -> str:
+        return str(value if value is not None else '')
+
+
 class KnowledgeMediaAssetSerializer(serializers.ModelSerializer):
     resourceId = serializers.IntegerField(source='resource_id', read_only=True)
     resourceName = serializers.CharField(source='resource_name', read_only=True)

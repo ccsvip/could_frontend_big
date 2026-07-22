@@ -23,6 +23,7 @@ import {
   Row,
   Button,
   Card,
+  Drawer,
   Empty,
   Form,
   Input,
@@ -54,17 +55,20 @@ import {
   deleteKnowledgeDocument,
   deleteKnowledgeMediaAsset,
   downloadKnowledgeDocument,
+  fetchDocumentChunks,
   fetchKnowledgeBaseDocuments,
   fetchKnowledgeBases,
   fetchKnowledgeMediaAssets,
   indexKnowledgeBase,
   indexKnowledgeDocument,
   recallTestKnowledgeBase,
+  updateDocumentChunk,
   updateKnowledgeBase,
   updateKnowledgeMediaAsset,
   uploadKnowledgeBaseDocument,
   type KnowledgeBaseListQuery,
   type KnowledgeBaseRecord,
+  type KnowledgeDocumentChunkRecord,
   type KnowledgeDocumentListQuery,
   type KnowledgeDocumentRecord,
   type KnowledgeMediaAssetRecord,
@@ -107,6 +111,11 @@ type MediaAssetFormValues = {
   priority?: number;
 };
 
+type ChunkEditFormValues = {
+  title?: string;
+  content: string;
+};
+
 type RecallHistoryItem = {
   id: string;
   query: string;
@@ -142,17 +151,22 @@ const defaultIndexConfig = {
 };
 
 const recallModeText: Record<string, string> = {
+  // 托管 RAG 对用户展示为「向量召回」，不暴露供应商文案
+  bailian: '向量召回',
   vector: '向量召回',
   keyword: '关键词召回',
   empty: '无命中',
   skipped: '未进入知识库检索',
+  disabled: '知识库检索未开通',
 };
 
 const recallModeColor: Record<string, string> = {
+  bailian: 'success',
   vector: 'success',
   keyword: 'processing',
   empty: 'default',
   skipped: 'warning',
+  disabled: 'error',
 };
 
 const skipReasonText: Record<string, string> = {
@@ -225,6 +239,17 @@ export const KnowledgeBasePage = () => {
   const [mediaAssetSaving, setMediaAssetSaving] = useState(false);
   const [deletingMediaAssetId, setDeletingMediaAssetId] = useState<number | null>(null);
   const [mediaAssetForm] = Form.useForm<MediaAssetFormValues>();
+
+  const [chunkDrawerOpen, setChunkDrawerOpen] = useState(false);
+  const [chunkDocument, setChunkDocument] = useState<KnowledgeDocumentRecord | null>(null);
+  const [chunks, setChunks] = useState<KnowledgeDocumentChunkRecord[]>([]);
+  const [chunksLoading, setChunksLoading] = useState(false);
+  const [chunkPage, setChunkPage] = useState(1);
+  const [chunkTotal, setChunkTotal] = useState(0);
+  const [editingChunk, setEditingChunk] = useState<KnowledgeDocumentChunkRecord | null>(null);
+  const [chunkEditOpen, setChunkEditOpen] = useState(false);
+  const [chunkSaving, setChunkSaving] = useState(false);
+  const [chunkForm] = Form.useForm<ChunkEditFormValues>();
 
   useEffect(() => {
     uploadTasksRef.current = uploadTasks;
@@ -543,6 +568,80 @@ export const KnowledgeBasePage = () => {
     }
   }, [loadBases, loadDocuments, selectedBase]);
 
+  const loadDocumentChunks = useCallback(async (documentId: number, page = 1) => {
+    setChunksLoading(true);
+    try {
+      const response = await fetchDocumentChunks(documentId, { page, pageSize: PAGE_SIZE });
+      setChunks(response.results);
+      setChunkTotal(response.count);
+      setChunkPage(response.page || page);
+    } catch {
+      setChunks([]);
+      setChunkTotal(0);
+    } finally {
+      setChunksLoading(false);
+    }
+  }, []);
+
+  const openChunkDrawer = useCallback((item: KnowledgeDocumentRecord) => {
+    if (item.indexingStatus !== 'ready') {
+      message.warning('文档尚未索引就绪，暂不可查看切片');
+      return;
+    }
+    setChunkDocument(item);
+    setChunkDrawerOpen(true);
+    setChunkPage(1);
+    void loadDocumentChunks(item.id, 1);
+  }, [loadDocumentChunks]);
+
+  const closeChunkDrawer = useCallback(() => {
+    setChunkDrawerOpen(false);
+    setChunkDocument(null);
+    setChunks([]);
+    setChunkTotal(0);
+    setChunkPage(1);
+    setChunkEditOpen(false);
+    setEditingChunk(null);
+    chunkForm.resetFields();
+  }, [chunkForm]);
+
+  const openEditChunk = useCallback((chunk: KnowledgeDocumentChunkRecord) => {
+    setEditingChunk(chunk);
+    chunkForm.setFieldsValue({
+      title: chunk.title || '',
+      content: chunk.content || '',
+    });
+    setChunkEditOpen(true);
+  }, [chunkForm]);
+
+  const handleSaveChunk = useCallback(async () => {
+    if (!chunkDocument || !editingChunk) return;
+    try {
+      const values = await chunkForm.validateFields();
+      const content = String(values.content || '');
+      if (content.trim().length < 10) {
+        message.error('切片正文至少 10 个字符');
+        return;
+      }
+      if (content.length > 6000) {
+        message.error('切片正文最多 6000 个字符');
+        return;
+      }
+      setChunkSaving(true);
+      await updateDocumentChunk(chunkDocument.id, editingChunk.chunkId, {
+        content,
+        title: values.title ?? '',
+      });
+      message.success('切片已更新');
+      setChunkEditOpen(false);
+      setEditingChunk(null);
+      chunkForm.resetFields();
+      void loadDocumentChunks(chunkDocument.id, chunkPage);
+    } finally {
+      setChunkSaving(false);
+    }
+  }, [chunkDocument, chunkForm, chunkPage, editingChunk, loadDocumentChunks]);
+
   const openBindMediaModal = useCallback(async () => {
     setBindMediaOpen(true);
     setSelectedResourceKeys([]);
@@ -630,7 +729,8 @@ export const KnowledgeBasePage = () => {
         query: recallQuery.trim(),
         topN: recallTopN,
       });
-      const modeLabel = recallModeText[result.mode] || '无命中';
+      const modeLabel = recallModeText[result.mode]
+        || (result.chunks.length > 0 ? result.mode || '已召回' : '无命中');
       setRecallChunks(result.chunks);
       setRecallMediaAssets(result.mediaAssets || []);
       setRecallMode(modeLabel);
@@ -710,10 +810,18 @@ export const KnowledgeBasePage = () => {
     {
       title: '操作',
       key: 'actions',
-      width: 240,
+      width: 300,
       align: 'right',
       render: (_, item) => (
         <div className="flex items-center justify-end gap-3.5">
+          <Button
+            type="link"
+            className="p-0 h-auto text-brand-600 hover:text-brand-700 font-semibold"
+            disabled={item.indexingStatus !== 'ready'}
+            onClick={() => openChunkDrawer(item)}
+          >
+            查看切片
+          </Button>
           <Button
             type="link"
             className="p-0 h-auto text-brand-600 hover:text-brand-700 font-semibold"
@@ -764,6 +872,7 @@ export const KnowledgeBasePage = () => {
     handleIndexDocument,
     handleSingleDownload,
     indexingDocumentId,
+    openChunkDrawer,
   ]);
 
   const resourceColumns = useMemo<ColumnsType<ResourceRecord>>(() => [
@@ -1399,6 +1508,134 @@ export const KnowledgeBasePage = () => {
     </>
   );
 
+  const chunkModals = (
+    <>
+      <Drawer
+        title={
+          <div className="flex flex-col gap-0.5">
+            <span className="font-bold text-slate-800">查看切片</span>
+            <span className="text-xs font-normal text-slate-500">
+              {chunkDocument?.title || chunkDocument?.fileName || '文档'}
+              {chunkTotal > 0 ? ` · 共 ${chunkTotal} 条` : ''}
+            </span>
+          </div>
+        }
+        open={chunkDrawerOpen}
+        onClose={closeChunkDrawer}
+        width={640}
+        destroyOnClose
+        zIndex={1000}
+      >
+        <Spin spinning={chunksLoading}>
+          {chunks.length === 0 && !chunksLoading ? (
+            <Empty description="暂无切片，请确认文档已索引就绪" className="py-16" />
+          ) : (
+            <div className="space-y-3">
+              {chunks.map((chunk, index) => (
+                <div
+                  key={chunk.chunkId}
+                  className="rounded-xl border border-slate-200 bg-slate-50/60 p-3.5"
+                >
+                  <div className="mb-2 flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-xs font-mono text-slate-400">
+                        #{(chunkPage - 1) * PAGE_SIZE + index + 1}
+                      </div>
+                      {chunk.title ? (
+                        <div className="mt-0.5 truncate text-sm font-semibold text-slate-800">
+                          {chunk.title}
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="font-mono text-[11px] text-slate-400">
+                        {chunk.content.length} 字
+                      </span>
+                      {canUpload ? (
+                        <Button
+                          type="link"
+                          size="small"
+                          className="h-auto p-0 font-semibold text-brand-600"
+                          onClick={() => openEditChunk(chunk)}
+                        >
+                          编辑
+                        </Button>
+                      ) : null}
+                    </div>
+                  </div>
+                  <Typography.Paragraph
+                    className="mb-0 whitespace-pre-wrap text-[13px] leading-relaxed text-slate-700"
+                    ellipsis={{ rows: 6, expandable: true, symbol: '展开' }}
+                  >
+                    {chunk.content}
+                  </Typography.Paragraph>
+                </div>
+              ))}
+            </div>
+          )}
+        </Spin>
+        {chunkTotal > PAGE_SIZE ? (
+          <div className="mt-4 flex justify-end border-t border-slate-100 pt-4">
+            <Pagination
+              size="small"
+              current={chunkPage}
+              total={chunkTotal}
+              pageSize={PAGE_SIZE}
+              showSizeChanger={false}
+              onChange={(page) => {
+                if (!chunkDocument) return;
+                setChunkPage(page);
+                void loadDocumentChunks(chunkDocument.id, page);
+              }}
+            />
+          </div>
+        ) : null}
+      </Drawer>
+
+      <Modal
+        forceRender
+        title={<span className="font-bold text-slate-800">编辑切片</span>}
+        open={chunkEditOpen}
+        width={640}
+        confirmLoading={chunkSaving}
+        onOk={() => void handleSaveChunk()}
+        onCancel={() => {
+          setChunkEditOpen(false);
+          setEditingChunk(null);
+          chunkForm.resetFields();
+        }}
+        okText="保存"
+        cancelText="取消"
+        destroyOnClose
+        // Drawer 默认 zIndex=1000；Modal 同级会被抽屉遮罩盖住，必须更高
+        zIndex={1100}
+        getContainer={() => document.body}
+      >
+        <Form form={chunkForm} layout="vertical" className="mt-4">
+          <Form.Item
+            name="title"
+            label={<span className="text-[13px] text-slate-600">标题</span>}
+            rules={[{ max: 50, message: '标题最多 50 个字符' }]}
+          >
+            <Input maxLength={50} placeholder="可选，最多 50 字" className="rounded-md" allowClear />
+          </Form.Item>
+          <Form.Item
+            name="content"
+            label={<span className="text-[13px] text-slate-600">正文</span>}
+            rules={[
+              { required: true, message: '请输入切片正文' },
+              { min: 10, message: '正文至少 10 个字符' },
+              { max: 6000, message: '正文最多 6000 个字符' },
+            ]}
+            extra={<span className="text-[11px]">修改后立即参与检索，不会改动源文件。</span>}
+          >
+            <Input.TextArea rows={12} maxLength={6000} showCount className="rounded-md font-mono text-[13px]" />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
+  );
+
   const recallTestTab = (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <Card variant="borderless" className="rounded-xl border border-slate-200/70 shadow-card">
@@ -1705,6 +1942,7 @@ export const KnowledgeBasePage = () => {
         />
       </div>
       {mediaAssetModals}
+      {chunkModals}
       {editBaseModal}
       {createBaseModal}
     </Space>

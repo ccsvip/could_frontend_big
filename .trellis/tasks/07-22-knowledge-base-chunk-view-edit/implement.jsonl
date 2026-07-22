@@ -1,0 +1,8 @@
+{"file": ".trellis/spec/backend/aliyun-bailian-managed-rag.md", "reason": "Managed RAG contract: remote truth source, tenant isolation, no local chunk path on active RAG"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend package guidelines index for implementer context"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend package guidelines index for implementer context"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "UI patterns for Drawer/Modal/Table consistency"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "API type and camelCase response conventions"}
+{"file": ".trellis/tasks/07-22-knowledge-base-chunk-view-edit/prd.md", "reason": "Requirements and acceptance criteria"}
+{"file": ".trellis/tasks/07-22-knowledge-base-chunk-view-edit/design.md", "reason": "API, bailian mapping, UI design"}
+{"file": ".trellis/tasks/07-22-knowledge-base-chunk-view-edit/implement.md", "reason": "Ordered implementation checklist"}

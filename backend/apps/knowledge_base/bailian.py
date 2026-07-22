@@ -263,3 +263,83 @@ def delete_index(index_id: str) -> None:
     except Exception as exc:
         if not _is_not_found_error(exc):
             raise
+
+
+def _metadata_dict(raw_metadata) -> dict:
+    if isinstance(raw_metadata, str):
+        try:
+            raw_metadata = json.loads(raw_metadata)
+        except (TypeError, ValueError):
+            return {}
+    return dict(raw_metadata) if isinstance(raw_metadata, dict) else {}
+
+
+def _as_bool(value, default: bool = True) -> bool:
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    text = str(value).strip().lower()
+    if text in {'1', 'true', 'yes', 'y', 'on'}:
+        return True
+    if text in {'0', 'false', 'no', 'n', 'off'}:
+        return False
+    return default
+
+
+def list_chunks(*, index_id: str, file_id: str, page_num: int = 1, page_size: int = 10) -> dict:
+    client, config = _client()
+    request = bailian_models.ListChunksRequest(
+        index_id=index_id,
+        file_id=file_id,
+        page_num=max(1, int(page_num or 1)),
+        page_size=max(1, min(int(page_size or 10), 100)),
+    )
+    data = _data(client.list_chunks(config.workspace_id, request))
+    nodes = getattr(data, 'nodes', None) or []
+    results = []
+    for node in nodes:
+        metadata = _metadata_dict(getattr(node, 'metadata', None))
+        chunk_id = str(metadata.get('_id') or '').strip()
+        if not chunk_id:
+            continue
+        text = str(getattr(node, 'text', '') or '').strip()
+        if not text:
+            text = str(metadata.get('content') or '').strip()
+        title = str(metadata.get('title') or metadata.get('hier_title') or '').strip()
+        results.append(
+            {
+                'chunk_id': chunk_id,
+                'title': title,
+                'content': text,
+                'is_displayed': _as_bool(metadata.get('is_displayed_chunk_content'), True),
+            }
+        )
+    total = getattr(data, 'total', None)
+    try:
+        total_count = int(total) if total is not None else len(results)
+    except (TypeError, ValueError):
+        total_count = len(results)
+    return {'total': total_count, 'nodes': results}
+
+
+def update_chunk(
+    *,
+    index_id: str,
+    file_id: str,
+    chunk_id: str,
+    content: str,
+    title: str | None = None,
+    is_displayed: bool = True,
+) -> None:
+    client, config = _client()
+    request = bailian_models.UpdateChunkRequest(
+        pipeline_id=index_id,
+        data_id=file_id,
+        chunk_id=chunk_id,
+        content=content,
+        is_displayed_chunk_content=bool(is_displayed),
+    )
+    if title is not None:
+        request.title = title
+    _data(client.update_chunk(config.workspace_id, request))

@@ -95,6 +95,25 @@ export type KnowledgeRecallChunk = {
   knowledgeBaseName?: string;
 };
 
+export type KnowledgeDocumentChunkRecord = {
+  chunkId: string;
+  title: string;
+  content: string;
+  isDisplayed: boolean;
+};
+
+export type KnowledgeDocumentChunkListResponse = {
+  count: number;
+  page: number;
+  pageSize: number;
+  results: KnowledgeDocumentChunkRecord[];
+};
+
+export type KnowledgeDocumentChunkListQuery = {
+  page?: number;
+  pageSize?: number;
+};
+
 export type KnowledgeMediaAssetRecord = {
   id: number;
   resourceId: number | null;
@@ -413,6 +432,28 @@ export const indexKnowledgeBase = async (knowledgeBaseId: number) => {
 
 export const indexKnowledgeDocument = async (documentId: number) => {
   const response = await httpClient.post<{ documentId: number; queued: boolean }>(`/knowledge-base/${documentId}/index/`);
+  return response.data;
+};
+
+export const fetchDocumentChunks = async (documentId: number, query?: KnowledgeDocumentChunkListQuery) => {
+  const response = await httpClient.get<KnowledgeDocumentChunkListResponse>(`/knowledge-base/${documentId}/chunks/`, {
+    params: {
+      page: query?.page,
+      pageSize: query?.pageSize,
+    },
+  });
+  return response.data;
+};
+
+export const updateDocumentChunk = async (
+  documentId: number,
+  chunkId: string,
+  payload: { content: string; title?: string },
+) => {
+  const response = await httpClient.patch<KnowledgeDocumentChunkRecord>(
+    `/knowledge-base/${documentId}/chunks/${encodeURIComponent(chunkId)}/`,
+    payload,
+  );
   return response.data;
 };
 

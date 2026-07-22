@@ -30,6 +30,7 @@ from apps.tenants.mixins import TenantScopedQuerysetMixin
 from .models import KnowledgeBase, KnowledgeDocument, KnowledgeMediaAsset
 from .serializers import (
     KnowledgeBaseSerializer,
+    KnowledgeDocumentChunkUpdateSerializer,
     KnowledgeDocumentSerializer,
     KnowledgeMediaAssetCreateSerializer,
     KnowledgeMediaAssetSerializer,
@@ -114,6 +115,17 @@ def assert_managed_rag_available(tenant) -> None:
     config = BailianKnowledgeConfig.load()
     if not config.is_active or not config.is_configured:
         raise serializers.ValidationError('平台尚未完成百炼托管知识库配置')
+
+
+def resolve_document_chunk_remote(document: KnowledgeDocument) -> tuple[str, str]:
+    if document.index_status != KnowledgeDocument.IndexStatus.READY:
+        raise serializers.ValidationError('文档尚未索引就绪，暂不可查看或编辑切片')
+    knowledge_base = document.knowledge_base
+    index_id = str(getattr(knowledge_base, 'bailian_index_id', '') or '').strip() if knowledge_base else ''
+    file_id = str(document.bailian_file_id or '').strip()
+    if not index_id or not file_id:
+        raise serializers.ValidationError('文档尚未完成百炼同步，暂不可查看或编辑切片')
+    return index_id, file_id
 
 
 def enqueue_media_asset_index(asset: KnowledgeMediaAsset, *, force: bool = False) -> dict:
@@ -412,6 +424,8 @@ class KnowledgeDocumentViewSet(
         'download': [CanDownloadKnowledgeBase],
         'bulk_download': [CanBulkDownloadKnowledgeBase],
         'index': [CanUploadKnowledgeBase],
+        'chunks': [CanViewKnowledgeBase],
+        'chunk_detail': [CanUploadKnowledgeBase],
     }
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
@@ -563,3 +577,96 @@ class KnowledgeDocumentViewSet(
         result = enqueue_document_index(document, force=True)
         self.clear_cached_business_responses()
         return Response(result)
+
+    @extend_schema(
+        tags=['KnowledgeBase'],
+        parameters=[
+            OpenApiParameter(name='page', description='页码，从 1 开始', required=False, type=int),
+            OpenApiParameter(name='pageSize', description='每页条数，最大 100', required=False, type=int),
+        ],
+        responses={200: OpenApiResponse(description='文档切片分页列表')},
+    )
+    @action(detail=True, methods=['get'], url_path='chunks')
+    def chunks(self, request, pk=None):
+        document = self.get_object()
+        assert_managed_rag_available(document.tenant)
+        index_id, file_id = resolve_document_chunk_remote(document)
+
+        try:
+            page = max(1, int(request.query_params.get('page') or 1))
+        except (TypeError, ValueError):
+            page = 1
+        try:
+            page_size = max(1, min(int(request.query_params.get('pageSize') or 10), 100))
+        except (TypeError, ValueError):
+            page_size = 10
+
+        try:
+            remote = bailian.list_chunks(
+                index_id=index_id,
+                file_id=file_id,
+                page_num=page,
+                page_size=page_size,
+            )
+        except bailian.BailianKnowledgeError as exc:
+            raise serializers.ValidationError(f'拉取文档切片失败：{exc}') from exc
+        except Exception as exc:
+            raise serializers.ValidationError(f'拉取文档切片失败：{exc}') from exc
+
+        results = [
+            {
+                'chunkId': item['chunk_id'],
+                'title': item['title'],
+                'content': item['content'],
+                'isDisplayed': item['is_displayed'],
+            }
+            for item in remote.get('nodes') or []
+        ]
+        return Response({
+            'count': int(remote.get('total') or 0),
+            'page': page,
+            'pageSize': page_size,
+            'results': results,
+        })
+
+    @extend_schema(
+        tags=['KnowledgeBase'],
+        request=KnowledgeDocumentChunkUpdateSerializer,
+        responses={200: OpenApiResponse(description='切片已更新')},
+    )
+    @action(detail=True, methods=['patch'], url_path=r'chunks/(?P<chunk_id>[^/]+)')
+    def chunk_detail(self, request, pk=None, chunk_id=None):
+        document = self.get_object()
+        assert_managed_rag_available(document.tenant)
+        index_id, file_id = resolve_document_chunk_remote(document)
+
+        chunk_id = str(chunk_id or '').strip()
+        if not chunk_id:
+            raise serializers.ValidationError('切片 ID 无效')
+
+        serializer = KnowledgeDocumentChunkUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        content = serializer.validated_data['content']
+        title = serializer.validated_data.get('title')
+        is_displayed = serializer.validated_data.get('isDisplayed', True)
+
+        try:
+            bailian.update_chunk(
+                index_id=index_id,
+                file_id=file_id,
+                chunk_id=chunk_id,
+                content=content,
+                title=title,
+                is_displayed=is_displayed,
+            )
+        except bailian.BailianKnowledgeError as exc:
+            raise serializers.ValidationError(f'更新文档切片失败：{exc}') from exc
+        except Exception as exc:
+            raise serializers.ValidationError(f'更新文档切片失败：{exc}') from exc
+
+        return Response({
+            'chunkId': chunk_id,
+            'title': '' if title is None else title,
+            'content': content,
+            'isDisplayed': is_displayed,
+        })
