@@ -22,6 +22,8 @@ The frontend consumer is `bulkDeleteImageResources(ids: number[])` in `web/src/a
 - Permission: `resources.images.delete` through `CanDeleteImageResources`.
 - Scope: resolve candidates only through `ImageResourceViewSet.get_queryset()` so resource type and tenant scope remain enforced.
 - Result: partial success; valid deletions are not rolled back when another ID fails.
+- Storage: `perform_destroy()` must snapshot `file.name` and `file.storage` before deleting the model, then delete the stored file after the database deletion succeeds. Django does not delete `FileField` content when a model is deleted.
+- Object storage: resources with `object_key` continue to call `delete_object(object_key, backend=storage_backend)` after database deletion.
 
 ```json
 {
@@ -39,6 +41,7 @@ The frontend consumer is `bulkDeleteImageResources(ids: number[])` in `web/src/a
 | Missing/empty `ids`, non-integer, non-positive, duplicate, or more than 100 IDs | `400` |
 | Missing delete permission | `403` |
 | Visible deletable image | ID added to `deletedIds` |
+| Visible image with a `FileField` upload | Database row and stored file are both deleted |
 | Referenced visible image | Item added to `failures` with the reference reason |
 | Missing, other-tenant, or non-image ID | Failure with empty `name` and `图片不存在或无权访问` |
 
@@ -55,6 +58,7 @@ The frontend consumer is `bulkDeleteImageResources(ids: number[])` in `web/src/a
 - Assert requests without delete permission return `403`.
 - Assert duplicate IDs return `400`.
 - Prime the resources business cache before deletion and assert the refreshed list reflects deletions.
+- Create a real file under a temporary `MEDIA_ROOT`, call the bulk delete API, and assert both `Resource.objects.filter(id=...).exists()` and `Path(file_path).exists()` are false.
 
 ## 7. Wrong vs Correct
 
@@ -76,3 +80,19 @@ for resource_id in ids:
 ```
 
 The correct path preserves tenant isolation, image-only scope, reference protection, storage cleanup, and cache invalidation.
+
+Wrong:
+
+```python
+super().perform_destroy(instance)  # FileField content remains on storage.
+```
+
+Correct:
+
+```python
+file_name = instance.file.name if instance.file else ''
+file_storage = instance.file.storage if file_name else None
+super().perform_destroy(instance)
+if file_name and file_storage is not None:
+    file_storage.delete(file_name)
+```

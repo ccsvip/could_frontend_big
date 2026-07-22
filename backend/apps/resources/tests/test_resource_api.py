@@ -1,4 +1,6 @@
 import hashlib
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -361,6 +363,31 @@ class ResourceApiTests(TenantTestMixin, APITestCase):
             ['duplicate.png', 'new-copy.png'],
         )
         self.assertEqual(Resource.objects.filter(tenant=self.tenant, resource_type=Resource.TYPE_IMAGE).count(), 2)
+
+    def test_bulk_delete_image_resources_removes_uploaded_file(self):
+        self.grant_permissions('resources.images.delete')
+
+        with TemporaryDirectory() as media_root, self.settings(MEDIA_ROOT=media_root):
+            resource = Resource.objects.create(
+                name='uploaded image',
+                resource_type=Resource.TYPE_IMAGE,
+                category=Resource.CATEGORY_HORIZONTAL,
+                file=SimpleUploadedFile('uploaded.png', b'uploaded-image-content', content_type='image/png'),
+                tenant=self.tenant,
+            )
+            uploaded_file_path = Path(resource.file.path)
+            self.assertTrue(uploaded_file_path.exists())
+
+            response = self.client.delete(
+                '/api/v1/resources/images/bulk/',
+                {'ids': [resource.id]},
+                format='json',
+            )
+
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(response.data, {'deletedIds': [resource.id], 'failures': []})
+            self.assertFalse(Resource.objects.filter(id=resource.id).exists())
+            self.assertFalse(uploaded_file_path.exists())
 
     def test_bulk_delete_image_resources_supports_partial_success_and_tenant_isolation(self):
         self.grant_permissions('resources.images.view', 'resources.images.delete')

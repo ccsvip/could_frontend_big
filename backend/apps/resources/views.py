@@ -186,9 +186,13 @@ class BaseResourceViewSet(CachedBusinessResponseMixin, TenantScopedQuerysetMixin
             from rest_framework.exceptions import ValidationError
 
             raise ValidationError({'message': f'该资源被 {reference_count} 个标注回复引用，不能删除'})
+        file_name = instance.file.name if instance.file else ''
+        file_storage = instance.file.storage if file_name else None
         object_key = (instance.object_key or '').strip()
         storage_backend = instance.storage_backend
         super().perform_destroy(instance)
+        if file_name and file_storage is not None:
+            file_storage.delete(file_name)
         if object_key:
             delete_object(object_key, backend=storage_backend)
 
