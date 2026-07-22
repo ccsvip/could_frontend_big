@@ -76,6 +76,7 @@ import {
   type ResourceRecord,
 } from '../../api/modules/resources';
 import { useAuthStore } from '../../store/auth';
+import { StatusTag } from '../../components/status-tag';
 
 type UploadTaskStatus = 'pending' | 'uploading' | 'success' | 'error';
 
@@ -1641,9 +1642,7 @@ export const KnowledgeBasePage = () => {
             <div>
               <Typography.Title level={3} className="mb-0 text-slate-900">{selectedBase.name}</Typography.Title>
             </div>
-            <Tag color={selectedBase.isActive ? 'success' : 'default'} className="ml-2">
-              {selectedBase.isActive ? '正常工作' : '已停用'}
-            </Tag>
+            <StatusTag type={selectedBase.isActive ? 'active' : 'inactive'} label={selectedBase.isActive ? '正常工作' : '已停用'} />
             {canUpload && <Button type="text" icon={<IconPencil />} onClick={() => openEditBase(selectedBase)} />}
             {canDelete && (
               <Popconfirm

@@ -12,16 +12,17 @@ This directory contains guidelines for backend development. Fill in each file wi
 
 ## Guidelines Index
 
-| Guide | Description | Status |
-|-------|-------------|--------|
-| [Directory Structure](./directory-structure.md) | Module organization and file layout | To fill |
-| [Database Guidelines](./database-guidelines.md) | ORM patterns, queries, migrations | ✅ Filled — immutable model + append-only event patterns |
-| [Error Handling](./error-handling.md) | Error types, handling strategies | To fill |
-| [Quality Guidelines](./quality-guidelines.md) | Code standards, forbidden patterns | ✅ Filled — superuser guard, secret loading, response signing, Range download |
-| [Logging Guidelines](./logging-guidelines.md) | Structured logging, log levels | To fill |
-| [Image Resource Bulk Delete](./image-resource-bulk-delete.md) | Tenant-safe partial-success bulk delete contract | Filled |
-| [Image Resource Hash Deduplication](./image-resource-hash-deduplication.md) | Tenant-scoped SHA-256 upload and backfill contract | Filled |
-| [Aliyun Bailian Managed RAG](./aliyun-bailian-managed-rag.md) | Managed document parsing, indexing, retrieval, credentials, and tenant isolation | Filled |
+| [Directory Structure](./directory-structure.md) | Module organization and file layout | ✅ Filled |
+| [Error Handling](./error-handling.md) | Error types, handling strategies | ✅ Filled |
+| [Database Guidelines](./database-guidelines.md) | ORM patterns, queries, migrations | ✅ Filled |
+| [Logging Guidelines](./logging-guidelines.md) | Structured logging, log levels | ✅ Filled |
+| [Quality Guidelines](./quality-guidelines.md) | Code standards, forbidden patterns | ✅ Filled |
+| [API Design](./api-design.md) | REST URL conventions, ViewSet patterns, pagination | ✅ Filled |
+| [Security Guidelines](./security-guidelines.md) | Auth, authorization, tenant isolation, secrets | ✅ Filled |
+| [Testing Strategy](./testing-strategy.md) | Test framework, mock patterns, WS testing | ✅ Filled |
+| [Image Resource Bulk Delete](./image-resource-bulk-delete.md) | Tenant-safe partial-success bulk delete | Filled |
+| [Image Resource Hash Deduplication](./image-resource-hash-deduplication.md) | Tenant-scoped SHA-256 dedup | Filled |
+| [Aliyun Bailian Managed RAG](./aliyun-bailian-managed-rag.md) | Managed RAG: indexing, retrieval, credentials | Filled |
 
 ---
 

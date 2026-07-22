@@ -28,6 +28,7 @@ import {
   Typography,
   message,
 } from 'antd';
+import { StatusTag } from '../../components/status-tag';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import {
@@ -138,10 +139,6 @@ const resolveDeviceRuntimeDiagnostic = (device: DeviceRecord): DeviceRuntimeDiag
   };
 };
 
-const statusMap: Record<DeviceRecord['status'], { color: string; text: string }> = {
-  online: { color: 'success', text: '在线' },
-  offline: { color: 'default', text: '离线' },
-};
 
 const toSelectOptions = <T extends { id: number; name: string }>(items: T[]) =>
   items.map((item) => ({ label: item.name, value: item.id }));
@@ -788,11 +785,9 @@ export const DeviceManagementPage = () => {
             {
               title: '状态',
               key: 'status',
-              width: 80,
+              width: 90,
               render: (_: unknown, record: DeviceWakeWordRow) => (
-                <Tag color={statusMap[record.device.status].color}>
-                  {statusMap[record.device.status].text}
-                </Tag>
+                <StatusTag type={record.device.status === 'online' ? 'online' : 'offline'} />
               ),
             },
             {
@@ -1013,8 +1008,8 @@ export const DeviceManagementPage = () => {
                               </Typography.Text>
                             </div>
                             <div className="flex items-center gap-2">
-                              <Tag color={statusMap[selectedDevice.status].color}>{statusMap[selectedDevice.status].text}</Tag>
-                              <Tag color={selectedDevice.isEnabled ? 'success' : 'error'}>{selectedDevice.isEnabled ? '已授权' : '已停用'}</Tag>
+                              <StatusTag type={selectedDevice.status === 'online' ? 'online' : 'offline'} />
+                              <StatusTag type={selectedDevice.isEnabled ? 'active' : 'inactive'} label={selectedDevice.isEnabled ? '已授权' : '已停用'} />
                               {canUpdateDevice && (
                                 <button
                                   type="button"

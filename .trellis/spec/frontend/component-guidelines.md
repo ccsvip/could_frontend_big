@@ -1,59 +1,27 @@
 # Component Guidelines
 
-> How components are built in this project.
+> How components are built and styled in this project.
 
 ---
 
-## Overview
+## Component Standards
 
-<!--
-Document your project's component conventions here.
-
-Questions to answer:
-- What component patterns do you use?
-- How are props defined?
-- How do you handle composition?
-- What accessibility standards apply?
--->
-
-(To be filled by the team)
+- **Icon Library**: Exclusively use `@tabler/icons-react` with `Icon` prefix (e.g., `IconDatabase`, `IconEdit`, `IconPlus`). Do not import `@ant-design/icons` or `lucide-react`.
+- **Status Indicators**: Use `<StatusTag />` (`web/src/components/status-tag.tsx`) for all business status representations (`online`, `offline`, `active`, `inactive`, `bound`, `unbound`, `pending`). Avoid inline `<Tag color="...">` or custom color class strings.
+- **Fluid Typography**: Use `text-fluid-*` classes defined in `web/src/styles/index.css` (`text-fluid-xs` through `text-fluid-stat`). Never use hardcoded pixel text sizes like `text-[12px]` or `text-xs`.
 
 ---
 
-## Component Structure
+## Styling & Token Patterns
 
-<!-- Standard structure of a component file -->
-
-(To be filled by the team)
-
----
-
-## Props Conventions
-
-<!-- How props should be defined and typed -->
-
-(To be filled by the team)
-
----
-
-## Styling Patterns
-
-<!-- How styles are applied (CSS modules, styled-components, Tailwind, etc.) -->
-
-(To be filled by the team)
-
----
-
-## Accessibility
-
-<!-- A11y requirements and patterns -->
-
-(To be filled by the team)
+- **Color Tokens**: Use `brand-*` color palette (`text-brand-700`, `bg-brand-50`, `border-brand-200`) defined in `tailwind.config.ts`. Avoid hardcoded `#0f766e` literals or `teal-*` classes in components.
+- **No `!` Override**: Never use Tailwind `!` prefix (`!p-0`, `!bg-brand-600`) to force-override Ant Design defaults. Use scoped CSS classes in `web/src/styles/index.css` when needed.
+- **Pre-commit Guard**: Verified by `scripts/check-tailwind-tokens.js`. Net increase in `!` or `teal-*` classes will be blocked at commit time.
 
 ---
 
 ## Common Mistakes
 
-<!-- Component-related mistakes your team has made -->
-
-(To be filled by the team)
+- Manual inline status tags with mixed color classes across different pages.
+- Mixing font scale systems (e.g. raw `text-xs` alongside `text-fluid-base`).
+- Adding `!` prefix classes in TSX components to patch Ant Design styles.

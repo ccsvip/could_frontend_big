@@ -52,6 +52,7 @@ import {
 } from '../../api/modules/devices';
 import { fetchImageResources, fetchVideoResources, type ResourceRecord, type ResourceType } from '../../api/modules/resources';
 import { ChatMarkdown } from '../../components/chat-markdown';
+import { StatusTag } from '../../components/status-tag';
 import { normalizeMediaAssetUrl } from '../../api/client';
 import { useAuthStore } from '../../store/auth';
 import { useAgentAudio } from './use-agent-audio';
@@ -1504,8 +1505,8 @@ export const ApplicationManagementPage = () => {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
         <div style={{ minWidth: 0 }}>
-          <div className="text-xl font-bold text-slate-800 tracking-tight">智能体控制台</div>
-          <span className="text-sm text-slate-500">
+          <div className="text-fluid-xl font-bold text-slate-800 tracking-tight">智能体控制台</div>
+          <span className="text-fluid-sm text-slate-500">
             查看您已创建的智能体并进行配置，或通过下方的预设模板一键初始化新角色。
           </span>
         </div>
@@ -1545,33 +1546,33 @@ export const ApplicationManagementPage = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card variant="borderless" className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-slate-500 font-medium">智能体总数</span>
-            <span className="text-2xl font-bold font-mono leading-none text-slate-800">{applicationTotal}</span>
-            <span className="text-xs text-slate-400 mt-1">所有已注册的智能体</span>
+            <span className="text-fluid-xs text-slate-500 font-medium">智能体总数</span>
+            <span className="text-fluid-stat font-bold font-mono leading-none text-slate-800">{applicationTotal}</span>
+            <span className="text-fluid-xs text-slate-400 mt-1">所有已注册的智能体</span>
           </div>
         </Card>
         <Card variant="borderless" className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-slate-500 font-medium">正常运行中</span>
+            <span className="text-fluid-xs text-slate-500 font-medium">正常运行中</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold font-mono leading-none text-emerald-600">{applicationOverview.activeCount}</span>
-              <span className="text-xs text-slate-400">停用 {applicationOverview.inactiveCount}</span>
+              <span className="text-fluid-stat font-bold font-mono leading-none text-emerald-600">{applicationOverview.activeCount}</span>
+              <span className="text-fluid-xs text-slate-400">停用 {applicationOverview.inactiveCount}</span>
             </div>
-            <span className="text-xs text-slate-400 mt-1">可对外提供对话服务</span>
+            <span className="text-fluid-xs text-slate-400 mt-1">可对外提供对话服务</span>
           </div>
         </Card>
         <Card variant="borderless" className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-slate-500 font-medium">后端绑定数</span>
-            <span className="text-2xl font-bold font-mono leading-none text-brand-600">{applicationOverview.configuredModelCount}</span>
-            <span className="text-xs text-slate-400 mt-1">已绑定标准模型或第三方机器人</span>
+            <span className="text-fluid-xs text-slate-500 font-medium">后端绑定数</span>
+            <span className="text-fluid-stat font-bold font-mono leading-none text-brand-600">{applicationOverview.configuredModelCount}</span>
+            <span className="text-fluid-xs text-slate-400 mt-1">已绑定标准模型或第三方机器人</span>
           </div>
         </Card>
         <Card variant="borderless" className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-slate-500 font-medium">知识库引用数</span>
-            <span className="text-2xl font-bold font-mono leading-none text-blue-600">{applicationOverview.knowledgeReferenceCount}</span>
-            <span className="text-xs text-slate-400 mt-1">知识库关联引用次数</span>
+            <span className="text-fluid-xs text-slate-500 font-medium">知识库引用数</span>
+            <span className="text-fluid-stat font-bold font-mono leading-none text-blue-600">{applicationOverview.knowledgeReferenceCount}</span>
+            <span className="text-fluid-xs text-slate-400 mt-1">知识库关联引用次数</span>
           </div>
         </Card>
       </div>
@@ -1707,9 +1708,7 @@ export const ApplicationManagementPage = () => {
                             className="cursor-pointer"
                             size="small"
                           />
-                          <Tag color={app.isActive ? 'success' : 'default'} className="m-0">
-                            {app.isActive ? '服务中' : '已停用'}
-                          </Tag>
+                          <StatusTag type={app.isActive ? 'active' : 'inactive'} label={app.isActive ? '服务中' : '已停用'} />
                         </div>
                       </div>
 
@@ -2734,7 +2733,7 @@ export const ApplicationManagementPage = () => {
                     </span>
                     <span>•</span>
                     <span>修改于: {annotation.lastHitAt ? dayjs(annotation.lastHitAt).format('M月D日 HH:mm') : dayjs(annotation.updated_at).format('M月D日 HH:mm')}</span>
-                    {!annotation.isActive && <Tag color="default" className="m-0 py-0 px-1.5 text-[10px]">已停用</Tag>}
+                    {!annotation.isActive && <StatusTag type="inactive" label="已停用" />}
                   </div>
                 </div>
               </Card>

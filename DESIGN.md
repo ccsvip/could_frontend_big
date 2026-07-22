@@ -122,9 +122,10 @@ components:
 - **Corner Style:** 8px 圆角
 - **Focus:** 激活时边框高亮为 Teal，内阴影发光限制在極淡的 Teal 晕影。
 
-### Tables
-- **Container:** 卡片式包裹，圆角 12px，不带大立体投影。
-- **Hover Row:** 悬停行行高加深至 Teal-50 (#f0fdfa)，提供明确的目标锁定。
+### Status Tags
+- **Component:** `<StatusTag />` (`web/src/components/status-tag.tsx`)
+- **Tokens:** Uses `brand-*` semantic color pairs (`online`, `offline`, `active`, `inactive`, `bound`, `unbound`, `pending`) with a pulsing or static dot indicator.
+- **Typography:** Built-in `text-fluid-xs` responsive fluid typography.
 
 ## 6. Do's and Don'ts
 
