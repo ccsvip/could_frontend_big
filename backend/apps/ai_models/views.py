@@ -66,6 +66,7 @@ from .models import (
     ASRReplacementRule,
     AgentAnnotation,
     AgentApplication,
+    BailianKnowledgeConfig,
     ChatConversation,
     ChatMessage,
     EmbeddingModel,
@@ -87,6 +88,7 @@ from .models import (
     TTSProvider,
     TTSVoice,
 )
+from .credential_crypto import encrypt_credential
 from .realtime_asr import resolve_asr_device_connection
 from .services.annotations import find_matching_annotation
 from .services.reply_blocks import blocks_to_text, serialize_reply_blocks, text_to_blocks
@@ -1160,9 +1162,21 @@ def _knowledge_model_payload(model, model_type: str) -> dict:
 def _knowledge_settings_payload() -> dict:
     embedding = _get_embedding_model()
     rerank = _get_rerank_model()
+    bailian = BailianKnowledgeConfig.load()
     return {
         'embedding': _knowledge_model_payload(embedding, 'embedding'),
         'rerank': _knowledge_model_payload(rerank, 'rerank'),
+        'bailian': {
+            'accessKeyIdMasked': mask_knowledge_api_key(bailian.access_key_id),
+            'accessKeyIdConfigured': bool(bailian.access_key_id),
+            'accessKeySecretConfigured': bool(bailian.access_key_secret_encrypted),
+            'workspaceId': bailian.workspace_id,
+            'categoryId': bailian.category_id,
+            'endpoint': bailian.endpoint,
+            'isActive': bailian.is_active,
+            'isConfigured': bailian.is_configured,
+            'updated_at': bailian.updated_at,
+        },
     }
 
 
@@ -1192,6 +1206,18 @@ class PlatformKnowledgeModelSettingsView(APIView):
                     continue
                 setattr(rerank, field, value)
             rerank.save()
+
+        if 'bailian' in payload:
+            bailian = BailianKnowledgeConfig.load()
+            for field, value in payload['bailian'].items():
+                if field == 'access_key_id' and value == '':
+                    continue
+                if field == 'access_key_secret':
+                    if value:
+                        bailian.access_key_secret_encrypted = encrypt_credential(value)
+                    continue
+                setattr(bailian, field, value)
+            bailian.save()
 
         return Response(KnowledgeModelSettingsSerializer(_knowledge_settings_payload()).data)
 
@@ -1231,6 +1257,7 @@ class TenantKnowledgeModelAuthorizationView(APIView):
             },
             'embeddingModelId': settings.embedding_model_id,
             'rerankModelId': settings.rerank_model_id,
+            'managedRagEnabled': settings.managed_rag_enabled,
             'isActive': settings.is_active,
         }
 
@@ -1247,6 +1274,7 @@ class TenantKnowledgeModelAuthorizationView(APIView):
             defaults={
                 'embedding_model_id': serializer.validated_data.get('embeddingModelId'),
                 'rerank_model_id': serializer.validated_data.get('rerankModelId'),
+                'managed_rag_enabled': serializer.validated_data.get('managedRagEnabled', False),
                 'is_active': serializer.validated_data.get('isActive', True),
             },
         )

@@ -11,6 +11,7 @@ from xml.etree import ElementTree
 import httpx
 from django.utils import timezone
 
+from apps.knowledge_base import bailian
 from apps.knowledge_base.models import KnowledgeBase, KnowledgeDocument, KnowledgeDocumentChunk, KnowledgeMediaAsset
 from apps.resources.models import Resource
 from apps.ai_models.models import EmbeddingModel, RerankModel, TenantKnowledgeModelSettings
@@ -1100,94 +1101,100 @@ def retrieve_knowledge_chunks(
     else:
         docs = []
 
-    if not docs:
+    if not docs or tenant is None:
         return _serialize_recall_result(chunks=[], mode='empty', embedding_model=None, rerank_model=None, include_media=include_media)
 
-    embedding_model = _embedding_model_for_tenant(tenant)
-    if not embedding_model:
-        return _serialize_recall_result(
-            chunks=_retrieve_keyword_chunks(docs, query, top_n),
-            mode='keyword',
-            embedding_model=None,
-            rerank_model=None,
-            query=query,
-            tenant=tenant,
-            include_media=include_media,
-        )
+    authorized = TenantKnowledgeModelSettings.objects.filter(
+        tenant=tenant,
+        is_active=True,
+        managed_rag_enabled=True,
+    ).exists()
+    if not authorized:
+        return _serialize_recall_result(chunks=[], mode='disabled', embedding_model=None, rerank_model=None, include_media=include_media)
 
-    try:
-        with httpx.Client(timeout=30.0) as client:
-            for doc in docs:
-                build_document_index(doc)
+    ready_docs = [
+        doc for doc in docs
+        if doc.index_status == KnowledgeDocument.IndexStatus.READY
+        and doc.bailian_file_id
+        and doc.knowledge_base_id
+        and getattr(doc.knowledge_base, 'bailian_index_id', '')
+    ]
+    docs_by_base: dict[int, list[KnowledgeDocument]] = {}
+    for doc in ready_docs:
+        docs_by_base.setdefault(doc.knowledge_base_id, []).append(doc)
 
-            query_embedding = _embed_texts(client, embedding_model, [query])[0]
-            stored_chunks = list(
-                KnowledgeDocumentChunk.objects.filter(
-                    document__in=docs,
-                    embedding_model=embedding_model.model,
-                ).select_related('document', 'document__knowledge_base')
+    candidates: list[RetrievedChunk] = []
+    for base_docs in docs_by_base.values():
+        knowledge_base_item = base_docs[0].knowledge_base
+        docs_by_file_id = {str(doc.bailian_file_id): doc for doc in base_docs}
+        docs_by_name = {
+            value: doc
+            for doc in base_docs
+            for value in (str(doc.file_name or '').strip(), str(doc.title or '').strip())
+            if value
+        }
+        try:
+            nodes = bailian.retrieve(
+                index_id=knowledge_base_item.bailian_index_id,
+                query=query,
+                top_n=max(top_n, knowledge_base_item.retrieval_top_n),
+                min_score=knowledge_base_item.retrieval_min_score,
             )
-            scored_chunks = [
-                _retrieved_chunk_from_stored_chunk(
-                    chunk,
-                    _cosine_similarity(query_embedding, chunk.embedding or []),
-                )
-                for chunk in stored_chunks
-            ]
-            scored_chunks = [chunk for chunk in scored_chunks if _passes_vector_score_gate(chunk)]
-            scored_chunks.sort(key=lambda item: item.score, reverse=True)
-            candidates = scored_chunks[: max(top_n * 4, top_n)]
-            if not candidates:
-                return _serialize_recall_result(
-                    chunks=[],
-                    mode='vector',
-                    embedding_model=embedding_model,
-                    rerank_model=None,
-                    query=query,
-                    tenant=tenant,
-                    include_media=include_media,
-                )
+        except Exception as exc:
+            logger.warning(
+                'Bailian knowledge retrieval failed tenant_id=%s knowledge_base_id=%s error=%s',
+                tenant.id,
+                knowledge_base_item.id,
+                exc,
+            )
+            continue
 
-            rerank_model = _rerank_model_for_tenant(tenant)
-            if rerank_model:
-                try:
-                    candidates = _rerank_chunks(client, rerank_model, query, candidates, top_n)
-                except Exception as e:
-                    logger.warning('Failed to rerank knowledge chunks error=%s', e)
-            else:
-                candidates = candidates[:top_n]
+        for node_index, node in enumerate(nodes):
+            metadata = node.metadata or {}
+            remote_file_id = next(
+                (
+                    str(metadata.get(key) or '').strip()
+                    for key in ('file_id', 'fileId', 'document_id', 'documentId', 'doc_id', 'docId')
+                    if metadata.get(key)
+                ),
+                '',
+            )
+            document = docs_by_file_id.get(remote_file_id)
+            if document is None:
+                remote_name = next(
+                    (
+                        str(metadata.get(key) or '').strip()
+                        for key in ('file_name', 'fileName', 'title', 'document_name', 'documentName')
+                        if metadata.get(key)
+                    ),
+                    '',
+                )
+                document = docs_by_name.get(remote_name)
+            if document is None:
+                continue
+            candidates.append(
+                RetrievedChunk(
+                    document_id=document.id,
+                    doc_title=document.title or document.file_name,
+                    content=node.text,
+                    score=node.score,
+                    chunk_index=node_index,
+                    knowledge_base_id=knowledge_base_item.id,
+                    knowledge_base_name=knowledge_base_item.name,
+                    retrieval_min_score=knowledge_base_item.retrieval_min_score,
+                )
+            )
 
-        return _serialize_recall_result(
-            chunks=candidates[:top_n],
-            mode='vector',
-            embedding_model=embedding_model,
-            rerank_model=rerank_model,
-            query=query,
-            tenant=tenant,
-            include_media=include_media,
-        )
-    except EXPECTED_EXTERNAL_MODEL_TRANSPORT_ERRORS as e:
-        _log_expected_external_model_fallback('vector knowledge chunk retrieval', e)
-        return _serialize_recall_result(
-            chunks=_retrieve_keyword_chunks(docs, query, top_n),
-            mode='keyword',
-            embedding_model=embedding_model,
-            rerank_model=None,
-            query=query,
-            tenant=tenant,
-            include_media=include_media,
-        )
-    except Exception as e:
-        logger.warning('Error during vector knowledge base retrieval, fallback to keyword retrieval: %s', e, exc_info=True)
-        return _serialize_recall_result(
-            chunks=_retrieve_keyword_chunks(docs, query, top_n),
-            mode='keyword',
-            embedding_model=embedding_model,
-            rerank_model=None,
-            query=query,
-            tenant=tenant,
-            include_media=include_media,
-        )
+    candidates.sort(key=lambda item: item.score, reverse=True)
+    return _serialize_recall_result(
+        chunks=candidates[:top_n],
+        mode='bailian',
+        embedding_model=None,
+        rerank_model=None,
+        query=query,
+        tenant=tenant,
+        include_media=include_media,
+    )
 
 
 def retrieve_knowledge_context(
@@ -1199,84 +1206,17 @@ def retrieve_knowledge_context(
     knowledge_document_ids: list[int] | None = None,
     knowledge_base_ids: list[int] | None = None,
 ) -> str:
-    """
-    Retrieves matching document fragments from txt/md documents bound to the application.
-
-    Preferred path: DashScope embedding recall + DashScope rerank.
-    Fallback path: local keyword matching when the external model is not configured or fails.
-    """
     if not application or not query:
         return ''
-    if not _has_retrieval_intent(query):
-        return ''
-
-    docs = None
-    try:
-        if knowledge_document_ids is None and knowledge_base_ids is None:
-            docs = _bound_approved_text_documents(application)
-        else:
-            docs = _approved_text_documents_for_ids(
-                application,
-                knowledge_document_ids=knowledge_document_ids,
-                knowledge_base_ids=knowledge_base_ids,
-            )
-        if not docs:
-            return ''
-
-        embedding_model = _embedding_model_for_tenant(application.tenant)
-        if not embedding_model:
-            return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars, docs)
-
-        with httpx.Client(timeout=30.0) as client:
-            embedding_preparation_failed = False
-            for doc in docs:
-                result = build_document_index(doc)
-                if result.get('status') == KnowledgeDocument.IndexStatus.FAILED:
-                    embedding_preparation_failed = True
-                    logger.warning('Failed to prepare knowledge document embeddings id=%s error=%s', doc.id, result.get('error'))
-
-            if embedding_preparation_failed:
-                return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars, docs)
-
-            query_embedding = _embed_texts(client, embedding_model, [query])[0]
-            stored_chunks = list(
-                KnowledgeDocumentChunk.objects.filter(
-                    document__in=docs,
-                    embedding_model=embedding_model.model,
-                ).select_related('document', 'document__knowledge_base')
-            )
-            if not stored_chunks:
-                return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars, docs)
-
-            scored_chunks = [
-                    _retrieved_chunk_from_stored_chunk(
-                        chunk,
-                        _cosine_similarity(query_embedding, chunk.embedding or []),
-                    )
-                for chunk in stored_chunks
-            ]
-            scored_chunks = [chunk for chunk in scored_chunks if _passes_vector_score_gate(chunk)]
-            scored_chunks.sort(key=lambda item: item.score, reverse=True)
-            candidates = scored_chunks[: max(top_n * 4, top_n)]
-            if not candidates:
-                return ''
-
-            rerank_model = _rerank_model_for_tenant(application.tenant)
-            if rerank_model:
-                try:
-                    candidates = _rerank_chunks(client, rerank_model, query, candidates, top_n)
-                except Exception as e:
-                    logger.warning('Failed to rerank knowledge chunks application_id=%s error=%s', application.id, e)
-            else:
-                candidates = candidates[:top_n]
-
-        return _format_context(candidates[:top_n], max_chars)
-    except EXPECTED_EXTERNAL_MODEL_TRANSPORT_ERRORS as e:
-        _log_expected_external_model_fallback('vector knowledge context retrieval', e, application_id=application.id)
-        return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars, docs)
-    except Exception as e:
-        logger.warning('Error during vector knowledge base retrieval, fallback to keyword retrieval: %s', e, exc_info=True)
-        return _retrieve_keyword_knowledge_context(application, query, top_n, max_chars, docs)
+    result = retrieve_knowledge_chunks(
+        query=query,
+        application=application,
+        top_n=top_n,
+        knowledge_document_ids=knowledge_document_ids,
+        knowledge_base_ids=knowledge_base_ids,
+        include_media=False,
+    )
+    return _format_context_from_recall_result(result, max_chars=max_chars)
 
 
 def _format_context_from_recall_result(result: dict, max_chars: int = 3000) -> str:

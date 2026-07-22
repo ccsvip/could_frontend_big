@@ -2,7 +2,8 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from apps.ai_models.models import EmbeddingModel, RerankModel, TenantKnowledgeModelSettings
+from apps.ai_models.credential_crypto import decrypt_credential
+from apps.ai_models.models import BailianKnowledgeConfig, EmbeddingModel, RerankModel, TenantKnowledgeModelSettings
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
@@ -70,6 +71,50 @@ class KnowledgeModelSettingsApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(get_resp.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(patch_resp.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_superuser_configures_bailian_secret_without_returning_plaintext(self):
+        self.client.force_authenticate(self.superuser)
+
+        response = self.client.patch(
+            '/api/v1/settings/knowledge-base/models/',
+            {
+                'bailian': {
+                    'accessKeyId': 'access-key-id',
+                    'accessKeySecret': 'access-key-secret',
+                    'workspaceId': 'workspace-1',
+                    'categoryId': 'default',
+                    'endpoint': 'bailian.cn-beijing.aliyuncs.com',
+                    'isActive': True,
+                },
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['bailian']['accessKeySecretConfigured'])
+        self.assertNotIn('access-key-secret', str(response.data))
+        config = BailianKnowledgeConfig.load()
+        self.assertNotEqual(config.access_key_secret_encrypted, 'access-key-secret')
+        self.assertEqual(decrypt_credential(config.access_key_secret_encrypted), 'access-key-secret')
+
+        response = self.client.patch(
+            '/api/v1/settings/knowledge-base/models/',
+            {
+                'bailian': {
+                    'accessKeyId': '',
+                    'accessKeySecret': '',
+                    'workspaceId': 'workspace-1',
+                    'categoryId': 'default',
+                    'endpoint': 'bailian.cn-beijing.aliyuncs.com',
+                    'isActive': True,
+                },
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        config.refresh_from_db()
+        self.assertEqual(config.access_key_id, 'access-key-id')
+        self.assertEqual(decrypt_credential(config.access_key_secret_encrypted), 'access-key-secret')
+
     def test_superuser_can_assign_knowledge_models_to_tenant(self):
         embedding = EmbeddingModel.load_aliyun()
         rerank = RerankModel.load_aliyun()
@@ -84,6 +129,7 @@ class KnowledgeModelSettingsApiTests(TenantTestMixin, APITestCase):
             {
                 'embeddingModelId': embedding.id,
                 'rerankModelId': rerank.id,
+                'managedRagEnabled': True,
                 'isActive': True,
             },
             format='json',
@@ -95,10 +141,12 @@ class KnowledgeModelSettingsApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(resp.data['models']['rerank']['alias'], '公司可见排序别名')
         self.assertTrue(resp.data['models']['embedding']['grantIsActive'])
         self.assertTrue(resp.data['models']['rerank']['grantIsActive'])
+        self.assertTrue(resp.data['managedRagEnabled'])
 
         settings = TenantKnowledgeModelSettings.objects.get(tenant=self.tenant)
         self.assertEqual(settings.embedding_model_id, embedding.id)
         self.assertEqual(settings.rerank_model_id, rerank.id)
+        self.assertTrue(settings.managed_rag_enabled)
         self.assertTrue(settings.is_active)
 
     def test_tenant_assignment_rejects_inactive_models(self):

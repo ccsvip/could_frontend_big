@@ -29,6 +29,7 @@ if ENV_FILE.exists():
         os.environ.setdefault(key.strip(), value.strip())
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-change-me')
+BAILIAN_CREDENTIAL_ENCRYPTION_KEY = os.getenv('BAILIAN_CREDENTIAL_ENCRYPTION_KEY', '').strip()
 DEBUG = os.getenv('DJANGO_DEBUG', '0') == '1'
 ALLOWED_HOSTS = [host.strip() for host in os.getenv('DJANGO_ALLOWED_HOSTS', '*').split(',') if host.strip()]
 

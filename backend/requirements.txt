@@ -20,3 +20,4 @@ django-celery-beat
 minio==7.2.7
 sentry-sdk
 cryptography==45.0.7
+alibabacloud-bailian20231229==2.14.0

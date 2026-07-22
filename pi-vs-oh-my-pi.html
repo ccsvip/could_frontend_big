@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pi vs Oh My Pi — 全面对比分析</title>
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Noto Sans SC', sans-serif;
+    --font-mono: 'JetBrains Mono', Consolas, monospace;
+    --transition-speed: 0.3s;
+  }
+
+  /* 1. Theme Variables */
+  [data-theme="dark"] {
+    --bg: #0b0f17;
+    --bg-gradient: radial-gradient(circle at 50% 0%, #172033 0%, #0b0f17 75%);
+    --surface: #141b27;
+    --surface-hover: #1c2638;
+    --surface-glass: rgba(20, 27, 39, 0.8);
+    --header-bg: rgba(11, 15, 23, 0.85);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(255, 255, 255, 0.18);
+    --text: #f0f4f8;
+    --text-dim: #94a3b8;
+    --text-muted: #64748b;
+    --pi-color: #38bdf8;
+    --pi-gradient: linear-gradient(135deg, #38bdf8, #818cf8);
+    --omp-color: #34d399;
+    --omp-gradient: linear-gradient(135deg, #34d399, #10b981);
+    --accent: #6366f1;
+    --accent-glow: rgba(99, 102, 241, 0.2);
+    --badge-no-bg: rgba(239, 68, 68, 0.12);
+    --badge-no-text: #f87171;
+    --badge-yes-bg: rgba(16, 185, 129, 0.12);
+    --badge-yes-text: #34d399;
+    --code-bg: rgba(255, 255, 255, 0.06);
+    --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    --card-glow-pi: rgba(56, 189, 248, 0.15);
+    --card-glow-omp: rgba(52, 211, 153, 0.15);
+    --table-header-bg: #182234;
+    --table-stripe: rgba(255, 255, 255, 0.015);
+    --table-hover: rgba(56, 189, 248, 0.06);
+  }
+
+  [data-theme="light"] {
+    --bg: #f8fafc;
+    --bg-gradient: radial-gradient(circle at 50% 0%, #e0f2fe 0%, #f8fafc 75%);
+    --surface: #ffffff;
+    --surface-hover: #f1f5f9;
+    --surface-glass: rgba(255, 255, 255, 0.85);
+    --header-bg: rgba(248, 250, 252, 0.85);
+    --border: rgba(0, 0, 0, 0.08);
+    --border-hover: rgba(0, 0, 0, 0.16);
+    --text: #0f172a;
+    --text-dim: #475569;
+    --text-muted: #94a3b8;
+    --pi-color: #0284c7;
+    --pi-gradient: linear-gradient(135deg, #0284c7, #4f46e5);
+    --omp-color: #059669;
+    --omp-gradient: linear-gradient(135deg, #059669, #10b981);
+    --accent: #4f46e5;
+    --accent-glow: rgba(79, 70, 229, 0.12);
+    --badge-no-bg: #fee2e2;
+    --badge-no-text: #dc2626;
+    --badge-yes-bg: #d1fae5;
+    --badge-yes-text: #059669;
+    --code-bg: rgba(0, 0, 0, 0.05);
+    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    --card-glow-pi: rgba(2, 132, 199, 0.12);
+    --card-glow-omp: rgba(5, 150, 105, 0.12);
+    --table-header-bg: #f1f5f9;
+    --table-stripe: rgba(0, 0, 0, 0.015);
+    --table-hover: rgba(2, 132, 199, 0.05);
+  }
+
+  [data-theme="cyberpunk"] {
+    --bg: #080512;
+    --bg-gradient: radial-gradient(circle at 50% 0%, #200d3d 0%, #080512 80%);
+    --surface: #130c25;
+    --surface-hover: #1d1338;
+    --surface-glass: rgba(19, 12, 37, 0.85);
+    --header-bg: rgba(8, 5, 18, 0.85);
+    --border: rgba(255, 0, 128, 0.25);
+    --border-hover: rgba(0, 240, 255, 0.5);
+    --text: #f5f3ff;
+    --text-dim: #a78bfa;
+    --text-muted: #6ee7b7;
+    --pi-color: #00f0ff;
+    --pi-gradient: linear-gradient(135deg, #00f0ff, #7000ff);
+    --omp-color: #ff007f;
+    --omp-gradient: linear-gradient(135deg, #ff007f, #ffb800);
+    --accent: #00f0ff;
+    --accent-glow: rgba(0, 240, 255, 0.25);
+    --badge-no-bg: rgba(255, 0, 128, 0.2);
+    --badge-no-text: #ff4da6;
+    --badge-yes-bg: rgba(0, 240, 255, 0.2);
+    --badge-yes-text: #00f0ff;
+    --code-bg: rgba(112, 0, 255, 0.15);
+    --shadow: 0 10px 30px -5px rgba(112, 0, 255, 0.3);
+    --card-glow-pi: rgba(0, 240, 255, 0.25);
+    --card-glow-omp: rgba(255, 0, 127, 0.25);
+    --table-header-bg: #1c1038;
+    --table-stripe: rgba(255, 255, 255, 0.02);
+    --table-hover: rgba(0, 240, 255, 0.08);
+  }
+
+  [data-theme="midnight"] {
+    --bg: #030712;
+    --bg-gradient: radial-gradient(circle at 50% 0%, #0f172a 0%, #030712 80%);
+    --surface: #0b1329;
+    --surface-hover: #131f3d;
+    --surface-glass: rgba(11, 19, 41, 0.85);
+    --header-bg: rgba(3, 7, 18, 0.85);
+    --border: rgba(56, 189, 248, 0.15);
+    --border-hover: rgba(56, 189, 248, 0.35);
+    --text: #f8fafc;
+    --text-dim: #94a3b8;
+    --text-muted: #475569;
+    --pi-color: #38bdf8;
+    --pi-gradient: linear-gradient(135deg, #38bdf8, #0284c7);
+    --omp-color: #fbbf24;
+    --omp-gradient: linear-gradient(135deg, #fbbf24, #f59e0b);
+    --accent: #38bdf8;
+    --accent-glow: rgba(56, 189, 248, 0.2);
+    --badge-no-bg: rgba(244, 63, 94, 0.15);
+    --badge-no-text: #fb7185;
+    --badge-yes-bg: rgba(251, 191, 36, 0.15);
+    --badge-yes-text: #fbbf24;
+    --code-bg: rgba(56, 189, 248, 0.1);
+    --shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.25);
+    --card-glow-pi: rgba(56, 189, 248, 0.2);
+    --card-glow-omp: rgba(251, 191, 36, 0.2);
+    --table-header-bg: #111c38;
+    --table-stripe: rgba(255, 255, 255, 0.02);
+    --table-hover: rgba(56, 189, 248, 0.08);
+  }
+
+  /* Base Reset & Global Styles */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    background-image: var(--bg-gradient);
+    background-attachment: fixed;
+    color: var(--text);
+    line-height: 1.6;
+    padding-bottom: 4rem;
+    min-height: 100vh;
+    transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
+  }
+
+  /* Header & Theme Switcher Bar */
+  .sticky-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--header-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    transition: background var(--transition-speed) ease, border-color var(--transition-speed) ease;
+    margin-bottom: 2rem;
+  }
+
+  .nav-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+    background: linear-gradient(135deg, var(--pi-color), var(--omp-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .theme-switcher {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0.25rem;
+    border-radius: 9999px;
+    box-shadow: var(--shadow);
+    transition: all var(--transition-speed) ease;
+  }
+
+  .theme-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    padding: 0.4rem 0.85rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    font-family: inherit;
+    border-radius: 9999px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .theme-btn:hover {
+    color: var(--text);
+    background: var(--surface-hover);
+  }
+
+  .theme-btn.active {
+    background: var(--accent);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 8px var(--accent-glow);
+  }
+
+  .container { 
+    max-width: 1100px; 
+    margin: 0 auto;
+    padding: 0 1.25rem;
+  }
+
+  /* Hero Section */
+  .page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 4vw, 3.2rem);
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 0.6rem;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--pi-color) 30%, var(--omp-color) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: clamp(1rem, 1.4vw, 1.2rem);
+    font-weight: 400;
+  }
+
+  /* Hero Cards Row */
+  .hero-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1.25rem;
+    align-items: stretch;
+    margin-bottom: 2.5rem;
+  }
+
+  .hero-card {
+    background: var(--surface-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 2rem 1.75rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-hover);
+  }
+
+  .hero-card.pi:hover {
+    box-shadow: 0 16px 36px -10px var(--card-glow-pi);
+  }
+
+  .hero-card.omp:hover {
+    box-shadow: 0 16px 36px -10px var(--card-glow-omp);
+  }
+
+  .hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+  }
+
+  .hero-card.pi::before { background: var(--pi-gradient); }
+  .hero-card.omp::before { background: var(--omp-gradient); }
+
+  .hero-card h2 {
+    font-size: clamp(1.5rem, 2vw, 2rem);
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    letter-spacing: -0.01em;
+  }
+
+  .hero-card.pi h2 { color: var(--pi-color); }
+  .hero-card.omp h2 { color: var(--omp-color); }
+
+  .hero-card .tagline {
+    font-size: 0.92rem;
+    color: var(--text-dim);
+    font-weight: 500;
+    margin-bottom: 1rem;
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    background: var(--code-bg);
+    border-radius: 6px;
+    width: fit-content;
+  }
+
+  .hero-card p {
+    font-size: 0.95rem;
+    color: var(--text);
+    line-height: 1.7;
+    flex-grow: 1;
+  }
+
+  .hero-card strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .hero-card .url {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    padding-top: 0.8rem;
+    border-top: 1px dashed var(--border);
+    font-family: var(--font-mono);
+  }
+
+  .hero-card .url a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+
+  .hero-card .url a:hover {
+    text-decoration: underline;
+  }
+
+  .vs-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-dim);
+    padding: 0 0.75rem;
+    user-select: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    align-self: center;
+    box-shadow: var(--shadow);
+  }
+
+  /* Info Boxes */
+  .info-box {
+    background: var(--surface-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 14px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 2.5rem;
+    font-size: 0.95rem;
+    color: var(--text);
+    box-shadow: var(--shadow);
+    line-height: 1.7;
+    transition: all var(--transition-speed) ease;
+  }
+
+  .info-box strong {
+    color: var(--text);
+  }
+
+  /* Section Styling */
+  .section {
+    margin-bottom: 3rem;
+  }
+
+  .section-title {
+    font-size: clamp(1.2rem, 1.6vw, 1.5rem);
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .section-title .icon {
+    font-size: 1.3rem;
+  }
+
+  /* Comparison Table Container & Styling */
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    background: var(--surface);
+    transition: border-color var(--transition-speed) ease;
+  }
+
+  table.comparison {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+    text-align: left;
+  }
+
+  table.comparison th {
+    background: var(--table-header-bg);
+    padding: 1rem 1.2rem;
+    border-bottom: 2px solid var(--border);
+    font-weight: 600;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  table.comparison th:first-child { width: 22%; color: var(--text-dim); }
+  table.comparison th:nth-child(2) { color: var(--pi-color); width: 39%; }
+  table.comparison th:nth-child(3) { color: var(--omp-color); width: 39%; }
+
+  table.comparison tr:nth-child(even) td {
+    background: var(--table-stripe);
+  }
+
+  table.comparison td {
+    padding: 0.9rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.65;
+    transition: background 0.2s ease;
+  }
+
+  table.comparison tr:last-child td {
+    border-bottom: none;
+  }
+
+  table.comparison tr:hover td {
+    background: var(--table-hover);
+  }
+
+  table.comparison .label {
+    color: var(--text-dim);
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  table.comparison strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  /* Timeline Section */
+  .timeline {
+    position: relative;
+    padding-left: 2rem;
+    margin-top: 1rem;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 2px;
+    background: var(--border);
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 1.75rem;
+    padding-left: 1rem;
+  }
+
+  .timeline-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -1.8rem;
+    top: 0.45rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+    transition: all 0.3s ease;
+  }
+
+  .timeline-item:hover::before {
+    transform: scale(1.3);
+    background: var(--pi-color);
+  }
+
+  .timeline-item .date {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+  }
+
+  .timeline-item .title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+
+  .timeline-item .desc {
+    font-size: 0.92rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* Verdict Cards Grid */
+  .verdict-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .verdict-box {
+    background: var(--surface-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.75rem;
+    box-shadow: var(--shadow);
+    transition: all var(--transition-speed) ease;
+  }
+
+  .verdict-box h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .verdict-box.pi h3 { color: var(--pi-color); }
+  .verdict-box.omp h3 { color: var(--omp-color); }
+
+  .verdict-box ul { list-style: none; padding: 0; }
+  .verdict-box li {
+    font-size: 0.9rem;
+    color: var(--text);
+    padding: 0.4rem 0;
+    padding-left: 1.4rem;
+    position: relative;
+    line-height: 1.6;
+  }
+
+  .verdict-box li::before {
+    content: '➔';
+    position: absolute;
+    left: 0;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  .verdict-box.pi li::before { color: var(--pi-color); }
+  .verdict-box.omp li::before { color: var(--omp-color); }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    line-height: 1.8;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .hero-row { 
+      grid-template-columns: 1fr; 
+      gap: 1.5rem;
+    }
+    .vs-badge { 
+      margin: -0.5rem auto;
+      transform: rotate(90deg);
+    }
+    .verdict-grid { 
+      grid-template-columns: 1fr; 
+    }
+    .nav-content {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .theme-switcher {
+      width: 100%;
+      justify-content: center;
+    }
+    .theme-btn {
+      padding: 0.35rem 0.6rem;
+      font-size: 0.78rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sticky Header & Theme Controls -->
+<header class="sticky-nav">
+  <div class="nav-content">
+    <div class="nav-logo">
+      <span>⚡ Pi vs Oh My Pi</span>
+    </div>
+    <div class="theme-switcher" id="themeSwitcher">
+      <button class="theme-btn active" data-theme-val="dark">
+        <span>🌙</span> 暗黑
+      </button>
+      <button class="theme-btn" data-theme-val="light">
+        <span>☀️</span> 明亮
+      </button>
+      <button class="theme-btn" data-theme-val="cyberpunk">
+        <span>⚡</span> 赛博
+      </button>
+      <button class="theme-btn" data-theme-val="midnight">
+        <span>🔮</span> 夜蓝
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+<div class="page-header">
+  <h1>Pi  vs  Oh My Pi</h1>
+  <p class="subtitle">两大 AI 编码助手的完整对比 — 哲学、架构、功能、生态</p>
+</div>
+
+<!-- Hero cards -->
+<div class="hero-row">
+  <div class="hero-card pi">
+    <h2>Pi</h2>
+    <div class="tagline">极简 · 可塑 · 敏捷</div>
+    <p>Mario Zechner 创建的轻量终端编码助手。天生极简：仅 4 个内置工具（read / write / edit / bash）、不到 1000 token 的 system prompt。不预置 sub-agent、plan mode、MCP、权限弹窗——所有能力通过 <strong>Extension</strong> 按需加载。</p>
+    <div class="url"><a href="https://pi.dev" target="_blank">pi.dev</a> · <a href="https://github.com/earendil-works/pi" target="_blank">GitHub</a></div>
+  </div>
+  <div class="vs-badge">VS</div>
+  <div class="hero-card omp">
+    <h2>Oh My Pi (OMP)</h2>
+    <div class="tagline">电池全包 · IDE 有线 · 生产就绪</div>
+    <p>can1357 从 Pi fork 并重写的"编码优先"分支。将原本的轻量脚手架膨胀为完整的生产工具：~55k 行 Rust 引擎、32 个内置工具、40+ 模型提供商、Hashline 编辑、LSP 集成、DAP 调试器、Sub-agent 编排。</p>
+    <div class="url"><a href="https://omp.sh" target="_blank">omp.sh</a> · <a href="https://github.com/can1357/oh-my-pi" target="_blank">GitHub</a></div>
+  </div>
+</div>
+
+<div class="info-box">
+  <strong>ⓘ 关系说明：</strong>Oh My Pi 是 Pi 的一个<strong>深度 fork</strong>，并非独立项目。两者代码同源（TypeScript 核心 + Bun 运行时），但 OMP 重写了 Rust 底层引擎并大幅膨胀了工具面。当前最新：Pi v0.74+ / OMP v17.0.7（2026-07-21）。
+</div>
+
+<!-- 一、项目定位 -->
+<div class="section">
+  <div class="section-title"><span class="icon">🎯</span> 一、项目定位与哲学</div>
+  <div class="table-wrapper">
+    <table class="comparison">
+      <thead>
+        <tr><th>维度</th><th>Pi</th><th>Oh My Pi</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="label">设计哲学</td>
+          <td>极简核心 + 按需扩展。拒绝预置任何非必需功能，把选择权交给用户。</td>
+          <td>电池全包，开箱即用。预装尽可能多的工具和集成，让开发者拿起来就能干。</td>
+        </tr>
+        <tr>
+          <td class="label">内置工具</td>
+          <td><strong>4 个</strong>：read, write, edit, bash</td>
+          <td><strong>32 个</strong>：read / write / edit / bash / ast_edit / grep / glob / lsp / debug / browser / web_search …</td>
+        </tr>
+        <tr>
+          <td class="label">System Prompt 大小</td>
+          <td>~1000 tokens</td>
+          <td>数倍于 Pi（含 LSP/DAP/Hashline 等指令）</td>
+        </tr>
+        <tr>
+          <td class="label">Sub-agent / Plan</td>
+          <td>默认无，通过 Extension 可加</td>
+          <td>内置 sub-agent 编排、多 worktree 隔离执行</td>
+        </tr>
+        <tr>
+          <td class="label">MCP 支持</td>
+          <td>不内置，通过 Extension 接入</td>
+          <td>原生 MCP 服务器支持</td>
+        </tr>
+        <tr>
+          <td class="label">适用人群</td>
+          <td>喜欢 DIY、对 context 敏感、想要完全掌控的开发者</td>
+          <td>想要 IDE 级能力 + 终端效率、不愿花时间折腾的开发者</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 二、技术架构 -->
+<div class="section">
+  <div class="section-title"><span class="icon">⚙️</span> 二、技术架构对比</div>
+  <div class="table-wrapper">
+    <table class="comparison">
+      <thead>
+        <tr><th>维度</th><th>Pi</th><th>Oh My Pi</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="label">语言 / 运行时</td>
+          <td>TypeScript + Bun</td>
+          <td>TypeScript + Bun（Rust 引擎 ~55k LOC）</td>
+        </tr>
+        <tr>
+          <td class="label">核心引擎</td>
+          <td>纯粹的 TS agent runtime，通过 @earendil-works 包发布</td>
+          <td>Rust 性能核心（搜索、grep、shell、高亮）+ TS agent surface</td>
+        </tr>
+        <tr>
+          <td class="label">包结构</td>
+          <td>pi-ai / pi-agent-core / pi-coding-agent / pi-tui / pi-utils</td>
+          <td>同名包 @oh-my-pi/pi-* + 额外：hashline / natives / catalog / collab-web / mnemopi / omp-stats</td>
+        </tr>
+        <tr>
+          <td class="label">模型提供商</td>
+          <td>多提供商（OpenAI / Anthropic / Google 等），由 pi-ai 统一接口</td>
+          <td><strong>40+ 提供商</strong>，带角色路由（default/smol/slow/plan/commit）、credential 轮换、退避</td>
+        </tr>
+        <tr>
+          <td class="label">持久化运行时</td>
+          <td>无持久 worker</td>
+          <td>持久 Python kernel + Bun worker + loopback bridge，工具可跨语言保持状态</td>
+        </tr>
+        <tr>
+          <td class="label">扩展机制</td>
+          <td>TypeScript Extension（自动发现 .pi/extensions/），可注册 tool/command/事件/UI</td>
+          <td>继承 Extension 机制 + 额外：插件系统（omp plugin install）、多 MCP server 接入</td>
+        </tr>
+        <tr>
+          <td class="label">分发</td>
+          <td>npm 包 / Pi Packages 市场</td>
+          <td>npm 包（@oh-my-pi/*）+ git 直装</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 三、关键差异化功能 -->
+<div class="section">
+  <div class="section-title"><span class="icon">🔬</span> 三、关键差异化功能</div>
+  <div class="table-wrapper">
+    <table class="comparison">
+      <thead>
+        <tr><th>功能</th><th>Pi</th><th>Oh My Pi</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="label">Hashline 编辑</td>
+          <td>❌ 无</td>
+          <td>✅<strong> 核心特性</strong>。每行代码绑定内容 hash，编辑时引用 hash 而非行号，避免行偏移/空白变更导致的编辑失败。提升首次编辑成功率 6–68 个百分点。</td>
+        </tr>
+        <tr>
+          <td class="label">LSP 集成</td>
+          <td>❌ 无原生 LSP</td>
+          <td>✅<strong> 深度集成</strong>。14 种 LSP 操作：diagnostics / references / rename（含 workspace/willRenameFiles，自动更新 re-export / barrel / alias）、code_actions / definition / hover / symbols ……</td>
+        </tr>
+        <tr>
+          <td class="label">DAP 调试器</td>
+          <td>❌ 无</td>
+          <td>✅<strong> 原生 DAP 调试</strong>。28 种 DAP 操作，支持 lldb-dap（C/C++）、dlv（Go）、debugpy（Python）等真实调试器 attach — 断点、单步、栈帧、变量检查——不仅仅是打印日志。</td>
+        </tr>
+        <tr>
+          <td class="label">AST 编辑</td>
+          <td>❌ 无</td>
+          <td>✅ ast_edit（基于 tree-sitter 的结构感知改写）+ ast_grep 搜索</td>
+        </tr>
+        <tr>
+          <td class="label">代码审查图谱</td>
+          <td>❌ 无</td>
+          <td>✅ Code Review Graph（community detection、impact radius、bridge nodes、test coverage gap）</td>
+        </tr>
+        <tr>
+          <td class="label">浏览器自动化</td>
+          <td>❌ 无</td>
+          <td>✅ 内置 Puppeteer/Playwright 浏览器控制</td>
+        </tr>
+        <tr>
+          <td class="label">Sub-agent 编排</td>
+          <td>❌ 默认无（可通过 Extension 加）</td>
+          <td>✅ 内置 task/sub-agent 系统，isolated worktree，并行 fan-out</td>
+        </tr>
+        <tr>
+          <td class="label">Web 搜索</td>
+          <td>❌ 无</td>
+          <td>✅ 内置 web_search 工具</td>
+        </tr>
+        <tr>
+          <td class="label">持久记忆</td>
+          <td>可通过 Extension 实现</td>
+          <td>✅ mnemopi 引擎</td>
+        </tr>
+        <tr>
+          <td class="label">进程入口模式</td>
+          <td>（交互 / 单发 / RPC / SDK）4 种</td>
+          <td>interactive / one-shot / RPC / ACP，支持 Node/TypeScript 嵌入</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 四、生态与社区 -->
+<div class="section">
+  <div class="section-title"><span class="icon">🌐</span> 四、生态与社区</div>
+  <div class="table-wrapper">
+    <table class="comparison">
+      <thead>
+        <tr><th>维度</th><th>Pi</th><th>Oh My Pi</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="label">许可证</td>
+          <td>MIT</td>
+          <td>MIT</td>
+        </tr>
+        <tr>
+          <td class="label">维护方</td>
+          <td>Mario Zechner（earendil-works）</td>
+          <td>can1357（社区 fork）</td>
+        </tr>
+        <tr>
+          <td class="label">发布频率</td>
+          <td>稳定，月级更新</td>
+          <td>极活跃（v17.0.7，2026-07-21），周级更新</td>
+        </tr>
+        <tr>
+          <td class="label">包市场</td>
+          <td>Pi Packages（npm/git），50+ 示例包</td>
+          <td>继承 Pi 生态 + 插件命令 omp plugin install</td>
+        </tr>
+        <tr>
+          <td class="label">社区规模</td>
+          <td>较小，专注核心理念</td>
+          <td>更大，活跃得多的 PR/Issue/Release</td>
+        </tr>
+        <tr>
+          <td class="label">跨平台</td>
+          <td>macOS / Linux / Windows</td>
+          <td>macOS / Linux / Windows（原生 Windows，无 WSL 依赖）</td>
+        </tr>
+        <tr>
+          <td class="label">Trellis 集成</td>
+          <td>Pi Agent 模式（.pi/ + trellis_subagent）</td>
+          <td>Oh My Pi 模式（.omp/，extension-backed，TypeScript hook）</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 五、适用场景 -->
+<div class="section">
+  <div class="section-title"><span class="icon">💡</span> 五、如何选择</div>
+  <div class="verdict-grid">
+    <div class="verdict-box pi">
+      <h3>选 Pi 如果……</h3>
+      <ul>
+        <li>你想要一个<strong>极简的起点</strong>，自己决定能力边界</li>
+        <li>你对 context 窗口<strong>非常敏感</strong>，想要最小的 system prompt</li>
+        <li>你喜欢自己组装工具链，不喜欢预置的"全家桶"</li>
+        <li>你主要在终端工作，不需要 LSP / DAP / Hashline</li>
+        <li>你想要通过编写 TypeScript Extension 来深度定制</li>
+        <li>你对"开箱即用"没有要求，愿意投入配置时间换取灵活性</li>
+      </ul>
+    </div>
+    <div class="verdict-box omp">
+      <h3>选 Oh My Pi 如果……</h3>
+      <ul>
+        <li>你想要<strong>开箱即用</strong>的生产级工具，不愿折腾配置</li>
+        <li>你需要 IDE 级特性：LSP rename、代码审查、实时调试</li>
+        <li>你想用 Hashline 避免文件编辑因行号变化而失败</li>
+        <li>你经常需要多模型路由（不同任务用不同模型）</li>
+        <li>你需要 sub-agent 并行执行和隔离 worktree</li>
+        <li>你想在终端里 debug 真实进程、检查栈帧和变量</li>
+        <li>你喜欢活跃的社区和快速迭代</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- 发展时间线 -->
+<div class="section">
+  <div class="section-title"><span class="icon">📅</span> 发展时间线</div>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="date">~2024 中</div>
+      <div class="title">Mario Zechner 创建 Pi</div>
+      <div class="desc">作为个人项目，以最小化 agent harness 为理念，只有 4 个工具和不到千 token 的 system prompt。</div>
+    </div>
+    <div class="timeline-item">
+      <div class="date">~2025 初</div>
+      <div class="title">can1357 fork → Oh My Pi</div>
+      <div class="desc">从 Pi fork，目标是"编码优先的表面"——增加大量内置工具、Rust 引擎、多提供商支持。</div>
+    </div>
+    <div class="timeline-item">
+      <div class="date">2025–2026</div>
+      <div class="title">两者并行演化</div>
+      <div class="desc">Pi 保持极简哲学，迭代稳定；OMP 快速膨胀，引入 Hashline、LSP、DAP、sub-agent、code-review-graph 等重量级特性。</div>
+    </div>
+    <div class="timeline-item">
+      <div class="date">2026-07-21</div>
+      <div class="title">OMP v17.0.7 发布</div>
+      <div class="desc">版本号 17 表明 OMP 的迭代速度远超原版 Pi（后者处于 v0.74.x）。</div>
+    </div>
+  </div>
+</div>
+
+<!-- 总结 -->
+<div class="info-box" style="border-left-color: var(--omp-color);">
+  <strong>💬 一句话总结：</strong>Pi 是"一把你可以自己磨的刀"，Oh My Pi 是"一把出厂开好刃、带刀鞘和磨刀石的瑞士军刀"。两者同源，但面向完全不同的开发哲学——Pi 把控制权给你，OMP 把生产力给你。
+</div>
+
+<div class="footer">
+  数据来源：pi.dev · omp.sh · GitHub (earendil-works/pi · can1357/oh-my-pi) · BetterStack · explainx.ai · WhyOps · 社区博客<br>
+  数据截至 2026-07-22 · 仅供研究参考
+</div>
+
+</div>
+
+<!-- Theme Switcher Script -->
+<script>
+  (function() {
+    const themeBtns = document.querySelectorAll('.theme-btn');
+    const htmlEl = document.documentElement;
+
+    // Load saved theme or default to 'dark'
+    const savedTheme = localStorage.getItem('pi_theme') || 'dark';
+    setTheme(savedTheme);
+
+    themeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const theme = btn.getAttribute('data-theme-val');
+        setTheme(theme);
+      });
+    });
+
+    function setTheme(theme) {
+      htmlEl.setAttribute('data-theme', theme);
+      localStorage.setItem('pi_theme', theme);
+
+      themeBtns.forEach(btn => {
+        if (btn.getAttribute('data-theme-val') === theme) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+  })();
+</script>
+
+</body>
+</html>

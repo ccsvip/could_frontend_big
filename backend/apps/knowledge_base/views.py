@@ -22,6 +22,7 @@ from apps.accounts.permissions import (
     CanUploadKnowledgeBase,
     CanViewKnowledgeBase,
 )
+from apps.ai_models.models import BailianKnowledgeConfig, TenantKnowledgeModelSettings
 from config.business_cache import CachedBusinessResponseMixin, clear_business_cache_namespace
 from apps.resources.models import Resource
 from apps.tenants.mixins import TenantScopedQuerysetMixin
@@ -40,6 +41,7 @@ from .services import (
     notify_knowledge_document_event,
 )
 from .tasks import build_knowledge_document_index, build_knowledge_media_asset_index
+from . import bailian
 
 MAX_BULK_DOWNLOAD_COUNT = 20
 MAX_BULK_DOWNLOAD_SIZE = 200 * 1024 * 1024
@@ -93,11 +95,25 @@ def enqueue_document_index(document: KnowledgeDocument, *, force: bool = False) 
         build_knowledge_document_index.delay(document.pk, force=force)
         return {'documentId': document.pk, 'queued': True}
     except (OperationalError, OSError):
-        from apps.ai_models.services.agent_knowledge import build_document_index_by_id
+        from .managed_indexing import build_managed_document_index
 
-        result = build_document_index_by_id(document.pk, force=force)
+        result = build_managed_document_index(document.pk, force=force)
         document.refresh_from_db()
         return {'documentId': document.pk, 'queued': False, **result}
+
+
+def assert_managed_rag_available(tenant) -> None:
+    if tenant is None:
+        raise serializers.ValidationError('知识库必须归属于当前公司')
+    if not TenantKnowledgeModelSettings.objects.filter(
+        tenant=tenant,
+        is_active=True,
+        managed_rag_enabled=True,
+    ).exists():
+        raise serializers.ValidationError('当前公司尚未获得百炼托管知识库授权')
+    config = BailianKnowledgeConfig.load()
+    if not config.is_active or not config.is_configured:
+        raise serializers.ValidationError('平台尚未完成百炼托管知识库配置')
 
 
 def enqueue_media_asset_index(asset: KnowledgeMediaAsset, *, force: bool = False) -> dict:
@@ -186,7 +202,7 @@ class KnowledgeBaseViewSet(
     def perform_update(self, serializer):
         index_config_changed = any(
             field in serializer.validated_data
-            for field in ('chunk_size', 'chunk_overlap')
+            for field in ('chunk_size', 'chunk_overlap', 'parser')
         )
         instance = serializer.save()
         if index_config_changed:
@@ -196,6 +212,17 @@ class KnowledgeBaseViewSet(
 
     def perform_destroy(self, instance: KnowledgeBase):
         documents = list(instance.documents.all())
+        if instance.bailian_index_id:
+            for document in documents:
+                if document.bailian_file_id:
+                    try:
+                        bailian.delete_document(index_id=instance.bailian_index_id, file_id=document.bailian_file_id)
+                    except Exception as exc:
+                        raise serializers.ValidationError(f'百炼远端文档删除失败：{exc}') from exc
+            try:
+                bailian.delete_index(instance.bailian_index_id)
+            except Exception as exc:
+                raise serializers.ValidationError(f'百炼远端索引删除失败：{exc}') from exc
         super().perform_destroy(instance)
         for document in documents:
             if document.file:
@@ -223,6 +250,7 @@ class KnowledgeBaseViewSet(
             context={**self.get_serializer_context(), 'request': request},
         )
         serializer.is_valid(raise_exception=True)
+        assert_managed_rag_available(self.request_tenant)
         document = serializer.save(
             uploaded_by=request.user,
             knowledge_base=knowledge_base,
@@ -339,6 +367,7 @@ class KnowledgeBaseViewSet(
     @action(detail=True, methods=['post'], url_path='index')
     def index(self, request, pk=None):
         knowledge_base = self.get_object()
+        assert_managed_rag_available(knowledge_base.tenant)
         documents = list(knowledge_base.documents.filter(tenant=knowledge_base.tenant).order_by('id'))
         media_assets = list(knowledge_base.media_assets.filter(tenant=knowledge_base.tenant).order_by('id'))
         document_results = [enqueue_document_index(document, force=True) for document in documents]
@@ -403,12 +432,21 @@ class KnowledgeDocumentViewSet(
         return self.apply_tenant_scope(queryset)
 
     def perform_create(self, serializer):
+        assert_managed_rag_available(self.request_tenant)
         document = serializer.save(**self.tenant_create_kwargs())
         self.clear_cached_business_responses()
         notify_knowledge_document_event('create', getattr(self.request, 'user', None), document)
         enqueue_document_index(document)
 
     def perform_destroy(self, instance: KnowledgeDocument):
+        if instance.bailian_file_id and instance.knowledge_base_id and instance.knowledge_base.bailian_index_id:
+            try:
+                bailian.delete_document(
+                    index_id=instance.knowledge_base.bailian_index_id,
+                    file_id=instance.bailian_file_id,
+                )
+            except Exception as exc:
+                raise serializers.ValidationError(f'百炼远端文档删除失败：{exc}') from exc
         document_id = instance.pk
         document_title = instance.title
         document_file_name = instance.file_name
@@ -521,6 +559,7 @@ class KnowledgeDocumentViewSet(
     @action(detail=True, methods=['post'], url_path='index')
     def index(self, request, pk=None):
         document = self.get_object()
+        assert_managed_rag_available(document.tenant)
         result = enqueue_document_index(document, force=True)
         self.clear_cached_business_responses()
         return Response(result)

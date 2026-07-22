@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models import (
     AgentAnnotation,
     AgentApplication,
+    BailianKnowledgeConfig,
     ChatConversation,
     ChatMessage,
     EmbeddingModel,
@@ -35,9 +36,16 @@ class RerankModelAdmin(admin.ModelAdmin):
     search_fields = ('name', 'code', 'model')
 
 
+@admin.register(BailianKnowledgeConfig)
+class BailianKnowledgeConfigAdmin(admin.ModelAdmin):
+    list_display = ('workspace_id', 'category_id', 'endpoint', 'is_active', 'updated_at')
+    readonly_fields = ('access_key_secret_encrypted', 'updated_at')
+    exclude = ('access_key_secret_encrypted',)
+
+
 @admin.register(TenantKnowledgeModelSettings)
 class TenantKnowledgeModelSettingsAdmin(admin.ModelAdmin):
-    list_display = ('tenant', 'embedding_model', 'rerank_model', 'is_active', 'updated_at')
+    list_display = ('tenant', 'managed_rag_enabled', 'embedding_model', 'rerank_model', 'is_active', 'updated_at')
     list_filter = ('is_active',)
     raw_id_fields = ('tenant', 'embedding_model', 'rerank_model')
 

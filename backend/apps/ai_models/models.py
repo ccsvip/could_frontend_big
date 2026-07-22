@@ -383,6 +383,33 @@ class RerankModel(models.Model):
         return provider
 
 
+class BailianKnowledgeConfig(models.Model):
+    access_key_id = models.CharField('AccessKey ID', max_length=256, blank=True, default='')
+    access_key_secret_encrypted = models.TextField('加密 AccessKey Secret', blank=True, default='')
+    workspace_id = models.CharField('百炼 Workspace ID', max_length=128, blank=True, default='')
+    category_id = models.CharField('百炼 Category ID', max_length=128, default='default')
+    endpoint = models.CharField('百炼 API 地址', max_length=255, default='bailian.cn-beijing.aliyuncs.com')
+    is_active = models.BooleanField('是否启用', default=False)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = '百炼知识库配置'
+        verbose_name_plural = '百炼知识库配置'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls) -> 'BailianKnowledgeConfig':
+        instance, _ = cls.objects.get_or_create(pk=1)
+        return instance
+
+    @property
+    def is_configured(self) -> bool:
+        return bool(self.access_key_id and self.access_key_secret_encrypted and self.workspace_id and self.endpoint)
+
+
 class TenantKnowledgeModelSettings(models.Model):
     tenant = models.OneToOneField(
         'tenants.Tenant',
@@ -406,6 +433,7 @@ class TenantKnowledgeModelSettings(models.Model):
         related_name='tenant_rerank_settings',
         verbose_name='重排序模型',
     )
+    managed_rag_enabled = models.BooleanField('是否启用百炼托管知识库', default=False)
     is_active = models.BooleanField('是否启用', default=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
 

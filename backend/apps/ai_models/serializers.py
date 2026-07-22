@@ -579,11 +579,13 @@ class KnowledgeModelSerializer(serializers.Serializer):
 class KnowledgeModelSettingsSerializer(serializers.Serializer):
     embedding = KnowledgeModelSerializer()
     rerank = KnowledgeModelSerializer()
+    bailian = serializers.DictField()
 
 
 class KnowledgeModelSettingsWriteSerializer(serializers.Serializer):
     embedding = serializers.DictField(required=False)
     rerank = serializers.DictField(required=False)
+    bailian = serializers.DictField(required=False)
 
     def _validate_model_payload(self, payload: dict, *, model_type: str) -> dict:
         allowed_fields = {'alias', 'model', 'baseUrl', 'apiKey', 'isActive', 'dimensions'}
@@ -615,6 +617,30 @@ class KnowledgeModelSettingsWriteSerializer(serializers.Serializer):
         for model_type in ('embedding', 'rerank'):
             if model_type in attrs:
                 normalized[model_type] = self._validate_model_payload(attrs[model_type], model_type=model_type)
+        if 'bailian' in attrs:
+            payload = attrs['bailian']
+            allowed_fields = {'accessKeyId', 'accessKeySecret', 'workspaceId', 'categoryId', 'endpoint', 'isActive'}
+            unknown = set(payload) - allowed_fields
+            if unknown:
+                raise serializers.ValidationError(f'bailian 包含不支持的字段：{min(unknown)}')
+            bailian = {}
+            for source, target in (
+                ('accessKeyId', 'access_key_id'),
+                ('accessKeySecret', 'access_key_secret'),
+                ('workspaceId', 'workspace_id'),
+                ('categoryId', 'category_id'),
+                ('endpoint', 'endpoint'),
+                ('isActive', 'is_active'),
+            ):
+                if source not in payload:
+                    continue
+                value = payload[source]
+                if source != 'isActive':
+                    value = str(value or '').strip()
+                if source in {'workspaceId', 'categoryId', 'endpoint'} and not value:
+                    raise serializers.ValidationError(f'bailian.{source} 不能为空')
+                bailian[target] = value
+            normalized['bailian'] = bailian
         return normalized
 
 
@@ -622,6 +648,7 @@ class TenantKnowledgeModelSettingsSerializer(serializers.Serializer):
     embeddingModelId = serializers.IntegerField(required=False, allow_null=True)
     rerankModelId = serializers.IntegerField(required=False, allow_null=True)
     isActive = serializers.BooleanField(required=False, default=True)
+    managedRagEnabled = serializers.BooleanField(required=False, default=False)
 
     def validate(self, attrs):
         tenant_id = self.context.get('tenant_id')

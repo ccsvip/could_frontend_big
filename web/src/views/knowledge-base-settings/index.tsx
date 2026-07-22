@@ -43,6 +43,12 @@ type KnowledgeModelFormValues = {
   rerankBaseUrl: string;
   rerankApiKey?: string;
   rerankIsActive: boolean;
+  bailianAccessKeyId: string;
+  bailianAccessKeySecret?: string;
+  bailianWorkspaceId: string;
+  bailianCategoryId: string;
+  bailianEndpoint: string;
+  bailianIsActive: boolean;
 };
 
 const DEFAULT_MODEL_FORM: KnowledgeModelFormValues = {
@@ -57,6 +63,12 @@ const DEFAULT_MODEL_FORM: KnowledgeModelFormValues = {
   rerankBaseUrl: 'https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank',
   rerankApiKey: '',
   rerankIsActive: true,
+  bailianAccessKeyId: '',
+  bailianAccessKeySecret: '',
+  bailianWorkspaceId: '',
+  bailianCategoryId: '',
+  bailianEndpoint: 'bailian.cn-beijing.aliyuncs.com',
+  bailianIsActive: false,
 };
 
 const toModelFormValues = (settings: KnowledgeModelSettings): KnowledgeModelFormValues => ({
@@ -71,6 +83,12 @@ const toModelFormValues = (settings: KnowledgeModelSettings): KnowledgeModelForm
   rerankBaseUrl: settings.rerank.baseUrl,
   rerankApiKey: '',
   rerankIsActive: settings.rerank.isActive,
+  bailianAccessKeyId: '',
+  bailianAccessKeySecret: '',
+  bailianWorkspaceId: settings.bailian.workspaceId,
+  bailianCategoryId: settings.bailian.categoryId,
+  bailianEndpoint: settings.bailian.endpoint,
+  bailianIsActive: settings.bailian.isActive,
 });
 
 export const KnowledgeBaseSettingsPage = () => {
@@ -146,6 +164,14 @@ export const KnowledgeBaseSettingsPage = () => {
           apiKey: values.rerankApiKey,
           isActive: values.rerankIsActive,
         },
+        bailian: {
+          accessKeyId: values.bailianAccessKeyId,
+          accessKeySecret: values.bailianAccessKeySecret,
+          workspaceId: values.bailianWorkspaceId,
+          categoryId: values.bailianCategoryId,
+          endpoint: values.bailianEndpoint,
+          isActive: values.bailianIsActive,
+        },
       });
       setSettings(nextSettings);
       modelForm.setFieldsValue(toModelFormValues(nextSettings));
@@ -182,6 +208,7 @@ export const KnowledgeBaseSettingsPage = () => {
       const nextAuthorization = await updateTenantKnowledgeAuthorization(selectedTenantId, {
         embeddingModelId: authorization.embeddingModelId,
         rerankModelId: authorization.rerankModelId,
+        managedRagEnabled: authorization.managedRagEnabled,
         isActive: authorization.isActive,
       });
       setAuthorization(nextAuthorization);
@@ -253,6 +280,28 @@ export const KnowledgeBaseSettingsPage = () => {
             </Form.Item>
           </Card>
         </div>
+        <Card className="mt-4 rounded-xl border-slate-100 shadow-sm" title="阿里云百炼托管知识库">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Form.Item name="bailianAccessKeyId" label="AccessKey ID" extra={settings?.bailian.accessKeyIdConfigured ? `当前：${settings.bailian.accessKeyIdMasked}；留空表示保留` : undefined}>
+              <Input className="font-mono" />
+            </Form.Item>
+            <Form.Item name="bailianAccessKeySecret" label="AccessKey Secret" extra={settings?.bailian.accessKeySecretConfigured ? '留空表示保留原密钥' : undefined}>
+              <Input.Password className="font-mono" />
+            </Form.Item>
+            <Form.Item name="bailianWorkspaceId" label="Workspace ID" rules={[{ required: true, message: '请输入 Workspace ID' }]}>
+              <Input className="font-mono" />
+            </Form.Item>
+            <Form.Item name="bailianCategoryId" label="Category ID" rules={[{ required: true, message: '请输入 Category ID' }]}>
+              <Input className="font-mono" />
+            </Form.Item>
+            <Form.Item name="bailianEndpoint" label="Endpoint" rules={[{ required: true, message: '请输入 Endpoint' }]}>
+              <Input className="font-mono" />
+            </Form.Item>
+            <Form.Item name="bailianIsActive" label="平台启用" valuePropName="checked">
+              <Switch checkedChildren="启用" unCheckedChildren="停用" />
+            </Form.Item>
+          </div>
+        </Card>
         <div className="mt-4 flex justify-end">
           <Button type="primary" icon={<IconDeviceFloppy />} loading={savingModels} onClick={() => void saveModelSettings()}>
             保存模型配置
@@ -275,11 +324,17 @@ export const KnowledgeBaseSettingsPage = () => {
           onChange={setSelectedTenantId}
         />
         <Space>
-          <Switch
+        <Switch
             checked={authorization?.isActive ?? false}
             checkedChildren="启用"
             unCheckedChildren="停用"
             onChange={(checked) => authorization && setAuthorization({ ...authorization, isActive: checked })}
+          />
+          <Switch
+            checked={authorization?.managedRagEnabled ?? false}
+            checkedChildren="托管 RAG"
+            unCheckedChildren="托管 RAG"
+            onChange={(checked) => authorization && setAuthorization({ ...authorization, managedRagEnabled: checked })}
           />
           <Button type="primary" icon={<IconDeviceFloppy />} loading={savingAuthorization} onClick={() => void saveAuthorization()}>
             保存授权

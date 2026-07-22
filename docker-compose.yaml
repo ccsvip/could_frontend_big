@@ -12,7 +12,8 @@ x-backend-build: &backend-build
 services:
   # 所有服务统一使用 always 重启策略，确保 Docker 或宿主机重启后自动恢复。
   db:
-    image: ${POSTGRES_IMAGE:-docker.m.daocloud.io/library/postgres:16-alpine}
+    # 知识库 chunk 使用 pgvector（embedding_vector）；官方 postgres 镜像无 vector.so。
+    image: ${POSTGRES_IMAGE:-pgvector/pgvector:pg16}
     container_name: solin_db
     restart: always
     env_file:

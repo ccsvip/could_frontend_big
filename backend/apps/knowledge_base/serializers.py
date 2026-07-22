@@ -12,6 +12,7 @@ from .models import KnowledgeBase, KnowledgeDocument, KnowledgeMediaAsset
 ALLOWED_DOCUMENT_EXTENSIONS = {
     '.doc',
     '.docx',
+    '.wps',
     '.ppt',
     '.pptx',
     '.md',
@@ -19,8 +20,10 @@ ALLOWED_DOCUMENT_EXTENSIONS = {
     '.pdf',
     '.xls',
     '.xlsx',
+    '.epub',
+    '.mobi',
 }
-ALLOWED_DOCUMENT_TYPES_MESSAGE = '仅支持 doc/docx/ppt/pptx/md/txt/pdf/xls/xlsx 等文档格式'
+ALLOWED_DOCUMENT_TYPES_MESSAGE = '仅支持 doc/docx/wps/ppt/pptx/xls/xlsx/md/txt/pdf/epub/mobi 文档格式'
 
 
 class KnowledgeBaseSerializer(serializers.ModelSerializer):
@@ -33,6 +36,10 @@ class KnowledgeBaseSerializer(serializers.ModelSerializer):
     retrievalMinScore = serializers.FloatField(source='retrieval_min_score', required=False, min_value=0, max_value=1)
     mediaMaxAssets = serializers.IntegerField(source='media_max_assets', required=False, min_value=0, max_value=200)
     mediaMinRelevance = serializers.FloatField(source='media_min_relevance', required=False, min_value=0, max_value=1)
+    parserLabel = serializers.CharField(source='get_parser_display', read_only=True)
+    remoteIndexStatus = serializers.CharField(source='bailian_index_status', read_only=True)
+    remoteIndexError = serializers.CharField(source='bailian_index_error', read_only=True)
+    remoteSyncedAt = serializers.DateTimeField(source='bailian_synced_at', read_only=True, allow_null=True)
 
     class Meta:
         model = KnowledgeBase
@@ -49,6 +56,11 @@ class KnowledgeBaseSerializer(serializers.ModelSerializer):
             'retrievalMinScore',
             'mediaMaxAssets',
             'mediaMinRelevance',
+            'parser',
+            'parserLabel',
+            'remoteIndexStatus',
+            'remoteIndexError',
+            'remoteSyncedAt',
             'created_at',
             'updated_at',
         )
@@ -107,6 +119,9 @@ class KnowledgeDocumentSerializer(serializers.ModelSerializer):
     indexedAt = serializers.DateTimeField(source='indexed_at', read_only=True, allow_null=True)
     chunkCount = serializers.IntegerField(source='chunk_count', read_only=True)
     indexModel = serializers.CharField(source='index_model', read_only=True)
+    remoteParseStatus = serializers.CharField(source='bailian_parse_status', read_only=True)
+    remoteSyncedAt = serializers.DateTimeField(source='bailian_synced_at', read_only=True, allow_null=True)
+    retryable = serializers.SerializerMethodField()
 
     class Meta:
         model = KnowledgeDocument
@@ -128,6 +143,9 @@ class KnowledgeDocumentSerializer(serializers.ModelSerializer):
             'indexedAt',
             'chunkCount',
             'indexModel',
+            'remoteParseStatus',
+            'remoteSyncedAt',
+            'retryable',
             'created_at',
             'updated_at',
         )
@@ -144,6 +162,9 @@ class KnowledgeDocumentSerializer(serializers.ModelSerializer):
             'indexedAt',
             'chunkCount',
             'indexModel',
+            'remoteParseStatus',
+            'remoteSyncedAt',
+            'retryable',
             'created_at',
             'updated_at',
         )
@@ -163,6 +184,9 @@ class KnowledgeDocumentSerializer(serializers.ModelSerializer):
         if obj.uploaded_by is None:
             return ''
         return obj.uploaded_by.get_full_name() or obj.uploaded_by.username
+
+    def get_retryable(self, obj: KnowledgeDocument) -> bool:
+        return obj.index_status == KnowledgeDocument.IndexStatus.FAILED
 
     def validate_file(self, value):
         suffix = Path(value.name).suffix.lower()

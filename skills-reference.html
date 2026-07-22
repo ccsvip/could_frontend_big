@@ -1,0 +1,2515 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Skills 参考手册 | Agent 技能库与指引</title>
+<meta name="description" content="包含 31 个 AI Agent 核心技能的交互式参考手册与使用指南，覆盖代码审查、架构设计、Bug 诊断、Git 规范及 Trellis 工作流。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root[data-theme="dark"] {
+    --bg-main: #0b0f19;
+    --bg-sidebar: #111827;
+    --bg-header: rgba(17, 24, 39, 0.85);
+    --bg-card: #1f293d;
+    --bg-card-hover: #26334d;
+    --bg-card-subtle: #161e2e;
+    --bg-input: #161f30;
+    --border-color: #2d3748;
+    --border-light: rgba(255, 255, 255, 0.08);
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --brand: #0d9488;
+    --brand-light: #14b8a6;
+    --brand-dark: #0f766e;
+    --brand-gradient: linear-gradient(135deg, #0d9488 0%, #6366f1 100%);
+    --brand-glow: rgba(13, 148, 136, 0.25);
+    --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+    --tag-coding-bg: rgba(59, 130, 246, 0.15);
+    --tag-coding-text: #60a5fa;
+    --tag-design-bg: rgba(139, 92, 246, 0.15);
+    --tag-design-text: #a78bfa;
+    --tag-debug-bg: rgba(244, 63, 94, 0.15);
+    --tag-debug-text: #fb7185;
+    --tag-workflow-bg: rgba(245, 158, 11, 0.15);
+    --tag-workflow-text: #fbbf24;
+    --tag-ux-bg: rgba(236, 72, 153, 0.15);
+    --tag-ux-text: #f472b6;
+    --tag-git-bg: rgba(16, 185, 129, 0.15);
+    --tag-git-text: #34d399;
+    --tag-research-bg: rgba(99, 102, 241, 0.15);
+    --tag-research-text: #818cf8;
+    --code-bg: #151c2c;
+    --code-text: #e2e8f0;
+  }
+
+  :root[data-theme="light"] {
+    --bg-main: #f8fafc;
+    --bg-sidebar: #ffffff;
+    --bg-header: rgba(255, 255, 255, 0.85);
+    --bg-card: #ffffff;
+    --bg-card-hover: #f1f5f9;
+    --bg-card-subtle: #f8fafc;
+    --bg-input: #f1f5f9;
+    --border-color: #e2e8f0;
+    --border-light: rgba(0, 0, 0, 0.06);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --brand: #0f766e;
+    --brand-light: #14b8a6;
+    --brand-dark: #0d9488;
+    --brand-gradient: linear-gradient(135deg, #0f766e 0%, #4f46e5 100%);
+    --brand-glow: rgba(15, 118, 110, 0.15);
+    --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+    --tag-coding-bg: #dbeafe;
+    --tag-coding-text: #1e40af;
+    --tag-design-bg: #ede9fe;
+    --tag-design-text: #5b21b6;
+    --tag-debug-bg: #fee2e2;
+    --tag-debug-text: #991b1b;
+    --tag-workflow-bg: #fef3c7;
+    --tag-workflow-text: #92400e;
+    --tag-ux-bg: #fce7f3;
+    --tag-ux-text: #9d174d;
+    --tag-git-bg: #d1fae5;
+    --tag-git-text: #065f46;
+    --tag-research-bg: #e0e7ff;
+    --tag-research-text: #3730a3;
+    --code-bg: #1e293b;
+    --code-text: #e2e8f0;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  html {
+    font-size: clamp(13px, 0.52vw + 9px, 16px);
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text-primary);
+    background: var(--bg-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Top Navigation Bar */
+  .top-header {
+    height: 60px;
+    background: var(--bg-header);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+  }
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--brand-gradient);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 4px 12px var(--brand-glow);
+  }
+  .logo-title {
+    font-weight: 800;
+    font-size: 1.15rem;
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+  }
+  .logo-badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: var(--brand-glow);
+    color: var(--brand-light);
+    border: 1px solid var(--brand-light);
+    font-weight: 600;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cmd-search-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 14px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+  }
+  .cmd-search-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    flex-shrink: 0;
+  }
+  .cmd-search-btn:hover {
+    border-color: var(--brand-light);
+    color: var(--text-primary);
+    background: var(--bg-card-hover);
+    box-shadow: 0 0 12px var(--brand-glow);
+  }
+  .cmd-kbd {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-size: 0.7rem;
+    font-family: 'Fira Code', monospace;
+    color: var(--brand-light);
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .theme-toggle-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .theme-toggle-btn:hover {
+    border-color: var(--brand-light);
+    color: var(--brand-light);
+    background: var(--bg-card-hover);
+    transform: scale(1.05);
+  }
+
+  .mobile-menu-toggle {
+    display: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  /* Main Container Layout */
+  .app-layout {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 320px;
+    min-width: 320px;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: transform 0.3s ease;
+    z-index: 40;
+  }
+  .sidebar-header-box {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .sidebar-search-box {
+    position: relative;
+  }
+  .sidebar-search-box input {
+    width: 100%;
+    padding: 9px 12px 9px 36px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-input);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+  .sidebar-search-box input:focus {
+    border-color: var(--brand-light);
+    box-shadow: 0 0 0 3px var(--brand-glow);
+  }
+  .sidebar-search-box svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    stroke: var(--text-muted);
+  }
+
+  .sidebar-tools-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+  }
+  .sidebar-tools-btn {
+    background: none;
+    border: none;
+    color: var(--brand-light);
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .sidebar-tools-btn:hover {
+    text-decoration: underline;
+  }
+
+  .sidebar-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+  }
+  .sidebar-scroll::-webkit-scrollbar { width: 5px; }
+  .sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+
+  /* Accordion Groups */
+  .group {
+    margin-bottom: 8px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    cursor: pointer;
+    user-select: none;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+  }
+  .group-header:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+  }
+  .group-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .group-count-badge {
+    font-size: 0.7rem;
+    background: var(--bg-input);
+    padding: 1px 7px;
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .group-arrow {
+    width: 14px;
+    height: 14px;
+    stroke: var(--text-muted);
+    transition: transform 0.2s ease;
+  }
+  .group-header.collapsed .group-arrow {
+    transform: rotate(-90deg);
+  }
+
+  .group-items {
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
+  .group-items.hidden {
+    max-height: 0 !important;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px 8px 24px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: 6px;
+    margin: 2px 0;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.15s ease;
+    position: relative;
+  }
+  .nav-item:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+  }
+  .nav-item.active {
+    background: var(--brand-glow);
+    color: var(--brand-light);
+    font-weight: 700;
+  }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 16px;
+    background: var(--brand-light);
+    border-radius: 2px;
+  }
+  .nav-item .desc-sub {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Main Content Area */
+  .main-content {
+    flex: 1;
+    padding: 32px 48px;
+    overflow-y: auto;
+    height: 100%;
+    background: var(--bg-main);
+  }
+  .main-content::-webkit-scrollbar { width: 6px; }
+  .main-content::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+
+  /* Skill Card View */
+  .skill-card {
+    display: none;
+    animation: fadeInUp 0.3s ease forwards;
+    max-width: 1000px;
+    margin: 0 auto 40px;
+  }
+  .skill-card.active {
+    display: block;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Skill Header Banner */
+  .skill-hero-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    box-shadow: var(--card-shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .skill-hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--brand-gradient);
+  }
+
+  .breadcrumb {
+    font-size: 0.78rem;
+    color: var(--brand-light);
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .skill-title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .skill-title {
+    font-size: clamp(22px, 1.2vw + 16px, 32px);
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+  }
+  .skill-en-code {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.88rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--brand-light);
+    padding: 3px 10px;
+    border-radius: 6px;
+  }
+  .skill-desc-text {
+    font-size: 0.98rem;
+    color: var(--text-secondary);
+    margin: 12px 0 16px;
+    line-height: 1.7;
+  }
+  
+  .tags-flex {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .tag-pill {
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .tag-coding { background: var(--tag-coding-bg); color: var(--tag-coding-text); }
+  .tag-design { background: var(--tag-design-bg); color: var(--tag-design-text); }
+  .tag-debug { background: var(--tag-debug-bg); color: var(--tag-debug-text); }
+  .tag-workflow { background: var(--tag-workflow-bg); color: var(--tag-workflow-text); }
+  .tag-ux { background: var(--tag-ux-bg); color: var(--tag-ux-text); }
+  .tag-git { background: var(--tag-git-bg); color: var(--tag-git-text); }
+  .tag-research { background: var(--tag-research-bg); color: var(--tag-research-text); }
+
+  .hero-actions-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-light);
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid transparent;
+  }
+  .action-btn-primary {
+    background: var(--brand-gradient);
+    color: #ffffff;
+    box-shadow: 0 4px 14px var(--brand-glow);
+  }
+  .action-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--brand-glow);
+    filter: brightness(1.08);
+  }
+  .action-btn-secondary {
+    background: var(--bg-input);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+  .action-btn-secondary:hover {
+    border-color: var(--brand-light);
+    color: var(--brand-light);
+    background: var(--bg-card-hover);
+    transform: translateY(-1px);
+  }
+  .action-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; }
+
+  /* Content Sections */
+  .section-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    box-shadow: var(--card-shadow);
+  }
+  .section-card h3 {
+    font-size: clamp(14px, 0.52vw + 10px, 18px);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .section-card h3 svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--brand-light);
+    fill: none;
+  }
+
+  .trigger-box {
+    background: var(--bg-card-subtle);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--brand-light);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 0.92rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  /* List Styling */
+  .custom-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .custom-list li {
+    position: relative;
+    padding-left: 24px;
+    font-size: 0.92rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+  }
+  .custom-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    top: 2px;
+    color: var(--brand-light);
+    font-weight: 800;
+    font-size: 0.85rem;
+  }
+
+  /* Timeline Step List */
+  .step-timeline {
+    list-style: none;
+    position: relative;
+    padding-left: 32px;
+  }
+  .step-timeline::before {
+    content: '';
+    position: absolute;
+    left: 13px;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    background: var(--border-color);
+  }
+  .step-timeline li {
+    position: relative;
+    margin-bottom: 16px;
+    font-size: 0.92rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+  }
+  .step-timeline li:last-child { margin-bottom: 0; }
+  .step-number-badge {
+    position: absolute;
+    left: -32px;
+    top: 1px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--brand-gradient);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 8px var(--brand-glow);
+  }
+
+  /* Tips & Alerts */
+  .tips-callout {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+  .tips-callout h4 {
+    color: #f59e0b;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Tables & Data Grid */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 0.88rem;
+  }
+  .data-table th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--bg-card-subtle);
+    color: var(--brand-light);
+    font-weight: 700;
+    border-bottom: 2px solid var(--border-color);
+  }
+  .data-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-primary);
+    vertical-align: top;
+  }
+  .data-table tr:hover td {
+    background: var(--bg-card-hover);
+  }
+
+  /* Welcome Screen */
+  .welcome-hero {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 48px 40px;
+    text-align: center;
+    box-shadow: var(--card-shadow);
+    max-width: 960px;
+    margin: 20px auto 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .welcome-hero h2 {
+    font-size: clamp(24px, 1.5vw + 18px, 38px);
+    font-weight: 800;
+    margin-bottom: 12px;
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .welcome-hero p {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    max-width: 580px;
+    margin: 0 auto 28px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .stat-card {
+    background: var(--bg-card-subtle);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px 16px;
+    text-align: center;
+    transition: transform 0.2s ease;
+  }
+  .stat-card:hover { transform: translateY(-3px); }
+  .stat-num {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--brand-light);
+    font-family: 'Fira Code', monospace;
+  }
+  .stat-label {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    font-weight: 600;
+  }
+
+  .category-discovery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 32px;
+    text-align: left;
+  }
+  .category-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .category-card:hover {
+    border-color: var(--brand-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px var(--brand-glow);
+  }
+  .cat-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .cat-card-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-primary);
+  }
+  .cat-card-count {
+    font-size: 0.75rem;
+    background: var(--brand-glow);
+    color: var(--brand-light);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 700;
+  }
+
+  /* Command Palette Modal */
+  .cmd-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 10vh;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .cmd-modal-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .cmd-modal {
+    width: 90%;
+    max-width: 640px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    overflow: hidden;
+    transform: translateY(-10px);
+    transition: transform 0.2s ease;
+  }
+  .cmd-modal-backdrop.active .cmd-modal {
+    transform: translateY(0);
+  }
+  .cmd-modal-input-wrap {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-card-subtle);
+  }
+  .cmd-modal-input-wrap svg { width: 22px; height: 22px; stroke: var(--brand-light); fill: none; flex-shrink: 0; }
+  .cmd-modal-input-wrap input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.05rem;
+    font-weight: 500;
+    outline: none;
+  }
+  .cmd-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    line-height: 1;
+    transition: all 0.2s ease;
+  }
+  .cmd-close-btn:hover {
+    color: var(--text-primary);
+    background: var(--bg-card-hover);
+  }
+  .cmd-modal-results {
+    max-height: 420px;
+    overflow-y: auto;
+    padding: 8px;
+  }
+  .cmd-modal-results::-webkit-scrollbar { width: 4px; }
+  .cmd-modal-results::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+  
+  .cmd-result-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 4px;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+  }
+  .cmd-result-item:hover, .cmd-result-item.selected {
+    background: var(--bg-card-hover);
+    border-color: var(--border-color);
+  }
+  .cmd-result-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .cmd-result-item .item-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cmd-result-item .item-id {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.76rem;
+    color: var(--brand-light);
+    background: var(--bg-input);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 400;
+  }
+  .cmd-result-item .item-sub {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  .cmd-result-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--brand-light);
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+  }
+  .cmd-result-item:hover .cmd-result-action {
+    opacity: 1;
+  }
+
+  /* Toast Notification */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--brand-dark);
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 900px) {
+    .app-layout { flex-direction: column; height: auto; }
+    .sidebar {
+      width: 100%;
+      min-width: 0;
+      height: auto;
+      max-height: 350px;
+      position: relative;
+    }
+    .main-content { padding: 20px 16px; height: auto; }
+    .mobile-menu-toggle { display: flex; }
+    .cmd-search-btn span { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Navigation Header -->
+<header class="top-header">
+  <div class="logo-area" onclick="showWelcome()">
+    <div class="logo-icon">🧠</div>
+    <div>
+      <span class="logo-title">AI Skills Hub</span>
+      <span class="logo-badge">31 SKILLS</span>
+    </div>
+  </div>
+
+  <div class="header-actions">
+    <button class="cmd-search-btn" onclick="openCmdModal()">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <span>搜索技能...</span>
+      <span class="cmd-kbd">⌘K</span>
+    </button>
+    
+    <button class="theme-toggle-btn" onclick="toggleTheme()" title="切换主题" id="themeBtn">
+    </button>
+  </div>
+</header>
+
+<!-- Main App Layout -->
+<div class="app-layout">
+  
+  <!-- Left Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header-box">
+      <div class="sidebar-search-box">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="searchInput" placeholder="搜索技能名称或功能..." oninput="filterSkills(this.value)">
+      </div>
+      <div class="sidebar-tools-row">
+        <span>分类浏览</span>
+        <button class="sidebar-tools-btn" onclick="toggleAllGroups()">展开/折叠全部</button>
+      </div>
+    </div>
+
+    <div class="sidebar-scroll" id="sidebarScroll"></div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content" id="mainContent">
+
+    <!-- Welcome Dashboard -->
+    <div class="skill-card active" id="welcome">
+      <div class="welcome-hero">
+        <h2>AI Agent 智能技能库手册</h2>
+        <p>探索 31 个覆盖全流程的 AI 辅助编码、架构设计、Bug 诊断与规范治理技能。</p>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-num">31</div>
+            <div class="stat-label">AI Agent Skills</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">11</div>
+            <div class="stat-label">专业能力分类</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">⌘K</div>
+            <div class="stat-label">全局快速检索</div>
+          </div>
+        </div>
+
+        <div class="category-discovery-grid" id="categoryGrid"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Command Palette Modal -->
+<div class="cmd-modal-backdrop" id="cmdModal" onclick="closeCmdModalOnBackdrop(event)">
+  <div class="cmd-modal">
+    <div class="cmd-modal-input-wrap">
+      <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" id="cmdInput" placeholder="输入技能名称、英文 ID 或功能关键词..." oninput="searchCmdModal(this.value)">
+      <span class="cmd-kbd">ESC</span>
+      <button class="cmd-close-btn" onclick="closeCmdModal()" title="关闭 (ESC)">✕</button>
+    </div>
+    <div class="cmd-modal-results" id="cmdResults"></div>
+  </div>
+</div>
+
+<!-- Floating Toast -->
+<div class="toast" id="toast">
+  <span>✓</span>
+  <span id="toastMsg">已复制到剪贴板</span>
+</div>
+
+<script>
+// ---- Data Definitions ----
+const groups = [
+  {
+    name: "代码审查 & 质量",
+    items: [
+      { id: "code-review", label: "Code Review", desc: "双轴代码审查" },
+      { id: "trellis-check", label: "Trellis Check", desc: "综合质量验证" },
+    ]
+  },
+  {
+    name: "设计 & 架构",
+    items: [
+      { id: "codebase-design", label: "Codebase Design", desc: "模块设计语言" },
+      { id: "design-an-interface", label: "Design an Interface", desc: "接口多方案设计" },
+      { id: "domain-modeling", label: "Domain Modeling", desc: "领域模型构建" },
+    ]
+  },
+  {
+    name: "Bug 诊断 & 分析",
+    items: [
+      { id: "diagnosing-bugs", label: "Diagnosing Bugs", desc: "结构化 Bug 诊断" },
+      { id: "trellis-break-loop", label: "Trellis Break Loop", desc: "Bug 深层分析" },
+    ]
+  },
+  {
+    name: "审计",
+    items: [
+      { id: "fuck-my-shit-mountain", label: "Fuck My Shit Mountain", desc: "全面代码审计" },
+    ]
+  },
+  {
+    name: "Git & 工具链",
+    items: [
+      { id: "git-guardrails-claude-code", label: "Git Guardrails", desc: "Git 安全守卫" },
+      { id: "setup-pre-commit", label: "Setup Pre-Commit", desc: "Husky 预提交钩子" },
+      { id: "resolving-merge-conflicts", label: "Resolving Merge Conflicts", desc: "合并冲突解决" },
+    ]
+  },
+  {
+    name: "规划 & 需求",
+    items: [
+      { id: "grilling", label: "Grilling", desc: "方案压力测试" },
+      { id: "trellis-brainstorm", label: "Trellis Brainstorm", desc: "需求发现与协作" },
+      { id: "request-refactor-plan", label: "Request Refactor Plan", desc: "重构计划制定" },
+      { id: "prototype", label: "Prototype", desc: "快速原型验证" },
+    ]
+  },
+  {
+    name: "测试",
+    items: [
+      { id: "tdd", label: "TDD", desc: "测试驱动开发" },
+      { id: "migrate-to-shoehorn", label: "Migrate to Shoehorn", desc: "类型安全测试数据" },
+      { id: "scaffold-exercises", label: "Scaffold Exercises", desc: "练习脚手架" },
+    ]
+  },
+  {
+    name: "研究 & 知识",
+    items: [
+      { id: "research", label: "Research", desc: "可信来源研究" },
+      { id: "obsidian-vault", label: "Obsidian Vault", desc: "笔记管理" },
+    ]
+  },
+  {
+    name: "QA & 问题跟踪",
+    items: [
+      { id: "qa", label: "QA Session", desc: "交互式 QA 问题上报" },
+    ]
+  },
+  {
+    name: "Trellis 工作流",
+    items: [
+      { id: "trellis-start", label: "Trellis Start", desc: "启动开发会话" },
+      { id: "trellis-before-dev", label: "Trellis Before Dev", desc: "开发前规范加载" },
+      { id: "trellis-continue", label: "Trellis Continue", desc: "恢复任务" },
+      { id: "trellis-finish-work", label: "Trellis Finish Work", desc: "结束会话归档" },
+      { id: "trellis-update-spec", label: "Trellis Update Spec", desc: "规范文档更新" },
+      { id: "trellis-meta", label: "Trellis Meta", desc: "Trellis 架构定制" },
+      { id: "trellis-session-insight", label: "Trellis Session Insight", desc: "跨会话记忆检索" },
+      { id: "trellis-spec-bootstrap", label: "Trellis Spec Bootstrap", desc: "Spec 引导初始化" },
+      { id: "trellis-channel", label: "Trellis Channel", desc: "多 Agent 协作" },
+    ]
+  },
+  {
+    name: "UI/UX 设计",
+    items: [
+      { id: "ui-ux-pro-max", label: "UI/UX Pro Max", desc: "设计智能系统" },
+    ]
+  },
+];
+
+const skills = {
+  "code-review": {
+    name: "Code Review",
+    nameEn: "code-review",
+    desc: "双轴代码审查：从 Standards（是否符合编码标准）和 Spec（是否实现需求规范）两个维度审查变更代码。",
+    trigger: "用户说「review this PR」「review 这个分支」「review since main」；或在代码提交前做最终审查",
+    tags: ["review", "quality"],
+    tagClass: "tag-coding",
+    useWhen: [
+      "用户要求 review 一个分支、PR 或工作区中的变更",
+      "用户说「review since X」",
+      "提交前对代码做最后一次检查",
+    ],
+    howToUse: [
+      "Pin 固定点：确定 diff 比较基准（commit/branch/tag）",
+      "识别 Spec 来源：查找 issue、PRD、规范文档",
+      "识别 Standards 来源：查找 CONTRIBUTING.md、CODING_STANDARDS.md 等",
+      "并行启动两个子 agent：Standards + Spec 同时审查",
+      "汇总输出：呈现两个维度的报告，不做交叉排序",
+    ],
+    keyProcess: [
+      "Standards 轴：检查是否符合文档化标准 + 基线代码坏味检测（神秘命名、重复代码、特性依恋等 12 种）",
+      "Spec 轴：检查是否忠实实现需求、有无遗漏或范围蔓延",
+      "坏味只是判断型启发式，文档化标准高于基线",
+    ],
+    whyTwoAxes: "变更可能通过一个轴但在另一个轴上失败。分开报告防止一个维度掩盖另一个。",
+    tips: [
+      "每个轴限制 400 词以内输出",
+      "最终报告只并列呈现，不要合并或重排",
+      "结尾一行总结每个轴的总发现数和最严重问题",
+    ],
+  },
+  "trellis-check": {
+    name: "Trellis Check",
+    nameEn: "trellis-check",
+    desc: "综合质量验证：代码写完后运行规范合规检查、lint、类型检查、测试、跨层数据流验证。",
+    trigger: "代码编写完成后自动调用；或用户说「check quality」「verify the code」「做个质量检查」",
+    tags: ["quality", "workflow", "trellis"],
+    tagClass: "tag-workflow",
+    useWhen: [
+      "代码编写完成，需要质量验证",
+      "提交前做最终检查",
+      "长时间会话中检查上下文漂移",
+    ],
+    howToUse: [
+      "Step 1：git diff --name-only HEAD 识别变更文件",
+      "Step 2：读取任务 artifacts（prd.md / design.md / implement.md）和 spec",
+      "Step 3：运行项目 lint、类型检查和测试",
+      "Step 4：检查清单 - 代码质量、测试覆盖、Spec 同步",
+      "Step 5：跨层检查（数据流、代码复用、导入/依赖）",
+      "Step 6：报告并修复发现的问题",
+    ],
+    keyProcess: [
+      "代码质量：无 lint 错误、无调试日志、无类型安全绕过",
+      "测试覆盖：新功能有单元测试、Bug 修复有回归测试",
+      "Spec 同步：发现的新模式或约定要更新到 .trellis/spec/",
+      "跨层数据流：存储 → 服务 → API → UI 读写链正确",
+    ],
+    tips: [
+      "单层变更可跳过 Step 5",
+      "发现非显而易见的模式后，应更新 spec 文档",
+    ],
+  },
+  "codebase-design": {
+    name: "Codebase Design",
+    nameEn: "codebase-design",
+    desc: "深度模块设计方法论。一致的设计词汇表，用于设计小接口、大行为的深层模块。",
+    trigger: "用户说「design this module」「改进一下接口」「module 拆得太大了」；或需要设计新模块/重构接口时",
+    tags: ["design", "architecture"],
+    tagClass: "tag-design",
+    useWhen: [
+      "设计或改进模块接口",
+      "寻找模块深化机会",
+      "决定在何处放置 seam",
+      "让代码更可测试或 AI 可导航",
+    ],
+    howToUse: [
+      "使用统一术语：Module / Interface / Implementation / Depth / Seam / Adapter / Leverage / Locality",
+      "深度模块 = 小接口 + 大实现",
+      "设计接口时提问：能否减少方法数？简化参数？隐藏更多复杂性？",
+      "删除测试：想象删除该模块 — 复杂性是否消失？",
+    ],
+    keyProcess: [
+      "Depth（深度）：接口提供的杠杆效应 — 调用方每学习一个接口单位能获得多少行为",
+      "Leverage（杠杆）：调用方从深度获得的收益 — 一个实现在 N 个调用点和 M 个测试中回报",
+      "Locality（局部性）：维护者从深度获得的收益 — 变更、Bug、知识集中在一处",
+    ],
+    testability: [
+      "接受依赖，不要创建依赖（constructor injection）",
+      "返回结果，不要产生副作用",
+      "小接口面积 = 更少的测试需求",
+      "接口即测试面 — 调用方和测试跨越同一个 seam",
+    ],
+    tips: [
+      "一个适配器 = 假设的 seam；两个适配器 = 真实的 seam",
+      "不要在无变化的地方引入 seam",
+      '"Interface" 包含类型签名 + 不变式 + 排序约束 + 错误模式 + 配置要求',
+    ],
+  },
+  "design-an-interface": {
+    name: "Design an Interface",
+    nameEn: "design-an-interface",
+    desc: "基于「设计两次」理念，并行生成多个截然不同的接口设计方案，然后对比综合。",
+    trigger: "用户说「design it twice」「设计几个不同方案」「explore interface options」",
+    tags: ["design", "planning"],
+    tagClass: "tag-design",
+    useWhen: [
+      "设计 API 或模块接口",
+      "探索接口设计的多种可能性",
+      "用户提到「design it twice」",
+    ],
+    howToUse: [
+      "1. 收集需求：问题、调用方、关键操作、约束、隐藏/暴露内容",
+      "2. 并行生成 3+ 种方案：每个子 agent 分配不同的约束方向",
+      "3. 展示方案：接口签名、使用示例、隐藏了什么、权衡",
+      "4. 对比方案：接口简洁性、通用性、实现效率、深度",
+      "5. 综合最佳方案：结合多个方案的洞察",
+    ],
+    designConstraints: [
+      "方案 A：最小化方法数（1-3 个方法）",
+      "方案 B：最大化灵活性（支持多种用例）",
+      "方案 C：为最常见场景优化",
+      "方案 D：从特定范式/库汲取灵感",
+    ],
+    tips: [
+      "不要让子 agent 产生相似的方案 — 强制差异性",
+      "不要跳过对比环节 — 价值在于对比",
+      "不要实现 — 只关心接口形状",
+    ],
+  },
+  "domain-modeling": {
+    name: "Domain Modeling",
+    nameEn: "domain-modeling",
+    desc: "主动构建和打磨项目领域模型，挑战术语、发明边界场景、编写术语表和 ADR。",
+    trigger: "用户说「术语如何定义」「这个domain model不对」「写个 ADR」；或讨论概念时发现术语模糊",
+    tags: ["design", "architecture"],
+    tagClass: "tag-design",
+    useWhen: [
+      "需要确定领域术语或通用语言",
+      "记录架构决策（ADR）",
+      "其他技能需要维护领域模型",
+    ],
+    howToUse: [
+      "检查术语表：当用户使用的术语与现有 CONTEXT.md 冲突时，立即指出",
+      "打磨模糊语言：将模糊/过载的术语替换为精确的规范术语",
+      "具体场景讨论：用具体场景压力测试领域关系",
+      "代码交叉引用：当用户描述与现实代码不一致时，指出矛盾",
+      "及时更新 CONTEXT.md：术语确定后立即写入，不累积",
+    ],
+    keyProcess: [
+      "单一上下文：CONTEXT.md + docs/adr/ 在项目根",
+      "多上下文：CONTEXT-MAP.md 指向每个上下文的位置",
+      "ADR 只在全部三个条件成立时创建：难以逆转、没上下文会惊讶、有真正权衡",
+    ],
+    tips: [
+      "CONTEXT.md 只包含术语表，不含实现细节",
+      "不在当前会话中做批量更新 — 边确定边写入",
+      "不创建不必要文件 — 有内容才创建",
+    ],
+  },
+  "diagnosing-bugs": {
+    name: "Diagnosing Bugs",
+    nameEn: "diagnosing-bugs",
+    desc: "结构化 Bug 诊断六阶段流程。核心是构建紧反馈回路 — 有了它就解决了 90%。",
+    trigger: "用户说「debug this」「diagnose」「程序出错了/抛异常/性能很慢」；或报告异常行为时",
+    tags: ["debug", "bug"],
+    tagClass: "tag-debug",
+    useWhen: [
+      "用户说「diagnose/debug this」",
+      "报告异常/错误/崩溃/性能问题",
+    ],
+    howToUse: [
+      "Phase 1 — 构建反馈回路（最重要！）：找到能复现问题的命令",
+      "Phase 2 — 复现并最小化：确认症状，缩小到最简场景",
+      "Phase 3 — 假设：生成 3-5 个可证伪的排名假设，展示给用户",
+      "Phase 4 — 验证：每个探测对应 Phase 3 的一个预测，一次只变一个变量",
+      "Phase 5 — 修复 + 回归测试：先写测试 → 看失败 → 应用修复 → 看通过",
+      "Phase 6 — 清理 + 事后分析：移除 instrumentation，记录学到了什么",
+    ],
+    feedbackLoop: [
+      "失败测试（单元/集成/e2e）",
+      "curl/HTTP 脚本请求开发服务器",
+      "CLI 调用 + fixture + diff",
+      "无头浏览器脚本（Playwright/Puppeteer）",
+      "回放抓取的真实流量",
+      "快速原型夹具（最小化系统）",
+      "属性/模糊测试循环",
+      "二分法夹具（git bisect run）",
+      "差分循环（旧版本 vs 新版本）",
+    ],
+    tips: [
+      "Phase 1 没有完成就进入 Phase 2 是最大的 anti-pattern",
+      "紧回路标准：确定性的、秒级、可无人值守运行",
+      "每个 debug 日志加唯一前缀 [DEBUG-xxxx]，最后 grep 清理",
+      "性能回归用测量平台（profiler/计时）而不是日志",
+    ],
+  },
+  "trellis-break-loop": {
+    name: "Trellis Break Loop",
+    nameEn: "trellis-break-loop",
+    desc: "Bug 修复后的深层分析，打破「修 Bug → 忘记 → 重复」的循环。从 5 个维度分析并固化到 Spec。",
+    trigger: "Bug 修复后自动调用；或用户说「这Bug又出现了」「怎么还在」「break the loop」",
+    tags: ["debug", "analysis", "trellis"],
+    tagClass: "tag-debug",
+    useWhen: [
+      "修复 Bug 后，防止同类问题再次发生",
+      "需要深入分析 Bug 根因",
+    ],
+    howToUse: [
+      "1. 根因分类：缺失规范 / 跨层契约 / 变更传播失败 / 测试覆盖缺口 / 隐式假设",
+      "2. 修复失败分析：如果多次尝试才成功，分析为什么前几次失败",
+      "3. 预防机制：文档化 / 架构屏障 / 编译时检查 / 运行时监控 / 测试覆盖 / 代码审查",
+      "4. 系统性扩展：该 Bug 揭示了更广泛的问题？",
+      "5. 知识固化：更新 .trellis/spec/ 相关文档",
+    ],
+    rootCauseCategories: [
+      "A. 缺失规范 — 没有文档说明怎么做",
+      "B. 跨层契约 — 层之间接口不清晰",
+      "C. 变更传播失败 — 改了一处遗漏其他",
+      "D. 测试覆盖缺口 — 单元测试过，集成失败",
+      "E. 隐式假设 — 依赖未文档化的假设",
+    ],
+    tips: [
+      "Debugging 的价值不在于修 Bug，而在于让这类 Bug 不再发生",
+      "三个层次洞察：战术（修当前）→ 战略（防同类）→ 哲学（扩展思维模式）",
+      "分析完必须马上更新 spec 文件，否则分析停留在聊天记录中毫无价值",
+    ],
+  },
+  "fuck-my-shit-mountain": {
+    name: "Fuck My Shit Mountain",
+    nameEn: "fuck-my-shit-mountain",
+    desc: "全面的代码库审计系统。尽管名字刺耳，输出必须是冷静、专业、可操作的。支持全量/增量/定向审计。",
+    trigger: "用户说「audit this codebase」「做个审计」「代码库健康检查」「看看这代码有多烂」",
+    tags: ["audit", "quality"],
+    tagClass: "tag-coding",
+    useWhen: [
+      "用户请求全面的代码库审计",
+      "需要进行结构化仓库健康检查",
+      "PR review 增量审计",
+    ],
+    howToUse: [
+      "1. 收集必要输入：审计模式、报告语言、输出格式、审计范围（可选）",
+      "2. 加载对应 prompt 文件和评分规则",
+      "3. 系统化审计代码库（覆盖策略）",
+      "4. 每个发现使用 issue-card 模板记录",
+      "5. 组装报告（md/html/json）",
+      "6. 运行 report_lint.py 检查报告质量",
+    ],
+    auditModes: [
+      "full — 所有维度",
+      "incremental — 基于 git 变更增量审计",
+      "architecture / security / stability / performance / testing / maintainability / design / release / documentation / observability / configuration / data-integrity / privacy / accessibility / supply-chain / cost / ai-safety 等",
+    ],
+    scoring: "0.0-10.0 评分，含等级 S/A/B/C/D/F，每个分数需一句话证词",
+    tips: [
+      "每个发现必须有具体证据（文件、函数、行为）",
+      "区分 Confirmed 和 Suspected 问题",
+      "不要夸大严重性，映射到 severity.md 规则",
+      "发现密钥/凭据时不得在报告中打印完整值",
+    ],
+    rules: [
+      "发现必须含回归测试建议",
+      "发现必须含预估工作量",
+      "14 条不可协商规则（详见文档）",
+    ],
+  },
+  "git-guardrails-claude-code": {
+    name: "Git Guardrails",
+    nameEn: "git-guardrails-claude-code",
+    desc: "在 Claude Code 中设置 PreToolUse 钩子，拦截危险 git 命令（push, reset --hard, clean, branch -D 等）。",
+    trigger: "用户说「set up git safety」「block dangerous commands」「加个git安全守卫」",
+    tags: ["git", "safety"],
+    tagClass: "tag-git",
+    useWhen: [
+      "防止执行破坏性 git 操作",
+      "添加 git 安全钩子",
+      "在 Claude Code 中阻止 git push/reset",
+    ],
+    howToUse: [
+      "1. 询问安装范围：仅本项目还是全局",
+      "2. 复制钩子脚本到目标位置",
+      "3. 添加 PreToolUse 到 settings.json 中",
+      "4. 询问是否需要自定义黑名单",
+      "5. 快速验证：echo 一个假命令测试拦截",
+    ],
+    whatBlocked: [
+      "git push（含 --force）",
+      "git reset --hard",
+      "git clean -f / fd",
+      "git branch -D",
+      "git checkout . / git restore .",
+    ],
+    tips: [
+      "项目级配置在 .claude/settings.json",
+      "全局配置在 ~/.claude/settings.json",
+      "settings.json 已存在时合并 hooks，不要覆盖",
+    ],
+  },
+  "setup-pre-commit": {
+    name: "Setup Pre-Commit",
+    nameEn: "setup-pre-commit",
+    desc: "配置 Husky pre-commit 钩子 + lint-staged（Prettier）+ 类型检查 + 测试。",
+    trigger: "用户说「add pre-commit hooks」「setup husky」「配置 pre-commit」「加提交前检查」",
+    tags: ["git", "tooling", "quality"],
+    tagClass: "tag-git",
+    useWhen: [
+      "用户要求添加 pre-commit 钩子",
+      "设置 Husky",
+      "配置 lint-staged",
+    ],
+    howToUse: [
+      "1. 检测包管理器（npm/pnpm/yarn/bun）",
+      "2. 安装 devDependencies：husky lint-staged prettier",
+      "3. 初始化 Husky：npx husky init",
+      "4. 创建 .husky/pre-commit 脚本",
+      "5. 创建 .lintstagedrc 配置",
+      "6. 如没有 Prettier 配置则创建 .prettierrc",
+      "7. 验证所有文件存在且配置正确",
+      "8. 提交配置",
+    ],
+    tips: [
+      "Husky v9+ 不需要 shebang",
+      "prettier --ignore-unknown 跳过 Prettier 无法解析的文件",
+      "如项目没有 typecheck/test 脚本则跳过对应行",
+    ],
+  },
+  "resolving-merge-conflicts": {
+    name: "Resolving Merge Conflicts",
+    nameEn: "resolving-merge-conflicts",
+    desc: "解决进行中的 git merge/rebase 冲突。深入理解双方变更意图，保留两者语义。",
+    trigger: "检测到 git merge/rebase 冲突时自动触发",
+    tags: ["git", "merge"],
+    tagClass: "tag-git",
+    useWhen: [
+      "需要解决 git merge 或 rebase 冲突",
+    ],
+    howToUse: [
+      "1. 查看合并/变基当前状态和冲突文件",
+      "2. 找到每个冲突的主要来源：阅读 commit message、PR、issue",
+      "3. 解决每个 hunk：尽量保留双方意图；不兼容时选择符合合并目标的",
+      "4. 运行项目的自动化检查（类型检查、测试、格式化）",
+      "5. 完成合并/变基：stage 所有文件并提交",
+    ],
+    tips: [
+      "不要无谓发明新行为",
+      "总是解决，从不 --abort",
+      "变基时持续继续直到所有 commit 都变基完毕",
+    ],
+  },
+  "grilling": {
+    name: "Grilling",
+    nameEn: "grilling",
+    desc: "对计划、决策或想法进行无情的压力测试。逐步遍历决策树，每次一个问题。",
+    trigger: "用户说「grill me」「做个压力测试」「质疑一下这个方案」「挑战我的想法」",
+    tags: ["planning", "review"],
+    tagClass: "tag-design",
+    useWhen: [
+      "用户想要压力测试他们的想法",
+      "用户使用了「grill」触发短语",
+    ],
+    howToUse: [
+      "逐个提问，每次只问一个问题",
+      "每个问题提供你的推荐答案",
+      "如果事实可以通过探索环境（文件、工具等）获得，不要问用户",
+      "所有决策权在用户手中",
+      "直到用户确认达成共识才执行",
+    ],
+    tips: [
+      "一次问多个问题是令人困惑的",
+      "不要同时动作 — 先达成理解",
+    ],
+  },
+  "trellis-brainstorm": {
+    name: "Trellis Brainstorm",
+    nameEn: "trellis-brainstorm",
+    desc: "引导式需求发现流程。从模糊需求到清晰的 PRD、设计和实施计划。",
+    trigger: "用户说「brainstorm this」「讨论一下方案」「需求不太明确」；或需求模糊、有多个方案选择时",
+    tags: ["planning", "workflow", "trellis"],
+    tagClass: "tag-workflow",
+    useWhen: [
+      "需求不明确",
+      "存在多种有效方案",
+      "用户描述了一个新功能或复杂任务",
+    ],
+    howToUse: [
+      "1. 捕获用户需求到 prd.md",
+      "2. 检查代码库获取已有信息",
+      "3. 问到最高价值的剩余问题（一次一个）",
+      "4. 每个回答后立即更新 prd.md",
+      "5. 复杂任务创建 design.md 和 implement.md",
+      "6. PRD 收敛检查后开始实施",
+    ],
+    questionRules: [
+      "每个问题必须包含：需要的决策、为什么重要、你的推荐、不同选择的权衡",
+      "能通过代码库回答的问题不问用户",
+      "只问产品意图、偏好、范围边界或风险容忍度",
+    ],
+    artifacts: [
+      "prd.md — 目标、需求、验收标准、范围外、阻塞问题",
+      "design.md — 架构边界、数据流、兼容性、关键权衡",
+      "implement.md — 有序实施清单、验证命令、回滚点",
+    ],
+    tips: [
+      "使用第一性原理分析：剥离实现细节 → 列出基本真理 → 挑战假设 → 从真理向上构建",
+      "不要在用户批准前开始实现",
+    ],
+  },
+  "request-refactor-plan": {
+    name: "Request Refactor Plan",
+    nameEn: "request-refactor-plan",
+    desc: "通过用户访谈创建详细的重构计划，分解为极小的可提交步骤，然后归档为 GitHub Issue。",
+    trigger: "用户说「plan a refactor」「重构计划」「写个 refactor RFC」「拆成小步骤」",
+    tags: ["planning", "refactor"],
+    tagClass: "tag-design",
+    useWhen: [
+      "用户想要规划重构",
+      "创建重构 RFC",
+      "将重构分解为安全的增量步骤",
+    ],
+    howToUse: [
+      "1. 请用户描述问题和可能的解决方案",
+      "2. 探索仓库验证用户陈述",
+      "3. 询问是否考虑过其他方案",
+      "4. 深入讨论实现细节",
+      "5. 确定精确范围（改什么不改什么）",
+      "6. 检查测试覆盖，如不足则询问测试计划",
+      "7. 将实施分解为极小的 commit",
+      "8. 创建 GitHub Issue",
+    ],
+    issueTemplate: [
+      "Problem Statement — 问题陈述",
+      "Solution — 解决方案",
+      "Commits — 极细粒度的 commit 计划",
+      "Decision Document — 决策记录（模块、接口、技术澄清）",
+      "Testing Decisions — 测试策略",
+      "Out of Scope — 明确不涵盖的内容",
+    ],
+    tips: [
+      "参考 Martin Fowler 的建议：每一步尽可能小，始终能看到程序在运行",
+      "不包含具体文件路径和代码片段 — 它们会很快过时",
+    ],
+  },
+  "prototype": {
+    name: "Prototype",
+    nameEn: "prototype",
+    desc: "构建一次性原型来回答设计问题。根据问题类型分为逻辑原型和 UI 原型。",
+    trigger: "用户说「prototype this」「验证一下这个方案」「写个 quick demo」「试试这个想法」",
+    tags: ["planning", "design", "experiment"],
+    tagClass: "tag-design",
+    useWhen: [
+      "需要验证状态模型或逻辑是否合理",
+      "探索 UI 应该长什么样",
+    ],
+    howToUse: [
+      "确定问题类型：逻辑问题 → 终端交互式原型；UI 问题 → 多方案 UI 页面",
+      "逻辑原型：构建微型交互式终端应用，推动状态机通过纸面难以推理的用例",
+      "UI 原型：生成多个截然不同的 UI 变体，通过 URL 参数切换",
+    ],
+    rules: [
+      "从第一天就明确标注为一次性代码",
+      "一条命令即可运行",
+      "默认无持久化（状态在内存中）",
+      "跳过打磨：无测试、无错误处理、无抽象",
+      "每次操作后展示完整状态",
+      "完成后将验证的决策合并到真实代码",
+    ],
+    tips: [
+      "问题决定原型形状 — 类型错了整个原型就浪费了",
+      "原型 commit 到 throwaway 分支，不在 main 上",
+    ],
+  },
+  "tdd": {
+    name: "TDD",
+    nameEn: "tdd",
+    desc: "测试驱动开发的红-绿循环。通过公共接口验证行为，不耦合实现细节。",
+    trigger: "用户说「TDD」「test-first」「先写测试」「红绿重构」；或需要高质量/无回归保障时",
+    tags: ["testing", "tdd"],
+    tagClass: "tag-coding",
+    useWhen: [
+      "用户想用测试优先的方式构建功能",
+      "修复 Bug",
+      "需要集成测试",
+    ],
+    howToUse: [
+      "先定 seams：在写任何测试前，确定并在 seam 上达成一致",
+      "红 → 绿循环：先写失败的测试，然后只写足够通过它的代码",
+      "一次一个切片：一个 seam、一个测试、一个最小实现",
+      "重构不属于红绿循环，属于 review 阶段",
+    ],
+    whatIsGoodTest: [
+      "通过公共接口验证行为",
+      "读起来像规范 — 「用户可以用有效购物车结账」",
+      "重构后仍然存活 — 不关心内部结构",
+      "预期值来自独立的事实来源（已知正确的字面量、规范）",
+    ],
+    antiPatterns: [
+      "实现耦合 — Mock 内部协作者、测试私有方法",
+      "同义反复 — 断言用自己的方式重新计算预期值",
+      "水平切片 — 一次写完所有测试再实现",
+    ],
+    tips: [
+      "不要在红绿循环中做重构",
+      "不要预期未来测试或添加推测性功能",
+    ],
+  },
+  "migrate-to-shoehorn": {
+    name: "Migrate to Shoehorn",
+    nameEn: "migrate-to-shoehorn",
+    desc: "将测试文件中的 `as` 类型断言迁移到 @total-typescript/shoehorn，实现类型安全的测试数据。",
+    trigger: "用户说「use shoehorn」「替换 as 断言」「partial test data」；或测试代码里看到 as Type 时",
+    tags: ["testing", "typescript"],
+    tagClass: "tag-coding",
+    useWhen: [
+      "用户提到 shoehorn",
+      "想要替换测试中的 `as` 断言",
+      "需要部分测试数据",
+    ],
+    howToUse: [
+      "安装：npm i @total-typescript/shoehorn",
+      "`as Type` → `fromPartial()` — 传递部分数据但保留类型检查",
+      "`as unknown as Type` → `fromAny()` — 故意传错误类型数据",
+      "添加 import { fromPartial, fromAny } from '@total-typescript/shoehorn'",
+      "运行类型检查验证",
+    ],
+    functions: [
+      "fromPartial() — 传部分数据，仍然类型检查",
+      "fromAny() — 故意传递错误类型数据（保留自动补全）",
+      "fromExact() — 强制完整对象（可以后续替换为 fromPartial）",
+    ],
+    tips: [
+      "仅测试代码使用，绝不用于生产代码",
+    ],
+  },
+  "scaffold-exercises": {
+    name: "Scaffold Exercises",
+    nameEn: "scaffold-exercises",
+    desc: "创建通过 lint 检查的练习目录结构，包含 sections、problems、solutions 和 explainers。",
+    trigger: "用户说「scaffold exercises」「创建练习」「搭个练习目录」「建课程结构」",
+    tags: ["education", "scaffold"],
+    tagClass: "tag-coding",
+    useWhen: [
+      "需要搭建练习目录结构",
+      "创建练习 stubs",
+      "设置新的课程部分",
+    ],
+    howToUse: [
+      "1. 解析计划：提取 section 名称、练习名称和变体类型",
+      "2. 创建目录：mkdir -p 每个路径",
+      "3. 创建 stub readme：每个变体文件夹一个带标题的 readme",
+      "4. 运行 lint：pnpm ai-hero-cli internal lint",
+      "5. 修复错误直到 lint 通过",
+    ],
+    naming: [
+      "Sections: XX-section-name/ (如 01-retrieval-skill-building)",
+      "Exercises: XX.YY-exercise-name/ (如 01.03-retrieval-with-bm25)",
+      "Section number = XX, Exercise number = XX.YY",
+      "名称使用 dash-case（小写、连字符）",
+    ],
+    tips: [
+      "移动/重命名练习时使用 git mv 保留历史",
+      "每个子文件夹至少需要一个非空的 readme.md",
+    ],
+  },
+  "research": {
+    name: "Research",
+    nameEn: "research",
+    desc: "在后台启动研究 agent，针对高可信主要来源调查问题，将发现写入 Markdown 文件。",
+    trigger: "用户说「research this topic」「查一下 API 文档」「做个研究」「investigate this」",
+    tags: ["research", "knowledge"],
+    tagClass: "tag-research",
+    useWhen: [
+      "用户想要研究某个话题",
+      "需要收集文档或 API 事实",
+      "需要将阅读工作委托给后台 agent",
+    ],
+    howToUse: [
+      "启动后台 agent 进行研究",
+      "只使用主要来源（官方文档、源码、规范、第一方 API）",
+      "将发现写入单个 Markdown 文件",
+      "每个声明引用来源",
+      "保存到仓库中已有的笔记位置，或放在合理位置",
+    ],
+    tips: [
+      "让研究在后台进行，你可以同时继续工作",
+      "不要使用次要来源的文章",
+    ],
+  },
+  "obsidian-vault": {
+    name: "Obsidian Vault",
+    nameEn: "obsidian-vault",
+    desc: "在 Obsidian 知识库中搜索、创建和管理笔记，使用 wikilinks 和索引笔记。",
+    trigger: "用户说「find a note」「search obsidian」「在笔记里找一下」「create a note」",
+    tags: ["knowledge", "notes"],
+    tagClass: "tag-research",
+    useWhen: [
+      "用户想在 Obsidian 中查找笔记",
+      "创建笔记",
+      "组织笔记结构",
+    ],
+    howToUse: [
+      "搜索：使用 find/grep 或 glob 工具搜索",
+      "创建新笔记：使用 Title Case 命名，添加 [[wikilinks]]",
+      "查找相关笔记：搜索 [[Note Title]] 反向链接",
+      "命名约定：Title Case，不使用文件夹分类",
+    ],
+    linking: "使用 Obsidian [[wikilinks]] 语法连接笔记。索引笔记只是 [[wikilinks]] 列表。",
+    tips: [
+      "不建文件夹，用链接和索引笔记组织",
+      "底部添加依赖/相关笔记链接",
+    ],
+  },
+  "qa": {
+    name: "QA Session",
+    nameEn: "qa",
+    desc: "交互式 QA 会话。用户对话式报告 Bug，Agent 在后台探索代码库并提交 GitHub Issue。",
+    trigger: "用户说「QA session」「报个 bug」「file an issue」「做个 QA 测试」",
+    tags: ["qa", "issue"],
+    tagClass: "tag-coding",
+    useWhen: [
+      "用户想要报告 Bug",
+      "进行 QA 测试",
+      "对话式提交 Issue",
+    ],
+    howToUse: [
+      "1. 倾听并轻微澄清（最多 2-3 个简短问题）",
+      "2. 后台探索代码库（了解领域语言和功能边界）",
+      "3. 判断范围：单个 issue 还是拆分成多个",
+      "4. 使用 gh issue create 提交 Issue（不需要用户审查）",
+      "5. 继续回话直到用户说完成",
+    ],
+    issueRules: [
+      "不包含文件路径或行号 — 它们会过时",
+      "使用项目的领域语言",
+      "描述行为，不是代码",
+      "复现步骤必须包含",
+      "简明扼要（30 秒内读完）",
+    ],
+    tips: [
+      "创建多个独立 issue 时按依赖顺序创建",
+      "每个 issue 应独立可修复和可验证",
+      "最大化并行性 — 多人可同时处理不同 issue",
+    ],
+  },
+  "trellis-start": {
+    name: "Trellis Start",
+    nameEn: "trellis-start",
+    desc: "初始化 AI 开发会话：读取工作流指南、开发者身份、git 状态、活跃任务和项目规范，然后路由到正确的技能。",
+    trigger: "每次开始新的 AI 会话时自动触发；或用户说「开始新任务」「start session」",
+    tags: ["workflow", "trellis", "start"],
+    tagClass: "tag-workflow",
+    useWhen: [
+      "开始新的编码会话",
+      "恢复工作",
+      "启动新任务",
+      "重新建立项目上下文",
+    ],
+    howToUse: [
+      "Step 1: get_context.py 获取身份、git 状态、当前任务",
+      "Step 2: get_context.py --mode phase 获取阶段概览",
+      "Step 3: get_context.py --mode packages + 读取 spec 索引",
+      "Step 4: 根据任务状态路由到对应技能",
+    ],
+    routing: [
+      "规划中 + 无 prd.md → trellis-brainstorm",
+      "规划中 + 有 prd.md → 继续规划或 task.py start",
+      "in_progress → 加载实施步骤",
+      "无活跃任务 → 询问是否创建 Trellis 任务",
+    ],
+    tips: [
+      "get_context.py 是入口，规范指引在 .trellis/workflow.md",
+    ],
+  },
+  "trellis-before-dev": {
+    name: "Trellis Before Dev",
+    nameEn: "trellis-before-dev",
+    desc: "在开始编码前发现并注入项目特定的编码规范。读取 .trellis/spec/ 中的索引、预开发检查清单和共享指南。",
+    trigger: "即将写代码前自动调用；或用户说「该写代码了」「开始实现吧」",
+    tags: ["workflow", "trellis", "coding"],
+    tagClass: "tag-workflow",
+    useWhen: [
+      "开始新的编码任务",
+      "写代码之前",
+      "切换到不同的包",
+      "需要刷新项目约定和标准",
+    ],
+    howToUse: [
+      "1. 读取当前任务 artifacts（prd.md / design.md / implement.md）",
+      "2. 发现包和 spec 层：get_context.py --mode packages",
+      "3. 识别适用的 spec：基于包/工作类型",
+      "4. 读取 spec 索引和预开发检查清单",
+      "5. 读取具体指南文件",
+      "6. 始终读取共享指南",
+    ],
+    tips: [
+      "此步骤在写任何代码之前是强制性的",
+      "索引文件只是指针，目标是具体的指南文件",
+    ],
+  },
+  "trellis-continue": {
+    name: "Trellis Continue",
+    nameEn: "trellis-continue",
+    desc: "恢复进行中的任务。加载工作流阶段索引，确定应继续的阶段/步骤，加载步骤详情。",
+    trigger: "回到进行中的任务时自动触发；或用户说「继续」「continue」「刚才做到哪了」",
+    tags: ["workflow", "trellis", "continue"],
+    tagClass: "tag-workflow",
+    useWhen: [
+      "回到进行中的任务",
+      "需要知道接下来做什么",
+    ],
+    howToUse: [
+      "Step 1: get_context.py 确认当前任务、git 状态、最近 commits",
+      "Step 2: get_context.py --mode phase 加载阶段索引",
+      "Step 3: 根据状态 + artifacts 确定位置",
+      "Step 4: get_context.py --mode phase --step X.X 加载步骤详情",
+    ],
+    statusRouting: [
+      "planning + 无 prd.md → 1.1 Brainstorm",
+      "planning + prd.md → 判断轻量/复杂",
+      "in_progress + 未实现 → 2.1",
+      "in_progress + 实现完成未检查 → 2.2",
+      "in_progress + 检查通过 → 3.3 规范更新 → 3.4 提交",
+    ],
+    tips: [
+      "严格按照阶段内顺序执行 — [required] 步骤不可跳过",
+      "发现需要时可回退到前一阶段",
+    ],
+  },
+  "trellis-finish-work": {
+    name: "Trellis Finish Work",
+    nameEn: "trellis-finish-work",
+    desc: "结束当前会话：验证质量门已通过、归档完成任务、记录开发者日志。",
+    trigger: "用户说「finish work」「结束会话」「wrap up」「今天就到这」；或任务完成时",
+    tags: ["workflow", "trellis", "finish"],
+    tagClass: "tag-workflow",
+    useWhen: [
+      "编码完成准备结束会话",
+    ],
+    howToUse: [
+      "Step 1: get_context.py --mode record 调查当前状态",
+      "Step 2: git status --porcelain 检查脏文件，区分当前任务/其他工作",
+      "Step 3: task.py archive 归档完成任务",
+      "Step 4: add_session.py 记录会话日志",
+    ],
+    tips: [
+      "代码提交在 Phase 3.4，不是 finish-work 的一部分",
+      "归档和日志记录是自动提交的",
+      "脏文件检查是关键步骤 — 不要丢失未提交的工作",
+    ],
+  },
+  "trellis-update-spec": {
+    name: "Trellis Update Spec",
+    nameEn: "trellis-update-spec",
+    desc: "将可执行合约和编码约定捕获到 .trellis/spec/ 文档中。包含完整的 7 段强制输出格式。",
+    trigger: "学到新知识、修完 Bug、做完功能后自动调用；或用户说「把这个记下来」「更新 spec」",
+    tags: ["workflow", "trellis", "documentation"],
+    tagClass: "tag-workflow",
+    useWhen: [
+      "从调试、实施或讨论中学到了有价值的东西",
+      "需要将知识持久化供将来使用",
+    ],
+    howToUse: [
+      "1. 识别你学到了什么以及重要性",
+      "2. 分类更新类型：设计决策 / 项目约定 / 新模式 / 禁止模式 / 常见错误 / 约定 / 陷阱",
+      "3. 读取当前 spec 文件了解结构和避免重复",
+      "4. 进行更新（具体、有示例、解释原因）",
+      "5. 如需要更新索引文件 index.md",
+    ],
+    mandatoryTrigger: [
+      "新增/变更的 API 签名",
+      "跨层请求/响应合约变更",
+      "数据库 schema/迁移变更",
+      "基础设施集成",
+    ],
+    mandatoryOutput7: [
+      "1. Scope/Trigger",
+      "2. Signatures",
+      "3. Contracts（请求/响应/环境变量）",
+      "4. Validation & Error Matrix",
+      "5. Good/Base/Bad Cases",
+      "6. Tests Required",
+      "7. Wrong vs Correct",
+    ],
+    tips: [
+      "Code-Spec 是「如何写代码」，Guide 是「写之前要思考什么」",
+      "关键洞察：Spec 更新不只是为了问题 — 每个功能实现都包含未来的 AI 需要的设计决策",
+    ],
+  },
+  "trellis-meta": {
+    name: "Trellis Meta",
+    nameEn: "trellis-meta",
+    desc: "理解和定制本地 Trellis 架构。涵盖工作流、持久化、平台钩子、频道运行时、跨会话记忆等。",
+    trigger: "用户说「customize trellis」「修改 Trellis 配置」「trellis 是怎么工作的」",
+    tags: ["workflow", "trellis", "architecture"],
+    tagClass: "tag-workflow",
+    useWhen: [
+      "修改 .trellis 及平台钩子/设置",
+      "定制频道运行时",
+      "管理跨会话记忆",
+    ],
+    howToUse: [
+      "1. 先读 overview.md 建立系统模型",
+      "2. 按需要读取相关参考文件",
+      "3. 编辑前读取实际文件，以本地内容为权威",
+      "4. 不要修改全局 npm 安装目录或 node_modules",
+    ],
+    scope: [
+      ".trellis/: workflow, config, tasks, spec, workspace, scripts, agents",
+      "平台目录: .claude/, .codex/, .cursor/ 等",
+      "共享技能: .agents/skills/",
+      "频道存储: ~/.trellis/channels/",
+      "会话日志: ~/.claude/projects/ 等",
+    ],
+    tips: [
+      "不要写团队私有规则到公共 bundled skill 中 — 写在 .trellis/spec/ 或本地技能中",
+      "不要手工编辑 ~/.trellis/channels/ 下的 events.jsonl",
+    ],
+  },
+  "trellis-session-insight": {
+    name: "Trellis Session Insight",
+    nameEn: "trellis-session-insight",
+    desc: "通过 trellis mem CLI 访问过去的 AI 对话历史。读取本地 JSONL 文件实现跨会话记忆。",
+    trigger: "用户问「上次怎么解决的」「之前讨论过吗」「想起一段对话」；或开始涉及之前工作的 task",
+    tags: ["memory", "trellis", "history"],
+    tagClass: "tag-workflow",
+    useWhen: [
+      "用户问「上次怎么解决的」",
+      "「之前讨论过吗」",
+      "「想起一段对话」",
+      "开始涉及之前工作的 brainstorm",
+      "调试熟悉的 Bug",
+    ],
+    howToUse: [
+      "trellis mem search <keyword> — 搜索关键词",
+      "trellis mem extract <session-id> --phase brainstorm — 提取会话内容",
+      "trellis mem context <session-id> --turns 3 --around 2 — 查看上下文",
+      "trellis mem list --cwd <path> — 列出项目会话",
+    ],
+    whenToUse: [
+      "Brainstorm 重复风险：检查之前是否已经做过决定",
+      "熟悉的 Bug：之前是否修复过类似问题",
+      "跨会话继续：用户说「继续上次的」",
+      "决策检索：决定在旧 brainstorm 中",
+    ],
+    whenNotToUse: [
+      "相关信息在当前 turn、prd.md、git log 中已有",
+      "问题涉及代码事实而不是对话事实",
+      "用户明确说「不要翻历史」",
+    ],
+    tips: [
+      "mem 是只读的，不做任何写回",
+      "mem 不上传任何数据到远程",
+      "获取到的原始材料如何处理是现场判断：引用、更新 spec、归档或只是吸收",
+    ],
+  },
+  "trellis-spec-bootstrap": {
+    name: "Trellis Spec Bootstrap",
+    nameEn: "trellis-spec-bootstrap",
+    desc: "从真实代码库创建或刷新 .trellis/spec/ 指南。单 agent 负责全流程：分析仓库、选择边界、编写文档、验证结果。",
+    trigger: "初始化新项目、或用户说「刷新 spec」「重新生成规范文档」时触发",
+    tags: ["workflow", "trellis", "documentation"],
+    tagClass: "tag-workflow",
+    useWhen: [
+      "创建新的 .trellis/spec 指南",
+      "刷新现有规范",
+    ],
+    howToUse: [
+      "1. 确认 Trellis 已初始化，检查当前 .trellis/spec/ 结构",
+      "2. 使用最佳工具分析仓库架构",
+      "3. 按包和层分解 spec 工作（仅当反映实际代码库时）",
+      "4. 填充 spec 文件：具体模式、文件路径、示例和反例",
+      "5. 验证最终 spec 内部一致且不含模板占位符",
+    ],
+    doneCriteria: [
+      ".trellis/spec/ 描述项目当前状态",
+      "每个相关包/层有带真实示例的实用编码指南",
+      "不适用的模板部分已删除",
+      "index.md 匹配最终 spec 文件集",
+    ],
+    tips: [
+      "将模板视为起点而非合同 — 按需删除/重命名/拆分/添加",
+      "偏好源码支持的规则而非通用建议",
+      "不留占位文本、空标题或复制的样板",
+    ],
+  },
+  "trellis-channel": {
+    name: "Trellis Channel",
+    nameEn: "trellis-channel",
+    desc: "多 Agent 协作运行时。通过持久化事件日志实现 agent 间通信、worker 生成、Peer review 和 forum 讨论。",
+    trigger: "用户说「和另一个 agent 讨论」「spawn a worker」「开个 issue 区」「看看那个 thread」",
+    tags: ["workflow", "trellis", "collaboration"],
+    tagClass: "tag-workflow",
+    useWhen: [
+      "需要多个 agent 协作讨论",
+      "生成 worker agent 执行任务",
+      "让 agent review 代码",
+      "开 issue board 或 changelog forum",
+    ],
+    howToUse: [
+      "trellis channel list --all — 列出所有频道",
+      "trellis channel forum <board> --scope global — 查看 forum",
+      "trellis channel send <message> — 发送消息到频道",
+      "trellis channel spawn --agent implement — 生成 worker",
+      "trellis channel context add/delete/list — 管理上下文",
+    ],
+    routing: [
+      "和另一个 agent 讨论 → workflows.md",
+      "生成 implement/check agent → workers.md",
+      "开 issue 区 / forum → forum.md",
+      "worker 卡住 → progress-debugging.md",
+    ],
+    tips: [
+      "使用 --kind done 而非 --tag 作为完成信号",
+      "brainstorm 要做多轮压力测试",
+      "forum 频道是 event-sourced 的",
+    ],
+  },
+  "ui-ux-pro-max": {
+    name: "UI/UX Pro Max",
+    nameEn: "ui-ux-pro-max",
+    desc: "全面的 UI/UX 设计智能系统。包含 50+ 风格、161 色板、57 字体搭配、161 产品类型、99 UX 指南和 25 图表类型。",
+    trigger: "用户说「设计这个页面」「做个 UI」「选配色/字体」「这个界面不好看」「优化 UIUX」",
+    tags: ["design", "ui", "ux"],
+    tagClass: "tag-ux",
+    useWhen: [
+      "设计新页面（Landing/Dashboard/Admin/SaaS）",
+      "创建或重构 UI 组件",
+      "选择配色、字体系统、间距标准",
+      "评审 UI 代码的用户体验或可访问性",
+      "实现暗色模式、图表、动画",
+    ],
+    priorityRules: [
+      "P1-可访问性（CRITICAL）：对比度 4.5:1、Alt 文本、键盘导航",
+      "P2-触摸与交互（CRITICAL）：最小 44×44px、加载反馈",
+      "P3-性能（HIGH）：WebP/AVIF、懒加载、CLS < 0.1",
+      "P4-风格选择（HIGH）：匹配产品类型、一致性、SVG 图标",
+      "P5-布局与响应式（HIGH）：移动优先、无水平滚动",
+      "P6-排版与色彩（MEDIUM）：基础 16px、行高 1.5",
+    ],
+    howToUse: [
+      "Step 1: 分析用户需求（产品类型、受众、风格关键词、技术栈）",
+      "Step 2: 生成设计系统 --design-system",
+      "Step 3: 补充详细搜索（--domain product/style/color/typography/chart/ux 等）",
+      "Step 4: 技术栈指南（--stack nextjs/react/vue/flutter 等）",
+    ],
+    tips: [
+      "始终从 --design-system 开始获取综合推荐",
+      "查询使用多维关键词：产品+行业+风格+密度",
+      "交付前检查清单：可视化、交互、深色模式、布局、可访问性",
+    ],
+  },
+};
+
+// ---- App Logic & Rendering ----
+function renderSidebar() {
+  const container = document.getElementById('sidebarScroll');
+  let html = '';
+  groups.forEach((g, gi) => {
+    html += `<div class="group" data-group="${gi}">
+      <div class="group-header" onclick="toggleGroup(${gi})">
+        <div class="group-title-wrap">
+          <span>${g.name}</span>
+          <span class="group-count-badge">${g.items.length}</span>
+        </div>
+        <svg class="group-arrow" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+      <div class="group-items" id="group-items-${gi}">`;
+    
+    g.items.forEach(s => {
+      html += `<a class="nav-item" data-skill="${s.id}" onclick="showSkill('${s.id}')">
+        <span>${s.label}</span>
+        <span class="desc-sub">${s.desc}</span>
+      </a>`;
+    });
+    
+    html += `</div></div>`;
+  });
+  container.innerHTML = html;
+  
+  // Set default scrollHeight for opened groups
+  setTimeout(() => {
+    document.querySelectorAll('.group-items').forEach(el => {
+      el.style.maxHeight = el.scrollHeight + 'px';
+    });
+  }, 50);
+}
+
+function renderCategoryDiscovery() {
+  const grid = document.getElementById('categoryGrid');
+  let html = '';
+  groups.forEach((g, gi) => {
+    html += `<div class="category-card" onclick="focusCategory(${gi})">
+      <div class="cat-card-header">
+        <div class="cat-card-title">${g.name}</div>
+        <div class="cat-card-count">${g.items.length} 个技能</div>
+      </div>
+      <div style="font-size:0.8rem; color:var(--text-secondary)">
+        包含: ${g.items.map(i => i.label).slice(0, 3).join(', ')}${g.items.length > 3 ? '...' : ''}
+      </div>
+    </div>`;
+  });
+  grid.innerHTML = html;
+}
+
+function toggleGroup(gi) {
+  const header = document.querySelectorAll('.group-header')[gi];
+  const items = document.getElementById(`group-items-${gi}`);
+  if (items.classList.contains('hidden')) {
+    items.classList.remove('hidden');
+    items.style.maxHeight = items.scrollHeight + 'px';
+    header.classList.remove('collapsed');
+  } else {
+    items.classList.add('hidden');
+    items.style.maxHeight = '0';
+    header.classList.add('collapsed');
+  }
+}
+
+let allExpanded = true;
+function toggleAllGroups() {
+  allExpanded = !allExpanded;
+  groups.forEach((_, gi) => {
+    const header = document.querySelectorAll('.group-header')[gi];
+    const items = document.getElementById(`group-items-${gi}`);
+    if (allExpanded) {
+      items.classList.remove('hidden');
+      items.style.maxHeight = items.scrollHeight + 'px';
+      header.classList.remove('collapsed');
+    } else {
+      items.classList.add('hidden');
+      items.style.maxHeight = '0';
+      header.classList.add('collapsed');
+    }
+  });
+}
+
+function focusCategory(gi) {
+  groups.forEach((_, index) => {
+    const items = document.getElementById(`group-items-${index}`);
+    const header = document.querySelectorAll('.group-header')[index];
+    if (index === gi) {
+      items.classList.remove('hidden');
+      items.style.maxHeight = items.scrollHeight + 'px';
+      header.classList.remove('collapsed');
+      if (groups[gi].items.length > 0) {
+        showSkill(groups[gi].items[0].id);
+      }
+    }
+  });
+}
+
+function showWelcome() {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.skill-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('welcome').classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showSkill(id) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.skill-card').forEach(c => c.classList.remove('active'));
+
+  const navItem = document.querySelector(`.nav-item[data-skill="${id}"]`);
+  if (navItem) navItem.classList.add('active');
+
+  let card = document.getElementById(`card-${id}`);
+  if (!card) {
+    card = renderSkillCard(id);
+    document.getElementById('mainContent').appendChild(card);
+  }
+  card.classList.add('active');
+  document.getElementById('mainContent').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderSkillCard(id) {
+  const s = skills[id];
+  if (!s) return;
+
+  const card = document.createElement('div');
+  card.id = `card-${id}`;
+  card.className = 'skill-card';
+
+  const tagsHTML = (s.tags || []).map(t => `<span class="tag-pill ${s.tagClass || 'tag-coding'}">#${t}</span>`).join('');
+
+  card.innerHTML = `
+    <div class="skill-hero-card">
+      <div class="breadcrumb">
+        <span>Skills Reference</span> / <span>${s.name}</span>
+      </div>
+      <div class="skill-title-row">
+        <h1 class="skill-title">${s.name}</h1>
+        <span class="skill-en-code">${s.nameEn}</span>
+      </div>
+      <div class="tags-flex">${tagsHTML}</div>
+      <div class="skill-desc-text">${s.desc}</div>
+
+      <div class="hero-actions-row">
+        ${s.trigger ? `<button class="action-btn action-btn-primary" onclick="copyText('${escapeJsString(s.trigger)}', '触发条件已复制')">
+          <svg viewBox="0 0 24 24" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          复制触发词
+        </button>` : ''}
+        <button class="action-btn action-btn-secondary" onclick="copyText('${s.nameEn}', 'Skill ID 已复制')">
+          <svg viewBox="0 0 24 24" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          复制 Skill ID
+        </button>
+      </div>
+    </div>
+
+    ${s.trigger ? `
+      <div class="section-card">
+        <h3>
+          <svg viewBox="0 0 24 24" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          如何触发
+        </h3>
+        <div class="trigger-box">
+          <span>${s.trigger}</span>
+        </div>
+      </div>
+    ` : ''}
+
+    ${s.useWhen ? `
+      <div class="section-card">
+        <h3>
+          <svg viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          🎯 使用场景
+        </h3>
+        <ul class="custom-list">
+          ${s.useWhen.map(i => `<li>${i}</li>`).join('')}
+        </ul>
+      </div>
+    ` : ''}
+
+    ${s.howToUse ? `
+      <div class="section-card">
+        <h3>
+          <svg viewBox="0 0 24 24" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          📋 操作步骤与流程
+        </h3>
+        <ol class="step-timeline">
+          ${s.howToUse.map((item, idx) => `
+            <li>
+              <span class="step-number-badge">${idx + 1}</span>
+              <div>${item}</div>
+            </li>
+          `).join('')}
+        </ol>
+      </div>
+    ` : ''}
+
+    ${s.keyProcess ? renderCustomSection('🔑 关键流程与判定', s.keyProcess) : ''}
+    ${s.whyTwoAxes ? renderCustomSection('⚖️ 为什么双轴审查', [s.whyTwoAxes]) : ''}
+    ${s.testability ? renderCustomSection('🧪 可测试性设计标准', s.testability) : ''}
+    ${s.designConstraints ? renderCustomSection('📐 设计约束维度', s.designConstraints) : ''}
+    ${s.feedbackLoop ? renderCustomSection('🔄 反馈回路构建手段', s.feedbackLoop) : ''}
+    ${s.rootCauseCategories ? renderCustomSection('🔍 根因五大分类', s.rootCauseCategories) : ''}
+    ${s.auditModes ? renderCustomSection('🛡️ 支持的审计模式', s.auditModes) : ''}
+    ${s.scoring ? renderCustomSection('⭐ 评分规则机制', [s.scoring]) : ''}
+    ${s.rules ? renderCustomSection('🚨 核心规范要求', s.rules) : ''}
+    ${s.whatBlocked ? renderCustomSection('🚫 默认拦截的危险命令', s.whatBlocked) : ''}
+    ${s.functions ? renderCustomSection('⚡ Shoehorn 导出函数说明', s.functions) : ''}
+    ${s.naming ? renderCustomSection('🏷️ 练习命名约束', s.naming) : ''}
+    ${s.whatIsGoodTest ? renderCustomSection('✨ 好测试的标准', s.whatIsGoodTest) : ''}
+    ${s.antiPatterns ? renderCustomSection('⚠️ 常见 Anti-Patterns', s.antiPatterns) : ''}
+    ${s.issueTemplate ? renderCustomSection('📝 Issue 模板字段结构', s.issueTemplate) : ''}
+    ${s.issueRules ? renderCustomSection('📌 Issue 撰写规则', s.issueRules) : ''}
+    ${s.routing ? renderCustomSection('🔀 路由分类规则', s.routing) : ''}
+    ${s.statusRouting ? renderCustomSection('📊 任务状态路由映射', s.statusRouting) : ''}
+    ${s.mandatoryTrigger ? renderCustomSection('⚡ Code-Spec 强制触发条件', s.mandatoryTrigger) : ''}
+    ${s.mandatoryOutput7 ? renderCustomSection('📄 Code-Spec 7 段式强制输出', s.mandatoryOutput7) : ''}
+    ${s.scope ? renderCustomSection('🌐 作用域分布', s.scope) : ''}
+    ${s.whenToUse ? renderCustomSection('💡 何时启用记忆检索', s.whenToUse) : ''}
+    ${s.whenNotToUse ? renderCustomSection('⛔ 何时不建议检索', s.whenNotToUse) : ''}
+    ${s.doneCriteria ? renderCustomSection('✅ 验证完成标准', s.doneCriteria) : ''}
+    ${s.priorityRules ? renderCustomSection('🏆 UI/UX 优先级原则', s.priorityRules) : ''}
+    ${s.artifacts ? renderCustomSection('📦 生成的 Artifacts 产物', s.artifacts) : ''}
+    ${s.questionRules ? renderCustomSection('❓ 提问规范', s.questionRules) : ''}
+
+    ${s.tips ? `
+      <div class="section-card tips-callout">
+        <h4>💡 专家提示与核心注意 (Tips)</h4>
+        <ul class="custom-list">
+          ${s.tips.map(t => `<li>${t}</li>`).join('')}
+        </ul>
+      </div>
+    ` : ''}
+  `;
+
+  return card;
+}
+
+function renderCustomSection(title, items) {
+  return `
+    <div class="section-card">
+      <h3>${title}</h3>
+      <ul class="custom-list">
+        ${items.map(i => `<li>${i}</li>`).join('')}
+      </ul>
+    </div>
+  `;
+}
+
+function escapeJsString(str) {
+  return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+// ---- Search & Filter ----
+function filterSkills(q) {
+  const term = q.toLowerCase().trim();
+  document.querySelectorAll('.nav-item').forEach(item => {
+    const text = item.textContent.toLowerCase();
+    item.style.display = (!term || text.includes(term)) ? 'flex' : 'none';
+  });
+
+  groups.forEach((_, gi) => {
+    const groupEl = document.querySelector(`.group[data-group="${gi}"]`);
+    const visibleCount = Array.from(groupEl.querySelectorAll('.nav-item')).filter(i => i.style.display !== 'none').length;
+    groupEl.style.display = visibleCount > 0 ? '' : 'none';
+    if (term && visibleCount > 0) {
+      const items = document.getElementById(`group-items-${gi}`);
+      const header = document.querySelectorAll('.group-header')[gi];
+      items.classList.remove('hidden');
+      items.style.maxHeight = items.scrollHeight + 'px';
+      header.classList.remove('collapsed');
+    }
+  });
+}
+
+// ---- Command Palette Modal ----
+function openCmdModal() {
+  const modal = document.getElementById('cmdModal');
+  modal.classList.add('active');
+  const input = document.getElementById('cmdInput');
+  input.value = '';
+  input.focus();
+  searchCmdModal('');
+}
+
+function closeCmdModal() {
+  document.getElementById('cmdModal').classList.remove('active');
+}
+
+function closeCmdModalOnBackdrop(e) {
+  if (e.target.id === 'cmdModal') closeCmdModal();
+}
+
+function searchCmdModal(q) {
+  const term = q.toLowerCase().trim();
+  const resultsContainer = document.getElementById('cmdResults');
+  let matches = [];
+
+  Object.keys(skills).forEach(id => {
+    const s = skills[id];
+    const matchScore = (s.name.toLowerCase().includes(term) ? 2 : 0) + 
+                       (s.nameEn.toLowerCase().includes(term) ? 2 : 0) + 
+                       (s.desc.toLowerCase().includes(term) ? 1 : 0);
+    if (!term || matchScore > 0) {
+      matches.push(s);
+    }
+  });
+
+  if (matches.length === 0) {
+    resultsContainer.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted)">未找到相关 Skill</div>`;
+    return;
+  }
+
+  resultsContainer.innerHTML = matches.map(s => `
+    <div class="cmd-result-item" onclick="selectCmdResult('${s.nameEn}')">
+      <div class="cmd-result-left">
+        <div class="item-title">
+          <span>${s.name}</span>
+          <span class="item-id">${s.nameEn}</span>
+        </div>
+        <div class="item-sub">${s.desc}</div>
+      </div>
+      <div class="cmd-result-action">
+        <span>查看</span>
+        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectCmdResult(id) {
+  closeCmdModal();
+  showSkill(id);
+}
+
+// Global Keyboard Shortcuts
+window.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    openCmdModal();
+  } else if (e.key === 'Escape') {
+    closeCmdModal();
+  }
+});
+
+// Toast System
+function copyText(text, msg = '已复制到剪贴板') {
+  navigator.clipboard.writeText(text).then(() => {
+    showToast(msg);
+  }).catch(() => {
+    showToast('复制失败');
+  });
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2200);
+}
+
+// Theme System
+function updateThemeIcon(theme) {
+  const btn = document.getElementById('themeBtn');
+  if (!btn) return;
+  if (theme === 'dark') {
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+  } else {
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+  }
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  updateThemeIcon(next);
+  localStorage.setItem('theme', next);
+}
+
+// Load Theme preference
+(function initTheme() {
+  const saved = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  updateThemeIcon(saved);
+})();
+
+// Init App
+renderSidebar();
+renderCategoryDiscovery();
+</script>
+</body>
+</html>

@@ -90,6 +90,7 @@ type UploadTask = {
 type KnowledgeBaseFormValues = {
   name: string;
   description?: string;
+  parser?: KnowledgeBaseRecord['parser'];
   chunkSize?: number;
   chunkOverlap?: number;
   retrievalTopN?: number;
@@ -309,6 +310,7 @@ export const KnowledgeBasePage = () => {
       const created = await createKnowledgeBase({
         name: values.name.trim(),
         description: values.description?.trim(),
+        parser: values.parser ?? 'AUTO_SELECT',
         chunkSize: values.chunkSize ?? defaultIndexConfig.chunkSize,
         chunkOverlap: values.chunkOverlap ?? defaultIndexConfig.chunkOverlap,
         retrievalTopN: values.retrievalTopN ?? defaultIndexConfig.retrievalTopN,
@@ -403,6 +405,7 @@ export const KnowledgeBasePage = () => {
     editForm.setFieldsValue({
       name: item.name,
       description: item.description,
+      parser: item.parser ?? 'AUTO_SELECT',
       chunkSize: item.chunkSize,
       chunkOverlap: item.chunkOverlap,
       retrievalTopN: item.retrievalTopN,
@@ -421,6 +424,7 @@ export const KnowledgeBasePage = () => {
       const updated = await updateKnowledgeBase(editingBase.id, {
         name: values.name.trim(),
         description: values.description?.trim() || '',
+        parser: values.parser ?? 'AUTO_SELECT',
         chunkSize: values.chunkSize ?? defaultIndexConfig.chunkSize,
         chunkOverlap: values.chunkOverlap ?? defaultIndexConfig.chunkOverlap,
         retrievalTopN: values.retrievalTopN ?? defaultIndexConfig.retrievalTopN,
@@ -662,6 +666,7 @@ export const KnowledgeBasePage = () => {
       render: (_, item) => (
         <Space direction="vertical" size={2}>
           <Tag color={indexStatusColor[item.indexingStatus]}>{item.indexingStatusLabel || item.indexingStatus}</Tag>
+          {item.remoteParseStatus ? <Typography.Text className="text-fluid-xs text-slate-500">百炼解析：{item.remoteParseStatus}</Typography.Text> : null}
           <Typography.Text className="text-xs text-slate-500"><span className="font-mono font-semibold">{item.chunkCount}</span> 块</Typography.Text>
           {item.indexingStatus === 'failed' && item.indexingError ? (
             <Typography.Text className="max-w-[180px] text-xs" type="danger" ellipsis={{ tooltip: item.indexingError }}>
@@ -789,6 +794,14 @@ export const KnowledgeBasePage = () => {
             <Form.Item name="description" label={<span className="text-slate-600">说明</span>} className="mb-0">
               <Input.TextArea maxLength={255} rows={3} placeholder="说明资料范围、维护责任人或适用业务场景" className="rounded-md" />
             </Form.Item>
+            <Form.Item name="parser" label={<span className="text-slate-600">百炼解析器</span>} initialValue="AUTO_SELECT">
+              <select className="h-8 w-full rounded-md border border-slate-200 px-2 text-fluid-sm">
+                <option value="AUTO_SELECT">自动选择（推荐）</option>
+                <option value="DOCMIND">DOCMIND</option>
+                <option value="DOCMIND_DIGITAL">DOCMIND_DIGITAL</option>
+                <option value="DOCMIND_LLM_VERSION">DOCMIND_LLM_VERSION</option>
+              </select>
+            </Form.Item>
           </section>
 
           <section>
@@ -864,6 +877,14 @@ export const KnowledgeBasePage = () => {
             </Form.Item>
             <Form.Item name="description" label="说明">
               <Input.TextArea maxLength={255} rows={3} placeholder="用于区分业务场景、资料范围或维护责任人" />
+            </Form.Item>
+            <Form.Item name="parser" label="百炼解析器">
+              <select className="h-8 w-full rounded-md border border-slate-200 px-2 text-fluid-sm">
+                <option value="AUTO_SELECT">自动选择（推荐）</option>
+                <option value="DOCMIND">DOCMIND</option>
+                <option value="DOCMIND_DIGITAL">DOCMIND_DIGITAL</option>
+                <option value="DOCMIND_LLM_VERSION">DOCMIND_LLM_VERSION</option>
+              </select>
             </Form.Item>
             <div className="mt-2 mb-4 p-3 rounded-lg bg-slate-50 border border-slate-100 text-xs text-slate-500 leading-relaxed">
               <div className="font-semibold text-slate-600 mb-1">分块参数指南：</div>
@@ -1618,5 +1639,3 @@ export const KnowledgeBasePage = () => {
     </Space>
   );
 };
-
-

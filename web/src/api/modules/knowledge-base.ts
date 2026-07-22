@@ -19,6 +19,9 @@ export type KnowledgeDocumentRecord = {
   indexedAt: string | null;
   chunkCount: number;
   indexModel: string;
+  remoteParseStatus?: string;
+  remoteSyncedAt?: string | null;
+  retryable?: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -36,6 +39,11 @@ export type KnowledgeBaseRecord = {
   retrievalMinScore: number;
   mediaMaxAssets: number;
   mediaMinRelevance: number;
+  parser: 'AUTO_SELECT' | 'DOCMIND' | 'DOCMIND_DIGITAL' | 'DOCMIND_LLM_VERSION';
+  parserLabel?: string;
+  remoteIndexStatus?: string;
+  remoteIndexError?: string;
+  remoteSyncedAt?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -114,7 +122,7 @@ export type KnowledgeMediaAssetRecord = {
 };
 
 export type KnowledgeRecallResult = {
-  mode: 'empty' | 'keyword' | 'vector' | 'skipped';
+  mode: 'empty' | 'keyword' | 'vector' | 'bailian' | 'disabled' | 'skipped';
   retrievalSkipped?: boolean;
   skipReason?: string;
   embeddingModelAlias: string;
@@ -134,6 +142,17 @@ export type KnowledgeModelSettings = {
     apiKeyConfigured: boolean;
     isActive: boolean;
     dimensions: number;
+    updated_at: string;
+  };
+  bailian: {
+    accessKeyIdMasked: string;
+    accessKeyIdConfigured: boolean;
+    accessKeySecretConfigured: boolean;
+    workspaceId: string;
+    categoryId: string;
+    endpoint: string;
+    isActive: boolean;
+    isConfigured: boolean;
     updated_at: string;
   };
   rerank: {
@@ -157,11 +176,12 @@ export type TenantKnowledgeAuthorization = {
   };
   embeddingModelId: number | null;
   rerankModelId: number | null;
+  managedRagEnabled: boolean;
   isActive: boolean;
 };
 
 const DOWNLOAD_TIMEOUT_MS = 120000;
-export const KNOWLEDGE_BASE_ACCEPT = '.doc,.docx,.ppt,.pptx,.md,.txt,.pdf,.xls,.xlsx';
+export const KNOWLEDGE_BASE_ACCEPT = '.doc,.docx,.wps,.ppt,.pptx,.xls,.xlsx,.md,.txt,.pdf,.epub,.mobi';
 
 const downloadClient = axios.create({
   baseURL: API_BASE_URL,
@@ -283,12 +303,12 @@ export const fetchKnowledgeBases = async (query?: KnowledgeBaseListQuery) => {
   return response.data;
 };
 
-export const createKnowledgeBase = async (payload: { name: string; description?: string; chunkSize?: number; chunkOverlap?: number; retrievalTopN?: number; retrievalMinScore?: number; mediaMaxAssets?: number; mediaMinRelevance?: number }) => {
+export const createKnowledgeBase = async (payload: { name: string; description?: string; parser?: KnowledgeBaseRecord['parser']; chunkSize?: number; chunkOverlap?: number; retrievalTopN?: number; retrievalMinScore?: number; mediaMaxAssets?: number; mediaMinRelevance?: number }) => {
   const response = await httpClient.post<KnowledgeBaseRecord>('/knowledge-bases/', payload);
   return response.data;
 };
 
-export const updateKnowledgeBase = async (id: number, payload: Partial<{ name: string; description: string; isActive: boolean; chunkSize: number; chunkOverlap: number; retrievalTopN: number; retrievalMinScore: number; mediaMaxAssets: number; mediaMinRelevance: number }>) => {
+export const updateKnowledgeBase = async (id: number, payload: Partial<{ name: string; description: string; parser: KnowledgeBaseRecord['parser']; isActive: boolean; chunkSize: number; chunkOverlap: number; retrievalTopN: number; retrievalMinScore: number; mediaMaxAssets: number; mediaMinRelevance: number }>) => {
   const response = await httpClient.patch<KnowledgeBaseRecord>(`/knowledge-bases/${id}/`, payload);
   return response.data;
 };
@@ -429,6 +449,7 @@ export const updateKnowledgeModelSettings = async (
   payload: Partial<{
     embedding: Partial<{ alias: string; model: string; baseUrl: string; apiKey: string; isActive: boolean; dimensions: number }>;
     rerank: Partial<{ alias: string; model: string; baseUrl: string; apiKey: string; isActive: boolean }>;
+    bailian: Partial<{ accessKeyId: string; accessKeySecret: string; workspaceId: string; categoryId: string; endpoint: string; isActive: boolean }>;
   }>,
 ) => {
   const response = await httpClient.patch<KnowledgeModelSettings>('/settings/knowledge-base/models/', payload);
@@ -442,7 +463,7 @@ export const fetchTenantKnowledgeAuthorization = async (tenantId: number) => {
 
 export const updateTenantKnowledgeAuthorization = async (
   tenantId: number,
-  payload: { embeddingModelId: number | null; rerankModelId: number | null; isActive: boolean },
+  payload: { embeddingModelId: number | null; rerankModelId: number | null; managedRagEnabled: boolean; isActive: boolean },
 ) => {
   const response = await httpClient.put<TenantKnowledgeAuthorization>(
     `/settings/knowledge-base/tenants/${tenantId}/authorization/`,

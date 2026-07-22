@@ -9,6 +9,12 @@ from apps.tenants.managers import TenantManager
 
 
 class KnowledgeBase(models.Model):
+    class Parser(models.TextChoices):
+        AUTO_SELECT = 'AUTO_SELECT', '自动选择'
+        DOCMIND = 'DOCMIND', '文档智能解析'
+        DOCMIND_DIGITAL = 'DOCMIND_DIGITAL', '电子文档解析'
+        DOCMIND_LLM_VERSION = 'DOCMIND_LLM_VERSION', '大模型文档解析'
+
     name = models.CharField('知识库名称', max_length=128)
     description = models.CharField('知识库说明', max_length=255, blank=True, default='')
     is_active = models.BooleanField('是否启用', default=True)
@@ -18,6 +24,12 @@ class KnowledgeBase(models.Model):
     retrieval_min_score = models.FloatField('向量最低相关度', default=0.2)
     media_max_assets = models.PositiveSmallIntegerField('配套素材召回上限', default=0)
     media_min_relevance = models.FloatField('配套素材最低相关度', default=0.22)
+    parser = models.CharField('百炼解析器', max_length=32, choices=Parser.choices, default=Parser.AUTO_SELECT)
+    bailian_index_id = models.CharField('百炼 Index ID', max_length=128, blank=True, default='')
+    bailian_index_status = models.CharField('百炼索引状态', max_length=32, blank=True, default='')
+    bailian_index_error = models.TextField('百炼索引错误', blank=True, default='')
+    bailian_index_job_id = models.CharField('百炼索引任务 ID', max_length=128, blank=True, default='')
+    bailian_synced_at = models.DateTimeField('百炼同步时间', blank=True, null=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -91,6 +103,12 @@ class KnowledgeDocument(models.Model):
     indexed_at = models.DateTimeField('索引完成时间', blank=True, null=True)
     chunk_count = models.PositiveIntegerField('分块数量', default=0)
     index_model = models.CharField('索引模型', max_length=128, blank=True, default='')
+    content_md5 = models.CharField('文件 MD5', max_length=32, blank=True, default='')
+    bailian_file_id = models.CharField('百炼 File ID', max_length=128, blank=True, default='')
+    bailian_parse_status = models.CharField('百炼解析状态', max_length=32, blank=True, default='')
+    bailian_index_job_id = models.CharField('百炼索引任务 ID', max_length=128, blank=True, default='')
+    sync_attempt = models.PositiveIntegerField('同步尝试次数', default=0)
+    bailian_synced_at = models.DateTimeField('百炼同步时间', blank=True, null=True)
     tenant = models.ForeignKey(
         'tenants.Tenant',
         on_delete=models.CASCADE,
