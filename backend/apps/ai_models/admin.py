@@ -38,14 +38,14 @@ class RerankModelAdmin(admin.ModelAdmin):
 
 @admin.register(BailianKnowledgeConfig)
 class BailianKnowledgeConfigAdmin(admin.ModelAdmin):
-    list_display = ('workspace_id', 'category_id', 'endpoint', 'is_active', 'updated_at')
+    list_display = ('workspace_id', 'endpoint', 'is_active', 'updated_at')
     readonly_fields = ('access_key_secret_encrypted', 'updated_at')
     exclude = ('access_key_secret_encrypted',)
 
 
 @admin.register(TenantKnowledgeModelSettings)
 class TenantKnowledgeModelSettingsAdmin(admin.ModelAdmin):
-    list_display = ('tenant', 'managed_rag_enabled', 'embedding_model', 'rerank_model', 'is_active', 'updated_at')
+    list_display = ('tenant', 'managed_rag_enabled', 'bailian_category_id', 'embedding_model', 'rerank_model', 'is_active', 'updated_at')
     list_filter = ('is_active',)
     raw_id_fields = ('tenant', 'embedding_model', 'rerank_model')
 

@@ -61,14 +61,40 @@ def _data(response):
     return data
 
 
-def apply_upload_lease(*, file_name: str, content_md5: str, file_size: int) -> UploadLease:
+def find_category_by_name(category_name: str) -> str:
+    client, config = _client()
+    request = bailian_models.ListCategoryRequest(
+        category_name=category_name,
+        category_type='UNSTRUCTURED',
+        max_results=200,
+    )
+    categories = getattr(_data(client.list_category(config.workspace_id, request)), 'category_list', None) or []
+    for category in categories:
+        if str(getattr(category, 'category_name', '') or '') == category_name:
+            return str(getattr(category, 'category_id', '') or '')
+    return ''
+
+
+def create_category(category_name: str) -> str:
+    client, config = _client()
+    request = bailian_models.AddCategoryRequest(
+        category_name=category_name,
+        category_type='UNSTRUCTURED',
+    )
+    category_id = str(getattr(_data(client.add_category(config.workspace_id, request)), 'category_id', '') or '')
+    if not category_id:
+        raise BailianKnowledgeError('百炼未返回有效的 Category ID')
+    return category_id
+
+
+def apply_upload_lease(*, category_id: str, file_name: str, content_md5: str, file_size: int) -> UploadLease:
     client, config = _client()
     request = bailian_models.ApplyFileUploadLeaseRequest(
         file_name=file_name,
         md_5=content_md5,
         size_in_bytes=str(file_size),
     )
-    data = _data(client.apply_file_upload_lease(config.category_id, config.workspace_id, request))
+    data = _data(client.apply_file_upload_lease(category_id, config.workspace_id, request))
     param = getattr(data, 'param', None)
     lease_id = str(getattr(data, 'file_upload_lease_id', '') or '')
     url = str(getattr(param, 'url', '') or '')
@@ -100,12 +126,12 @@ def upload_file(lease: UploadLease, file_obj: BinaryIO, *, file_size: int) -> No
         raise BailianKnowledgeError(f'百炼文件上传失败（HTTP {response.status_code}）')
 
 
-def add_file(*, lease_id: str, parser: str) -> str:
+def add_file(*, category_id: str, lease_id: str, parser: str) -> str:
     client, config = _client()
     request = bailian_models.AddFileRequest(
         lease_id=lease_id,
         parser=parser,
-        category_id=config.category_id,
+        category_id=category_id,
     )
     file_id = str(getattr(_data(client.add_file(config.workspace_id, request)), 'file_id', '') or '')
     if not file_id:

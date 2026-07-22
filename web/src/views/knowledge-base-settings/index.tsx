@@ -46,7 +46,6 @@ type KnowledgeModelFormValues = {
   bailianAccessKeyId: string;
   bailianAccessKeySecret?: string;
   bailianWorkspaceId: string;
-  bailianCategoryId: string;
   bailianEndpoint: string;
   bailianIsActive: boolean;
 };
@@ -66,7 +65,6 @@ const DEFAULT_MODEL_FORM: KnowledgeModelFormValues = {
   bailianAccessKeyId: '',
   bailianAccessKeySecret: '',
   bailianWorkspaceId: '',
-  bailianCategoryId: '',
   bailianEndpoint: 'bailian.cn-beijing.aliyuncs.com',
   bailianIsActive: false,
 };
@@ -86,7 +84,6 @@ const toModelFormValues = (settings: KnowledgeModelSettings): KnowledgeModelForm
   bailianAccessKeyId: '',
   bailianAccessKeySecret: '',
   bailianWorkspaceId: settings.bailian.workspaceId,
-  bailianCategoryId: settings.bailian.categoryId,
   bailianEndpoint: settings.bailian.endpoint,
   bailianIsActive: settings.bailian.isActive,
 });
@@ -168,7 +165,6 @@ export const KnowledgeBaseSettingsPage = () => {
           accessKeyId: values.bailianAccessKeyId,
           accessKeySecret: values.bailianAccessKeySecret,
           workspaceId: values.bailianWorkspaceId,
-          categoryId: values.bailianCategoryId,
           endpoint: values.bailianEndpoint,
           isActive: values.bailianIsActive,
         },
@@ -291,9 +287,6 @@ export const KnowledgeBaseSettingsPage = () => {
             <Form.Item name="bailianWorkspaceId" label="Workspace ID" rules={[{ required: true, message: '请输入 Workspace ID' }]}>
               <Input className="font-mono" />
             </Form.Item>
-            <Form.Item name="bailianCategoryId" label="Category ID" rules={[{ required: true, message: '请输入 Category ID' }]}>
-              <Input className="font-mono" />
-            </Form.Item>
             <Form.Item name="bailianEndpoint" label="Endpoint" rules={[{ required: true, message: '请输入 Endpoint' }]}>
               <Input className="font-mono" />
             </Form.Item>
@@ -336,6 +329,11 @@ export const KnowledgeBaseSettingsPage = () => {
             unCheckedChildren="托管 RAG"
             onChange={(checked) => authorization && setAuthorization({ ...authorization, managedRagEnabled: checked })}
           />
+          {authorization?.managedRagEnabled ? (
+            <Tag color={authorization.managedRagCategoryStatus === 'ready' ? 'success' : authorization.managedRagCategoryStatus === 'failed' ? 'error' : 'processing'}>
+              {authorization.managedRagCategoryStatus === 'ready' ? '租户空间已就绪' : authorization.managedRagCategoryStatus === 'failed' ? '租户空间创建失败' : '租户空间待创建'}
+            </Tag>
+          ) : null}
           <Button type="primary" icon={<IconDeviceFloppy />} loading={savingAuthorization} onClick={() => void saveAuthorization()}>
             保存授权
           </Button>

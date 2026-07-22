@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -81,7 +83,6 @@ class KnowledgeModelSettingsApiTests(TenantTestMixin, APITestCase):
                     'accessKeyId': 'access-key-id',
                     'accessKeySecret': 'access-key-secret',
                     'workspaceId': 'workspace-1',
-                    'categoryId': 'default',
                     'endpoint': 'bailian.cn-beijing.aliyuncs.com',
                     'isActive': True,
                 },
@@ -91,6 +92,7 @@ class KnowledgeModelSettingsApiTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(response.data['bailian']['accessKeySecretConfigured'])
+        self.assertNotIn('categoryId', response.data['bailian'])
         self.assertNotIn('access-key-secret', str(response.data))
         config = BailianKnowledgeConfig.load()
         self.assertNotEqual(config.access_key_secret_encrypted, 'access-key-secret')
@@ -103,7 +105,6 @@ class KnowledgeModelSettingsApiTests(TenantTestMixin, APITestCase):
                     'accessKeyId': '',
                     'accessKeySecret': '',
                     'workspaceId': 'workspace-1',
-                    'categoryId': 'default',
                     'endpoint': 'bailian.cn-beijing.aliyuncs.com',
                     'isActive': True,
                 },
@@ -122,18 +123,31 @@ class KnowledgeModelSettingsApiTests(TenantTestMixin, APITestCase):
         embedding.save(update_fields=['name', 'updated_at'])
         rerank.name = '公司可见排序别名'
         rerank.save(update_fields=['name', 'updated_at'])
+        BailianKnowledgeConfig.objects.update_or_create(
+            pk=1,
+            defaults={
+                'access_key_id': 'access-key-id',
+                'access_key_secret_encrypted': 'encrypted-secret',
+                'workspace_id': 'workspace-1',
+                'is_active': True,
+            },
+        )
         self.client.force_authenticate(self.superuser)
 
-        resp = self.client.put(
-            f'/api/v1/settings/knowledge-base/tenants/{self.tenant.id}/authorization/',
-            {
-                'embeddingModelId': embedding.id,
-                'rerankModelId': rerank.id,
-                'managedRagEnabled': True,
-                'isActive': True,
-            },
-            format='json',
-        )
+        with (
+            patch('apps.knowledge_base.tenant_provisioning.bailian.find_category_by_name', return_value=''),
+            patch('apps.knowledge_base.tenant_provisioning.bailian.create_category', return_value='category-tenant'),
+        ):
+            resp = self.client.put(
+                f'/api/v1/settings/knowledge-base/tenants/{self.tenant.id}/authorization/',
+                {
+                    'embeddingModelId': embedding.id,
+                    'rerankModelId': rerank.id,
+                    'managedRagEnabled': True,
+                    'isActive': True,
+                },
+                format='json',
+            )
 
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(resp.data['tenant']['id'], self.tenant.id)
@@ -142,11 +156,15 @@ class KnowledgeModelSettingsApiTests(TenantTestMixin, APITestCase):
         self.assertTrue(resp.data['models']['embedding']['grantIsActive'])
         self.assertTrue(resp.data['models']['rerank']['grantIsActive'])
         self.assertTrue(resp.data['managedRagEnabled'])
+        self.assertEqual(resp.data['managedRagCategoryStatus'], 'ready')
+        self.assertEqual(resp.data['managedRagCategoryError'], '')
 
         settings = TenantKnowledgeModelSettings.objects.get(tenant=self.tenant)
         self.assertEqual(settings.embedding_model_id, embedding.id)
         self.assertEqual(settings.rerank_model_id, rerank.id)
         self.assertTrue(settings.managed_rag_enabled)
+        self.assertEqual(settings.bailian_category_id, 'category-tenant')
+        self.assertEqual(settings.bailian_category_workspace_id, 'workspace-1')
         self.assertTrue(settings.is_active)
 
     def test_tenant_assignment_rejects_inactive_models(self):

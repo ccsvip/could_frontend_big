@@ -7,11 +7,13 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 
-from apps.ai_models.models import AgentApplication, TenantKnowledgeModelSettings
+from apps.ai_models.models import AgentApplication, BailianKnowledgeConfig, TenantKnowledgeModelSettings
 from apps.ai_models.services.agent_knowledge import retrieve_knowledge_chunks, retrieve_knowledge_context
 from apps.knowledge_base import bailian
 from apps.knowledge_base.managed_indexing import build_managed_document_index
 from apps.knowledge_base.models import KnowledgeBase, KnowledgeDocument
+from apps.knowledge_base.tenant_provisioning import ensure_tenant_category, tenant_category_name
+from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
 
 
@@ -66,6 +68,7 @@ class ManagedRagTests(TenantTestMixin, TestCase):
             with self.subTest(suffix=suffix):
                 document = self.create_document(f'document-{suffix}.{suffix}')
                 with (
+                    patch('apps.knowledge_base.managed_indexing.ensure_tenant_category', return_value='category-tenant'),
                     patch('apps.knowledge_base.managed_indexing.bailian.apply_upload_lease') as apply_lease,
                     patch('apps.knowledge_base.managed_indexing.bailian.upload_file'),
                     patch('apps.knowledge_base.managed_indexing.bailian.add_file', return_value=f'file-{suffix}'),
@@ -80,6 +83,93 @@ class ManagedRagTests(TenantTestMixin, TestCase):
                 self.assertEqual(result['status'], KnowledgeDocument.IndexStatus.READY)
                 self.assertEqual(document.bailian_file_id, f'file-{suffix}')
                 self.assertEqual(document.index_model, 'bailian-managed-rag')
+                apply_lease.assert_called_once_with(
+                    category_id='category-tenant',
+                    file_name=f'document-{suffix}.{suffix}',
+                    content_md5=document.content_md5,
+                    file_size=document.file_size,
+                )
+
+    def test_tenant_category_is_created_once_and_reused(self):
+        BailianKnowledgeConfig.objects.update_or_create(
+            pk=1,
+            defaults={
+                'access_key_id': 'access-key-id',
+                'access_key_secret_encrypted': 'encrypted-secret',
+                'workspace_id': 'workspace-1',
+                'is_active': True,
+            },
+        )
+        with (
+            patch('apps.knowledge_base.tenant_provisioning.bailian.find_category_by_name', return_value='') as find_mock,
+            patch('apps.knowledge_base.tenant_provisioning.bailian.create_category', return_value='category-tenant') as create_mock,
+        ):
+            first = ensure_tenant_category(self.tenant.id)
+            second = ensure_tenant_category(self.tenant.id)
+
+        self.assertEqual(first, 'category-tenant')
+        self.assertEqual(second, 'category-tenant')
+        find_mock.assert_called_once_with(tenant_category_name(self.tenant.id))
+        create_mock.assert_called_once_with(tenant_category_name(self.tenant.id))
+        tenant_settings = TenantKnowledgeModelSettings.objects.get(tenant=self.tenant)
+        self.assertEqual(tenant_settings.bailian_category_id, 'category-tenant')
+        self.assertEqual(tenant_settings.bailian_category_workspace_id, 'workspace-1')
+
+    def test_tenant_category_recovers_existing_remote_mapping(self):
+        BailianKnowledgeConfig.objects.update_or_create(
+            pk=1,
+            defaults={
+                'access_key_id': 'access-key-id',
+                'access_key_secret_encrypted': 'encrypted-secret',
+                'workspace_id': 'workspace-1',
+                'is_active': True,
+            },
+        )
+        with (
+            patch(
+                'apps.knowledge_base.tenant_provisioning.bailian.find_category_by_name',
+                return_value='existing-category',
+            ),
+            patch('apps.knowledge_base.tenant_provisioning.bailian.create_category') as create_mock,
+        ):
+            category_id = ensure_tenant_category(self.tenant.id)
+
+        self.assertEqual(category_id, 'existing-category')
+        create_mock.assert_not_called()
+
+    def test_different_tenants_receive_different_categories(self):
+        BailianKnowledgeConfig.objects.update_or_create(
+            pk=1,
+            defaults={
+                'access_key_id': 'access-key-id',
+                'access_key_secret_encrypted': 'encrypted-secret',
+                'workspace_id': 'workspace-1',
+                'is_active': True,
+            },
+        )
+        other_tenant = Tenant.objects.create(name='另一家公司', code='other-tenant')
+        TenantKnowledgeModelSettings.objects.create(
+            tenant=other_tenant,
+            managed_rag_enabled=True,
+            is_active=True,
+        )
+        category_ids = {
+            tenant_category_name(self.tenant.id): 'category-first',
+            tenant_category_name(other_tenant.id): 'category-second',
+        }
+
+        with (
+            patch('apps.knowledge_base.tenant_provisioning.bailian.find_category_by_name', return_value=''),
+            patch(
+                'apps.knowledge_base.tenant_provisioning.bailian.create_category',
+                side_effect=lambda name: category_ids[name],
+            ),
+        ):
+            first = ensure_tenant_category(self.tenant.id)
+            second = ensure_tenant_category(other_tenant.id)
+
+        self.assertEqual(first, 'category-first')
+        self.assertEqual(second, 'category-second')
 
     def test_retrieve_uses_bailian_and_injects_existing_context_contract(self):
         document = self.create_document('refund-policy.pdf')

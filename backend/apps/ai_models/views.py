@@ -1171,7 +1171,6 @@ def _knowledge_settings_payload() -> dict:
             'accessKeyIdConfigured': bool(bailian.access_key_id),
             'accessKeySecretConfigured': bool(bailian.access_key_secret_encrypted),
             'workspaceId': bailian.workspace_id,
-            'categoryId': bailian.category_id,
             'endpoint': bailian.endpoint,
             'isActive': bailian.is_active,
             'isConfigured': bailian.is_configured,
@@ -1258,6 +1257,12 @@ class TenantKnowledgeModelAuthorizationView(APIView):
             'embeddingModelId': settings.embedding_model_id,
             'rerankModelId': settings.rerank_model_id,
             'managedRagEnabled': settings.managed_rag_enabled,
+            'managedRagCategoryStatus': (
+                'ready'
+                if settings.bailian_category_id and settings.bailian_category_workspace_id == BailianKnowledgeConfig.load().workspace_id
+                else ('failed' if settings.bailian_category_error else 'pending')
+            ),
+            'managedRagCategoryError': settings.bailian_category_error,
             'isActive': settings.is_active,
         }
 
@@ -1269,7 +1274,7 @@ class TenantKnowledgeModelAuthorizationView(APIView):
         serializer = TenantKnowledgeModelSettingsSerializer(data=request.data, context={'tenant_id': tenant_id})
         serializer.is_valid(raise_exception=True)
         tenant = serializer.validated_data['tenant']
-        TenantKnowledgeModelSettings.objects.update_or_create(
+        settings, _ = TenantKnowledgeModelSettings.objects.update_or_create(
             tenant=tenant,
             defaults={
                 'embedding_model_id': serializer.validated_data.get('embeddingModelId'),
@@ -1278,6 +1283,13 @@ class TenantKnowledgeModelAuthorizationView(APIView):
                 'is_active': serializer.validated_data.get('isActive', True),
             },
         )
+        if settings.is_active and settings.managed_rag_enabled:
+            from apps.knowledge_base.tenant_provisioning import ensure_tenant_category
+
+            try:
+                ensure_tenant_category(tenant.id)
+            except Exception as exc:
+                raise ValidationError({'managedRagEnabled': str(exc)}) from exc
         return Response(self._response_payload(tenant))
 
 

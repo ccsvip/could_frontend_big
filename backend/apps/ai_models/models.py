@@ -387,7 +387,6 @@ class BailianKnowledgeConfig(models.Model):
     access_key_id = models.CharField('AccessKey ID', max_length=256, blank=True, default='')
     access_key_secret_encrypted = models.TextField('加密 AccessKey Secret', blank=True, default='')
     workspace_id = models.CharField('百炼 Workspace ID', max_length=128, blank=True, default='')
-    category_id = models.CharField('百炼 Category ID', max_length=128, default='default')
     endpoint = models.CharField('百炼 API 地址', max_length=255, default='bailian.cn-beijing.aliyuncs.com')
     is_active = models.BooleanField('是否启用', default=False)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
@@ -434,6 +433,9 @@ class TenantKnowledgeModelSettings(models.Model):
         verbose_name='重排序模型',
     )
     managed_rag_enabled = models.BooleanField('是否启用百炼托管知识库', default=False)
+    bailian_category_id = models.CharField('百炼租户 Category ID', max_length=128, blank=True, default='')
+    bailian_category_workspace_id = models.CharField('Category 所属 Workspace ID', max_length=128, blank=True, default='')
+    bailian_category_error = models.TextField('Category 自动创建错误', blank=True, default='')
     is_active = models.BooleanField('是否启用', default=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
 

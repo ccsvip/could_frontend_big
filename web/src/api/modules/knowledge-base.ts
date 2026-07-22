@@ -149,7 +149,6 @@ export type KnowledgeModelSettings = {
     accessKeyIdConfigured: boolean;
     accessKeySecretConfigured: boolean;
     workspaceId: string;
-    categoryId: string;
     endpoint: string;
     isActive: boolean;
     isConfigured: boolean;
@@ -177,6 +176,8 @@ export type TenantKnowledgeAuthorization = {
   embeddingModelId: number | null;
   rerankModelId: number | null;
   managedRagEnabled: boolean;
+  managedRagCategoryStatus: 'pending' | 'ready' | 'failed';
+  managedRagCategoryError: string;
   isActive: boolean;
 };
 
@@ -449,7 +450,7 @@ export const updateKnowledgeModelSettings = async (
   payload: Partial<{
     embedding: Partial<{ alias: string; model: string; baseUrl: string; apiKey: string; isActive: boolean; dimensions: number }>;
     rerank: Partial<{ alias: string; model: string; baseUrl: string; apiKey: string; isActive: boolean }>;
-    bailian: Partial<{ accessKeyId: string; accessKeySecret: string; workspaceId: string; categoryId: string; endpoint: string; isActive: boolean }>;
+    bailian: Partial<{ accessKeyId: string; accessKeySecret: string; workspaceId: string; endpoint: string; isActive: boolean }>;
   }>,
 ) => {
   const response = await httpClient.patch<KnowledgeModelSettings>('/settings/knowledge-base/models/', payload);

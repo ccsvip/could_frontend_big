@@ -107,3 +107,11 @@ delete_pending → deleted / failed
 - 不记录 AccessKey Secret、预签名 URL、上传 headers 或完整外部错误响应。
 - 超管写入 Secret 时空值表示保留旧值；显式清除使用独立动作而非空字符串覆盖。
 - 请求超时、最大文件大小和文件名长度按官方 API 约束处理；官方 100MB/150MB 口径不一致时以实际 API 响应为准并输出明确错误。
+
+## Tenant Category Auto-Provisioning
+
+- Platform configuration contains credentials, Workspace ID, endpoint, and active state only. Category ID is not an operator input.
+- Enabling managed RAG for a company calls `ensure_tenant_category(tenant_id)` synchronously; first upload calls the same interface as a recovery path.
+- Each tenant uses a deterministic `solin_t{tenant_id}` unstructured Category. `ListCategory` recovers an existing remote category before `AddCategory` creates one.
+- The tenant grant stores the Category ID and owning Workspace ID. Upload lease and `AddFile` receive only this tenant-scoped mapping.
+- Existing remote file and Index mappings remain valid. Historical files are not deleted or automatically re-uploaded when the global Category field is removed.

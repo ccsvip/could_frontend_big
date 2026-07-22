@@ -11,6 +11,7 @@ from apps.ai_models.models import TenantKnowledgeModelSettings
 
 from . import bailian
 from .models import KnowledgeBase, KnowledgeDocument
+from .tenant_provisioning import ensure_tenant_category
 
 
 PARSE_SUCCESS = 'PARSE_SUCCESS'
@@ -72,14 +73,20 @@ def _wait_for_index(*, index_id: str, job_id: str) -> None:
 
 
 def _upload_document(document: KnowledgeDocument, content_md5: str) -> str:
+    category_id = ensure_tenant_category(document.tenant_id)
     lease = bailian.apply_upload_lease(
+        category_id=category_id,
         file_name=document.file_name,
         content_md5=content_md5,
         file_size=int(document.file_size or document.file.size),
     )
     with document.file.open('rb') as file_obj:
         bailian.upload_file(lease, file_obj, file_size=int(document.file_size or document.file.size))
-    return bailian.add_file(lease_id=lease.lease_id, parser=document.knowledge_base.parser)
+    return bailian.add_file(
+        category_id=category_id,
+        lease_id=lease.lease_id,
+        parser=document.knowledge_base.parser,
+    )
 
 
 def _submit_document_index(document: KnowledgeDocument) -> tuple[str, str]:

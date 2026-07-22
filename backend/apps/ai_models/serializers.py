@@ -619,7 +619,7 @@ class KnowledgeModelSettingsWriteSerializer(serializers.Serializer):
                 normalized[model_type] = self._validate_model_payload(attrs[model_type], model_type=model_type)
         if 'bailian' in attrs:
             payload = attrs['bailian']
-            allowed_fields = {'accessKeyId', 'accessKeySecret', 'workspaceId', 'categoryId', 'endpoint', 'isActive'}
+            allowed_fields = {'accessKeyId', 'accessKeySecret', 'workspaceId', 'endpoint', 'isActive'}
             unknown = set(payload) - allowed_fields
             if unknown:
                 raise serializers.ValidationError(f'bailian 包含不支持的字段：{min(unknown)}')
@@ -628,7 +628,6 @@ class KnowledgeModelSettingsWriteSerializer(serializers.Serializer):
                 ('accessKeyId', 'access_key_id'),
                 ('accessKeySecret', 'access_key_secret'),
                 ('workspaceId', 'workspace_id'),
-                ('categoryId', 'category_id'),
                 ('endpoint', 'endpoint'),
                 ('isActive', 'is_active'),
             ):
@@ -637,7 +636,7 @@ class KnowledgeModelSettingsWriteSerializer(serializers.Serializer):
                 value = payload[source]
                 if source != 'isActive':
                     value = str(value or '').strip()
-                if source in {'workspaceId', 'categoryId', 'endpoint'} and not value:
+                if source in {'workspaceId', 'endpoint'} and not value:
                     raise serializers.ValidationError(f'bailian.{source} 不能为空')
                 bailian[target] = value
             normalized['bailian'] = bailian
