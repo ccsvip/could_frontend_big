@@ -1,0 +1,21 @@
+{
+  "login": {
+    "title": "Login",
+    "welcome": "Digital Human Management",
+    "subtitle": "Professional digital human management and configuration platform",
+    "feature1Title": "Safe & Reliable",
+    "feature1Desc": "Enterprise-grade security to protect your data",
+    "feature2Title": "Efficient Collaboration",
+    "feature2Desc": "Supports multi-tenant management, improving team efficiency",
+    "usernamePlaceholder": "Username",
+    "passwordPlaceholder": "Password",
+    "loginBtn": "Sign In",
+    "loggingIn": "Signing in...",
+    "errorEmpty": "Please enter username and password",
+    "errorFailed": "Login failed, please check your credentials"
+  },
+  "dashboard": {
+    "title": "Digital Human Management",
+    "logout": "Logout"
+  }
+}

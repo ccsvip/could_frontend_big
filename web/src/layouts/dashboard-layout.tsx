@@ -27,6 +27,8 @@ import {
   IconVolume,
 } from '@tabler/icons-react';
 import { Avatar, Button, Drawer, Dropdown, Form, Grid, Input, Layout, Menu, Modal, Typography, message } from 'antd';
+import { LanguageSelector } from '../components/LanguageSelector';
+import { useTranslation } from 'react-i18next';
 import type { MenuProps } from 'antd';
 import dayjs, { type Dayjs } from 'dayjs';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -427,6 +429,7 @@ const SidebarContent = ({
 );
 
 export const DashboardLayout = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const screens = useBreakpoint();
@@ -599,7 +602,7 @@ export const DashboardLayout = () => {
     {
       key: 'logout',
       icon: <IconLogout size={16} />,
-      label: '退出登录',
+      label: t('dashboard.logout'),
       onClick: () => {
         logout();
         navigate('/login', { replace: true });
@@ -694,6 +697,7 @@ export const DashboardLayout = () => {
                 <span className="xl:hidden">正常</span>
               </div>
 
+              <LanguageSelector />
               <Dropdown menu={{ items: userItems }} placement="bottomRight" arrow>
                 <button type="button" className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white/80 px-1.5 py-1 text-left transition hover:border-brand-300 hover:bg-brand-50/50 sm:gap-2.5 sm:pl-2 sm:pr-3">
                   <Avatar size={32} className="bg-gradient-to-br from-brand-600 to-brand-700 font-semibold text-white">

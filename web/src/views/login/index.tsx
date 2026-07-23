@@ -4,6 +4,8 @@ import {
 import { Form, Input, Modal, message } from 'antd';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LanguageSelector } from '../../components/LanguageSelector';
+import { useTranslation } from 'react-i18next';
 import { applyAccountRequest, loginRequest } from '../../api/modules/auth';
 import { useAuthStore } from '../../store/auth';
 
@@ -103,6 +105,7 @@ const FingerprintIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export const LoginPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
   const [applyVisible, setApplyVisible] = useState(false);
@@ -184,6 +187,9 @@ export const LoginPage = () => {
       </style>
       
       {/* 背景动态渐变和网格 */}
+      <div className="absolute top-6 right-6 z-50">
+        <LanguageSelector />
+      </div>
       <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand-300 blur-[120px] mix-blend-multiply animate-blob" />
         <div className="absolute top-[20%] right-[-10%] w-[35%] h-[35%] rounded-full bg-blue-300 blur-[120px] mix-blend-multiply animate-blob animation-delay-2000" />
@@ -216,7 +222,7 @@ export const LoginPage = () => {
                 <h1 className="text-2xl font-bold tracking-wide">AI System</h1>
               </div>
               <h2 className="text-4xl font-semibold leading-tight mb-4">
-                数字人管理平台
+                {t('login.welcome')}
               </h2>
               <p className="text-slate-400 text-lg max-w-md leading-relaxed">
                 创建、管理并驱动您的下一代虚拟数字分身。结合强大的 AI 模型，赋予数字人真实的灵魂与交互能力。

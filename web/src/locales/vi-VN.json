@@ -1,0 +1,21 @@
+{
+  "login": {
+    "title": "Đăng nhập",
+    "welcome": "Nền tảng quản lý người kỹ thuật số",
+    "subtitle": "Nền tảng quản lý và cấu hình người kỹ thuật số chuyên nghiệp",
+    "feature1Title": "An toàn & Đáng tin cậy",
+    "feature1Desc": "Bảo vệ an ninh cấp doanh nghiệp để bảo vệ dữ liệu của bạn",
+    "feature2Title": "Cộng tác hiệu quả",
+    "feature2Desc": "Hỗ trợ quản lý nhiều khách thuê, cải thiện hiệu quả cộng tác nhóm",
+    "usernamePlaceholder": "Vui lòng nhập tài khoản",
+    "passwordPlaceholder": "Vui lòng nhập mật khẩu",
+    "loginBtn": "Đăng nhập",
+    "loggingIn": "Đang đăng nhập...",
+    "errorEmpty": "Vui lòng nhập tài khoản và mật khẩu",
+    "errorFailed": "Đăng nhập thất bại, vui lòng kiểm tra tài khoản và mật khẩu"
+  },
+  "dashboard": {
+    "title": "Nền tảng quản lý người kỹ thuật số",
+    "logout": "Đăng xuất"
+  }
+}

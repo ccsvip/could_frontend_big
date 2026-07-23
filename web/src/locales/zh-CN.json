@@ -1,0 +1,21 @@
+{
+  "login": {
+    "title": "登录",
+    "welcome": "数字人后台管理平台",
+    "subtitle": "专业的数字人管理与配置平台",
+    "feature1Title": "安全可靠",
+    "feature1Desc": "企业级安全防护，保障您的数据安全",
+    "feature2Title": "高效协同",
+    "feature2Desc": "支持多租户管理，提升团队协作效率",
+    "usernamePlaceholder": "请输入账号",
+    "passwordPlaceholder": "请输入密码",
+    "loginBtn": "登 录",
+    "loggingIn": "登录中...",
+    "errorEmpty": "请输入账号和密码",
+    "errorFailed": "登录失败，请检查账号密码"
+  },
+  "dashboard": {
+    "title": "数字人后台管理平台",
+    "logout": "退出登录"
+  }
+}
