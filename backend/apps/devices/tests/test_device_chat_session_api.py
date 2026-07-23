@@ -65,6 +65,7 @@ class DeviceChatSessionApiTests(TenantTestMixin, APITestCase):
         conversation=None,
         runtime_session_id='',
         command_dispatch_diagnostics=None,
+        knowledge_references=None,
     ):
         return DeviceChatLog.objects.create(
             tenant=self.tenant,
@@ -78,6 +79,7 @@ class DeviceChatSessionApiTests(TenantTestMixin, APITestCase):
             question_text=question,
             answer_text=answer,
             command_dispatch_diagnostics=command_dispatch_diagnostics or {},
+            knowledge_references=knowledge_references or [],
         )
 
     def test_list_paginates_device_runtime_conversations_after_grouping(self):
@@ -208,6 +210,33 @@ class DeviceChatSessionApiTests(TenantTestMixin, APITestCase):
                 ('assistant', 'Answer two'),
             ],
         )
+
+    def test_retrieve_exposes_knowledge_references_on_assistant_message(self):
+        self.grant_permissions('ai_models.chat.view')
+        log = self.create_log(
+            question='退款多久到账？',
+            answer='通常三个工作日到账。',
+            runtime_session_id='runtime-session-references',
+            knowledge_references=[{
+                'position': 1,
+                'knowledge_base_id': 8,
+                'knowledge_base_name': '售后知识库',
+                'document_id': 16,
+                'document_name': '退款政策',
+                'chunk_id': 'chunk-refund',
+                'chunk_index': 2,
+                'content': '退款通常三个工作日到账。',
+                'score': 0.92,
+            }],
+        )
+
+        response = self.client.get(f'/api/v1/device-chat-sessions/{log.id}/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        assistant = response.data['messages'][1]
+        self.assertEqual(assistant['knowledgeReferences'][0]['documentName'], '退款政策')
+        self.assertEqual(assistant['knowledgeReferences'][0]['chunkId'], 'chunk-refund')
+        self.assertNotIn('knowledgeReferences', response.data['messages'][0])
 
     def test_retrieve_exposes_safe_command_dispatch_diagnostics_on_assistant_message(self):
         self.grant_permissions('ai_models.chat.view')

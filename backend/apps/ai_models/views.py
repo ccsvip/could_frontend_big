@@ -2370,7 +2370,15 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             """Ensure DB connection is alive inside the streaming generator."""
             connections['default'].ensure_connection()
 
-        def _save_assistant_message(content: str, *, update_conversation: bool = False, media_blocks: list[dict] | None = None):
+        knowledge_references = knowledge_recall_result.get('_knowledgeReferences') or []
+
+        def _save_assistant_message(
+            content: str,
+            *,
+            update_conversation: bool = False,
+            media_blocks: list[dict] | None = None,
+            include_knowledge_references: bool = False,
+        ):
             _ensure_db()
             content_blocks = text_to_blocks(content) + list(media_blocks or [])
             ChatMessage.objects.create(
@@ -2378,6 +2386,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                 role=ChatMessage.ROLE_ASSISTANT,
                 content=content,
                 content_blocks=content_blocks,
+                knowledge_references=knowledge_references if include_knowledge_references else [],
             )
             if update_conversation:
                 conversation.save(update_fields=['updated_at'])
@@ -2517,11 +2526,15 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                                 full_content,
                                 update_conversation=True,
                                 media_blocks=knowledge_media_blocks,
+                                include_knowledge_references=True,
                             )
                             assistant_message_saved = True
                             if knowledge_media_blocks:
                                 serialized_blocks = await sync_to_async(_serialize_assistant_blocks, thread_sensitive=True)(saved_blocks)
                                 yield f"data: {json.dumps({'blocks': serialized_blocks})}\n\n"
+                            if knowledge_references:
+                                from apps.ai_models.services.agent_knowledge import serialize_knowledge_references
+                                yield f"data: {json.dumps({'knowledgeReferences': serialize_knowledge_references(knowledge_references)})}\n\n"
                             if conversation.title == '新对话':
                                 generated_title = await _generate_conversation_title(
                                     client=client,
@@ -2691,11 +2704,15 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                                 full_content,
                                 update_conversation=True,
                                 media_blocks=knowledge_media_blocks,
+                                include_knowledge_references=True,
                             )
                             assistant_message_saved = True
                             if knowledge_media_blocks:
                                 serialized_blocks = await sync_to_async(_serialize_assistant_blocks, thread_sensitive=True)(saved_blocks)
                                 yield f"data: {json.dumps({'blocks': serialized_blocks})}\n\n"
+                            if knowledge_references:
+                                from apps.ai_models.services.agent_knowledge import serialize_knowledge_references
+                                yield f"data: {json.dumps({'knowledgeReferences': serialize_knowledge_references(knowledge_references)})}\n\n"
                             if conversation.title == '新对话':
                                 generated_title = await _generate_conversation_title(
                                     client=client,
@@ -2757,7 +2774,8 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                 )
                 if full_content and not assistant_message_saved:
                     await sync_to_async(_save_assistant_message, thread_sensitive=True)(
-                        full_content + '\n\n[请求超时，回复可能不完整]'
+                        full_content + '\n\n[请求超时，回复可能不完整]',
+                        include_knowledge_references=True,
                     )
                 yield f"data: {json.dumps({'error': True, 'content': '请求超时'})}\n\n"
                 yield "data: [DONE]\n\n"

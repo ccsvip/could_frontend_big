@@ -18,6 +18,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.models import ASRFillerWordSet, ASRRuntimeSettings, AgentApplication, ChatConversation, ChatMessage, LLMModel, LLMProvider, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, TenantLLMModelGrant, TenantThirdPartyChatbotGrant, ThirdPartyChatbotApplication, ThirdPartyChatbotIntegration, ThirdPartyChatbotProvider
 from apps.devices.models import Device, DeviceApplication, DeviceChatLog
+from apps.resources.services.command_dispatch import DispatchOutcome
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
 
@@ -2104,8 +2105,8 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         device_application.save(update_fields=['agent_application', 'updated_at'])
 
         with patch(
-            'apps.ai_models.services.agent_knowledge.retrieve_knowledge_context_with_media',
-            return_value=('B 知识库上下文', []),
+            'apps.ai_models.services.agent_knowledge.retrieve_knowledge_context_with_media_and_references',
+            return_value=('B 知识库上下文', [], []),
         ) as retrieve_knowledge_context:
             session = realtime._prepare_device_llm_session('ANDROID-AGENT-SWITCH-001', 'B 知识问题')
 
@@ -2331,6 +2332,18 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
             authorization_type=Device.AUTHORIZATION_PERMANENT,
         )
 
+        knowledge_references = [{
+            'position': 1,
+            'knowledge_base_id': 301,
+            'knowledge_base_name': 'WebSocket KB',
+            'document_id': 401,
+            'document_name': 'WebSocket document',
+            'chunk_id': 'chunk-ws-1',
+            'chunk_index': 0,
+            'content': 'WebSocket knowledge content.',
+            'score': 0.89,
+        }]
+
         async def run_websocket():
             from config.asgi import application
 
@@ -2351,7 +2364,22 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 yield '这是'
                 yield '实时回答。'
 
-            with patch('apps.ai_models.llm_services.stream_llm_chat_completion', side_effect=stream_answer) as stream_llm:
+            with (
+                patch('apps.ai_models.llm_services.stream_llm_chat_completion', side_effect=stream_answer) as stream_llm,
+                patch(
+                    'apps.ai_models.services.agent_knowledge.retrieve_knowledge_context_with_media_and_references',
+                    return_value=('WebSocket knowledge context', [], knowledge_references),
+                ),
+                patch(
+                    'apps.resources.services.command_dispatch.try_dispatch_command',
+                    return_value=DispatchOutcome(
+                        hit=False,
+                        reply_text='',
+                        mode='ordinary',
+                        route='ordinary_conversation',
+                    ),
+                ),
+            ):
                 await communicator.send_input({
                     'type': 'websocket.receive',
                     'text': json.dumps({
@@ -2420,8 +2448,10 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                     },
                 )
                 done = await communicator.receive_output(timeout=1)
+                done_payload = json.loads(done['text'])
+                self.assertNotIn('knowledgeReferences', done_payload['payload'])
                 self.assertEqual(
-                    json.loads(done['text']),
+                    done_payload,
                     {
                         'type': 'llm.done',
                         'id': 'llm-session-1',
@@ -2437,6 +2467,20 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                             'applicationName': 'Runtime LLM App',
                             'sessionId': ANY,
                             'conversationId': ANY,
+                            'followUpSuggestedQuestions': [],
+                            'commandDispatch': {
+                                'hit': False,
+                                'mode': 'ordinary',
+                                'replySource': 'fixed',
+                                'toolCalls': [],
+                                'commands': [],
+                                'highestScore': None,
+                                'secondHighestScore': None,
+                                'candidateCount': None,
+                                'route': 'ordinary_conversation',
+                                'confirmationOutcome': None,
+                                'executionOutcome': None,
+                            },
                         },
                     },
                 )
@@ -2446,7 +2490,8 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 self.assertEqual(call_kwargs['max_tokens'], 256)
                 self.assertEqual(call_kwargs['messages'][0]['role'], 'system')
                 self.assertIn('你是设备助手。', call_kwargs['messages'][0]['content'])
-                self.assertEqual(call_kwargs['messages'][1], {'role': 'user', 'content': '介绍一下展厅'})
+                self.assertEqual(call_kwargs['messages'][1], {'role': 'system', 'content': 'WebSocket knowledge context'})
+                self.assertEqual(call_kwargs['messages'][2], {'role': 'user', 'content': '介绍一下展厅'})
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)
@@ -2464,6 +2509,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         self.assertEqual(chat_log.trace_id, 'trace-llm-1')
         self.assertEqual(chat_log.model_name, 'runtime-model')
         self.assertTrue(chat_log.runtime_session_id)
+        self.assertEqual(chat_log.knowledge_references, knowledge_references)
 
     def test_unified_realtime_websocket_reuses_conversation_id_for_device_llm_history(self):
         provider = LLMProvider.objects.create(

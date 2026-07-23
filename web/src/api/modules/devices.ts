@@ -1,5 +1,5 @@
 import { httpClient } from '../client';
-import type { ChatMessage } from './chat';
+import type { ChatMessage, KnowledgeReference } from './chat';
 
 export type DeviceStatus = 'online' | 'offline';
 export type DeviceAuthorizationType = 'permanent' | 'trial';
@@ -209,6 +209,7 @@ export type DeviceChatLogRecord = {
   deviceName: string;
   questionText: string;
   answerText: string;
+  knowledgeReferences: KnowledgeReference[];
   commandDispatch: ControlCommandDispatchDiagnostics;
   requestId: string;
   traceId: string;

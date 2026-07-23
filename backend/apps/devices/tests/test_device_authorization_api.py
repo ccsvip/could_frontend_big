@@ -1299,10 +1299,25 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             captured_messages.append(kwargs['messages'])
             return '欢迎来到数字人展厅。'
 
+        knowledge_references = [{
+            'position': 1,
+            'knowledge_base_id': 101,
+            'knowledge_base_name': 'HTTP KB',
+            'document_id': 201,
+            'document_name': 'HTTP document',
+            'chunk_id': 'chunk-http-1',
+            'chunk_index': 0,
+            'content': 'HTTP knowledge content.',
+            'score': 0.92,
+        }]
         with (
             patch('apps.devices.views.asr_services.transcribe_pcm_audio', return_value='介绍一下展厅'),
             patch('apps.devices.views.llm_services.run_llm_chat_completion', fake_run_llm_chat_completion),
             patch('apps.devices.views.tts_services.synthesize_tts_pcm', return_value=b'\x01\x02'),
+            patch(
+                'apps.ai_models.services.agent_knowledge.retrieve_knowledge_context_with_media_and_references',
+                return_value=('HTTP knowledge context', [], knowledge_references),
+            ),
             patch('apps.devices.views._log_http_voice_pipeline') as pipeline_log,
         ):
             response = self.client.post(
@@ -1326,6 +1341,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['questionText'], '介绍一下展厅')
         self.assertEqual(response.data['answerText'], '欢迎来到数字人展厅。')
         self.assertTrue(response.data['audioBase64'])
+        self.assertNotIn('knowledgeReferences', response.data)
         chat_log = DeviceChatLog.objects.get(code='ANDROID-VOICE-002')
         self.assertEqual(chat_log.source, DeviceChatLog.SOURCE_HTTP)
         self.assertEqual(chat_log.tenant, self.tenant)
@@ -1334,6 +1350,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(chat_log.question_text, '介绍一下展厅')
         self.assertEqual(chat_log.answer_text, '欢迎来到数字人展厅。')
         self.assertEqual(chat_log.model_name, 'qwen/qwen3-32b')
+        self.assertEqual(chat_log.knowledge_references, knowledge_references)
         stages = [call.args[0] for call in pipeline_log.call_args_list]
         self.assertEqual(
             stages,
@@ -1825,13 +1842,14 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
 
         with (
             patch(
-                'apps.ai_models.services.agent_knowledge.retrieve_knowledge_context_with_media',
+                'apps.ai_models.services.agent_knowledge.retrieve_knowledge_context_with_media_and_references',
                 return_value=(
                     '素材上下文',
                     [
                         {'type': 'image', 'resourceId': image.id},
                         {'type': 'video', 'resourceId': video.id},
                     ],
+                    [],
                 ),
             ),
             patch('config.realtime.llm_services.stream_llm_chat_completion', new=fake_stream_llm_chat_completion),

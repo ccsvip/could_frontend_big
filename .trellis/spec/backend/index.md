@@ -23,6 +23,7 @@ This directory contains guidelines for backend development. Fill in each file wi
 | [Image Resource Bulk Delete](./image-resource-bulk-delete.md) | Tenant-safe partial-success bulk delete | Filled |
 | [Image Resource Hash Deduplication](./image-resource-hash-deduplication.md) | Tenant-scoped SHA-256 dedup | Filled |
 | [Aliyun Bailian Managed RAG](./aliyun-bailian-managed-rag.md) | Managed RAG: indexing, retrieval, credentials | Filled |
+| [Knowledge Reference Snapshots](./knowledge-reference-snapshots.md) | Management citations and device protocol isolation | Filled |
 
 ---
 

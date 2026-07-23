@@ -9,6 +9,8 @@ import httpx
 
 from apps.ai_models.models import AgentApplication, EmbeddingModel, RerankModel, TenantKnowledgeModelSettings
 from apps.ai_models.services.agent_knowledge import (
+    _format_context_from_recall_result,
+    build_knowledge_reference_snapshots,
     media_blocks_for_reply_text,
     retrieve_knowledge_chunks,
     retrieve_knowledge_context,
@@ -18,6 +20,43 @@ from apps.resources.models import Resource
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
+
+
+class KnowledgeReferenceSnapshotTests(TestCase):
+    def test_references_only_include_chunks_selected_for_model_context(self):
+        result = {
+            'chunks': [
+                {
+                    'documentId': 1,
+                    'documentTitle': '文档一',
+                    'chunkId': 'chunk-1',
+                    'chunkIndex': 0,
+                    'content': '第一段正文',
+                    'score': 0.9,
+                    'knowledgeBaseId': 10,
+                    'knowledgeBaseName': '知识库',
+                },
+                {
+                    'documentId': 2,
+                    'documentTitle': '文档二',
+                    'chunkId': 'chunk-2',
+                    'chunkIndex': 0,
+                    'content': '第二段正文会因为长度限制被截掉',
+                    'score': 0.8,
+                    'knowledgeBaseId': 10,
+                    'knowledgeBaseName': '知识库',
+                },
+            ],
+            'mediaAssets': [],
+        }
+        first_part = '---\n文档: 文档一\n相关度: 0.9000\n内容: 第一段正文\n'
+
+        context, selected = _format_context_from_recall_result(result, max_chars=len(first_part))
+        references = build_knowledge_reference_snapshots(selected)
+
+        self.assertIn('第一段正文', context)
+        self.assertNotIn('第二段正文', context)
+        self.assertEqual([item['chunk_id'] for item in references], ['chunk-1'])
 
 
 class _DummyDashScopeResponse:

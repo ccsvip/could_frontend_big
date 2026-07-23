@@ -66,6 +66,7 @@ class RetrievedChunk:
     knowledge_base_id: int | None = None
     knowledge_base_name: str = ''
     retrieval_min_score: float = DEFAULT_VECTOR_MIN_SCORE
+    chunk_id: str = ''
 
 
 @dataclass
@@ -1052,6 +1053,7 @@ def _serialize_recall_result(
                 'score': chunk.score,
                 'knowledgeBaseId': chunk.knowledge_base_id,
                 'knowledgeBaseName': chunk.knowledge_base_name,
+                'chunkId': chunk.chunk_id,
             }
             for chunk in chunks
         ],
@@ -1182,6 +1184,7 @@ def retrieve_knowledge_chunks(
                     knowledge_base_id=knowledge_base_item.id,
                     knowledge_base_name=knowledge_base_item.name,
                     retrieval_min_score=knowledge_base_item.retrieval_min_score,
+                    chunk_id=str(metadata.get('_id') or metadata.get('chunk_id') or metadata.get('chunkId') or ''),
                 )
             )
 
@@ -1216,12 +1219,14 @@ def retrieve_knowledge_context(
         knowledge_base_ids=knowledge_base_ids,
         include_media=False,
     )
-    return _format_context_from_recall_result(result, max_chars=max_chars)
+    context, _ = _format_context_from_recall_result(result, max_chars=max_chars)
+    return context
 
 
-def _format_context_from_recall_result(result: dict, max_chars: int = 3000) -> str:
+def _format_context_from_recall_result(result: dict, max_chars: int = 3000) -> tuple[str, list[dict]]:
     chunks = result.get('chunks') or []
     context_parts = []
+    selected_chunks = []
     current_len = 0
     for chunk in chunks:
         part = (
@@ -1232,9 +1237,10 @@ def _format_context_from_recall_result(result: dict, max_chars: int = 3000) -> s
         if current_len + len(part) > max_chars:
             break
         context_parts.append(part)
+        selected_chunks.append(chunk)
         current_len += len(part)
     if not context_parts:
-        return ''
+        return '', []
 
     media_assets = result.get('mediaAssets') or []
     media_context = ''
@@ -1251,7 +1257,71 @@ def _format_context_from_recall_result(result: dict, max_chars: int = 3000) -> s
         '如果参考内容中没有相关信息或与用户问题无关，请忽略它们并使用你已有的知识回答，但不要向用户提及“根据参考内容”或“根据知识库”等字眼。\n\n'
         '【知识库参考信息】\n'
     )
-    return header + ''.join(context_parts) + media_context + '---\n'
+    return header + ''.join(context_parts) + media_context + '---\n', selected_chunks
+
+
+def build_knowledge_reference_snapshots(chunks: list[dict]) -> list[dict]:
+    references = []
+    for position, chunk in enumerate(chunks, start=1):
+        try:
+            document_id = int(chunk.get('documentId'))
+            knowledge_base_id = int(chunk.get('knowledgeBaseId'))
+        except (TypeError, ValueError):
+            logger.warning('Skipping malformed knowledge reference chunk position=%s', position)
+            continue
+        content = str(chunk.get('content') or '').strip()
+        if document_id <= 0 or knowledge_base_id <= 0 or not content:
+            continue
+        try:
+            score = float(chunk.get('score')) if chunk.get('score') is not None else None
+        except (TypeError, ValueError):
+            score = None
+        try:
+            chunk_index = int(chunk.get('chunkIndex')) if chunk.get('chunkIndex') is not None else None
+        except (TypeError, ValueError):
+            chunk_index = None
+        references.append({
+            'position': position,
+            'knowledge_base_id': knowledge_base_id,
+            'knowledge_base_name': str(chunk.get('knowledgeBaseName') or ''),
+            'document_id': document_id,
+            'document_name': str(chunk.get('documentTitle') or ''),
+            'chunk_id': str(chunk.get('chunkId') or ''),
+            'chunk_index': chunk_index,
+            'content': content,
+            'score': score,
+        })
+    return references
+
+
+def serialize_knowledge_references(value) -> list[dict]:
+    if not isinstance(value, list):
+        return []
+    results = []
+    for item in value:
+        if not isinstance(item, dict):
+            continue
+        try:
+            position = int(item.get('position'))
+            knowledge_base_id = int(item.get('knowledge_base_id'))
+            document_id = int(item.get('document_id'))
+        except (TypeError, ValueError):
+            continue
+        content = str(item.get('content') or '').strip()
+        if position <= 0 or knowledge_base_id <= 0 or document_id <= 0 or not content:
+            continue
+        results.append({
+            'position': position,
+            'knowledgeBaseId': knowledge_base_id,
+            'knowledgeBaseName': str(item.get('knowledge_base_name') or ''),
+            'documentId': document_id,
+            'documentName': str(item.get('document_name') or ''),
+            'chunkId': str(item.get('chunk_id') or ''),
+            'chunkIndex': item.get('chunk_index') if isinstance(item.get('chunk_index'), int) else None,
+            'content': content,
+            'score': float(item['score']) if isinstance(item.get('score'), (int, float)) else None,
+        })
+    return results
 
 
 def retrieve_knowledge_context_with_media(
@@ -1272,7 +1342,7 @@ def retrieve_knowledge_context_with_media(
         knowledge_document_ids=knowledge_document_ids,
         knowledge_base_ids=knowledge_base_ids,
     )
-    context = _format_context_from_recall_result(result, max_chars=max_chars)
+    context, _ = _format_context_from_recall_result(result, max_chars=max_chars)
     blocks = [
         {
             'type': 'image' if item.get('resourceType') == Resource.TYPE_IMAGE else 'video',
@@ -1282,6 +1352,36 @@ def retrieve_knowledge_context_with_media(
         if item.get('resourceId') and item.get('resourceType') in {Resource.TYPE_IMAGE, Resource.TYPE_VIDEO}
     ]
     return context, blocks
+
+
+def retrieve_knowledge_context_with_media_and_references(
+    application,
+    query: str,
+    top_n: int = 5,
+    max_chars: int = 3000,
+    *,
+    knowledge_document_ids: list[int] | None = None,
+    knowledge_base_ids: list[int] | None = None,
+) -> tuple[str, list[dict], list[dict]]:
+    if not application or not query:
+        return '', [], []
+    result = retrieve_knowledge_chunks(
+        query=query,
+        application=application,
+        top_n=top_n,
+        knowledge_document_ids=knowledge_document_ids,
+        knowledge_base_ids=knowledge_base_ids,
+    )
+    context, selected_chunks = _format_context_from_recall_result(result, max_chars=max_chars)
+    blocks = [
+        {
+            'type': 'image' if item.get('resourceType') == Resource.TYPE_IMAGE else 'video',
+            'resourceId': item.get('resourceId'),
+        }
+        for item in result.get('mediaAssets') or []
+        if item.get('resourceId') and item.get('resourceType') in {Resource.TYPE_IMAGE, Resource.TYPE_VIDEO}
+    ]
+    return context, blocks, build_knowledge_reference_snapshots(selected_chunks)
 
 
 def retrieve_knowledge_context_with_recall(
@@ -1303,8 +1403,8 @@ def retrieve_knowledge_context_with_recall(
         knowledge_base_ids=knowledge_base_ids,
         include_media=True,
     )
-    context = _format_context_from_recall_result(result, max_chars=max_chars)
-    return context, result
+    context, selected_chunks = _format_context_from_recall_result(result, max_chars=max_chars)
+    return context, {**result, '_knowledgeReferences': build_knowledge_reference_snapshots(selected_chunks)}
 
 
 def inject_knowledge_context(conversation, api_messages, query: str) -> list[dict]:

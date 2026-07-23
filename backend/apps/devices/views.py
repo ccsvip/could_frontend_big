@@ -1237,7 +1237,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             )
 
         try:
-            answer_text, answer_blocks, answer_source = self._generate_answer(
+            answer_text, answer_blocks, answer_source, knowledge_references = self._generate_answer(
                 device, question_text, session_id=session_id, request=request, pipeline_context=pipeline_context,
             )
         except Exception as exc:
@@ -1289,6 +1289,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
                 model_name=runtime_model_name,
                 runtime_session_id=session_id,
                 answer_blocks=answer_blocks,
+                knowledge_references=knowledge_references,
             )
         except Exception:
             logger.exception('device.voice_chat.log_failed device_code=%s', device.code)
@@ -1376,7 +1377,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         session_id: str | None = None,
         request=None,
         pipeline_context: dict[str, str | None] | None = None,
-    ) -> tuple[str, list[dict], str]:
+    ) -> tuple[str, list[dict], str, list[dict]]:
         agent_application = device.effective_agent_application
         annotation = DeviceVoiceChatView._find_annotation(agent_application, question_text)
         if annotation is not None:
@@ -1392,13 +1393,13 @@ class DeviceVoiceChatView(DeviceRuntimeView):
                 if pipeline_context is not None:
                     _log_http_voice_pipeline('llm.request', pipeline_context, {'backend': 'annotation', 'questionText': question_text, 'annotationId': annotation_id})
                     _log_http_voice_pipeline('llm.response', pipeline_context, {'answerText': answer_text, 'answerBlocks': blocks})
-                return answer_text, serialize_published_annotation_blocks(annotation, tenant=agent_application.tenant, request=request), 'annotation'
+                return answer_text, serialize_published_annotation_blocks(annotation, tenant=agent_application.tenant, request=request), 'annotation', []
             blocks = annotation.answer_blocks or text_to_blocks(annotation.answer)
             answer_text = blocks_to_text(blocks)
             if pipeline_context is not None:
                 _log_http_voice_pipeline('llm.request', pipeline_context, {'backend': 'annotation', 'questionText': question_text, 'annotationId': annotation_id})
                 _log_http_voice_pipeline('llm.response', pipeline_context, {'answerText': answer_text, 'answerBlocks': blocks})
-            return answer_text, serialize_reply_blocks(blocks, tenant=agent_application.tenant, request=request), 'annotation'
+            return answer_text, serialize_reply_blocks(blocks, tenant=agent_application.tenant, request=request), 'annotation', []
 
         runtime_config = agent_application.runtime_config() if agent_application is not None else {}
         if runtime_config.get('runtime_backend_type') == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
@@ -1432,7 +1433,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             answer_text = third_party_chatbots.send_chatbot_message(chatbot, question_text, conversation=conversation)
             if pipeline_context is not None:
                 _log_http_voice_pipeline('llm.response', pipeline_context, {'answerText': answer_text})
-            return answer_text, serialize_reply_blocks(text_to_blocks(answer_text), tenant=device.tenant), 'third_party'
+            return answer_text, serialize_reply_blocks(text_to_blocks(answer_text), tenant=device.tenant), 'third_party', []
 
         model = None
         runtime_model_id = runtime_config.get('llm_model_id')
@@ -1462,10 +1463,11 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             )
             messages.extend(history)
         media_blocks: list[dict] = []
+        knowledge_references: list[dict] = []
         if agent_application is not None:
-            from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context_with_media
+            from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context_with_media_and_references
 
-            knowledge_context, media_blocks = retrieve_knowledge_context_with_media(
+            knowledge_context, media_blocks, knowledge_references = retrieve_knowledge_context_with_media_and_references(
                 agent_application,
                 question_text,
                 knowledge_document_ids=runtime_config.get('knowledge_document_ids') or [],
@@ -1502,7 +1504,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             [*text_to_blocks(answer_text), *media_blocks],
             tenant=device.tenant,
             request=request,
-        ), 'platform_llm'
+        ), 'platform_llm', knowledge_references
 
     @staticmethod
     def _resolve_third_party_conversation(device: Device, agent_application, chatbot, runtime_config: dict, session_id: str | None):

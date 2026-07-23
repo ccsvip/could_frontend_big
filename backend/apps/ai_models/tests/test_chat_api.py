@@ -405,7 +405,24 @@ class ChatApiTests(TenantTestMixin, APITestCase):
             _DummyStreamResponse([plain_json_response]),
             post_response=_DummyJsonResponse(summary_payload),
         )
-        with patch('apps.ai_models.views.httpx.AsyncClient', return_value=dummy_client):
+        knowledge_references = [{
+            'position': 1,
+            'knowledge_base_id': 8,
+            'knowledge_base_name': '售后知识库',
+            'document_id': 16,
+            'document_name': '退款政策',
+            'chunk_id': 'chunk-refund',
+            'chunk_index': 2,
+            'content': '退款通常三个工作日到账。',
+            'score': 0.92,
+        }]
+        with (
+            patch('apps.ai_models.views.httpx.AsyncClient', return_value=dummy_client),
+            patch(
+                'apps.ai_models.services.agent_knowledge.inject_knowledge_context_with_recall',
+                return_value=([], {'_knowledgeReferences': knowledge_references}),
+            ),
+        ):
             response = self.client.post(
                 f'/api/v1/ai-models/chat/conversations/{conversation.id}/send/',
                 {'content': '你好'},
@@ -416,6 +433,7 @@ class ChatApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('这是兼容模式返回的完整回复', _sse_content(streamed_body))
         self.assertNotIn('max_tokens', dummy_client.stream_calls[0][1]['json'])
+        self.assertIn('knowledgeReferences', streamed_body)
 
         messages = list(conversation.messages.order_by('created_at').values_list('role', 'content'))
         self.assertEqual(
@@ -425,6 +443,8 @@ class ChatApiTests(TenantTestMixin, APITestCase):
                 (ChatMessage.ROLE_ASSISTANT, '这是兼容模式返回的完整回复'),
             ],
         )
+        assistant = conversation.messages.get(role=ChatMessage.ROLE_ASSISTANT)
+        self.assertEqual(assistant.knowledge_references, knowledge_references)
 
     def test_send_accepts_sse_lines_without_space_after_data_prefix(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')

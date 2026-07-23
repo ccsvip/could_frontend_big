@@ -1226,6 +1226,7 @@ async def _run_llm_session_body(
             trace_id,
             answer_blocks,
             command_dispatch_diagnostics,
+            session.get('knowledgeReferences') if dispatch_outcome is None or not dispatch_outcome.hit else [],
         )
     except Exception:
         logger.exception('realtime.agent_chat.log_failed device_code=%s request_id=%s', session.get('deviceCode'), request_id)
@@ -1395,6 +1396,7 @@ def _record_realtime_device_chat_log(
     trace_id: str,
     answer_blocks: list[dict] | None = None,
     command_dispatch_diagnostics: dict[str, Any] | None = None,
+    knowledge_references: list[dict] | None = None,
 ) -> None:
     from apps.devices.models import DeviceChatLog
     from apps.devices.services.chat_logs import record_device_chat_log
@@ -1413,6 +1415,7 @@ def _record_realtime_device_chat_log(
         runtime_session_id=str(session.get('sessionId') or ''),
         answer_blocks=answer_blocks,
         command_dispatch_diagnostics=command_dispatch_diagnostics,
+        knowledge_references=knowledge_references,
     )
 
 
@@ -2243,10 +2246,10 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
     )
     messages = [{'role': 'system', 'content': system_prompt}]
 
-    from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context_with_media
+    from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context_with_media_and_references
     from apps.ai_models.services.reply_blocks import serialize_reply_blocks
 
-    knowledge_context, media_blocks = retrieve_knowledge_context_with_media(
+    knowledge_context, media_blocks, knowledge_references = retrieve_knowledge_context_with_media_and_references(
         agent_application,
         question_text,
         knowledge_document_ids=runtime_config.get('knowledge_document_ids') or [],
@@ -2275,6 +2278,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
         'llmModelId': model.id,
         'messages': messages,
         'knowledgeMediaBlocks': media_blocks,
+        'knowledgeReferences': knowledge_references,
         'temperature': runtime_config.get('temperature', 0.7),
         'maxTokens': None if runtime_config.get('max_tokens_unlimited') else runtime_config.get('max_tokens', 1000),
         'modelName': model.name,
@@ -2290,7 +2294,7 @@ def _run_device_llm_answer(device_code: str, question_text: str) -> dict[str, An
     if agent_application is None or not agent_application.runtime_config().get('is_active'):
         raise RuntimeError('设备未绑定可用智能体')
     runtime_config = agent_application.runtime_config()
-    answer_text, answer_blocks, _answer_source = DeviceVoiceChatView._generate_answer(device, question_text)
+    answer_text, answer_blocks, _answer_source, _knowledge_references = DeviceVoiceChatView._generate_answer(device, question_text)
     return {
         'deviceCode': device.code,
         'answerText': answer_text,

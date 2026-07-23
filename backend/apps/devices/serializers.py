@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from apps.ai_models.services.reply_blocks import serialize_reply_blocks, text_to_blocks
+from apps.ai_models.services.agent_knowledge import serialize_knowledge_references
 
 from apps.ai_models.models import AgentApplication, TTSVoice
 from apps.resources.models import CommandGroup, ModelAsset, Resource, ScrollingText
@@ -550,6 +551,7 @@ class DeviceChatLogSerializer(serializers.ModelSerializer):
     questionText = serializers.CharField(source='question_text', read_only=True)
     answerText = serializers.CharField(source='answer_text', read_only=True)
     answerBlocks = serializers.SerializerMethodField()
+    knowledgeReferences = serializers.SerializerMethodField()
     commandDispatch = serializers.JSONField(source='command_dispatch_diagnostics', read_only=True)
     requestId = serializers.CharField(source='request_id', read_only=True)
     traceId = serializers.CharField(source='trace_id', read_only=True)
@@ -574,6 +576,7 @@ class DeviceChatLogSerializer(serializers.ModelSerializer):
             'questionText',
             'answerText',
             'answerBlocks',
+            'knowledgeReferences',
             'commandDispatch',
             'requestId',
             'traceId',
@@ -587,6 +590,9 @@ class DeviceChatLogSerializer(serializers.ModelSerializer):
             tenant=obj.tenant,
             request=self.context.get('request'),
         )
+
+    def get_knowledgeReferences(self, obj: DeviceChatLog) -> list[dict]:
+        return serialize_knowledge_references(obj.knowledge_references)
 
 
 class DeviceBindSerializer(serializers.Serializer):

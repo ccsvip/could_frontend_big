@@ -3,6 +3,7 @@ from __future__ import annotations
 from django.db.models import BigIntegerField, Case, CharField, Count, F, Max, Min, Q, QuerySet, Value, When
 
 from apps.ai_models.services.reply_blocks import serialize_reply_blocks, text_to_blocks
+from apps.ai_models.services.agent_knowledge import serialize_knowledge_references
 from apps.devices.models import DeviceChatLog
 
 
@@ -137,6 +138,7 @@ def serialize_device_chat_session(logs: list[DeviceChatLog], *, request=None) ->
                     tenant=log.tenant,
                     request=request,
                 ),
+                'knowledgeReferences': serialize_knowledge_references(log.knowledge_references),
                 'commandDispatch': log.command_dispatch_diagnostics,
                 'feedback': 'none',
                 'createdAt': log.created_at,

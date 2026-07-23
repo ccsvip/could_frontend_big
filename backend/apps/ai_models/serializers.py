@@ -47,6 +47,7 @@ from .models import (
 from .services.annotations import normalize_annotation_question
 from .services.asr_transcripts import contains_unicode_letter_or_number, normalize_ignored_transcript
 from .services.reply_blocks import blocks_to_text, normalize_reply_blocks, serialize_reply_blocks, text_to_blocks
+from .services.agent_knowledge import serialize_knowledge_references
 from .services.third_party_chatbots import (
     default_config_for_scheme,
     mask_sensitive_config,
@@ -1505,12 +1506,13 @@ class AgentAnnotationCreateFromMessageSerializer(serializers.Serializer):
 class ChatMessageSerializer(serializers.ModelSerializer):
     conversationId = serializers.IntegerField(source='conversation_id', read_only=True)
     contentBlocks = serializers.SerializerMethodField()
+    knowledgeReferences = serializers.SerializerMethodField()
     feedback = serializers.CharField(required=False)
 
     class Meta:
         model = ChatMessage
-        fields = ['id', 'conversationId', 'role', 'content', 'contentBlocks', 'feedback', 'created_at']
-        read_only_fields = ['id', 'conversationId', 'role', 'content', 'contentBlocks', 'feedback', 'created_at']
+        fields = ['id', 'conversationId', 'role', 'content', 'contentBlocks', 'knowledgeReferences', 'feedback', 'created_at']
+        read_only_fields = fields
 
     def get_contentBlocks(self, obj: ChatMessage) -> list[dict]:
         return serialize_reply_blocks(
@@ -1518,6 +1520,9 @@ class ChatMessageSerializer(serializers.ModelSerializer):
             tenant=obj.conversation.tenant,
             request=self.context.get('request'),
         )
+
+    def get_knowledgeReferences(self, obj: ChatMessage) -> list[dict]:
+        return serialize_knowledge_references(obj.knowledge_references)
 
 
 class ChatConversationListSerializer(serializers.ModelSerializer):

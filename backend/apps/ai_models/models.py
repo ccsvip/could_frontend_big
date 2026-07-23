@@ -1044,6 +1044,7 @@ class ChatMessage(models.Model):
     role = models.CharField('角色', max_length=16, choices=ROLE_CHOICES, default=ROLE_USER)
     content = models.TextField('消息内容')
     content_blocks = models.JSONField('消息内容块', blank=True, default=list)
+    knowledge_references = models.JSONField('知识引用快照', blank=True, default=list)
     feedback = models.CharField('反馈', max_length=8, choices=FEEDBACK_CHOICES, default=FEEDBACK_NONE)
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
 

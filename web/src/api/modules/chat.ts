@@ -1,12 +1,25 @@
 import { httpClient } from '../client';
 import type { AgentReplyBlock } from './applications';
 
+export type KnowledgeReference = {
+  position: number;
+  knowledgeBaseId: number;
+  knowledgeBaseName: string;
+  documentId: number;
+  documentName: string;
+  chunkId: string;
+  chunkIndex: number | null;
+  content: string;
+  score: number | null;
+};
+
 export type ChatMessage = {
   id: number;
   conversationId: number;
   role: 'user' | 'assistant' | 'system';
   content: string;
   contentBlocks: AgentReplyBlock[];
+  knowledgeReferences: KnowledgeReference[];
   feedback: 'none' | 'up' | 'down';
   created_at: string;
 };
@@ -84,6 +97,7 @@ export const sendMessageStream = async (
   onError: (error: string) => void,
   onDone: () => void,
   onFollowUpSuggestedQuestions?: (questions: string[]) => void,
+  onKnowledgeReferences?: (references: KnowledgeReference[]) => void,
 ): Promise<AbortController> => {
   const controller = new AbortController();
   const token = localStorage.getItem('token');
@@ -155,6 +169,8 @@ export const sendMessageStream = async (
                     (item: unknown): item is string => typeof item === 'string' && item.trim().length > 0,
                   ),
                 );
+              } else if (Array.isArray(parsed.knowledgeReferences)) {
+                onKnowledgeReferences?.(parsed.knowledgeReferences);
               } else if (parsed.content) {
                 onChunk(parsed.content);
                 if (Array.isArray(parsed.blocks)) {

@@ -30,6 +30,7 @@ import {
   updateConversationConfig,
   type ChatConversationDetail,
   type ChatMessage,
+  type KnowledgeReference,
   type ChatConversationRecord,
 } from '../../api/modules/chat';
 import { fetchKnowledgeBases, type KnowledgeBaseRecord } from '../../api/modules/knowledge-base';
@@ -53,6 +54,7 @@ import {
 import { fetchImageResources, fetchVideoResources, type ResourceRecord, type ResourceType } from '../../api/modules/resources';
 import { ChatMarkdown } from '../../components/chat-markdown';
 import { StatusTag } from '../../components/status-tag';
+import { KnowledgeReferences } from '../../components/knowledge-references';
 import { normalizeMediaAssetUrl } from '../../api/client';
 import { useAuthStore } from '../../store/auth';
 import { useAgentAudio } from './use-agent-audio';
@@ -414,6 +416,7 @@ export const ApplicationManagementPage = () => {
   const [streaming, setStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
   const [streamingBlocks, setStreamingBlocks] = useState<AgentReplyBlock[]>([]);
+  const [streamingKnowledgeReferences, setStreamingKnowledgeReferences] = useState<KnowledgeReference[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -1311,6 +1314,7 @@ export const ApplicationManagementPage = () => {
     setMessages([]);
     setStreamingContent('');
     setStreamingBlocks([]);
+    setStreamingKnowledgeReferences([]);
     setInputValue('');
     message.success('已开始新对话，发送首条消息后将保存到历史');
   };
@@ -1336,6 +1340,7 @@ export const ApplicationManagementPage = () => {
       content,
       contentBlocks: [textBlock(content)],
       feedback: 'none',
+      knowledgeReferences: [],
       created_at: new Date().toISOString(),
     };
     setInputValue('');
@@ -1343,6 +1348,7 @@ export const ApplicationManagementPage = () => {
     setStreaming(true);
     setStreamingContent('');
     setStreamingBlocks([]);
+    setStreamingKnowledgeReferences([]);
     setFollowUpSuggestedQuestions([]);
     if (replyPlaybackEnabled && ttsReady) {
       agentAudio.startStreamPlayback();
@@ -1391,6 +1397,7 @@ export const ApplicationManagementPage = () => {
       (error) => message.error(error),
       finish,
       (questions) => setFollowUpSuggestedQuestions(questions),
+      (references) => setStreamingKnowledgeReferences(references),
     );
     abortRef.current = controller;
   };
@@ -1486,11 +1493,12 @@ export const ApplicationManagementPage = () => {
         role: 'assistant' as const,
         content: streamingContent,
         contentBlocks: streamingBlocks.length ? streamingBlocks : [textBlock(streamingContent)],
+        knowledgeReferences: streamingKnowledgeReferences,
         feedback: 'none' as const,
         created_at: new Date().toISOString(),
       },
     ];
-  }, [conversation?.id, messages, streamingBlocks, streamingContent]);
+  }, [conversation?.id, messages, streamingBlocks, streamingContent, streamingKnowledgeReferences]);
 
   const applicationOverview = useMemo(() => {
     const activeCount = applications.filter((app) => app.isActive).length;
@@ -1865,7 +1873,10 @@ export const ApplicationManagementPage = () => {
               {isUser ? (
                 <span className="whitespace-pre-wrap break-words">{msg.content}</span>
               ) : (
-                renderReplyBlocks(msg.contentBlocks, msg.content)
+                <>
+                  {renderReplyBlocks(msg.contentBlocks, msg.content)}
+                  <KnowledgeReferences references={msg.knowledgeReferences || []} />
+                </>
               )}
               {msg.id === -1 && (
                 <span className="ml-1 inline-block h-4 w-0.5 bg-brand-500 animate-pulse align-middle" />
@@ -2968,7 +2979,12 @@ export const ApplicationManagementPage = () => {
                               >
                                 {isUser ? (
                                   <span className="whitespace-pre-wrap break-words">{msg.content}</span>
-                                ) : renderReplyBlocks(msg.contentBlocks, msg.content)}
+                                ) : (
+                                  <>
+                                    {renderReplyBlocks(msg.contentBlocks, msg.content)}
+                                    <KnowledgeReferences references={msg.knowledgeReferences || []} />
+                                  </>
+                                )}
                               </div>
                               {!isUser && msg.commandDispatch?.route && (
                                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 px-1 text-fluid-xs text-slate-500">
