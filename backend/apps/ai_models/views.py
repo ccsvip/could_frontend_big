@@ -2789,7 +2789,8 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                 )
                 if full_content and not assistant_message_saved:
                     await sync_to_async(_save_assistant_message, thread_sensitive=True)(
-                        full_content + f'\n\n[发生错误: {str(exc)[:100]}]'
+                        full_content + f'\n\n[发生错误: {str(exc)[:100]}]',
+                        include_knowledge_references=True,
                     )
                 yield f"data: {json.dumps({'error': True, 'content': str(exc)[:200]})}\n\n"
                 yield "data: [DONE]\n\n"

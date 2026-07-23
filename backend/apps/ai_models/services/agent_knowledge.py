@@ -987,6 +987,7 @@ def _chunks_from_recall_result(result: dict) -> list[RetrievedChunk]:
                 chunk_index=item.get('chunkIndex'),
                 knowledge_base_id=item.get('knowledgeBaseId'),
                 knowledge_base_name=item.get('knowledgeBaseName') or '',
+                chunk_id=str(item.get('chunkId') or ''),
             )
         )
     return chunks
@@ -1272,13 +1273,23 @@ def build_knowledge_reference_snapshots(chunks: list[dict]) -> list[dict]:
         content = str(chunk.get('content') or '').strip()
         if document_id <= 0 or knowledge_base_id <= 0 or not content:
             continue
+        raw_score = chunk.get('score')
         try:
-            score = float(chunk.get('score')) if chunk.get('score') is not None else None
-        except (TypeError, ValueError):
+            score = float(raw_score) if raw_score is not None and not isinstance(raw_score, bool) else None
+        except (TypeError, ValueError, OverflowError):
             score = None
+        if score is not None and not math.isfinite(score):
+            score = None
+        raw_chunk_index = chunk.get('chunkIndex')
         try:
-            chunk_index = int(chunk.get('chunkIndex')) if chunk.get('chunkIndex') is not None else None
-        except (TypeError, ValueError):
+            chunk_index = (
+                int(raw_chunk_index)
+                if raw_chunk_index is not None
+                and not isinstance(raw_chunk_index, bool)
+                and not (isinstance(raw_chunk_index, float) and not math.isfinite(raw_chunk_index))
+                else None
+            )
+        except (TypeError, ValueError, OverflowError):
             chunk_index = None
         references.append({
             'position': position,
@@ -1310,6 +1321,23 @@ def serialize_knowledge_references(value) -> list[dict]:
         content = str(item.get('content') or '').strip()
         if position <= 0 or knowledge_base_id <= 0 or document_id <= 0 or not content:
             continue
+        raw_chunk_index = item.get('chunk_index')
+        chunk_index = (
+            raw_chunk_index
+            if isinstance(raw_chunk_index, int) and not isinstance(raw_chunk_index, bool)
+            else None
+        )
+        raw_score = item.get('score')
+        try:
+            score = (
+                float(raw_score)
+                if isinstance(raw_score, (int, float)) and not isinstance(raw_score, bool)
+                else None
+            )
+        except (TypeError, ValueError, OverflowError):
+            score = None
+        if score is not None and not math.isfinite(score):
+            score = None
         results.append({
             'position': position,
             'knowledgeBaseId': knowledge_base_id,
@@ -1317,9 +1345,9 @@ def serialize_knowledge_references(value) -> list[dict]:
             'documentId': document_id,
             'documentName': str(item.get('document_name') or ''),
             'chunkId': str(item.get('chunk_id') or ''),
-            'chunkIndex': item.get('chunk_index') if isinstance(item.get('chunk_index'), int) else None,
+            'chunkIndex': chunk_index,
             'content': content,
-            'score': float(item['score']) if isinstance(item.get('score'), (int, float)) else None,
+            'score': score,
         })
     return results
 

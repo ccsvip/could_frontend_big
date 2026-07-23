@@ -1217,6 +1217,10 @@ async def _run_llm_session_body(
         await sync_to_async(_append_runtime_conversation_messages, thread_sensitive=True)(conversation_id, question_text, answer_text, answer_blocks)
     else:
         _remember_agent_exchange(session.get('memoryKey'), question_text, answer_text)
+    should_record_knowledge_references = (
+        session.get('annotationAnswer') is None
+        and (dispatch_outcome is None or not dispatch_outcome.hit)
+    )
     try:
         await sync_to_async(_record_realtime_device_chat_log, thread_sensitive=True)(
             session,
@@ -1226,7 +1230,7 @@ async def _run_llm_session_body(
             trace_id,
             answer_blocks,
             command_dispatch_diagnostics,
-            session.get('knowledgeReferences') if dispatch_outcome is None or not dispatch_outcome.hit else [],
+            session.get('knowledgeReferences') if should_record_knowledge_references else [],
         )
     except Exception:
         logger.exception('realtime.agent_chat.log_failed device_code=%s request_id=%s', session.get('deviceCode'), request_id)
@@ -2249,12 +2253,16 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
     from apps.ai_models.services.agent_knowledge import retrieve_knowledge_context_with_media_and_references
     from apps.ai_models.services.reply_blocks import serialize_reply_blocks
 
-    knowledge_context, media_blocks, knowledge_references = retrieve_knowledge_context_with_media_and_references(
-        agent_application,
-        question_text,
-        knowledge_document_ids=runtime_config.get('knowledge_document_ids') or [],
-        knowledge_base_ids=runtime_config.get('knowledge_base_ids') or [],
-    )
+    knowledge_context = ''
+    media_blocks = []
+    knowledge_references = []
+    if annotation_answer is None:
+        knowledge_context, media_blocks, knowledge_references = retrieve_knowledge_context_with_media_and_references(
+            agent_application,
+            question_text,
+            knowledge_document_ids=runtime_config.get('knowledge_document_ids') or [],
+            knowledge_base_ids=runtime_config.get('knowledge_base_ids') or [],
+        )
     media_blocks = serialize_reply_blocks(media_blocks, tenant=agent_application.tenant)
     if knowledge_context:
         messages.append({'role': 'system', 'content': knowledge_context})

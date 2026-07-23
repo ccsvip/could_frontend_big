@@ -1,1 +1,2 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/backend/knowledge-reference-snapshots.md", "reason": "Spec contract for knowledge reference snapshots: storage keys, serialization rules, DTO fields, and validation matrix for annotation/command/third-party paths"}
+{"file": ".scratch/dify-knowledge-citations-research.md", "reason": "Dify reference implementation research: data model, SSE contract, persistence patterns, and UI interaction model"}

@@ -16,7 +16,7 @@ from django.test import TestCase, override_settings
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import ASRFillerWordSet, ASRRuntimeSettings, AgentApplication, ChatConversation, ChatMessage, LLMModel, LLMProvider, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, TenantLLMModelGrant, TenantThirdPartyChatbotGrant, ThirdPartyChatbotApplication, ThirdPartyChatbotIntegration, ThirdPartyChatbotProvider
+from apps.ai_models.models import ASRFillerWordSet, ASRRuntimeSettings, AgentAnnotation, AgentApplication, ChatConversation, ChatMessage, LLMModel, LLMProvider, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, TenantLLMModelGrant, TenantThirdPartyChatbotGrant, ThirdPartyChatbotApplication, ThirdPartyChatbotIntegration, ThirdPartyChatbotProvider
 from apps.devices.models import Device, DeviceApplication, DeviceChatLog
 from apps.resources.services.command_dispatch import DispatchOutcome
 from apps.tenants.models import Tenant
@@ -2118,6 +2118,44 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         self.assertIn({'role': 'system', 'content': 'B 知识库上下文'}, session['messages'])
         self.assertNotIn({'role': 'user', 'content': 'A 知识问题'}, session['messages'])
         self.assertNotIn({'role': 'assistant', 'content': 'A 知识答案'}, session['messages'])
+
+    def test_device_llm_session_skips_knowledge_retrieval_for_annotation_answer(self):
+        from config import realtime
+
+        provider = LLMProvider.objects.create(
+            name='Runtime Annotation Provider',
+            provider_type='openai',
+            api_base_url='https://llm.example/v1',
+            api_key='secret',
+            is_active=True,
+        )
+        model = LLMModel.objects.create(provider=provider, name='annotation-model', is_active=True)
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model, is_active=True)
+        agent_application = self.bind_agent_device(
+            agent_name='Annotation Agent',
+            device_name='Annotation Device',
+            device_code='ANDROID-ANNOTATION-KB-001',
+            llm_model=model,
+        )
+        AgentAnnotation.objects.create(
+            tenant=self.tenant,
+            application=agent_application,
+            question='show annotation',
+            answer='annotation answer',
+            created_by=self.user,
+        )
+
+        with patch(
+            'apps.ai_models.services.agent_knowledge.retrieve_knowledge_context_with_media_and_references',
+        ) as retrieve_knowledge_context:
+            session = realtime._prepare_device_llm_session(
+                'ANDROID-ANNOTATION-KB-001',
+                'show annotation',
+            )
+
+        retrieve_knowledge_context.assert_not_called()
+        self.assertEqual(session['annotationAnswer'], 'annotation answer')
+        self.assertEqual(session['knowledgeReferences'], [])
 
     def test_device_llm_session_rejects_inactive_device_application(self):
         from apps.devices.services.runtime import RuntimeDeviceError

@@ -9,11 +9,13 @@ import httpx
 
 from apps.ai_models.models import AgentApplication, EmbeddingModel, RerankModel, TenantKnowledgeModelSettings
 from apps.ai_models.services.agent_knowledge import (
+    _chunks_from_recall_result,
     _format_context_from_recall_result,
     build_knowledge_reference_snapshots,
     media_blocks_for_reply_text,
     retrieve_knowledge_chunks,
     retrieve_knowledge_context,
+    serialize_knowledge_references,
 )
 from apps.knowledge_base.models import KnowledgeBase, KnowledgeDocument, KnowledgeDocumentChunk, KnowledgeMediaAsset
 from apps.resources.models import Resource
@@ -57,6 +59,55 @@ class KnowledgeReferenceSnapshotTests(TestCase):
         self.assertIn('第一段正文', context)
         self.assertNotIn('第二段正文', context)
         self.assertEqual([item['chunk_id'] for item in references], ['chunk-1'])
+
+    def test_reference_numeric_fields_reject_booleans_and_non_finite_values(self):
+        chunks = [
+            {
+                'documentId': index,
+                'documentTitle': f'Document {index}',
+                'chunkIndex': chunk_index,
+                'content': f'Content {index}',
+                'score': score,
+                'knowledgeBaseId': 10,
+            }
+            for index, (chunk_index, score) in enumerate(
+                [(True, True), (float('nan'), float('nan')), (float('inf'), float('-inf'))],
+                start=1,
+            )
+        ]
+
+        references = build_knowledge_reference_snapshots(chunks)
+        serialized = serialize_knowledge_references([
+            {
+                **reference,
+                'chunk_index': chunk_index,
+                'score': score,
+            }
+            for reference, (chunk_index, score) in zip(
+                references,
+                [(True, True), (0, float('nan')), (1, float('inf'))],
+            )
+        ])
+
+        self.assertEqual([item['chunk_index'] for item in references], [None, None, None])
+        self.assertEqual([item['score'] for item in references], [None, None, None])
+        self.assertEqual([item['chunkIndex'] for item in serialized], [None, 0, 1])
+        self.assertEqual([item['score'] for item in serialized], [None, None, None])
+
+    def test_recall_chunk_conversion_preserves_chunk_id(self):
+        chunks = _chunks_from_recall_result({
+            'chunks': [{
+                'documentId': 1,
+                'documentTitle': 'Document',
+                'chunkId': 'remote-chunk-1',
+                'chunkIndex': 0,
+                'content': 'Content',
+                'score': 0.9,
+                'knowledgeBaseId': 10,
+            }],
+        })
+
+        self.assertEqual(chunks[0].chunk_id, 'remote-chunk-1')
 
 
 class _DummyDashScopeResponse:

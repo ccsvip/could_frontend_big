@@ -80,14 +80,14 @@ Dify 使用独立的 `dataset_retriever_resources` 表，以 `message_id` 关联
 ```ts
 type KnowledgeCitation = {
   position: number
-  knowledgeBaseId: string
+  knowledgeBaseId: number
   knowledgeBaseName: string
-  documentId: string
+  documentId: number
   documentName: string
   chunkId: string
-  chunkIndex?: number
+  chunkIndex: number | null
   content: string
-  score?: number
+  score: number | null
 }
 ```
 
