@@ -383,6 +383,8 @@ export const ApplicationManagementPage = () => {
   const [openingMessageEnabled, setOpeningMessageEnabled] = useState(true);
   const [openingMessage, setOpeningMessage] = useState('');
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
+  const [followUpSuggestedQuestionsEnabled, setFollowUpSuggestedQuestionsEnabled] = useState(false);
+  const [followUpSuggestedQuestions, setFollowUpSuggestedQuestions] = useState<string[]>([]);
   const [newSuggestedQuestion, setNewSuggestedQuestion] = useState('');
   const [voiceInputEnabled, setVoiceInputEnabled] = useState(false);
   const [replyPlaybackEnabled, setReplyPlaybackEnabled] = useState(false);
@@ -484,6 +486,8 @@ export const ApplicationManagementPage = () => {
     setOpeningMessageEnabled(detail.openingMessageEnabled);
     setOpeningMessage(detail.openingMessage || '');
     setSuggestedQuestions(detail.suggestedQuestions || []);
+    setFollowUpSuggestedQuestionsEnabled(Boolean(detail.followUpSuggestedQuestionsEnabled));
+    setFollowUpSuggestedQuestions([]);
     setNewSuggestedQuestion('');
     setVoiceInputEnabled(detail.voiceInputEnabled);
     setReplyPlaybackEnabled(detail.replyPlaybackEnabled);
@@ -523,6 +527,9 @@ export const ApplicationManagementPage = () => {
     if (detail.isActive !== payload.isActive) return '启用状态';
     if (detail.openingMessageEnabled !== payload.openingMessageEnabled) return '开场白开关';
     if (stringValue(detail.openingMessage) !== stringValue(payload.openingMessage)) return '开场白';
+    if (Boolean(detail.followUpSuggestedQuestionsEnabled) !== Boolean(payload.followUpSuggestedQuestionsEnabled)) {
+      return '回答后建议问题';
+    }
     if (detail.voiceInputEnabled !== payload.voiceInputEnabled) return '语音输入';
     if (detail.replyPlaybackEnabled !== payload.replyPlaybackEnabled) return '回复播报';
     if (!hasTtsFilterPunctuation) return 'TTS 过滤规则字段';
@@ -553,6 +560,7 @@ export const ApplicationManagementPage = () => {
     if (isActive !== selectedApplication.isActive) return true;
     if (openingMessageEnabled !== selectedApplication.openingMessageEnabled) return true;
     if (openingMessage.trim() !== (selectedApplication.openingMessage || '')) return true;
+    if (followUpSuggestedQuestionsEnabled !== Boolean(selectedApplication.followUpSuggestedQuestionsEnabled)) return true;
     if (voiceInputEnabled !== selectedApplication.voiceInputEnabled) return true;
     if (replyPlaybackEnabled !== selectedApplication.replyPlaybackEnabled) return true;
     if (ttsFilterPunctuation !== selectedApplication.ttsFilterPunctuation) return true;
@@ -586,6 +594,7 @@ export const ApplicationManagementPage = () => {
     openingMessageEnabled,
     openingMessage,
     suggestedQuestions,
+    followUpSuggestedQuestionsEnabled,
     voiceInputEnabled,
     replyPlaybackEnabled,
     ttsFilterPunctuation,
@@ -1101,6 +1110,7 @@ export const ApplicationManagementPage = () => {
         openingMessageEnabled: selectedTemplate ? selectedTemplate.openingMessageEnabled : true,
         openingMessage: selectedTemplate ? selectedTemplate.openingMessage : '',
         suggestedQuestions: selectedTemplate ? [...selectedTemplate.suggestedQuestions] : [],
+        followUpSuggestedQuestionsEnabled: false,
         isActive: true,
       };
       const created = await createAgentApplication(payload);
@@ -1154,6 +1164,7 @@ export const ApplicationManagementPage = () => {
         openingMessageEnabled,
         openingMessage: openingMessage.trim(),
         suggestedQuestions: normalizedSuggestedQuestions,
+        followUpSuggestedQuestionsEnabled,
         voiceInputEnabled,
         replyPlaybackEnabled,
         ttsFilterPunctuation,
@@ -1203,6 +1214,7 @@ export const ApplicationManagementPage = () => {
     openingMessageEnabled,
     openingMessage,
     suggestedQuestions,
+    followUpSuggestedQuestionsEnabled,
     voiceInputEnabled,
     replyPlaybackEnabled,
     ttsFilterPunctuation,
@@ -1331,6 +1343,7 @@ export const ApplicationManagementPage = () => {
     setStreaming(true);
     setStreamingContent('');
     setStreamingBlocks([]);
+    setFollowUpSuggestedQuestions([]);
     if (replyPlaybackEnabled && ttsReady) {
       agentAudio.startStreamPlayback();
     }
@@ -1377,6 +1390,7 @@ export const ApplicationManagementPage = () => {
       () => undefined,
       (error) => message.error(error),
       finish,
+      (questions) => setFollowUpSuggestedQuestions(questions),
     );
     abortRef.current = controller;
   };
@@ -2184,6 +2198,22 @@ export const ApplicationManagementPage = () => {
             ) : displayedMessages.length > 0 ? (
               <div>
                 {displayedMessages.map(renderChatMessage)}
+                {!streaming && (followUpSuggestedQuestions.length > 0 ? followUpSuggestedQuestions : suggestedQuestions).length > 0 ? (
+                  <div className="flex justify-start gap-2 flex-wrap max-w-xl mt-3 ml-1">
+                    {(followUpSuggestedQuestions.length > 0 ? followUpSuggestedQuestions : suggestedQuestions).map((question, index) => (
+                      <Button
+                        type="dashed"
+                        size="small"
+                        key={`follow-${index}-${question}`}
+                        disabled={!canChat}
+                        onClick={() => void sendSuggestedQuestion(question)}
+                        className="rounded-full flex items-center gap-1 text-xs text-slate-600 hover:text-brand-600 hover:border-brand-500"
+                      >
+                        <IconHelpCircle size={12} /> {question}
+                      </Button>
+                    ))}
+                  </div>
+                ) : null}
                 <div ref={messagesEndRef} />
               </div>
             ) : (
@@ -2196,14 +2226,14 @@ export const ApplicationManagementPage = () => {
                 ) : (
                   <span className="text-sm">输入消息并发送，开始与大模型进行调试对话</span>
                 )}
-                {suggestedQuestions.length > 0 && (
+                {(followUpSuggestedQuestions.length > 0 ? followUpSuggestedQuestions : suggestedQuestions).length > 0 && (
                   <div className="flex justify-center gap-2 flex-wrap max-w-lg mt-2">
-                    {suggestedQuestions.map((question, index) => (
-                      <Button 
-                        type="dashed" 
+                    {(followUpSuggestedQuestions.length > 0 ? followUpSuggestedQuestions : suggestedQuestions).map((question, index) => (
+                      <Button
+                        type="dashed"
                         size="small"
-                        key={`${index}-${question}`} 
-                        disabled={streaming || !canChat} 
+                        key={`${index}-${question}`}
+                        disabled={streaming || !canChat}
                         onClick={() => void sendSuggestedQuestion(question)}
                         className="rounded-full flex items-center gap-1 text-xs text-slate-600 hover:text-brand-600 hover:border-brand-500"
                       >
@@ -2390,6 +2420,26 @@ export const ApplicationManagementPage = () => {
               </div>
             </Card>
 
+            {/* Follow-up Suggested Questions */}
+            <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm shrink-0" styles={{ body: { padding: '16px' } }}>
+              <div className="flex justify-between items-center">
+                <div className="flex flex-col">
+                  <span className="text-base font-bold text-slate-800">回答后建议问题</span>
+                  <span className="text-xs text-slate-400">
+                    开启后，平台 LLM 每轮回答完成会额外生成下一步问题（默认关闭；不写入对话上下文）
+                  </span>
+                </div>
+                <Switch
+                  checked={followUpSuggestedQuestionsEnabled}
+                  disabled={!canUpdate || runtimeBackendType === 'third_party_chatbot'}
+                  onChange={setFollowUpSuggestedQuestionsEnabled}
+                />
+              </div>
+              {runtimeBackendType === 'third_party_chatbot' ? (
+                <div className="mt-2 text-xs text-slate-400">第三方会话机器人不支持回答后建议问题</div>
+              ) : null}
+            </Card>
+
             {/* Voice Settings */}
             <Card variant="borderless" className="bg-white border border-slate-200/50 shadow-sm shrink-0" styles={{ body: { padding: '16px' } }}>
               <div className="flex flex-col gap-4">
@@ -2542,14 +2592,14 @@ export const ApplicationManagementPage = () => {
               </div>
             ) : null}
 
-            {suggestedQuestions.length > 0 ? (
+            {((followUpSuggestedQuestions.length > 0 ? followUpSuggestedQuestions : suggestedQuestions).length > 0) ? (
               <div className="flex justify-center gap-2 flex-wrap max-w-md mt-2">
-                {suggestedQuestions.map((question, index) => (
-                  <Button 
-                    type="dashed" 
+                {(followUpSuggestedQuestions.length > 0 ? followUpSuggestedQuestions : suggestedQuestions).map((question, index) => (
+                  <Button
+                    type="dashed"
                     size="small"
-                    key={`${index}-${question}`} 
-                    disabled={streaming || !canChat} 
+                    key={`${index}-${question}`}
+                    disabled={streaming || !canChat}
                     onClick={() => void sendSuggestedQuestion(question)}
                     className="rounded-full flex items-center gap-1 text-xs text-slate-600 hover:text-brand-600 hover:border-brand-500"
                   >

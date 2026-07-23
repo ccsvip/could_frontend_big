@@ -1240,6 +1240,7 @@ async def _run_llm_session_body(
         'applicationName': session['applicationName'],
         'sessionId': session.get('sessionId'),
         'conversationId': conversation_id,
+        'followUpSuggestedQuestions': [],
     }
     if _has_media_reply_blocks(answer_blocks):
         done_payload['answerBlocks'] = answer_blocks
@@ -1252,6 +1253,30 @@ async def _run_llm_session_body(
             'commands': command_dispatch_snapshots,
         }
         done_payload['commandDispatch'].update(command_dispatch_diagnostics)
+
+    command_hit = bool(dispatch_outcome is not None and dispatch_outcome.hit)
+    annotation_hit = session.get('annotationAnswer') is not None
+    is_platform_llm = session.get('backendType') == RUNTIME_BACKEND_PLATFORM_LLM
+    if (
+        is_platform_llm
+        and not command_hit
+        and not annotation_hit
+        and bool(session.get('followUpSuggestedQuestionsEnabled'))
+        and answer_text
+    ):
+        try:
+            done_payload['followUpSuggestedQuestions'] = await sync_to_async(
+                _generate_session_follow_up_questions,
+                thread_sensitive=True,
+            )(session, answer_text)
+        except Exception:
+            logger.exception(
+                'realtime.follow_up_failed device_code=%s request_id=%s',
+                session.get('deviceCode'),
+                request_id,
+            )
+            done_payload['followUpSuggestedQuestions'] = []
+
     await _send_json(
         send,
         {
@@ -1263,6 +1288,42 @@ async def _run_llm_session_body(
         },
     )
     return answer_text
+
+
+def _generate_session_follow_up_questions(session: dict[str, Any], answer_text: str) -> list[str]:
+    """同步：查模型 + 旁路生成。必须在 sync_to_async 线程中调用。"""
+    from apps.ai_models.models import LLMModel
+    from apps.ai_models.services.follow_up_suggested_questions import (
+        generate_follow_up_suggested_questions,
+    )
+
+    model_name = session.get('modelName') or ''
+    model_config = session.get('modelConfig') or {}
+    model = None
+    llm_model_id = session.get('llmModelId')
+    if llm_model_id:
+        model = LLMModel.objects.select_related('provider').filter(id=llm_model_id).first()
+    if model is None and model_name and model_config.get('apiBaseUrl'):
+        model = (
+            LLMModel.objects.select_related('provider')
+            .filter(name=model_name, provider__api_base_url=model_config.get('apiBaseUrl'))
+            .first()
+        )
+    if model is None and model_name:
+        model = LLMModel.objects.select_related('provider').filter(name=model_name).first()
+
+    history_messages = [
+        item
+        for item in (session.get('messages') or [])
+        if isinstance(item, dict) and item.get('role') in ('user', 'assistant')
+    ]
+    history_messages.append({'role': 'assistant', 'content': answer_text})
+    return generate_follow_up_suggested_questions(
+        model=model,
+        history_messages=history_messages,
+        latest_answer=answer_text,
+        enabled=True,
+    )
 
 
 async def _send_llm_tts_segment(send, command_id, request_id: str, trace_id: str, text: str) -> None:
@@ -2160,6 +2221,9 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
         'ttsFilterPunctuation': runtime_config.get('tts_filter_punctuation') or '',
         'ttsFilterEmoji': runtime_config.get('tts_filter_emoji'),
         'ttsFilterExcludePatterns': runtime_config.get('tts_filter_exclude_patterns') or [],
+        'followUpSuggestedQuestionsEnabled': bool(
+            runtime_config.get('follow_up_suggested_questions_enabled', False)
+        ),
     }
 
     if runtime_backend_type == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
@@ -2208,6 +2272,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
             'apiKey': model.provider.api_key,
             'enableWebSearch': model.enable_web_search,
         },
+        'llmModelId': model.id,
         'messages': messages,
         'knowledgeMediaBlocks': media_blocks,
         'temperature': runtime_config.get('temperature', 0.7),
@@ -2225,7 +2290,7 @@ def _run_device_llm_answer(device_code: str, question_text: str) -> dict[str, An
     if agent_application is None or not agent_application.runtime_config().get('is_active'):
         raise RuntimeError('设备未绑定可用智能体')
     runtime_config = agent_application.runtime_config()
-    answer_text, answer_blocks = DeviceVoiceChatView._generate_answer(device, question_text)
+    answer_text, answer_blocks, _answer_source = DeviceVoiceChatView._generate_answer(device, question_text)
     return {
         'deviceCode': device.code,
         'answerText': answer_text,

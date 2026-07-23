@@ -1100,6 +1100,7 @@ class DeviceRuntimeResourcesView(DeviceRuntimeView):
             'openingMessageEnabled': config.get('opening_message_enabled'),
             'openingMessage': config.get('opening_message') or '',
             'suggestedQuestions': config.get('suggested_questions') or [],
+            'followUpSuggestedQuestionsEnabled': config.get('follow_up_suggested_questions_enabled', False),
             'voiceInputEnabled': config.get('voice_input_enabled'),
             'replyPlaybackEnabled': config.get('reply_playback_enabled'),
             'ttsFilterPunctuation': config.get('tts_filter_punctuation') or '',
@@ -1236,7 +1237,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             )
 
         try:
-            answer_text, answer_blocks = self._generate_answer(
+            answer_text, answer_blocks, answer_source = self._generate_answer(
                 device, question_text, session_id=session_id, request=request, pipeline_context=pipeline_context,
             )
         except Exception as exc:
@@ -1306,9 +1307,39 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             'questionText': question_text,
             'answerText': answer_text,
             'answerBlocks': answer_blocks,
+            'followUpSuggestedQuestions': [],
             'audioBase64': None,
             'audioContentType': 'audio/wav',
         }
+        try:
+            runtime_agent = device.effective_agent_application
+            runtime_config = runtime_agent.runtime_config() if runtime_agent is not None else {}
+            if (
+                answer_source == 'platform_llm'
+                and runtime_agent is not None
+                and bool(runtime_config.get('follow_up_suggested_questions_enabled'))
+                and answer_text
+            ):
+                from apps.ai_models.services.follow_up_suggested_questions import (
+                    generate_follow_up_suggested_questions,
+                )
+
+                model = None
+                runtime_model_id = runtime_config.get('llm_model_id')
+                if runtime_model_id:
+                    model = LLMModel.objects.filter(id=runtime_model_id).select_related('provider').first()
+                if model is None and runtime_agent.llm_model_id:
+                    model = LLMModel.objects.filter(id=runtime_agent.llm_model_id).select_related('provider').first()
+                history = session_store.get_history(device.code, session_id) if session_id else []
+                payload['followUpSuggestedQuestions'] = generate_follow_up_suggested_questions(
+                    model=model,
+                    history_messages=history,
+                    latest_answer=answer_text,
+                    enabled=True,
+                )
+        except Exception:
+            logger.exception('device.voice_chat.follow_up_failed device_code=%s', device.code)
+            payload['followUpSuggestedQuestions'] = []
         try:
             payload['audioBase64'] = self._synthesize_answer_audio(device, answer_text, pipeline_context=pipeline_context)
         except Exception as exc:
@@ -1345,7 +1376,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         session_id: str | None = None,
         request=None,
         pipeline_context: dict[str, str | None] | None = None,
-    ) -> tuple[str, list[dict]]:
+    ) -> tuple[str, list[dict], str]:
         agent_application = device.effective_agent_application
         annotation = DeviceVoiceChatView._find_annotation(agent_application, question_text)
         if annotation is not None:
@@ -1361,13 +1392,13 @@ class DeviceVoiceChatView(DeviceRuntimeView):
                 if pipeline_context is not None:
                     _log_http_voice_pipeline('llm.request', pipeline_context, {'backend': 'annotation', 'questionText': question_text, 'annotationId': annotation_id})
                     _log_http_voice_pipeline('llm.response', pipeline_context, {'answerText': answer_text, 'answerBlocks': blocks})
-                return answer_text, serialize_published_annotation_blocks(annotation, tenant=agent_application.tenant, request=request)
+                return answer_text, serialize_published_annotation_blocks(annotation, tenant=agent_application.tenant, request=request), 'annotation'
             blocks = annotation.answer_blocks or text_to_blocks(annotation.answer)
             answer_text = blocks_to_text(blocks)
             if pipeline_context is not None:
                 _log_http_voice_pipeline('llm.request', pipeline_context, {'backend': 'annotation', 'questionText': question_text, 'annotationId': annotation_id})
                 _log_http_voice_pipeline('llm.response', pipeline_context, {'answerText': answer_text, 'answerBlocks': blocks})
-            return answer_text, serialize_reply_blocks(blocks, tenant=agent_application.tenant, request=request)
+            return answer_text, serialize_reply_blocks(blocks, tenant=agent_application.tenant, request=request), 'annotation'
 
         runtime_config = agent_application.runtime_config() if agent_application is not None else {}
         if runtime_config.get('runtime_backend_type') == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
@@ -1401,7 +1432,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             answer_text = third_party_chatbots.send_chatbot_message(chatbot, question_text, conversation=conversation)
             if pipeline_context is not None:
                 _log_http_voice_pipeline('llm.response', pipeline_context, {'answerText': answer_text})
-            return answer_text, serialize_reply_blocks(text_to_blocks(answer_text), tenant=device.tenant)
+            return answer_text, serialize_reply_blocks(text_to_blocks(answer_text), tenant=device.tenant), 'third_party'
 
         model = None
         runtime_model_id = runtime_config.get('llm_model_id')
@@ -1471,7 +1502,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             [*text_to_blocks(answer_text), *media_blocks],
             tenant=device.tenant,
             request=request,
-        )
+        ), 'platform_llm'
 
     @staticmethod
     def _resolve_third_party_conversation(device: Device, agent_application, chatbot, runtime_config: dict, session_id: str | None):

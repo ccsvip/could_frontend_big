@@ -2408,6 +2408,29 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             conversation.summary = new_summary
             conversation.save(update_fields=['summary', 'updated_at'])
 
+        def _generate_follow_up_suggested_questions(answer_text: str) -> list[str]:
+            """旁路生成，不写入会话消息、不改动主 messages。"""
+            _ensure_db()
+            application = conversation.application
+            if application is None:
+                return []
+            from apps.ai_models.services.follow_up_suggested_questions import (
+                generate_follow_up_suggested_questions,
+            )
+
+            history = [
+                {'role': role, 'content': msg}
+                for role, msg in history_messages
+                if role in (ChatMessage.ROLE_USER, ChatMessage.ROLE_ASSISTANT)
+            ]
+            history.append({'role': ChatMessage.ROLE_ASSISTANT, 'content': answer_text})
+            return generate_follow_up_suggested_questions(
+                model=model,
+                history_messages=history,
+                latest_answer=answer_text,
+                enabled=bool(application.follow_up_suggested_questions_enabled),
+            )
+
         async def event_stream():
             full_content = ''
             assistant_message_saved = False
@@ -2541,6 +2564,12 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                                         generated_summary
                                     )
                                     yield f"data: {json.dumps({'summary': generated_summary})}\n\n"
+                            follow_ups = await sync_to_async(
+                                _generate_follow_up_suggested_questions,
+                                thread_sensitive=True,
+                            )(full_content)
+                            if follow_ups:
+                                yield f"data: {json.dumps({'followUpSuggestedQuestions': follow_ups})}\n\n"
 
                         yield "data: [DONE]\n\n"
                         return
@@ -2709,6 +2738,12 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                                         generated_summary
                                     )
                                     yield f"data: {json.dumps({'summary': generated_summary})}\n\n"
+                            follow_ups = await sync_to_async(
+                                _generate_follow_up_suggested_questions,
+                                thread_sensitive=True,
+                            )(full_content)
+                            if follow_ups:
+                                yield f"data: {json.dumps({'followUpSuggestedQuestions': follow_ups})}\n\n"
 
                 yield "data: [DONE]\n\n"
 

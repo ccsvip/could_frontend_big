@@ -763,9 +763,10 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
             '你好，我是样芋量，很高兴见到你，有什么我可以帮你的吗？',
         )
         self.assertEqual(response.data['suggestedQuestions'], [])
+        self.assertFalse(response.data['followUpSuggestedQuestionsEnabled'])
         self.assertFalse(response.data['voiceInputEnabled'])
         self.assertFalse(response.data['replyPlaybackEnabled'])
-        self.assertEqual(response.data['ttsFilterPunctuation'], '。！？!?；;、')
+        self.assertEqual(response.data['ttsFilterPunctuation'], '。！？!?；;、-')
         self.assertTrue(response.data['ttsFilterEmoji'])
         self.assertEqual(response.data['ttsFilterExcludePatterns'], [])
 
@@ -784,6 +785,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
                 'openingMessageEnabled': True,
                 'openingMessage': '你好，我是客服助手。',
                 'suggestedQuestions': ['你能做什么？', '如何使用知识库？'],
+                'followUpSuggestedQuestionsEnabled': True,
                 'voiceInputEnabled': True,
                 'replyPlaybackEnabled': True,
                 'ttsFilterPunctuation': '。！？!?；;、',
@@ -796,12 +798,14 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['openingMessage'], '你好，我是客服助手。')
         self.assertEqual(response.data['suggestedQuestions'], ['你能做什么？', '如何使用知识库？'])
+        self.assertTrue(response.data['followUpSuggestedQuestionsEnabled'])
         self.assertTrue(response.data['voiceInputEnabled'])
         self.assertTrue(response.data['replyPlaybackEnabled'])
         self.assertEqual(response.data['ttsFilterPunctuation'], '。！？!?；;、')
         self.assertFalse(response.data['ttsFilterEmoji'])
         self.assertEqual(response.data['ttsFilterExcludePatterns'], ['（动作提示）', '内心独白'])
         application.refresh_from_db()
+        self.assertTrue(application.follow_up_suggested_questions_enabled)
         self.assertEqual(application.tts_filter_punctuation, '。！？!?；;、')
         self.assertFalse(application.tts_filter_emoji)
         self.assertEqual(application.tts_filter_exclude_patterns, ['（动作提示）', '内心独白'])

@@ -83,6 +83,7 @@ export const sendMessageStream = async (
   onSummary: (summary: string) => void,
   onError: (error: string) => void,
   onDone: () => void,
+  onFollowUpSuggestedQuestions?: (questions: string[]) => void,
 ): Promise<AbortController> => {
   const controller = new AbortController();
   const token = localStorage.getItem('token');
@@ -148,6 +149,12 @@ export const sendMessageStream = async (
                 onTitle(parsed.title);
               } else if (parsed.summary) {
                 onSummary(parsed.summary);
+              } else if (Array.isArray(parsed.followUpSuggestedQuestions)) {
+                onFollowUpSuggestedQuestions?.(
+                  parsed.followUpSuggestedQuestions.filter(
+                    (item: unknown): item is string => typeof item === 'string' && item.trim().length > 0,
+                  ),
+                );
               } else if (parsed.content) {
                 onChunk(parsed.content);
                 if (Array.isArray(parsed.blocks)) {

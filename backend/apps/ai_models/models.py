@@ -729,6 +729,7 @@ class AgentApplication(models.Model):
     opening_message_enabled = models.BooleanField('是否启用开场白', default=True)
     opening_message = models.TextField('开场白', blank=True, default='')
     suggested_questions = models.JSONField('建议问题', blank=True, default=list)
+    follow_up_suggested_questions_enabled = models.BooleanField('是否启用回答后建议问题', default=False)
     voice_input_enabled = models.BooleanField('是否启用语音输入', default=False)
     reply_playback_enabled = models.BooleanField('是否自动播报回复', default=False)
     tts_filter_punctuation = models.CharField('TTS 过滤标点', max_length=64, blank=True, default='。！？!?；;、-')
@@ -797,6 +798,7 @@ class AgentApplication(models.Model):
             'opening_message_enabled': self.opening_message_enabled,
             'opening_message': self.opening_message,
             'suggested_questions': list(self.suggested_questions or []),
+            'follow_up_suggested_questions_enabled': self.follow_up_suggested_questions_enabled,
             'voice_input_enabled': self.voice_input_enabled,
             'reply_playback_enabled': self.reply_playback_enabled,
             'tts_filter_punctuation': self.tts_filter_punctuation,
@@ -835,6 +837,10 @@ class AgentApplication(models.Model):
             'opening_message_enabled': config.get('opening_message_enabled', self.opening_message_enabled),
             'opening_message': config.get('opening_message', self.opening_message),
             'suggested_questions': config.get('suggested_questions', self.suggested_questions or []),
+            'follow_up_suggested_questions_enabled': config.get(
+                'follow_up_suggested_questions_enabled',
+                self.follow_up_suggested_questions_enabled,
+            ),
             'voice_input_enabled': config.get('voice_input_enabled', self.voice_input_enabled),
             'reply_playback_enabled': config.get('reply_playback_enabled', self.reply_playback_enabled),
             'tts_filter_punctuation': config.get('tts_filter_punctuation', self.tts_filter_punctuation),

@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/backend/api-design.md", "reason": "API field naming and response contract consistency for followUpSuggestedQuestions"}
+{"file": ".trellis/spec/backend/testing-strategy.md", "reason": "Where to place unit/integration tests for generator and channels"}
+{"file": ".trellis/spec/backend/directory-structure.md", "reason": "Service module placement under apps/ai_models/services"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "SSE callback and application type extensions"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "Conversation settings switch and chip UI patterns"}
+{"file": "docs/superpowers/specs/2026-06-16-agent-conversation-settings-design.md", "reason": "Existing static opening/suggested questions semantics to extend without breaking"}

@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/backend/testing-strategy.md", "reason": "Check coverage expectations for new service and channel hooks"}
+{"file": ".trellis/spec/backend/api-design.md", "reason": "Verify response/SSE/WS field contracts match API guidelines"}
+{"file": ".trellis/spec/backend/security-guidelines.md", "reason": "Ensure no secret leakage in follow-up logs; tenant model isolation"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "Verify frontend types for followUpSuggestedQuestionsEnabled and SSE payload"}
+{"file": "docs/superpowers/specs/2026-06-16-agent-conversation-settings-design.md", "reason": "Regression: static suggested questions and opening message still valid"}

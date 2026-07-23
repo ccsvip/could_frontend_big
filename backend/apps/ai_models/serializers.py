@@ -1162,6 +1162,10 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
         required=False,
         allow_empty=True,
     )
+    followUpSuggestedQuestionsEnabled = serializers.BooleanField(
+        source='follow_up_suggested_questions_enabled',
+        required=False,
+    )
     voiceInputEnabled = serializers.BooleanField(source='voice_input_enabled', required=False)
     replyPlaybackEnabled = serializers.BooleanField(source='reply_playback_enabled', required=False)
     ttsFilterPunctuation = serializers.CharField(source='tts_filter_punctuation', required=False, allow_blank=True)
@@ -1214,6 +1218,7 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
             'openingMessageEnabled',
             'openingMessage',
             'suggestedQuestions',
+            'followUpSuggestedQuestionsEnabled',
             'voiceInputEnabled',
             'replyPlaybackEnabled',
             'ttsFilterPunctuation',

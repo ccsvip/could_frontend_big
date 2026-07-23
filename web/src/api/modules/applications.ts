@@ -39,6 +39,7 @@ export type AgentApplicationRecord = {
   openingMessageEnabled: boolean;
   openingMessage: string;
   suggestedQuestions: string[];
+  followUpSuggestedQuestionsEnabled: boolean;
   voiceInputEnabled: boolean;
   replyPlaybackEnabled: boolean;
   ttsFilterPunctuation: string;
@@ -84,6 +85,7 @@ export type AgentApplicationPayload = {
   openingMessageEnabled?: boolean;
   openingMessage?: string;
   suggestedQuestions?: string[];
+  followUpSuggestedQuestionsEnabled?: boolean;
   voiceInputEnabled?: boolean;
   replyPlaybackEnabled?: boolean;
   ttsFilterPunctuation?: string;
