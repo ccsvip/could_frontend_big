@@ -1,0 +1,1587 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="could_frontend PostgreSQL 数据库从本机迁移到 Linux 虚拟机的 Navicat 与命令行操作手册。">
+  <title>could_frontend 数据库恢复操作手册</title>
+  <style>
+    :root {
+      --bg: #f3f6f5;
+      --surface: #ffffff;
+      --surface-muted: #edf3f1;
+      --text: #182421;
+      --text-muted: #52625e;
+      --border: #cedbd7;
+      --brand: #126b5d;
+      --brand-strong: #0b5147;
+      --brand-soft: #e1f1ed;
+      --info: #245d8f;
+      --info-soft: #e8f2fb;
+      --warning: #8a5700;
+      --warning-soft: #fff4d9;
+      --danger: #a72f2f;
+      --danger-soft: #fdeaea;
+      --success: #287143;
+      --success-soft: #e5f4e9;
+      --code-bg: #17201f;
+      --code-text: #e9f0ee;
+      --shadow: 0 10px 28px rgba(24, 36, 33, 0.08);
+      --radius: 8px;
+      --content-width: 1180px;
+      --nav-width: 244px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 24px;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif;
+      font-size: clamp(15px, 0.35vw + 14px, 18px);
+      line-height: 1.72;
+      letter-spacing: 0;
+    }
+
+    a {
+      color: var(--brand-strong);
+    }
+
+    a:hover {
+      color: var(--brand);
+    }
+
+    button,
+    a {
+      touch-action: manipulation;
+    }
+
+    :focus-visible {
+      outline: 3px solid rgba(18, 107, 93, 0.35);
+      outline-offset: 3px;
+    }
+
+    .skip-link {
+      position: fixed;
+      top: 8px;
+      left: 8px;
+      z-index: 1000;
+      padding: 10px 14px;
+      border-radius: 6px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      transform: translateY(-150%);
+    }
+
+    .skip-link:focus {
+      transform: translateY(0);
+    }
+
+    .masthead {
+      border-bottom: 1px solid #23433d;
+      background: #17332e;
+      color: #f4fbf9;
+    }
+
+    .masthead-inner {
+      width: min(calc(100% - 32px), var(--content-width));
+      margin: 0 auto;
+      padding: clamp(30px, 5vw, 64px) 0 clamp(26px, 4vw, 48px);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: #a9d9cf;
+      font-size: clamp(12px, 0.3vw + 11px, 15px);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      margin-top: 0;
+      line-height: 1.3;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      max-width: 920px;
+      margin-bottom: 12px;
+      font-size: clamp(28px, 2.8vw, 52px);
+    }
+
+    h2 {
+      margin-bottom: 18px;
+      font-size: clamp(22px, 1.2vw + 18px, 34px);
+    }
+
+    h3 {
+      margin-bottom: 12px;
+      font-size: clamp(18px, 0.7vw + 16px, 25px);
+    }
+
+    h4 {
+      margin-bottom: 8px;
+      font-size: clamp(16px, 0.45vw + 15px, 21px);
+    }
+
+    .spaced-heading {
+      margin-top: 24px;
+    }
+
+    .masthead p {
+      max-width: 820px;
+      margin: 0;
+      color: #d6e8e4;
+      font-size: clamp(16px, 0.55vw + 14px, 21px);
+    }
+
+    .status-row,
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #eef8f6;
+      font-size: clamp(12px, 0.25vw + 11px, 14px);
+      font-weight: 700;
+    }
+
+    .primary-link,
+    .secondary-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 10px 17px;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background-color 180ms ease, border-color 180ms ease;
+    }
+
+    .primary-link {
+      background: #f4fbf9;
+      color: #17332e;
+    }
+
+    .secondary-link {
+      border-color: #71958e;
+      color: #f4fbf9;
+    }
+
+    .primary-link:hover,
+    .secondary-link:hover {
+      background: #dff1ed;
+      color: #17332e;
+    }
+
+    .flow-band {
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      width: min(calc(100% - 32px), var(--content-width));
+      margin: 0 auto;
+      padding: 18px 0;
+    }
+
+    .flow-step {
+      position: relative;
+      padding: 2px 18px 2px 34px;
+      color: var(--text-muted);
+      font-size: clamp(12px, 0.3vw + 11px, 15px);
+      font-weight: 700;
+    }
+
+    .flow-step::before {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      width: 11px;
+      height: 11px;
+      border: 3px solid var(--surface);
+      border-radius: 50%;
+      background: var(--brand);
+      box-shadow: 0 0 0 1px var(--brand);
+      content: "";
+    }
+
+    .flow-step:not(:last-child)::after {
+      position: absolute;
+      top: 13px;
+      right: -8px;
+      width: 16px;
+      height: 1px;
+      background: var(--border);
+      content: "";
+    }
+
+    .page-shell {
+      display: grid;
+      grid-template-columns: var(--nav-width) minmax(0, 1fr);
+      gap: 38px;
+      width: min(calc(100% - 32px), var(--content-width));
+      margin: 0 auto;
+      padding: 34px 0 72px;
+    }
+
+    .side-nav {
+      position: sticky;
+      top: 20px;
+      align-self: start;
+      max-height: calc(100dvh - 40px);
+      overflow-y: auto;
+    }
+
+    .side-nav strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+      font-size: clamp(12px, 0.25vw + 11px, 14px);
+      text-transform: uppercase;
+    }
+
+    .side-nav a {
+      display: block;
+      min-height: 40px;
+      margin: 2px 0;
+      padding: 8px 11px;
+      border-left: 3px solid transparent;
+      border-radius: 0 6px 6px 0;
+      color: var(--text-muted);
+      font-size: clamp(13px, 0.3vw + 12px, 16px);
+      text-decoration: none;
+    }
+
+    .side-nav a:hover,
+    .side-nav a[aria-current="true"] {
+      border-left-color: var(--brand);
+      background: var(--brand-soft);
+      color: var(--brand-strong);
+    }
+
+    main {
+      min-width: 0;
+    }
+
+    .section {
+      margin-bottom: 28px;
+      padding: clamp(22px, 2.5vw, 36px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      scroll-margin-top: 22px;
+    }
+
+    .section-kicker {
+      margin: 0 0 7px;
+      color: var(--brand);
+      font-size: clamp(12px, 0.25vw + 11px, 14px);
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    p,
+    li {
+      overflow-wrap: anywhere;
+    }
+
+    p:first-child {
+      margin-top: 0;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    code {
+      padding: 0.12em 0.35em;
+      border-radius: 4px;
+      background: #e9efed;
+      color: #24322f;
+      font-family: Consolas, "Cascadia Code", "SFMono-Regular", monospace;
+      font-size: 0.92em;
+    }
+
+    .callout {
+      margin: 18px 0;
+      padding: 16px 18px;
+      border: 1px solid;
+      border-left-width: 5px;
+      border-radius: 7px;
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .callout-danger {
+      border-color: #e4a7a7;
+      background: var(--danger-soft);
+      color: #742323;
+    }
+
+    .callout-warning {
+      border-color: #e6c57e;
+      background: var(--warning-soft);
+      color: #684300;
+    }
+
+    .callout-info {
+      border-color: #aac9e3;
+      background: var(--info-soft);
+      color: #1d4d76;
+    }
+
+    .callout-success {
+      border-color: #a8d1b4;
+      background: var(--success-soft);
+      color: #225b36;
+    }
+
+    .verdict {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 22px;
+      align-items: center;
+      padding: 20px;
+      border: 2px solid #d88686;
+      border-radius: var(--radius);
+      background: var(--danger-soft);
+    }
+
+    .verdict p {
+      margin: 4px 0 0;
+      color: #742323;
+    }
+
+    .verdict-mark {
+      min-width: 112px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      background: var(--danger);
+      color: #fff;
+      font-size: clamp(14px, 0.4vw + 13px, 18px);
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .facts-grid,
+    .error-grid,
+    .check-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .facts-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 18px;
+    }
+
+    .fact,
+    .error-item,
+    .check-item {
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: #fbfcfc;
+    }
+
+    .fact {
+      padding: 15px;
+    }
+
+    .fact dt {
+      color: var(--text-muted);
+      font-size: clamp(12px, 0.25vw + 11px, 14px);
+      font-weight: 700;
+    }
+
+    .fact dd {
+      margin: 4px 0 0;
+      font-family: Consolas, "Cascadia Code", monospace;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .error-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .error-item {
+      padding: 18px;
+    }
+
+    .error-level {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--warning-soft);
+      color: var(--warning);
+      font-size: clamp(11px, 0.2vw + 10px, 13px);
+      font-weight: 800;
+    }
+
+    .error-item blockquote {
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      border-left: 3px solid var(--danger);
+      background: var(--danger-soft);
+      color: #682323;
+      font-family: Consolas, "Cascadia Code", monospace;
+      font-size: clamp(12px, 0.25vw + 11px, 14px);
+      overflow-wrap: anywhere;
+    }
+
+    .cause-chain {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin: 20px 0;
+      counter-reset: cause;
+    }
+
+    .cause-chain div {
+      position: relative;
+      min-height: 112px;
+      padding: 38px 14px 14px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--surface-muted);
+      counter-increment: cause;
+    }
+
+    .cause-chain div::before {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      color: var(--brand);
+      content: "0" counter(cause);
+      font-family: Consolas, monospace;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .steps {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: step;
+    }
+
+    .step {
+      position: relative;
+      margin: 0 0 18px;
+      padding: 0 0 4px 54px;
+      counter-increment: step;
+    }
+
+    .step::before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #fff;
+      content: counter(step);
+      font-weight: 800;
+    }
+
+    .step::after {
+      position: absolute;
+      top: 40px;
+      bottom: -17px;
+      left: 18px;
+      width: 2px;
+      background: var(--border);
+      content: "";
+    }
+
+    .step:last-child::after {
+      display: none;
+    }
+
+    .step h3,
+    .step h4 {
+      padding-top: 5px;
+    }
+
+    .code-block {
+      position: relative;
+      margin: 14px 0 18px;
+      border: 1px solid #30413e;
+      border-radius: 7px;
+      background: var(--code-bg);
+      overflow: hidden;
+    }
+
+    .code-label {
+      min-height: 42px;
+      padding: 10px 92px 8px 14px;
+      border-bottom: 1px solid #344744;
+      color: #acc0bb;
+      font-size: clamp(11px, 0.25vw + 10px, 13px);
+      font-weight: 700;
+    }
+
+    .copy-button {
+      position: absolute;
+      top: 5px;
+      right: 6px;
+      min-width: 72px;
+      min-height: 34px;
+      padding: 6px 10px;
+      border: 1px solid #58716b;
+      border-radius: 5px;
+      background: #24332f;
+      color: #f1f7f5;
+      cursor: pointer;
+      font: inherit;
+      font-size: clamp(11px, 0.2vw + 10px, 13px);
+      font-weight: 700;
+    }
+
+    .copy-button:hover {
+      background: #345048;
+    }
+
+    pre {
+      max-width: 100%;
+      margin: 0;
+      padding: 16px;
+      color: var(--code-text);
+      font-family: Consolas, "Cascadia Code", "SFMono-Regular", monospace;
+      font-size: clamp(12px, 0.3vw + 11px, 15px);
+      line-height: 1.65;
+      overflow-x: auto;
+      tab-size: 2;
+      white-space: pre;
+    }
+
+    pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+    }
+
+    .choice-table,
+    .verify-table,
+    .trouble-table {
+      width: 100%;
+      margin: 18px 0;
+      border-collapse: collapse;
+      font-size: clamp(13px, 0.3vw + 12px, 16px);
+    }
+
+    .choice-table th,
+    .choice-table td,
+    .verify-table th,
+    .verify-table td,
+    .trouble-table th,
+    .trouble-table td {
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .choice-table th,
+    .verify-table th,
+    .trouble-table th {
+      background: var(--surface-muted);
+      color: #2a3c38;
+    }
+
+    .table-wrap {
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    .check-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 16px;
+    }
+
+    .check-item {
+      position: relative;
+      min-height: 72px;
+      padding: 14px 14px 14px 46px;
+    }
+
+    .check-item::before {
+      position: absolute;
+      top: 16px;
+      left: 15px;
+      width: 19px;
+      height: 19px;
+      border: 2px solid var(--success);
+      border-radius: 4px;
+      content: "";
+    }
+
+    details {
+      margin: 12px 0;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: #fbfcfc;
+    }
+
+    summary {
+      min-height: 48px;
+      padding: 11px 14px;
+      color: var(--brand-strong);
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    details > div {
+      padding: 0 14px 16px;
+    }
+
+    .footer {
+      border-top: 1px solid var(--border);
+      background: #e8eeec;
+      color: var(--text-muted);
+    }
+
+    .footer-inner {
+      width: min(calc(100% - 32px), var(--content-width));
+      margin: 0 auto;
+      padding: 24px 0;
+      font-size: clamp(12px, 0.25vw + 11px, 14px);
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 100;
+      max-width: min(360px, calc(100% - 36px));
+      padding: 12px 16px;
+      border-radius: 7px;
+      background: #152d28;
+      color: #fff;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .toast.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 900px) {
+      .flow {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 0;
+      }
+
+      .flow-step:nth-child(2)::after {
+        display: none;
+      }
+
+      .page-shell {
+        display: block;
+        padding-top: 20px;
+      }
+
+      .side-nav {
+        position: relative;
+        top: auto;
+        z-index: 10;
+        display: flex;
+        gap: 4px;
+        max-height: none;
+        margin-bottom: 20px;
+        padding: 6px;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        background: var(--surface);
+        overflow-x: auto;
+      }
+
+      .side-nav strong {
+        display: none;
+      }
+
+      .side-nav a {
+        flex: 0 0 auto;
+        min-height: 42px;
+        border: 0;
+        border-radius: 5px;
+        white-space: nowrap;
+      }
+
+      .side-nav a:hover,
+      .side-nav a[aria-current="true"] {
+        border: 0;
+      }
+
+      .cause-chain {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .masthead-inner,
+      .flow,
+      .page-shell,
+      .footer-inner {
+        width: min(calc(100% - 24px), var(--content-width));
+      }
+
+      .masthead-inner {
+        padding-top: 28px;
+      }
+
+      .flow {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-step::after {
+        display: none;
+      }
+
+      .section {
+        padding: 20px 16px;
+      }
+
+      .verdict {
+        grid-template-columns: 1fr;
+      }
+
+      .verdict-mark {
+        min-width: 0;
+      }
+
+      .facts-grid,
+      .error-grid,
+      .check-grid,
+      .cause-chain {
+        grid-template-columns: 1fr;
+      }
+
+      .step {
+        padding-left: 46px;
+      }
+
+      .step::before {
+        width: 32px;
+        height: 32px;
+      }
+
+      .step::after {
+        top: 34px;
+        left: 15px;
+      }
+
+      .primary-link,
+      .secondary-link {
+        width: 100%;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .masthead {
+        background: #fff;
+        color: #111;
+      }
+
+      .masthead p,
+      .eyebrow {
+        color: #333;
+      }
+
+      .side-nav,
+      .action-row,
+      .copy-button,
+      .toast {
+        display: none;
+      }
+
+      .page-shell {
+        display: block;
+        width: 100%;
+      }
+
+      .section {
+        break-inside: avoid;
+        box-shadow: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <header class="masthead">
+    <div class="masthead-inner">
+      <p class="eyebrow">could_frontend / PostgreSQL 16 / pgvector</p>
+      <h1>数据库恢复操作手册</h1>
+      <p>从本机 <strong>192.168.3.90</strong> 迁移到虚拟机 <strong>192.168.182.129</strong>。先解释失败原因，再给出 Navicat 与命令行两套可执行方案。</p>
+      <div class="status-row" aria-label="环境摘要">
+        <span class="status-chip">源库：digital_human</span>
+        <span class="status-chip">目标端口：5433</span>
+        <span class="status-chip">目标路径：/home/cancer/workspace/could_frontend</span>
+      </div>
+      <div class="action-row">
+        <a class="primary-link" href="#navicat-plan">方案 A：Navicat 优先</a>
+        <a class="secondary-link" href="#cli-plan">方案 B：命令行推荐</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flow-band" aria-label="恢复主流程">
+    <div class="flow">
+      <div class="flow-step">停止所有写服务</div>
+      <div class="flow-step">创建真正的空库</div>
+      <div class="flow-step">使用标准备份恢复</div>
+      <div class="flow-step">验证后再启动项目</div>
+    </div>
+  </div>
+
+  <div class="page-shell">
+    <nav class="side-nav" aria-label="本页目录">
+      <strong>本页目录</strong>
+      <a href="#conclusion">直接结论</a>
+      <a href="#diagnosis">错误根因</a>
+      <a href="#why-recreate-failed">为何重建仍失败</a>
+      <a href="#preflight">恢复前总闸</a>
+      <a href="#navicat-plan">Navicat 方案</a>
+      <a href="#cli-plan">命令行方案</a>
+      <a href="#verification">恢复验证</a>
+      <a href="#troubleshooting">故障处理</a>
+      <a href="#files-and-env">文件与环境</a>
+      <a href="#final-checklist">最终清单</a>
+    </nav>
+
+    <main id="main-content" tabindex="-1">
+      <section class="section" id="conclusion">
+        <p class="section-kicker">先看结论</p>
+        <h2>当前 Navicat SQL 不应继续原样导入</h2>
+        <div class="verdict">
+          <div>
+            <strong>停止重放 <code>could_frontend.sql</code> / <code>public.sql</code></strong>
+            <p>这两个文件是 Navicat 的“结构和数据 SQL 转储”，不是可靠的 PostgreSQL 全库恢复包。继续在失败后的库上重跑，只会制造更多重复数据和对象冲突。</p>
+          </div>
+          <div class="verdict-mark">不可继续</div>
+        </div>
+
+        <div class="callout callout-info">
+          <strong>你贴出的长串小数不是报错</strong>
+          那些数字是知识库切片的向量数据。真正的错误从后面的 <code>[ERR] ERROR:</code> 开始。不要因为向量很长就误判为“SQL 太长”或“字段格式坏了”。
+        </div>
+
+        <dl class="facts-grid">
+          <div class="fact">
+            <dt>源 PostgreSQL</dt>
+            <dd>16.14</dd>
+          </div>
+          <div class="fact">
+            <dt>目标数据库镜像</dt>
+            <dd>pgvector/pgvector:pg16</dd>
+          </div>
+          <div class="fact">
+            <dt>源数据库</dt>
+            <dd>digital_human</dd>
+          </div>
+          <div class="fact">
+            <dt>目标宿主机端口</dt>
+            <dd>5433 -&gt; container:5432</dd>
+          </div>
+          <div class="fact">
+            <dt>现有 SQL 大小</dt>
+            <dd>约 149.5 MB / 文件</dd>
+          </div>
+          <div class="fact">
+            <dt>现有 SQL 事务</dt>
+            <dd>BEGIN=0 / COMMIT=0</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="section" id="diagnosis">
+        <p class="section-kicker">Evidence-based diagnosis</p>
+        <h2>四类错误分别意味着什么</h2>
+        <div class="error-grid">
+          <article class="error-item">
+            <span class="error-level">阻断恢复</span>
+            <h3>1. 父表无法删除</h3>
+            <blockquote>cannot drop table resources_scrollingtext because other objects depend on it</blockquote>
+            <p><strong>原因：</strong>脚本第 438673 行先删除父表 <code>resources_scrollingtext</code>，到第 438700 行才删除子表 <code>resources_scrollingtextitem</code>。外键还在，且语句没有 <code>CASCADE</code>，所以父表删除必然失败。</p>
+            <p><strong>后果：</strong>旧表保留，后面的 <code>CREATE TABLE</code> 和 <code>INSERT</code> 继续执行，目标库进入半旧半新状态。</p>
+          </article>
+
+          <article class="error-item">
+            <span class="error-level">目标库已被写入</span>
+            <h3>2. 唯一键重复</h3>
+            <blockquote>Key (tenant_id, permissionpoint_id)=(1, 80) already exists</blockquote>
+            <p><strong>原因：</strong>备份文件中这个组合只出现一次，记录是 <code>VALUES (787, 1, 80)</code>。重复来自目标库：要么第一次失败后直接重跑，要么后台启动时执行 Django migrations，提前写入了默认公司的权限关系。</p>
+            <p><strong>后果：</strong>说明恢复前提“空库且无写入者”没有成立。不要用 <code>ON CONFLICT DO NOTHING</code> 掩盖，它会留下来源不明的混合数据。</p>
+          </article>
+
+          <article class="error-item">
+            <span class="error-level">Navicat DDL 兼容问题</span>
+            <h3>3. identity sequence 所有权</h3>
+            <blockquote>cannot change ownership of identity sequence</blockquote>
+            <p><strong>原因：</strong>表字段已经通过 <code>GENERATED BY DEFAULT AS IDENTITY</code> 绑定序列，Navicat 后面又执行 <code>ALTER SEQUENCE ... OWNED BY</code>。PostgreSQL 不允许再次改变 identity sequence 的所有权关系。</p>
+            <p><strong>后果：</strong>单看这一条通常不是数据损坏的主因，但它证明该 SQL 的对象定义方式不适合做跨库恢复。</p>
+          </article>
+
+          <article class="error-item">
+            <span class="error-level">扩展对象导出错误</span>
+            <h3>4. pgvector 内部类型与函数</h3>
+            <blockquote>CREATE OR REPLACE FUNCTION ... AS '$libdir/vector'</blockquote>
+            <p><strong>原因：</strong>Navicat 把 <code>vector</code>、<code>halfvec</code>、<code>sparsevec</code> 以及 C 函数当普通 schema 对象导出，但文件里没有 <code>CREATE EXTENSION vector</code>。这些对象应由扩展管理，不能靠手写对象顺序重建。</p>
+            <p><strong>后果：</strong>未安装扩展时函数不存在；已安装扩展时又会与扩展拥有的类型冲突。两头都不可靠。</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="why-recreate-failed">
+        <p class="section-kicker">Why it still failed</p>
+        <h2>为什么“删库、建库、创建扩展”以后仍失败</h2>
+        <div class="cause-chain" aria-label="失败因果链">
+          <div>目标项目或后台容器仍在运行</div>
+          <div><code>backend</code> 自动执行 <code>migrate</code></div>
+          <div>默认公司迁移写入权限关系</div>
+          <div>Navicat 插入相同关系后报重复键</div>
+        </div>
+        <p>项目的 <code>docker-compose.yaml</code> 明确把后台启动命令写成：</p>
+        <div class="code-block">
+          <div class="code-label">项目中的后台启动行为</div>
+          <button class="copy-button" type="button" data-copy-target="compose-start">复制</button>
+          <pre id="compose-start"><code>python manage.py migrate
+python manage.py seed_operations_periodic_tasks
+python manage.py collectstatic --noinput
+python manage.py seed_devices
+uvicorn config.asgi:application ...</code></pre>
+        </div>
+        <p>其中 <code>tenants/0002_default_company.py</code> 会执行 <code>tenant.permission_points.set(PermissionPoint.objects.all())</code>。因此，只重建数据库但不停止写服务，库很快就不再是空库。</p>
+        <div class="callout callout-warning">
+          <strong>另一个同时存在的问题</strong>
+          你手工创建 <code>vector</code> 扩展后，现有 SQL 又尝试删除并重建扩展拥有的类型与函数。即使后台完全停止，这份 SQL 仍然会报扩展对象冲突。
+        </div>
+      </section>
+
+      <section class="section" id="preflight">
+        <p class="section-kicker">Recovery gate</p>
+        <h2>恢复前总闸：五项全部满足才继续</h2>
+        <div class="callout callout-danger">
+          <strong>危险操作：后续会删除目标库 <code>digital_human</code></strong>
+          只允许在 <strong>192.168.182.129</strong> 的克隆环境执行。执行前确认当前终端目录是 <code>/home/cancer/workspace/could_frontend</code>，并确认目标库已有可回退备份。
+        </div>
+        <div class="check-grid">
+          <div class="check-item"><strong>主机核对</strong><br>当前操作目标是虚拟机 192.168.182.129，不是源主机 192.168.3.90。</div>
+          <div class="check-item"><strong>路径核对</strong><br>目标项目目录为 /home/cancer/workspace/could_frontend。</div>
+          <div class="check-item"><strong>凭据核对</strong><br>SSH 用户与 PostgreSQL 用户是两套凭据，不要混用。</div>
+          <div class="check-item"><strong>停止写入</strong><br>backend、celery_worker、celery_beat 全部停止。</div>
+          <div class="check-item"><strong>备份可读</strong><br>新备份能够列出对象清单，不是 0 字节或损坏文件。</div>
+          <div class="check-item"><strong>资产边界</strong><br>数据库、MinIO 桶和 .env 分开备份，三者缺一不可。</div>
+        </div>
+
+        <h3 class="spaced-heading">先在目标虚拟机停止写服务</h3>
+        <div class="code-block">
+          <div class="code-label">目标虚拟机 / Linux Shell</div>
+          <button class="copy-button" type="button" data-copy-target="stop-writers">复制</button>
+          <pre id="stop-writers"><code>cd "/home/cancer/workspace/could_frontend"
+docker compose ps
+docker compose stop backend celery_worker celery_beat
+docker compose ps</code></pre>
+        </div>
+        <p>第二次 <code>docker compose ps</code> 中，这三个服务必须是 <code>Exited</code> 或 <code>Stopped</code>；数据库 <code>solin_db</code> 应继续运行并保持 <code>healthy</code>。</p>
+      </section>
+
+      <section class="section" id="navicat-plan">
+        <p class="section-kicker">Plan A / Navicat first</p>
+        <h2>方案 A：优先使用 Navicat 的“备份 / 还原”</h2>
+        <div class="callout callout-success">
+          <strong>适合你的使用习惯</strong>
+          保留 Navicat 图形化操作，但必须改用 PostgreSQL 的 Backup/Restore 工作流。不要再选“转储 SQL 文件 → 结构和数据”，也不要用“运行 SQL 文件”重放当前 149.5 MB 文件。
+        </div>
+
+        <div class="table-wrap">
+          <table class="choice-table">
+            <thead>
+              <tr><th>Navicat 功能</th><th>本次是否使用</th><th>原因</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>备份 / Backup</td><td><strong>使用</strong></td><td>使用 PostgreSQL 备份语义记录对象依赖和扩展关系。</td></tr>
+              <tr><td>还原备份 / Restore Backup</td><td><strong>使用</strong></td><td>与 Backup 配套，适合跨连接恢复。</td></tr>
+              <tr><td>转储 SQL 文件 / Dump SQL File</td><td><strong>不要使用</strong></td><td>当前失败文件正是此功能生成，扩展和 identity sequence 处理不可靠。</td></tr>
+              <tr><td>运行 SQL 文件 / Execute SQL File</td><td><strong>不要用于当前文件</strong></td><td>出错后会继续执行，留下半恢复数据库。</td></tr>
+              <tr><td>数据传输 / Data Transfer</td><td><strong>不作为首选</strong></td><td>迁移、扩展、identity 和自动种子数据同时存在，容易变成混合库。</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ol class="steps">
+          <li class="step">
+            <h3>建立目标 PostgreSQL 连接</h3>
+            <p>数据库参数来自目标项目配置，而不是 Linux 登录账号。当前克隆配置可确认：数据库名 <code>digital_human</code>、数据库用户 <code>postgres</code>、宿主机端口 <code>5433</code>。</p>
+            <div class="table-wrap">
+              <table class="choice-table">
+                <thead><tr><th>连接方式</th><th>Navicat 常规页</th><th>SSH 页</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>直接连接</td>
+                    <td>主机 <code>192.168.182.129</code>；端口 <code>5433</code>；初始数据库 <code>postgres</code>；用户 <code>postgres</code>；密码从目标 <code>backend/.env</code> 读取。</td>
+                    <td>关闭 SSH 隧道。</td>
+                  </tr>
+                  <tr>
+                    <td>SSH 隧道</td>
+                    <td>主机 <code>127.0.0.1</code>；端口 <code>5433</code>；初始数据库 <code>postgres</code>；数据库凭据同上。</td>
+                    <td>主机 <code>192.168.182.129</code>；端口 <code>22</code>；SSH 用户 <code>cancer</code>；密码只在 Navicat 界面输入。</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="callout callout-info">
+              <strong>若直接连接超时</strong>
+              先在目标服务器运行 <code>docker compose ps</code>，确认 <code>solin_db</code> 映射了 <code>0.0.0.0:5433-&gt;5432/tcp</code>；再检查虚拟机防火墙。不要为了图省事把数据库密码写进网页或聊天记录。
+            </div>
+          </li>
+
+          <li class="step">
+            <h3>在源连接重新生成 Navicat 备份</h3>
+            <p>连接源主机 <code>192.168.3.90</code> 的 <code>digital_human</code>。在对象树选中数据库后，打开 <strong>备份 / Backup</strong>，选择 <strong>新建备份 / New Backup</strong>。常见版本会生成 Navicat 备份文件（例如 <code>.nb3</code>）。</p>
+            <ul>
+              <li>对象范围选择整个 <code>digital_human</code> 数据库或完整 <code>public</code> schema。</li>
+              <li>保留表结构、数据、约束、索引、序列、视图和扩展信息。</li>
+              <li>如果界面提供“所有者 / Owner”和“权限 / Privileges”，取消恢复源所有者与 ACL，目标统一使用当前数据库用户。</li>
+              <li>备份结束后必须显示成功，并记录文件路径、大小和时间。</li>
+            </ul>
+            <div class="callout callout-warning">
+              <strong>看不到“备份 / Backup”或只能生成同类 SQL？</strong>
+              立即停止方案 A，直接使用方案 B。不要手工从 149.5 MB SQL 中删除 vector 函数，这不仅费劲，而且很容易漏掉操作符、类型、聚合、访问方法和序列语句。
+            </div>
+          </li>
+
+          <li class="step">
+            <h3>在目标连接创建真正的空库</h3>
+            <p>目标 Navicat 连接必须先连维护数据库 <code>postgres</code>，不能连着 <code>digital_human</code> 删除自己。下面三段 SQL <strong>逐条执行</strong>，不要包在事务中。</p>
+            <div class="code-block">
+              <div class="code-label">Navicat 查询窗口 / 连接到 postgres / 第 1 条</div>
+              <button class="copy-button" type="button" data-copy-target="navicat-drop">复制</button>
+              <pre id="navicat-drop"><code>DROP DATABASE IF EXISTS digital_human WITH (FORCE);</code></pre>
+            </div>
+            <div class="code-block">
+              <div class="code-label">Navicat 查询窗口 / 第 2 条</div>
+              <button class="copy-button" type="button" data-copy-target="navicat-create">复制</button>
+              <pre id="navicat-create"><code>CREATE DATABASE digital_human
+  WITH OWNER = postgres
+       ENCODING = 'UTF8'
+       TEMPLATE = template0;</code></pre>
+            </div>
+            <p>刷新数据库列表，再打开新建的 <code>digital_human</code> 查询窗口，执行：</p>
+            <div class="code-block">
+              <div class="code-label">Navicat 查询窗口 / 连接到 digital_human / 第 3 条</div>
+              <button class="copy-button" type="button" data-copy-target="navicat-vector">复制</button>
+              <pre id="navicat-vector"><code>CREATE EXTENSION IF NOT EXISTS vector;
+
+SELECT extname, extversion
+FROM pg_extension
+WHERE extname = 'vector';
+
+SELECT count(*) AS public_table_count
+FROM pg_tables
+WHERE schemaname = 'public';</code></pre>
+            </div>
+            <p>此时应看到一条 <code>vector</code> 扩展记录，且 <code>public_table_count = 0</code>。扩展创建类型和函数，但不会创建项目业务表。</p>
+          </li>
+
+          <li class="step">
+            <h3>把新备份还原到目标库</h3>
+            <p>选中目标 <code>digital_human</code>，打开 <strong>备份 / Backup → 还原备份 / Restore Backup</strong>，选择第 2 步生成的备份文件。不同 Navicat 版本菜单可能显示为 <strong>Restore</strong> 或 <strong>Restore Backup</strong>。</p>
+            <ul>
+              <li>目标数据库必须明确显示为 <code>192.168.182.129 / digital_human</code>。</li>
+              <li>如果有 <strong>Exit on error / 出错即停止</strong>，必须开启。</li>
+              <li>如果有 <strong>No owner / 不恢复所有者</strong>、<strong>No privileges / 不恢复权限</strong>，必须开启。</li>
+              <li>空库恢复时不需要“只恢复数据”或“仅追加数据”。</li>
+              <li>恢复窗口出现第一条 ERROR 就停止，不允许忽略错误后继续完成。</li>
+            </ul>
+            <div class="callout callout-info">
+              <strong>扩展已存在通常不是问题</strong>
+              标准备份会以扩展为单位记录 pgvector，不会重建 <code>$libdir/vector</code> 内部函数。如果 Navicat 备份仍尝试逐个创建这些内部函数，说明该版本的 Backup 也不适配，改走方案 B。
+            </div>
+          </li>
+
+          <li class="step">
+            <h3>先验证数据库，再启动项目</h3>
+            <p>不要看到 Navicat 进度条 100% 就直接启动。先执行“恢复验证”章节的 SQL，所有硬性项目通过后，才在目标虚拟机启动服务：</p>
+            <div class="code-block">
+              <div class="code-label">目标虚拟机 / Linux Shell</div>
+              <button class="copy-button" type="button" data-copy-target="navicat-start">复制</button>
+              <pre id="navicat-start"><code>cd "/home/cancer/workspace/could_frontend"
+docker compose up -d backend celery_worker celery_beat
+docker compose ps
+docker compose logs --no-color --tail 120 backend</code></pre>
+            </div>
+            <p>后台日志中允许出现“没有待应用迁移”；不允许出现数据库连接失败、迁移表缺失、vector 类型不存在或唯一键冲突。</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="section" id="cli-plan">
+        <p class="section-kicker">Plan B / Recommended</p>
+        <h2>方案 B：用 PostgreSQL 原生工具生成标准备份</h2>
+        <div class="callout callout-success">
+          <strong>这是技术上最稳妥的方案</strong>
+          使用源数据库容器内的 PostgreSQL 16 <code>pg_dump</code> 创建 custom-format 归档，再用目标容器内的 <code>pg_restore</code> 恢复。对象依赖、扩展、序列和数据顺序由 PostgreSQL 自己处理。
+        </div>
+
+        <ol class="steps">
+          <li class="step">
+            <h3>在源项目容器内生成 custom-format 备份</h3>
+            <p>在 Windows 源项目目录打开 PowerShell。备份先写到数据库容器内部，再用 <code>docker cp</code> 取出，避免 Windows PowerShell 5 把二进制重定向搞坏。</p>
+            <div class="code-block">
+              <div class="code-label">源主机 192.168.3.90 / PowerShell</div>
+              <button class="copy-button" type="button" data-copy-target="source-dump">复制</button>
+              <pre id="source-dump"><code>Set-Location "C:/code/SVN_CODE/branches/real/could_frontend"
+
+docker compose exec -T db sh -lc 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc --no-owner --no-privileges -f /tmp/digital_human.dump'
+
+docker compose exec -T db sh -lc 'pg_restore -l /tmp/digital_human.dump | head -n 30'
+
+docker cp "solin_db:/tmp/digital_human.dump" "C:/云端静态资源备份+.env+数据库备份/数据库备份/192.168.3.90/digital_human.dump"
+
+Get-Item "C:/云端静态资源备份+.env+数据库备份/数据库备份/192.168.3.90/digital_human.dump"
+Get-FileHash -Algorithm SHA256 "C:/云端静态资源备份+.env+数据库备份/数据库备份/192.168.3.90/digital_human.dump"</code></pre>
+            </div>
+            <p><code>pg_restore -l</code> 应输出对象清单，文件大小不能为 0。命令从容器环境读取数据库用户和库名，不会把数据库密码写进命令历史。</p>
+          </li>
+
+          <li class="step">
+            <h3>把备份传到目标虚拟机</h3>
+            <p>使用 Windows 自带 OpenSSH 的 <code>scp</code>。命令执行后会交互提示 SSH 密码，直接输入即可；不要把密码拼在命令里。</p>
+            <div class="code-block">
+              <div class="code-label">源主机 / PowerShell</div>
+              <button class="copy-button" type="button" data-copy-target="copy-to-target">复制</button>
+              <pre id="copy-to-target"><code>scp "C:/云端静态资源备份+.env+数据库备份/数据库备份/192.168.3.90/digital_human.dump" "cancer@192.168.182.129:/home/cancer/workspace/could_frontend/digital_human.dump"</code></pre>
+            </div>
+            <p>若 PowerShell 提示找不到 <code>scp</code>，安装 Windows“OpenSSH 客户端”可选功能，或者用 WinSCP 把同一个文件传到相同目标路径。</p>
+          </li>
+
+          <li class="step">
+            <h3>在目标端确认文件和运行环境</h3>
+            <div class="code-block">
+              <div class="code-label">目标虚拟机 192.168.182.129 / Linux Shell</div>
+              <button class="copy-button" type="button" data-copy-target="target-precheck">复制</button>
+              <pre id="target-precheck"><code>cd "/home/cancer/workspace/could_frontend"
+
+pwd
+ls -lh "./digital_human.dump"
+sha256sum "./digital_human.dump"
+docker compose ps
+grep -E '^(DB_PORT|POSTGRES_DB|POSTGRES_USER)=' ".env" "backend/.env"</code></pre>
+            </div>
+            <p>期望看到路径完全匹配、dump 文件大小合理、数据库服务 healthy，配置中数据库名为 <code>digital_human</code>、用户为 <code>postgres</code>。不要输出或截图 <code>POSTGRES_PASSWORD</code>。</p>
+          </li>
+
+          <li class="step">
+            <h3>停止写服务并备份当前目标库</h3>
+            <p>即使目标库“不要了”，也建议先做最后一份回退备份。该文件只保存在目标数据库容器和项目目录。</p>
+            <div class="code-block">
+              <div class="code-label">目标虚拟机 / Linux Shell</div>
+              <button class="copy-button" type="button" data-copy-target="target-safety-backup">复制</button>
+              <pre id="target-safety-backup"><code>docker compose stop backend celery_worker celery_beat
+
+docker compose exec -T db sh -lc 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc --no-owner --no-privileges -f /tmp/target-before-restore.dump'
+
+docker cp "solin_db:/tmp/target-before-restore.dump" "./target-before-restore.dump"
+
+ls -lh "./target-before-restore.dump"
+docker compose ps</code></pre>
+            </div>
+            <div class="callout callout-danger">
+              <strong>下一步不可逆地替换目标库</strong>
+              请再次核对终端提示符、<code>pwd</code>、服务器 IP、<code>POSTGRES_DB</code> 和回退文件。确认无误后再执行。
+            </div>
+          </li>
+
+          <li class="step">
+            <h3>删除旧库并创建空库</h3>
+            <p><code>dropdb --force</code> 会终止目标库连接；写服务已经停止，所以不会与迁移或业务请求抢占。</p>
+            <div class="code-block">
+              <div class="code-label">目标虚拟机 / Linux Shell / 危险操作</div>
+              <button class="copy-button" type="button" data-copy-target="target-recreate">复制</button>
+              <pre id="target-recreate"><code>docker compose exec -T db sh -lc 'dropdb --force --if-exists -U "$POSTGRES_USER" "$POSTGRES_DB"'
+
+docker compose exec -T db sh -lc 'createdb -U "$POSTGRES_USER" -O "$POSTGRES_USER" -E UTF8 "$POSTGRES_DB"'
+
+docker compose exec -T db sh -lc 'psql -X -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT current_database(), current_user;"'</code></pre>
+            </div>
+          </li>
+
+          <li class="step">
+            <h3>把归档送入容器并恢复</h3>
+            <p><code>--exit-on-error</code> 是关键：任何一条对象或数据错误都会立即停止，不再制造“表面完成、内部半残”的数据库。</p>
+            <div class="code-block">
+              <div class="code-label">目标虚拟机 / Linux Shell</div>
+              <button class="copy-button" type="button" data-copy-target="target-restore">复制</button>
+              <pre id="target-restore"><code>docker cp "./digital_human.dump" "solin_db:/tmp/digital_human.dump"
+
+docker compose exec -T db sh -lc 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean --if-exists --no-owner --no-privileges --exit-on-error /tmp/digital_human.dump'
+
+docker compose exec -T db sh -lc 'psql -X -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT count(*) AS tables FROM pg_tables WHERE schemaname = '\''public'\'';"'</code></pre>
+            </div>
+            <p><code>pg_restore</code> 退出码必须是 0。只要出现 ERROR，就保持服务停止，回到“删除旧库并创建空库”重新开始；不要在当前库上继续补执行。</p>
+          </li>
+
+          <li class="step">
+            <h3>完成验证并启动服务</h3>
+            <p>先执行下一章节的数据库验证 SQL；确认全部通过后再启动：</p>
+            <div class="code-block">
+              <div class="code-label">目标虚拟机 / Linux Shell</div>
+              <button class="copy-button" type="button" data-copy-target="target-start">复制</button>
+              <pre id="target-start"><code>docker compose up -d backend celery_worker celery_beat
+
+docker compose ps
+docker compose logs --no-color --tail 150 backend
+
+docker compose exec backend python manage.py migrate --check</code></pre>
+            </div>
+            <p><code>migrate --check</code> 应返回 0 且不创建新迁移。恢复后的 <code>django_migrations</code> 已记录源库迁移状态，后台启动不应重新灌入默认权限。</p>
+          </li>
+        </ol>
+
+        <details>
+          <summary>必须保留 .sql 文件时怎么办？</summary>
+          <div>
+            <p>可以让 PostgreSQL 自己生成 plain-format SQL，而不是使用当前 Navicat SQL。源容器内改用：</p>
+            <div class="code-block">
+              <div class="code-label">源数据库容器 / 生成标准 plain SQL</div>
+              <button class="copy-button" type="button" data-copy-target="plain-dump">复制</button>
+              <pre id="plain-dump"><code>docker compose exec -T db sh -lc 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fp --clean --if-exists --no-owner --no-privileges --encoding=UTF8 -f /tmp/digital_human.pg_dump.sql'
+
+docker cp "solin_db:/tmp/digital_human.pg_dump.sql" "./digital_human.pg_dump.sql"</code></pre>
+            </div>
+            <p>目标端恢复必须用 <code>psql -X -v ON_ERROR_STOP=1</code>，不能让错误被忽略。对于 149 MB 且包含大量向量的数据，custom-format 通常更快、更可控，因此仍推荐 <code>.dump</code>。</p>
+          </div>
+        </details>
+      </section>
+
+      <section class="section" id="verification">
+        <p class="section-kicker">Verification matrix</p>
+        <h2>恢复成功不是“没有红字”，而是这些检查全部通过</h2>
+        <p>以下 SQL 可以在 Navicat 的目标 <code>digital_human</code> 查询窗口执行；也可以通过容器内 <code>psql</code> 执行。</p>
+        <div class="code-block">
+          <div class="code-label">目标数据库 / 验收 SQL</div>
+          <button class="copy-button" type="button" data-copy-target="verification-sql">复制</button>
+          <pre id="verification-sql"><code>-- 1. 当前连接必须是目标库
+SELECT current_database(), current_user, version();
+
+-- 2. pgvector 必须由扩展管理
+SELECT extname, extversion
+FROM pg_extension
+WHERE extname = 'vector';
+
+-- 3. 项目表与迁移记录必须存在
+SELECT count(*) AS public_table_count
+FROM pg_tables
+WHERE schemaname = 'public';
+
+SELECT count(*) AS migration_count, max(applied) AS latest_migration_time
+FROM django_migrations;
+
+-- 4. 关键业务数据数量，用源库同一查询结果做对比
+SELECT count(*) AS tenant_count FROM tenants_tenant;
+SELECT count(*) AS permission_count FROM accounts_permissionpoint;
+SELECT count(*) AS tenant_permission_links FROM tenants_tenant_permission_points;
+SELECT count(*) AS resource_count FROM resources_resource;
+SELECT count(*) AS knowledge_chunk_count FROM knowledge_base_knowledgedocumentchunk;
+
+-- 5. 该查询必须返回 0 行
+SELECT tenant_id, permissionpoint_id, count(*) AS duplicate_count
+FROM tenants_tenant_permission_points
+GROUP BY tenant_id, permissionpoint_id
+HAVING count(*) &gt; 1;
+
+-- 6. 向量数据应可正常读取
+SELECT
+  count(*) FILTER (WHERE embedding_vector IS NOT NULL) AS vectorized_chunks,
+  max(vector_dims(embedding_vector)) AS max_vector_dimensions
+FROM knowledge_base_knowledgedocumentchunk;</code></pre>
+        </div>
+
+        <div class="table-wrap">
+          <table class="verify-table">
+            <thead><tr><th>检查项</th><th>通过标准</th><th>失败时处理</th></tr></thead>
+            <tbody>
+              <tr><td>current_database()</td><td><code>digital_human</code></td><td>立即停止，连接错库。</td></tr>
+              <tr><td>vector 扩展</td><td>正好 1 行，显示版本号</td><td>确认目标镜像是 pgvector/pgvector:pg16，再重建空库恢复。</td></tr>
+              <tr><td>public 表数量</td><td>大于 0，且与源库同类查询一致</td><td>备份或恢复不完整，不能启动后台。</td></tr>
+              <tr><td>django_migrations</td><td>有记录，最大时间非空</td><td>恢复的不是完整项目数据库。</td></tr>
+              <tr><td>关键表数量</td><td>逐项与源库查询结果一致</td><td>不要补插；重新生成备份并恢复。</td></tr>
+              <tr><td>重复权限关系</td><td>返回 0 行</td><td>目标库不是空库或发生并发写入，重做。</td></tr>
+              <tr><td>vector_dims()</td><td>有向量时返回正整数</td><td>检查 pgvector 版本、列类型和恢复错误。</td></tr>
+              <tr><td>migrate --check</td><td>退出码 0</td><td>确认代码版本与源库迁移版本完全一致。</td></tr>
+              <tr><td>容器健康</td><td>db/backend/worker/beat 正常运行</td><td>看对应容器最近 150 行日志。</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-info">
+          <strong>必须做源端数量对比</strong>
+          “表里有数据”不等于“数据完整”。在源库和目标库分别执行同一组 <code>count(*)</code>，至少核对公司、权限、素材、知识切片、设备、会话等核心表。
+        </div>
+      </section>
+
+      <section class="section" id="troubleshooting">
+        <p class="section-kicker">Troubleshooting</p>
+        <h2>看到这些错误时怎么处理</h2>
+        <div class="table-wrap">
+          <table class="trouble-table">
+            <thead><tr><th>错误或现象</th><th>真正含义</th><th>正确动作</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><code>cannot drop table ... depends on it</code></td>
+                <td>仍在使用错误的 Navicat SQL，或目标库不是空库。</td>
+                <td>停止恢复；不要加 CASCADE 修文件；重新建空库并用 Backup/Restore 或 pg_restore。</td>
+              </tr>
+              <tr>
+                <td><code>duplicate key value violates unique constraint</code></td>
+                <td>目标库已有数据，常见原因是后台迁移、种子命令或失败后重跑。</td>
+                <td>确认三个写服务停止；删除并重建目标库；从头恢复。</td>
+              </tr>
+              <tr>
+                <td><code>cannot change ownership of identity sequence</code></td>
+                <td>Navicat 对 identity sequence 生成了冗余 DDL。</td>
+                <td>放弃当前 SQL；不要逐条忽略。用 PostgreSQL 标准备份。</td>
+              </tr>
+              <tr>
+                <td><code>type "vector" does not exist</code></td>
+                <td>目标镜像缺少 pgvector，或扩展未被备份/恢复。</td>
+                <td>确认 db 镜像是 <code>pgvector/pgvector:pg16</code>；在空库确认可创建扩展后重做。</td>
+              </tr>
+              <tr>
+                <td><code>could not access file "$libdir/vector"</code></td>
+                <td>目标 PostgreSQL 容器没有 vector 共享库，通常用了官方 postgres 镜像。</td>
+                <td>恢复项目的 pgvector 镜像配置并重建 db 容器；不要手工复制 .so。</td>
+              </tr>
+              <tr>
+                <td><code>unsupported version in file header</code></td>
+                <td>目标 pg_restore 比生成 dump 的 pg_dump 老。</td>
+                <td>确保源、目标均使用 PostgreSQL 16 容器内工具。</td>
+              </tr>
+              <tr>
+                <td><code>permission denied to create extension</code></td>
+                <td>恢复用户不是具备扩展权限的数据库管理员。</td>
+                <td>用目标容器的 <code>POSTGRES_USER</code> 恢复；不要给普通业务账号临时超级权限。</td>
+              </tr>
+              <tr>
+                <td>Navicat 显示 Finished with error</td>
+                <td>恢复没有成功，即使后面部分语句执行完了。</td>
+                <td>把当前库当作不可用；保存日志；重建空库后重做。</td>
+              </tr>
+              <tr>
+                <td>数据库正常但图片/视频 404</td>
+                <td>SQL 只恢复对象键，没有迁移 MinIO 桶或本地 media 文件。</td>
+                <td>迁移对应存储，并核对目标 .env 的 endpoint、bucket 与凭据。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="files-and-env">
+        <p class="section-kicker">Beyond PostgreSQL</p>
+        <h2>数据库恢复完，不代表项目数据已经全部迁完</h2>
+        <h3>1. MinIO / 素材文件</h3>
+        <p>项目启用了 MinIO，数据库中的 <code>resources/2026/...</code> 等值只是对象键或路径。PostgreSQL 备份不会包含图片、视频、模型包和其他二进制对象。</p>
+        <ul>
+          <li>单独备份并迁移源 MinIO 的 <code>digital-human</code> 桶。</li>
+          <li>迁移前后比较对象数量和总容量，并随机打开图片、视频验证。</li>
+          <li>目标 <code>backend/.env</code> 中的 MinIO endpoint 必须从容器内可达。</li>
+          <li>访问密钥和 Secret 只放在目标环境配置或密钥管理中，不写进 HTML、命令脚本或 Git。</li>
+        </ul>
+
+        <h3>2. 本地 media 目录</h3>
+        <p>如果有未进入 MinIO 的历史文件，还要检查源项目 <code>backend/media/</code>。保持目录结构复制到目标对应路径，并保留文件所有者和读取权限。</p>
+
+        <h3>3. .env 配置</h3>
+        <p>可以拿源端 <code>.env</code> 和 <code>backend/.env</code> 做对照，但不要整文件无脑覆盖目标：</p>
+        <ul>
+          <li>数据库名与用户可以一致；主机、端口和容器内 endpoint 要按目标环境配置。</li>
+          <li>第三方 API Key、MinIO 密钥、JWT Secret 等敏感项要通过安全通道迁移。</li>
+          <li>目标虚拟机特有的域名、TLS 路径、回调 URL、跨域来源不能照搬源主机。</li>
+          <li>迁移后不要把包含真实密钥的 <code>.env</code> 提交到 Git。</li>
+        </ul>
+
+        <div class="callout callout-warning">
+          <strong>数据一致性提醒</strong>
+          如果源系统仍在写入，数据库快照与 MinIO 文件复制可能不是同一时刻。正式切换时应安排短暂停写窗口：停止源端上传与业务写入，完成最终数据库 dump 和 MinIO 增量同步，再启动目标端。
+        </div>
+      </section>
+
+      <section class="section" id="final-checklist">
+        <p class="section-kicker">Go-live checklist</p>
+        <h2>最终上线清单</h2>
+        <div class="check-grid">
+          <div class="check-item">现有 Navicat SQL 已停止使用，没有在失败库上再次重跑。</div>
+          <div class="check-item">恢复期间 backend、celery_worker、celery_beat 始终停止。</div>
+          <div class="check-item">新备份由 Navicat Backup 或 PostgreSQL 16 pg_dump 生成。</div>
+          <div class="check-item">pg_restore / Navicat Restore 全程无 ERROR，遇错即停。</div>
+          <div class="check-item">源端与目标端关键表 count(*) 已逐项核对。</div>
+          <div class="check-item">vector 扩展和知识切片向量查询正常。</div>
+          <div class="check-item">Django migrate --check 返回 0。</div>
+          <div class="check-item">MinIO 桶、本地 media 与 .env 已分别处理。</div>
+          <div class="check-item">后台、Celery、数据库容器状态正常，日志无迁移错误。</div>
+          <div class="check-item">登录、设备、素材、知识库和图片视频访问已人工抽检。</div>
+        </div>
+        <div class="callout callout-success">
+          <strong>全部通过后才算恢复成功</strong>
+          本次问题无需修改 Django 模型或历史 migrations。正确修复点在数据库迁移流程：停写、空库、标准备份、遇错即停、恢复后验证。
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      could_frontend 数据库恢复手册。根据仓库当前 <code>docker-compose.yaml</code>、PostgreSQL 16.14 Navicat 转储和 Django migrations 分析生成。文档不包含任何明文密码。
+    </div>
+  </footer>
+
+  <div class="toast" id="copy-toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const toast = document.getElementById('copy-toast');
+      let toastTimer;
+
+      const showToast = (message) => {
+        toast.textContent = message;
+        toast.classList.add('is-visible');
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(() => {
+          toast.classList.remove('is-visible');
+        }, 2200);
+      };
+
+      const fallbackCopy = (text) => {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.setAttribute('readonly', '');
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        const copied = document.execCommand('copy');
+        textArea.remove();
+        return copied;
+      };
+
+      document.querySelectorAll('.copy-button').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const target = document.getElementById(button.dataset.copyTarget);
+          if (!target) {
+            showToast('未找到要复制的内容');
+            return;
+          }
+
+          const text = target.innerText.trim();
+          try {
+            if (navigator.clipboard && window.isSecureContext) {
+              await navigator.clipboard.writeText(text);
+            } else if (!fallbackCopy(text)) {
+              throw new Error('copy failed');
+            }
+            const originalLabel = button.textContent;
+            button.textContent = '已复制';
+            showToast('命令已复制到剪贴板');
+            window.setTimeout(() => {
+              button.textContent = originalLabel;
+            }, 1600);
+          } catch (error) {
+            showToast('复制失败，请手动选择代码');
+          }
+        });
+      });
+
+      const navLinks = Array.from(document.querySelectorAll('.side-nav a'));
+      const sections = navLinks
+        .map((link) => document.querySelector(link.getAttribute('href')))
+        .filter(Boolean);
+
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+          const visible = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+
+          if (!visible) {
+            return;
+          }
+
+          navLinks.forEach((link) => {
+            const isCurrent = link.getAttribute('href') === `#${visible.target.id}`;
+            if (isCurrent) {
+              link.setAttribute('aria-current', 'true');
+            } else {
+              link.removeAttribute('aria-current');
+            }
+          });
+        }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+
+        sections.forEach((section) => observer.observe(section));
+      }
+    })();
+  </script>
+</body>
+</html>
