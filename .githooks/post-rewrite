@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+# Git sends rewritten commit pairs on stdin. Drain them before the potentially
+# long-running index update so a large rebase cannot block on a full pipe.
+cat >/dev/null
+
+exec "$(dirname "$0")/gitnexus-update"

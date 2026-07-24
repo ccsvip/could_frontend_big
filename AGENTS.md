@@ -219,9 +219,9 @@ Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agent
 
 ### 索引维护
 
-- 索引由 GitNexus 自动维护，状态可在 `gitnexus.json` 中查看。
-- 手动重建：`node .gitnexus/run.cjs analyze`（项目根目录执行）。
-- 修改函数签名、类结构、导入关系、新建/删除文件后，若需要图谱查询，先重建索引。
+- 本仓库通过 `.githooks/` 在 commit、merge、rebase/amend、应用补丁和分支切换后自动执行 GitNexus `analyze --index-only`。
+- 每个 clone 需要执行一次 `git config core.hooksPath .githooks`；可用 `GITNEXUS_AUTO_UPDATE=0` 临时关闭自动更新。
+- 自动更新失败不会回滚已经完成的 Git 操作，但会输出明确警告；状态可用 `node .gitnexus/run.cjs status` 检查。
 
 ### 降级方案
 
@@ -251,7 +251,7 @@ Managed by Trellis. Edits outside this block are preserved; edits inside may be 
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **could_frontend_big** (9317 symbols, 18185 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **could_frontend_big** (9196 symbols, 17914 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
 

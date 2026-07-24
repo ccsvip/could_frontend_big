@@ -1,0 +1,47 @@
+#!/usr/bin/env sh
+
+# Keep the workspace index aligned with Git operations without modifying
+# generated AI instruction files after a commit has completed.
+
+if [ "${GITNEXUS_AUTO_UPDATE:-1}" = "0" ]; then
+  exit 0
+fi
+
+repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+git_dir=$(git rev-parse --absolute-git-dir 2>/dev/null) || exit 0
+lock_dir="$git_dir/gitnexus-auto-update.lock"
+
+if ! mkdir "$lock_dir" 2>/dev/null; then
+  echo "[gitnexus] Another index update is already running; skipping." >&2
+  exit 0
+fi
+
+trap 'rmdir "$lock_dir" 2>/dev/null || true' EXIT HUP INT TERM
+
+cd "$repo_root" || exit 0
+
+echo "[gitnexus] Updating knowledge graph..."
+
+if command -v gitnexus >/dev/null 2>&1; then
+  run_gitnexus() {
+    gitnexus "$@"
+  }
+elif command -v node >/dev/null 2>&1 && [ -f .gitnexus/run.cjs ]; then
+  run_gitnexus() {
+    node .gitnexus/run.cjs "$@"
+  }
+else
+  echo "[gitnexus] GitNexus is unavailable; install it to enable automatic updates." >&2
+  exit 0
+fi
+
+if ! run_gitnexus analyze --index-only; then
+  echo "[gitnexus] Update failed; repairing FTS indexes and retrying once..." >&2
+  if ! run_gitnexus analyze --repair-fts --index-only ||
+    ! run_gitnexus analyze --index-only; then
+    echo "[gitnexus] Automatic index update failed; the Git operation already completed." >&2
+    exit 0
+  fi
+fi
+
+echo "[gitnexus] Knowledge graph is up to date."
