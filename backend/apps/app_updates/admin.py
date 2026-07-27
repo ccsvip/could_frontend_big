@@ -39,7 +39,7 @@ class AppReleaseAdmin(SuperuserOnlyAdminMixin, admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if not change:
             obj.created_by = request.user
-            obj.package_name = getattr(settings, 'APP_UPDATE_PACKAGE_NAME', 'com.solin.digital')
+            obj.package_name = getattr(settings, 'APP_UPDATE_PACKAGE_NAME', 'com.lingzhi.digital')
         super().save_model(request, obj, form, change)
 
     def has_delete_permission(self, request, obj=None):

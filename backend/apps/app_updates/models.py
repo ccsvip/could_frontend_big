@@ -20,7 +20,7 @@ def app_release_upload_to(instance: 'AppRelease', filename: str) -> str:
 
 class AppRelease(models.Model):
     release_id = models.CharField('发布 ID', max_length=64, unique=True, default=generate_release_id, editable=False)
-    package_name = models.CharField('应用包名', max_length=255, default='com.solin.digital')
+    package_name = models.CharField('应用包名', max_length=255, default='com.lingzhi.digital')
     version_name = models.CharField('版本名称', max_length=64)
     version_code = models.PositiveBigIntegerField('内部版本号', unique=True)
     version_info = models.CharField('完整版本标识', max_length=255, unique=True)
@@ -75,7 +75,7 @@ class AppRelease(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        expected_package = getattr(settings, 'APP_UPDATE_PACKAGE_NAME', 'com.solin.digital')
+        expected_package = getattr(settings, 'APP_UPDATE_PACKAGE_NAME', 'com.lingzhi.digital')
         if self.package_name != expected_package:
             raise ValidationError({'package_name': f'应用包名必须为 {expected_package}'})
         if not self.apk_file:

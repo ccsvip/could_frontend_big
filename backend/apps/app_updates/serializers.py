@@ -14,7 +14,7 @@ class AppUpdateCheckSerializer(serializers.Serializer):
     versionInfo = serializers.CharField(max_length=255)
 
     def validate_packageName(self, value: str) -> str:
-        expected = getattr(settings, 'APP_UPDATE_PACKAGE_NAME', 'com.solin.digital')
+        expected = getattr(settings, 'APP_UPDATE_PACKAGE_NAME', 'com.lingzhi.digital')
         if value != expected:
             raise serializers.ValidationError('应用包名不受支持')
         return value
@@ -76,7 +76,7 @@ class AppReleaseManagementSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context.get('request')
-        validated_data['package_name'] = getattr(settings, 'APP_UPDATE_PACKAGE_NAME', 'com.solin.digital')
+        validated_data['package_name'] = getattr(settings, 'APP_UPDATE_PACKAGE_NAME', 'com.lingzhi.digital')
         release = AppRelease(**validated_data, created_by=getattr(request, 'user', None))
         try:
             release.save()

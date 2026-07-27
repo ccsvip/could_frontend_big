@@ -202,7 +202,7 @@ class AppUpdateDeviceApiTests(TestCase):
         return self.client.post(
             '/api/v1/app-updates/check/',
             {
-                'packageName': 'com.solin.digital',
+                'packageName': 'com.lingzhi.digital',
                 'versionName': '1.0.1',
                 'versionCode': version_code,
                 'versionInfo': 'solin_cloud_1.0.1_20260718_0930',
