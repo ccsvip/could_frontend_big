@@ -79,7 +79,80 @@ class AppRelease(models.Model):
 
 ## Migrations
 
-<!-- How to create and run migrations -->
+### Scenario: Reconcile a Restored Database with Migration History
+
+#### 1. Scope / Trigger
+
+- Trigger: `migrate` fails with `DuplicateTable`, `DuplicateColumn`, or a duplicate primary key after a database restore, branch switch, or schema import.
+- This procedure applies to development and preserved `--keepdb` test databases. Never use it against production without a reviewed backup and recovery plan.
+
+#### 2. Signatures
+
+```bash
+docker compose exec backend python manage.py showmigrations <app>
+docker compose exec backend python manage.py sqlmigrate <app> <migration>
+docker compose exec backend python manage.py migrate <app> <migration> --fake
+docker compose exec backend python manage.py migrate --check
+```
+
+Sequence repair uses the exact table and primary key column:
+
+```sql
+SELECT setval(
+  pg_get_serial_sequence('<table>', 'id'),
+  COALESCE(MAX(id), 1),
+  MAX(id) IS NOT NULL
+) FROM <table>;
+```
+
+#### 3. Contracts
+
+- `--fake` is allowed only after the existing columns, types, nullability, identity/default behavior, indexes, foreign keys, unique constraints, and check constraints match `sqlmigrate`.
+- If a migration is only partially reflected in the database, execute the missing SQL first and fake the migration only after its complete final state is present.
+- Preserve business rows and existing volumes. Do not drop a development or test database merely to bypass migration drift.
+- Run tests that share a `--keepdb` database serially; concurrent migration setup can race and report false duplicate-column failures.
+
+#### 4. Validation & Error Matrix
+
+| Condition | Required action |
+|-----------|-----------------|
+| Table/column exists and the full migration effect matches | Fake that migration, then continue normally |
+| Only part of the migration effect exists | Apply only the missing operations, verify, then fake |
+| Existing structure differs from the migration | Stop; do not fake until the mismatch and data compatibility are resolved |
+| Insert fails on an existing primary key | Compare the sequence value with `MAX(id)` and repair the exact sequence |
+| `migrate --check` is non-zero | Do not start dependent services or declare the repair complete |
+
+#### 5. Good/Base/Bad Cases
+
+- Good: a restored table exactly matches `sqlmigrate`; fake its missing record and run all later migrations normally.
+- Base: no drift exists; run `docker compose exec backend python manage.py migrate` without special handling.
+- Bad: use `--fake` immediately after seeing `DuplicateTable`, leaving other operations from the same migration unapplied.
+
+#### 6. Tests Required
+
+- Assert `migrate --check` exits successfully.
+- Assert `makemigrations --check --dry-run` reports `No changes detected`.
+- Run the affected Django test module with `--keepdb` and assert test database setup completes before the test cases run.
+- Restart Compose and assert the backend health check, Celery ping, and an authenticated or authentication-protected API response.
+
+#### 7. Wrong vs Correct
+
+Wrong:
+
+```bash
+# The duplicate table proves only that one operation already exists.
+python manage.py migrate ai_models 0036 --fake
+```
+
+Correct:
+
+```bash
+python manage.py sqlmigrate ai_models 0036
+# Compare every operation with information_schema/pg_constraint, apply any
+# missing operation, then record the fully represented migration.
+python manage.py migrate ai_models 0036 --fake
+python manage.py migrate --check
+```
 
 (To be filled by the team)
 
