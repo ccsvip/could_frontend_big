@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('release_id', models.CharField(default=apps.app_updates.models.generate_release_id, editable=False, max_length=64, unique=True, verbose_name='发布 ID')),
-                ('package_name', models.CharField(default='com.solin.digital', max_length=255, verbose_name='应用包名')),
+                ('package_name', models.CharField(default='com.lingzhi.digital', max_length=255, verbose_name='应用包名')),
                 ('version_name', models.CharField(max_length=64, verbose_name='版本名称')),
                 ('version_code', models.PositiveBigIntegerField(unique=True, verbose_name='内部版本号')),
                 ('version_info', models.CharField(max_length=255, unique=True, verbose_name='完整版本标识')),

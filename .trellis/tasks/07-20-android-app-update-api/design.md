@@ -59,7 +59,7 @@ GET /api/v1/app-update-releases/{releaseId}/apk/
 - `APP_UPDATE_PRIVATE_KEY_BASE64`：Base64 编码的 PEM 私钥；
 - `APP_UPDATE_PRIVATE_KEY_FILE`：容器内 PEM 文件路径，作为可选替代；
 - `APP_UPDATE_SIGNATURE_TTL_SECONDS`：响应有效期，默认 7 天；
-- `APP_UPDATE_PACKAGE_NAME`：允许的 Android 包名，默认 `com.solin.digital`。
+- `APP_UPDATE_PACKAGE_NAME`：允许的 Android 包名，默认 `com.lingzhi.digital`。
 
 检查请求命中更新时，服务端基于当前绝对下载 URL、动态 `expiresAt` 和最新发布字段构造无结尾换行的 UTF-8 原文并即时签名。缺少或非法私钥时返回明确 `503`，绝不返回未签名发布。
 
