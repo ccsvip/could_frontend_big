@@ -7,6 +7,7 @@ import {
   createRealtimeCommandId,
   encodeRealtimeCommand,
 } from '../api/realtime';
+import type { RealtimeError } from '../api/realtime';
 
 type PlayRealtimeTtsOptions = TtsTestPayload & {
   token: string;
@@ -26,6 +27,10 @@ type PlayRealtimeTtsResult = {
 
 type WebAudioWindow = Window & typeof globalThis & {
   webkitAudioContext?: typeof AudioContext;
+};
+
+type TtsRealtimeSocketMessage = TtsRealtimeMessage & {
+  error?: RealtimeError;
 };
 
 export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<PlayRealtimeTtsResult> => {
@@ -243,9 +248,9 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
         return;
       }
 
-      let payload: TtsRealtimeMessage;
+      let payload: TtsRealtimeSocketMessage;
       try {
-        payload = JSON.parse(event.data) as TtsRealtimeMessage;
+        payload = JSON.parse(event.data) as TtsRealtimeSocketMessage;
       } catch {
         return;
       }
@@ -270,7 +275,7 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
       }
       if (payload.type === 'tts.error') {
         socket.close();
-        fail(new Error(payload.message || '语音合成失败'));
+        fail(new Error(payload.error?.message || '语音合成失败'));
       }
     };
 

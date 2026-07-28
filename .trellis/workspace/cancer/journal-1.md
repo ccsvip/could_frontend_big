@@ -7,15 +7,15 @@
 
 
 
-## Session 1: 修复 MinIO 地址切换后视频缓存
+## Session 1: 修复 Codex 与 OMP 的 GitNexus MCP 接入
 
 **Date**: 2026-07-28
-**Task**: 修复 MinIO 地址切换后视频缓存
-**Branch**: `main`
+**Task**: 修复 Codex 与 OMP 的 GitNexus MCP 接入
+**Branch**: `dev`
 
 ### Summary
 
-定位到资源列表缓存未在 MinIO 设置保存后失效；保存配置后清理 resources 命名空间，并添加 A 到 B 地址切换回归测试。
+为 Codex 和 OMP 默认用户配置注册 gitnexus stdio MCP；通过 Codex 列表、OMP /mcp list 与 /mcp test、原生 MCP initialize/tools/resources 握手验证。
 
 ### Main Changes
 
@@ -23,9 +23,7 @@
 
 ### Git Commits
 
-| Hash | Message |
-|------|---------|
-| `715a9e3` | (see git log) |
+(No commits - planning session)
 
 ### Testing
 

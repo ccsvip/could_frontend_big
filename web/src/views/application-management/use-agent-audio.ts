@@ -9,6 +9,7 @@ import {
   createRealtimeCommandId,
   encodeRealtimeCommand,
 } from '../../api/realtime';
+import type { RealtimeError } from '../../api/realtime';
 import type { TtsSessionConfig } from '../../api/modules/tts';
 import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
@@ -30,7 +31,7 @@ type AsrSocketMessage = {
   type?: string;
   text?: string;
   final?: boolean;
-  message?: string;
+  error?: RealtimeError;
 };
 
 type StopRecordingOptions = {
@@ -244,7 +245,7 @@ export const useAgentAudio = () => {
           return;
         }
         if (payload.type === 'asr.error') {
-          message.error(payload.message || '语音识别失败');
+          message.error(payload.error?.message || '语音识别失败');
           stopRecording({ suppressDone: true, cancel: true });
         }
       };

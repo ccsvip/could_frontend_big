@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~40 | Active |
+| `journal-1.md` | ~38 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,7 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
-| 1 | 2026-07-28 | 修复 MinIO 地址切换后视频缓存 | `715a9e3` | `main` |
+| 1 | 2026-07-28 | 修复 Codex 与 OMP 的 GitNexus MCP 接入 | - | `dev` |
 <!-- @@@/auto:session-history -->
 
 ---

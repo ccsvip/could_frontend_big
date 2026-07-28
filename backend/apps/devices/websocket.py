@@ -3,13 +3,11 @@ from __future__ import annotations
 from django.utils import timezone
 
 from .models import Device, DeviceAuthLog
-from .services.runtime import get_runtime_device_or_none
+from .services.runtime import get_runtime_device
 
 
-def mark_device_online_for_websocket(device_code: str) -> Device | None:
-    device = get_runtime_device_or_none(device_code, require_tenant=False)
-    if device is None:
-        return None
+def mark_device_online_for_websocket(device_code: str) -> Device:
+    device = get_runtime_device(device_code, require_tenant=False)
     now = timezone.now()
     device.status = Device.STATUS_ONLINE
     device.last_heartbeat = now

@@ -10,7 +10,7 @@ from apps.accounts.authentication import TenantAwareJWTAuthentication
 
 from apps.accounts.services.permissions import get_active_permission_codes_for_user
 from apps.tenants.services import get_user_tenant
-from .services.runtime import get_runtime_device_or_none
+from .services.runtime import get_runtime_device
 
 
 @dataclass(frozen=True)
@@ -49,10 +49,8 @@ def resolve_device_event_subscription(token: str, tenant_id_param: str) -> dict 
     return _resolve_connection(token, tenant_id_param)
 
 
-def resolve_runtime_config_event_subscription(device_code: str) -> dict | None:
-    device = get_runtime_device_or_none(device_code, require_tenant=True)
-    if device is None:
-        return None
+def resolve_runtime_config_event_subscription(device_code: str) -> dict:
+    device = get_runtime_device(device_code, require_tenant=True)
     return {'tenant_id': device.tenant_id, 'device_code': device.code, 'device_id': device.id}
 
 

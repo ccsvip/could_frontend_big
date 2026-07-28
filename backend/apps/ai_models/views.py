@@ -299,7 +299,7 @@ class ASRDeviceStatusView(APIView):
     def get(self, request):
         device_code = str(request.headers.get('X-Device-Code') or '').strip()
         if not device_code:
-            error = runtime_device_error('设备码不能为空', status.HTTP_400_BAD_REQUEST, RUNTIME_ERROR_EMPTY_DEVICE_CODE)
+            error = runtime_device_error(None, status.HTTP_400_BAD_REQUEST, RUNTIME_ERROR_EMPTY_DEVICE_CODE)
             return Response(error.as_payload(), status=error.status_code)
 
         try:
@@ -576,7 +576,7 @@ class TTSRuntimeView(APIView):
     def post(self, request):
         device_code = str(request.headers.get('X-Device-Code') or '').strip()
         if not device_code:
-            error = runtime_device_error('设备码不能为空', status.HTTP_400_BAD_REQUEST, RUNTIME_ERROR_EMPTY_DEVICE_CODE)
+            error = runtime_device_error(None, status.HTTP_400_BAD_REQUEST, RUNTIME_ERROR_EMPTY_DEVICE_CODE)
             return Response(error.as_payload(), status=error.status_code)
 
         try:

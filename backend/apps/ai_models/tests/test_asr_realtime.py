@@ -338,8 +338,9 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
             },
         )
 
-    def test_resolve_realtime_connection_rejects_unbound_android_device(self):
+    def test_resolve_realtime_connection_preserves_unbound_android_device_error(self):
         from apps.ai_models.realtime_asr import resolve_asr_realtime_connection
+        from apps.devices.services.runtime import RuntimeDeviceError
 
         Device.objects.create(
             name='Unbound ASR Android Device',
@@ -347,12 +348,14 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
             authorization_type=Device.AUTHORIZATION_PERMANENT,
         )
 
-        connection = resolve_asr_realtime_connection(
-            '',
-            headers=[(b'x-device-code', b'ANDROID-ASR-PENDING')],
-        )
+        with self.assertRaises(RuntimeDeviceError) as caught:
+            resolve_asr_realtime_connection(
+                '',
+                headers=[(b'x-device-code', b'ANDROID-ASR-PENDING')],
+            )
 
-        self.assertIsNone(connection)
+        self.assertEqual(caught.exception.code, '1004')
+        self.assertEqual(caught.exception.message, '设备未绑定公司')
 
     def test_resolve_realtime_connection_accepts_device_code_query_for_browser_test_page(self):
         from apps.ai_models.realtime_asr import resolve_asr_realtime_connection

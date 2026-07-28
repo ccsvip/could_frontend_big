@@ -94,6 +94,7 @@ INSTALLED_APPS = [
     'apps.ai_models',
     'apps.audit',
     'apps.app_updates',
+    'apps.error_codes',
 ]
 
 MIDDLEWARE = [

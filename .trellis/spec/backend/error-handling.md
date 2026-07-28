@@ -263,3 +263,70 @@ user = authentication.get_user(validated_token)
 
 Errors in WebSocket auth close the connection — they do not return JSON error
 envelopes. The DRF envelope convention applies only to HTTP API views.
+
+## Scenario: Unified realtime error catalogue
+
+### 1. Scope / Trigger
+- Trigger: `/ws/realtime/` errors, device-runtime failures, the read-only error-code API, and the platform error-code centre share one static catalogue in `apps.error_codes.catalogue`.
+- The catalogue is code-maintained only: do not create a model, migration, or write endpoint for these definitions.
+
+### 2. Signatures
+```python
+from apps.error_codes.catalogue import require_error_definition_by_key
+
+definition = require_error_definition_by_key('ASR_UPSTREAM_ERROR')
+# definition.code == '1022'
+```
+
+```json
+{
+  "type": "asr.error",
+  "id": "command-id",
+  "requestId": "request-id",
+  "traceId": "trace-id",
+  "error": {"code": "1022", "message": "ASR 上游服务暂不可用"}
+}
+```
+
+### 3. Contracts
+- Every public catalogue code is a unique decimal string in the inclusive range `1001`–`2000`. Internal symbolic `key` values are backend-only lookup identifiers.
+- `GET /api/v1/error-codes/` and `GET /api/v1/error-codes/{code}/` are read-only, superuser-only catalogue views. Their `code` field and lookup are the public numeric string; their `category` field is the canonical Chinese label.
+- WebSocket `error`, `agent.error`, `llm.error`, `asr.error`, and `tts.error` events carry only nested `error.code` and `error.message` for the canonical error. Preserve available `id`, `requestId`, and `traceId`; never dual-write top-level `code`, `statusCode`, or `message`.
+- `RuntimeDeviceError.as_payload()` retains its HTTP compatibility shape: `code` is canonical numeric, `statusCode` remains the legacy `440xx` business status, and `message` is the canonical message.
+- Log underlying/upstream exception detail server-side; send a safe catalogue definition to clients.
+
+### 4. Validation & Error Matrix
+| Condition | Catalogue key | Client result |
+| --- | --- | --- |
+| Realtime command omits `type` | `REALTIME_COMMAND_TYPE_REQUIRED` | nested `error.code: "1013"` |
+| Device authorization is expired | `DEVICE_EXPIRED` | numeric code plus HTTP `statusCode: 44014` when returned by device runtime |
+| ASR upstream stream fails after start | `ASR_UPSTREAM_ERROR` | `asr.error` with safe nested numeric code; no upstream exception text |
+| No catalogue definition matches | `INTERNAL_ERROR` | safe nested numeric code and message |
+
+### 5. Good/Base/Bad Cases
+- Good: backend selects a definition by symbolic key and serializes its numeric public code; UI renders API category labels directly.
+- Base: a superuser filters the catalogue by an API-provided Chinese category and retrieves all matching entries.
+- Bad: emitting `ASR_UPSTREAM_ERROR` as a public code, exposing `str(exc)`, or adding `legacyStatusCode` to the error-code centre.
+
+### 6. Tests Required
+- Catalogue API tests must assert superuser-only access, numeric detail lookup, filtering by Chinese category, and every code's uniqueness/range.
+- WebSocket regression tests must assert nested errors, numeric `error.code`, preserved correlation fields, and absence of legacy top-level error fields.
+- Device-runtime tests must assert numeric `code` while retaining the existing `statusCode` value.
+- Frontend changes require `docker compose exec web npm run build`.
+
+### 7. Wrong vs Correct
+#### Wrong
+```python
+_send_realtime_error(send, 'asr.error', command_id, str(exc))
+```
+
+#### Correct
+```python
+logger.exception('realtime.asr.stream_failed')
+await _send_realtime_error(
+    send,
+    'asr.error',
+    command_id,
+    require_error_definition_by_key('ASR_UPSTREAM_ERROR'),
+)
+```

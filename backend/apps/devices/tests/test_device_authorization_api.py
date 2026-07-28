@@ -509,7 +509,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(context.exception.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(context.exception.message, '设备未绑定公司')
-        self.assertEqual(context.exception.code, 'DEVICE_TENANT_UNBOUND')
+        self.assertEqual(context.exception.code, '1004')
         self.assertEqual(context.exception.business_status_code, 44011)
 
     def test_runtime_config_expired_software_trial_returns_stable_error_code(self):
@@ -531,7 +531,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data['code'], 'DEVICE_EXPIRED')
+        self.assertEqual(response.data['code'], '1007')
         self.assertEqual(response.data['statusCode'], 44014)
         self.assertEqual(response.data['message'], '设备授权已过期')
         self.assertIs(response.data['authorizationExpired'], True)
@@ -572,7 +572,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         )
 
         self.assertEqual(heartbeat_response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(heartbeat_response.data['code'], 'DEVICE_EXPIRED')
+        self.assertEqual(heartbeat_response.data['code'], '1007')
 
     def test_device_status_choices_match_android_runtime_states(self):
         self.assertEqual(
@@ -1048,7 +1048,10 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             payload = json.loads(response['text'])
             self.assertEqual(payload['type'], 'error')
             self.assertEqual(payload['id'], 'voice-inactive-1')
-            self.assertEqual(payload['error']['code'], 'voice_not_found')
+            self.assertEqual(payload['error'], {'code': '1018', 'message': '音色不可用'})
+            self.assertNotIn('code', payload)
+            self.assertNotIn('statusCode', payload)
+            self.assertNotIn('message', payload)
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)

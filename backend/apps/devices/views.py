@@ -528,7 +528,7 @@ class DeviceActivationView(APIView):
         ).strip()
         if not device_code:
             self._log_activation(None, '', False, '设备码不能为空', request)
-            error = runtime_device_error('设备码不能为空', status.HTTP_400_BAD_REQUEST, RUNTIME_ERROR_EMPTY_DEVICE_CODE)
+            error = runtime_device_error(None, status.HTTP_400_BAD_REQUEST, RUNTIME_ERROR_EMPTY_DEVICE_CODE)
             return Response(error.as_payload(), status=error.status_code)
         existing_devices = list(
             Device.objects.select_for_update()
@@ -537,7 +537,7 @@ class DeviceActivationView(APIView):
         )
         if len(existing_devices) > 1:
             self._log_activation(None, device_code, False, '设备码存在重复绑定，请联系后台处理', request)
-            error = runtime_device_error('设备码存在重复绑定，请联系后台处理', status.HTTP_409_CONFLICT, RUNTIME_ERROR_DUPLICATE_DEVICE_CODE)
+            error = runtime_device_error(None, status.HTTP_409_CONFLICT, RUNTIME_ERROR_DUPLICATE_DEVICE_CODE)
             return Response(error.as_payload(), status=error.status_code)
 
         now = timezone.now()
@@ -792,7 +792,7 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
             'expiresAt': serializers.DateTimeField().to_representation(device.expires_at),
         }
         if device.is_expired and device.is_software_trial:
-            error = runtime_device_error('设备授权已过期', status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_DEVICE_EXPIRED)
+            error = runtime_device_error(None, status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_DEVICE_EXPIRED)
             return Response(
                 {**error.as_payload(), **expiration_payload},
                 status=error.status_code,
@@ -800,7 +800,7 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
         application = device.application
         agent_application = device.effective_agent_application
         if agent_application is None or not agent_application.runtime_config().get('is_active'):
-            error = runtime_device_error('设备未绑定可用智能体', status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_AGENT_UNBOUND)
+            error = runtime_device_error(None, status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_AGENT_UNBOUND)
             return Response(error.as_payload(), status=error.status_code)
         DeviceAuthLog.objects.create(
             tenant=device.tenant,
@@ -1162,7 +1162,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         except RuntimeDeviceError as exc:
             return Response(exc.as_payload(), status=exc.status_code)
         if device.effective_agent_application is None or not device.effective_agent_application.runtime_config().get('is_active'):
-            error = runtime_device_error('设备未绑定可用智能体', status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_AGENT_UNBOUND)
+            error = runtime_device_error(None, status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_AGENT_UNBOUND)
             return Response(error.as_payload(), status=error.status_code)
 
         pipeline_context = {

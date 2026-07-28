@@ -296,8 +296,8 @@ class RealtimeWebSocketTests(SimpleTestCase):
                         'type': 'error',
                         'id': 'runtime-config-sub',
                         'error': {
-                            'code': 'runtime_config_subscribed_failed',
-                            'message': 'Device runtime config subscription failed',
+                            'code': '1010',
+                            'message': '设备运行时配置订阅失败',
                         },
                     }
                 ],
@@ -705,6 +705,78 @@ class RealtimeWebSocketTests(SimpleTestCase):
 
         async_to_sync(run_task)()
 
+    def test_asr_stream_error_uses_canonical_error_payload(self):
+        async def run_task():
+            from config.realtime import RealtimeConnection, _asr_upstream_to_client
+
+            class FailingASRUpstream:
+                def __aiter__(self):
+                    return self
+
+                async def __anext__(self):
+                    raise RuntimeError('upstream unavailable')
+
+            sent_events = []
+
+            async def send(event):
+                sent_events.append(event)
+
+            await _asr_upstream_to_client(
+                FailingASRUpstream(),
+                send,
+                RealtimeConnection(),
+                'asr-stream-error',
+                [],
+                request_id='req-asr-stream-error',
+                trace_id='trace-asr-stream-error',
+            )
+
+            payload = json.loads(sent_events[0]['text'])
+            self.assertEqual(payload['type'], 'asr.error')
+            self.assertEqual(payload['id'], 'asr-stream-error')
+            self.assertEqual(payload['requestId'], 'req-asr-stream-error')
+            self.assertEqual(payload['traceId'], 'trace-asr-stream-error')
+            self.assertEqual(payload['error'], {'code': '1022', 'message': 'ASR 上游服务暂不可用'})
+            self.assertNotIn('code', payload)
+            self.assertNotIn('statusCode', payload)
+            self.assertNotIn('message', payload)
+
+        async_to_sync(run_task)()
+
+    def test_agent_asr_stream_error_uses_canonical_error_payload(self):
+        async def run_task():
+            from config.realtime import RealtimeConnection, _agent_asr_upstream_to_client
+
+            class FailingASRUpstream:
+                def __aiter__(self):
+                    return self
+
+                async def __anext__(self):
+                    raise RuntimeError('upstream unavailable')
+
+            sent_events = []
+
+            async def send(event):
+                sent_events.append(event)
+
+            connection = RealtimeConnection()
+            connection.agent_session_id = 'agent-asr-stream-error'
+            connection.agent_request_id = 'req-agent-asr-stream-error'
+            connection.agent_trace_id = 'trace-agent-asr-stream-error'
+            await _agent_asr_upstream_to_client(FailingASRUpstream(), send, connection, [])
+
+            payload = json.loads(sent_events[0]['text'])
+            self.assertEqual(payload['type'], 'agent.error')
+            self.assertEqual(payload['id'], 'agent-asr-stream-error')
+            self.assertEqual(payload['requestId'], 'req-agent-asr-stream-error')
+            self.assertEqual(payload['traceId'], 'trace-agent-asr-stream-error')
+            self.assertEqual(payload['error'], {'code': '1022', 'message': 'ASR 上游服务暂不可用'})
+            self.assertNotIn('code', payload)
+            self.assertNotIn('statusCode', payload)
+            self.assertNotIn('message', payload)
+
+        async_to_sync(run_task)()
+
     def test_binary_audio_frames_are_ignored_after_asr_stops_accepting_audio(self):
         async def run_task():
             from config.realtime import RealtimeConnection, _handle_binary_frame
@@ -837,8 +909,8 @@ class RealtimeWebSocketTests(SimpleTestCase):
                     'type': 'error',
                     'id': 'unknown-1',
                     'error': {
-                        'code': 'unknown_command',
-                        'message': 'Unsupported realtime command: realtime.not_supported',
+                        'code': 'REALTIME_UNKNOWN_COMMAND',
+                        'message': '不支持的实时命令',
                     },
                 },
             )
@@ -1120,7 +1192,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
                     'id': 'asr-unauthorized',
                     'requestId': 'req-asr-error-1',
                     'traceId': 'trace-asr-error-1',
-                    'message': 'ASR session is not authorized',
+                    'error': {'code': '1019', 'message': 'ASR 会话未授权'},
                 },
             )
 
@@ -1137,7 +1209,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
                     'id': 'asr-config-error',
                     'requestId': 'req-asr-error-1',
                     'traceId': 'trace-asr-error-1',
-                    'message': 'ASR 服务未就绪',
+                    'error': {'code': '1020', 'message': 'ASR 服务未就绪'},
                 },
             )
 
@@ -1159,7 +1231,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
                     'id': 'asr-upstream-error',
                     'requestId': 'req-asr-error-1',
                     'traceId': 'trace-asr-error-1',
-                    'message': 'upstream unavailable',
+                    'error': {'code': '1022', 'message': 'ASR 上游服务暂不可用'},
                 },
             )
 
@@ -2193,7 +2265,7 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         with self.assertRaises(RuntimeDeviceError) as ctx:
             realtime._prepare_device_llm_session('ANDROID-INACTIVE-APP-001', '还能回答吗？')
 
-        self.assertEqual(ctx.exception.code, 'DEVICE_APPLICATION_INACTIVE')
+        self.assertEqual(ctx.exception.code, '1009')
 
     def test_agent_session_start_returns_error_for_inactive_device_application(self):
         provider = LLMProvider.objects.create(
@@ -2261,9 +2333,10 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
             self.assertEqual(payload['id'], 'agent-inactive-session')
             self.assertEqual(payload['requestId'], 'req-inactive-agent')
             self.assertEqual(payload['traceId'], 'trace-inactive-agent')
-            self.assertEqual(payload['code'], 'DEVICE_APPLICATION_INACTIVE')
-            self.assertEqual(payload['statusCode'], 44022)
-            self.assertEqual(payload['message'], '设备绑定应用未启用')
+            self.assertEqual(payload['error'], {'code': '1009', 'message': '设备绑定应用未启用'})
+            self.assertNotIn('code', payload)
+            self.assertNotIn('statusCode', payload)
+            self.assertNotIn('message', payload)
 
             await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
             await communicator.wait(timeout=1)
@@ -3561,6 +3634,61 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
         self.assertEqual(device.status, Device.STATUS_OFFLINE)
 
 
+    def test_unified_realtime_websocket_preserves_unbound_tenant_errors(self):
+        Device.objects.create(
+            name='Unbound Realtime Device',
+            code='ANDROID-UNBOUND-REALTIME',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+
+        async def run_websocket():
+            communicator = await self.open_realtime_websocket()
+
+            await communicator.send_input({
+                'type': 'websocket.receive',
+                'text': json.dumps({
+                    'type': 'device.runtime_config.subscribe',
+                    'id': 'runtime-config-unbound',
+                    'payload': {'deviceCode': 'ANDROID-UNBOUND-REALTIME'},
+                }),
+            })
+            self.assertEqual(
+                await self.receive_realtime_json(communicator),
+                {
+                    'type': 'error',
+                    'id': 'runtime-config-unbound',
+                    'error': {'code': '1004', 'message': '设备未绑定公司'},
+                },
+            )
+
+            await communicator.send_input({
+                'type': 'websocket.receive',
+                'text': json.dumps({
+                    'type': 'asr.session.start',
+                    'id': 'asr-unbound',
+                    'payload': {
+                        'deviceCode': 'ANDROID-UNBOUND-REALTIME',
+                        'requestId': 'req-asr-unbound',
+                        'traceId': 'trace-asr-unbound',
+                    },
+                }),
+            })
+            self.assertEqual(
+                await self.receive_realtime_json(communicator),
+                {
+                    'type': 'asr.error',
+                    'id': 'asr-unbound',
+                    'requestId': 'req-asr-unbound',
+                    'traceId': 'trace-asr-unbound',
+                    'error': {'code': '1004', 'message': '设备未绑定公司'},
+                },
+            )
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
 class RealtimeDeviceStatusTests(TenantTestMixin, TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='realtime-device-status', password='test123456')
@@ -3570,6 +3698,54 @@ class RealtimeDeviceStatusTests(TenantTestMixin, TestCase):
             name='Realtime Device App',
             code='realtime-device-app',
         )
+
+    def test_unified_realtime_websocket_device_status_returns_disabled_error(self):
+        Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            name='Disabled Runtime Device',
+            code='ANDROID-DISABLED-STATUS',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            is_enabled=False,
+        )
+
+        async def run_websocket():
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            self.assertEqual((await communicator.receive_output(timeout=1))['type'], 'websocket.accept')
+
+            await communicator.send_input({
+                'type': 'websocket.receive',
+                'text': json.dumps({
+                    'type': 'device.status.start',
+                    'id': 'device-status-disabled',
+                    'payload': {'deviceCode': 'ANDROID-DISABLED-STATUS'},
+                }),
+            })
+            message = await communicator.receive_output(timeout=1)
+            self.assertEqual(
+                json.loads(message['text']),
+                {
+                    'type': 'error',
+                    'id': 'device-status-disabled',
+                    'error': {'code': '1006', 'message': '设备已停用'},
+                },
+            )
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
 
     def test_unified_realtime_websocket_marks_device_online_until_disconnect(self):
         device = Device.objects.create(
@@ -3661,8 +3837,8 @@ class RealtimeDeviceStatusTests(TenantTestMixin, TestCase):
                     'type': 'error',
                     'id': 'device-ping-1',
                     'error': {
-                        'code': 'device_status_not_started',
-                        'message': 'Device status session is not started',
+                        'code': '1017',
+                        'message': '设备状态会话尚未启动',
                     },
                 },
             )
@@ -3761,8 +3937,8 @@ class RealtimeDeviceStatusTests(TenantTestMixin, TestCase):
                     'type': 'error',
                     'id': 'missing-type-1',
                     'error': {
-                        'code': 'invalid_command',
-                        'message': 'Realtime command type is required',
+                        'code': '1013',
+                        'message': '实时命令类型不能为空',
                     },
                 },
             )
