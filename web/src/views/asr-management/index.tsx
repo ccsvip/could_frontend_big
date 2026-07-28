@@ -51,6 +51,7 @@ import {
   createRealtimeCommandId,
   encodeRealtimeCommand,
 } from '../../api/realtime';
+import type { RealtimeError } from '../../api/realtime';
 import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
 import { requestMicrophoneStream } from '../media-devices';
@@ -61,7 +62,7 @@ type AsrSocketMessage = {
   type?: string;
   text?: string;
   final?: boolean;
-  message?: string;
+  error?: RealtimeError;
 };
 
 type WebAudioWindow = Window & typeof globalThis & {
@@ -545,7 +546,7 @@ export const AsrManagementPage = () => {
     }
 
     if (payload.type === 'asr.error') {
-      setErrorText(payload.message || 'ASR 测试失败');
+      setErrorText(payload.error?.message || 'ASR 测试失败');
       setPhase('error');
       stopAudio();
       closeSocket();

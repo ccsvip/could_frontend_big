@@ -9,6 +9,7 @@ import {
   IconCloud,
   IconDeviceDesktop,
   IconFileSearch,
+  IconFileUnknown,
   IconFileText,
   IconHeadset,
   IconLayoutSidebarLeftCollapse,
@@ -63,6 +64,7 @@ const menuIconMap = {
   SoundOutlined: <IconVolume size={16} />,
   FileImageOutlined: <IconPhoto size={16} />,
   FileSearchOutlined: <IconFileSearch size={16} />,
+  FileUnknownOutlined: <IconFileUnknown size={16} />,
   NotificationOutlined: <IconBell size={16} />,
   EnvironmentOutlined: <IconMapPin size={16} />,
   ExportOutlined: <IconArrowBarToRight size={16} />,
@@ -134,9 +136,9 @@ const buildSuperAdminTenantModuleMenus = (
     };
   });
 
-// 构建超管专属导航树：租户管理(可展开→各公司→各公司业务模块)、账号申请管理、日志管理。
+// 构建平台管理权限用户的导航树；其中“错误码中心”仅对实际平台超管可见。
 // 与后端 menus 流程完全分流，仅在 hasPermission('tenant.management.view') 时启用。
-const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
+const buildSuperAdminMenus = (tenants: TenantRecord[], isSuperuser: boolean): AppMenu[] => [
   {
     key: 'tenant-management',
     label: '租户管理',
@@ -166,6 +168,14 @@ const buildSuperAdminMenus = (tenants: TenantRecord[]): AppMenu[] => [
     icon: 'SolutionOutlined',
     path: '/account-applications',
   },
+  ...(isSuperuser
+    ? [{
+        key: 'error-codes',
+        label: '错误码中心',
+        icon: 'FileUnknownOutlined',
+        path: '/error-codes',
+      }]
+    : []),
   {
     key: 'settings',
     label: '设置',
@@ -434,6 +444,7 @@ export const DashboardLayout = () => {
   const now = useLiveNow();
   const { username, role, logout, menus } = useAuthStore();
   const hasPermission = useAuthStore((state) => state.hasPermission);
+  const isSuperuser = useAuthStore((state) => state.isSuperuser);
   const includeHiddenTenants = useTenantScopeStore((state) => state.includeHiddenTenants);
   const isSuperAdmin = hasPermission('tenant.management.view');
   const [scopedTenants, setScopedTenants] = useState<TenantRecord[]>([]);
@@ -526,9 +537,9 @@ export const DashboardLayout = () => {
   const visibleMenus = useMemo(
     () =>
       isSuperAdmin
-        ? buildSuperAdminMenus(scopedTenants)
+        ? buildSuperAdminMenus(scopedTenants, isSuperuser)
         : normalizeSidebarMenus(filterVisibleMenus(menus)),
-    [isSuperAdmin, scopedTenants, menus],
+    [isSuperAdmin, isSuperuser, scopedTenants, menus],
   );
   const navigateFromMenu = useCallback(
     (path: string) => {

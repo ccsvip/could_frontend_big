@@ -1,0 +1,1 @@
+gitnexus MCP resource unavailable in this harness; used source and LSP fallback for impact analysis.

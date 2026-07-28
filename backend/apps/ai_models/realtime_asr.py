@@ -7,7 +7,7 @@ import websockets
 from apps.accounts.authentication import TenantAwareJWTAuthentication
 
 from apps.accounts.services.permissions import get_active_permission_codes_for_user
-from apps.devices.services.runtime import get_runtime_device_or_none
+from apps.devices.services.runtime import get_runtime_device
 from apps.tenants.models import Tenant
 from apps.tenants.services import get_user_tenant
 
@@ -67,9 +67,7 @@ def resolve_asr_device_connection(device_code: str) -> dict[str, Any] | None:
     if not device_code:
         return None
 
-    device = get_runtime_device_or_none(device_code, require_tenant=True)
-    if device is None:
-        return None
+    device = get_runtime_device(device_code, require_tenant=True)
 
     return {
         'device_id': device.id,

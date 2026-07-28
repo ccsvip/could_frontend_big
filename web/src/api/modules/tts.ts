@@ -99,7 +99,6 @@ export type TtsRealtimeMessage = {
   sampleRate?: number;
   responseFormat?: 'pcm' | 'wav' | 'mp3' | 'opus';
   voice?: string;
-  message?: string;
 };
 
 const blobRequestConfig = {

@@ -263,7 +263,8 @@ class TTSRealtimeTests(TenantTestMixin, TestCase):
                     error = await communicator.receive_output(timeout=1)
                     payload = json.loads(error['text'])
                     self.assertEqual(payload['type'], 'tts.error')
-                    self.assertIn('Too many characters', payload['message'])
+                    self.assertEqual(payload['error'], {'code': '1027', 'message': 'TTS 上游服务暂不可用'})
+                    self.assertNotIn('message', payload)
 
                 combined_logs = '\n'.join(logs.output)
                 self.assertIn('tts.realtime.upstream_error', combined_logs)

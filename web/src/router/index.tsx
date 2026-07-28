@@ -62,6 +62,9 @@ const MinioSettingsPage = lazy(() =>
 const AppUpdateManagementPage = lazy(() =>
   import('../views/app-update-management').then((module) => ({ default: module.AppUpdateManagementPage })),
 );
+const ErrorCodeCenterPage = lazy(() =>
+  import('../views/error-code-center').then((module) => ({ default: module.ErrorCodeCenterPage })),
+);
 const AsrSettingsPage = lazy(() =>
   import('../views/asr-settings').then((module) => ({ default: module.AsrSettingsPage })),
 );
@@ -401,6 +404,14 @@ export const AppRouter = () => {
           element: (
             <SuperuserGuard>
               <AppUpdateManagementPage />
+            </SuperuserGuard>
+          ),
+        },
+        {
+          path: 'error-codes',
+          element: (
+            <SuperuserGuard>
+              <ErrorCodeCenterPage />
             </SuperuserGuard>
           ),
         },

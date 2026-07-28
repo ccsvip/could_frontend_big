@@ -7,8 +7,8 @@ export type RealtimeCommand = {
 };
 
 export type RealtimeError = {
-  code?: string;
-  message?: string;
+  code: string;
+  message: string;
 };
 
 export type RealtimeEnvelope<TPayload = unknown> = {
