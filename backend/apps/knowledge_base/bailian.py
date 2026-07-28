@@ -123,7 +123,7 @@ def upload_file(lease: UploadLease, file_obj: BinaryIO, *, file_size: int) -> No
     with httpx.Client(timeout=httpx.Timeout(120.0, connect=30.0)) as client:
         response = client.request(lease.method, lease.url, headers=headers, content=_file_chunks(file_obj))
     if response.status_code >= 400:
-        raise BailianKnowledgeError(f'百炼文件上传失败（HTTP {response.status_code}）')
+        raise BailianKnowledgeError(f'文件上传失败（HTTP {response.status_code}）')
 
 
 def add_file(*, category_id: str, lease_id: str, parser: str) -> str:
@@ -135,7 +135,7 @@ def add_file(*, category_id: str, lease_id: str, parser: str) -> str:
     )
     file_id = str(getattr(_data(client.add_file(config.workspace_id, request)), 'file_id', '') or '')
     if not file_id:
-        raise BailianKnowledgeError('百炼未返回有效的 FileId')
+        raise BailianKnowledgeError('服务器未返回有效的 FileId')
     return file_id
 
 
@@ -150,9 +150,12 @@ def describe_file(file_id: str) -> dict:
 
 
 def create_index(*, name: str, file_id: str) -> str:
+    name = name.strip()
+    if not 1 <= len(name) <= 20:
+        raise BailianKnowledgeError('索引名称长度必须为 1 到 20 个字符')
     client, config = _client()
     request = bailian_models.CreateIndexRequest(
-        name=name[:128],
+        name=name,
         structure_type='unstructured',
         source_type='DATA_CENTER_FILE',
         sink_type='DEFAULT',
@@ -160,7 +163,7 @@ def create_index(*, name: str, file_id: str) -> str:
     )
     index_id = str(getattr(_data(client.create_index(config.workspace_id, request)), 'id', '') or '')
     if not index_id:
-        raise BailianKnowledgeError('百炼未返回有效的 IndexId')
+        raise BailianKnowledgeError('服务器未返回有效的 IndexId')
     return index_id
 
 
@@ -169,7 +172,7 @@ def submit_index(index_id: str) -> str:
     data = _data(client.submit_index_job(config.workspace_id, bailian_models.SubmitIndexJobRequest(index_id=index_id)))
     job_id = str(getattr(data, 'id', '') or '')
     if not job_id:
-        raise BailianKnowledgeError('百炼未返回有效的索引任务 ID')
+        raise BailianKnowledgeError('服务器未返回有效的索引任务 ID')
     return job_id
 
 
@@ -182,7 +185,7 @@ def add_document_to_index(*, index_id: str, file_id: str) -> str:
     )
     job_id = str(getattr(_data(client.submit_index_add_documents_job(config.workspace_id, request)), 'id', '') or '')
     if not job_id:
-        raise BailianKnowledgeError('百炼未返回有效的追加索引任务 ID')
+        raise BailianKnowledgeError('服务器未返回有效的追加索引任务 ID')
     return job_id
 
 

@@ -6,6 +6,7 @@ import time
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
+from django.utils.http import int_to_base36
 
 from apps.ai_models.models import TenantKnowledgeModelSettings
 
@@ -18,6 +19,10 @@ PARSE_SUCCESS = 'PARSE_SUCCESS'
 PARSE_FAILED_STATUSES = {'PARSE_FAILED', 'FAILED', 'ERROR'}
 INDEX_SUCCESS_STATUSES = {'COMPLETED', 'SUCCESS', 'SUCCEEDED'}
 INDEX_FAILED_STATUSES = {'FAILED', 'ERROR', 'CANCELED', 'CANCELLED'}
+
+
+def _remote_index_name(knowledge_base: KnowledgeBase) -> str:
+    return f'solin-k{int_to_base36(knowledge_base.pk)}'
 
 
 def _assert_tenant_authorized(document: KnowledgeDocument) -> None:
@@ -94,7 +99,7 @@ def _submit_document_index(document: KnowledgeDocument) -> tuple[str, str]:
         knowledge_base = KnowledgeBase.objects.select_for_update().get(pk=document.knowledge_base_id)
         if not knowledge_base.bailian_index_id:
             index_id = bailian.create_index(
-                name=f'{document.tenant_id}-{knowledge_base.name}',
+                name=_remote_index_name(knowledge_base),
                 file_id=document.bailian_file_id,
             )
             job_id = bailian.submit_index(index_id)

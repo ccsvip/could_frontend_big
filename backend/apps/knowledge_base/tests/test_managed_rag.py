@@ -10,7 +10,7 @@ from django.test import TestCase, override_settings
 from apps.ai_models.models import AgentApplication, BailianKnowledgeConfig, TenantKnowledgeModelSettings
 from apps.ai_models.services.agent_knowledge import retrieve_knowledge_chunks, retrieve_knowledge_context
 from apps.knowledge_base import bailian
-from apps.knowledge_base.managed_indexing import build_managed_document_index
+from apps.knowledge_base.managed_indexing import _remote_index_name, build_managed_document_index
 from apps.knowledge_base.models import KnowledgeBase, KnowledgeDocument
 from apps.knowledge_base.tenant_provisioning import ensure_tenant_category, tenant_category_name
 from apps.tenants.models import Tenant
@@ -63,6 +63,27 @@ class ManagedRagTests(TenantTestMixin, TestCase):
         ):
             bailian._data(response)
 
+    def test_bailian_create_index_rejects_invalid_name_before_remote_request(self):
+        for invalid_name in ('', '   ', 'x' * 21):
+            with (
+                self.subTest(name=invalid_name),
+                patch('apps.knowledge_base.bailian._client') as client_factory,
+                self.assertRaisesMessage(bailian.BailianKnowledgeError, '百炼索引名称长度必须为 1 到 20 个字符'),
+            ):
+                bailian.create_index(name=invalid_name, file_id='file-1')
+
+            client_factory.assert_not_called()
+
+    def test_remote_index_name_is_stable_unique_and_within_bailian_limit(self):
+        first = KnowledgeBase(pk=1)
+        second = KnowledgeBase(pk=2)
+        largest = KnowledgeBase(pk=2**63 - 1)
+
+        self.assertEqual(_remote_index_name(first), _remote_index_name(first))
+        self.assertNotEqual(_remote_index_name(first), _remote_index_name(second))
+        self.assertEqual(len(_remote_index_name(largest)), 20)
+        self.assertRegex(_remote_index_name(largest), r'^solin-k[0-9a-z]+$')
+
     def test_official_document_formats_use_managed_indexing(self):
         for suffix in ('pdf', 'docx', 'xlsx'):
             with self.subTest(suffix=suffix):
@@ -89,6 +110,33 @@ class ManagedRagTests(TenantTestMixin, TestCase):
                     content_md5=document.content_md5,
                     file_size=document.file_size,
                 )
+
+    def test_long_knowledge_base_name_uses_valid_remote_index_name(self):
+        self.knowledge_base.name = '这是一个远远超过百炼索引名称长度限制的知识库名称'
+        self.knowledge_base.bailian_index_id = ''
+        self.knowledge_base.save(update_fields=['name', 'bailian_index_id', 'updated_at'])
+        document = self.create_document('long-name.pdf')
+
+        with (
+            patch('apps.knowledge_base.managed_indexing.ensure_tenant_category', return_value='category-tenant'),
+            patch('apps.knowledge_base.managed_indexing.bailian.apply_upload_lease') as apply_lease,
+            patch('apps.knowledge_base.managed_indexing.bailian.upload_file'),
+            patch('apps.knowledge_base.managed_indexing.bailian.add_file', return_value='file-long-name'),
+            patch(
+                'apps.knowledge_base.managed_indexing.bailian.describe_file',
+                return_value={'status': 'PARSE_SUCCESS', 'error': '', 'parser': 'AUTO_SELECT'},
+            ),
+            patch('apps.knowledge_base.managed_indexing.bailian.create_index', return_value='index-long-name') as create_index,
+            patch('apps.knowledge_base.managed_indexing.bailian.submit_index', return_value='job-long-name'),
+            patch('apps.knowledge_base.managed_indexing.bailian.get_index_job_status', return_value='COMPLETED'),
+        ):
+            apply_lease.return_value = bailian.UploadLease('lease-1', 'https://upload.invalid', 'PUT', {})
+            result = build_managed_document_index(document.id)
+
+        remote_name = create_index.call_args.kwargs['name']
+        self.assertEqual(result['status'], KnowledgeDocument.IndexStatus.READY)
+        self.assertLessEqual(len(remote_name), 20)
+        self.assertRegex(remote_name, r'^solin-k[0-9a-z]+$')
 
     def test_tenant_category_is_created_once_and_reused(self):
         BailianKnowledgeConfig.objects.update_or_create(

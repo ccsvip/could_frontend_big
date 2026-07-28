@@ -7,6 +7,7 @@ This contract applies to document knowledge bases. Supported documents are uploa
 ## 2. Signatures
 
 - Upload pipeline: `ApplyFileUploadLease -> PUT -> AddFile -> DescribeFile -> CreateIndex/SubmitIndexJob or SubmitIndexAddDocumentsJob`.
+- Remote index naming: `_remote_index_name(knowledge_base) -> "solin-k<base36_pk>"`.
 - Retrieval boundary: `bailian.retrieve(index_id, query, top_n, min_score) -> list[RetrievalNode]`.
 - Each local `KnowledgeBase` maps to one `bailian_index_id`; each `KnowledgeDocument` maps to one `bailian_file_id`.
 - Platform config: `BailianKnowledgeConfig`; tenant grant and remote category mapping: `TenantKnowledgeModelSettings`.
@@ -21,6 +22,8 @@ This contract applies to document knowledge bases. Supported documents are uploa
 - Enabling managed RAG provisions a deterministic `solin_t{tenant_id}` category through `ListCategory/AddCategory`; first upload repeats the check as a recovery path.
 - `TenantKnowledgeModelSettings` persists `bailian_category_id`, `bailian_category_workspace_id`, and a bounded `bailian_category_error`. Company-facing APIs never expose the remote ID.
 - Upload lease and `AddFile` must receive the category ID returned by `ensure_tenant_category`; they must not read a shared global category.
+- A Bailian index name is an internal stable identifier derived from the globally unique local knowledge-base primary key. It must not include the tenant ID or user-editable knowledge-base display name.
+- `bailian.create_index` accepts only a stripped, non-empty name of at most 20 characters and rejects invalid names before creating an SDK client or making a remote request.
 - Tenant APIs never accept or return arbitrary Workspace, index, or file IDs.
 - Recall keeps the existing `mode/chunks/mediaAssets` shape and uses `mode=bailian` for managed retrieval.
 
@@ -34,6 +37,7 @@ This contract applies to document knowledge bases. Supported documents are uploa
 | Mapping is missing but deterministic remote category exists | Recover and persist its ID; do not create a duplicate |
 | Category lookup/create fails | Persist a bounded tenant provisioning error and reject authorization/upload |
 | Unsupported extension | Reject before any remote request |
+| Remote index name is blank or longer than 20 characters | Raise `BailianKnowledgeError` before creating the SDK client |
 | Remote parse/index failure | Persist `failed` plus the bounded error summary |
 | Retrieve failure | Log tenant/base identifiers, return empty document recall, never query local pgvector |
 | Remote delete failure | Keep the local record/file and return an explicit API error |
@@ -43,7 +47,7 @@ This contract applies to document knowledge bases. Supported documents are uploa
 
 - Good: enabling a tenant grant automatically provisions its category; each local base then supplies its stored `index_id`, and Bailian nodes map only to ready local documents.
 - Base: Bailian returns no nodes or is temporarily unavailable; the LLM conversation continues without knowledge context.
-- Bad: an operator enters one shared Category ID, or code calls `_embed_texts`, `build_document_index`, or `KnowledgeDocumentChunk` from the active document upload/recall path.
+- Bad: code builds the remote index name from the user-editable display name, an operator enters one shared Category ID, or code calls `_embed_texts`, `build_document_index`, or `KnowledgeDocumentChunk` from the active document upload/recall path.
 
 ## 6. Tests Required
 
@@ -53,6 +57,8 @@ This contract applies to document knowledge bases. Supported documents are uploa
 - Patch local embedding/index helpers and assert they are never called by managed retrieval.
 - Assert company responses contain only `managedRagEnabled`, never platform credentials or Workspace IDs.
 - Assert two tenants receive different Category IDs, retries reuse the persisted mapping, and an existing deterministic remote category is recovered after an interrupted local save.
+- Assert long display names produce stable `solin-k<base36_pk>` remote names no longer than 20 characters, including the maximum 64-bit positive primary key.
+- Assert blank and overlong remote index names are rejected before `_client()` is called.
 
 ## 7. Wrong vs Correct
 
@@ -60,6 +66,7 @@ This contract applies to document knowledge bases. Supported documents are uploa
 
 ```python
 lease = bailian.apply_upload_lease(config.category_id, file_name, content_md5, file_size)
+index_id = bailian.create_index(name=f'{tenant_id}-{knowledge_base.name}', file_id=file_id)
 ```
 
 ### Correct
@@ -72,4 +79,5 @@ lease = bailian.apply_upload_lease(
     content_md5=content_md5,
     file_size=document.file_size,
 )
+index_id = bailian.create_index(name=_remote_index_name(knowledge_base), file_id=file_id)
 ```
