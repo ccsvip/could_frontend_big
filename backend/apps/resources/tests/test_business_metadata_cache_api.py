@@ -11,7 +11,7 @@ from rest_framework.test import APITestCase
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.knowledge_base.models import KnowledgeDocument
-from apps.resources.models import Resource, VoiceTone
+from apps.resources.models import MinioConfig, Resource, VoiceTone
 from apps.tenants.test_utils import TenantTestMixin
 from config.business_cache import get_business_cache_summaries
 
@@ -139,3 +139,46 @@ class BusinessMetadataCacheApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(b''.join(download_response.streaming_content), b'cache-doc-content')
         self.assertEqual(self.get_cache_key_count('knowledge_base'), 0)
         self.assertTrue(Path(document.file.path).exists())
+
+    def test_minio_endpoint_update_invalidates_cached_video_urls(self):
+        self.grant_permissions('resources.videos.view')
+        object_key = f'tenants/{self.tenant.id}/videos/demo.mp4'
+        Resource.objects.create(
+            name='缓存视频',
+            resource_type=Resource.TYPE_VIDEO,
+            category=Resource.CATEGORY_HORIZONTAL,
+            object_key=object_key,
+            tenant=self.tenant,
+        )
+        MinioConfig.objects.update_or_create(
+            pk=1,
+            defaults={'endpoint': 'storage-a.example:9000', 'bucket_name': 'videos'},
+        )
+
+        cached_response = self.client.get('/api/v1/resources/videos/')
+
+        self.assertEqual(cached_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            cached_response.data['results'][0]['fileUrl'],
+            f'http://storage-a.example:9000/videos/{object_key}',
+        )
+        self.assertEqual(self.get_cache_key_count('resources'), 1)
+
+        superuser = User.objects.create_superuser(username='minio-root', password='test123456')
+        self.client.force_authenticate(user=superuser)
+        update_response = self.client.patch(
+            '/api/v1/settings/minio/',
+            {'endpoint': 'storage-b.example:9000'},
+            format='json',
+        )
+
+        self.assertEqual(update_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.get_cache_key_count('resources'), 0)
+
+        self.client.force_authenticate(user=self.user)
+        updated_response = self.client.get('/api/v1/resources/videos/')
+
+        self.assertEqual(
+            updated_response.data['results'][0]['fileUrl'],
+            f'http://storage-b.example:9000/videos/{object_key}',
+        )

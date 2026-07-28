@@ -46,7 +46,7 @@ from apps.accounts.permissions import (
     IsAdminRole,
     IsSuperUser,
 )
-from config.business_cache import CachedBusinessResponseMixin
+from config.business_cache import CachedBusinessResponseMixin, clear_business_cache_namespace
 from apps.tenants.mixins import TenantScopedQuerysetMixin
 from apps.tenants.models import Tenant
 from apps.tenants.services import get_request_tenant, resolve_member_or_public_tenant, scope_queryset_member_or_public
@@ -461,6 +461,7 @@ class MinioSettingsView(APIView):
         serializer = MinioConfigSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        clear_business_cache_namespace('resources')
         return Response(self._response_payload())
 
 
