@@ -2231,8 +2231,14 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             )
             conversation.save(update_fields=['updated_at'])
 
+            serialized_answer_blocks = serialize_reply_blocks(
+                answer_blocks,
+                tenant=conversation.tenant,
+                request=request,
+            )
+
             async def annotation_event_stream():
-                yield f"data: {json.dumps({'content': answer_text, 'blocks': serialize_reply_blocks(answer_blocks, tenant=conversation.tenant, request=request)})}\n\n"
+                yield f"data: {json.dumps({'content': answer_text, 'blocks': serialized_answer_blocks})}\n\n"
                 yield "data: [DONE]\n\n"
 
             logger.info(

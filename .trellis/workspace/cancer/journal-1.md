@@ -36,3 +36,36 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 2: 修复智能体标注媒体流式断连
+
+**Date**: 2026-07-28
+**Task**: 修复智能体标注媒体流式断连
+**Branch**: `dev`
+
+### Summary
+
+将 Annotation 媒体回复块的同步资源序列化移至异步 SSE generator 外，避免 ASGI SynchronousOnlyOperation 断开流；补充媒体块回归测试并验证 Docker 后端测试与前端构建。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `df3f3a7` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

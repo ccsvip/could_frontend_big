@@ -28,6 +28,7 @@ from apps.ai_models.models import (
 )
 from apps.ai_models.services import third_party_chatbots
 from apps.ai_models.views import _build_chat_completions_url, _build_llm_request_payload
+from apps.resources.models import Resource
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
@@ -702,11 +703,22 @@ class ChatApiTests(TenantTestMixin, APITestCase):
             user=self.user,
             application=application,
         )
+        image = Resource.objects.create(
+            tenant=self.tenant,
+            name='营业时间图片',
+            resource_type=Resource.TYPE_IMAGE,
+            category=Resource.CATEGORY_HORIZONTAL,
+            cloud_url='https://cdn.example.test/business-hours.png',
+        )
         annotation = AgentAnnotation.objects.create(
             tenant=self.tenant,
             application=application,
             question='营业时间？',
             answer='我们的服务时间为周一至周五 09:00 - 18:00。',
+            answer_blocks=[
+                {'type': 'text', 'text': '我们的服务时间为周一至周五 09:00 - 18:00。'},
+                {'type': 'image', 'resourceId': image.id},
+            ],
         )
 
         with patch('apps.ai_models.views.httpx.AsyncClient') as client_mock:
@@ -719,6 +731,10 @@ class ChatApiTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(_sse_content(streamed_body), '我们的服务时间为周一至周五 09:00 - 18:00。')
+        self.assertEqual(
+            streamed_body,
+            f"data: {json.dumps({'content': '我们的服务时间为周一至周五 09:00 - 18:00。', 'blocks': [{'type': 'text', 'text': '我们的服务时间为周一至周五 09:00 - 18:00。'}, {'type': 'image', 'resourceId': image.id, 'resourceName': '营业时间图片', 'url': 'https://cdn.example.test/business-hours.png', 'missing': False}]})}\n\ndata: [DONE]\n\n",
+        )
         client_mock.assert_not_called()
         annotation.refresh_from_db()
         self.assertEqual(annotation.hit_count, 1)
@@ -727,6 +743,9 @@ class ChatApiTests(TenantTestMixin, APITestCase):
             messages,
             [
                 (ChatMessage.ROLE_USER, '营业时间。', [{'type': 'text', 'text': '营业时间。'}]),
-                (ChatMessage.ROLE_ASSISTANT, '我们的服务时间为周一至周五 09:00 - 18:00。', [{'type': 'text', 'text': '我们的服务时间为周一至周五 09:00 - 18:00。'}]),
+                (ChatMessage.ROLE_ASSISTANT, '我们的服务时间为周一至周五 09:00 - 18:00。', [
+                    {'type': 'text', 'text': '我们的服务时间为周一至周五 09:00 - 18:00。'},
+                    {'type': 'image', 'resourceId': image.id},
+                ]),
             ],
         )

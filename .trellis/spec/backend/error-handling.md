@@ -249,6 +249,26 @@ def _error_response(request, *, code: str, message: str, http_status: int, detai
   errors through.
 - This is a legacy pattern. New subsystems should use the global DRF envelope.
 
+## Streaming SSE generators
+
+`StreamingHttpResponse` async generators run in Django's async context. Any synchronous helper that can evaluate an ORM queryset must run before the generator is created, or be called through `sync_to_async(..., thread_sensitive=True)`.
+
+This matters for `POST /api/v1/ai-models/chat/conversations/{id}/send/`: `serialize_reply_blocks()` resolves referenced `Resource` rows. Calling it directly inside an async annotation SSE generator raises `SynchronousOnlyOperation` after the `200` response starts; ASGI closes the chunked stream and browsers surface the failure as `TypeError: network error`.
+
+```python
+# Wrong: the ORM query executes while the stream is iterated asynchronously.
+async def annotation_event_stream():
+    yield json.dumps({'blocks': serialize_reply_blocks(answer_blocks, tenant=tenant)})
+
+# Correct: serialize in the synchronous view path, then yield only prepared data.
+serialized_blocks = serialize_reply_blocks(answer_blocks, tenant=tenant, request=request)
+
+async def annotation_event_stream():
+    yield json.dumps({'blocks': serialized_blocks})
+```
+
+Regression tests that cover an async SSE generator must include a reply block with a tenant-scoped image or video resource, drain `response.streaming_content` asynchronously, and assert both the serialized media block and terminal `data: [DONE]` event. Text-only blocks do not evaluate the resource query and cannot catch this failure.
+
 ## WS / WebSocket Error Handling (Non-DRF)
 
 WebSocket consumers in `apps/devices/realtime.py`, `apps/ai_models/realtime_asr.py`,
