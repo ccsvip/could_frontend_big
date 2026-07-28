@@ -69,3 +69,36 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 3: 修复设备状态心跳错误映射
+
+**Date**: 2026-07-28
+**Task**: 修复设备状态心跳错误映射
+**Branch**: `dev`
+
+### Summary
+
+修复统一 WebSocket 的 device.status.ping 忽略 payload.deviceCode 问题；心跳现在按设备、公司、应用和智能体真实状态返回 1001-1009 错误，可为有效设备恢复状态会话，并补齐在线生命周期与重新校验回归测试。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `165e880` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
