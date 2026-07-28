@@ -161,6 +161,63 @@ class RuntimeDeviceError(Exception):
   `RUNTIME_ERROR_DEVICE_EXPIRED`, `RUNTIME_ERROR_AGENT_UNBOUND`,
   `RUNTIME_ERROR_APPLICATION_INACTIVE`.
 
+## Scenario: Device Status Ping Runtime Errors
+
+### 1. Scope / Trigger
+
+- Applies to Android `device.status.ping` commands on the unified `/ws/realtime/` connection.
+- A ping is a recoverable device heartbeat, not merely an assertion that `device.status.start` previously succeeded.
+
+### 2. Signatures
+
+- Command: `{"type":"device.status.ping","id":string,"payload":{"deviceCode":string,"requestId"?:string,"traceId"?:string}}`
+- Resolver: `get_ready_runtime_device(device_code: str) -> Device`
+
+### 3. Contracts
+
+- Read `payload.deviceCode`; accept `payload.device_code` for compatibility.
+- If the connection already owns a device-status session, a missing payload code may fall back to that session's device code.
+- A ready device without an active status session is marked online, attached to the connection, and receives `device.status.pong`.
+- Error responses preserve command `id` and include non-empty `requestId` / `traceId` correlation values.
+
+### 4. Validation & Error Matrix
+
+- Missing code -> `1001 DEVICE_CODE_REQUIRED`
+- Unknown code -> `1002 DEVICE_NOT_REGISTERED`
+- Unbound tenant -> `1004 DEVICE_TENANT_UNBOUND`
+- Disabled tenant -> `1005 DEVICE_TENANT_DISABLED`
+- Disabled device -> `1006 DEVICE_DISABLED`
+- Expired authorization -> `1007 DEVICE_EXPIRED`
+- Missing or inactive effective agent application -> `1008 DEVICE_AGENT_UNBOUND`
+- Inactive bound device application -> `1009 DEVICE_APPLICATION_INACTIVE`
+
+### 5. Good/Base/Bad Cases
+
+- Good: a ready device sends ping before start and receives `device.status.pong`; disconnect marks it offline.
+- Base: a started session sends ping and refreshes `last_heartbeat` after revalidation.
+- Bad: a disabled device sends ping and receives `1006`, never the protocol-only `1017` fallback.
+
+### 6. Tests Required
+
+- WebSocket integration tests must assert ready-device recovery, exact business error code/message propagation, request/trace correlation, and online-to-offline lifecycle.
+- Revalidate an established session after disabling its device and assert the next ping returns `1006` and clears online state.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```python
+if connection.device_status_device_id is None:
+    return REALTIME_DEVICE_STATUS_NOT_STARTED
+```
+
+#### Correct
+
+```python
+device = get_ready_runtime_device(payload_device_code)
+# Recover or refresh the connection, then return device.status.pong.
+```
+
 ### `AppUpdateSigningError` (service error — 503)
 
 **File:** `backend/apps/app_updates/signing.py`

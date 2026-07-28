@@ -25,7 +25,12 @@ from apps.ai_models import llm_services, realtime_asr, realtime_tts
 from apps.ai_models.models import RUNTIME_BACKEND_PLATFORM_LLM, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, TTSVoice
 from apps.ai_models.services import third_party_chatbots
 from apps.ai_models.services import tts as tts_services
-from apps.devices.services.runtime import RuntimeDeviceError, get_runtime_device, validate_runtime_application_active
+from apps.devices.services.runtime import (
+    RuntimeDeviceError,
+    get_ready_runtime_device,
+    get_runtime_device,
+    validate_runtime_application_active,
+)
 from apps.devices.services.voice_pipeline_logging import log_voice_pipeline
 from apps.devices.views import DeviceVoiceChatView
 from apps.devices.realtime import (
@@ -632,6 +637,25 @@ async def _handle_device_status_start(send, connection: RealtimeConnection, mess
         await _send_realtime_error(send, 'error', command_id, exc)
         return
 
+    await _activate_device_status_connection(connection, device, command_id)
+    await _send_json(
+        send,
+        {
+            'type': 'device.status.started',
+            'id': command_id,
+            'payload': {
+                'deviceCode': device.code,
+                'status': 'online',
+            },
+        },
+    )
+
+
+async def _activate_device_status_connection(
+    connection: RealtimeConnection,
+    device,
+    command_id,
+) -> None:
     connection.device_status_device_id = device.id
     connection.device_status_device_code = device.code
     connection.device_status_command_id = command_id
@@ -652,17 +676,6 @@ async def _handle_device_status_start(send, connection: RealtimeConnection, mess
             'status': 'online',
             'isEnabled': device.is_enabled,
         }
-    )
-    await _send_json(
-        send,
-        {
-            'type': 'device.status.started',
-            'id': command_id,
-            'payload': {
-                'deviceCode': device.code,
-                'status': 'online',
-            },
-        },
     )
 
 
@@ -2606,16 +2619,45 @@ async def _send_realtime_error(
 
 
 async def _handle_device_status_ping(send, connection: RealtimeConnection, message: dict[str, Any]) -> None:
-    if connection.device_status_device_id is None:
-        await _send_realtime_error(send, 'error', message.get('id'), 'REALTIME_DEVICE_STATUS_NOT_STARTED')
+    command_id = message.get('id')
+    payload = message.get('payload') if isinstance(message.get('payload'), dict) else {}
+    request_id = _request_id_from_payload(payload)
+    trace_id = _trace_id_from_payload(payload, request_id)
+    device_code = str(
+        payload.get('deviceCode')
+        or payload.get('device_code')
+        or connection.device_status_device_code
+        or ''
+    ).strip()
+
+    try:
+        device = await sync_to_async(get_ready_runtime_device, thread_sensitive=True)(device_code)
+        if connection.device_status_device_id != device.id:
+            await _clear_device_status(connection)
+            connection.close_device_events()
+            device = await sync_to_async(mark_device_online_for_websocket, thread_sensitive=True)(device.code)
+            await _activate_device_status_connection(connection, device, command_id)
+        else:
+            await sync_to_async(touch_device_for_websocket, thread_sensitive=True)(device.id)
+    except RuntimeDeviceError as exc:
+        if connection.device_status_device_id is not None and device_code == connection.device_status_device_code:
+            await _clear_device_status(connection)
+        await _send_realtime_error(
+            send,
+            'error',
+            command_id,
+            exc,
+            request_id=request_id,
+            trace_id=trace_id,
+        )
         return
-    await sync_to_async(touch_device_for_websocket, thread_sensitive=True)(connection.device_status_device_id)
+
     await _send_json(
         send,
         {
             'type': 'device.status.pong',
-            'id': message.get('id'),
-            'payload': {'deviceCode': connection.device_status_device_code},
+            'id': command_id,
+            'payload': {'deviceCode': device.code},
         },
     )
 
