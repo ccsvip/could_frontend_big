@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 3
+- **Total Sessions**: 4
 - **Last Active**: 2026-07-28
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~104 | Active |
+| `journal-1.md` | ~137 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 4 | 2026-07-28 | 修复百炼索引名称长度错误 | `ed89f7b` | `main` |
 | 3 | 2026-07-28 | 修复设备状态心跳错误映射 | `165e880` | `dev` |
 | 2 | 2026-07-28 | 修复智能体标注媒体流式断连 | `df3f3a7` | `dev` |
 | 1 | 2026-07-28 | 修复 Codex 与 OMP 的 GitNexus MCP 接入 | - | `dev` |

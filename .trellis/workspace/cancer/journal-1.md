@@ -102,3 +102,36 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 4: 修复百炼索引名称长度错误
+
+**Date**: 2026-07-28
+**Task**: 修复百炼索引名称长度错误
+**Branch**: `main`
+
+### Summary
+
+将百炼远端索引名改为基于知识库主键的稳定 base36 名称，并在 SDK 边界校验 1 到 20 字符；新增长名称、唯一性和非法边界回归测试。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ed89f7b` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
