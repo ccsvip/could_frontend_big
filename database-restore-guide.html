@@ -1162,17 +1162,35 @@ WHERE schemaname = 'public';</code></pre>
           </li>
 
           <li class="step">
-            <h3>先验证数据库，再启动项目</h3>
-            <p>不要看到 Navicat 进度条 100% 就直接启动。先执行“恢复验证”章节的 SQL，所有硬性项目通过后，才在目标虚拟机启动服务：</p>
+            <h3>先验证、固定基线并升级，再启动项目</h3>
+            <p>不要看到 Navicat 进度条 100% 就直接启动。先执行“恢复验证”章节的 SQL；对遗留 <code>.nb3</code> 成功恢复的库，先把 identity/serial 序列推进到已有数据的最大值，再立即生成 PostgreSQL 原生 baseline。随后在隔离临时库验证当前代码可以升级该 baseline，最后才升级真实目标库并启动服务。</p>
             <div class="code-block">
               <div class="code-label">目标虚拟机 / Linux Shell</div>
               <button class="copy-button" type="button" data-copy-target="navicat-start">复制</button>
               <pre id="navicat-start"><code>cd "/home/cancer/workspace/could_frontend"
+
+# 仅修复序列游标；不改表结构或业务数据。
+docker compose exec -T db psql -X -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "DO \$\$ DECLARE rec record; BEGIN FOR rec IN SELECT n.nspname, c.relname, a.attname, pg_get_serial_sequence(format('%I.%I', n.nspname, c.relname), a.attname) AS sequence_name FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace JOIN pg_attribute a ON a.attrelid = c.oid WHERE c.relkind = 'r' AND n.nspname = 'public' AND a.attnum &gt; 0 AND NOT a.attisdropped LOOP IF rec.sequence_name IS NOT NULL THEN EXECUTE format('SELECT setval(%L, COALESCE(MAX(%I), 1), MAX(%I) IS NOT NULL) FROM %I.%I', rec.sequence_name, rec.attname, rec.attname, rec.nspname, rec.relname); END IF; END LOOP; END \$\$;"
+
+# 在真实目标库尚未执行当前代码迁移前，固定 legacy baseline。
+docker compose exec -T db sh -lc 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc --no-owner --no-privileges -f /tmp/digital_human-baseline.dump'
+docker compose exec -T db sh -lc 'pg_restore -l /tmp/digital_human-baseline.dump | head -n 30'
+docker cp "$(docker compose ps -q db):/tmp/digital_human-baseline.dump" "/protected/path/digital_human-baseline.dump"
+
+# 在隔离临时库执行真实旧基线到当前代码的升级验证。
+BASELINE_DUMP="/protected/path/digital_human-baseline.dump" \
+  bash scripts/verify-db-restore-upgrade.sh
+
+# 确认验证成功后，才升级真正的恢复目标。
+docker compose run --rm --no-deps backend python manage.py migrate --noinput
+docker compose run --rm --no-deps backend python manage.py migrate --check
+docker compose run --rm --no-deps backend python manage.py makemigrations --check --dry-run
+
 docker compose up -d backend celery_worker celery_beat
 docker compose ps
 docker compose logs --no-color --tail 120 backend</code></pre>
             </div>
-            <p>后台日志中允许出现“没有待应用迁移”；不允许出现数据库连接失败、迁移表缺失、vector 类型不存在或唯一键冲突。</p>
+            <p>后台日志中允许出现“没有待应用迁移”；不允许出现数据库连接失败、迁移表缺失、vector 类型不存在或唯一键冲突。若任一步失败，保持写服务停止，重新创建空库并恢复；不要在半恢复库上手工补 DDL。</p>
           </li>
         </ol>
       </section>
@@ -1284,21 +1302,42 @@ docker compose exec -T db sh -lc 'psql -X -v ON_ERROR_STOP=1 -U "$POSTGRES_USER"
           </li>
 
           <li class="step">
-            <h3>完成验证并启动服务</h3>
-            <p>先执行下一章节的数据库验证 SQL；确认全部通过后再启动：</p>
+            <h3>在隔离库验证升级，再升级并启动目标库</h3>
+            <p>custom-format 归档就是 canonical baseline。先在隔离临时库验证“该归档 → 当前代码”的完整 Django 升级；验证脚本绝不触碰 <code>POSTGRES_DB</code>，也不启动 backend 或 Celery。</p>
             <div class="code-block">
               <div class="code-label">目标虚拟机 / Linux Shell</div>
               <button class="copy-button" type="button" data-copy-target="target-start">复制</button>
-              <pre id="target-start"><code>docker compose up -d backend celery_worker celery_beat
+              <pre id="target-start"><code>cd "/home/cancer/workspace/could_frontend"
 
+BASELINE_DUMP="$(pwd)/digital_human.dump" \
+  bash scripts/verify-db-restore-upgrade.sh
+
+# 验证通过后，才升级真正的恢复目标；仍不要启动写服务。
+docker compose run --rm --no-deps backend python manage.py migrate --noinput
+docker compose run --rm --no-deps backend python manage.py migrate --check
+docker compose run --rm --no-deps backend python manage.py makemigrations --check --dry-run
+
+docker compose up -d backend celery_worker celery_beat
 docker compose ps
-docker compose logs --no-color --tail 150 backend
-
-docker compose exec backend python manage.py migrate --check</code></pre>
+docker compose logs --no-color --tail 150 backend</code></pre>
             </div>
-            <p><code>migrate --check</code> 应返回 0 且不创建新迁移。恢复后的 <code>django_migrations</code> 已记录源库迁移状态，后台启动不应重新灌入默认权限。</p>
+            <p>任一验证、恢复或迁移命令失败时，保持服务停止，回到“删除旧库并创建空库”重新开始；不要在半恢复库上继续补执行。验证通过的 custom dump 必须转存到受保护路径或 CI 制品，不能提交 Git。</p>
+          </li>
+          <li class="step">
+            <h3>把 legacy Navicat 归档转换为未来升级基线</h3>
+            <p>旧的 Navicat <code>.nb3</code> 仅可作为一次性导入输入，不能由 <code>pg_restore</code> 读取，也不得提交 Git。按方案 A 成功导入空库后，必须在升级该真实目标库前生成 <code>pg_dump -Fc</code> baseline，并通过上面的隔离验证；之后每次新增、删除、重命名字段或编写数据迁移前，都重跑相同验证。</p>
+            <div class="code-block">
+              <div class="code-label">开发机或 CI / 仅需 db 服务 healthy</div>
+              <button class="copy-button" type="button" data-copy-target="baseline-upgrade-check">复制</button>
+              <pre id="baseline-upgrade-check"><code>cd "/home/cancer/workspace/could_frontend"
+
+BASELINE_DUMP="/protected/path/digital_human-baseline.dump" \
+  bash scripts/verify-db-restore-upgrade.sh</code></pre>
+            </div>
+            <p>脚本会创建独立的临时数据库，恢复 custom dump，并执行 <code>migrate --noinput</code>、<code>migrate --check</code> 与 <code>makemigrations --check --dry-run</code>；无论成功或失败均删除临时库和容器内复制的 archive。</p>
           </li>
         </ol>
+
 
         <details>
           <summary>必须保留 .sql 文件时怎么办？</summary>

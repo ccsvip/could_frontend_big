@@ -150,6 +150,10 @@ coverage/
 *.seed
 *.pid.lock
 
+# Database backups contain business data and must remain outside Git.
+*.nb3
+*.dump
+
 # Local docker-compose overrides (team-specific, not for VCS)
 docker-compose.override.yml
 docker-compose.override.yaml

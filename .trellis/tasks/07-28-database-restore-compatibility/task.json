@@ -1,7 +1,7 @@
 {
-  "id": "database-restore-guide",
-  "name": "database-restore-guide",
-  "title": "数据库备份恢复排障与操作手册",
+  "id": "database-restore-compatibility",
+  "name": "database-restore-compatibility",
+  "title": "数据库备份恢复兼容性",
   "description": "",
   "status": "in_progress",
   "dev_type": null,
@@ -10,7 +10,7 @@
   "priority": "P2",
   "creator": "cancer",
   "assignee": "cancer",
-  "createdAt": "2026-07-24",
+  "createdAt": "2026-07-28",
   "completedAt": null,
   "branch": null,
   "base_branch": "main",
@@ -18,10 +18,8 @@
   "commit": null,
   "pr_url": null,
   "subtasks": [],
-  "children": [
-    "07-28-database-restore-compatibility"
-  ],
-  "parent": null,
+  "children": [],
+  "parent": "07-24-database-restore-guide",
   "relatedFiles": [],
   "notes": "",
   "meta": {}

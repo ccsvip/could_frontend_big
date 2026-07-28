@@ -154,6 +154,27 @@ python manage.py migrate ai_models 0036 --fake
 python manage.py migrate --check
 ```
 
+### Scenario: Verify a Preserved Backup Can Upgrade
+
+#### 1. Scope / Trigger
+
+- Trigger: before merging any schema or data migration, when replacing a development database, or after a legacy Navicat restore.
+- Use a PostgreSQL custom-format archive created by `pg_dump -Fc`; Navicat `.nb3` is a one-time GUI import source, not an automated restore format.
+
+#### 2. Contracts
+
+- Keep the protected baseline archive outside Git and provide it with `BASELINE_DUMP`.
+- Run `bash scripts/verify-db-restore-upgrade.sh` with only Compose `db` healthy. It must restore into a generated `restore_verify_*` database, run `migrate --noinput`, `migrate --check`, and `makemigrations --check --dry-run`, then remove the database and copied archive on both success and failure.
+- The verifier must not connect to, restore into, migrate, or drop `POSTGRES_DB`; backend, Celery worker, and Celery beat remain stopped until the isolated verification succeeds.
+- After a Navicat restore, reconcile every public identity/serial sequence to its table maximum before any data migration can insert rows. A stale sequence can surface as a duplicate primary key in an unrelated `RunPython` migration.
+- A `DuplicateTable` migration record and stale sequences are independent forms of drift. Verify the full schema before `--fake`, then reconcile the affected sequence(s) before resuming migrations.
+
+#### 3. Validation
+
+- Smoke-test the verifier with a disposable `pg_dump -Fc` archive and assert no `restore_verify_*` database remains.
+- The actual acceptance path is the preserved old baseline upgrading to the current checkout; a current-schema dump proves script plumbing only.
+- Do not start Compose writers until the target database finishes `migrate --noinput`, `migrate --check`, and `makemigrations --check --dry-run`.
+
 (To be filled by the team)
 
 ---
