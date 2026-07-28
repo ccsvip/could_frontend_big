@@ -96,3 +96,12 @@ def validate_runtime_application_active(device: Device) -> None:
     application = getattr(device, 'application', None)
     if application is not None and not application.is_active:
         raise runtime_device_error(None, status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_APPLICATION_INACTIVE)
+
+
+def get_ready_runtime_device(device_code: str) -> Device:
+    device = get_runtime_device(device_code, require_tenant=True)
+    validate_runtime_application_active(device)
+    agent_application = device.effective_agent_application
+    if agent_application is None or not agent_application.runtime_config().get('is_active'):
+        raise runtime_device_error(None, status.HTTP_403_FORBIDDEN, RUNTIME_ERROR_AGENT_UNBOUND)
+    return device

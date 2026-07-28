@@ -3809,8 +3809,24 @@ class RealtimeDeviceStatusTests(TenantTestMixin, TestCase):
         device.refresh_from_db()
         self.assertEqual(device.status, Device.STATUS_OFFLINE)
 
-    def test_unified_realtime_websocket_device_status_ping_requires_started_session(self):
+    def test_unified_realtime_websocket_device_status_ping_starts_session_for_ready_device(self):
+        agent_application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Realtime Ping Agent',
+        )
+        self.application.agent_application = agent_application
+        self.application.save(update_fields=['agent_application', 'updated_at'])
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            name='Realtime Ping Device',
+            code='ANDROID-PING-READY',
+            status=Device.STATUS_OFFLINE,
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+
         async def run_websocket():
+            from asgiref.sync import sync_to_async
             from config.asgi import application
 
             communicator = ApplicationCommunicator(
@@ -3828,18 +3844,192 @@ class RealtimeDeviceStatusTests(TenantTestMixin, TestCase):
 
             await communicator.send_input({
                 'type': 'websocket.receive',
-                'text': json.dumps({'type': 'device.status.ping', 'id': 'device-ping-1'}),
+                'text': json.dumps({
+                    'type': 'device.status.ping',
+                    'id': 'device-ping-1',
+                    'payload': {
+                        'deviceCode': 'ANDROID-PING-READY',
+                        'requestId': 'request-device-ping-1',
+                        'traceId': 'trace-device-ping-1',
+                    },
+                }),
+            })
+            message = await communicator.receive_output(timeout=1)
+            self.assertEqual(
+                json.loads(message['text']),
+                {
+                    'type': 'device.status.pong',
+                    'id': 'device-ping-1',
+                    'payload': {'deviceCode': 'ANDROID-PING-READY'},
+                },
+            )
+
+            online_status = await sync_to_async(
+                lambda: Device.objects.get(id=device.id).status,
+                thread_sensitive=True,
+            )()
+            self.assertEqual(online_status, Device.STATUS_ONLINE)
+
+            await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+            await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+        device.refresh_from_db()
+        self.assertEqual(device.status, Device.STATUS_OFFLINE)
+
+    def test_unified_realtime_websocket_device_status_ping_returns_runtime_device_errors(self):
+        unbound_device = Device.objects.create(
+            name='Unbound Ping Device',
+            code='ANDROID-PING-UNBOUND',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+        disabled_device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            name='Disabled Ping Device',
+            code='ANDROID-PING-DISABLED',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+            is_enabled=False,
+        )
+        inactive_application = DeviceApplication.objects.create(
+            tenant=self.tenant,
+            name='Inactive Ping App',
+            code='inactive-ping-app',
+            is_active=False,
+        )
+        inactive_application_device = Device.objects.create(
+            tenant=self.tenant,
+            application=inactive_application,
+            name='Inactive Application Ping Device',
+            code='ANDROID-PING-INACTIVE-APP',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+        unbound_agent_device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            name='Unbound Agent Ping Device',
+            code='ANDROID-PING-UNBOUND-AGENT',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+        scenarios = (
+            (unbound_device.code, '1004', '设备未绑定公司'),
+            (disabled_device.code, '1006', '设备已停用'),
+            (inactive_application_device.code, '1009', '设备绑定应用未启用'),
+            (unbound_agent_device.code, '1008', '设备未绑定可用智能体'),
+        )
+
+        async def run_websocket():
+            from config.asgi import application
+
+            for index, (device_code, error_code, error_message) in enumerate(scenarios, start=1):
+                communicator = ApplicationCommunicator(
+                    application,
+                    {
+                        'type': 'websocket',
+                        'path': '/ws/realtime/',
+                        'query_string': b'',
+                        'headers': [],
+                    },
+                )
+                await communicator.send_input({'type': 'websocket.connect'})
+                self.assertEqual((await communicator.receive_output(timeout=1))['type'], 'websocket.accept')
+
+                await communicator.send_input({
+                    'type': 'websocket.receive',
+                    'text': json.dumps({
+                        'type': 'device.status.ping',
+                        'id': f'device-ping-error-{index}',
+                        'payload': {
+                            'deviceCode': device_code,
+                            'requestId': f'request-device-ping-error-{index}',
+                            'traceId': f'trace-device-ping-error-{index}',
+                        },
+                    }),
+                })
+                message = await communicator.receive_output(timeout=1)
+                self.assertEqual(
+                    json.loads(message['text']),
+                    {
+                        'type': 'error',
+                        'id': f'device-ping-error-{index}',
+                        'requestId': f'request-device-ping-error-{index}',
+                        'traceId': f'trace-device-ping-error-{index}',
+                        'error': {'code': error_code, 'message': error_message},
+                    },
+                )
+
+                await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
+                await communicator.wait(timeout=1)
+
+        async_to_sync(run_websocket)()
+
+    def test_unified_realtime_websocket_device_status_ping_revalidates_started_session(self):
+        agent_application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            name='Realtime Revalidation Agent',
+        )
+        self.application.agent_application = agent_application
+        self.application.save(update_fields=['agent_application', 'updated_at'])
+        device = Device.objects.create(
+            tenant=self.tenant,
+            application=self.application,
+            name='Realtime Revalidation Device',
+            code='ANDROID-PING-REVALIDATE',
+            authorization_type=Device.AUTHORIZATION_PERMANENT,
+        )
+
+        async def run_websocket():
+            from asgiref.sync import sync_to_async
+            from config.asgi import application
+
+            communicator = ApplicationCommunicator(
+                application,
+                {
+                    'type': 'websocket',
+                    'path': '/ws/realtime/',
+                    'query_string': b'',
+                    'headers': [],
+                },
+            )
+            await communicator.send_input({'type': 'websocket.connect'})
+            self.assertEqual((await communicator.receive_output(timeout=1))['type'], 'websocket.accept')
+
+            await communicator.send_input({
+                'type': 'websocket.receive',
+                'text': json.dumps({
+                    'type': 'device.status.start',
+                    'id': 'device-status-revalidate',
+                    'payload': {'deviceCode': device.code},
+                }),
+            })
+            started = await communicator.receive_output(timeout=1)
+            self.assertEqual(json.loads(started['text'])['type'], 'device.status.started')
+
+            await sync_to_async(
+                lambda: Device.objects.filter(id=device.id).update(is_enabled=False),
+                thread_sensitive=True,
+            )()
+            await communicator.send_input({
+                'type': 'websocket.receive',
+                'text': json.dumps({
+                    'type': 'device.status.ping',
+                    'id': 'device-ping-revalidate',
+                    'payload': {
+                        'deviceCode': device.code,
+                        'requestId': 'request-device-ping-revalidate',
+                        'traceId': 'trace-device-ping-revalidate',
+                    },
+                }),
             })
             message = await communicator.receive_output(timeout=1)
             self.assertEqual(
                 json.loads(message['text']),
                 {
                     'type': 'error',
-                    'id': 'device-ping-1',
-                    'error': {
-                        'code': '1017',
-                        'message': '设备状态会话尚未启动',
-                    },
+                    'id': 'device-ping-revalidate',
+                    'requestId': 'request-device-ping-revalidate',
+                    'traceId': 'trace-device-ping-revalidate',
+                    'error': {'code': '1006', 'message': '设备已停用'},
                 },
             )
 
@@ -3847,6 +4037,8 @@ class RealtimeDeviceStatusTests(TenantTestMixin, TestCase):
             await communicator.wait(timeout=1)
 
         async_to_sync(run_websocket)()
+        device.refresh_from_db()
+        self.assertEqual(device.status, Device.STATUS_OFFLINE)
 
     def test_unified_realtime_websocket_filters_other_tenant_device_events(self):
         other_tenant = Tenant.objects.create(name='Realtime Other Tenant', code='realtime-other-tenant')
