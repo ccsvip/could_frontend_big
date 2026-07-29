@@ -251,7 +251,7 @@ Managed by Trellis. Edits outside this block are preserved; edits inside may be 
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **could_frontend_big** (9196 symbols, 17914 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **could_frontend_big** (9300 symbols, 18099 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
 
@@ -290,5 +290,25 @@ This project is indexed by GitNexus as **could_frontend_big** (9196 symbols, 179
 | Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
 | Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
+| Work in the Tests area (585 symbols) | `.claude/skills/generated/tests/SKILL.md` |
+| Work in the Services area (281 symbols) | `.claude/skills/generated/services/SKILL.md` |
+| Work in the Ai_models area (277 symbols) | `.claude/skills/generated/ai-models/SKILL.md` |
+| Work in the Config area (160 symbols) | `.claude/skills/generated/config/SKILL.md` |
+| Work in the Modules area (134 symbols) | `.claude/skills/generated/modules/SKILL.md` |
+| Work in the Resources area (129 symbols) | `.claude/skills/generated/resources/SKILL.md` |
+| Work in the Command-management area (126 symbols) | `.claude/skills/generated/command-management/SKILL.md` |
+| Work in the Devices area (123 symbols) | `.claude/skills/generated/devices/SKILL.md` |
+| Work in the Application-management area (120 symbols) | `.claude/skills/generated/application-management/SKILL.md` |
+| Work in the Accounts area (85 symbols) | `.claude/skills/generated/accounts/SKILL.md` |
+| Work in the Knowledge_base area (82 symbols) | `.claude/skills/generated/knowledge-base/SKILL.md` |
+| Work in the Device-chat area (53 symbols) | `.claude/skills/generated/device-chat/SKILL.md` |
+| Work in the Router area (49 symbols) | `.claude/skills/generated/router/SKILL.md` |
+| Work in the Resource-management area (45 symbols) | `.claude/skills/generated/resource-management/SKILL.md` |
+| Work in the Knowledge-base area (38 symbols) | `.claude/skills/generated/knowledge-base-2/SKILL.md` |
+| Work in the Asr-management area (33 symbols) | `.claude/skills/generated/asr-management/SKILL.md` |
+| Work in the Views area (30 symbols) | `.claude/skills/generated/views/SKILL.md` |
+| Work in the Device-management area (24 symbols) | `.claude/skills/generated/device-management/SKILL.md` |
+| Work in the Third-party-chatbot-settings area (22 symbols) | `.claude/skills/generated/third-party-chatbot-settings/SKILL.md` |
+| Work in the App_updates area (22 symbols) | `.claude/skills/generated/app-updates/SKILL.md` |
 
 <!-- gitnexus:end -->
