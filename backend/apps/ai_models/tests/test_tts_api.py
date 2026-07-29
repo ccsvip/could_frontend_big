@@ -1,4 +1,5 @@
 import base64
+import asyncio
 import json
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -12,8 +13,9 @@ from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import TTSProvider, TTSVoice, TenantTTSSettings
-from apps.ai_models.services import tts as tts_services
+from apps.ai_models.credential_crypto import decrypt_credential
+from apps.ai_models.models import CosyVoiceSettings, TTSProvider, TTSVoice, TenantTTSSettings
+from apps.ai_models.services import cosyvoice as cosyvoice_services, tts as tts_services
 from apps.devices.models import Device
 from apps.tenants.models import Tenant
 from apps.tenants.test_utils import TenantTestMixin
@@ -104,6 +106,141 @@ class ErrorTTSUpstream:
         except StopIteration:
             raise StopAsyncIteration
 
+
+class CosyVoiceTTSUpstream:
+    def __init__(self):
+        self.messages = []
+        self._events = asyncio.Queue()
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+    async def send(self, message):
+        payload = json.loads(message)
+        self.messages.append(payload)
+        header = payload['header']
+        if header['action'] == 'run-task':
+            await self._events.put(json.dumps({'type': 'session.finished'}))
+            await self._events.put(json.dumps({
+                'header': {'task_id': header['task_id'], 'event': 'task-started', 'attributes': {}},
+                'payload': {},
+            }))
+        elif header['action'] == 'finish-task':
+            await self._events.put(json.dumps({'type': 'session.finished'}))
+            await self._events.put(b'\x01\x02')
+            await self._events.put(b'\x03\x04')
+            await self._events.put(json.dumps({
+                'header': {'task_id': header['task_id'], 'event': 'task-finished', 'attributes': {}},
+                'payload': {'usage': {'characters': 6}},
+            }))
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        return await self._events.get()
+
+
+class FailedCosyVoiceTTSUpstream(CosyVoiceTTSUpstream):
+    async def send(self, message):
+        payload = json.loads(message)
+        self.messages.append(payload)
+        header = payload['header']
+        if header['action'] == 'run-task':
+            await self._events.put(json.dumps({
+                'header': {
+                    'task_id': header['task_id'],
+                    'event': 'task-failed',
+                    'error_code': 'InvalidParameter',
+                    'error_message': 'TTS input is invalid.',
+                    'attributes': {},
+                },
+                'payload': {},
+            }))
+
+
+class CosyVoiceTTSServiceTests(TestCase):
+    def _config(self):
+        return SimpleNamespace(
+            provider_code='cosyvoice',
+            is_active=True,
+            api_key='test-api-key',
+            base_url='wss://configured.example/api-ws/v1/inference',
+            model='cosyvoice-v3.5-plus',
+            sample_rate=24000,
+        )
+
+    @patch('apps.ai_models.services.tts.websockets.connect')
+    def test_cosyvoice_uses_task_protocol_and_aggregates_binary_pcm(self, connect):
+        upstream = CosyVoiceTTSUpstream()
+        connect.return_value = upstream
+        config = self._config()
+
+        pcm = tts_services.synthesize_tts_pcm(
+            text='第一句。第二句。',
+            voice=SimpleNamespace(voice_code='custom-voice'),
+            config=config,
+        )
+
+        self.assertEqual(pcm, b'\x01\x02\x03\x04')
+        connect.assert_called_once_with(
+            config.base_url,
+            additional_headers=[('Authorization', 'Bearer test-api-key')],
+            user_agent_header='solin-admin/1.0',
+            open_timeout=10,
+            ping_interval=20,
+            ping_timeout=20,
+            max_size=8 * 1024 * 1024,
+        )
+        actions = [message['header']['action'] for message in upstream.messages]
+        self.assertEqual(actions, ['run-task', 'continue-task', 'continue-task', 'finish-task'])
+        task_id = upstream.messages[0]['header']['task_id']
+        self.assertRegex(task_id, r'^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')
+        self.assertTrue(all(message['header']['task_id'] == task_id for message in upstream.messages))
+        self.assertEqual(
+            upstream.messages[0],
+            {
+                'header': {'action': 'run-task', 'task_id': task_id, 'streaming': 'duplex'},
+                'payload': {
+                    'task_group': 'audio',
+                    'task': 'tts',
+                    'function': 'SpeechSynthesizer',
+                    'model': 'cosyvoice-v3.5-plus',
+                    'input': {},
+                    'parameters': {
+                        'text_type': 'PlainText',
+                        'voice': 'custom-voice',
+                        'format': 'pcm',
+                        'sample_rate': 24000,
+                        'volume': 50,
+                        'rate': 1.0,
+                        'pitch': 1.0,
+                    },
+                },
+            },
+        )
+        self.assertEqual(
+            [message['payload'] for message in upstream.messages[1:3]],
+            [{'input': {'text': '第一句。'}}, {'input': {'text': '第二句。'}}],
+        )
+        self.assertEqual(upstream.messages[3]['payload'], {'input': {}})
+
+    @patch('apps.ai_models.services.tts.websockets.connect')
+    def test_cosyvoice_task_failed_raises_official_error(self, connect):
+        upstream = FailedCosyVoiceTTSUpstream()
+        connect.return_value = upstream
+
+        with self.assertRaisesRegex(RuntimeError, r'^InvalidParameter: TTS input is invalid\.$'):
+            tts_services.synthesize_tts_pcm(
+                text='失败文本。',
+                voice=SimpleNamespace(voice_code='custom-voice'),
+                config=self._config(),
+            )
+
+        self.assertEqual([message['header']['action'] for message in upstream.messages], ['run-task'])
 
 class TTSRealtimeTests(TenantTestMixin, TestCase):
     def setUp(self):
@@ -700,3 +837,196 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response['X-TTS-Voice'], 'Elias')
         self.assertEqual(synthesize_tts_pcm.call_args.kwargs['voice'].id, other_voice.id)
+
+
+class CosyVoiceApiTests(APITestCase):
+    settings_path = '/api/v1/settings/tts/cosyvoice/'
+    websocket_url = 'wss://workspace-123.cn-beijing.maas.aliyuncs.com/api-ws/v1/inference'
+    customization_url = 'https://workspace-123.cn-beijing.maas.aliyuncs.com/api/v1/services/audio/tts/customization'
+
+    def setUp(self):
+        self.superuser = User.objects.create_superuser(username='cosyvoice-root', password='test123456')
+
+    def authenticate_superuser(self):
+        self.client.force_authenticate(user=self.superuser)
+
+    def test_dedicated_settings_are_superuser_only_and_generic_route_rejects_cosyvoice(self):
+        self.assertEqual(self.client.get(self.settings_path).status_code, status.HTTP_401_UNAUTHORIZED)
+        self.authenticate_superuser()
+
+        response = self.client.get(self.settings_path)
+        generic_response = self.client.get('/api/v1/settings/tts/providers/cosyvoice/')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['model'], 'cosyvoice-v3.5-plus')
+        self.assertEqual(generic_response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_settings_mask_key_and_accept_only_cosyvoice_default_voice(self):
+        self.authenticate_superuser()
+        qwen_voice = TTSVoice.objects.get(provider__code='aliyun', voice_code='Cherry')
+
+        rejected = self.client.patch(self.settings_path, {'defaultVoiceId': qwen_voice.id}, format='json')
+        updated = self.client.patch(
+            self.settings_path,
+            {
+                'apiKey': 'cosyvoice-secret',
+                'websocketUrl': self.websocket_url,
+                'customizationUrl': self.customization_url,
+                'defaultTestText': 'CosyVoice 试听文本。',
+            },
+            format='json',
+        )
+
+        self.assertEqual(rejected.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(updated.status_code, status.HTTP_200_OK)
+        self.assertEqual(updated.data['apiKeyMasked'], '****')
+        self.assertTrue(updated.data['apiKeyConfigured'])
+        self.assertTrue(updated.data['configured'])
+        self.assertNotIn('cosyvoice-secret', str(updated.data))
+
+        settings_obj = CosyVoiceSettings.objects.get(provider__code='cosyvoice')
+        self.assertNotEqual(settings_obj.api_key_encrypted, 'cosyvoice-secret')
+        self.assertEqual(decrypt_credential(settings_obj.api_key_encrypted), 'cosyvoice-secret')
+
+    def test_settings_require_official_beijing_service_urls(self):
+        self.authenticate_superuser()
+
+        insecure_websocket = self.client.patch(
+            self.settings_path,
+            {'websocketUrl': 'ws://workspace-123.cn-beijing.maas.aliyuncs.com/api-ws/v1/inference'},
+            format='json',
+        )
+        insecure_customization = self.client.patch(
+            self.settings_path,
+            {'customizationUrl': 'http://workspace-123.cn-beijing.maas.aliyuncs.com/api/v1/services/audio/tts/customization'},
+            format='json',
+        )
+
+        self.assertEqual(insecure_websocket.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('北京地域端点', insecure_websocket.data['message'])
+        self.assertEqual(insecure_customization.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('北京地域端点', insecure_customization.data['message'])
+        invalid_endpoints = {
+            'websocketUrl': [
+                f'{self.websocket_url}/',
+                f'{self.websocket_url}?debug=true',
+                f'{self.websocket_url}#fragment',
+                f'{self.websocket_url} ',
+                'wss://workspace-123.cn-beijing.maas.aliyuncs.com:443/api-ws/v1/inference',
+                'wss://workspace-123@evil.example/api-ws/v1/inference',
+                'wss://workspace-123.cn-beijing.maas.aliyuncs.com.evil.example/api-ws/v1/inference',
+            ],
+            'customizationUrl': [
+                f'{self.customization_url}/',
+                f'{self.customization_url}?debug=true',
+                f'{self.customization_url}#fragment',
+                f'{self.customization_url} ',
+                'https://workspace-123.cn-beijing.maas.aliyuncs.com:443/api/v1/services/audio/tts/customization',
+                'https://workspace-123@evil.example/api/v1/services/audio/tts/customization',
+                'https://workspace-123.cn-beijing.maas.aliyuncs.com.evil.example/api/v1/services/audio/tts/customization',
+            ],
+        }
+        for field, urls in invalid_endpoints.items():
+            for url in urls:
+                with self.subTest(field=field, url=url):
+                    response = self.client.patch(self.settings_path, {field: url}, format='json')
+
+                    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_runtime_rejects_whitespace_padded_websocket_endpoint(self):
+        settings_obj = cosyvoice_services.get_cosyvoice_settings()
+        settings_obj.websocket_url = f'{self.websocket_url} '
+
+        with self.assertRaises(cosyvoice_services.CosyVoiceCustomizationError) as error:
+            cosyvoice_services.get_effective_cosyvoice_tts_config(settings_obj)
+
+        self.assertEqual(error.exception.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+    def test_settings_reject_singapore_customization_url_without_replacing_beijing_configuration(self):
+        self.authenticate_superuser()
+        configured = self.client.patch(
+            self.settings_path,
+            {
+                'apiKey': 'cosyvoice-secret',
+                'websocketUrl': self.websocket_url,
+                'customizationUrl': self.customization_url,
+            },
+            format='json',
+        )
+        rejected = self.client.patch(
+            self.settings_path,
+            {
+                'customizationUrl': (
+                    'https://workspace-123.ap-southeast-1.maas.aliyuncs.com/'
+                    'api/v1/services/audio/tts/customization'
+                ),
+            },
+            format='json',
+        )
+        current = self.client.get(self.settings_path)
+
+        self.assertEqual(configured.status_code, status.HTTP_200_OK)
+        self.assertTrue(configured.data['configured'])
+        self.assertEqual(rejected.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('北京地域端点', rejected.data['message'])
+        self.assertEqual(current.status_code, status.HTTP_200_OK)
+        self.assertEqual(current.data['customizationUrl'], self.customization_url)
+        self.assertTrue(current.data['configured'])
+
+    def test_unprofiled_cosyvoice_voice_cannot_be_exposed_or_selected(self):
+        self.authenticate_superuser()
+        self.client.get(self.settings_path)
+        provider = TTSProvider.objects.get(code='cosyvoice')
+        unprofiled_voice = TTSVoice.objects.create(
+            provider=provider,
+            display_name='无效音色',
+            voice_code='unprofiled-cosyvoice',
+        )
+
+        set_default = self.client.patch(self.settings_path, {'defaultVoiceId': unprofiled_voice.id}, format='json')
+        settings_response = self.client.get(self.settings_path)
+        detail_response = self.client.patch(f'{self.settings_path}voices/{unprofiled_voice.id}/', {'isActive': False}, format='json')
+
+        self.assertEqual(set_default.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(settings_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(settings_response.data['voices'], [])
+        self.assertEqual(detail_response.status_code, status.HTTP_404_NOT_FOUND)
+
+    @patch('apps.ai_models.services.cosyvoice._post_customization')
+    def test_enroll_https_voice_persists_only_custom_profile(self, post_customization):
+        self.authenticate_superuser()
+        post_customization.return_value = {'output': {'voice_id': 'cv-enrolled-1'}}
+
+        insecure = self.client.post(f'{self.settings_path}voices/enroll/', {'displayName': '测试音色', 'sourceAudioUrl': 'http://example.com/source.wav'}, format='json')
+        response = self.client.post(f'{self.settings_path}voices/enroll/', {'displayName': '测试音色', 'sourceAudioUrl': 'https://example.com/source.wav'}, format='json')
+
+        self.assertEqual(insecure.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        voice = TTSVoice.objects.get(voice_code='cv-enrolled-1')
+        self.assertEqual(voice.provider.code, 'cosyvoice')
+        self.assertEqual(voice.cosyvoice_profile.source_type, 'enroll')
+        self.assertEqual(voice.cosyvoice_profile.source_audio_url, 'https://example.com/source.wav')
+        self.assertEqual(post_customization.call_args.args[1]['input']['target_model'], 'cosyvoice-v3.5-plus')
+
+    @patch('apps.ai_models.services.cosyvoice._post_customization')
+    def test_design_and_delete_use_cosyvoice_remote_voice(self, post_customization):
+        self.authenticate_superuser()
+        post_customization.return_value = {'output': {'voice_id': 'cv-designed-1'}}
+
+        created = self.client.post(f'{self.settings_path}voices/design/', {'displayName': 'WarmVoice', 'description': '温暖、自然的女声', 'language': 'zh'}, format='json')
+        voice = TTSVoice.objects.get(voice_code='cv-designed-1')
+        self.assertEqual(created.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(voice.cosyvoice_profile.source_type, 'design')
+        self.assertEqual(
+            post_customization.call_args.args[1]['input']['language_hints'],
+            ['zh'],
+        )
+        deleted = self.client.delete(f'{self.settings_path}voices/{voice.id}/')
+        self.assertEqual(deleted.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(TTSVoice.objects.filter(id=voice.id).exists())
+        self.assertEqual(
+            post_customization.call_args.args[1]['input'],
+            {'action': 'delete_voice', 'voice_id': 'cv-designed-1'},
+        )
+

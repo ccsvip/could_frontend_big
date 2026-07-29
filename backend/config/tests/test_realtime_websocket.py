@@ -1479,6 +1479,52 @@ class RealtimeWebSocketTests(SimpleTestCase):
 
         async_to_sync(run_websocket)()
 
+    def test_realtime_tts_rejects_cosyvoice_provider_in_both_command_paths(self):
+        async def run_cases():
+            from config.realtime import _run_agent_tts_stream, _run_tts_session_body
+
+            sent = []
+
+            async def send(message):
+                sent.append(message)
+
+            with patch(
+                'apps.ai_models.realtime_tts.resolve_tts_realtime_connection',
+                return_value={'user_id': 1, 'tenant_id': 2, 'is_superuser': False},
+            ):
+                await _run_agent_tts_stream(
+                    send,
+                    'agent-cosyvoice',
+                    asyncio.Queue(),
+                    'COSYVOICE-DEVICE',
+                    'request-agent-cosyvoice',
+                    'trace-agent-cosyvoice',
+                    '你好',
+                    {'providerCode': 'cosyvoice'},
+                )
+                await _run_tts_session_body(
+                    send,
+                    'session-cosyvoice',
+                    {
+                        'payload': {
+                            'token': 'test-token',
+                            'tenantId': 2,
+                            'providerCode': 'cosyvoice',
+                            'requestId': 'request-session-cosyvoice',
+                            'traceId': 'trace-session-cosyvoice',
+                        },
+                    },
+                )
+
+            self.assertEqual(len(sent), 2)
+            for message in sent:
+                payload = json.loads(message['text'])
+                self.assertEqual(payload['type'], 'tts.error')
+                self.assertEqual(payload['error']['code'], '1024')
+
+        async_to_sync(run_cases)()
+
+
 
 class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
     def setUp(self):

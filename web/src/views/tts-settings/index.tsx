@@ -396,7 +396,7 @@ export const TtsSettingsPage = () => {
               key={provider.code}
               hoverable
               className="rounded-xl border border-slate-100 shadow-card hover:shadow-card-hover transition-all duration-200"
-              onClick={() => navigate(`/settings/tts/${provider.code}`)}
+              onClick={() => navigate(provider.code === 'cosyvoice' ? '/settings/tts/cosyvoice' : `/settings/tts/${provider.code}`)}
             >
               <div className="flex h-full flex-col gap-4">
                 <div className="flex items-start justify-between gap-3">

@@ -622,6 +622,61 @@ class TTSVoice(models.Model):
     def __str__(self):
         return f'{self.display_name} ({self.voice_code})'
 
+class CosyVoiceSettings(models.Model):
+    provider = models.OneToOneField(
+        TTSProvider,
+        on_delete=models.CASCADE,
+        related_name='cosyvoice_settings',
+        verbose_name='CosyVoice 供应商',
+    )
+    api_key_encrypted = models.CharField('加密 API Key', max_length=1024, blank=True, default='')
+    websocket_url = models.CharField('WebSocket URL', max_length=512, blank=True, default='')
+    customization_url = models.CharField('音色定制 API URL', max_length=512, blank=True, default='')
+    default_voice = models.ForeignKey(
+        TTSVoice,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+        verbose_name='默认音色',
+    )
+    default_test_text = models.TextField(
+        '默认测试文本',
+        default='对吧~我就特别喜欢这种超市，尤其是过年的时候去逛超市就会觉得超级超级开心！想买好多好多的东西呢！',
+    )
+    is_active = models.BooleanField('是否启用', default=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = 'CosyVoice 设置'
+        verbose_name_plural = 'CosyVoice 设置'
+
+
+class CosyVoiceProfile(models.Model):
+    SOURCE_ENROLL = 'enroll'
+    SOURCE_DESIGN = 'design'
+    SOURCE_CHOICES = [
+        (SOURCE_ENROLL, '音色复刻'),
+        (SOURCE_DESIGN, '音色设计'),
+    ]
+
+    voice = models.OneToOneField(
+        TTSVoice,
+        on_delete=models.CASCADE,
+        related_name='cosyvoice_profile',
+        verbose_name='CosyVoice 音色',
+    )
+    source_type = models.CharField('创建方式', max_length=16, choices=SOURCE_CHOICES)
+    source_audio_url = models.URLField('源音频 URL', max_length=512, blank=True, default='')
+    description = models.TextField('设计描述', blank=True, default='')
+    language = models.CharField('语言', max_length=32, blank=True, default='')
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = 'CosyVoice 音色配置'
+        verbose_name_plural = 'CosyVoice 音色配置'
+
 
 class TenantTTSSettings(models.Model):
     tenant = models.OneToOneField(

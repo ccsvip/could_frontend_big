@@ -1908,6 +1908,9 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
     provider = await sync_to_async(realtime_tts.resolve_tts_provider, thread_sensitive=True)(
         payload.get('providerCode'),
     )
+    if provider is None:
+        await _send_realtime_error(send, 'tts.error', command_id, 'TTS_NOT_READY', request_id=request_id, trace_id=trace_id)
+        return
     config = await sync_to_async(realtime_tts.get_effective_tts_config, thread_sensitive=True)(provider)
     if not realtime_tts.is_tts_configured(config):
         await _send_realtime_error(send, 'tts.error', command_id, 'TTS_NOT_READY', request_id=request_id, trace_id=trace_id)
@@ -2413,6 +2416,9 @@ async def _run_tts_session_body(send, command_id, message: dict[str, Any]) -> No
     provider = await sync_to_async(realtime_tts.resolve_tts_provider, thread_sensitive=True)(
         payload.get('providerCode'),
     )
+    if provider is None:
+        await _send_realtime_error(send, 'tts.error', command_id, 'TTS_NOT_READY', request_id=request_id, trace_id=trace_id)
+        return
     config = await sync_to_async(realtime_tts.get_effective_tts_config, thread_sensitive=True)(provider)
     if not realtime_tts.is_tts_configured(config):
         await _send_realtime_error(send, 'tts.error', command_id, 'TTS_NOT_READY', request_id=request_id, trace_id=trace_id)

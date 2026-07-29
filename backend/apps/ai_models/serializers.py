@@ -12,6 +12,12 @@ from .llm_services import (
 )
 from .services.tts import get_effective_tts_config, mask_api_key as mask_tts_api_key
 from .services import third_party_chatbots, tts as tts_services
+from .services.cosyvoice import (
+    COSYVOICE_CUSTOMIZATION_URL_ERROR,
+    COSYVOICE_WEBSOCKET_URL_ERROR,
+    is_valid_cosyvoice_customization_url,
+    is_valid_cosyvoice_websocket_url,
+)
 from .models import (
     ASRConfig,
     ASRFillerWordSet,
@@ -40,6 +46,7 @@ from .models import (
     ThirdPartyChatbotIntegration,
     ThirdPartyChatbotProvider,
     TTSProvider,
+    CosyVoiceSettings,
     TTSVoice,
     default_agent_opening_message,
     default_tts_session_config,
@@ -838,6 +845,108 @@ class TTSVoiceWriteSerializer(serializers.ModelSerializer):
         fields = ['displayName', 'voiceCode', 'gender', 'avatarPath', 'isActive', 'isVisible', 'sortOrder']
 
 
+
+class CosyVoiceVoiceSerializer(TTSVoiceSerializer):
+    sourceType = serializers.CharField(source='cosyvoice_profile.source_type', read_only=True)
+    sourceAudioUrl = serializers.CharField(source='cosyvoice_profile.source_audio_url', read_only=True)
+    description = serializers.CharField(source='cosyvoice_profile.description', read_only=True)
+    language = serializers.CharField(source='cosyvoice_profile.language', read_only=True)
+
+    class Meta(TTSVoiceSerializer.Meta):
+        fields = TTSVoiceSerializer.Meta.fields + ['sourceType', 'sourceAudioUrl', 'description', 'language']
+
+
+class CosyVoiceSettingsSerializer(serializers.ModelSerializer):
+    apiKeyMasked = serializers.SerializerMethodField()
+    apiKeyConfigured = serializers.SerializerMethodField()
+    websocketUrl = serializers.CharField(source='websocket_url')
+    customizationUrl = serializers.CharField(source='customization_url')
+    isActive = serializers.BooleanField(source='is_active')
+    defaultVoiceId = serializers.IntegerField(source='default_voice_id', allow_null=True)
+    defaultTestText = serializers.CharField(source='default_test_text')
+    configured = serializers.SerializerMethodField()
+    model = serializers.SerializerMethodField()
+    voices = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CosyVoiceSettings
+        fields = ['apiKeyMasked', 'apiKeyConfigured', 'websocketUrl', 'customizationUrl', 'model', 'isActive', 'defaultVoiceId', 'defaultTestText', 'configured', 'voices']
+        read_only_fields = fields
+
+    @extend_schema_field(serializers.CharField())
+    def get_apiKeyMasked(self, obj):
+        return '****' if obj.api_key_encrypted else ''
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_apiKeyConfigured(self, obj):
+        return bool(obj.api_key_encrypted)
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_configured(self, obj):
+        return bool(
+            obj.is_active
+            and obj.api_key_encrypted
+            and is_valid_cosyvoice_websocket_url(obj.websocket_url)
+            and is_valid_cosyvoice_customization_url(obj.customization_url)
+        )
+
+    @extend_schema_field(serializers.CharField())
+    def get_model(self, obj):
+        return 'cosyvoice-v3.5-plus'
+
+    @extend_schema_field(CosyVoiceVoiceSerializer(many=True))
+    def get_voices(self, obj):
+        return CosyVoiceVoiceSerializer(
+            obj.provider.voices.filter(cosyvoice_profile__isnull=False).select_related('cosyvoice_profile').order_by('sort_order', 'id'),
+            many=True,
+            context={'request': self.context.get('request'), 'default_voice_id': obj.default_voice_id},
+        ).data
+
+
+class CosyVoiceSettingsWriteSerializer(serializers.Serializer):
+    apiKey = serializers.CharField(required=False, write_only=True, allow_blank=True, max_length=512)
+    websocketUrl = serializers.CharField(required=False, max_length=512, allow_blank=True, trim_whitespace=False)
+    customizationUrl = serializers.CharField(required=False, max_length=512, allow_blank=True, trim_whitespace=False)
+    isActive = serializers.BooleanField(required=False)
+    defaultVoiceId = serializers.IntegerField(required=False, allow_null=True)
+    defaultTestText = serializers.CharField(required=False, allow_blank=False, max_length=2000)
+
+    def validate_websocketUrl(self, value: str) -> str:
+        if value and not is_valid_cosyvoice_websocket_url(value):
+            raise serializers.ValidationError(COSYVOICE_WEBSOCKET_URL_ERROR)
+        return value
+
+    def validate_customizationUrl(self, value: str) -> str:
+        if value and not is_valid_cosyvoice_customization_url(value):
+            raise serializers.ValidationError(COSYVOICE_CUSTOMIZATION_URL_ERROR)
+        return value
+
+
+class CosyVoiceEnrollSerializer(serializers.Serializer):
+    displayName = serializers.CharField(source='display_name', max_length=128)
+    sourceAudioUrl = serializers.URLField(source='source_audio_url', max_length=512)
+    avatarPath = serializers.CharField(source='avatar_path', required=False, max_length=255, allow_blank=True)
+
+    def validate_sourceAudioUrl(self, value):
+        if not value.startswith('https://'):
+            raise serializers.ValidationError('参考音频必须是可访问的 HTTPS URL。')
+        return value
+
+
+class CosyVoiceDesignSerializer(serializers.Serializer):
+    displayName = serializers.CharField(source='display_name', max_length=128)
+    description = serializers.CharField(max_length=2000)
+    language = serializers.ChoiceField(choices=['zh', 'en'])
+    avatarPath = serializers.CharField(source='avatar_path', required=False, max_length=255, allow_blank=True)
+
+
+class CosyVoiceVoiceWriteSerializer(serializers.Serializer):
+    displayName = serializers.CharField(required=False, max_length=128)
+    avatarPath = serializers.CharField(required=False, max_length=255, allow_blank=True)
+    isActive = serializers.BooleanField(required=False)
+    isVisible = serializers.BooleanField(required=False)
+    isDefault = serializers.BooleanField(required=False)
+
 def validate_tts_session_config(value: dict) -> dict:
     if not isinstance(value, dict):
         raise serializers.ValidationError('TTS 会话配置必须是对象')
@@ -949,6 +1058,15 @@ class PlatformTTSProviderSummarySerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.BooleanField())
     def get_configured(self, obj: TTSProvider) -> bool:
+        if obj.code == 'cosyvoice':
+            settings_obj = getattr(obj, 'cosyvoice_settings', None)
+            return bool(
+                settings_obj
+                and settings_obj.is_active
+                and settings_obj.api_key_encrypted
+                and settings_obj.websocket_url.strip()
+                and settings_obj.customization_url.strip()
+            )
         config = get_effective_tts_config(obj)
         return bool(config.api_key and config.base_url and config.model and config.is_active)
 

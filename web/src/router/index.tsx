@@ -71,6 +71,9 @@ const AsrSettingsPage = lazy(() =>
 const TtsSettingsPage = lazy(() =>
   import('../views/tts-settings').then((module) => ({ default: module.TtsSettingsPage })),
 );
+const CosyVoiceSettingsPage = lazy(() =>
+  import('../views/cosyvoice-settings').then((module) => ({ default: module.CosyVoiceSettingsPage })),
+);
 const LlmSettingsAdminPage = lazy(() =>
   import('../views/settings-llm').then((module) => ({ default: module.LlmSettingsAdminPage })),
 );
@@ -429,6 +432,14 @@ export const AppRouter = () => {
             <PermissionGuard permission="tenant.management.view">
               <TtsSettingsPage />
             </PermissionGuard>
+          ),
+        },
+        {
+          path: 'settings/tts/cosyvoice',
+          element: (
+            <SuperuserGuard>
+              <CosyVoiceSettingsPage />
+            </SuperuserGuard>
           ),
         },
         {

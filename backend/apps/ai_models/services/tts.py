@@ -6,6 +6,7 @@ import io
 import json
 import re
 import wave
+import uuid
 from dataclasses import dataclass
 from urllib.parse import urlencode
 
@@ -17,6 +18,7 @@ from apps.ai_models.models import TTSProvider, TTSVoice, TenantTTSSettings
 
 PCM_SOURCE_FORMAT = 'pcm_s16le'
 DEFAULT_TEST_TEXT = '对吧~我就特别喜欢这种超市，尤其是过年的时候去逛超市就会觉得超级超级开心！想买好多好多的东西呢！'
+COSYVOICE_TTS_MODEL = 'cosyvoice-v3.5-plus'
 DEFAULT_TTS_SEGMENT_BOUNDARIES = '。！？!?；;'
 TTS_MODEL_PROFILES = [
     {
@@ -91,6 +93,7 @@ QWEN3_FLASH_VOICE_CODES = QWEN3_INSTRUCT_FLASH_VOICE_CODES | QWEN3_FLASH_EXTRA_V
 @dataclass(frozen=True)
 class EffectiveTTSConfig:
     provider: TTSProvider
+    provider_code: str
     api_key: str
     base_url: str
     model: str
@@ -99,7 +102,6 @@ class EffectiveTTSConfig:
     default_test_text: str
     is_active: bool
     updated_at: object | None = None
-
 
 def mask_api_key(value: str) -> str:
     if not value:
@@ -117,6 +119,7 @@ def get_effective_tts_config(provider: TTSProvider | None = None) -> EffectiveTT
     cfg = provider or get_aliyun_tts_provider()
     return EffectiveTTSConfig(
         provider=cfg,
+        provider_code=cfg.code,
         api_key=(cfg.api_key or getattr(settings, 'ALIYUN_TTS_API_KEY', '')).strip(),
         base_url=(cfg.base_url or getattr(settings, 'ALIYUN_TTS_BASE_URL', '')).strip(),
         model=(cfg.model or getattr(settings, 'ALIYUN_TTS_MODEL', '')).strip(),
@@ -428,7 +431,122 @@ def synthesize_tts_pcm(
     session_config: dict | None = None,
 ) -> bytes:
     effective = config or get_effective_tts_config(voice.provider)
+    if effective.provider_code == 'cosyvoice':
+        return asyncio.run(_synthesize_cosyvoice_tts_pcm_async(text=text, voice=voice, config=effective))
     return asyncio.run(_synthesize_tts_pcm_async(text=text, voice=voice, config=effective, session_config=session_config))
+
+
+async def _synthesize_cosyvoice_tts_pcm_async(
+    *,
+    text: str,
+    voice: TTSVoice,
+    config: EffectiveTTSConfig,
+) -> bytes:
+    if not is_tts_configured(config):
+        raise RuntimeError('TTS 服务未配置或未启用')
+    if voice is None:
+        raise RuntimeError('TTS 音色未配置')
+
+    task_id = str(uuid.uuid4())
+    run_task = {
+        'header': {
+            'action': 'run-task',
+            'task_id': task_id,
+            'streaming': 'duplex',
+        },
+        'payload': {
+            'task_group': 'audio',
+            'task': 'tts',
+            'function': 'SpeechSynthesizer',
+            'model': COSYVOICE_TTS_MODEL,
+            'input': {},
+            'parameters': {
+                'text_type': 'PlainText',
+                'voice': voice.voice_code,
+                'format': 'pcm',
+                'sample_rate': config.sample_rate,
+                'volume': 50,
+                'rate': 1.0,
+                'pitch': 1.0,
+            },
+        },
+    }
+    audio_parts: list[bytes] = []
+    async with websockets.connect(
+        config.base_url,
+        additional_headers=[('Authorization', f'Bearer {config.api_key}')],
+        user_agent_header='solin-admin/1.0',
+        open_timeout=10,
+        ping_interval=20,
+        ping_timeout=20,
+        max_size=8 * 1024 * 1024,
+    ) as upstream:
+        await upstream.send(json.dumps(run_task))
+        async for raw_message in upstream:
+            header = _matching_cosyvoice_task_header(raw_message, task_id)
+            if header is None:
+                continue
+            if header.get('event') == 'task-failed':
+                raise RuntimeError(_extract_cosyvoice_task_error(header))
+            if header.get('event') == 'task-started':
+                break
+        else:
+            raise RuntimeError('CosyVoice upstream closed before task started.')
+
+        for chunk in split_tts_text(text):
+            await upstream.send(json.dumps({
+                'header': {
+                    'action': 'continue-task',
+                    'task_id': task_id,
+                    'streaming': 'duplex',
+                },
+                'payload': {'input': {'text': chunk}},
+            }))
+        await upstream.send(json.dumps({
+            'header': {
+                'action': 'finish-task',
+                'task_id': task_id,
+                'streaming': 'duplex',
+            },
+            'payload': {'input': {}},
+        }))
+
+        async for raw_message in upstream:
+            if isinstance(raw_message, bytes):
+                audio_parts.append(raw_message)
+                continue
+            header = _matching_cosyvoice_task_header(raw_message, task_id)
+            if header is None:
+                continue
+            if header.get('event') == 'task-failed':
+                raise RuntimeError(_extract_cosyvoice_task_error(header))
+            if header.get('event') == 'task-finished':
+                break
+        else:
+            raise RuntimeError('CosyVoice upstream closed before task finished.')
+
+    return b''.join(audio_parts)
+
+
+def _matching_cosyvoice_task_header(raw_message, task_id: str) -> dict | None:
+    try:
+        event = json.loads(raw_message)
+    except (TypeError, json.JSONDecodeError):
+        return None
+    if not isinstance(event, dict):
+        return None
+    header = event.get('header')
+    if not isinstance(header, dict) or header.get('task_id') != task_id:
+        return None
+    return header
+
+
+def _extract_cosyvoice_task_error(header: dict) -> str:
+    error_code = str(header.get('error_code') or '').strip()
+    error_message = str(header.get('error_message') or '').strip()
+    if error_code and error_message:
+        return f'{error_code}: {error_message}'[:200]
+    return (error_message or error_code or 'CosyVoice task failed.')[:200]
 
 
 async def _synthesize_tts_pcm_async(

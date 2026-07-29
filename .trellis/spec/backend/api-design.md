@@ -244,3 +244,54 @@ The `app_updates` app uses a custom format with business error codes:
 - Hand-crafted `Response()` in business views (bypasses global error envelope)
 - Try/except + silent failure — propagate to global handler
 - Bypassing `TenantScopedQuerysetMixin` in tenant-scoped endpoints
+
+---
+
+## Scenario: CosyVoice Beijing workspace endpoints
+
+### 1. Scope / Trigger
+- CosyVoice v3.5-plus is an isolated super-admin TTS integration. Its realtime and voice-customization APIs use the same **Beijing** Model Studio workspace; accepting another region can send credentials to the wrong service.
+
+### 2. Signatures
+- `PATCH /api/v1/settings/tts/cosyvoice/` accepts `websocketUrl` and `customizationUrl`.
+- `is_valid_cosyvoice_websocket_url(value: str) -> bool` and `is_valid_cosyvoice_customization_url(value: str) -> bool` in `apps.ai_models.services.cosyvoice` are the shared service boundary.
+
+### 3. Contracts
+- `websocketUrl` is exactly `wss://{WorkspaceId}.cn-beijing.maas.aliyuncs.com/api-ws/v1/inference`.
+- `customizationUrl` is exactly `https://{WorkspaceId}.cn-beijing.maas.aliyuncs.com/api/v1/services/audio/tts/customization`.
+- `{WorkspaceId}` is one non-empty DNS label. URLs have no query, fragment, userinfo, port, suffix host, or surrounding whitespace.
+- `apiKey` is write-only; responses expose only `apiKeyConfigured` and `apiKeyMasked`, never plaintext.
+
+### 4. Validation & Error Matrix
+| Condition | Result |
+| --- | --- |
+| Exact Beijing realtime URL | Accepted |
+| Exact Beijing customization URL | Accepted |
+| Singapore/other region, wrong scheme/path/host, port, credentials, query, fragment, or whitespace | HTTP 400 with the endpoint-specific Beijing requirement |
+| Invalid persisted endpoint at runtime | `CosyVoiceCustomizationError(status_code=400)` before outbound I/O |
+
+### 5. Good/Base/Bad Cases
+- Good: both settings use the same workspace identifier under `cn-beijing.maas.aliyuncs.com`.
+- Base: omitting or submitting a blank `apiKey` keeps the encrypted stored credential unchanged.
+- Bad: do not reuse Qwen voice-design endpoints such as `ap-southeast-1` for CosyVoice customization.
+
+### 6. Tests Required
+- Test accepted official Beijing URLs, encrypted-key masking, and exact retained configuration after rejected updates.
+- Test both fields reject scheme, path, query, fragment, whitespace, port, credential, and host-suffix variants.
+- Test Singapore customization rejection returns HTTP 400 and cannot replace a valid persisted Beijing URL.
+- Test runtime validation rejects invalid persisted values before a network request.
+
+### 7. Wrong vs Correct
+#### Wrong
+```python
+return parsed.scheme == 'https' and bool(parsed.netloc)
+```
+
+#### Correct
+```python
+return re.fullmatch(
+    r'https://[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?'
+    r'\.cn-beijing\.maas\.aliyuncs\.com/api/v1/services/audio/tts/customization',
+    value,
+) is not None
+```

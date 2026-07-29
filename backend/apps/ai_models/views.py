@@ -51,6 +51,7 @@ from apps.tenants.models import Tenant
 from config.request_id import get_request_id, get_trace_id
 
 from . import llm_services
+from .services import cosyvoice as cosyvoice_services
 from .llm_services import (
     get_effective_llm_model_for_tenant,
     get_effective_llm_models_for_tenant,
@@ -126,6 +127,12 @@ from .serializers import (
     PlatformTTSSettingsSerializer,
     PlatformTTSSettingsWriteSerializer,
     CompanyTTSSettingsWriteSerializer,
+    CosyVoiceDesignSerializer,
+    CosyVoiceEnrollSerializer,
+    CosyVoiceSettingsSerializer,
+    CosyVoiceSettingsWriteSerializer,
+    CosyVoiceVoiceSerializer,
+    CosyVoiceVoiceWriteSerializer,
     CompanyTTSVoiceSerializer,
     TenantKnowledgeModelSettingsSerializer,
     TenantLLMAuthorizationSerializer,
@@ -473,18 +480,144 @@ class TTSProviderListView(APIView):
 
     def get(self, request):
         tts_services.get_aliyun_tts_provider()
-        providers = TTSProvider.objects.select_related('default_voice').prefetch_related('voices').order_by('id')
+        cosyvoice_services.get_cosyvoice_settings()
+        providers = TTSProvider.objects.select_related('default_voice', 'cosyvoice_settings').prefetch_related('voices').order_by('id')
         return Response(PlatformTTSProviderSummarySerializer(providers, many=True).data)
+
+
+def _reject_cosyvoice_generic_provider(provider_code: str | None) -> None:
+    if provider_code == cosyvoice_services.COSYVOICE_PROVIDER_CODE:
+        raise ValidationError({'providerCode': 'CosyVoice 请使用专属设置接口。'})
+
+
+class CosyVoiceSettingsView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def get(self, request):
+        return Response(CosyVoiceSettingsSerializer(cosyvoice_services.get_cosyvoice_settings(), context={'request': request}).data)
+
+    def patch(self, request):
+        settings_obj = cosyvoice_services.get_cosyvoice_settings()
+        serializer = CosyVoiceSettingsWriteSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        values = serializer.validated_data
+        default_voice_id = values.pop('defaultVoiceId', settings_obj.default_voice_id)
+        if default_voice_id is None:
+            settings_obj.default_voice = None
+        elif not settings_obj.provider.voices.filter(id=default_voice_id, cosyvoice_profile__isnull=False).exists():
+            raise ValidationError({'defaultVoiceId': '默认音色必须属于 CosyVoice。'})
+        else:
+            settings_obj.default_voice_id = default_voice_id
+        if 'apiKey' in values:
+            api_key = values.pop('apiKey').strip()
+            if api_key:
+                settings_obj.api_key_encrypted = encrypt_credential(api_key)
+        for source, target in {
+            'websocketUrl': 'websocket_url',
+            'customizationUrl': 'customization_url',
+            'isActive': 'is_active',
+            'defaultTestText': 'default_test_text',
+        }.items():
+            if source in values:
+                setattr(settings_obj, target, values[source])
+        settings_obj.save()
+        return Response(CosyVoiceSettingsSerializer(settings_obj, context={'request': request}).data)
+
+
+class CosyVoiceTestView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def post(self, request):
+        settings_obj = cosyvoice_services.get_cosyvoice_settings()
+        voice_id = request.data.get('voiceId') if isinstance(request.data, dict) else None
+        selected_voice_id = voice_id or settings_obj.default_voice_id
+        voice = settings_obj.provider.voices.filter(id=selected_voice_id, cosyvoice_profile__isnull=False, is_active=True, is_visible=True).first()
+        if voice is None:
+            return Response({'voiceId': '请先选择 CosyVoice 音色。'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            config = cosyvoice_services.get_effective_cosyvoice_tts_config(settings_obj)
+            if not cosyvoice_services.is_cosyvoice_configured(settings_obj):
+                raise cosyvoice_services.CosyVoiceCustomizationError('请先完成 CosyVoice 配置。', status_code=400)
+            text = tts_services.normalize_tts_text(request.data.get('text'), config)
+            pcm = tts_services.synthesize_tts_pcm(text=text, voice=voice, config=config)
+        except cosyvoice_services.CosyVoiceCustomizationError as exc:
+            return Response({'message': exc.message}, status=exc.status_code)
+        except Exception as exc:
+            return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
+        return _tts_audio_response(pcm=pcm, config=config, voice=voice, wrap_wav=True)
+
+
+class CosyVoiceEnrollView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def post(self, request):
+        serializer = CosyVoiceEnrollSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            voice = cosyvoice_services.enroll_cosyvoice_voice(settings_obj=cosyvoice_services.get_cosyvoice_settings(), **serializer.validated_data)
+        except cosyvoice_services.CosyVoiceCustomizationError as exc:
+            return Response({'message': exc.message}, status=exc.status_code)
+        return Response(CosyVoiceVoiceSerializer(voice, context={'request': request}).data, status=status.HTTP_201_CREATED)
+
+
+class CosyVoiceDesignView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def post(self, request):
+        serializer = CosyVoiceDesignSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            voice = cosyvoice_services.design_cosyvoice_voice(settings_obj=cosyvoice_services.get_cosyvoice_settings(), **serializer.validated_data)
+        except cosyvoice_services.CosyVoiceCustomizationError as exc:
+            return Response({'message': exc.message}, status=exc.status_code)
+        return Response(CosyVoiceVoiceSerializer(voice, context={'request': request}).data, status=status.HTTP_201_CREATED)
+
+
+class CosyVoiceVoiceDetailView(APIView):
+    permission_classes = [IsSuperUser]
+
+    def _voice(self, voice_id):
+        return get_object_or_404(TTSVoice.objects.select_related('cosyvoice_profile'), id=voice_id, provider__code=cosyvoice_services.COSYVOICE_PROVIDER_CODE, cosyvoice_profile__isnull=False)
+
+    def patch(self, request, voice_id):
+        voice = self._voice(voice_id)
+        serializer = CosyVoiceVoiceWriteSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        values = serializer.validated_data
+        is_default = values.pop('isDefault', None)
+        for source, target in {'displayName': 'display_name', 'avatarPath': 'avatar_path', 'isActive': 'is_active', 'isVisible': 'is_visible'}.items():
+            if source in values:
+                setattr(voice, target, values[source])
+        voice.save()
+        settings_obj = cosyvoice_services.get_cosyvoice_settings()
+        if is_default is True:
+            settings_obj.default_voice = voice
+            settings_obj.save(update_fields=['default_voice', 'updated_at'])
+        elif is_default is False and settings_obj.default_voice_id == voice.id:
+            settings_obj.default_voice = None
+            settings_obj.save(update_fields=['default_voice', 'updated_at'])
+        return Response(CosyVoiceVoiceSerializer(voice, context={'request': request, 'default_voice_id': settings_obj.default_voice_id}).data)
+
+    def delete(self, request, voice_id):
+        voice = self._voice(voice_id)
+        try:
+            cosyvoice_services.delete_cosyvoice_remote_voice(voice=voice)
+        except cosyvoice_services.CosyVoiceCustomizationError as exc:
+            return Response({'message': exc.message}, status=exc.status_code)
+        voice.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TTSSettingsView(APIView):
     permission_classes = [IsSuperUser]
 
     def get(self, request, provider_code=None):
+        _reject_cosyvoice_generic_provider(provider_code)
         provider = _get_platform_tts_provider(provider_code)
         return Response(PlatformTTSSettingsSerializer(provider, context={'request': request}).data)
 
     def patch(self, request, provider_code=None):
+        _reject_cosyvoice_generic_provider(provider_code)
         provider = _get_platform_tts_provider(provider_code)
         serializer = PlatformTTSSettingsWriteSerializer(provider, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -496,6 +629,7 @@ class TTSSettingsTestView(APIView):
     permission_classes = [IsSuperUser]
 
     def post(self, request, provider_code=None):
+        _reject_cosyvoice_generic_provider(provider_code)
         provider = _get_platform_tts_provider(provider_code)
         config = tts_services.get_effective_tts_config(provider)
         session_config = request.data.get('ttsSessionConfig') if isinstance(request.data, dict) else None

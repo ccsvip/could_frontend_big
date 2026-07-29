@@ -19,6 +19,7 @@ from apps.tenants.models import Tenant
 from apps.tenants.services import get_user_tenant
 
 from .models import TTSProvider, TTSVoice
+from .services.cosyvoice import COSYVOICE_PROVIDER_CODE
 from .services.tts import (
     build_tts_ws_url,
     get_aliyun_tts_provider,
@@ -125,10 +126,12 @@ def resolve_tts_voice(
     return get_default_tts_voice(provider, model_code=model_code)
 
 
-def resolve_tts_provider(raw_provider_code) -> TTSProvider:
+def resolve_tts_provider(raw_provider_code) -> TTSProvider | None:
     provider_code = str(raw_provider_code or '').strip()
     if not provider_code:
         return get_aliyun_tts_provider()
+    if provider_code == COSYVOICE_PROVIDER_CODE:
+        return None
     return TTSProvider.objects.filter(code=provider_code).first() or get_aliyun_tts_provider()
 
 
