@@ -432,7 +432,12 @@ def synthesize_tts_pcm(
 ) -> bytes:
     effective = config or get_effective_tts_config(voice.provider)
     if effective.provider_code == 'cosyvoice':
-        return asyncio.run(_synthesize_cosyvoice_tts_pcm_async(text=text, voice=voice, config=effective))
+        return asyncio.run(_synthesize_cosyvoice_tts_pcm_async(
+            text=text,
+            voice=voice,
+            config=effective,
+            controls=session_config,
+        ))
     return asyncio.run(_synthesize_tts_pcm_async(text=text, voice=voice, config=effective, session_config=session_config))
 
 
@@ -441,12 +446,14 @@ async def _synthesize_cosyvoice_tts_pcm_async(
     text: str,
     voice: TTSVoice,
     config: EffectiveTTSConfig,
+    controls: dict | None = None,
 ) -> bytes:
     if not is_tts_configured(config):
         raise RuntimeError('TTS 服务未配置或未启用')
     if voice is None:
         raise RuntimeError('TTS 音色未配置')
 
+    options = controls if isinstance(controls, dict) else {}
     task_id = str(uuid.uuid4())
     run_task = {
         'header': {
@@ -465,9 +472,9 @@ async def _synthesize_cosyvoice_tts_pcm_async(
                 'voice': voice.voice_code,
                 'format': 'pcm',
                 'sample_rate': config.sample_rate,
-                'volume': 50,
-                'rate': 1.0,
-                'pitch': 1.0,
+                'volume': _bounded_int(options.get('volume'), 50, 0, 100),
+                'rate': _bounded_float(options.get('speech_rate'), 1.0, 0.5, 2.0),
+                'pitch': _bounded_float(options.get('pitch_rate'), 1.0, 0.5, 2.0),
             },
         },
     }

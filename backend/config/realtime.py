@@ -25,6 +25,7 @@ from apps.ai_models import llm_services, realtime_asr, realtime_tts
 from apps.ai_models.models import RUNTIME_BACKEND_PLATFORM_LLM, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, TTSVoice
 from apps.ai_models.services import third_party_chatbots
 from apps.ai_models.services import tts as tts_services
+from apps.ai_models.services import tts_adapters
 from apps.devices.services.runtime import (
     RuntimeDeviceError,
     get_ready_runtime_device,
@@ -1905,36 +1906,42 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
         await _send_realtime_error(send, 'tts.error', command_id, 'TTS_UNAUTHORIZED', request_id=request_id, trace_id=trace_id)
         return
 
-    provider = await sync_to_async(realtime_tts.resolve_tts_provider, thread_sensitive=True)(
-        payload.get('providerCode'),
-    )
-    if provider is None:
-        await _send_realtime_error(send, 'tts.error', command_id, 'TTS_NOT_READY', request_id=request_id, trace_id=trace_id)
-        return
-    config = await sync_to_async(realtime_tts.get_effective_tts_config, thread_sensitive=True)(provider)
-    if not realtime_tts.is_tts_configured(config):
-        await _send_realtime_error(send, 'tts.error', command_id, 'TTS_NOT_READY', request_id=request_id, trace_id=trace_id)
-        return
-    if session_config is None:
-        session_config = await sync_to_async(_resolve_connection_tts_session_config, thread_sensitive=True)(resolved_connection, config)
-    model_code = tts_services.get_tts_model_profile_code_from_session(session_config, config.model)
-
-    voice = await sync_to_async(realtime_tts.resolve_tts_voice, thread_sensitive=True)(
+    resolution = await sync_to_async(realtime_tts.resolve_realtime_tts_voice, thread_sensitive=True)(
         resolved_connection,
         payload.get('voiceId'),
-        provider,
-        model_code=model_code,
+        provider_code=payload.get('providerCode'),
     )
-    if voice is None:
+    if resolution.voice is None:
         await _send_realtime_error(
             send,
             'tts.error',
             command_id,
-            'TTS_VOICE_NOT_AVAILABLE',
+            resolution.error_key or 'TTS_VOICE_NOT_AVAILABLE',
             request_id=request_id,
             trace_id=trace_id,
         )
         return
+    voice = resolution.voice
+
+    try:
+        # Route on the resolved voice's own card; never on the client's providerCode.
+        adapter = await sync_to_async(tts_adapters.get_adapter_for_voice, thread_sensitive=True)(voice)
+        await sync_to_async(adapter.ensure_channel, thread_sensitive=True)(voice.provider, tts_adapters.CHANNEL_REALTIME)
+        config = await sync_to_async(adapter.effective_config, thread_sensitive=True)(voice.provider)
+    except Exception:
+        logger.exception('realtime.agent.tts_adapter_unavailable device_code=%s voice_id=%s', device_code, voice.id)
+        await _send_realtime_error(send, 'tts.error', command_id, 'TTS_NOT_READY', request_id=request_id, trace_id=trace_id)
+        return
+    if not realtime_tts.is_tts_configured(config):
+        await _send_realtime_error(send, 'tts.error', command_id, 'TTS_NOT_READY', request_id=request_id, trace_id=trace_id)
+        return
+
+    if session_config is None:
+        session_config = await sync_to_async(_resolve_connection_tts_session_config, thread_sensitive=True)(
+            resolved_connection,
+            config,
+        )
+    model_code = tts_services.get_tts_model_profile_code_from_session(session_config, config.model)
 
     _log_agent_voice_pipeline(
         'tts.request',
@@ -1943,7 +1950,7 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
         trace_id=trace_id,
         device_code=device_code,
         payload={
-            'providerCode': getattr(provider, 'code', None),
+            'providerCode': voice.provider.code,
             'model': model_code,
             'voiceId': getattr(voice, 'id', None),
             'voiceCode': getattr(voice, 'voice_code', None),
@@ -1953,7 +1960,7 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
         },
     )
 
-    await realtime_tts._stream_tts_segments_audio(
+    await adapter.stream_realtime_segments(
         segments=_agent_tts_segments(
             first_segment,
             queue,
@@ -1964,7 +1971,7 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
         ),
         voice=voice,
         config=config,
-        session_config=session_config,
+        controls=session_config,
         exclude_patterns=payload.get('ttsFilterExcludePatterns') or [],
         send=_with_command_id(send, command_id, request_id=request_id, trace_id=trace_id),
     )
@@ -2413,13 +2420,32 @@ async def _run_tts_session_body(send, command_id, message: dict[str, Any]) -> No
         await _send_realtime_error(send, 'tts.error', command_id, 'TTS_UNAUTHORIZED', request_id=request_id, trace_id=trace_id)
         return
 
-    provider = await sync_to_async(realtime_tts.resolve_tts_provider, thread_sensitive=True)(
-        payload.get('providerCode'),
+    resolution = await sync_to_async(realtime_tts.resolve_realtime_tts_voice, thread_sensitive=True)(
+        resolved_connection,
+        payload.get('voiceId'),
+        provider_code=payload.get('providerCode'),
     )
-    if provider is None:
+    if resolution.voice is None:
+        await _send_realtime_error(
+            send,
+            'tts.error',
+            command_id,
+            resolution.error_key or 'TTS_VOICE_NOT_AVAILABLE',
+            request_id=request_id,
+            trace_id=trace_id,
+        )
+        return
+    voice = resolution.voice
+
+    try:
+        # The resolved voice's card selects the adapter and the upstream protocol.
+        adapter = await sync_to_async(tts_adapters.get_adapter_for_voice, thread_sensitive=True)(voice)
+        await sync_to_async(adapter.ensure_channel, thread_sensitive=True)(voice.provider, tts_adapters.CHANNEL_REALTIME)
+        config = await sync_to_async(adapter.effective_config, thread_sensitive=True)(voice.provider)
+    except Exception:
+        logger.exception('realtime.tts.adapter_unavailable command_id=%s voice_id=%s', command_id, voice.id)
         await _send_realtime_error(send, 'tts.error', command_id, 'TTS_NOT_READY', request_id=request_id, trace_id=trace_id)
         return
-    config = await sync_to_async(realtime_tts.get_effective_tts_config, thread_sensitive=True)(provider)
     if not realtime_tts.is_tts_configured(config):
         await _send_realtime_error(send, 'tts.error', command_id, 'TTS_NOT_READY', request_id=request_id, trace_id=trace_id)
         return
@@ -2427,23 +2453,16 @@ async def _run_tts_session_body(send, command_id, message: dict[str, Any]) -> No
     text = realtime_tts.normalize_tts_text(str(payload.get('text') or ''), config)
     session_config = payload.get('sessionConfig') or payload.get('ttsSessionConfig')
     if session_config is None:
-        session_config = await sync_to_async(_resolve_connection_tts_session_config, thread_sensitive=True)(resolved_connection, config)
-    model_code = tts_services.get_tts_model_profile_code_from_session(session_config, config.model)
+        session_config = await sync_to_async(_resolve_connection_tts_session_config, thread_sensitive=True)(
+            resolved_connection,
+            config,
+        )
 
-    voice = await sync_to_async(realtime_tts.resolve_tts_voice, thread_sensitive=True)(
-        resolved_connection,
-        payload.get('voiceId'),
-        provider,
-        model_code=model_code,
-    )
-    if voice is None:
-        await _send_realtime_error(send, 'tts.error', command_id, 'TTS_VOICE_NOT_AVAILABLE', request_id=request_id, trace_id=trace_id)
-        return
-    await realtime_tts._stream_tts_audio(
+    await adapter.stream_realtime_text(
         text=text,
         voice=voice,
         config=config,
-        session_config=session_config,
+        controls=session_config,
         send=_with_command_id(send, command_id, request_id=request_id, trace_id=trace_id),
     )
 

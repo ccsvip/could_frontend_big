@@ -37,8 +37,22 @@ class TenantOwnedPrimaryKeyField(serializers.PrimaryKeyRelatedField):
 
 
 class AvailableTTSVoicePrimaryKeyField(serializers.PrimaryKeyRelatedField):
+    """Selectable TTS voices, narrowed to the request tenant's card grants.
+
+    The semantics of the bound field are unchanged — it is still "the voice this
+    device speaks with". Only the selectable set is tightened: a company can no
+    longer bind a globally visible voice from a card it was never granted.
+
+    Superusers keep the platform-wide set so they can administer any tenant.
+    """
+
     def get_queryset(self):
-        return TTSVoice.objects.filter(is_active=True, is_visible=True, provider__is_active=True)
+        from apps.ai_models.services import tts_authorization as tts_auth
+
+        request = self.root.context.get('request')
+        if getattr(getattr(request, 'user', None), 'is_superuser', False):
+            return TTSVoice.objects.filter(is_active=True, is_visible=True, provider__is_active=True)
+        return tts_auth.get_effective_tts_voices_for_tenant(_tenant_from_context(self.root))
 
 
 class DeviceGroupSerializer(serializers.ModelSerializer):

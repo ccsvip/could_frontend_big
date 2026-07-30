@@ -706,6 +706,37 @@ class TenantTTSSettings(models.Model):
         return f'{self.tenant_id}:{self.default_voice_id or "unset"}'
 
 
+class TenantTTSProviderGrant(models.Model):
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='tts_provider_grants',
+        verbose_name='所属公司',
+    )
+    provider = models.ForeignKey(
+        TTSProvider,
+        on_delete=models.CASCADE,
+        related_name='tenant_grants',
+        verbose_name='授权 TTS 卡片',
+    )
+    is_active = models.BooleanField('是否启用', default=True)
+    public_config = models.JSONField('公司卡片公共配置', blank=True, default=dict)
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        verbose_name = '公司 TTS 卡片授权'
+        verbose_name_plural = '公司 TTS 卡片授权'
+        constraints = [
+            models.UniqueConstraint(fields=['tenant', 'provider'], name='uniq_tenant_tts_provider_grant'),
+        ]
+
+    def __str__(self):
+        return f'{self.tenant_id}:{self.provider_id}'
+
+
 class ASRReplacementRule(models.Model):
     source_text = models.CharField('原词', max_length=128)
     replacement_text = models.CharField('替换词', max_length=128)

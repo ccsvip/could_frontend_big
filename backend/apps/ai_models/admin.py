@@ -10,6 +10,7 @@ from .models import (
     LLMProvider,
     RerankModel,
     TenantKnowledgeModelSettings,
+    TenantTTSProviderGrant,
     TTSProvider,
     TTSVoice,
 )
@@ -63,6 +64,14 @@ class TTSVoiceAdmin(admin.ModelAdmin):
     list_display = ('display_name', 'voice_code', 'provider', 'gender', 'is_active', 'is_visible', 'sort_order')
     list_filter = ('provider', 'gender', 'is_active', 'is_visible')
     search_fields = ('display_name', 'voice_code')
+
+
+@admin.register(TenantTTSProviderGrant)
+class TenantTTSProviderGrantAdmin(admin.ModelAdmin):
+    list_display = ('tenant', 'provider', 'is_active', 'created_at', 'updated_at')
+    list_filter = ('provider', 'is_active')
+    search_fields = ('tenant__name', 'provider__name', 'provider__code')
+    raw_id_fields = ('tenant', 'provider')
 
 
 @admin.register(ChatConversation)

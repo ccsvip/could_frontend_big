@@ -70,11 +70,28 @@ def has_device_tts_voice_config(value: Any) -> bool:
 
 
 def company_tts_session_config_for_device(device, provider=None) -> dict:
+    """Company-level controls for the card the device's voice belongs to.
+
+    Reads the per-card grant ``public_config`` (authoritative since card
+    authorization landed) rather than the single legacy
+    ``TenantTTSSettings.tts_session_config``, so a CosyVoice voice never inherits
+    Qwen's controls. Falls back to the legacy field for tenants whose grant has no
+    stored config yet.
+    """
+    from apps.ai_models.services import tts_authorization as tts_auth
+
     config = tts_services.get_effective_tts_config(provider)
-    settings_obj = tts_services.get_tenant_tts_settings(getattr(device, 'tenant', None))
+    base = dict(config.tts_session_config)
+    tenant = getattr(device, 'tenant', None)
+
+    card_config = tts_auth.get_tenant_tts_card_public_config(tenant, provider) if provider is not None else {}
+    if card_config:
+        return {**base, **card_config}
+
+    settings_obj = tts_services.get_tenant_tts_settings(tenant)
     if settings_obj is not None and isinstance(settings_obj.tts_session_config, dict):
-        return {**config.tts_session_config, **settings_obj.tts_session_config}
-    return dict(config.tts_session_config)
+        return {**base, **settings_obj.tts_session_config}
+    return base
 
 
 def device_tts_session_config(device, provider=None) -> dict:

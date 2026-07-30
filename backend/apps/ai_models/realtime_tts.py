@@ -5,6 +5,7 @@ import base64
 import json
 import logging
 import time
+from dataclasses import dataclass
 from typing import Any, AsyncIterable
 
 import websockets
@@ -133,6 +134,91 @@ def resolve_tts_provider(raw_provider_code) -> TTSProvider | None:
     if provider_code == COSYVOICE_PROVIDER_CODE:
         return None
     return TTSProvider.objects.filter(code=provider_code).first() or get_aliyun_tts_provider()
+
+
+@dataclass(frozen=True)
+class RealtimeVoiceResolution:
+    """Outcome of resolving which voice a realtime session should use."""
+
+    voice: TTSVoice | None = None
+    error_key: str | None = None
+
+
+def resolve_realtime_tts_voice(
+    connection: dict[str, Any],
+    raw_voice_id=None,
+    *,
+    provider_code: str | None = None,
+    model_code: str | None = None,
+) -> RealtimeVoiceResolution:
+    """Resolve the voice for a realtime session, then verify any declared card.
+
+    ``voiceId`` (or the device binding / company default) is the routing key. A
+    client-sent ``providerCode`` is optional and only ever a consistency check —
+    honouring it as a router would let a client hop to a card the company was
+    never granted. Old clients that send no ``providerCode`` keep working.
+    """
+    from apps.tenants.models import Tenant
+
+    from .services import tts_authorization as tts_auth
+
+    declared_code = str(provider_code or '').strip()
+    voice = None
+
+    device_id = connection.get('device_id')
+    if device_id:
+        device = Device.objects.select_related('tenant', 'tts_voice__provider').filter(id=device_id).first()
+        if device is None:
+            return RealtimeVoiceResolution(error_key='TTS_UNAUTHORIZED')
+        voice = _swallow_validation(lambda: tts_auth.resolve_device_tts_voice(device, raw_voice_id, model_code=model_code))
+    elif connection.get('tenant_id'):
+        tenant = Tenant.objects.filter(id=connection['tenant_id'], is_active=True).first()
+        voice = _swallow_validation(lambda: tts_auth.resolve_tenant_tts_voice(tenant, raw_voice_id, model_code=model_code))
+    elif connection.get('is_superuser'):
+        # Platform admin previewing without picking a company: no tenant grant to
+        # honour, so fall back to the platform-wide catalogue.
+        voice = _resolve_platform_voice(raw_voice_id, declared_code, model_code)
+    else:
+        return RealtimeVoiceResolution(error_key='TTS_UNAUTHORIZED')
+
+    if voice is None:
+        return RealtimeVoiceResolution(error_key='TTS_VOICE_NOT_AVAILABLE')
+    if declared_code and declared_code != voice.provider.code:
+        logger.warning(
+            'tts.realtime.provider_code_mismatch declared=%s resolved=%s voice_id=%s',
+            declared_code, voice.provider.code, voice.id,
+        )
+        return RealtimeVoiceResolution(error_key='TTS_VOICE_NOT_AVAILABLE')
+    return RealtimeVoiceResolution(voice=voice)
+
+
+def _resolve_platform_voice(raw_voice_id, provider_code: str, model_code: str | None) -> TTSVoice | None:
+    voice_id = _parse_positive_int(raw_voice_id)
+    if voice_id is not None:
+        return (
+            TTSVoice.objects
+            .select_related('provider')
+            .filter(id=voice_id, is_active=True, provider__is_active=True)
+            .first()
+        )
+    queryset = TTSVoice.objects.select_related('provider').filter(
+        is_active=True,
+        is_visible=True,
+        provider__is_active=True,
+    )
+    if provider_code:
+        queryset = queryset.filter(provider__code=provider_code)
+    return queryset.order_by('provider__id', 'sort_order', 'id').first()
+
+
+def _swallow_validation(resolver):
+    """Realtime replies with tts.error, so turn 400-style rejections into None."""
+    from rest_framework.exceptions import ValidationError as DRFValidationError
+
+    try:
+        return resolver()
+    except DRFValidationError:
+        return None
 
 
 def _optional_positive_seconds(value) -> float | None:

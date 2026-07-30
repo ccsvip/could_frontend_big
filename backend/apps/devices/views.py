@@ -27,6 +27,8 @@ from apps.ai_models.services.reply_blocks import blocks_to_text, serialize_publi
 from apps.ai_models.services import asr as asr_services
 from apps.ai_models.services import third_party_chatbots
 from apps.ai_models.services import tts as tts_services
+from apps.ai_models.services import tts_adapters
+from apps.ai_models.services import tts_authorization as tts_auth
 from apps.resources.models import ModelAsset, Resource, ScrollingText
 from apps.resources.services.minio_client import build_public_object_url
 from apps.tenants.mixins import TenantScopedQuerysetMixin
@@ -860,13 +862,13 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
 
     @staticmethod
     def _device_voice(device: Device):
-        voice = getattr(device, 'tts_voice', None)
-        if voice is None:
-            return tts_services.get_effective_tts_voice_for_tenant(device.tenant)
-        provider = getattr(voice, 'provider', None)
-        if not voice.is_active or not voice.is_visible or provider is None or not provider.is_active:
-            return None
-        return voice
+        """Resolve the voice this device actually speaks with.
+
+        Priority is unchanged (device binding first, then company default), but a
+        binding whose card lost its grant is now treated as invalid and falls back
+        inside the tenant's authorization rather than being returned as-is.
+        """
+        return tts_auth.resolve_device_tts_voice(device)
 
     @staticmethod
     def _voice_payload(voice, request=None, config=None):
@@ -1565,29 +1567,26 @@ class DeviceVoiceChatView(DeviceRuntimeView):
 
     @staticmethod
     def _synthesize_answer_audio(device: Device, answer_text: str, *, pipeline_context: dict[str, str | None] | None = None) -> str:
-        provider = tts_services.get_aliyun_tts_provider()
-        config = tts_services.get_effective_tts_config(provider)
-        device_voice = getattr(device, 'tts_voice', None)
-        if device_voice is not None:
-            voice = device_voice if device_voice.provider_id == provider.id and tts_services.is_voice_available(device_voice) else None
-        else:
-            voice = tts_services.get_effective_tts_voice_for_tenant(device.tenant, provider)
+        voice = tts_auth.resolve_device_tts_voice(device)
         if voice is None:
             raise RuntimeError('请先配置默认音色')
-        session_config = device_tts_session_config(device, provider)
+        # The resolved voice's own card decides the adapter and request payload.
+        adapter = tts_adapters.get_adapter_for_voice(voice)
+        config = adapter.effective_config(voice.provider)
+        session_config = device_tts_session_config(device, voice.provider)
         if pipeline_context is not None:
             _log_http_voice_pipeline(
                 'tts.request',
                 pipeline_context,
                 {
                     'text': answer_text,
-                    'providerCode': provider.code,
+                    'providerCode': voice.provider.code,
                     'model': config.model,
                     'voice': {'id': voice.id, 'voiceCode': voice.voice_code},
                     'sessionConfig': session_config,
                 },
             )
-        pcm = tts_services.synthesize_tts_pcm(text=answer_text, voice=voice, config=config, session_config=session_config)
+        pcm = adapter.synthesize_pcm(text=answer_text, voice=voice, config=config, controls=session_config)
         wav = tts_services.pcm_to_wav(pcm, sample_rate=session_config.get('sample_rate') or config.sample_rate)
         audio_base64 = base64.b64encode(wav).decode('ascii')
         if pipeline_context is not None:

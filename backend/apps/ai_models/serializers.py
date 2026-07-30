@@ -571,6 +571,104 @@ class TenantLLMAuthorizationSerializer(serializers.Serializer):
         return attrs
 
 
+class TenantTTSCardAuthorizationSerializer(serializers.Serializer):
+    """Validate a super-admin TTS card-authorization save.
+
+    Grants are per TTS card (``TTSProvider``). Each card's ``publicConfig`` is
+    validated against that card's own adapter schema, so one card's fields can
+    never leak into another card's stored config.
+    """
+
+    cardGrants = serializers.ListField(child=serializers.DictField(), required=True)
+    defaultVoiceId = serializers.IntegerField(required=False, allow_null=True)
+
+    def validate(self, attrs):
+        from .services.tts_adapters import TTSAdapterError, get_tts_provider_adapter
+
+        tenant_id = self.context.get('tenant_id')
+        tenant = Tenant.objects.filter(id=tenant_id, is_active=True).first()
+        if tenant is None:
+            raise serializers.ValidationError({'tenantId': '公司不存在或已停用'})
+
+        grants = attrs.get('cardGrants') or []
+        provider_ids: list[int] = []
+        active_provider_ids: set[int] = set()
+        for item in grants:
+            try:
+                provider_id = int(item.get('providerId'))
+            except (TypeError, ValueError):
+                raise serializers.ValidationError({'cardGrants': 'providerId 必须是正整数'})
+            if provider_id <= 0:
+                raise serializers.ValidationError({'cardGrants': 'providerId 必须是正整数'})
+            provider_ids.append(provider_id)
+            if bool(item.get('isActive')):
+                active_provider_ids.add(provider_id)
+
+        providers = {provider.id: provider for provider in TTSProvider.objects.filter(id__in=provider_ids)}
+        missing_ids = set(provider_ids) - set(providers)
+        if missing_ids:
+            raise serializers.ValidationError({'cardGrants': f'TTS 卡片不存在：{min(missing_ids)}'})
+
+        normalized_grants = []
+        for item in grants:
+            provider = providers[int(item['providerId'])]
+            entry = {'provider': provider, 'isActive': bool(item.get('isActive'))}
+            if 'publicConfig' in item:
+                raw_config = item.get('publicConfig')
+                if raw_config is not None and not isinstance(raw_config, dict):
+                    raise serializers.ValidationError({'cardGrants': 'publicConfig 必须是对象'})
+                try:
+                    adapter = get_tts_provider_adapter(provider.code)
+                    entry['publicConfig'] = adapter.normalize_public_controls(raw_config or {})
+                except TTSAdapterError as exc:
+                    raise serializers.ValidationError({'cardGrants': str(exc)})
+            normalized_grants.append(entry)
+
+        self._validate_default_voice(attrs, active_provider_ids)
+        self._validate_disable_not_in_use(tenant, normalized_grants)
+
+        attrs['tenant'] = tenant
+        attrs['normalizedGrants'] = normalized_grants
+        return attrs
+
+    def _validate_default_voice(self, attrs, active_provider_ids: set[int]) -> None:
+        default_voice_id = attrs.get('defaultVoiceId')
+        if default_voice_id is None:
+            return
+        voice = TTSVoice.objects.select_related('provider').filter(id=default_voice_id).first()
+        if voice is None:
+            raise serializers.ValidationError({'defaultVoiceId': '默认音色不存在'})
+        if voice.provider_id not in active_provider_ids:
+            raise serializers.ValidationError({'defaultVoiceId': '默认音色必须属于本次启用授权的 TTS 卡片'})
+        if not voice.is_active or not voice.provider.is_active:
+            raise serializers.ValidationError({'defaultVoiceId': '默认音色或所属卡片未启用'})
+        if not voice.is_visible:
+            raise serializers.ValidationError({'defaultVoiceId': '默认音色未对外展示'})
+
+    def _validate_disable_not_in_use(self, tenant, normalized_grants) -> None:
+        """Refuse to disable a card whose voices are still referenced.
+
+        Silently disabling would change what an online device speaks with, so the
+        MVP blocks it and reports where the card is still used.
+        """
+        from .services import tts_authorization as tts_auth
+
+        for entry in normalized_grants:
+            if entry['isActive']:
+                continue
+            provider = entry['provider']
+            usage = tts_auth.tts_provider_usage_for_tenant(tenant, provider)
+            if usage['tenantDefault'] or usage['deviceCount'] or usage['deviceApplicationCount']:
+                raise serializers.ValidationError({
+                    'cardGrants': (
+                        f'{provider.name} 仍在使用中，无法取消授权'
+                        f'（公司默认音色：{"是" if usage["tenantDefault"] else "否"}，'
+                        f'设备 {usage["deviceCount"]} 台，'
+                        f'设备应用 {usage["deviceApplicationCount"]} 个）'
+                    ),
+                })
+
+
 class KnowledgeModelSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     type = serializers.CharField(read_only=True)
@@ -1188,42 +1286,71 @@ class PlatformTTSSettingsWriteSerializer(serializers.ModelSerializer):
 
 
 class CompanyTTSVoiceSerializer(TTSVoiceSerializer):
+    """Company-facing voice payload.
+
+    Carries the public card identity the frontend needs to pick the right config
+    schema for the selected voice. Never carries credentials or provider-private
+    request parameters.
+    """
+
+    providerId = serializers.IntegerField(source='provider_id', read_only=True)
+    providerCode = serializers.SerializerMethodField()
+    providerName = serializers.SerializerMethodField()
+    configSchemaKey = serializers.SerializerMethodField()
+    supportedChannels = serializers.SerializerMethodField()
+    capabilities = serializers.SerializerMethodField()
+
     class Meta(TTSVoiceSerializer.Meta):
-        fields = ['id', 'displayName', 'voiceCode', 'gender', 'avatarPath', 'isDefault']
+        fields = [
+            'id',
+            'providerId',
+            'providerCode',
+            'providerName',
+            'displayName',
+            'voiceCode',
+            'gender',
+            'avatarPath',
+            'configSchemaKey',
+            'supportedChannels',
+            'capabilities',
+            'isDefault',
+        ]
+        read_only_fields = fields
 
+    def _adapter(self, obj: TTSVoice):
+        from .services.tts_adapters import TTSAdapterError, get_tts_provider_adapter
 
-class CompanyTTSSettingsWriteSerializer(serializers.ModelSerializer):
-    voiceId = serializers.PrimaryKeyRelatedField(
-        source='default_voice',
-        queryset=TTSVoice.objects.all(),
-        required=False,
-        allow_null=True,
-    )
-    ttsSessionConfig = serializers.JSONField(source='tts_session_config', required=False)
-    modelCode = serializers.CharField(required=False, allow_blank=False, write_only=True)
+        cache = self.context.setdefault('_adapter_cache', {})
+        code = obj.provider.code
+        if code not in cache:
+            try:
+                cache[code] = get_tts_provider_adapter(code)
+            except TTSAdapterError:
+                cache[code] = None
+        return cache[code]
 
-    class Meta:
-        model = TenantTTSSettings
-        fields = ['voiceId', 'ttsSessionConfig', 'modelCode']
+    @extend_schema_field(serializers.CharField())
+    def get_providerCode(self, obj: TTSVoice) -> str:
+        return obj.provider.code
 
-    def validate_ttsSessionConfig(self, value: dict) -> dict:
-        return validate_tts_session_config(value)
+    @extend_schema_field(serializers.CharField())
+    def get_providerName(self, obj: TTSVoice) -> str:
+        return obj.provider.name
 
-    def validate_modelCode(self, value: str) -> str:
-        raw = str(value or '').strip()
-        resolved = tts_services.resolve_tts_model_profile_code(raw)
-        if resolved != raw:
-            raise serializers.ValidationError('TTS 模型选项不存在')
-        return resolved
+    @extend_schema_field(serializers.CharField())
+    def get_configSchemaKey(self, obj: TTSVoice) -> str:
+        adapter = self._adapter(obj)
+        return adapter.schema_key if adapter is not None else ''
 
-    def validate(self, attrs):
-        attrs = super().validate(attrs)
-        model_code = attrs.pop('modelCode', None)
-        if model_code:
-            session_config = dict(attrs.get('tts_session_config') or getattr(self.instance, 'tts_session_config', None) or {})
-            session_config['model_code'] = model_code
-            attrs['tts_session_config'] = validate_tts_session_config(session_config)
-        return attrs
+    @extend_schema_field(serializers.ListField(child=serializers.CharField()))
+    def get_supportedChannels(self, obj: TTSVoice) -> list[str]:
+        adapter = self._adapter(obj)
+        return adapter.supported_channels(obj.provider) if adapter is not None else []
+
+    @extend_schema_field(serializers.DictField())
+    def get_capabilities(self, obj: TTSVoice) -> dict:
+        adapter = self._adapter(obj)
+        return adapter.public_voice_capabilities(obj) if adapter is not None else {}
 
 
 class AgentKnowledgeDocumentSerializer(serializers.ModelSerializer):

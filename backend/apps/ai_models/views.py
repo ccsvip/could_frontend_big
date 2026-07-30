@@ -83,6 +83,8 @@ from .models import (
     TenantLLMModelGrant,
     TenantLLMSettings,
     TenantThirdPartyChatbotGrant,
+    TenantTTSProviderGrant,
+    TenantTTSSettings,
     ThirdPartyChatbotApplication,
     ThirdPartyChatbotIntegration,
     ThirdPartyChatbotProvider,
@@ -126,7 +128,6 @@ from .serializers import (
     PlatformTTSProviderSummarySerializer,
     PlatformTTSSettingsSerializer,
     PlatformTTSSettingsWriteSerializer,
-    CompanyTTSSettingsWriteSerializer,
     CosyVoiceDesignSerializer,
     CosyVoiceEnrollSerializer,
     CosyVoiceSettingsSerializer,
@@ -137,9 +138,13 @@ from .serializers import (
     TenantKnowledgeModelSettingsSerializer,
     TenantLLMAuthorizationSerializer,
     TenantThirdPartyChatbotAuthorizationSerializer,
+    TenantTTSCardAuthorizationSerializer,
     mask_knowledge_api_key,
 )
 from .services import third_party_chatbots, tts as tts_services
+from .services import tts_adapters
+from .services import tts_authorization as tts_auth
+from .services import tts_runtime_events
 from .services.asr import (
     get_effective_asr_config,
     serialize_asr_settings,
@@ -399,45 +404,6 @@ def _select_platform_tts_voice(provider, raw_voice_id=None) -> TTSVoice | None:
     return tts_services.get_default_tts_voice(provider)
 
 
-def _select_company_tts_voice(tenant, provider, raw_voice_id=None, *, model_code: str | None = None) -> TTSVoice | None:
-    if raw_voice_id not in (None, ''):
-        try:
-            voice_id = int(raw_voice_id)
-        except (TypeError, ValueError):
-            raise ValidationError({'voiceId': '音色不能为空'})
-        return tts_services.get_available_tts_voices(provider, model_code=model_code).filter(id=voice_id).first()
-    return tts_services.get_effective_tts_voice_for_tenant(tenant, provider, model_code=model_code)
-
-
-def _select_device_runtime_tts_voice(device, provider, raw_voice_id=None, *, model_code: str | None = None) -> TTSVoice | None:
-    if raw_voice_id not in (None, ''):
-        return _select_company_tts_voice(device.tenant, provider, raw_voice_id, model_code=model_code)
-
-    device_voice = getattr(device, 'tts_voice', None)
-    if device_voice is not None:
-        if (
-            device_voice.provider_id == provider.id
-            and tts_services.is_voice_available(device_voice)
-            and (model_code is None or tts_services.is_tts_voice_supported_by_model_code(device_voice, model_code))
-        ):
-            return device_voice
-        return None
-
-    return tts_services.get_effective_tts_voice_for_tenant(device.tenant, provider, model_code=model_code)
-
-
-def _company_tts_session_config(tenant, config, request_data=None) -> dict:
-    settings_obj = tts_services.get_tenant_tts_settings(tenant)
-    session_config = dict(settings_obj.tts_session_config if settings_obj is not None else config.tts_session_config)
-    request_config = request_data.get('ttsSessionConfig') if isinstance(request_data, dict) else None
-    if isinstance(request_config, dict):
-        session_config.update(request_config)
-    model_code = request_data.get('modelCode') if isinstance(request_data, dict) else None
-    if model_code:
-        session_config['model_code'] = model_code
-    return session_config
-
-
 def _get_platform_tts_provider(provider_code: str | None = None) -> TTSProvider:
     if provider_code is None:
         return tts_services.get_aliyun_tts_provider()
@@ -445,34 +411,82 @@ def _get_platform_tts_provider(provider_code: str | None = None) -> TTSProvider:
 
 
 def _build_company_tts_options_payload(tenant, request=None):
-    provider = tts_services.get_aliyun_tts_provider()
-    config = tts_services.get_effective_tts_config(provider)
-    settings_obj = tts_services.get_tenant_tts_settings(tenant)
-    tts_session_config = settings_obj.tts_session_config if settings_obj is not None else config.tts_session_config
-    default_model_code = tts_services.get_tts_model_profile_code_from_session(tts_session_config, config.model)
-    selected_voice = tts_services.get_effective_tts_voice_for_tenant(tenant, provider, model_code=default_model_code)
-    voices = tts_services.get_available_tts_voices(provider, model_code=default_model_code)
+    """Provider-neutral company TTS options.
+
+    Keeps the legacy flat ``voices`` list and single ``provider`` summary for the
+    existing pages, and adds ``providers[]`` groups plus each card's
+    ``publicConfigSchema`` so the UI can render per-card config for whichever
+    voice is selected. Only voices the tenant is authorized for appear.
+    """
+    voices = list(tts_auth.get_effective_tts_voices_for_tenant(tenant))
+    selected_voice = tts_auth.get_effective_tts_voice_for_tenant(tenant)
+    default_voice_id = selected_voice.id if selected_voice else None
+
+    serializer_context = {'default_voice_id': default_voice_id, 'request': request}
+    voices_by_provider: dict[int, list] = {}
+    for voice in voices:
+        voices_by_provider.setdefault(voice.provider_id, []).append(voice)
+
+    providers_payload = []
+    for provider_id, provider_voices in voices_by_provider.items():
+        provider = provider_voices[0].provider
+        try:
+            adapter = tts_adapters.get_tts_provider_adapter(provider.code)
+        except tts_adapters.TTSAdapterError:
+            continue
+        summary = adapter.public_provider_summary(provider)
+        summary['publicConfig'] = tts_auth.get_tenant_tts_card_public_config(tenant, provider)
+        summary['voices'] = CompanyTTSVoiceSerializer(
+            provider_voices,
+            many=True,
+            context=serializer_context,
+        ).data
+        providers_payload.append(summary)
+
+    default_provider = selected_voice.provider if selected_voice else None
+    sample_rate = tts_services.get_aliyun_tts_provider().sample_rate
+    default_test_text = tts_services.DEFAULT_TEST_TEXT
+    session_config = {}
+    if default_provider is not None:
+        try:
+            default_adapter = tts_adapters.get_tts_provider_adapter(default_provider.code)
+            default_config = default_adapter.effective_config(default_provider)
+            sample_rate = default_config.sample_rate
+            default_test_text = default_config.default_test_text
+            session_config = default_adapter.normalize_public_controls(
+                tts_auth.get_tenant_tts_card_public_config(tenant, default_provider)
+            )
+        except (tts_adapters.TTSAdapterError, cosyvoice_services.CosyVoiceCustomizationError):
+            session_config = {}
+
     return {
         'provider': {
-            'code': provider.code,
-            'name': provider.name,
-            'defaultModelCode': default_model_code,
+            'id': default_provider.id if default_provider else None,
+            'code': default_provider.code if default_provider else '',
+            'name': default_provider.name if default_provider else '',
+            'defaultModelCode': _default_model_code_for_provider(default_provider, session_config),
             'modelOptions': tts_services.public_tts_model_profiles(),
-            'isActive': provider.is_active,
+            'isActive': bool(default_provider.is_active) if default_provider else False,
         },
-        'defaultVoiceId': selected_voice.id if selected_voice else None,
-        'sampleRate': config.sample_rate,
-        'ttsSessionConfig': tts_session_config,
-        'defaultTestText': config.default_test_text,
-        'voices': CompanyTTSVoiceSerializer(
-            voices,
-            many=True,
-            context={
-                'default_voice_id': selected_voice.id if selected_voice else None,
-                'request': request,
-            },
-        ).data,
+        'providers': providers_payload,
+        'defaultVoiceId': default_voice_id,
+        'sampleRate': sample_rate,
+        'ttsSessionConfig': session_config,
+        'defaultTestText': default_test_text,
+        'voices': CompanyTTSVoiceSerializer(voices, many=True, context=serializer_context).data,
     }
+
+
+def _default_model_code_for_provider(provider, controls=None) -> str:
+    """Prefer the tenant's saved card config over the platform default."""
+    if provider is None:
+        return ''
+    if isinstance(controls, dict) and controls.get('model_code'):
+        return str(controls['model_code'])
+    try:
+        return tts_adapters.get_tts_provider_adapter(provider.code).default_model_code(provider)
+    except tts_adapters.TTSAdapterError:
+        return ''
 
 
 class TTSProviderListView(APIView):
@@ -670,17 +684,76 @@ class CompanyTTSDefaultVoiceView(TenantScopedQuerysetMixin, APIView):
         tenant = self.request_tenant
         if tenant is None:
             return Response({'tenant': '当前账号未归属公司'}, status=status.HTTP_400_BAD_REQUEST)
-        provider = tts_services.get_aliyun_tts_provider()
-        settings_obj = tts_services.get_tenant_tts_settings(tenant)
-        serializer = CompanyTTSSettingsWriteSerializer(settings_obj, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        voice = serializer.validated_data.get('default_voice')
-        session_config = serializer.validated_data.get('tts_session_config') or settings_obj.tts_session_config
-        model_code = tts_services.get_tts_model_profile_code_from_session(session_config, provider.model)
-        if voice is not None and not tts_services.get_available_tts_voices(provider, model_code=model_code).filter(id=voice.id).exists():
-            return Response({'voiceId': '所选音色不支持当前播报模型'}, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
+
+        raw_voice_id = request.data.get('voiceId')
+        voice = None
+        if raw_voice_id not in (None, ''):
+            # Authorization is checked before anything is persisted.
+            voice = tts_auth.ensure_tts_voice_authorized_for_tenant(tenant, raw_voice_id)
+        else:
+            voice = tts_auth.get_effective_tts_voice_for_tenant(tenant)
+        if voice is None:
+            return Response(
+                {'voiceId': '当前公司暂无可用 TTS 音色，请联系超管分配'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        adapter = tts_adapters.get_adapter_for_voice(voice)
+        controls = self._resolve_public_controls(request.data, tenant, voice, adapter)
+        try:
+            adapter.ensure_voice_supported(voice, controls)
+        except tts_adapters.TTSAdapterError as exc:
+            return Response({'voiceId': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            TenantTTSSettings.objects.update_or_create(
+                tenant=tenant,
+                defaults={'default_voice_id': voice.id},
+            )
+            if controls is not None:
+                # Config is stored on the selected voice's own card, so saving one
+                # card's controls never overwrites another card's config.
+                TenantTTSProviderGrant.objects.filter(
+                    tenant=tenant,
+                    provider_id=voice.provider_id,
+                ).update(public_config=controls)
+            tts_runtime_events.publish_tenant_tts_config_changed(tenant.id)
+
         return Response(_build_company_tts_options_payload(tenant, request))
+
+    def _resolve_public_controls(self, data, tenant, voice, adapter):
+        """Merge request controls over the card's stored config, then whitelist."""
+        raw = data.get('ttsSessionConfig')
+        model_code = data.get('modelCode')
+        if not isinstance(raw, dict) and model_code in (None, ''):
+            return None
+
+        merged = dict(tts_auth.get_tenant_tts_card_public_config(tenant, voice.provider))
+        if isinstance(raw, dict):
+            merged.update(_camel_to_snake_controls(raw))
+        if model_code:
+            merged['model_code'] = model_code
+        try:
+            return adapter.normalize_public_controls(merged)
+        except tts_adapters.TTSAdapterError as exc:
+            raise ValidationError({'ttsSessionConfig': str(exc)})
+
+
+_TTS_CONTROL_ALIASES = {
+    'modelCode': 'model_code',
+    'languageType': 'language_type',
+    'responseFormat': 'response_format',
+    'sampleRate': 'sample_rate',
+    'speechRate': 'speech_rate',
+    'pitchRate': 'pitch_rate',
+    'bitRate': 'bit_rate',
+    'optimizeInstructions': 'optimize_instructions',
+}
+
+
+def _camel_to_snake_controls(raw: dict) -> dict:
+    """Accept the camelCase control names the web client already sends."""
+    return {_TTS_CONTROL_ALIASES.get(key, key): value for key, value in raw.items()}
 
 
 class CompanyTTSTestView(TenantScopedQuerysetMixin, APIView):
@@ -688,19 +761,42 @@ class CompanyTTSTestView(TenantScopedQuerysetMixin, APIView):
 
     def post(self, request):
         tenant = self.request_tenant
-        provider = tts_services.get_aliyun_tts_provider()
-        config = tts_services.get_effective_tts_config(provider)
-        session_config = _company_tts_session_config(tenant, config, request.data)
-        model_code = tts_services.get_tts_model_profile_code_from_session(session_config, config.model)
-        voice = _select_company_tts_voice(tenant, provider, request.data.get('voiceId'), model_code=model_code)
+        voice = tts_auth.resolve_tenant_tts_voice(tenant, request.data.get('voiceId'))
         if voice is None:
-            return Response({'voiceId': '请先配置默认音色或当前模型不支持该音色'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'voiceId': '当前公司暂无可用 TTS 音色，请联系超管分配'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            # The resolved voice's own card decides the adapter and the payload.
+            adapter = tts_adapters.get_adapter_for_voice(voice)
+            adapter.ensure_channel(voice.provider, tts_adapters.CHANNEL_HTTP_TEST)
+            config = adapter.effective_config(voice.provider)
+            controls = adapter.normalize_public_controls(
+                _company_card_controls(tenant, voice, request.data)
+            )
+        except (tts_adapters.TTSAdapterError, cosyvoice_services.CosyVoiceCustomizationError) as exc:
+            return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
+
         text = tts_services.normalize_tts_text(request.data.get('text'), config)
         try:
-            pcm = tts_services.synthesize_tts_pcm(text=text, voice=voice, config=config, session_config=session_config)
+            pcm = adapter.synthesize_pcm(text=text, voice=voice, config=config, controls=controls)
         except Exception as exc:
             return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
         return _tts_audio_response(pcm=pcm, config=config, voice=voice, wrap_wav=True)
+
+
+def _company_card_controls(tenant, voice, request_data=None) -> dict:
+    """Stored card config, overlaid with this request's public overrides."""
+    controls = dict(tts_auth.get_tenant_tts_card_public_config(tenant, voice.provider))
+    if isinstance(request_data, dict):
+        raw = request_data.get('ttsSessionConfig')
+        if isinstance(raw, dict):
+            controls.update(_camel_to_snake_controls(raw))
+        model_code = request_data.get('modelCode')
+        if model_code:
+            controls['model_code'] = model_code
+    return controls
 
 
 class TTSRuntimeView(APIView):
@@ -717,16 +813,28 @@ class TTSRuntimeView(APIView):
             device = get_runtime_device(device_code, require_tenant=True)
         except RuntimeDeviceError as exc:
             return Response(exc.as_payload(), status=exc.status_code)
-        provider = tts_services.get_aliyun_tts_provider()
-        config = tts_services.get_effective_tts_config(provider)
-        session_config = _company_tts_session_config(device.tenant, config, request.data)
-        model_code = tts_services.get_tts_model_profile_code_from_session(session_config, config.model)
-        voice = _select_device_runtime_tts_voice(device, provider, request.data.get('voiceId'), model_code=model_code)
+
+        voice = tts_auth.resolve_device_tts_voice(device, request.data.get('voiceId'))
         if voice is None:
-            return Response({'voiceId': '请先配置默认音色或当前模型不支持该音色'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'voiceId': '当前公司暂无可用 TTS 音色，请联系超管分配'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            # Android sends only voiceId/text/generic params; the card is derived
+            # from the resolved voice, never from the request.
+            adapter = tts_adapters.get_adapter_for_voice(voice)
+            adapter.ensure_channel(voice.provider, tts_adapters.CHANNEL_HTTP_RUNTIME)
+            config = adapter.effective_config(voice.provider)
+            controls = adapter.normalize_public_controls(
+                _company_card_controls(device.tenant, voice, request.data)
+            )
+        except (tts_adapters.TTSAdapterError, cosyvoice_services.CosyVoiceCustomizationError) as exc:
+            return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
+
         text = tts_services.normalize_tts_text(request.data.get('text'), config)
         try:
-            pcm = tts_services.synthesize_tts_pcm(text=text, voice=voice, config=config, session_config=session_config)
+            pcm = adapter.synthesize_pcm(text=text, voice=voice, config=config, controls=controls)
         except Exception as exc:
             return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
         return _tts_audio_response(pcm=pcm, config=config, voice=voice, wrap_wav=_request_wav_audio(request))
@@ -1200,6 +1308,111 @@ class TenantLLMAuthorizationView(APIView):
                 tenant=tenant,
                 defaults={'default_model_id': default_model_id},
             )
+
+        return Response(self._response_payload(tenant))
+
+
+class TenantTTSCardAuthorizationView(APIView):
+    """Super-admin: which TTS cards is this company allowed to use?
+
+    Mirrors the LLM allocation GET/PUT experience, but the resource is a TTS card
+    (``TTSProvider``) rather than a model.
+    """
+
+    permission_classes = [IsSuperUser]
+
+    def _get_tenant(self, tenant_id):
+        tenant = Tenant.objects.filter(id=tenant_id, is_active=True).first()
+        if tenant is None:
+            raise ValidationError({'tenantId': '公司不存在或已停用'})
+        return tenant
+
+    def _response_payload(self, tenant):
+        settings_obj = tts_services.get_tenant_tts_settings(tenant)
+        default_voice_id = getattr(settings_obj, 'default_voice_id', None)
+        grant_map = {
+            grant.provider_id: grant
+            for grant in TenantTTSProviderGrant.objects.filter(tenant=tenant)
+        }
+        providers = []
+        for provider in tts_auth.grantable_tts_providers():
+            grant = grant_map.get(provider.id)
+            try:
+                adapter = tts_adapters.get_tts_provider_adapter(provider.code)
+            except tts_adapters.TTSAdapterError:
+                # A card whose adapter is not implemented cannot be allocated.
+                continue
+            usage = tts_auth.tts_provider_usage_for_tenant(tenant, provider)
+            voices = [
+                self._voice_payload(provider, voice, adapter, tenant, default_voice_id)
+                for voice in provider.voices.all().order_by('sort_order', 'id')
+            ]
+            summary = adapter.public_provider_summary(provider)
+            summary.update({
+                'sortOrder': provider.id,
+                'grantIsActive': bool(grant and grant.is_active),
+                'publicConfig': dict(grant.public_config) if grant and isinstance(grant.public_config, dict) else {},
+                'voices': voices,
+                'usage': usage,
+                'canDisableGrant': not (usage['tenantDefault'] or usage['deviceCount'] or usage['deviceApplicationCount']),
+            })
+            providers.append(summary)
+        return {
+            'tenant': {'id': tenant.id, 'name': tenant.name, 'isActive': tenant.is_active},
+            'providers': providers,
+            'defaultVoiceId': default_voice_id,
+        }
+
+    def _voice_payload(self, provider, voice, adapter, tenant, default_voice_id):
+        return {
+            'id': voice.id,
+            'providerId': provider.id,
+            'providerCode': provider.code,
+            'displayName': voice.display_name,
+            'voiceCode': voice.voice_code,
+            'gender': voice.gender,
+            'avatarPath': voice.avatar_path,
+            'isActive': voice.is_active,
+            'isVisible': voice.is_visible,
+            'sortOrder': voice.sort_order,
+            'supportedChannels': adapter.supported_channels(provider),
+            'capabilities': adapter.public_voice_capabilities(voice),
+            'effectiveAuthorized': tts_auth.is_tts_voice_effective_for_tenant(tenant, voice),
+            'isDefault': voice.id == default_voice_id,
+            'usage': tts_auth.tts_voice_usage_for_tenant(tenant, voice),
+        }
+
+    def get(self, request, tenant_id):
+        tenant = self._get_tenant(tenant_id)
+        return Response(self._response_payload(tenant))
+
+    def put(self, request, tenant_id):
+        serializer = TenantTTSCardAuthorizationSerializer(
+            data=request.data,
+            context={'tenant_id': tenant_id},
+        )
+        serializer.is_valid(raise_exception=True)
+        tenant = serializer.validated_data['tenant']
+        grants = serializer.validated_data['normalizedGrants']
+        default_voice_id = serializer.validated_data.get('defaultVoiceId')
+
+        with transaction.atomic():
+            for entry in grants:
+                defaults = {'is_active': entry['isActive']}
+                if 'publicConfig' in entry:
+                    defaults['public_config'] = entry['publicConfig']
+                TenantTTSProviderGrant.objects.update_or_create(
+                    tenant=tenant,
+                    provider=entry['provider'],
+                    defaults=defaults,
+                )
+            TenantTTSSettings.objects.update_or_create(
+                tenant=tenant,
+                defaults={'default_voice_id': default_voice_id},
+            )
+            # Grants and per-card config change a device's effective voice without
+            # touching the Device row, so online devices must be told explicitly.
+            tts_runtime_events.publish_tenant_tts_config_changed(tenant.id)
 
         return Response(self._response_payload(tenant))
 
