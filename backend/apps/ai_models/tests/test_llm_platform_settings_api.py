@@ -93,6 +93,22 @@ class LLMPlatformSettingsApiTests(TenantTestMixin, APITestCase):
         self.assertNotIn('sk-secret', str(resp.data))
         self.assertTrue(resp.data['apiKeyConfigured'])
         self.assertTrue(resp.data['apiKeyMasked'].startswith('sk-'))
+        self.assertEqual(resp.data['apiProtocol'], 'chat_completions')
+
+    def test_superuser_can_update_provider_api_protocol(self):
+        provider = self.create_platform_provider()
+        self.client.force_authenticate(self.superuser)
+
+        resp = self.client.patch(
+            f'/api/v1/settings/llm/providers/{provider.id}/',
+            {'apiProtocol': 'responses'},
+            format='json',
+        )
+
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.data['apiProtocol'], 'responses')
+        provider.refresh_from_db()
+        self.assertEqual(provider.api_protocol, 'responses')
 
     def test_superuser_can_create_platform_provider_without_provider_type(self):
         self.client.force_authenticate(self.superuser)

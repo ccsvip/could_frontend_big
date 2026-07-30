@@ -152,7 +152,7 @@ export const LlmSettingsAdminPage = () => {
   const openCreateProvider = () => {
     setEditingProvider(null);
     providerForm.resetFields();
-    providerForm.setFieldsValue({ sortOrder: 0 });
+    providerForm.setFieldsValue({ sortOrder: 0, apiProtocol: 'chat_completions' });
     setProviderLogoFile([]);
     setProviderModalOpen(true);
   };
@@ -162,6 +162,7 @@ export const LlmSettingsAdminPage = () => {
     providerForm.setFieldsValue({
       name: record.name,
       apiBaseUrl: record.apiBaseUrl,
+      apiProtocol: record.apiProtocol,
       sortOrder: record.sortOrder,
     });
     setProviderLogoFile(record.avatarUrl ? [{ uid: '-1', name: 'logo', status: 'done', url: record.avatarUrl }] : []);
@@ -687,6 +688,18 @@ export const LlmSettingsAdminPage = () => {
           </Form.Item>
           <Form.Item name="apiBaseUrl" label="API 地址" rules={[{ required: true, message: '请输入 API 地址' }]}>
             <Input className="rounded-lg" />
+          </Form.Item>
+          <Form.Item
+            name="apiProtocol"
+            label="API 协议"
+            rules={[{ required: true, message: '请选择 API 协议' }]}
+          >
+            <Select
+              options={[
+                { value: 'chat_completions', label: 'OpenAI Chat Completions' },
+                { value: 'responses', label: 'OpenAI Responses API' },
+              ]}
+            />
           </Form.Item>
           <Form.Item
             name="apiKey"

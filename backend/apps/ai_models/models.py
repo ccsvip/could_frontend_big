@@ -17,6 +17,13 @@ PROVIDER_TYPE_CHOICES = [
     ('other', '其他'),
 ]
 
+LLM_API_PROTOCOL_CHAT_COMPLETIONS = 'chat_completions'
+LLM_API_PROTOCOL_RESPONSES = 'responses'
+LLM_API_PROTOCOL_CHOICES = [
+    (LLM_API_PROTOCOL_CHAT_COMPLETIONS, 'OpenAI Chat Completions'),
+    (LLM_API_PROTOCOL_RESPONSES, 'OpenAI Responses API'),
+]
+
 RUNTIME_BACKEND_PLATFORM_LLM = 'platform_llm'
 RUNTIME_BACKEND_THIRD_PARTY_CHATBOT = 'third_party_chatbot'
 ASR_DEFAULT_EFFECTIVE_INPUT_TIMEOUT_SECONDS = 15
@@ -43,6 +50,12 @@ THIRD_PARTY_CHATBOT_SCHEME_CHOICES = [
 class LLMProvider(models.Model):
     name = models.CharField('供应商名称', max_length=128)
     provider_type = models.CharField('供应商类型', max_length=32, choices=PROVIDER_TYPE_CHOICES, default='openai')
+    api_protocol = models.CharField(
+        'API 协议',
+        max_length=32,
+        choices=LLM_API_PROTOCOL_CHOICES,
+        default=LLM_API_PROTOCOL_CHAT_COMPLETIONS,
+    )
     api_base_url = models.URLField('API 地址', max_length=512)
     api_key = models.CharField('API 密钥', max_length=512)
     avatar = models.ImageField('供应商头像', upload_to='ai_models/avatars/', blank=True, null=True)

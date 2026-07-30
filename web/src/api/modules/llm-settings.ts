@@ -48,6 +48,7 @@ export type PlatformLLMProviderRecord = {
   name: string;
   providerType: string;
   providerTypeLabel: string;
+  apiProtocol: 'chat_completions' | 'responses';
   apiBaseUrl: string;
   apiKeyMasked: string;
   apiKeyConfigured: boolean;
@@ -69,6 +70,7 @@ export type PlatformLLMProviderListResponse = {
 export type PlatformLLMProviderPayload = {
   name: string;
   providerType?: string;
+  apiProtocol?: 'chat_completions' | 'responses';
   apiBaseUrl: string;
   apiKey?: string;
   avatar?: File;
@@ -334,6 +336,7 @@ const buildProviderFormData = (payload: Partial<PlatformLLMProviderPayload>) => 
   const formData = new FormData();
   if (payload.name !== undefined) formData.append('name', payload.name);
   if (payload.providerType !== undefined) formData.append('providerType', payload.providerType);
+  if (payload.apiProtocol !== undefined) formData.append('apiProtocol', payload.apiProtocol);
   if (payload.apiBaseUrl !== undefined) formData.append('apiBaseUrl', payload.apiBaseUrl);
   if (payload.apiKey !== undefined) formData.append('apiKey', payload.apiKey);
   if (payload.avatar) formData.append('avatar', payload.avatar);

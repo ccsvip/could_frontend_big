@@ -164,19 +164,18 @@ def _build_llm_request_payload(
     max_tokens: int,
     max_tokens_unlimited: bool,
     enable_web_search: bool = False,
+    api_protocol: str = 'chat_completions',
 ) -> dict:
-    payload = {
-        'model': model_name,
-        'messages': messages,
-        'stream': stream,
-        'temperature': temperature,
-    }
-    if not max_tokens_unlimited:
-        payload['max_tokens'] = max_tokens
-    if enable_web_search:
-        payload['enable_search'] = True
-        payload['search_options'] = {'forced_search': True}
-    return payload
+    return llm_services.build_llm_request_payload(
+        model_name=model_name,
+        messages=messages,
+        stream=stream,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        max_tokens_unlimited=max_tokens_unlimited,
+        enable_web_search=enable_web_search,
+        api_protocol=api_protocol,
+    )
 
 
 class ASRSettingsView(APIView):
@@ -1756,15 +1755,8 @@ class CompanyLLMModelTestView(TenantScopedQuerysetMixin, APIView):
         return Response(llm_services.run_llm_model_test(model=model, settings=test_settings))
 
 
-def _build_chat_completions_url(raw_url: str) -> str:
-    api_url = raw_url.rstrip('/')
-    if api_url.endswith('/chat/completions'):
-        return api_url
-    if api_url.endswith('/openai'):
-        return f'{api_url}/v1/chat/completions'
-    if api_url.endswith('/v1'):
-        return f'{api_url}/chat/completions'
-    return f'{api_url}/chat/completions'
+def _build_chat_completions_url(raw_url: str, *, api_protocol: str = 'chat_completions') -> str:
+    return llm_services.build_llm_api_url(raw_url, api_protocol)
 
 
 def _resolve_tenant_llm_model(tenant, model_id=None, *, use_default: bool = False) -> LLMModel:
@@ -1791,62 +1783,26 @@ def _resolve_tenant_third_party_chatbot(tenant, chatbot_id=None) -> ThirdPartyCh
 
 
 def _coerce_openai_content_to_text(content) -> str:
-    if isinstance(content, str):
-        return content
-    if isinstance(content, list):
-        chunks = []
-        for item in content:
-            if isinstance(item, str):
-                chunks.append(item)
-                continue
-            if not isinstance(item, dict):
-                continue
-            text = item.get('text')
-            if isinstance(text, str):
-                chunks.append(text)
-                continue
-            inner_text = item.get('content')
-            if isinstance(inner_text, str):
-                chunks.append(inner_text)
-        return ''.join(chunks)
-    return ''
+    return llm_services._coerce_openai_content_to_text(content)
 
 
-def _extract_openai_completion_text(payload: dict, *, stream_chunk: bool) -> str:
-    choices = payload.get('choices')
-    if not isinstance(choices, list) or not choices:
-        return ''
-
-    first_choice = choices[0] if isinstance(choices[0], dict) else {}
+def _extract_openai_completion_text(
+    payload: dict,
+    *,
+    stream_chunk: bool,
+    api_protocol: str = 'chat_completions',
+) -> str:
     if stream_chunk:
-        delta = first_choice.get('delta') if isinstance(first_choice, dict) else {}
-        if not isinstance(delta, dict):
-            return ''
-        return _coerce_openai_content_to_text(delta.get('content'))
-
-    if isinstance(first_choice, dict):
-        message = first_choice.get('message')
-        if isinstance(message, dict):
-            content = _coerce_openai_content_to_text(message.get('content'))
-            if content:
-                return content
-        return _coerce_openai_content_to_text(first_choice.get('text'))
-    return ''
+        return llm_services.extract_llm_stream_delta(payload, api_protocol=api_protocol)
+    return llm_services.extract_llm_completion_text(payload, api_protocol=api_protocol)
 
 
 def _extract_openai_error_message(payload: dict) -> str:
-    error = payload.get('error')
-    if isinstance(error, dict):
-        message = error.get('message')
-        if isinstance(message, str):
-            return message
-    return ''
+    return llm_services.extract_llm_error_message(payload)
 
 
 def _parse_sse_data_line(line: str) -> str | None:
-    if not line.startswith('data:'):
-        return None
-    return line[5:].lstrip()
+    return llm_services._parse_sse_data_line(line)
 
 
 def _normalize_generated_title(raw_title: str) -> str:
@@ -1872,6 +1828,7 @@ async def _generate_conversation_title(
         '请根据用户首轮提问和助手首轮回答，生成一个简短、明确、适合侧边栏展示的中文标题。'
         '要求：1. 只输出标题本身；2. 不要使用引号、句号、序号；3. 控制在12个汉字以内。'
     )
+    api_protocol = llm_services.get_llm_api_protocol(provider)
     response = await client.post(
         api_url,
         json=_build_llm_request_payload(
@@ -1888,6 +1845,7 @@ async def _generate_conversation_title(
             max_tokens_unlimited=False,
             temperature=0.2,
             enable_web_search=enable_web_search,
+            api_protocol=api_protocol,
         ),
         headers={
             'Authorization': f'Bearer {provider.api_key}',
@@ -1903,7 +1861,7 @@ async def _generate_conversation_title(
         return None
     if not isinstance(payload, dict):
         return None
-    title = _extract_openai_completion_text(payload, stream_chunk=False)
+    title = _extract_openai_completion_text(payload, stream_chunk=False, api_protocol=api_protocol)
     normalized_title = _normalize_generated_title(title)
     return normalized_title if normalized_title and normalized_title != '新对话' else None
 
@@ -1923,6 +1881,7 @@ async def _generate_conversation_summary(
         '请基于用户首轮提问和助手首轮回答，生成一句简短中文摘要，用于侧边栏副标题展示。'
         '要求：1. 只输出摘要本身；2. 控制在28个汉字以内；3. 不要使用引号、句号、序号。'
     )
+    api_protocol = llm_services.get_llm_api_protocol(provider)
     response = await client.post(
         api_url,
         json=_build_llm_request_payload(
@@ -1936,6 +1895,7 @@ async def _generate_conversation_summary(
             max_tokens_unlimited=False,
             temperature=0.2,
             enable_web_search=enable_web_search,
+            api_protocol=api_protocol,
         ),
         headers={
             'Authorization': f'Bearer {provider.api_key}',
@@ -1951,7 +1911,11 @@ async def _generate_conversation_summary(
         return None
     if not isinstance(payload, dict):
         return None
-    summary = _extract_openai_completion_text(payload, stream_chunk=False).strip().replace('\r', ' ').replace('\n', ' ')
+    summary = _extract_openai_completion_text(
+        payload,
+        stream_chunk=False,
+        api_protocol=api_protocol,
+    ).strip().replace('\r', ' ').replace('\n', ' ')
     if len(summary) > 60:
         summary = summary[:60].rstrip()
     return summary or None
@@ -2703,7 +2667,8 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         from apps.ai_models.services.agent_knowledge import inject_knowledge_context_with_recall, media_blocks_for_reply_text
         api_messages, knowledge_recall_result = inject_knowledge_context_with_recall(conversation, api_messages, content)
 
-        api_url = _build_chat_completions_url(provider.api_base_url)
+        api_protocol = llm_services.get_llm_api_protocol(provider)
+        api_url = _build_chat_completions_url(provider.api_base_url, api_protocol=api_protocol)
 
         logger.info(
             'chat.send.dispatch conversation_id=%s user_id=%s provider_id=%s provider_name=%s model_name=%s api_url=%s message_count=%s use_stream=%s temperature=%s max_tokens=%s',
@@ -2809,6 +2774,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                                 max_tokens=conversation.max_tokens,
                                 max_tokens_unlimited=conversation.max_tokens_unlimited,
                                 enable_web_search=enable_web_search,
+                                api_protocol=api_protocol,
                             ),
                             headers={
                                 'Authorization': f'Bearer {provider.api_key}',
@@ -2861,7 +2827,11 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                                 )
                                 return
 
-                            text = _extract_openai_completion_text(payload, stream_chunk=False)
+                            text = _extract_openai_completion_text(
+                                payload,
+                                stream_chunk=False,
+                                api_protocol=api_protocol,
+                            )
                             if text:
                                 full_content = text
                                 logger.info(
@@ -2951,6 +2921,7 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                             max_tokens=conversation.max_tokens,
                             max_tokens_unlimited=conversation.max_tokens_unlimited,
                             enable_web_search=enable_web_search,
+                            api_protocol=api_protocol,
                         ),
                         headers={
                             'Authorization': f'Bearer {provider.api_key}',
@@ -2997,7 +2968,24 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                                     break
                                 try:
                                     chunk = json.loads(data_str)
-                                    text = _extract_openai_completion_text(chunk, stream_chunk=True)
+                                    error_message = _extract_openai_error_message(chunk)
+                                    if error_message:
+                                        logger.warning(
+                                            'chat.send.stream_json_error conversation_id=%s user_id=%s provider_id=%s error_message=%s',
+                                            conversation.id,
+                                            request.user.id,
+                                            provider.id,
+                                            error_message[:200],
+                                        )
+                                        yield f"data: {json.dumps({'error': True, 'content': error_message})}\n\n"
+                                        yield "data: [DONE]\n\n"
+                                        await sync_to_async(_save_assistant_message, thread_sensitive=True)(error_message[:500])
+                                        return
+                                    text = _extract_openai_completion_text(
+                                        chunk,
+                                        stream_chunk=True,
+                                        api_protocol=api_protocol,
+                                    )
                                     if text:
                                         chunk_count += 1
                                         full_content += text
@@ -3029,7 +3017,11 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                                     )
                                     return
 
-                                text = _extract_openai_completion_text(payload, stream_chunk=False)
+                                text = _extract_openai_completion_text(
+                                    payload,
+                                    stream_chunk=False,
+                                    api_protocol=api_protocol,
+                                )
                                 if text:
                                     full_content = text
                                     logger.info(

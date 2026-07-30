@@ -29,6 +29,8 @@ from .models import (
     ChatMessage,
     EmbeddingModel,
     LLMModel,
+    LLM_API_PROTOCOL_CHOICES,
+    LLM_API_PROTOCOL_CHAT_COMPLETIONS,
     LLMProvider,
     LLMTestSettings,
     RerankModel,
@@ -74,6 +76,7 @@ def mask_knowledge_api_key(value: str) -> str:
 
 class PlatformLLMProviderSerializer(serializers.ModelSerializer):
     providerType = serializers.CharField(source='provider_type')
+    apiProtocol = serializers.ChoiceField(source='api_protocol', choices=LLM_API_PROTOCOL_CHOICES)
     providerTypeLabel = serializers.CharField(source='get_provider_type_display', read_only=True)
     apiBaseUrl = serializers.URLField(source='api_base_url')
     apiKeyMasked = serializers.SerializerMethodField()
@@ -86,7 +89,7 @@ class PlatformLLMProviderSerializer(serializers.ModelSerializer):
     class Meta:
         model = LLMProvider
         fields = [
-            'id', 'name', 'providerType', 'providerTypeLabel',
+            'id', 'name', 'providerType', 'providerTypeLabel', 'apiProtocol',
             'apiBaseUrl', 'apiKeyMasked', 'apiKeyConfigured',
             'avatar', 'avatarUrl', 'clearAvatar',
             'isActive', 'sortOrder', 'created_at', 'updated_at',
@@ -117,6 +120,10 @@ class PlatformLLMProviderSerializer(serializers.ModelSerializer):
 
 class PlatformLLMProviderWriteSerializer(serializers.ModelSerializer):
     providerType = serializers.CharField(source='provider_type', required=False, default='openai')
+    apiProtocol = serializers.ChoiceField(
+        source='api_protocol', choices=LLM_API_PROTOCOL_CHOICES,
+        required=False, default=LLM_API_PROTOCOL_CHAT_COMPLETIONS,
+    )
     apiBaseUrl = serializers.URLField(source='api_base_url')
     apiKey = serializers.CharField(source='api_key', required=False, allow_blank=True, write_only=True)
     clearAvatar = serializers.BooleanField(required=False, default=False, write_only=True)
@@ -126,7 +133,7 @@ class PlatformLLMProviderWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = LLMProvider
         fields = [
-            'name', 'providerType', 'apiBaseUrl', 'apiKey',
+            'name', 'providerType', 'apiProtocol', 'apiBaseUrl', 'apiKey',
             'avatar', 'clearAvatar', 'isActive', 'sortOrder',
         ]
         extra_kwargs = {

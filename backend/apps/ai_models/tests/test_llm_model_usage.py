@@ -50,15 +50,16 @@ class FakeStreamLLMResponse:
 class FakeStreamLLMClient:
     is_closed = False
 
-    def __init__(self):
+    def __init__(self, lines=None):
         self.stream_calls = []
+        self.lines = lines or [
+            'data: ' + json.dumps({'choices': [{'delta': {'content': '你好'}}]}),
+            'data: [DONE]',
+        ]
 
     def stream(self, *args, **kwargs):
         self.stream_calls.append((args, kwargs))
-        return FakeStreamLLMResponse([
-            'data: ' + json.dumps({'choices': [{'delta': {'content': '你好'}}]}),
-            'data: [DONE]',
-        ])
+        return FakeStreamLLMResponse(self.lines)
 
 
 class LLMModelUsageTests(TenantTestMixin, APITestCase):
@@ -280,6 +281,110 @@ class LLMModelUsageTests(TenantTestMixin, APITestCase):
         self.assertTrue(result['success'])
         self.assertTrue(client.post.call_args.kwargs['json']['enable_search'])
         self.assertTrue(client.post.call_args.kwargs['json']['search_options']['forced_search'])
+
+    @patch('apps.ai_models.llm_services.httpx.Client')
+    def test_run_llm_model_test_uses_responses_endpoint_and_payload(self, mock_client_class):
+        settings = LLMTestSettings(test_prompt='请回复连接成功', test_timeout_seconds=7, test_max_tokens=12)
+        self.provider.api_protocol = 'responses'
+        self.provider.save(update_fields=['api_protocol'])
+        client = mock_client_class.return_value.__enter__.return_value
+        client.post.return_value = MagicMock(status_code=200)
+
+        result = run_llm_model_test(model=self.default_model, settings=settings)
+
+        self.assertTrue(result['success'])
+        self.assertEqual(client.post.call_args.args[0], 'https://api.openai.com/v1/responses')
+        self.assertEqual(client.post.call_args.kwargs['json'], {
+            'model': 'gpt-4.1',
+            'input': [{'role': 'user', 'content': '请回复连接成功'}],
+            'stream': False,
+            'temperature': 0,
+            'max_output_tokens': 12,
+        })
+
+    def test_responses_payload_combines_web_search_and_function_tools(self):
+        payload = llm_services.build_llm_request_payload(
+            model_name='gpt-4.1',
+            messages=[{'role': 'user', 'content': '北京天气并执行命令'}],
+            stream=True,
+            temperature=0.3,
+            max_tokens=100,
+            enable_web_search=True,
+            api_protocol='responses',
+            tools=[{
+                'type': 'function',
+                'function': {
+                    'name': 'dispatch_command',
+                    'description': 'Dispatch a device command',
+                    'parameters': {'type': 'object', 'properties': {}},
+                },
+            }],
+        )
+
+        self.assertEqual(payload['input'], [{'role': 'user', 'content': '北京天气并执行命令'}])
+        self.assertEqual(payload['max_output_tokens'], 100)
+        self.assertEqual(payload['tools'], [
+            {
+                'type': 'function',
+                'name': 'dispatch_command',
+                'description': 'Dispatch a device command',
+                'parameters': {'type': 'object', 'properties': {}},
+            },
+            {'type': 'web_search'},
+        ])
+
+    def test_responses_tool_stream_preserves_existing_events(self):
+        async def run_stream():
+            fake_client = FakeStreamLLMClient([
+                'data: ' + json.dumps({'type': 'response.output_text.delta', 'delta': '你好'}),
+                'data: ' + json.dumps({
+                    'type': 'response.output_item.done',
+                    'item': {
+                        'type': 'function_call',
+                        'call_id': 'call_1',
+                        'name': 'dispatch_command',
+                        'arguments': '{"command":"restart"}',
+                    },
+                }),
+                'data: [DONE]',
+            ])
+            llm_services._STREAM_LLM_CLIENTS.clear()
+            llm_services._STREAM_LLM_CLIENTS[id(asyncio.get_running_loop())] = fake_client
+            try:
+                events = [
+                    event async for event in llm_services.stream_llm_chat_completion_with_tools(
+                        model_config={
+                            'name': 'gpt-4.1',
+                            'apiBaseUrl': 'https://api.openai.com/v1',
+                            'apiKey': 'sk-secret',
+                            'apiProtocol': 'responses',
+                        },
+                        messages=[{'role': 'user', 'content': '重启设备'}],
+                        tools=[{
+                            'type': 'function',
+                            'function': {'name': 'dispatch_command', 'parameters': {'type': 'object'}},
+                        }],
+                    )
+                ]
+            finally:
+                llm_services._STREAM_LLM_CLIENTS.clear()
+            return fake_client, events
+
+        fake_client, events = async_to_sync(run_stream)()
+
+        self.assertEqual(fake_client.stream_calls[0][0][1], 'https://api.openai.com/v1/responses')
+        self.assertEqual(events, [
+            {'type': 'delta', 'text': '你好'},
+            {
+                'type': 'tool_calls',
+                'tool_calls': [{
+                    'id': 'call_1',
+                    'type': 'function',
+                    'function': {'name': 'dispatch_command', 'arguments': '{"command":"restart"}'},
+                }],
+            },
+            {'type': 'done'},
+        ])
 
     @patch('apps.ai_models.llm_services.httpx.Client')
     def test_run_llm_model_test_returns_safe_failure_summary(self, mock_client_class):

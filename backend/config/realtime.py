@@ -2354,6 +2354,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
             'name': model.name,
             'apiBaseUrl': model.provider.api_base_url,
             'apiKey': model.provider.api_key,
+            'apiProtocol': model.provider.api_protocol,
             'enableWebSearch': model.enable_web_search,
         },
         'llmModelId': model.id,

@@ -277,6 +277,40 @@ class ChatApiTests(TenantTestMixin, APITestCase):
             'https://api.longcat.chat/openai/v1/chat/completions',
         )
 
+    def test_build_responses_url_and_payload(self):
+        payload = _build_llm_request_payload(
+            model_name='gpt-4.1',
+            messages=[{'role': 'user', 'content': '你好'}],
+            stream=False,
+            temperature=0.7,
+            max_tokens=1000,
+            max_tokens_unlimited=False,
+            enable_web_search=True,
+            api_protocol='responses',
+        )
+
+        self.assertEqual(
+            _build_chat_completions_url('https://api.openai.com/v1/chat/completions', api_protocol='responses'),
+            'https://api.openai.com/v1/responses',
+        )
+        self.assertEqual(
+            _build_chat_completions_url('https://api.openai.com/v1/responses'),
+            'https://api.openai.com/v1/chat/completions',
+        )
+        self.assertEqual(payload['input'], [{'role': 'user', 'content': '你好'}])
+        self.assertEqual(payload['max_output_tokens'], 1000)
+        self.assertEqual(payload['tools'], [{'type': 'web_search'}])
+        system_payload = _build_llm_request_payload(
+            model_name='gpt-4.1',
+            messages=[{'role': 'system', 'content': '保持中文'}],
+            stream=False,
+            temperature=0,
+            max_tokens=10,
+            max_tokens_unlimited=False,
+            api_protocol='responses',
+        )
+        self.assertEqual(system_payload['input'], [{'role': 'developer', 'content': '保持中文'}])
+
     def test_build_llm_request_payload_adds_search_param_only_when_enabled(self):
         base_payload = _build_llm_request_payload(
             model_name='qwen-plus',
