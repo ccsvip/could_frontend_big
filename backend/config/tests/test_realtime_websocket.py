@@ -16,6 +16,8 @@ from django.test import TestCase, override_settings
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
+from apps.ai_models import realtime_tts
+from apps.ai_models.services import tts_adapters
 from apps.ai_models.models import ASRFillerWordSet, ASRRuntimeSettings, AgentAnnotation, AgentApplication, ChatConversation, ChatMessage, LLMModel, LLMProvider, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, TenantLLMModelGrant, TenantThirdPartyChatbotGrant, ThirdPartyChatbotApplication, ThirdPartyChatbotIntegration, ThirdPartyChatbotProvider
 from apps.devices.models import Device, DeviceApplication, DeviceChatLog
 from apps.resources.services.command_dispatch import DispatchOutcome
@@ -1255,7 +1257,11 @@ class RealtimeWebSocketTests(SimpleTestCase):
             self.assertEqual(response['type'], 'websocket.accept')
 
             provider = SimpleNamespace(code='aliyun')
-            voice = SimpleNamespace(id=7, voice_code='Cherry')
+            voice = SimpleNamespace(
+                id=7,
+                voice_code='Cherry',
+                provider=SimpleNamespace(id=1, code='aliyun', name='阿里云 TTS', is_active=True),
+            )
             config = SimpleNamespace(
                 is_active=True,
                 api_key='test-api-key',
@@ -1270,10 +1276,12 @@ class RealtimeWebSocketTests(SimpleTestCase):
                     'apps.ai_models.realtime_tts.resolve_tts_realtime_connection',
                     return_value={'user_id': 1, 'tenant_id': 2, 'is_superuser': False},
                 ),
-                patch('apps.ai_models.realtime_tts.resolve_tts_provider', return_value=provider),
-                patch('apps.ai_models.realtime_tts.get_effective_tts_config', return_value=config),
+                patch(
+                    'apps.ai_models.realtime_tts.resolve_realtime_tts_voice',
+                    return_value=realtime_tts.RealtimeVoiceResolution(voice=voice),
+                ),
+                patch.object(tts_adapters.AliyunQwenTTSAdapter, 'effective_config', return_value=config),
                 patch('apps.ai_models.realtime_tts.is_tts_configured', return_value=True),
-                patch('apps.ai_models.realtime_tts.resolve_tts_voice', return_value=voice),
                 patch('apps.ai_models.realtime_tts.build_tts_ws_url', return_value='wss://tts.example/realtime?model=test'),
                 patch('apps.ai_models.realtime_tts.websockets.connect', return_value=upstream),
             ):
@@ -1416,7 +1424,11 @@ class RealtimeWebSocketTests(SimpleTestCase):
             self.assertEqual(response['type'], 'websocket.accept')
 
             provider = SimpleNamespace(code='aliyun')
-            voice = SimpleNamespace(id=7, voice_code='Cherry')
+            voice = SimpleNamespace(
+                id=7,
+                voice_code='Cherry',
+                provider=SimpleNamespace(id=1, code='aliyun', name='阿里云 TTS', is_active=True),
+            )
             config = SimpleNamespace(
                 is_active=True,
                 api_key='test-api-key',
@@ -1431,10 +1443,12 @@ class RealtimeWebSocketTests(SimpleTestCase):
                     'apps.ai_models.realtime_tts.resolve_tts_realtime_connection',
                     return_value={'user_id': 1, 'tenant_id': 2, 'is_superuser': False},
                 ),
-                patch('apps.ai_models.realtime_tts.resolve_tts_provider', return_value=provider),
-                patch('apps.ai_models.realtime_tts.get_effective_tts_config', return_value=config),
+                patch(
+                    'apps.ai_models.realtime_tts.resolve_realtime_tts_voice',
+                    return_value=realtime_tts.RealtimeVoiceResolution(voice=voice),
+                ),
+                patch.object(tts_adapters.AliyunQwenTTSAdapter, 'effective_config', return_value=config),
                 patch('apps.ai_models.realtime_tts.is_tts_configured', return_value=True),
-                patch('apps.ai_models.realtime_tts.resolve_tts_voice', return_value=voice),
                 patch('apps.ai_models.realtime_tts.build_tts_ws_url', return_value='wss://tts.example/realtime?model=test'),
                 patch('apps.ai_models.realtime_tts.websockets.connect', return_value=upstream),
             ):
@@ -1479,7 +1493,28 @@ class RealtimeWebSocketTests(SimpleTestCase):
 
         async_to_sync(run_websocket)()
 
-    def test_realtime_tts_rejects_cosyvoice_provider_in_both_command_paths(self):
+
+
+
+class RealtimeTTSVoiceRoutingTests(TenantTestMixin, TestCase):
+    """Realtime routing: the resolved voice's card decides, providerCode only confirms.
+
+    Needs DB access (tenant grants), so this is a TestCase rather than joining the
+    SimpleTestCase suite above.
+    """
+
+    def setUp(self):
+        self.user = User.objects.create_user(username='realtime-tts-routing', password='test123456')
+        self.setup_tenant(self.user)
+
+    def test_realtime_tts_reports_voice_unavailable_when_tenant_has_no_grant(self):
+        """CosyVoice is no longer blanket-rejected; it is authorization-gated.
+
+        The previous behaviour returned TTS_NOT_READY (1024) for any
+        providerCode=cosyvoice request. Now the card is routable, so a tenant
+        without a grant fails on voice resolution (1025) instead.
+        """
+
         async def run_cases():
             from config.realtime import _run_agent_tts_stream, _run_tts_session_body
 
@@ -1520,11 +1555,117 @@ class RealtimeWebSocketTests(SimpleTestCase):
             for message in sent:
                 payload = json.loads(message['text'])
                 self.assertEqual(payload['type'], 'tts.error')
-                self.assertEqual(payload['error']['code'], '1024')
+                self.assertEqual(payload['error']['code'], '1025')
 
         async_to_sync(run_cases)()
 
+    def test_realtime_tts_rejects_provider_code_that_contradicts_resolved_voice(self):
+        """A client-sent providerCode may only confirm, never redirect."""
 
+        async def run_cases():
+            from config.realtime import _run_tts_session_body
+
+            sent = []
+
+            async def send(message):
+                sent.append(message)
+
+            voice = SimpleNamespace(
+                id=7,
+                voice_code='Cherry',
+                provider=SimpleNamespace(id=1, code='aliyun', name='阿里云 TTS', is_active=True),
+            )
+
+            with (
+                patch(
+                    'apps.ai_models.realtime_tts.resolve_tts_realtime_connection',
+                    return_value={'user_id': 1, 'tenant_id': 2, 'is_superuser': False},
+                ),
+                patch('apps.ai_models.services.tts_authorization.resolve_tenant_tts_voice', return_value=voice),
+            ):
+                await _run_tts_session_body(
+                    send,
+                    'session-mismatch',
+                    {
+                        'payload': {
+                            'token': 'test-token',
+                            'tenantId': 2,
+                            'text': '你好',
+                            'voiceId': 7,
+                            'providerCode': 'cosyvoice',
+                        },
+                    },
+                )
+
+            self.assertEqual(len(sent), 1)
+            payload = json.loads(sent[0]['text'])
+            self.assertEqual(payload['type'], 'tts.error')
+            self.assertEqual(payload['error']['code'], '1025')
+
+        async_to_sync(run_cases)()
+
+    def test_realtime_tts_resolves_voice_without_provider_code_from_old_clients(self):
+        """Old clients send no providerCode; the voice's own card still routes."""
+
+        async def run_cases():
+            from config.realtime import _run_tts_session_body
+
+            sent = []
+
+            async def send(message):
+                sent.append(message)
+
+            voice = SimpleNamespace(
+                id=7,
+                voice_code='Cherry',
+                provider=SimpleNamespace(id=1, code='aliyun', name='阿里云 TTS', is_active=True),
+            )
+            config = SimpleNamespace(
+                is_active=True,
+                api_key='test-api-key',
+                base_url='wss://tts.example/realtime',
+                model='qwen3-tts-flash-realtime',
+                sample_rate=24000,
+                default_test_text='默认测试文本',
+                tts_session_config={},
+                provider=voice.provider,
+                provider_code='aliyun',
+            )
+            upstream = UnifiedTTSUpstream()
+
+            with (
+                patch(
+                    'apps.ai_models.realtime_tts.resolve_tts_realtime_connection',
+                    return_value={'user_id': 1, 'tenant_id': 2, 'is_superuser': False},
+                ),
+                patch('apps.ai_models.services.tts_authorization.resolve_tenant_tts_voice', return_value=voice),
+                patch.object(tts_adapters.AliyunQwenTTSAdapter, 'effective_config', return_value=config),
+                patch('apps.ai_models.realtime_tts.is_tts_configured', return_value=True),
+                patch('apps.ai_models.realtime_tts.build_tts_ws_url', return_value='wss://tts.example/realtime?model=test'),
+                patch('apps.ai_models.realtime_tts.websockets.connect', return_value=upstream),
+            ):
+                await _run_tts_session_body(
+                    send,
+                    'session-no-provider-code',
+                    {
+                        'payload': {
+                            'token': 'test-token',
+                            'tenantId': 2,
+                            'text': '你好',
+                            'voiceId': 7,
+                            'sessionConfig': {'response_format': 'pcm', 'sample_rate': 24000},
+                        },
+                    },
+                )
+
+            types = [json.loads(message['text'])['type'] for message in sent if 'text' in message]
+            self.assertIn('tts.ready', types)
+            self.assertIn('tts.done', types)
+            self.assertNotIn('tts.error', types)
+
+        async_to_sync(run_cases)()
+
+        async_to_sync(run_cases)()
 
 class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
     def setUp(self):
@@ -2842,7 +2983,11 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 yield '这是第二段。'
 
             tts_provider = SimpleNamespace(code='aliyun')
-            voice = SimpleNamespace(id=7, voice_code='Cherry')
+            voice = SimpleNamespace(
+                id=7,
+                voice_code='Cherry',
+                provider=SimpleNamespace(id=1, code='aliyun', name='阿里云 TTS', is_active=True),
+            )
             config = SimpleNamespace(
                 is_active=True,
                 api_key='test-api-key',
@@ -2858,10 +3003,12 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                     'apps.ai_models.realtime_tts.resolve_tts_realtime_connection',
                     return_value={'device_id': 1, 'tenant_id': self.tenant.id, 'is_superuser': False},
                 ),
-                patch('apps.ai_models.realtime_tts.resolve_tts_provider', return_value=tts_provider),
-                patch('apps.ai_models.realtime_tts.get_effective_tts_config', return_value=config),
+                patch(
+                    'apps.ai_models.realtime_tts.resolve_realtime_tts_voice',
+                    return_value=realtime_tts.RealtimeVoiceResolution(voice=voice),
+                ),
+                patch.object(tts_adapters.AliyunQwenTTSAdapter, 'effective_config', return_value=config),
                 patch('apps.ai_models.realtime_tts.is_tts_configured', return_value=True),
-                patch('apps.ai_models.realtime_tts.resolve_tts_voice', return_value=voice),
                 patch('apps.ai_models.realtime_tts.build_tts_ws_url', return_value='wss://tts.example/realtime?model=test'),
                 patch('apps.ai_models.realtime_tts.websockets.connect', return_value=upstream),
             ):
@@ -3308,7 +3455,11 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                 yield '自动回答。'
 
             tts_provider = SimpleNamespace(code='aliyun')
-            voice = SimpleNamespace(id=7, voice_code='Cherry')
+            voice = SimpleNamespace(
+                id=7,
+                voice_code='Cherry',
+                provider=SimpleNamespace(id=1, code='aliyun', name='阿里云 TTS', is_active=True),
+            )
             config = SimpleNamespace(
                 is_active=True,
                 api_key='test-api-key',
@@ -3332,10 +3483,12 @@ class RealtimeDeviceEventsTests(TenantTestMixin, TestCase):
                     'apps.ai_models.realtime_tts.resolve_tts_realtime_connection',
                     return_value={'device_id': 1, 'tenant_id': self.tenant.id, 'is_superuser': False},
                 ),
-                patch('apps.ai_models.realtime_tts.resolve_tts_provider', return_value=tts_provider),
-                patch('apps.ai_models.realtime_tts.get_effective_tts_config', return_value=config),
+                patch(
+                    'apps.ai_models.realtime_tts.resolve_realtime_tts_voice',
+                    return_value=realtime_tts.RealtimeVoiceResolution(voice=voice),
+                ),
+                patch.object(tts_adapters.AliyunQwenTTSAdapter, 'effective_config', return_value=config),
                 patch('apps.ai_models.realtime_tts.is_tts_configured', return_value=True),
-                patch('apps.ai_models.realtime_tts.resolve_tts_voice', return_value=voice),
                 patch('apps.ai_models.realtime_tts.build_tts_ws_url', return_value='wss://tts.example/realtime?model=test'),
             ):
                 await communicator.send_input({

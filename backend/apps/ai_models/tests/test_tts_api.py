@@ -14,7 +14,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.credential_crypto import decrypt_credential
-from apps.ai_models.models import CosyVoiceSettings, TTSProvider, TTSVoice, TenantTTSSettings
+from apps.ai_models.models import (
+    CosyVoiceSettings,
+    TenantTTSProviderGrant,
+    TenantTTSSettings,
+    TTSProvider,
+    TTSVoice,
+)
 from apps.ai_models.services import cosyvoice as cosyvoice_services, tts as tts_services
 from apps.devices.models import Device
 from apps.tenants.models import Tenant
@@ -250,6 +256,12 @@ class TTSRealtimeTests(TenantTestMixin, TestCase):
         UserRole.objects.create(user=self.user, role=self.role)
         self.provider = TTSProvider.objects.get(code='aliyun')
         self.voice = TTSVoice.objects.get(provider=self.provider, voice_code='Cherry')
+        # Realtime voice resolution now goes through card authorization.
+        TenantTTSProviderGrant.objects.update_or_create(
+            tenant=self.tenant,
+            provider=self.provider,
+            defaults={'is_active': True},
+        )
         self.tenant.permission_points.clear()
 
     def grant_permissions(self, *codes: str):
@@ -468,6 +480,13 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         UserRole.objects.create(user=self.tenant_user, role=self.role)
         self.provider = TTSProvider.objects.get(code='aliyun')
         self.cherry = TTSVoice.objects.get(provider=self.provider, voice_code='Cherry')
+        # Company TTS is now card-authorization gated: a tenant created directly in
+        # a test has no grant until a superuser allocates one.
+        TenantTTSProviderGrant.objects.update_or_create(
+            tenant=self.tenant,
+            provider=self.provider,
+            defaults={'is_active': True},
+        )
 
     def grant_permissions(self, *codes: str):
         permission_points = []
@@ -650,9 +669,15 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(update_response.status_code, status.HTTP_200_OK)
         settings = TenantTTSSettings.objects.get(tenant=self.tenant)
         self.assertEqual(settings.default_voice_id, self.cherry.id)
-        self.assertEqual(settings.tts_session_config['model_code'], 'standard')
-        self.assertEqual(settings.tts_session_config['language_type'], 'Chinese')
-        self.assertEqual(settings.tts_session_config['response_format'], 'mp3')
+        # Card controls are now authoritative on the per-card grant, so saving one
+        # card's config cannot overwrite another card's.
+        card_config = TenantTTSProviderGrant.objects.get(
+            tenant=self.tenant,
+            provider=self.provider,
+        ).public_config
+        self.assertEqual(card_config['model_code'], 'standard')
+        self.assertEqual(card_config['language_type'], 'Chinese')
+        self.assertEqual(card_config['response_format'], 'mp3')
         self.assertEqual(update_response.data['defaultVoiceId'], self.cherry.id)
         self.assertEqual(update_response.data['provider']['defaultModelCode'], 'standard')
         self.assertEqual(update_response.data['ttsSessionConfig']['language_type'], 'Chinese')

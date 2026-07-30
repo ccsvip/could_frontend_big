@@ -17,7 +17,7 @@ from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
-from apps.ai_models.models import AgentAnnotation, AgentApplication, ChatConversation, LLMModel, LLMProvider, TenantLLMModelGrant, TenantLLMSettings, TenantTTSSettings, TTSProvider, TTSVoice
+from apps.ai_models.models import AgentAnnotation, AgentApplication, ChatConversation, LLMModel, LLMProvider, TenantLLMModelGrant, TenantLLMSettings, TenantTTSProviderGrant, TenantTTSSettings, TTSProvider, TTSVoice
 from apps.ai_models import realtime_tts
 from apps.devices.models import Device, DeviceApplication, DeviceAuthLog, DeviceAuthorizationCode, DeviceChatLog, DeviceGroup, WakeWord
 from apps.devices.services.authorization import record_device_authorization_action
@@ -51,6 +51,13 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             tenant=self.tenant,
             name='Lobby Agent',
             system_prompt='你是大厅数字人。',
+        )
+        # TTS voices are now card-authorization gated; a test tenant holds no grant
+        # until one is allocated, which would make every voice unselectable.
+        TenantTTSProviderGrant.objects.update_or_create(
+            tenant=self.tenant,
+            provider=TTSProvider.objects.get(code='aliyun'),
+            defaults={'is_active': True},
         )
 
     def grant_permissions(self, *codes: str):
