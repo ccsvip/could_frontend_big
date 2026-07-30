@@ -135,3 +135,39 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 5: 公司侧 CosyVoice 分配与可扩展 TTS 架构
+
+**Date**: 2026-07-30
+**Task**: 公司侧 CosyVoice 分配与可扩展 TTS 架构
+**Branch**: `dev`
+
+### Summary
+
+新增 TenantTTSProviderGrant 按 TTS 卡片粒度授权公司，有效音色由「启用授权+启用卡片+启用可见音色」派生；数据迁移为存量 active 公司补建阿里云/Qwen 授权并搬迁旧 tts_session_config，CosyVoice 需超管显式分配。建立 tts_authorization 唯一授权入口与 tts_adapters 供应商 seam，CosyVoice 通过 run-task/continue-task/finish-task 接入统一 /ws/realtime/ 并逐块转发音频。统一 realtime 改为按已解析音色所属卡片路由，providerCode 仅做一致性校验，移除对 cosyvoice 的一律拒绝。新增超管卡片授权 API 与前端页面，公司页面按卡片 schema 渲染配置；安卓运行时契约保持冻结。137 条针对性测试通过，前端 npm run build 通过。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ea290f5` | (see git log) |
+| `54d669d` | (see git log) |
+| `fd58eaa` | (see git log) |
+| `87ff849` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
