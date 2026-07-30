@@ -513,6 +513,42 @@ WebSocket tests reside in two locations:
 - **`backend/config/tests/`** — protocol-level tests (`test_realtime_websocket.py`, `test_realtime_command_dispatch.py`)
 - **Per-app `tests/`** — application-level tests (`test_asr_realtime.py`, `test_tts_api.py`, `test_device_authorization_api.py`)
 
+### `SimpleTestCase` suites cannot touch the database
+
+`config/tests/test_realtime_websocket.py::RealtimeWebSocketTests` is a
+`SimpleTestCase`. Any query raises `DatabaseOperationForbidden`. When a realtime
+behaviour becomes database-dependent (for example a tenant authorization lookup), add
+a **new** `TestCase` class in the same file rather than converting the existing suite:
+
+```python
+class RealtimeTTSVoiceRoutingTests(TenantTestMixin, TestCase):
+    """Needs DB access (tenant grants), so it cannot join the SimpleTestCase suite."""
+```
+
+### `transaction.on_commit` side effects need explicit capture
+
+Events published via `transaction.on_commit` never fire inside a `TestCase`'s wrapping
+atomic block. Assertions on them time out or see zero calls unless the request is
+wrapped:
+
+```python
+with patch('apps.ai_models.services.tts_runtime_events.publish_device_event_sync') as publish:
+    with self.captureOnCommitCallbacks(execute=True):
+        response = self.client.put(url, payload, format='json')
+publish.assert_called()
+```
+
+In a WebSocket test the HTTP request runs through `sync_to_async`, so the capture must
+live **inside** the wrapped callable:
+
+```python
+def save_authorization():
+    with self.captureOnCommitCallbacks(execute=True):
+        return self.client.put(url, payload, format='json')
+
+response = await sync_to_async(save_authorization, thread_sensitive=True)()
+```
+
 ---
 
 ## Coverage
@@ -562,6 +598,8 @@ There is no automated test runner in CI, no linting step, and no build validatio
 | No coverage measurement | Untested code paths go unnoticed | Coverage must be added before any CI pipeline; not currently gated |
 | No CI pipeline | No automated test execution; tests only run on developer machines | Manual `docker compose exec` before commits; no regression safety net |
 | `TenantTestMixin` grants ALL permissions | Cannot test fine-grained permission denial without extra setup | Revoke specific permissions after `setup_tenant()` by clearing `self.tenant.permission_points` |
+| Seeded reference data varies with `--keepdb` history | Asserting an exact list from seeded rows is brittle — a preserved test DB may hold rows no current migration writes | Create purpose-built rows inside the test (e.g. a dedicated single-voice card) and assert membership, not full equality |
+| No baseline record of known-failing tests | A pre-existing failure looks like a regression you just caused | Before blaming your change, `git stash push -u` and re-run the suite on clean HEAD; compare failure sets |
 
 ### Frontend
 

@@ -123,6 +123,39 @@ After implementation:
 
 ---
 
+## Tightening An Existing Open Contract
+
+Use this when a resource that was visible to everyone becomes permission- or
+authorization-gated. See
+[TTS Tenant Card Authorization](../backend/tts-tenant-card-authorization.md) for the
+worked example.
+
+### Before implementing:
+
+- [ ] Listed **every** entry point that reads the resource — API options, admin API,
+      write-side validation fields, device/runtime endpoints, WebSocket paths.
+      Missing one leaves a bypass, not a bug you can find later.
+- [ ] Decided the single service function all of them will call. If two call sites
+      each re-implement the predicate, they will diverge.
+- [ ] Planned the backfill so existing owners keep what they already had.
+- [ ] Identified which fields are frozen for out-of-band clients (mobile app,
+      firmware) that cannot be redeployed alongside the backend.
+
+### After implementing:
+
+- [ ] Asserted the rejection path for a foreign-owner id, not just the happy path.
+      Cross-tenant leakage is invisible in single-tenant tests.
+- [ ] Confirmed a stale reference (binding to a now-revoked resource) is re-validated
+      at read time, not trusted because it was valid when written.
+- [ ] Confirmed error messages do not distinguish "unauthorized" from "nonexistent",
+      so ids cannot be probed.
+- [ ] Confirmed the change reaches already-connected clients. A gate change that only
+      alters a derived value writes no row, so nothing notifies them by default.
+- [ ] Re-ran the frozen client's contract test asserting the field set **exactly**, so
+      an accidentally-required new field is caught.
+
+---
+
 ## Cross-Platform Template Consistency
 
 In Trellis, command templates (e.g., `record-session.md`) exist in **multiple platforms** with identical or near-identical content. This is a cross-layer boundary.

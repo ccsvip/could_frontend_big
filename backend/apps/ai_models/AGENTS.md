@@ -10,11 +10,16 @@ AI 三件套（ASR / LLM / TTS）+ 聊天会话。`views.py` ~40KB（仓库最�
 
 ```
 ai_models/
-├── models.py        # ASRProvider / LLMProvider / TTSProvider / ChatConversation / ChatMessage
+├── models.py        # ASRProvider / LLMProvider / TTSProvider / TenantTTSProviderGrant / ChatConversation / ChatMessage
 ├── serializers.py
 ├── views.py         # 40KB —— 供应商 CRUD + chat conversations + SSE 流式 + 标题自动生成
 ├── urls.py          # /ai-models/{asr,llm,tts}/providers/*  /ai-models/chat/conversations/*
 ├── admin.py         # SimpleUI 后台
+├── services/
+│   ├── tts_authorization.py   # 公司 TTS 授权唯一入口（派生有效音色）
+│   ├── tts_adapters.py        # 供应商差异 seam（Qwen / CosyVoice）
+│   ├── cosyvoice_realtime.py  # run-task / continue-task / finish-task 桥接
+│   └── tts_runtime_events.py  # 授权变更后推送完整 runtime config
 └── (无 tasks.py)    # 当前没有 Celery 任务
 ```
 
@@ -30,6 +35,10 @@ ai_models/
 - **重生成**：`send` 端点支持 `regenerateMessageId`，**只允许**最后一条助手消息；后端会删该助手消息并复用前一条用户消息重请求。
 - **自动标题**：会话标题为默认值 `新对话` 时，首轮回复成功后用同一模型轻量请求生成短标题，回写 `title`。
 - **日志规范**：聊天链路打 `chat.send.*` / `chat.conversation.config_updated`；**不**打印 API key、**不**打印完整用户消息正文，只打 `conversation_id` / `provider_id` / `model_name` / `api_url` / `status_code` / `content_type` / `completed_*` / `timeout` / `exception`。
+- **公司 TTS 授权唯一入口**：任何"这家公司能用哪个音色"的判断都必须走 `services/tts_authorization.py`，不得用请求里的 `voiceId` 直查 `TTSVoice.objects`。授权粒度是卡片（`TTSProvider`），有效音色由 `active grant + active card + active/visible voice` 派生。
+- **TTS 供应商差异只在 adapter 内**：用 `get_adapter_for_voice(voice)` 按已解析音色所属卡片派发；每张卡片的公共配置存在自己的 `TenantTTSProviderGrant.public_config`，按各自 `publicConfigSchema` 白名单校验。
+- **realtime 路由键是音色**：`voiceId` / 设备绑定 / 公司默认决定卡片；客户端 `providerCode` 只做一致性校验，不一致返回 `tts.error` 1025。旧客户端不传该字段必须照常工作。
+- 完整契约见 `.trellis/spec/backend/tts-tenant-card-authorization.md`。
 
 ## ANTI-PATTERNS
 
@@ -41,6 +50,10 @@ ai_models/
 - ❌ 在日志里打 `api_key` / 完整 prompt / 完整用户消息正文。
 - ❌ 让 `regenerateMessageId` 命中非最后一条助手消息：会破坏会话线性结构。
 - ❌ 把规范化逻辑泄到 serializer：URL 规范化只在 `views.py` 调用上游前那一刻做。
+- ❌ 用请求里的 `providerCode` 决定真实上游协议：这让公司能跳到未授权卡片。
+- ❌ 把新供应商字段并进共享的 `tts_session_config`：Qwen 与 CosyVoice 配置会互相覆盖。
+- ❌ 用 `model_code` 过滤全部卡片的音色：它是 Qwen 播报档位概念，会把其它卡片音色全部误杀。
+- ❌ CosyVoice 实时流先聚合完整音频再下发：这等于取消了实时通道。
 
 ## NOTES
 

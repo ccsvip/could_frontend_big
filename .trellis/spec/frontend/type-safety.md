@@ -222,6 +222,51 @@ content: Record<string, unknown>;
 headers: Record<string, string>;
 ```
 
+### Optional fields for additive backend contracts
+
+When the backend adds fields to an existing response during a migration window, type
+the new fields as **optional** and keep the legacy fields. This lets pages migrate one
+at a time and keeps `tsc` honest about the fact that the field may be absent from a
+not-yet-upgraded backend.
+
+```typescript
+export type CompanyTtsOptions = {
+  /** Legacy single-card summary; reflects the default voice's card. */
+  provider: { code: string; name: string; isActive: boolean; /* … */ };
+  /** Added later: per-card groups. Optional until every consumer migrates. */
+  providers?: TtsCardSummary[];
+  voices: TtsVoiceRecord[];
+};
+```
+
+Consumers must then tolerate both shapes rather than assuming the new field:
+
+```typescript
+// Falls back to the legacy single-card count when `providers` is absent.
+const cardCount = options.providers?.length ?? (options.provider.isActive ? 1 : 0);
+```
+
+**Why**: making the field required forces every consumer to update in the same commit
+and breaks against a backend that has not shipped yet.
+
+### Narrowing a base type when a field's element type changes
+
+When an admin variant of a response enriches a nested array, `BaseType & { … }` does
+**not** replace the array's element type — the intersection keeps both and `tsc`
+reports the added properties as missing. Use `Omit` to drop the field first:
+
+```typescript
+// Wrong: `voices` stays TtsVoiceRecord[]; accessing voice.usage fails to compile.
+export type TenantTtsCardAuthorization = TtsCardSummary & {
+  voices: TenantTtsCardAuthorizationVoice[];
+};
+
+// Correct: drop the field, then re-declare it.
+export type TenantTtsCardAuthorization = Omit<TtsCardSummary, 'voices'> & {
+  voices: TenantTtsCardAuthorizationVoice[];
+};
+```
+
 ---
 
 ## Forbidden and Discouraged Patterns

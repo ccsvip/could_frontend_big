@@ -175,7 +175,61 @@ python manage.py migrate --check
 - The actual acceptance path is the preserved old baseline upgrading to the current checkout; a current-schema dump proves script plumbing only.
 - Do not start Compose writers until the target database finishes `migrate --noinput`, `migrate --check`, and `makemigrations --check --dry-run`.
 
-(To be filled by the team)
+### Scenario: Backfill a Grant Table When Tightening Access
+
+#### 1. Scope / Trigger
+
+- Trigger: adding an authorization table that gates something previously open to
+  everyone (for example `TenantTTSProviderGrant`, see
+  [TTS Tenant Card Authorization](./tts-tenant-card-authorization.md)).
+- Without a backfill, deploying the tightened read path revokes every existing
+  tenant at once.
+
+#### 2. Contracts
+
+- Ship the schema migration and the data migration as **separate** files, in order.
+- The data migration grants only what was already implicitly available. It must not
+  hand out anything new — a newly added vendor/card stays ungranted until an admin
+  allocates it explicitly.
+- Use `update_or_create` so the migration is idempotent and safe to re-run against a
+  partially migrated database.
+- Return early when the prerequisite row is absent (fresh database, seeds not yet
+  applied), rather than raising.
+- Scope the backfill to live records only (e.g. `is_active=True` tenants).
+- Provide a reverse function that removes only the rows this migration created.
+- Migrate legacy config into the new per-owner column while it is being written, so
+  the old single-JSON column can stop being the authority.
+
+```python
+def seed_grants(apps, schema_editor):
+    Tenant = apps.get_model('tenants', 'Tenant')
+    Provider = apps.get_model('ai_models', 'TTSProvider')
+    Grant = apps.get_model('ai_models', 'TenantTTSProviderGrant')
+
+    provider = Provider.objects.filter(code='aliyun').first()
+    if provider is None:
+        return                                  # fresh DB: nothing to backfill
+    for tenant_id in Tenant.objects.filter(is_active=True).values_list('id', flat=True):
+        Grant.objects.update_or_create(         # idempotent
+            tenant_id=tenant_id, provider_id=provider.id,
+            defaults={'is_active': True, 'public_config': legacy_config_for(tenant_id)},
+        )
+```
+
+#### 3. Validation
+
+- `makemigrations --check --dry-run` reports `No changes detected`.
+- Run `migrate`, then query the table and confirm the row count matches the number of
+  live owners and that legacy config actually carried over. A green migration is not
+  evidence the backfill was correct.
+- Re-run `migrate` (or the `RunPython` twice) and confirm no duplicate-key error.
+
+#### 4. Test Impact (expect this)
+
+Tightening a read path **will** break existing tests that create the owning record
+directly, because those records hold no grant. Add the grant in the affected `setUp`.
+That is the correct consequence of the tightening — do not loosen the production
+predicate to keep old tests green.
 
 ---
 

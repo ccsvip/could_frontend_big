@@ -35,6 +35,8 @@ grep -r "keyword" .
 | Is this pattern used elsewhere? | Follow the existing pattern |
 | Could this be a shared utility? | Create it in the right place |
 | Am I copying code from another file? | **STOP** - extract to shared |
+| Am I adding a second vendor/provider to an existing branch? | **STOP** — build an adapter seam instead of widening the `if` |
+| Am I about to widen a shared config dict with vendor-specific keys? | **STOP** — give each vendor its own config store and schema |
 
 ---
 
