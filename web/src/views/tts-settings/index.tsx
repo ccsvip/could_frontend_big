@@ -27,6 +27,7 @@ import {
   IconHeadphones,
   IconPlayerPlay,
   IconRefresh,
+  IconUsers,
   IconVolume,
   IconDeviceFloppy,
 } from '@tabler/icons-react';
@@ -380,9 +381,18 @@ export const TtsSettingsPage = () => {
                 <div className="mt-1 text-xs text-slate-500 font-mono">供应商 {providers.length} 个</div>
               </div>
             </div>
-            <Button icon={<IconRefresh size={16} />} loading={providersLoading} className="rounded-md" onClick={() => void loadProviders()}>
-              同步状态
-            </Button>
+            <Space wrap>
+              <Button
+                icon={<IconUsers size={16} />}
+                className="rounded-md"
+                onClick={() => navigate('/settings/tts/card-authorizations')}
+              >
+                公司卡片授权
+              </Button>
+              <Button icon={<IconRefresh size={16} />} loading={providersLoading} className="rounded-md" onClick={() => void loadProviders()}>
+                同步状态
+              </Button>
+            </Space>
           </div>
         </div>
 

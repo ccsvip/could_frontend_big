@@ -377,7 +377,14 @@ export const DeviceManagementPage = () => {
       pitchRate: sessionConfig.pitch_rate ?? DEFAULT_VOICE_TONE_CONFIG.pitchRate,
       volume: sessionConfig.volume ?? DEFAULT_VOICE_TONE_CONFIG.volume,
     });
-    const nextOptions = ttsOptionsResponse.voices.map((item) => ({ label: `${item.displayName}（${item.voiceCode}）`, value: item.id }));
+    const nextOptions = ttsOptionsResponse.voices.map((item) => ({
+      // Multiple cards can be authorized at once, so the card name disambiguates
+      // voices that would otherwise read identically.
+      label: item.providerName
+        ? `${item.displayName}（${item.voiceCode}）· ${item.providerName}`
+        : `${item.displayName}（${item.voiceCode}）`,
+      value: item.id,
+    }));
     setVoiceToneOptions(nextOptions);
     return nextOptions;
   };

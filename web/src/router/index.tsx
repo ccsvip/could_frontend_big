@@ -74,6 +74,9 @@ const TtsSettingsPage = lazy(() =>
 const CosyVoiceSettingsPage = lazy(() =>
   import('../views/cosyvoice-settings').then((module) => ({ default: module.CosyVoiceSettingsPage })),
 );
+const TtsCardAuthorizationPage = lazy(() =>
+  import('../views/tts-card-authorization').then((module) => ({ default: module.TtsCardAuthorizationPage })),
+);
 const LlmSettingsAdminPage = lazy(() =>
   import('../views/settings-llm').then((module) => ({ default: module.LlmSettingsAdminPage })),
 );
@@ -439,6 +442,14 @@ export const AppRouter = () => {
           element: (
             <SuperuserGuard>
               <CosyVoiceSettingsPage />
+            </SuperuserGuard>
+          ),
+        },
+        {
+          path: 'settings/tts/card-authorizations',
+          element: (
+            <SuperuserGuard>
+              <TtsCardAuthorizationPage />
             </SuperuserGuard>
           ),
         },

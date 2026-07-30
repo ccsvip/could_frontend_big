@@ -721,7 +721,11 @@ export const ApplicationManagementPage = () => {
   }, [messages, streamingContent]);
 
   const asrReady = Boolean(asrStatus?.isActive && asrStatus.configured);
-  const ttsReady = Boolean(ttsOptions?.provider.isActive && ttsOptions.defaultVoiceId);
+  // A default voice implies an active card grant, so it alone is sufficient. The
+  // legacy `provider.isActive` flag is empty when no card is authorized.
+  const ttsReady = Boolean(
+    ttsOptions?.defaultVoiceId && (ttsOptions.providers?.length ?? (ttsOptions.provider.isActive ? 1 : 0)) > 0,
+  );
   const ttsPlaybackSessionConfig = ttsOptions?.ttsSessionConfig
     ? { ...ttsOptions.ttsSessionConfig, response_format: 'pcm' as const }
     : undefined;

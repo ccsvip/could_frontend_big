@@ -11,6 +11,59 @@ export type TtsVoiceRecord = {
   isVisible?: boolean;
   sortOrder?: number;
   isDefault: boolean;
+  /** Card identity — present on company options, used to pick the config schema. */
+  providerId?: number;
+  providerCode?: string;
+  providerName?: string;
+  configSchemaKey?: string;
+  supportedChannels?: TtsChannel[];
+  capabilities?: TtsVoiceCapabilities;
+};
+
+export type TtsChannel = 'httpTest' | 'httpRuntime' | 'realtime';
+
+export type TtsVoiceCapabilities = {
+  speechRate?: boolean;
+  pitchRate?: boolean;
+  volume?: boolean;
+};
+
+export type TtsConfigFieldType = 'slider' | 'select' | 'switch' | 'textarea';
+
+export type TtsConfigField = {
+  name: string;
+  label: string;
+  type: TtsConfigFieldType;
+  min?: number;
+  max?: number;
+  step?: number;
+  options?: Array<{ value: string | number; label: string }>;
+};
+
+export type TtsPublicConfigSchema = {
+  schemaKey: string;
+  fields: TtsConfigField[];
+};
+
+export type TtsModelOption = {
+  code: string;
+  label: string;
+  supportsInstructionControl: boolean;
+};
+
+/** One TTS card the company is authorized to use. */
+export type TtsCardSummary = {
+  id: number;
+  code: string;
+  name: string;
+  isActive: boolean;
+  defaultModelCode: string;
+  modelOptions: TtsModelOption[];
+  supportedChannels: TtsChannel[];
+  publicConfigSchema: TtsPublicConfigSchema;
+  capabilities?: Record<string, boolean>;
+  publicConfig?: Partial<TtsSessionConfig> & Record<string, unknown>;
+  voices: TtsVoiceRecord[];
 };
 
 export type TtsProviderSummary = {
@@ -71,21 +124,25 @@ export type TtsSettingsPayload = Partial<{
 }>;
 
 export type CompanyTtsOptions = {
+  /**
+   * Legacy single-card summary, kept for the migration window. Reflects the
+   * default voice's card. Prefer `providers` for new code.
+   */
   provider: {
+    id?: number | null;
     code: string;
     name: string;
     defaultModelCode: string;
-    modelOptions: Array<{
-      code: string;
-      label: string;
-      supportsInstructionControl: boolean;
-    }>;
+    modelOptions: TtsModelOption[];
     isActive: boolean;
   };
+  /** All authorized cards, each with its own voices and config schema. */
+  providers?: TtsCardSummary[];
   defaultVoiceId: number | null;
   sampleRate: number;
   ttsSessionConfig: TtsSessionConfig;
   defaultTestText: string;
+  /** Flat union of every authorized card's voices. */
   voices: TtsVoiceRecord[];
 };
 
@@ -144,6 +201,58 @@ export const updateCompanyDefaultTtsVoice = async (voiceId: number, ttsSessionCo
 
 export const testCompanyTts = async (payload: TtsTestPayload) => {
   const response = await httpClient.post<Blob>('/ai-models/tts/test/', payload, blobRequestConfig);
+  return response.data;
+};
+
+export type TenantTtsCardGrantPayload = {
+  providerId: number;
+  isActive: boolean;
+  publicConfig?: Record<string, unknown>;
+};
+
+export type TenantTtsCardUsage = {
+  tenantDefault: boolean;
+  deviceCount: number;
+  deviceApplicationCount: number;
+};
+
+export type TenantTtsCardAuthorizationVoice = TtsVoiceRecord & {
+  effectiveAuthorized: boolean;
+  usage: TenantTtsCardUsage;
+};
+
+export type TenantTtsCardAuthorization = Omit<TtsCardSummary, 'voices'> & {
+  sortOrder: number;
+  grantIsActive: boolean;
+  usage: TenantTtsCardUsage;
+  canDisableGrant: boolean;
+  voices: TenantTtsCardAuthorizationVoice[];
+};
+
+export type TenantTtsCardAuthorizationResponse = {
+  tenant: { id: number; name: string; isActive: boolean };
+  providers: TenantTtsCardAuthorization[];
+  defaultVoiceId: number | null;
+};
+
+const tenantTtsCardAuthorizationPath = (tenantId: number) =>
+  `/settings/tts/tenants/${tenantId}/card-authorizations/`;
+
+export const fetchTenantTtsCardAuthorization = async (tenantId: number) => {
+  const response = await httpClient.get<TenantTtsCardAuthorizationResponse>(
+    tenantTtsCardAuthorizationPath(tenantId),
+  );
+  return response.data;
+};
+
+export const updateTenantTtsCardAuthorization = async (
+  tenantId: number,
+  payload: { cardGrants: TenantTtsCardGrantPayload[]; defaultVoiceId?: number | null },
+) => {
+  const response = await httpClient.put<TenantTtsCardAuthorizationResponse>(
+    tenantTtsCardAuthorizationPath(tenantId),
+    payload,
+  );
   return response.data;
 };
 
