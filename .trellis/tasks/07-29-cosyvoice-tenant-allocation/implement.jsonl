@@ -1,0 +1,10 @@
+{"file": ".trellis/spec/backend/index.md", "reason": "后端 spec 入口，串联本任务涉及的 ai_models/devices/tenants app 约定"}
+{"file": ".trellis/spec/backend/api-design.md", "reason": "超管授权 REST 资源路径与 camelCase 字段契约，复用 LLM 授权 GET/PUT 体验（req 22）"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "新增公司-TTS 卡片授权表、(tenant, provider/card) 唯一约束、public_config 字段与数据迁移（AC 1、2）"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "默认音色/授权保存的明确 400、使用中停用阻止、tts.error 契约与禁止跨 provider 静默回退（reqs 5/8/13/18/19）"}
+{"file": ".trellis/spec/backend/security-guidelines.md", "reason": "100% tenant 隔离、拒绝越权 voiceId/tenantId，公司侧不暴露凭据/私有 URL/私有参数（reqs 20/26）"}
+{"file": ".trellis/spec/backend/testing-strategy.md", "reason": "授权可见性、越权 voiceId 拒绝、默认音色校验、使用中停用阻止、设备运行时过滤、CosyVoice 与 Qwen 并存的回归测试组织方式"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "前端 spec 入口，覆盖 tts-management/device-management/application-management 三处 options 消费"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "provider-neutral options contract 类型定义与迁移期 provider 字段兼容（req 27）"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "本任务跨后端授权→公司 options→设备/应用选择器→安卓运行时/统一 realtime 契约，需保持跨层一致与向后兼容"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "provider adapter 深模块边界：把 Qwen/Aliyun 与 CosyVoice 差异收敛进 adapter，避免 CosyVoice 私有参数混入 Qwen 流程（reqs 21/9/11）"}

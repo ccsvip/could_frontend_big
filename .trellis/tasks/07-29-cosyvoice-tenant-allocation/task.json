@@ -1,8 +1,8 @@
 {
-  "id": "cosyvoice-tts-admin",
-  "name": "cosyvoice-tts-admin",
-  "title": "超管 TTS 接入 CosyVoice",
-  "description": "在超管 /settings/tts 增加 CosyVoice-v3.5-plus 模型选项和对应的预置音色",
+  "id": "cosyvoice-tenant-allocation",
+  "name": "cosyvoice-tenant-allocation",
+  "title": "公司侧 CosyVoice 分配与可扩展 TTS 架构",
+  "description": "",
   "status": "in_progress",
   "dev_type": null,
   "scope": null,
@@ -18,10 +18,8 @@
   "commit": null,
   "pr_url": null,
   "subtasks": [],
-  "children": [
-    "07-29-cosyvoice-tenant-allocation"
-  ],
-  "parent": null,
+  "children": [],
+  "parent": "07-29-cosyvoice-tts-admin",
   "relatedFiles": [],
   "notes": "",
   "meta": {}

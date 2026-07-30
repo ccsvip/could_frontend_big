@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "后端代码质量门禁，检查适配器边界、模型/迁移/视图改动是否符合约定"}
+{"file": ".trellis/spec/backend/testing-strategy.md", "reason": "校验回归测试是否覆盖授权可见性、越权拒绝、默认音色校验、使用中停用阻止、运行时过滤、CosyVoice/Qwen 并存"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "核对明确 400、tts.error 契约、禁止跨 provider 静默回退的实现是否合规（reqs 13/18/19）"}
+{"file": ".trellis/spec/backend/security-guidelines.md", "reason": "核对 tenant 隔离与公司侧不泄露凭据/私有参数是否落实（reqs 20/26）"}
+{"file": ".trellis/spec/backend/api-design.md", "reason": "核对超管授权 REST 路径与 camelCase 契约、安卓运行时向后兼容契约是否保持（reqs 22/27/28）"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "前端质量门禁，检查三处 options 消费改动与 npm run build/tsc 严格类型"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "核对 provider-neutral options contract 类型与迁移期 provider 字段兼容（req 27）"}
