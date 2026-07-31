@@ -7,6 +7,19 @@ if [ "${GITNEXUS_AUTO_UPDATE:-1}" = "0" ]; then
   exit 0
 fi
 
+# This repo's GitNexus index lives in-repo (.gitnexus/) but is registered in the
+# invoking user's HOME registry (~/.gitnexus/registry.json). A non-owning user
+# (e.g. root) resolves gitnexus via `npx gitnexus@latest` (different install, an
+# empty /root/.gitnexus registry) and cannot finalize against the index built by
+# the owning user — every git op then spews AnalysisNotFinalizedError and
+# rewrites .gitnexus metadata as root, breaking the owner's next run. Only the
+# owning user updates the index; everyone else skips. Override with
+# GITNEXUS_INDEX_OWNER_UID to change the owner.
+if [ "$(id -u)" != "${GITNEXUS_INDEX_OWNER_UID:-1000}" ]; then
+  echo "[gitnexus] Skipping index update (uid $(id -u) is not the index owner ${GITNEXUS_INDEX_OWNER_UID:-1000})." >&2
+  exit 0
+fi
+
 # Pin the FTS CJK segmentation mode to match the bigram-built index. Without
 # this, an incremental run resolves 'none' (default) and the index's recorded
 # 'bigram' stamp triggers cjkSegmentationModeMismatch → forced full rebuild.
