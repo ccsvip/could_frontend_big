@@ -30,7 +30,7 @@ Start here when exploring this area:
 - **`deleteWakeWord`** (Function) — `web/src/api/modules/devices.ts:505`
 - **`handleApplicationDelete`** (Function) — `web/src/views/device-management/index.tsx:232`
 - **`render`** (Function) — `web/src/views/device-management/index.tsx:264`
-- **`openApplicationConfig`** (Function) — `web/src/views/device-management/index.tsx:592`
+- **`openApplicationConfig`** (Function) — `web/src/views/device-management/index.tsx:599`
 
 ## Key Symbols
 
@@ -40,20 +40,20 @@ Start here when exploring this area:
 | `deleteWakeWord` | Function | `web/src/api/modules/devices.ts` | 505 |
 | `handleApplicationDelete` | Function | `web/src/views/device-management/index.tsx` | 232 |
 | `render` | Function | `web/src/views/device-management/index.tsx` | 264 |
-| `openApplicationConfig` | Function | `web/src/views/device-management/index.tsx` | 592 |
-| `openWakeWordModal` | Function | `web/src/views/device-management/index.tsx` | 622 |
-| `handleWakeWordDelete` | Function | `web/src/views/device-management/index.tsx` | 647 |
-| `renderWakeWordsByDevice` | Function | `web/src/views/device-management/index.tsx` | 653 |
-| `expandedRowRender` | Function | `web/src/views/device-management/index.tsx` | 683 |
+| `openApplicationConfig` | Function | `web/src/views/device-management/index.tsx` | 599 |
+| `openWakeWordModal` | Function | `web/src/views/device-management/index.tsx` | 629 |
+| `handleWakeWordDelete` | Function | `web/src/views/device-management/index.tsx` | 654 |
+| `renderWakeWordsByDevice` | Function | `web/src/views/device-management/index.tsx` | 660 |
+| `expandedRowRender` | Function | `web/src/views/device-management/index.tsx` | 690 |
 | `buildDeviceEventsUnsubscribeCommand` | Function | `web/src/api/realtime.ts` | 60 |
 | `resolveDeviceExpirationDisplay` | Function | `web/src/views/device-management/device-expiration-display.ts` | 13 |
 | `DeviceManagementPage` | Function | `web/src/views/device-management/index.tsx` | 165 |
 | `hasPermission` | Function | `web/src/views/device-management/index.tsx` | 202 |
 | `runtimeDiagnosticCounts` | Function | `web/src/views/device-management/index.tsx` | 219 |
-| `handleFilterChange` | Function | `web/src/views/device-management/index.tsx` | 535 |
+| `handleFilterChange` | Function | `web/src/views/device-management/index.tsx` | 542 |
 | `parseRealtimeMessage` | Function | `web/src/api/realtime.ts` | 98 |
-| `scheduleReload` | Function | `web/src/views/device-management/index.tsx` | 450 |
-| `connect` | Function | `web/src/views/device-management/index.tsx` | 460 |
+| `scheduleReload` | Function | `web/src/views/device-management/index.tsx` | 457 |
+| `connect` | Function | `web/src/views/device-management/index.tsx` | 467 |
 | `applicationOptions` | Function | `web/src/views/device-management/index.tsx` | 213 |
 | `agentApplicationOptions` | Function | `web/src/views/device-management/index.tsx` | 215 |
 

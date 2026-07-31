@@ -1,11 +1,11 @@
 ---
 name: tests
-description: "Skill for the Tests area of could_frontend_big. 585 symbols across 61 files."
+description: "Skill for the Tests area of could_frontend_big. 713 symbols across 66 files."
 ---
 
 # Tests
 
-585 symbols | 61 files | Cohesion: 88%
+713 symbols | 66 files | Cohesion: 88%
 
 ## When to Use
 
@@ -18,15 +18,15 @@ description: "Skill for the Tests area of could_frontend_big. 585 symbols across
 | File | Symbols |
 |------|---------|
 | `backend/apps/ai_models/tests/test_agent_application_api.py` | setUp, AgentApplicationApiTests, grant_permissions, agent_application_model, test_create_annotation_from_assistant_message (+39) |
+| `backend/apps/ai_models/tests/test_company_tts_options_api.py` | setUp, grant_permissions, setUp, setUp, CompanyTTSProviderNeutralOptionsTests (+25) |
+| `backend/apps/devices/tests/test_device_tts_authorization.py` | setUp, grant_permissions, setUp, setUp, DeviceTTSAuthorizationTests (+24) |
+| `backend/config/tests/test_realtime_websocket.py` | setUp, setUp, grant_permissions, setUp, RealtimeTTSVoiceRoutingTests (+24) |
 | `backend/apps/knowledge_base/tests/test_api.py` | setUp, KnowledgeBaseApiTests, grant_permissions, create_document, test_create_knowledge_base_returns_index_config (+23) |
-| `backend/config/tests/test_realtime_websocket.py` | setUp, grant_permissions, setUp, RealtimeDeviceEventsTests, RealtimeDeviceStatusTests (+22) |
+| `backend/apps/ai_models/tests/test_llm_model_usage.py` | LLMModelUsageTests, setUp, provider_model, llm_model_model, tenant_grant_model (+22) |
 | `backend/apps/ai_models/tests/test_third_party_chatbot_api.py` | setUp, ThirdPartyChatbotApiTests, provider_model, grant_permissions, create_chatbot (+21) |
-| `backend/apps/ai_models/tests/test_llm_model_usage.py` | LLMModelUsageTests, setUp, provider_model, llm_model_model, tenant_grant_model (+21) |
+| `backend/apps/ai_models/tests/test_tts_api.py` | setUp, setUp, TTSRealtimeTests, TTSApiTests, authenticate_superuser (+20) |
 | `backend/apps/ai_models/tests/test_llm_company_settings_api.py` | LLMCompanySettingsApiTests, setUp, provider_model, tenant_grant_model, tenant_settings_model (+19) |
-| `backend/apps/ai_models/tests/test_asr_api.py` | setUp, ASRApiTests, grant_permissions, test_non_superuser_cannot_update_asr_settings, test_user_with_asr_view_can_read_status_without_secret (+15) |
-| `backend/apps/resources/tests/test_command_dispatch.py` | _run, test_returns_none_when_no_commands, test_low_score_control_text_returns_ordinary_conversation_diagnostics, test_limited_tool_selection_uses_control_command_custom_reply_without_second_generation, test_tool_selection_sends_only_matching_company_candidates (+15) |
-| `backend/apps/app_updates/tests/test_app_update_api.py` | _consume_stream, make_release, test_threshold_confirm_compares_against_latest_uploaded_release, test_release_only_allows_active_patch_and_no_delete, test_model_rejects_file_replacement_and_invalid_filename (+15) |
-| `backend/apps/resources/tests/test_resource_api.py` | setUp, ResourceApiTests, grant_permissions, test_create_video_resource_allows_cloud_url_without_file, test_create_video_resource_rejects_empty_cloud_url_and_empty_file (+14) |
+| `backend/apps/ai_models/tests/test_tts_authorization.py` | grant, test_multiple_cards_are_unioned_and_ordered_by_card, test_default_voice_is_used_when_still_authorized, test_unauthorized_default_falls_back_inside_authorization, test_ensure_authorized_rejects_unauthorized_voice_id (+18) |
 
 ## Entry Points
 
@@ -47,21 +47,21 @@ Start here when exploring this area:
 | `ASRApiTests` | Class | `backend/apps/ai_models/tests/test_asr_api.py` | 17 |
 | `ASRRealtimeTests` | Class | `backend/apps/ai_models/tests/test_asr_realtime.py` | 43 |
 | `ChatApiTests` | Class | `backend/apps/ai_models/tests/test_chat_api.py` | 192 |
+| `CompanyTTSProviderNeutralOptionsTests` | Class | `backend/apps/ai_models/tests/test_company_tts_options_api.py` | 22 |
+| `CompanyTTSDefaultVoiceAuthorizationTests` | Class | `backend/apps/ai_models/tests/test_company_tts_options_api.py` | 183 |
+| `CompanyTTSTestAuthorizationTests` | Class | `backend/apps/ai_models/tests/test_company_tts_options_api.py` | 298 |
 | `KnowledgeModelSettingsApiTests` | Class | `backend/apps/ai_models/tests/test_knowledge_model_settings_api.py` | 13 |
 | `LLMCompanySettingsApiTests` | Class | `backend/apps/ai_models/tests/test_llm_company_settings_api.py` | 14 |
-| `LLMModelUsageTests` | Class | `backend/apps/ai_models/tests/test_llm_model_usage.py` | 63 |
+| `LLMModelUsageTests` | Class | `backend/apps/ai_models/tests/test_llm_model_usage.py` | 64 |
 | `LLMPlatformSettingsApiTests` | Class | `backend/apps/ai_models/tests/test_llm_platform_settings_api.py` | 12 |
 | `ThirdPartyChatbotApiTests` | Class | `backend/apps/ai_models/tests/test_third_party_chatbot_api.py` | 80 |
-| `TTSRealtimeTests` | Class | `backend/apps/ai_models/tests/test_tts_api.py` | 107 |
-| `TTSApiTests` | Class | `backend/apps/ai_models/tests/test_tts_api.py` | 325 |
+| `TTSRealtimeTests` | Class | `backend/apps/ai_models/tests/test_tts_api.py` | 250 |
+| `TTSApiTests` | Class | `backend/apps/ai_models/tests/test_tts_api.py` | 474 |
 | `DeviceApplicationDeletionApiTests` | Class | `backend/apps/devices/tests/test_device_application_deletion_api.py` | 16 |
 | `DeviceAuthorizationApiTests` | Class | `backend/apps/devices/tests/test_device_authorization_api.py` | 36 |
 | `DeviceChatSessionApiTests` | Class | `backend/apps/devices/tests/test_device_chat_session_api.py` | 15 |
-| `KnowledgeBaseApiTests` | Class | `backend/apps/knowledge_base/tests/test_api.py` | 29 |
-| `KnowledgeDocumentChunkApiTests` | Class | `backend/apps/knowledge_base/tests/test_chunks_api.py` | 21 |
-| `ManagedRagTests` | Class | `backend/apps/knowledge_base/tests/test_managed_rag.py` | 23 |
-| `BackendManagementFlowApiTests` | Class | `backend/apps/resources/tests/test_backend_management_flow_api.py` | 23 |
-| `BusinessMetadataCacheApiTests` | Class | `backend/apps/resources/tests/test_business_metadata_cache_api.py` | 28 |
+| `DeviceTTSAuthorizationTests` | Class | `backend/apps/devices/tests/test_device_tts_authorization.py` | 26 |
+| `DeviceHTTPRuntimeTTSAuthorizationTests` | Class | `backend/apps/devices/tests/test_device_tts_authorization.py` | 275 |
 
 ## Execution Flows
 
@@ -82,12 +82,13 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Services | 23 calls |
-| Ai_models | 9 calls |
+| Services | 22 calls |
+| Ai_models | 10 calls |
 | Config | 4 calls |
 | Devices | 1 calls |
 | Resources | 1 calls |
 | Tenants | 1 calls |
+| Knowledge_base | 1 calls |
 
 ## How to Explore
 

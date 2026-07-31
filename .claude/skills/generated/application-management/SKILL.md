@@ -50,18 +50,18 @@ Start here when exploring this area:
 | `stringValue` | Function | `web/src/views/application-management/index.tsx` | 503 |
 | `isDirty` | Function | `web/src/views/application-management/index.tsx` | 551 |
 | `loadSelectedApplication` | Function | `web/src/views/application-management/index.tsx` | 675 |
-| `handleSaveConfig` | Function | `web/src/views/application-management/index.tsx` | 1132 |
-| `handlePublish` | Function | `web/src/views/application-management/index.tsx` | 1230 |
-| `handleKeyDown` | Function | `web/src/views/application-management/index.tsx` | 1251 |
-| `addTtsFilterExcludePattern` | Function | `web/src/views/application-management/index.tsx` | 1412 |
+| `handleSaveConfig` | Function | `web/src/views/application-management/index.tsx` | 1136 |
+| `handlePublish` | Function | `web/src/views/application-management/index.tsx` | 1234 |
+| `handleKeyDown` | Function | `web/src/views/application-management/index.tsx` | 1255 |
+| `addTtsFilterExcludePattern` | Function | `web/src/views/application-management/index.tsx` | 1416 |
 | `createAgentApplicationConversation` | Function | `web/src/api/modules/applications.ts` | 135 |
 | `sendMessageStream` | Function | `web/src/api/modules/chat.ts` | 87 |
 | `processStream` | Function | `web/src/api/modules/chat.ts` | 140 |
-| `ensureConversation` | Function | `web/src/views/application-management/index.tsx` | 1295 |
-| `startNewConversation` | Function | `web/src/views/application-management/index.tsx` | 1309 |
-| `sendChatContent` | Function | `web/src/views/application-management/index.tsx` | 1330 |
-| `handleSend` | Function | `web/src/views/application-management/index.tsx` | 1404 |
-| `sendSuggestedQuestion` | Function | `web/src/views/application-management/index.tsx` | 1477 |
+| `ensureConversation` | Function | `web/src/views/application-management/index.tsx` | 1299 |
+| `startNewConversation` | Function | `web/src/views/application-management/index.tsx` | 1313 |
+| `sendChatContent` | Function | `web/src/views/application-management/index.tsx` | 1334 |
+| `handleSend` | Function | `web/src/views/application-management/index.tsx` | 1408 |
+| `sendSuggestedQuestion` | Function | `web/src/views/application-management/index.tsx` | 1481 |
 
 ## Execution Flows
 

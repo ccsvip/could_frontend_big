@@ -1,11 +1,11 @@
 ---
 name: modules
-description: "Skill for the Modules area of could_frontend_big. 134 symbols across 35 files."
+description: "Skill for the Modules area of could_frontend_big. 146 symbols across 39 files."
 ---
 
 # Modules
 
-134 symbols | 35 files | Cohesion: 83%
+146 symbols | 39 files | Cohesion: 83%
 
 ## When to Use
 
@@ -20,8 +20,8 @@ description: "Skill for the Modules area of could_frontend_big. 134 symbols acro
 | `web/src/api/modules/devices.ts` | normalizeList, buildDeviceParams, fetchDevices, fetchDeviceStats, fetchDeviceGroups (+13) |
 | `web/src/api/modules/knowledge-base.ts` | readBlobErrorMessage, extractFileName, saveBlob, authorizedDownloadRequest, downloadKnowledgeDocument (+6) |
 | `web/src/views/device-management/index.tsx` | loadData, handleSearch, handleDevicePageChange, handleWakeWordSave, refreshVoiceToneOptions (+5) |
+| `web/src/api/modules/llm-settings.ts` | fetchCompanyLLMOptions, fetchCompanyThirdPartyChatbotOptions, buildProviderFormData, createPlatformLLMProvider, updatePlatformLLMProvider (+4) |
 | `web/src/api/modules/resources.ts` | buildListParams, fetchImageResources, fetchVideoResources, buildFormData, createImageResource (+3) |
-| `web/src/api/modules/llm-settings.ts` | fetchCompanyLLMOptions, fetchCompanyThirdPartyChatbotOptions, buildProviderFormData, createPlatformLLMProvider, updatePlatformLLMProvider (+3) |
 | `web/src/views/knowledge-base/index.tsx` | openBindMediaModal, handleBulkDownload, loadMediaAssets, handleBindMediaAssets, handleSaveMediaAsset (+1) |
 | `web/src/api/modules/tts.ts` | fetchCompanyTtsOptions, ttsSettingsPath, fetchTtsSettings, updateTtsSettings, ttsSettingsTestPath (+1) |
 | `web/src/api/modules/models.ts` | buildFormData, createModelAsset, updateModelAsset, buildListParams, fetchModelAssets (+1) |
@@ -50,10 +50,10 @@ Start here when exploring this area:
 | `fetchWakeWords` | Function | `web/src/api/modules/devices.ts` | 488 |
 | `createWakeWord` | Function | `web/src/api/modules/devices.ts` | 495 |
 | `updateWakeWord` | Function | `web/src/api/modules/devices.ts` | 500 |
-| `loadData` | Function | `web/src/views/device-management/index.tsx` | 384 |
-| `handleSearch` | Function | `web/src/views/device-management/index.tsx` | 531 |
-| `handleDevicePageChange` | Function | `web/src/views/device-management/index.tsx` | 541 |
-| `handleWakeWordSave` | Function | `web/src/views/device-management/index.tsx` | 634 |
+| `loadData` | Function | `web/src/views/device-management/index.tsx` | 391 |
+| `handleSearch` | Function | `web/src/views/device-management/index.tsx` | 538 |
+| `handleDevicePageChange` | Function | `web/src/views/device-management/index.tsx` | 548 |
+| `handleWakeWordSave` | Function | `web/src/views/device-management/index.tsx` | 641 |
 | `fetchControlCommands` | Function | `web/src/api/modules/commands.ts` | 190 |
 | `fetchPoints` | Function | `web/src/api/modules/point-management.ts` | 50 |
 | `fetchImageResources` | Function | `web/src/api/modules/resources.ts` | 130 |
@@ -69,6 +69,7 @@ Start here when exploring this area:
 |------|------|-------|
 | `TaskCommandManagementPage → BuildActiveParam` | cross_community | 5 |
 | `ModelManagementPage → BuildListParams` | cross_community | 4 |
+| `TtsManagementPage → NormalizeTtsSessionConfig` | cross_community | 4 |
 | `TtsSettingsPage → TtsSettingsPath` | cross_community | 4 |
 | `ImportCurrentGroupCommands → BuildActiveParam` | cross_community | 4 |
 | `KnowledgeBasePage → FetchKnowledgeBases` | cross_community | 3 |
@@ -81,10 +82,9 @@ Start here when exploring this area:
 |------|-------------|
 | Device-authorization-center | 3 calls |
 | Command-management | 3 calls |
-| Tts-management | 2 calls |
-| Tts-settings | 1 calls |
+| Tts-settings | 2 calls |
+| Tts-management | 1 calls |
 | Tenant-management | 1 calls |
-| Knowledge-base-settings | 1 calls |
 | Knowledge-base | 1 calls |
 | Application-management | 1 calls |
 

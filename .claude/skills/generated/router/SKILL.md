@@ -1,11 +1,11 @@
 ---
 name: router
-description: "Skill for the Router area of could_frontend_big. 49 symbols across 3 files."
+description: "Skill for the Router area of could_frontend_big. 51 symbols across 3 files."
 ---
 
 # Router
 
-49 symbols | 3 files | Cohesion: 80%
+51 symbols | 3 files | Cohesion: 81%
 
 ## When to Use
 
@@ -17,7 +17,7 @@ description: "Skill for the Router area of could_frontend_big. 49 symbols across
 
 | File | Symbols |
 |------|---------|
-| `web/src/router/index.tsx` | LoginPage, DeviceManagementPage, DeviceAuthorizationCenterPage, AccountApplicationsPage, ModelManagementPage (+42) |
+| `web/src/router/index.tsx` | LoginPage, DeviceManagementPage, DeviceAuthorizationCenterPage, AccountApplicationsPage, ModelManagementPage (+44) |
 | `web/src/api/modules/auth.ts` | fetchCurrentUser |
 | `web/src/store/tenant-scope.ts` | useTenantScopeStore |
 
@@ -26,20 +26,20 @@ description: "Skill for the Router area of could_frontend_big. 49 symbols across
 Start here when exploring this area:
 
 - **`fetchCurrentUser`** (Function) — `web/src/api/modules/auth.ts:77`
-- **`AppRouter`** (Function) — `web/src/router/index.tsx:284`
-- **`setUserContext`** (Function) — `web/src/router/index.tsx:286`
-- **`setAuthSyncStatus`** (Function) — `web/src/router/index.tsx:287`
-- **`syncPromise`** (Function) — `web/src/router/index.tsx:303`
+- **`AppRouter`** (Function) — `web/src/router/index.tsx:290`
+- **`setUserContext`** (Function) — `web/src/router/index.tsx:292`
+- **`setAuthSyncStatus`** (Function) — `web/src/router/index.tsx:293`
+- **`syncPromise`** (Function) — `web/src/router/index.tsx:309`
 
 ## Key Symbols
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
 | `fetchCurrentUser` | Function | `web/src/api/modules/auth.ts` | 77 |
-| `AppRouter` | Function | `web/src/router/index.tsx` | 284 |
-| `setUserContext` | Function | `web/src/router/index.tsx` | 286 |
-| `setAuthSyncStatus` | Function | `web/src/router/index.tsx` | 287 |
-| `syncPromise` | Function | `web/src/router/index.tsx` | 303 |
+| `AppRouter` | Function | `web/src/router/index.tsx` | 290 |
+| `setUserContext` | Function | `web/src/router/index.tsx` | 292 |
+| `setAuthSyncStatus` | Function | `web/src/router/index.tsx` | 293 |
+| `syncPromise` | Function | `web/src/router/index.tsx` | 309 |
 | `useTenantScopeStore` | Function | `web/src/store/tenant-scope.ts` | 13 |
 | `LoginPage` | Function | `web/src/router/index.tsx` | 8 |
 | `DeviceManagementPage` | Function | `web/src/router/index.tsx` | 9 |

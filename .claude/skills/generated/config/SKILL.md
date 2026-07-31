@@ -1,11 +1,11 @@
 ---
 name: config
-description: "Skill for the Config area of could_frontend_big. 160 symbols across 18 files."
+description: "Skill for the Config area of could_frontend_big. 162 symbols across 19 files."
 ---
 
 # Config
 
-160 symbols | 18 files | Cohesion: 87%
+162 symbols | 19 files | Cohesion: 87%
 
 ## When to Use
 
@@ -35,7 +35,7 @@ Start here when exploring this area:
 - **`publish_device_event`** (Function) — `backend/apps/devices/realtime.py:27`
 - **`add_device_event_subscriber`** (Function) — `backend/apps/devices/realtime.py:77`
 - **`remove_device_event_subscriber`** (Function) — `backend/apps/devices/realtime.py:89`
-- **`run_websocket`** (Function) — `backend/apps/devices/tests/test_device_authorization_api.py:914`
+- **`run_websocket`** (Function) — `backend/apps/devices/tests/test_device_authorization_api.py:921`
 - **`has_device_tts_voice_config`** (Function) — `backend/apps/devices/tts_voice_config.py:65`
 
 ## Key Symbols
@@ -45,18 +45,18 @@ Start here when exploring this area:
 | `publish_device_event` | Function | `backend/apps/devices/realtime.py` | 27 |
 | `add_device_event_subscriber` | Function | `backend/apps/devices/realtime.py` | 77 |
 | `remove_device_event_subscriber` | Function | `backend/apps/devices/realtime.py` | 89 |
-| `run_websocket` | Function | `backend/apps/devices/tests/test_device_authorization_api.py` | 914 |
+| `run_websocket` | Function | `backend/apps/devices/tests/test_device_authorization_api.py` | 921 |
 | `has_device_tts_voice_config` | Function | `backend/apps/devices/tts_voice_config.py` | 65 |
 | `application` | Function | `backend/config/asgi.py` | 9 |
-| `realtime_websocket_application` | Function | `backend/config/realtime.py` | 380 |
-| `on_delta` | Function | `backend/config/realtime.py` | 960 |
-| `send_with_command_id` | Function | `backend/config/realtime.py` | 2510 |
+| `realtime_websocket_application` | Function | `backend/config/realtime.py` | 381 |
+| `on_delta` | Function | `backend/config/realtime.py` | 961 |
+| `send_with_command_id` | Function | `backend/config/realtime.py` | 2536 |
 | `make_request_id` | Function | `backend/config/request_id.py` | 10 |
 | `clean_trace_value` | Function | `backend/config/request_id.py` | 14 |
-| `run_task` | Function | `backend/config/tests/test_realtime_websocket.py` | 260 |
-| `stale_agent_task` | Function | `backend/config/tests/test_realtime_websocket.py` | 319 |
-| `run_start` | Function | `backend/config/tests/test_realtime_websocket.py` | 1159 |
-| `run_cases` | Function | `backend/config/tests/test_realtime_websocket.py` | 1184 |
+| `run_task` | Function | `backend/config/tests/test_realtime_websocket.py` | 262 |
+| `stale_agent_task` | Function | `backend/config/tests/test_realtime_websocket.py` | 321 |
+| `run_start` | Function | `backend/config/tests/test_realtime_websocket.py` | 1161 |
+| `run_cases` | Function | `backend/config/tests/test_realtime_websocket.py` | 1186 |
 | `resolve_runtime_config_event_subscription` | Function | `backend/apps/devices/realtime.py` | 51 |
 | `runtime_device_error` | Function | `backend/apps/devices/services/runtime.py` | 48 |
 | `get_runtime_device` | Function | `backend/apps/devices/services/runtime.py` | 56 |
@@ -83,10 +83,10 @@ Start here when exploring this area:
 | Area | Connections |
 |------|-------------|
 | Tests | 8 calls |
-| Ai_models | 4 calls |
-| Services | 3 calls |
-| Devices | 2 calls |
+| Services | 7 calls |
+| Devices | 3 calls |
 | Error_codes | 2 calls |
+| Ai_models | 2 calls |
 | Audit | 1 calls |
 | Knowledge_base | 1 calls |
 

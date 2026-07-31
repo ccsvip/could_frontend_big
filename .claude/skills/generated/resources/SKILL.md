@@ -1,11 +1,11 @@
 ---
 name: resources
-description: "Skill for the Resources area of could_frontend_big. 129 symbols across 19 files."
+description: "Skill for the Resources area of could_frontend_big. 122 symbols across 18 files."
 ---
 
 # Resources
 
-129 symbols | 19 files | Cohesion: 77%
+122 symbols | 18 files | Cohesion: 78%
 
 ## When to Use
 
@@ -17,16 +17,16 @@ description: "Skill for the Resources area of could_frontend_big. 129 symbols ac
 
 | File | Symbols |
 |------|---------|
-| `backend/apps/resources/views.py` | _publish_runtime_config_changed, perform_create, perform_update, perform_destroy, perform_create (+48) |
+| `backend/apps/resources/views.py` | _publish_runtime_config_changed, perform_create, perform_update, perform_destroy, perform_create (+45) |
 | `backend/apps/resources/serializers.py` | build_absolute_file_url, get_fileUrl, get_iconUrl, get_audioUrl, get_thumbnailUrl (+23) |
 | `backend/apps/resources/models.py` | _tenant_fk, Resource, ScrollingText, CommandGroup, VoiceTone (+4) |
-| `backend/apps/knowledge_base/views.py` | perform_destroy, PermissionMappedViewSet, KnowledgeBaseViewSet, KnowledgeDocumentViewSet, perform_create |
 | `backend/config/business_cache.py` | perform_create, perform_update, perform_destroy, clear_cached_business_responses, CachedBusinessResponseMixin |
+| `backend/apps/knowledge_base/views.py` | perform_destroy, PermissionMappedViewSet, KnowledgeBaseViewSet, KnowledgeDocumentViewSet |
 | `backend/apps/resources/tasks.py` | _resolve_notification_user, _resolve_notification_company, enqueue_command_notification, enqueue_command_change_notification |
 | `backend/apps/resources/services/minio_client.py` | build_public_object_url, get_video_upload_config, get_resource_upload_config |
 | `backend/apps/resources/tests/test_minio_client.py` | test_r2_public_url_uses_public_base_url, test_iter_object_chunks_releases_response, test_r2_presign_uses_r2_client_for_images |
 | `backend/apps/resources/services/image_hashes.py` | normalize_sha256, calculate_sha256, find_duplicate_image |
-| `backend/apps/tenants/mixins.py` | tenant_create_kwargs, perform_create, apply_tenant_scope |
+| `backend/apps/tenants/services.py` | get_tenant_from_code_param, scope_queryset_member_or_public, resolve_member_or_public_tenant |
 
 ## Entry Points
 

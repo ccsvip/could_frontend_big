@@ -23,15 +23,15 @@ description: "Skill for the Views area of could_frontend_big. 30 symbols across 
 | `web/src/views/application-management/audio-utils.ts` | downsampleBuffer, encodePCM16 |
 | `web/src/api/modules/asr.ts` | buildAsrRealtimeWebSocketUrl |
 | `web/src/api/modules/tts.ts` | buildTtsRealtimeWebSocketUrl |
-| `web/src/views/asr-management/index.tsx` | stopTest |
 | `web/src/views/media-devices.ts` | requestMicrophoneStream |
+| `web/src/views/asr-management/index.tsx` | stopTest |
 
 ## Entry Points
 
 Start here when exploring this area:
 
 - **`buildAsrRealtimeWebSocketUrl`** (Function) — `web/src/api/modules/asr.ts:140`
-- **`buildTtsRealtimeWebSocketUrl`** (Function) — `web/src/api/modules/tts.ts:149`
+- **`buildTtsRealtimeWebSocketUrl`** (Function) — `web/src/api/modules/tts.ts:258`
 - **`buildRealtimeWebSocketUrl`** (Function) — `web/src/api/realtime.ts:20`
 - **`createRealtimeCommandId`** (Function) — `web/src/api/realtime.ts:30`
 - **`encodeRealtimeCommand`** (Function) — `web/src/api/realtime.ts:33`
@@ -41,7 +41,7 @@ Start here when exploring this area:
 | Symbol | Type | File | Line |
 |--------|------|------|------|
 | `buildAsrRealtimeWebSocketUrl` | Function | `web/src/api/modules/asr.ts` | 140 |
-| `buildTtsRealtimeWebSocketUrl` | Function | `web/src/api/modules/tts.ts` | 149 |
+| `buildTtsRealtimeWebSocketUrl` | Function | `web/src/api/modules/tts.ts` | 258 |
 | `buildRealtimeWebSocketUrl` | Function | `web/src/api/realtime.ts` | 20 |
 | `createRealtimeCommandId` | Function | `web/src/api/realtime.ts` | 30 |
 | `encodeRealtimeCommand` | Function | `web/src/api/realtime.ts` | 33 |
@@ -55,8 +55,8 @@ Start here when exploring this area:
 | `stopRecording` | Function | `web/src/views/application-management/use-agent-audio.ts` | 84 |
 | `setupAudioStreaming` | Function | `web/src/views/application-management/use-agent-audio.ts` | 117 |
 | `startRecording` | Function | `web/src/views/application-management/use-agent-audio.ts` | 167 |
-| `stopTest` | Function | `web/src/views/asr-management/index.tsx` | 610 |
 | `requestMicrophoneStream` | Function | `web/src/views/media-devices.ts` | 2 |
+| `stopTest` | Function | `web/src/views/asr-management/index.tsx` | 610 |
 | `playRealtimeTts` | Function | `web/src/views/tts-realtime-playback.ts` | 35 |
 | `closeEncodedAudio` | Function | `web/src/views/tts-realtime-playback.ts` | 59 |
 | `closeAudio` | Function | `web/src/views/tts-realtime-playback.ts` | 72 |
