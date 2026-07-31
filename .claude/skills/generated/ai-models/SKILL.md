@@ -1,11 +1,11 @@
 ---
 name: ai-models
-description: "Skill for the Ai_models area of could_frontend_big. 288 symbols across 29 files."
+description: "Skill for the Ai_models area of could_frontend_big. 286 symbols across 29 files."
 ---
 
 # Ai_models
 
-288 symbols | 29 files | Cohesion: 80%
+286 symbols | 29 files | Cohesion: 81%
 
 ## When to Use
 
@@ -17,11 +17,11 @@ description: "Skill for the Ai_models area of could_frontend_big. 288 symbols ac
 
 | File | Symbols |
 |------|---------|
-| `backend/apps/ai_models/views.py` | ASRReplacementRuleViewSet, PlatformLLMProviderViewSet, PlatformLLMModelViewSet, PlatformThirdPartyChatbotProviderViewSet, PlatformThirdPartyChatbotApplicationViewSet (+120) |
+| `backend/apps/ai_models/views.py` | ASRReplacementRuleViewSet, PlatformLLMProviderViewSet, PlatformLLMModelViewSet, PlatformThirdPartyChatbotProviderViewSet, PlatformThirdPartyChatbotApplicationViewSet (+119) |
 | `backend/apps/ai_models/serializers.py` | mask_knowledge_api_key, create, validate_fillerWords, _adapter, get_configSchemaKey (+25) |
 | `backend/apps/ai_models/llm_services.py` | _normalize_api_protocol, get_llm_api_protocol, build_llm_api_url, _responses_input, _responses_tools (+22) |
 | `backend/apps/ai_models/realtime_tts.py` | _stream_tts_audio, _forward_tts_upstream_audio, ensure_segment_started, finish_active_segment, _new_tts_stream_stats (+17) |
-| `backend/apps/ai_models/models.py` | load, save, default_agent_opening_message, build_publish_config, publish (+8) |
+| `backend/apps/ai_models/models.py` | load, load, save, default_agent_opening_message, build_publish_config (+8) |
 | `backend/apps/resources/views.py` | PermissionMappedModelViewSet, ModelAssetViewSet, CommandGroupViewSet, ControlCommandViewSet, TaskCommandViewSet (+4) |
 | `backend/apps/ai_models/services/tts_adapters.py` | stream_realtime_text, stream_realtime_segments, get_tts_provider_adapter, get_adapter_for_voice, normalize_public_controls (+1) |
 | `backend/apps/devices/views.py` | DeviceChatSessionCollectionView, DeviceChatSessionDetailView, perform_create, get_queryset, stats (+1) |
@@ -82,7 +82,7 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Services | 19 calls |
+| Services | 20 calls |
 | Resources | 6 calls |
 | Tests | 5 calls |
 | Config | 2 calls |

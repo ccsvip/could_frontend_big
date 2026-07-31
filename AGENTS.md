@@ -251,18 +251,19 @@ Managed by Trellis. Edits outside this block are preserved; edits inside may be 
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **could_frontend_big** (9869 symbols, 19332 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **could_frontend_big** (38208 symbols, 86977 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
 
 ## Always Do
 
-- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `impact({target: "symbolName", direction: "upstream"})` and report the blast radius (direct callers, affected processes, risk level) to the user.
+- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `impact({target: "symbolName", direction: "upstream"})` and report the blast radius (direct callers, affected processes, risk level) to the user. For unified PDG impact, add `mode: "pdg"` with optional `line: <N>` — it returns statement-level `affectedStatements` over CDG + REACHING_DEF and inter-procedural symbols in `interproceduralByDepth`/`byDepth`; no-layer/degraded PDG results are UNKNOWN-risk notes (`--pdg` layer).
 - **MUST run `detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows. For regression review, compare against the default branch: `detect_changes({scope: "compare", base_ref: "main"})`.
 - **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
 - When exploring unfamiliar code, use `query({search_query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
 - When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `context({name: "symbolName"})`.
 - For security review, `explain({target: "fileOrSymbol"})` lists taint findings (source→sink flows; needs `analyze --pdg`).
+- For control/data dependence, `pdg_query({mode: "controls", target: "fileOrSymbol"})` answers "under what condition does X run?" (CDG, incl. guard clauses) and `pdg_query({mode: "flows", target, variable})` traces "where does variable Y flow?" (REACHING_DEF). `--pdg` layer.
 
 ## Never Do
 
@@ -291,16 +292,16 @@ This project is indexed by GitNexus as **could_frontend_big** (9869 symbols, 193
 | Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 | Work in the Tests area (713 symbols) | `.claude/skills/generated/tests/SKILL.md` |
-| Work in the Services area (372 symbols) | `.claude/skills/generated/services/SKILL.md` |
-| Work in the Ai_models area (288 symbols) | `.claude/skills/generated/ai-models/SKILL.md` |
+| Work in the Services area (378 symbols) | `.claude/skills/generated/services/SKILL.md` |
+| Work in the Ai_models area (286 symbols) | `.claude/skills/generated/ai-models/SKILL.md` |
 | Work in the Config area (162 symbols) | `.claude/skills/generated/config/SKILL.md` |
 | Work in the Modules area (146 symbols) | `.claude/skills/generated/modules/SKILL.md` |
 | Work in the Devices area (134 symbols) | `.claude/skills/generated/devices/SKILL.md` |
 | Work in the Command-management area (126 symbols) | `.claude/skills/generated/command-management/SKILL.md` |
 | Work in the Resources area (122 symbols) | `.claude/skills/generated/resources/SKILL.md` |
 | Work in the Application-management area (120 symbols) | `.claude/skills/generated/application-management/SKILL.md` |
-| Work in the Knowledge_base area (86 symbols) | `.claude/skills/generated/knowledge-base/SKILL.md` |
 | Work in the Accounts area (85 symbols) | `.claude/skills/generated/accounts/SKILL.md` |
+| Work in the Knowledge_base area (82 symbols) | `.claude/skills/generated/knowledge-base/SKILL.md` |
 | Work in the Device-chat area (53 symbols) | `.claude/skills/generated/device-chat/SKILL.md` |
 | Work in the Router area (51 symbols) | `.claude/skills/generated/router/SKILL.md` |
 | Work in the Resource-management area (45 symbols) | `.claude/skills/generated/resource-management/SKILL.md` |

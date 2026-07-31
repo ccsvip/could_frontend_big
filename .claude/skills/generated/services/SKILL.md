@@ -1,11 +1,11 @@
 ---
 name: services
-description: "Skill for the Services area of could_frontend_big. 372 symbols across 40 files."
+description: "Skill for the Services area of could_frontend_big. 378 symbols across 41 files."
 ---
 
 # Services
 
-372 symbols | 40 files | Cohesion: 76%
+378 symbols | 41 files | Cohesion: 76%
 
 ## When to Use
 
@@ -17,9 +17,9 @@ description: "Skill for the Services area of could_frontend_big. 372 symbols acr
 
 | File | Symbols |
 |------|---------|
-| `backend/apps/ai_models/services/agent_knowledge.py` | _chunk_knowledge_base_id, _chunk_knowledge_base_name, _knowledge_base_min_score, _chunk_retrieval_min_score, _retrieved_chunk_from_stored_chunk (+53) |
+| `backend/apps/ai_models/services/agent_knowledge.py` | _chunk_knowledge_base_id, _chunk_knowledge_base_name, _knowledge_base_min_score, _chunk_retrieval_min_score, _retrieved_chunk_from_stored_chunk (+56) |
 | `backend/apps/ai_models/services/third_party_chatbots.py` | default_scheme_a_config, default_scheme_b_config, default_config_for_scheme, supports_streaming, normalize_integration_config (+38) |
-| `backend/apps/ai_models/services/tts.py` | mask_api_key, get_aliyun_tts_provider, get_effective_tts_config, get_tts_model_profile_voice_codes, is_tts_voice_supported_by_model_code (+32) |
+| `backend/apps/ai_models/services/tts.py` | mask_api_key, get_aliyun_tts_provider, get_effective_tts_config, get_tts_model_profile_voice_codes, is_tts_voice_supported_by_model_code (+33) |
 | `backend/apps/ai_models/services/tts_adapters.py` | effective_config, effective_config, _coerce_controls, _qwen_provider, ensure_voice_supported (+18) |
 | `backend/apps/resources/services/minio_client.py` | _require_complete, _normalize_endpoint, _build_client, _build_r2_client, _ensure_bucket (+15) |
 | `backend/apps/ai_models/serializers.py` | validate, to_representation, validate, get_contentBlocks, get_configured (+11) |
@@ -85,8 +85,8 @@ Start here when exploring this area:
 | Ai_models | 18 calls |
 | Tests | 14 calls |
 | Resources | 7 calls |
+| Knowledge_base | 2 calls |
 | Devices | 2 calls |
-| Knowledge_base | 1 calls |
 
 ## How to Explore
 

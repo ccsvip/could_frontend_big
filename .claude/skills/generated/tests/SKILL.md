@@ -82,13 +82,12 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Services | 22 calls |
+| Services | 23 calls |
 | Ai_models | 10 calls |
 | Config | 4 calls |
 | Devices | 1 calls |
 | Resources | 1 calls |
 | Tenants | 1 calls |
-| Knowledge_base | 1 calls |
 
 ## How to Explore
 
