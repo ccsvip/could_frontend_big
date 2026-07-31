@@ -179,10 +179,9 @@ HTTP API 仍必须保持 REST 风格；WebSocket 只用于实时事件、流式�
 
 ```bash
 git config core.hooksPath .githooks
-# unix 还需：chmod +x .githooks/pre-commit
 ```
 
-未配置 `core.hooksPath` 时守卫不生效，新 clone 必须执行一次。CI 若要强制，可在流水线里直接跑 `node scripts/check-tailwind-tokens.js`（对全量 `*.tsx` 做 HEAD vs 工作区对比）。
+钩子文件与 `gitnexus-update` 已在仓库中提交可执行权限位（100755），clone 后无需再手动 chmod。未配置 `core.hooksPath` 时守卫不生效，新 clone 必须执行一次。CI 若要强制，可在流水线里直接跑 `node scripts/check-tailwind-tokens.js`（对全量 `*.tsx` 做 HEAD vs 工作区对比）。
 
 ## Agent skills
 
