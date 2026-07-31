@@ -239,3 +239,36 @@ Sentry PYTHON-DJANGO-47/-48 (ImportError: TenantTTSProviderGrant) 定位为切�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 8: 修复设备首次运行时配置错误码
+
+**Date**: 2026-07-31
+**Task**: 修复设备首次运行时配置错误码
+**Branch**: `main`
+
+### Summary
+
+修复待后台授权设备拉取运行时配置时误报 1008 的问题；待绑定设备现返回 1002，并补充边界回归测试与错误处理规范。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `96e7df7` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
