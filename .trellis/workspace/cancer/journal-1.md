@@ -206,3 +206,36 @@ Sentry PYTHON-DJANGO-47/-48 (ImportError: TenantTTSProviderGrant) 定位为切�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 7: 分析 WebSocket 三合一逻辑并绘制流程图
+
+**Date**: 2026-07-31
+**Task**: 分析 WebSocket 三合一逻辑并绘制流程图
+**Branch**: `dev`
+
+### Summary
+
+通过 GitNexus 和源码梳理统一 /ws/realtime/ 入口下 agent.session.start 的 ASR、LLM、TTS 三合一链路，生成 Excalidraw 流程图；结果已持久化到归档任务。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `none` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
