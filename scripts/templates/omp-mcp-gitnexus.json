@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "gitnexus": {
+      "type": "stdio",
+      "command": "/usr/bin/env",
+      "args": [
+        "GITNEXUS_FTS_CJK_SEGMENTATION=bigram",
+        "GITNEXUS_WAL_CHECKPOINT_THRESHOLD=67108864",
+        "gitnexus",
+        "mcp"
+      ],
+      "enabled": true
+    }
+  }
+}
