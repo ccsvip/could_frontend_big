@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/backend/tts-tenant-card-authorization.md", "reason": "复核卡片授权契约未被改动：授权页候选来源、adapter 交集过滤、Android 侧冻结契约不受播种影响"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "复核 migration 幂等性与 reverse 语义合规，确认没有毁数据风险"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "复核禁用写法：migration 里不得直接 import 业务模型、不得引入新 settings 依赖"}

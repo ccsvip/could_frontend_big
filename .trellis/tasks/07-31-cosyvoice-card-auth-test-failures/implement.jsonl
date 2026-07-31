@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/backend/tts-tenant-card-authorization.md", "reason": "本任务的直接契约文档：卡片授权数据模型、adapter 注册表与 grantable_tts_providers 的候选来源，决定播种 cosyvoice 卡片行的正确形状"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "数据 migration 的既有写法：幂等 update_or_create/get_or_create、reverse 约定、apps.get_model 历史模型用法"}
+{"file": ".trellis/spec/backend/testing-strategy.md", "reason": "测试库只跑 migration 的前提、以及本项目 fixture 与播种数据的分工，判定该改播种还是改 setUp"}
