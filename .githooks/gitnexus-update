@@ -7,6 +7,14 @@ if [ "${GITNEXUS_AUTO_UPDATE:-1}" = "0" ]; then
   exit 0
 fi
 
+# Pin the FTS CJK segmentation mode to match the bigram-built index. Without
+# this, an incremental run resolves 'none' (default) and the index's recorded
+# 'bigram' stamp triggers cjkSegmentationModeMismatch → forced full rebuild.
+export GITNEXUS_FTS_CJK_SEGMENTATION=bigram
+# LadybugDB auto-checkpoint at the default 16MiB threshold fails on this repo
+# (WAL rotation error); pin the 64MiB threshold used for the full rebuild.
+export GITNEXUS_WAL_CHECKPOINT_THRESHOLD=67108864
+
 repo_root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
 git_dir=$(git rev-parse --absolute-git-dir 2>/dev/null) || exit 0
 lock_dir="$git_dir/gitnexus-auto-update.lock"
