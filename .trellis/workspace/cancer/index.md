@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 5
-- **Last Active**: 2026-07-30
+- **Total Sessions**: 6
+- **Last Active**: 2026-07-31
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~173 | Active |
+| `journal-1.md` | ~208 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 6 | 2026-07-31 | 修复 CosyVoice TTS 卡片授权测试失败（播种缺失的卡片行） | `1aafbff`, `81303ce`, `7fa6c83` | `fix-bug` |
 | 5 | 2026-07-30 | 公司侧 CosyVoice 分配与可扩展 TTS 架构 | `ea290f5`, `54d669d`, `fd58eaa`, `87ff849` | `dev` |
 | 4 | 2026-07-28 | 修复百炼索引名称长度错误 | `ed89f7b` | `main` |
 | 3 | 2026-07-28 | 修复设备状态心跳错误映射 | `165e880` | `dev` |

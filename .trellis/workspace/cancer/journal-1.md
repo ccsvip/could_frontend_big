@@ -171,3 +171,38 @@
 ### Next Steps
 
 - None - task complete
+
+
+## Session 6: 修复 CosyVoice TTS 卡片授权测试失败（播种缺失的卡片行）
+
+**Date**: 2026-07-31
+**Task**: 修复 CosyVoice TTS 卡片授权测试失败（播种缺失的卡片行）
+**Branch**: `fix-bug`
+
+### Summary
+
+Sentry PYTHON-DJANGO-47/-48 (ImportError: TenantTTSProviderGrant) 定位为切分支后未重启 solin_backend 的进程内模块缓存错配，源码无缺陷，已 resolved 并备注根因；顺带发现 test_tts_card_authorization_api 3 条真实失败：0043 建了 CosyVoiceSettings 却从未播种 code='cosyvoice' 的 TTSProvider 行，而超管分配列表是 TTSProvider 行与 adapter 注册表的交集，导致任何新建库都无法分配 CosyVoice。新增 0047_seed_cosyvoice_provider（get_or_create 幂等、reverse=noop），目标模块 19/19 绿，全量 298 tests 由 11F+2E 降至 10F+0E（剩余同名、均为无关的知识库召回失败），现网 id=4 行逐字段无变化。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `1aafbff` | (see git log) |
+| `81303ce` | (see git log) |
+| `7fa6c83` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
