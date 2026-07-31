@@ -62,6 +62,7 @@ from .services.queries import (
 from .services.runtime import (
     RUNTIME_ERROR_AGENT_UNBOUND,
     RUNTIME_ERROR_DEVICE_EXPIRED,
+    RUNTIME_ERROR_DEVICE_NOT_REGISTERED,
     RUNTIME_ERROR_DUPLICATE_DEVICE_CODE,
     RUNTIME_ERROR_EMPTY_DEVICE_CODE,
     RuntimeDeviceError,
@@ -789,6 +790,9 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
         device, error = self.validate_device(request, allow_expired=True)
         if error is not None:
             return error
+        if device.tenant_id is None:
+            error = runtime_device_error(None, status.HTTP_404_NOT_FOUND, RUNTIME_ERROR_DEVICE_NOT_REGISTERED)
+            return Response(error.as_payload(), status=error.status_code)
         expiration_payload = {
             'authorizationExpired': device.is_expired,
             'expiresAt': serializers.DateTimeField().to_representation(device.expires_at),

@@ -218,6 +218,59 @@ device = get_ready_runtime_device(payload_device_code)
 # Recover or refresh the connection, then return device.status.pong.
 ```
 
+## Scenario: Pending Device Runtime Config Errors
+
+### 1. Scope / Trigger
+
+- Applies to `GET /api/v1/device-runtime/config/` after a previously unknown Android device calls the activation endpoint and creates a pending `Device` row.
+
+### 2. Signatures
+
+- Activation: `POST /api/v1/device-auth/activate/` with `deviceCode` creates a pending device when the code is unknown.
+- Config: `GET /api/v1/device-runtime/config/` with `X-Device-Code` resolves the runtime configuration.
+
+### 3. Contracts
+
+- A pending row has `tenant_id=None`; it records the authorization request but is not yet runtime-registered.
+- Runtime config maps this state to `{"code":"1002","statusCode":44004,"message":"设备未登记"}` with HTTP 404.
+- A tenant-bound device with no active effective agent remains `1008 / 44021` with HTTP 403.
+
+### 4. Validation & Error Matrix
+
+- No row for device code -> `1002 DEVICE_NOT_REGISTERED`.
+- Pending activation row with no tenant -> `1002 DEVICE_NOT_REGISTERED`.
+- Tenant-bound row with no active effective agent -> `1008 DEVICE_AGENT_UNBOUND`.
+- Tenant-bound, enabled, configured row -> full HTTP 200 runtime configuration.
+
+### 5. Good/Base/Bad Cases
+
+- Good: an authorized device receives its full runtime configuration.
+- Base: a completely unknown code receives `1002`.
+- Bad: a pending authorization request must not fall through to the agent check and report `1008`.
+
+### 6. Tests Required
+
+- Exercise activation followed by config and assert HTTP 404 plus exact `1002 / 44004 / 设备未登记` fields.
+- Separately assert unknown-device `1002` and tenant-bound-without-agent `1008` to preserve the boundary.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```python
+agent_application = device.effective_agent_application
+if agent_application is None:
+    return DEVICE_AGENT_UNBOUND
+```
+
+#### Correct
+
+```python
+if device.tenant_id is None:
+    return DEVICE_NOT_REGISTERED
+# Only authorized tenant-bound devices reach application and agent validation.
+```
+
 ### `AppUpdateSigningError` (service error — 503)
 
 **File:** `backend/apps/app_updates/signing.py`

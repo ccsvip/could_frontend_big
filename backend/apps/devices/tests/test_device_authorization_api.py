@@ -519,6 +519,56 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(context.exception.code, '1004')
         self.assertEqual(context.exception.business_status_code, 44011)
 
+    def test_runtime_config_pending_activation_returns_device_not_registered(self):
+        device_code = 'ANDROID-PENDING-CONFIG-001'
+        activate_response = self.client.post(
+            '/api/v1/device-auth/activate/',
+            {'deviceCode': device_code},
+            format='json',
+        )
+
+        self.assertEqual(activate_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(activate_response.data['bindingStatus'], 'pending')
+
+        response = self.client.get(
+            '/api/v1/device-runtime/config/',
+            HTTP_X_DEVICE_CODE=device_code,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['code'], '1002')
+        self.assertEqual(response.data['statusCode'], 44004)
+        self.assertEqual(response.data['message'], '设备未登记')
+
+    def test_runtime_config_unknown_device_returns_device_not_registered(self):
+        response = self.client.get(
+            '/api/v1/device-runtime/config/',
+            HTTP_X_DEVICE_CODE='ANDROID-UNKNOWN-CONFIG-001',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['code'], '1002')
+        self.assertEqual(response.data['statusCode'], 44004)
+        self.assertEqual(response.data['message'], '设备未登记')
+
+    def test_runtime_config_company_bound_without_agent_returns_agent_unbound(self):
+        device = Device.objects.create(
+            tenant=self.tenant,
+            name='Company Bound Without Agent',
+            code='ANDROID-COMPANY-NO-AGENT-001',
+            is_enabled=True,
+        )
+
+        response = self.client.get(
+            '/api/v1/device-runtime/config/',
+            HTTP_X_DEVICE_CODE=device.code,
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data['code'], '1008')
+        self.assertEqual(response.data['statusCode'], 44021)
+        self.assertEqual(response.data['message'], '设备未绑定可用智能体')
+
     def test_runtime_config_expired_software_trial_returns_stable_error_code(self):
         device = Device.objects.create(
             tenant=self.tenant,
