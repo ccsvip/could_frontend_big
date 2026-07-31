@@ -208,6 +208,19 @@ get_adapter_for_voice(voice) -> BaseTTSAdapter              # the routing entry 
   config never touches another's.
 - A card whose adapter is not registered is excluded from the super-admin allocation
   list, so it cannot be granted and then fail at runtime.
+- The allocation list is the **intersection** of `grantable_tts_providers()` (rows in
+  `TTSProvider`) and the adapter registry, so a registered adapter with no seeded row
+  is just as invisible as an unregistered one. Every shipped card therefore needs an
+  idempotent data migration creating its `TTSProvider` row — `0015_tts_settings` for
+  `aliyun`, `0047_seed_cosyvoice_provider` for `cosyvoice`. A settings model that is a
+  OneToOne on `TTSProvider` (`CosyVoiceSettings`, added by `0043`) does not create the
+  row it points at.
+- A seeding migration uses `get_or_create`, never `update_or_create`: production card
+  rows are configured by hand, so the migration fills a missing card and never
+  overwrites a configured `api_key` / `base_url` / `model` / `sample_rate` /
+  `tts_session_config` / `default_voice`. Its reverse is `RunPython.noop` — a data
+  migration cannot tell the row it created from a pre-existing one, and deleting a card
+  cascades into `TenantTTSProviderGrant`.
 - `model_code` is Aliyun/Qwen-specific. Voice filtering by it must be scoped to the
   `aliyun` card — other cards do not share Qwen's voice-code vocabulary.
 
@@ -223,12 +236,16 @@ get_adapter_for_voice(voice) -> BaseTTSAdapter              # the routing entry 
 
 ### 5. Good/Base/Bad Cases
 
-- **Good**: a new card ships as one adapter class plus its super-admin settings page;
-  the grant table, company options, device binding and runtime resolution are untouched.
+- **Good**: a new card ships as one adapter class, its super-admin settings page, and a
+  data migration seeding its `TTSProvider` row; the grant table, company options,
+  device binding and runtime resolution are untouched.
 - **Base**: Qwen keeps its historical `_normalize_session_config` bounds by delegating
   to it from the adapter, so existing behaviour is bit-for-bit unchanged.
 - **Bad**: widening a shared `session_config` dict with a new vendor's fields, or
   filtering every card's voices by Qwen's `model_code` (silently empties other cards).
+  Equally bad: registering an adapter but leaving its card as hand-entered production
+  data — it works on the one database somebody typed it into and is permanently
+  unallocatable on every fresh deployment, CI database, and new customer.
 
 ### 6. Tests Required
 
