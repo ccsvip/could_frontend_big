@@ -541,7 +541,7 @@ export const TtsManagementPage = () => {
                     onChange={setSelectedVoiceId}
                   />
                   <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
-                    {(options?.voices ?? []).map(renderVoice)}
+                    {availableVoices.map(renderVoice)}
                   </div>
                 </div>
               </Card>

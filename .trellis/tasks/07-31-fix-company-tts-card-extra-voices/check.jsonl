@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "审查精确删除谓词、反向迁移和迁移完整性"}
+{"file": ".trellis/spec/backend/testing-strategy.md", "reason": "审查测试框架、边界覆盖和 Docker 验证证据"}
+{"file": ".trellis/spec/backend/tts-tenant-card-authorization.md", "reason": "确认卡片授权、租户隔离和运行时契约未回归"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "审查目录过滤一致性与前端构建要求"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "审查 CompanyTtsOptions 兼容消费方式"}

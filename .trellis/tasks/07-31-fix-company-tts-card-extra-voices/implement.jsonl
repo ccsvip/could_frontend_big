@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "数据迁移范围、可逆性和迁移验证规范"}
+{"file": ".trellis/spec/backend/testing-strategy.md", "reason": "Django unittest 与 Docker 内测试执行规范"}
+{"file": ".trellis/spec/backend/tts-tenant-card-authorization.md", "reason": "保持公司 TTS 卡片授权和 provider-neutral 契约"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "前端变更与构建质量要求"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "公司 TTS options 兼容形状和严格类型约束"}
