@@ -8,14 +8,16 @@ with a client-supplied ``voiceId``.
 
 Effective voices are derived, never stored: a voice is effective for a tenant
 when the tenant holds an active grant on the voice's card (``TTSProvider``), the
-card is active, and the voice itself is active and visible.
+card is active, the voice itself is active and listed on the platform, the voice
+is either platform-public or owned by this tenant, and — when the card grant is
+in ``selected`` mode — the tenant also holds an active grant on the voice itself.
 """
 from __future__ import annotations
 
 from django.db.models import Q
 from rest_framework.exceptions import ValidationError
 
-from apps.ai_models.models import TenantTTSProviderGrant, TTSProvider, TTSVoice
+from apps.ai_models.models import TenantTTSProviderGrant, TenantTTSVoiceGrant, TTSProvider, TTSVoice
 
 from .tts import get_tts_model_profile_voice_codes
 
@@ -31,12 +33,25 @@ def get_effective_tts_voices_for_tenant(tenant, *, provider_code: str | None = N
         TTSVoice.objects
         .select_related('provider')
         .filter(
-            is_active=True,
-            is_visible=True,
-            provider__is_active=True,
-            provider__tenant_grants__tenant=tenant,
-            provider__tenant_grants__is_active=True,
+            # The card conditions and ``grant_mode`` must stay inside one
+            # ``.filter()`` call so they all match the SAME grant row. Split
+            # across two calls they degrade to "some grant row on this card is
+            # active for us" plus "some grant row on this card is ``all``" — and
+            # the second row may belong to another company, which would silently
+            # widen our ``selected`` card back to the whole card.
+            Q(
+                is_active=True,
+                is_visible=True,
+                provider__is_active=True,
+                provider__tenant_grants__tenant=tenant,
+                provider__tenant_grants__is_active=True,
+            )
+            & (
+                Q(provider__tenant_grants__grant_mode=TenantTTSProviderGrant.GRANT_MODE_ALL)
+                | Q(tenant_grants__tenant=tenant, tenant_grants__is_active=True)
+            ),
         )
+        .filter(Q(owner_tenant__isnull=True) | Q(owner_tenant=tenant))
     )
     if provider_code:
         queryset = queryset.filter(provider__code=provider_code)
@@ -139,6 +154,21 @@ def get_tenant_tts_provider_grant(tenant, provider) -> TenantTTSProviderGrant | 
     if tenant is None or provider is None:
         return None
     return TenantTTSProviderGrant.objects.filter(tenant=tenant, provider=provider).first()
+
+
+def tts_voice_grant_ids_for_tenant(tenant, provider) -> set[int]:
+    """Return the voice ids this tenant has actively ticked on one card.
+
+    Independent of the card's ``grant_mode`` so switching back to ``all`` and
+    then to ``selected`` again keeps the previous selection.
+    """
+    if tenant is None or provider is None:
+        return set()
+    return set(
+        TenantTTSVoiceGrant.objects
+        .filter(tenant=tenant, voice__provider=provider, is_active=True)
+        .values_list('voice_id', flat=True)
+    )
 
 
 def resolve_device_tts_voice(device, raw_voice_id=None, *, model_code: str | None = None) -> TTSVoice | None:

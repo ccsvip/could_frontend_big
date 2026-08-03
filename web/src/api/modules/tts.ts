@@ -204,9 +204,13 @@ export const testCompanyTts = async (payload: TtsTestPayload) => {
   return response.data;
 };
 
+export type TenantTtsGrantMode = 'all' | 'selected';
+
 export type TenantTtsCardGrantPayload = {
   providerId: number;
   isActive: boolean;
+  grantMode?: TenantTtsGrantMode;
+  voiceIds?: number[];
   publicConfig?: Record<string, unknown>;
 };
 
@@ -218,12 +222,17 @@ export type TenantTtsCardUsage = {
 
 export type TenantTtsCardAuthorizationVoice = TtsVoiceRecord & {
   effectiveAuthorized: boolean;
+  voiceGrantIsActive: boolean;
+  canRevoke: boolean;
+  ownerTenant: { id: number; name: string } | null;
   usage: TenantTtsCardUsage;
 };
 
 export type TenantTtsCardAuthorization = Omit<TtsCardSummary, 'voices'> & {
   sortOrder: number;
   grantIsActive: boolean;
+  grantMode: TenantTtsGrantMode;
+  authorizedVoiceCount: number;
   usage: TenantTtsCardUsage;
   canDisableGrant: boolean;
   voices: TenantTtsCardAuthorizationVoice[];

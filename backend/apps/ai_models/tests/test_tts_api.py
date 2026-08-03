@@ -700,18 +700,18 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(update_response.data['voiceId'], '所选音色不支持当前播报模型')
 
     def test_realtime_voice_resolver_rejects_voice_unsupported_by_model_alias(self):
-        from apps.ai_models.realtime_tts import resolve_tts_voice
+        from apps.ai_models.realtime_tts import resolve_realtime_tts_voice
 
         jennifer = TTSVoice.objects.get(provider=self.provider, voice_code='Jennifer')
 
-        voice = resolve_tts_voice(
+        resolution = resolve_realtime_tts_voice(
             {'user_id': self.tenant_user.id, 'tenant_id': self.tenant.id, 'is_superuser': False},
             jennifer.id,
-            self.provider,
             model_code='instructional',
         )
 
-        self.assertIsNone(voice)
+        self.assertIsNone(resolution.voice)
+        self.assertEqual(resolution.error_key, 'TTS_VOICE_NOT_AVAILABLE')
 
     def test_device_code_can_read_company_tts_options_without_jwt(self):
         Device.objects.create(
@@ -1054,4 +1054,67 @@ class CosyVoiceApiTests(APITestCase):
             post_customization.call_args.args[1]['input'],
             {'action': 'delete_voice', 'voice_id': 'cv-designed-1'},
         )
+
+    @patch('apps.ai_models.services.cosyvoice._post_customization')
+    def test_clone_without_owner_tenant_stays_platform_public(self, post_customization):
+        self.authenticate_superuser()
+        post_customization.return_value = {'output': {'voice_id': 'cv-public-1'}}
+
+        response = self.client.post(
+            f'{self.settings_path}voices/enroll/',
+            {'displayName': '公有音色', 'sourceAudioUrl': 'https://example.com/source.wav'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNone(TTSVoice.objects.get(voice_code='cv-public-1').owner_tenant_id)
+
+    @patch('apps.ai_models.services.cosyvoice._post_customization')
+    def test_clone_with_owner_tenant_is_private_to_that_company(self, post_customization):
+        self.authenticate_superuser()
+        post_customization.return_value = {'output': {'voice_id': 'cv-owned-1'}}
+        owner = Tenant.objects.create(name='复刻甲公司', code='clone-owner-a')
+        other = Tenant.objects.create(name='复刻乙公司', code='clone-owner-b')
+        cosyvoice = TTSProvider.objects.get(code='cosyvoice')
+        for tenant in (owner, other):
+            TenantTTSProviderGrant.objects.create(tenant=tenant, provider=cosyvoice, is_active=True)
+
+        response = self.client.post(
+            f'{self.settings_path}voices/enroll/',
+            {
+                'displayName': '甲公司专属音色',
+                'sourceAudioUrl': 'https://example.com/source.wav',
+                'ownerTenantId': owner.id,
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        voice = TTSVoice.objects.get(voice_code='cv-owned-1')
+        self.assertEqual(voice.owner_tenant_id, owner.id)
+        self.assertIn(voice.id, self._effective_voice_ids(owner))
+        self.assertNotIn(voice.id, self._effective_voice_ids(other))
+
+    def test_clone_owner_tenant_must_be_an_active_company(self):
+        self.authenticate_superuser()
+        disabled = Tenant.objects.create(name='停用公司', code='clone-owner-off', is_active=False)
+
+        unknown = self.client.post(
+            f'{self.settings_path}voices/design/',
+            {'displayName': 'X', 'description': '温暖女声', 'language': 'zh', 'ownerTenantId': 999999},
+            format='json',
+        )
+        inactive = self.client.post(
+            f'{self.settings_path}voices/design/',
+            {'displayName': 'X', 'description': '温暖女声', 'language': 'zh', 'ownerTenantId': disabled.id},
+            format='json',
+        )
+
+        self.assertEqual(unknown.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(inactive.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def _effective_voice_ids(self, tenant):
+        from apps.ai_models.services import tts_authorization as tts_auth
+
+        return set(tts_auth.get_effective_tts_voices_for_tenant(tenant).values_list('id', flat=True))
 

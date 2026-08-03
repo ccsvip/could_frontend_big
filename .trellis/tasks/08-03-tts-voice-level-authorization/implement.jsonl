@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/backend/tts-tenant-card-authorization.md", "reason": "本任务改造的正是这份 spec 描述的授权契约：卡片授权推导、adapter seam、实时路由、Android 冻结契约、授权变更后的 runtime 推送。实现前必须读，实现后必须同步更新。"}
+{"file": ".trellis/spec/backend/security-guidelines.md", "reason": "音色级授权 + owner_tenant 归属隔离属于多租户越权面。需遵守本文的租户隔离三道防线与「不在页面层过滤」原则。"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "新增 TenantTTSVoiceGrant 表、TTSVoice.owner_tenant 列与 3 个迁移，需遵守本项目的 ORM / 迁移约定与 TenantManager 使用规则。"}
+{"file": ".trellis/spec/backend/api-design.md", "reason": "扩展 GET/PUT /settings/tts/tenants/<id>/card-authorizations/ 的 payload，需遵守既有 REST 与命名（camelCase）约定。"}
+{"file": ".trellis/spec/backend/testing-strategy.md", "reason": "验收要求 apps.ai_models + apps.devices 全绿，且需补授权推导组合测试与跨公司隔离测试，遵循本文的测试框架与 mock 约定。"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "tts.ts 三个类型要加 grantMode / voiceIds / canRevoke / ownerTenant，npm run build（tsc -b）是唯一前端质量门禁。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "本改动跨 model → service → serializer → view → api client → page 六层，且新增 payload 字段，正是本指南的触发条件。"}

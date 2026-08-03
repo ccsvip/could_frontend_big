@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Button, Card, Collapse, Empty, Select, Space, Spin, Switch, Tag, Tooltip, Typography, message } from 'antd';
+import { Button, Card, Checkbox, Collapse, Empty, Segmented, Select, Space, Spin, Switch, Tag, Tooltip, Typography, message } from 'antd';
 import { IconCloud, IconDeviceFloppy, IconHeadphones, IconRefresh, IconVolume } from '@tabler/icons-react';
 import {
   fetchTenantTtsCardAuthorization,
   updateTenantTtsCardAuthorization,
   type TenantTtsCardAuthorization,
   type TenantTtsCardAuthorizationResponse,
+  type TenantTtsCardAuthorizationVoice,
+  type TenantTtsGrantMode,
 } from '../../api/modules/tts';
 import { fetchTenants, type TenantRecord } from '../../api/modules/tenants';
 
@@ -15,6 +17,17 @@ const usageSummary = (usage: TenantTtsCardAuthorization['usage']) => {
   if (usage.deviceCount) parts.push(`设备 ${usage.deviceCount} 台`);
   if (usage.deviceApplicationCount) parts.push(`设备应用 ${usage.deviceApplicationCount} 个`);
   return parts.join(' · ');
+};
+
+/** A voice the platform has shelved cannot be authorized in either mode. */
+const isShelved = (voice: TenantTtsCardAuthorizationVoice) => voice.isActive && voice.isVisible;
+
+/** Voices this card would hand to the company if the pending edits were saved. */
+const pendingAuthorizedVoices = (card: TenantTtsCardAuthorization) => {
+  if (!card.grantIsActive || !card.isActive) return [];
+  return card.voices.filter(
+    (voice) => isShelved(voice) && (card.grantMode === 'all' || voice.voiceGrantIsActive),
+  );
 };
 
 export const TtsCardAuthorizationPage = () => {
@@ -63,21 +76,38 @@ export const TtsCardAuthorizationPage = () => {
     void loadAuthorization();
   }, [loadAuthorization]);
 
+  // Mirrors the backend's post-save derivation, so the default voice offered here
+  // is one the same PUT will actually accept.
   const authorizedVoiceOptions = useMemo(() => {
     if (!authorization) return [];
     return authorization.providers
-      .filter((card) => card.grantIsActive)
       .map((card) => ({
         label: card.name,
-        options: card.voices
-          .filter((voice) => voice.isActive && voice.isVisible)
-          .map((voice) => ({
-            label: `${voice.displayName} (${voice.voiceCode})`,
-            value: voice.id,
-          })),
+        options: pendingAuthorizedVoices(card).map((voice) => ({
+          label: `${voice.displayName} (${voice.voiceCode})`,
+          value: voice.id,
+        })),
       }))
       .filter((group) => group.options.length > 0);
   }, [authorization]);
+
+  /**
+   * Apply one local card edit and drop the default voice if that edit would
+   * revoke it — the backend refuses a save that authorizes a card while making an
+   * un-ticked voice the default, so the page must not build that payload.
+   */
+  const patchCard = (providerId: number, patch: (card: TenantTtsCardAuthorization) => TenantTtsCardAuthorization) => {
+    if (!authorization) return;
+    const providers = authorization.providers.map((item) => (item.id === providerId ? patch(item) : item));
+    const stillAuthorized = providers.some((card) =>
+      pendingAuthorizedVoices(card).some((voice) => voice.id === authorization.defaultVoiceId),
+    );
+    setAuthorization({
+      ...authorization,
+      defaultVoiceId: stillAuthorized ? authorization.defaultVoiceId : null,
+      providers,
+    });
+  };
 
   const toggleGrant = (providerId: number, isActive: boolean) => {
     if (!authorization) return;
@@ -86,14 +116,22 @@ export const TtsCardAuthorizationPage = () => {
       message.warning(`${card.name} 仍在使用中（${usageSummary(card.usage)}），无法取消授权`);
       return;
     }
-    const clearsDefault = !isActive && card?.voices.some((voice) => voice.id === authorization.defaultVoiceId);
-    setAuthorization({
-      ...authorization,
-      defaultVoiceId: clearsDefault ? null : authorization.defaultVoiceId,
-      providers: authorization.providers.map((item) =>
-        item.id === providerId ? { ...item, grantIsActive: isActive } : item,
-      ),
-    });
+    patchCard(providerId, (item) => ({ ...item, grantIsActive: isActive }));
+  };
+
+  const setGrantMode = (providerId: number, grantMode: TenantTtsGrantMode) => {
+    patchCard(providerId, (item) => ({ ...item, grantMode }));
+  };
+
+  const toggleVoiceGrant = (providerId: number, voice: TenantTtsCardAuthorizationVoice, checked: boolean) => {
+    if (!checked && !voice.canRevoke) {
+      message.warning(`${voice.displayName} 仍在使用中（${usageSummary(voice.usage)}），无法取消授权`);
+      return;
+    }
+    patchCard(providerId, (item) => ({
+      ...item,
+      voices: item.voices.map((row) => (row.id === voice.id ? { ...row, voiceGrantIsActive: checked } : row)),
+    }));
   };
 
   const saveAuthorization = async () => {
@@ -104,6 +142,12 @@ export const TtsCardAuthorizationPage = () => {
         cardGrants: authorization.providers.map((card) => ({
           providerId: card.id,
           isActive: card.grantIsActive,
+          grantMode: card.grantMode,
+          // Only `selected` consumes the ticks; sending them in `all` mode would
+          // be ignored by the backend anyway.
+          ...(card.grantMode === 'selected'
+            ? { voiceIds: card.voices.filter((voice) => voice.voiceGrantIsActive).map((voice) => voice.id) }
+            : {}),
         })),
         defaultVoiceId: authorization.defaultVoiceId,
       });
@@ -128,7 +172,7 @@ export const TtsCardAuthorizationPage = () => {
                   公司 TTS 卡片授权
                 </Typography.Title>
                 <div className="mt-1 text-xs text-slate-500">
-                  按公司分配可用的 TTS 卡片；公司只能看到并使用已授权卡片下的音色。
+                  按公司分配可用的 TTS 卡片；卡片可整张授权，也可只授权其中指定的音色。
                 </div>
               </div>
             </div>
@@ -179,12 +223,6 @@ export const TtsCardAuthorizationPage = () => {
           </div>
         </div>
 
-        <Alert
-          type="info"
-          showIcon
-          message="卡片授权后，公司侧会自动看到该卡片下所有启用且展示的音色；MVP 不支持在卡片内排除单个音色。"
-        />
-
         <Spin spinning={authLoading}>
           {authorization && authorization.providers.length === 0 ? (
             <Card className="rounded-xl border border-slate-100 shadow-card">
@@ -193,7 +231,9 @@ export const TtsCardAuthorizationPage = () => {
           ) : (
             <Collapse
               className="custom-collapse border-slate-100 rounded-xl overflow-hidden shadow-sm bg-white"
-              items={(authorization?.providers || []).map((card) => ({
+              items={(authorization?.providers || []).map((card) => {
+                const authorizedCount = pendingAuthorizedVoices(card).length;
+                return {
                 key: card.id,
                 label: (
                   <div className="flex items-center justify-between w-full pr-4">
@@ -213,9 +253,20 @@ export const TtsCardAuthorizationPage = () => {
                     <div className="flex items-center gap-3 shrink-0 ml-2" onClick={(event) => event.stopPropagation()}>
                       {!card.canDisableGrant ? (
                         <span className="text-xs text-amber-600 font-medium">{usageSummary(card.usage)}</span>
-                      ) : (
-                        <span className="text-xs text-slate-400 font-medium">{card.voices.length} 个音色</span>
-                      )}
+                      ) : null}
+                      <span className="text-xs text-slate-400 font-medium">
+                        已授权 {authorizedCount} / 共 {card.voices.length} 个音色
+                      </span>
+                      <Segmented
+                        size="small"
+                        value={card.grantMode}
+                        disabled={!card.isActive || !card.grantIsActive}
+                        options={[
+                          { label: '全部音色', value: 'all' },
+                          { label: '指定音色', value: 'selected' },
+                        ]}
+                        onChange={(value) => setGrantMode(card.id, value as TenantTtsGrantMode)}
+                      />
                       <Tooltip title={card.canDisableGrant ? '' : `该卡片仍在使用中（${usageSummary(card.usage)}），无法取消授权`}>
                         <Switch
                           checked={card.grantIsActive}
@@ -235,6 +286,28 @@ export const TtsCardAuthorizationPage = () => {
                       card.voices.map((voice) => (
                         <div key={voice.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-3 px-4">
                           <div className="flex items-center gap-3 min-w-0">
+                            {card.grantMode === 'selected' ? (
+                              <Tooltip
+                                title={
+                                  !isShelved(voice)
+                                    ? '该音色未在平台上架，无法授权'
+                                    : voice.voiceGrantIsActive && !voice.canRevoke
+                                      ? `该音色仍在使用中（${usageSummary(voice.usage)}），无法取消授权`
+                                      : ''
+                                }
+                              >
+                                <Checkbox
+                                  checked={voice.voiceGrantIsActive}
+                                  disabled={
+                                    !card.grantIsActive
+                                    || !card.isActive
+                                    || !isShelved(voice)
+                                    || (voice.voiceGrantIsActive && !voice.canRevoke)
+                                  }
+                                  onChange={(event) => toggleVoiceGrant(card.id, voice, event.target.checked)}
+                                />
+                              </Tooltip>
+                            ) : null}
                             <IconHeadphones size={16} className="text-slate-400 shrink-0" />
                             <div className="min-w-0">
                               <div className="font-semibold text-slate-800 text-sm truncate">{voice.displayName}</div>
@@ -242,14 +315,19 @@ export const TtsCardAuthorizationPage = () => {
                             </div>
                           </div>
                           <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                            {voice.ownerTenant ? (
+                              <Tag color="purple" className="m-0 px-2 py-0.5 rounded-md border-0 text-xs">
+                                专属 · {voice.ownerTenant.name}
+                              </Tag>
+                            ) : null}
                             {voice.id === authorization?.defaultVoiceId ? (
                               <Tag color="success" className="m-0 px-2 py-0.5 rounded-md border-0 text-xs">公司默认</Tag>
                             ) : null}
                             <Tag
-                              color={voice.isActive && voice.isVisible ? 'success' : 'default'}
+                              color={isShelved(voice) ? 'success' : 'default'}
                               className="m-0 px-2 py-0.5 rounded-md border-0 text-xs"
                             >
-                              {voice.isActive && voice.isVisible ? '全局可用' : '全局停用'}
+                              {isShelved(voice) ? '平台上架' : '平台下架'}
                             </Tag>
                             <Tag
                               color={voice.effectiveAuthorized ? 'blue' : 'default'}
@@ -266,7 +344,8 @@ export const TtsCardAuthorizationPage = () => {
                     )}
                   </div>
                 ),
-              }))}
+                };
+              })}
             />
           )}
         </Spin>

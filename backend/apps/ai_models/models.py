@@ -620,7 +620,16 @@ class TTSVoice(models.Model):
     gender = models.CharField('性别', max_length=16, blank=True, default='')
     avatar_path = models.CharField('头像路径', max_length=255, blank=True, default='')
     is_active = models.BooleanField('是否启用', default=True)
-    is_visible = models.BooleanField('是否展示', default=True)
+    is_visible = models.BooleanField('平台上架', default=True)
+    owner_tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='owned_tts_voices',
+        verbose_name='归属公司',
+        help_text='留空表示平台公有音色；填写后只有该公司可用。',
+    )
     sort_order = models.PositiveIntegerField('排序', default=0)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
 
@@ -720,6 +729,13 @@ class TenantTTSSettings(models.Model):
 
 
 class TenantTTSProviderGrant(models.Model):
+    GRANT_MODE_ALL = 'all'
+    GRANT_MODE_SELECTED = 'selected'
+    GRANT_MODE_CHOICES = [
+        (GRANT_MODE_ALL, '全部音色'),
+        (GRANT_MODE_SELECTED, '指定音色'),
+    ]
+
     tenant = models.ForeignKey(
         'tenants.Tenant',
         on_delete=models.CASCADE,
@@ -733,6 +749,13 @@ class TenantTTSProviderGrant(models.Model):
         verbose_name='授权 TTS 卡片',
     )
     is_active = models.BooleanField('是否启用', default=True)
+    grant_mode = models.CharField(
+        '授权范围',
+        max_length=16,
+        choices=GRANT_MODE_CHOICES,
+        default=GRANT_MODE_ALL,
+        help_text='全部音色：卡下所有上架音色自动可用；指定音色：仅勾选的音色可用。',
+    )
     public_config = models.JSONField('公司卡片公共配置', blank=True, default=dict)
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
@@ -748,6 +771,36 @@ class TenantTTSProviderGrant(models.Model):
 
     def __str__(self):
         return f'{self.tenant_id}:{self.provider_id}'
+
+
+class TenantTTSVoiceGrant(models.Model):
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='tts_voice_grants',
+        verbose_name='所属公司',
+    )
+    voice = models.ForeignKey(
+        TTSVoice,
+        on_delete=models.CASCADE,
+        related_name='tenant_grants',
+        verbose_name='授权音色',
+    )
+    is_active = models.BooleanField('是否启用', default=True)
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        verbose_name = '公司 TTS 音色授权'
+        verbose_name_plural = '公司 TTS 音色授权'
+        constraints = [
+            models.UniqueConstraint(fields=['tenant', 'voice'], name='uniq_tenant_tts_voice_grant'),
+        ]
+
+    def __str__(self):
+        return f'{self.tenant_id}:{self.voice_id}'
 
 
 class ASRReplacementRule(models.Model):

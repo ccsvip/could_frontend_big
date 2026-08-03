@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/backend/tts-tenant-card-authorization.md", "reason": "校验实现是否守住 spec 的既有契约：授权音色是路由、providerCode 只能确认不能决定、adapter 内收敛供应商差异、runtime 推送不能漏。"}
+{"file": ".trellis/spec/backend/security-guidelines.md", "reason": "重点核查跨公司越权：owner_tenant 过滤是否漏在任一消费路径、错误文案是否泄露 id 存在性、超管旁路是否被误扩大。"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "核查禁止模式与代码标准，尤其是本次删除死代码后是否残留孤儿 import / 引用。"}
+{"file": ".trellis/spec/backend/database-guidelines.md", "reason": "核查迁移可逆性、唯一约束命名、是否误给 TTSVoice 挂上 TenantManager（design §2.3 明确禁止）。"}
+{"file": ".trellis/spec/backend/testing-strategy.md", "reason": "核查新增测试是否覆盖 design §9 的四类风险，且不是同义反复测试（删掉被测特性后测试仍通过即为无效）。"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "核查授权页改动是否引入非必要重构、是否保持既有本地 state + 统一 PUT 的风格。"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "核查新增 payload 字段在六层之间形状一致，无某层裸 cast 或漏传。"}

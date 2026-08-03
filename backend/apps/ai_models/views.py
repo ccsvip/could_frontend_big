@@ -85,6 +85,7 @@ from .models import (
     TenantThirdPartyChatbotGrant,
     TenantTTSProviderGrant,
     TenantTTSSettings,
+    TenantTTSVoiceGrant,
     ThirdPartyChatbotApplication,
     ThirdPartyChatbotIntegration,
     ThirdPartyChatbotProvider,
@@ -1333,6 +1334,9 @@ class TenantTTSCardAuthorizationView(APIView):
             grant.provider_id: grant
             for grant in TenantTTSProviderGrant.objects.filter(tenant=tenant)
         }
+        effective_voice_ids = set(
+            tts_auth.get_effective_tts_voices_for_tenant(tenant).values_list('id', flat=True)
+        )
         providers = []
         for provider in tts_auth.grantable_tts_providers():
             grant = grant_map.get(provider.id)
@@ -1342,16 +1346,34 @@ class TenantTTSCardAuthorizationView(APIView):
                 # A card whose adapter is not implemented cannot be allocated.
                 continue
             usage = tts_auth.tts_provider_usage_for_tenant(tenant, provider)
+            voice_grant_ids = tts_auth.tts_voice_grant_ids_for_tenant(tenant, provider)
             voices = [
-                self._voice_payload(provider, voice, adapter, tenant, default_voice_id)
-                for voice in provider.voices.all().order_by('sort_order', 'id')
+                self._voice_payload(
+                    provider,
+                    voice,
+                    adapter,
+                    tenant,
+                    default_voice_id,
+                    voice_grant_ids,
+                    effective_voice_ids,
+                )
+                # A voice cloned for another company must never appear on this
+                # company's page, even as an unticked row.
+                for voice in (
+                    provider.voices
+                    .select_related('owner_tenant')
+                    .filter(Q(owner_tenant__isnull=True) | Q(owner_tenant=tenant))
+                    .order_by('sort_order', 'id')
+                )
             ]
             summary = adapter.public_provider_summary(provider)
             summary.update({
                 'sortOrder': provider.id,
                 'grantIsActive': bool(grant and grant.is_active),
+                'grantMode': grant.grant_mode if grant else TenantTTSProviderGrant.GRANT_MODE_ALL,
                 'publicConfig': dict(grant.public_config) if grant and isinstance(grant.public_config, dict) else {},
                 'voices': voices,
+                'authorizedVoiceCount': sum(1 for voice in voices if voice['effectiveAuthorized']),
                 'usage': usage,
                 'canDisableGrant': not (usage['tenantDefault'] or usage['deviceCount'] or usage['deviceApplicationCount']),
             })
@@ -1362,7 +1384,17 @@ class TenantTTSCardAuthorizationView(APIView):
             'defaultVoiceId': default_voice_id,
         }
 
-    def _voice_payload(self, provider, voice, adapter, tenant, default_voice_id):
+    def _voice_payload(
+        self,
+        provider,
+        voice,
+        adapter,
+        tenant,
+        default_voice_id,
+        voice_grant_ids,
+        effective_voice_ids,
+    ):
+        usage = tts_auth.tts_voice_usage_for_tenant(tenant, voice)
         return {
             'id': voice.id,
             'providerId': provider.id,
@@ -1374,11 +1406,20 @@ class TenantTTSCardAuthorizationView(APIView):
             'isActive': voice.is_active,
             'isVisible': voice.is_visible,
             'sortOrder': voice.sort_order,
+            'ownerTenant': (
+                {'id': voice.owner_tenant_id, 'name': voice.owner_tenant.name}
+                if voice.owner_tenant_id
+                else None
+            ),
             'supportedChannels': adapter.supported_channels(provider),
             'capabilities': adapter.public_voice_capabilities(voice),
-            'effectiveAuthorized': tts_auth.is_tts_voice_effective_for_tenant(tenant, voice),
+            'voiceGrantIsActive': voice.id in voice_grant_ids,
+            'effectiveAuthorized': voice.id in effective_voice_ids,
             'isDefault': voice.id == default_voice_id,
-            'usage': tts_auth.tts_voice_usage_for_tenant(tenant, voice),
+            'usage': usage,
+            # Un-ticking a referenced voice is refused on save, so the page must be
+            # able to grey the checkbox out instead of offering a doomed action.
+            'canRevoke': not (usage['tenantDefault'] or usage['deviceCount'] or usage['deviceApplicationCount']),
         }
 
     def get(self, request, tenant_id):
@@ -1397,7 +1438,7 @@ class TenantTTSCardAuthorizationView(APIView):
 
         with transaction.atomic():
             for entry in grants:
-                defaults = {'is_active': entry['isActive']}
+                defaults = {'is_active': entry['isActive'], 'grant_mode': entry['grantMode']}
                 if 'publicConfig' in entry:
                     defaults['public_config'] = entry['publicConfig']
                 TenantTTSProviderGrant.objects.update_or_create(
@@ -1405,6 +1446,7 @@ class TenantTTSCardAuthorizationView(APIView):
                     provider=entry['provider'],
                     defaults=defaults,
                 )
+                self._sync_voice_grants(tenant, entry)
             TenantTTSSettings.objects.update_or_create(
                 tenant=tenant,
                 defaults={'default_voice_id': default_voice_id},
@@ -1414,6 +1456,30 @@ class TenantTTSCardAuthorizationView(APIView):
             tts_runtime_events.publish_tenant_tts_config_changed(tenant.id)
 
         return Response(self._response_payload(tenant))
+
+    def _sync_voice_grants(self, tenant, entry):
+        """Write one card's per-voice ticks.
+
+        Only ``selected`` mode rewrites the ticks. In ``all`` mode the ticks are
+        not consulted by the authorization query, so clearing them here would
+        silently throw away a selection the super-admin can no longer see — and
+        switching the card back to ``selected`` would come up empty.
+        """
+        if entry['grantMode'] != TenantTTSProviderGrant.GRANT_MODE_SELECTED:
+            return
+        target_ids = set(entry['voiceIds'])
+        for voice_id in sorted(target_ids):
+            TenantTTSVoiceGrant.objects.update_or_create(
+                tenant=tenant,
+                voice_id=voice_id,
+                defaults={'is_active': True},
+            )
+        (
+            TenantTTSVoiceGrant.objects
+            .filter(tenant=tenant, voice__provider=entry['provider'], is_active=True)
+            .exclude(voice_id__in=target_ids)
+            .update(is_active=False)
+        )
 
 
 class TenantThirdPartyChatbotAuthorizationView(APIView):

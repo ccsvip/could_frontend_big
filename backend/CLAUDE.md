@@ -133,6 +133,20 @@
   - A: 单个下载和批量 zip 都必须返回真正的二进制响应；只有错误仍走 `backend/config/exceptions.py` 的 JSON envelope，这样前端下载 helper 才能正确区分 Blob 成功体与 Blob(JSON) 错误体。
 - Q: 批量下载的 `download_count` 代表“真的下载完成”吗？
   - A: 不是。首版约定是 served/attempted 口径：zip 开始回传即视为已服务成功，对压缩包内实际包含的每个文档各 `+1`；被过滤掉的非法/重复/不存在 id 不计数。
+- Q: 公司到底能用哪些 TTS 音色，是怎么算出来的？
+  - A: 两级授权派生，不落库，唯一入口是 `apps/ai_models/services/tts_authorization.py`：`active TenantTTSProviderGrant + provider.is_active + voice.is_active/is_visible + (owner_tenant 为空 或 等于本公司) + (grant_mode == 'all' 或 存在 active TenantTTSVoiceGrant)`。这些条件必须写在**同一个** `.filter()` 里，拆成两次会让别家公司的授权行把 `selected` 卡片悄悄放宽。
+- Q: `TTSVoice.is_visible` 是“对某家公司可见”吗？
+  - A: 不是。它是平台级上架开关（`verbose_name='平台上架'`），下架即对所有公司不可用。按公司收窄只能用 `grant_mode` + `TenantTTSVoiceGrant` + `owner_tenant`。
+- Q: `all` 模式下为什么不清空 `TenantTTSVoiceGrant` 的勾选？
+  - A: `all` 模式下勾选不参与派生查询，清掉等于丢弃超管当前界面上看不见的历史选择；切回 `selected` 时应当原样恢复。`_sync_voice_grants` 因此只在 `selected` 模式重写勾选。
+- Q: 授权 PUT 里的 `defaultVoiceId` 为什么不能直接查库校验？
+  - A: 查库拿到的是**保存前**状态，会放过“同一次请求里取消勾选某音色 + 把它设为默认”的组合。serializer 用 `_voice_ids_after_save` 先算出这次保存后的授权集合再校验，失败返回 `默认音色本次保存后不可用（未上架、未勾选或不属于该公司）`。
+- Q: CosyVoice 复刻出来的音色怎么归属到公司？
+  - A: 复刻接口可选传 `ownerTenantId`，serializer 用 `source='owner_tenant'` 映射，view 侧 `**serializer.validated_data` 直接透传到 `TTSVoice.owner_tenant`；不传即平台公有音色。公司不存在或已停用返回 400 `公司不存在或已停用`。
+- Q: 跨公司探测音色 id 会不会被区分出来？
+  - A: 不会。“不属于本公司的音色 id”和“根本不存在的 id”共用同一条错误文案，避免超管界面之外的调用方靠错误差异枚举其它公司的复刻音色。
+- Q: 设备侧绑定的音色被取消勾选后会怎样？
+  - A: `resolve_device_tts_voice` 每次都重跑完整两级派生条件（不只校验卡片），绑定失效即回落到公司默认音色，再回落到第一个已授权音色；一个都没有时 `resources.voiceTones` 返回空数组，runtime TTS 返回 400。
 
 ## 相关文件清单
 
@@ -175,3 +189,4 @@
 - 2026-04-20T19:05:00+08:00：聊天室会话新增 `temperature` / `max_tokens` 配置并真实参与上游请求，`send` 端点支持最后一条助手消息重生成；配合前端搜索与模板能力，聊天室进入第二阶段工作台形态。
 - 2026-04-21T13:20:00+08:00：新增知识库已批准约束说明，记录预期 API、文档模型字段、admin-only 状态维护边界、raw DRF + 二进制下载契约，以及 A/C 两种结构下需要补充的测试路径。
 - 2026-06-11T00:00:00+08:00：移除独立 `/ai-models/chat` 菜单入口；聊天会话 API 保留给应用管理调试会话使用。
+- 2026-08-03T00:00:00+08:00：TTS 授权粒度下沉到音色级——`TenantTTSProviderGrant` 新增 `grant_mode`（`all` / `selected`），新增 `TenantTTSVoiceGrant` 逐音色授权表，`TTSVoice` 新增 `owner_tenant`（CosyVoice 复刻音色归属公司，`NULL` 为平台公有），`is_visible` 语义明确为「平台上架」并只改 `verbose_name`（迁移 `0049` / `0050` / `0051` 拆分为三个可独立回滚的纯新增迁移）。`tts_authorization.py` 的派生条件收在同一个 `.filter()` 内；授权 PUT 的 `defaultVoiceId` 改为对保存后派生集合校验；跨公司与不存在的音色 id 共用同一错误文案防探测；`resolve_device_tts_voice` 同步执行完整两级校验。

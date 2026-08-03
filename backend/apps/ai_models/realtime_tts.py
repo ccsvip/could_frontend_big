@@ -24,10 +24,7 @@ from .services.cosyvoice import COSYVOICE_PROVIDER_CODE
 from .services.tts import (
     build_tts_ws_url,
     get_aliyun_tts_provider,
-    get_default_tts_voice,
     get_effective_tts_config,
-    get_effective_tts_voice_for_tenant,
-    is_tts_voice_supported_by_model_code,
     is_tts_configured,
     normalize_tts_text,
     split_tts_text,
@@ -85,46 +82,6 @@ def _resolve_device_connection(query_params: dict[str, list[str]] | None) -> dic
         'tenant_id': device.tenant_id,
         'is_superuser': False,
     }
-
-
-def resolve_tts_voice(
-    connection: dict[str, Any],
-    raw_voice_id,
-    provider: TTSProvider,
-    *,
-    model_code: str | None = None,
-) -> TTSVoice | None:
-    voice_id = _parse_positive_int(raw_voice_id)
-    if voice_id is not None:
-        voice = TTSVoice.objects.select_related('provider').filter(id=voice_id, provider=provider).first()
-        if (
-            voice is not None
-            and voice.is_active
-            and (connection.get('is_superuser') or voice.is_visible)
-            and (model_code is None or is_tts_voice_supported_by_model_code(voice, model_code))
-        ):
-            return voice
-        return None
-
-    device_id = connection.get('device_id')
-    if device_id:
-        device = Device.objects.select_related('tts_voice__provider').filter(id=device_id).first()
-        device_voice = getattr(device, 'tts_voice', None)
-        if device_voice is not None:
-            if (
-                device_voice.provider_id == provider.id
-                and device_voice.is_active
-                and device_voice.is_visible
-                and device_voice.provider.is_active
-                and (model_code is None or is_tts_voice_supported_by_model_code(device_voice, model_code))
-            ):
-                return device_voice
-            return None
-
-    if connection.get('tenant_id'):
-        tenant = Tenant.objects.filter(id=connection['tenant_id'], is_active=True).first()
-        return get_effective_tts_voice_for_tenant(tenant, provider, model_code=model_code)
-    return get_default_tts_voice(provider, model_code=model_code)
 
 
 def resolve_tts_provider(raw_provider_code) -> TTSProvider | None:

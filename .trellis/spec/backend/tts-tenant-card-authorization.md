@@ -15,18 +15,34 @@
   cross-layer response contract, a WebSocket routing contract, and a frozen
   Android runtime contract.
 
-A TTS **card** is a `TTSProvider` row. Authorization granularity is the card, never
-the individual voice. A company sees a voice when **all** of the following hold:
+A TTS **card** is a `TTSProvider` row. Authorization has two levels: the card, and —
+when the card grant is in `selected` mode — the individual voice. A company sees a
+voice when **all** of the following hold:
 
 ```
 active TenantTTSProviderGrant(tenant, provider)
   AND provider.is_active
-  AND voice.is_active AND voice.is_visible
+  AND voice.is_active AND voice.is_visible          # 平台上架, platform-global
+  AND (voice.owner_tenant IS NULL OR voice.owner_tenant == tenant)
+  AND (grant.grant_mode == 'all'
+       OR active TenantTTSVoiceGrant(tenant, voice))
 ```
 
+`is_visible` is **platform listing (平台上架), not per-company visibility** — it is a
+global shelf flag with no tenant in it. Per-company scoping is `grant_mode` +
+`TenantTTSVoiceGrant` + `owner_tenant`; reaching for `is_visible` to hide a voice from
+one company hides it from every company.
+
+The card conditions and `grant_mode` must stay inside **one** `.filter()` call so they
+match the same joined grant row. Split across two calls, Django matches them
+independently: "some grant row on this card is active for us" AND "some grant row on
+this card is `all`" — and the second row may belong to another company, silently
+widening our `selected` card back to the whole card.
+
 Effective voices are always *derived* from that predicate — never stored, never
-cached in a column. A newly added voice on an already-granted card is therefore
-immediately usable with no extra write.
+cached in a column. A newly added voice on an `all`-mode granted card is therefore
+immediately usable with no extra write; on a `selected`-mode card it requires a tick,
+which is the point of that mode.
 
 ### 2. Signatures
 
@@ -37,10 +53,28 @@ class TenantTTSProviderGrant(models.Model):
     tenant = FK('tenants.Tenant', related_name='tts_provider_grants')
     provider = FK(TTSProvider, related_name='tenant_grants')     # the card
     is_active = BooleanField(default=True)
+    grant_mode = CharField(choices=[('all', '全部音色'), ('selected', '指定音色')],
+                           default='all')                        # GRANT_MODE_ALL / _SELECTED
     public_config = JSONField(default=dict)                       # per-card controls
     objects = TenantManager()
     # UniqueConstraint(fields=['tenant', 'provider'], name='uniq_tenant_tts_provider_grant')
+
+class TenantTTSVoiceGrant(models.Model):
+    tenant = FK('tenants.Tenant', related_name='tts_voice_grants')
+    voice = FK(TTSVoice, related_name='tenant_grants')
+    is_active = BooleanField(default=True)
+    # UniqueConstraint(fields=['tenant', 'voice'], name='uniq_tenant_tts_voice_grant')
+
+class TTSVoice(models.Model):
+    owner_tenant = FK('tenants.Tenant', null=True, blank=True,
+                      related_name='owned_tts_voices')            # null = platform-public
+    is_visible = BooleanField(default=True, verbose_name='平台上架')
 ```
+
+Migrations `0049` (grant mode + voice grants), `0050` (`owner_tenant`), `0051`
+(`is_visible` label) are deliberately split so each piece reverts on its own. All three
+are additive with no backfill: every existing voice becomes platform-public and every
+existing card grant becomes `all`, so an upgraded deployment behaves identically.
 
 Authorization service — `backend/apps/ai_models/services/tts_authorization.py`.
 This module is the **only** sanctioned way to answer "may this company use this
@@ -49,13 +83,19 @@ voice?":
 ```python
 get_effective_tts_voices_for_tenant(tenant, *, provider_code=None, model_code=None)
 get_effective_tts_voice_for_tenant(tenant, *, provider_code=None, model_code=None)
+is_tts_voice_effective_for_tenant(tenant, voice, *, model_code=None)
 ensure_tts_voice_authorized_for_tenant(tenant, raw_voice_id, *, field='voiceId')  # raises 400
 resolve_tenant_tts_voice(tenant, raw_voice_id=None, *, allow_fallback=True)
 resolve_device_tts_voice(device, raw_voice_id=None, *, model_code=None)
+get_tenant_tts_provider_grant(tenant, provider)
+tts_voice_grant_ids_for_tenant(tenant, provider)  # -> set[int], active ticks on one card
 get_tenant_tts_card_public_config(tenant, provider)
 tts_provider_usage_for_tenant(tenant, provider)   # -> usage dict
+tts_voice_usage_for_tenant(tenant, voice)         # -> same shape, one level down
 tts_provider_grant_is_in_use(tenant, provider)
 tts_provider_has_active_company_authorization(provider)
+tts_voice_has_active_company_authorization(voice)
+grantable_tts_providers()
 ```
 
 Super-admin REST:
@@ -72,16 +112,38 @@ PUT  /api/v1/settings/tts/tenants/{tenantId}/card-authorizations/    # IsSuperUs
 ```json
 {
   "cardGrants": [
-    {"providerId": 10, "isActive": true, "publicConfig": {"speech_rate": 1.2}}
+    {"providerId": 10, "isActive": true, "grantMode": "all",
+     "publicConfig": {"speech_rate": 1.2}},
+    {"providerId": 11, "isActive": true, "grantMode": "selected", "voiceIds": [101, 104]}
   ],
   "defaultVoiceId": 101
 }
 ```
 
+`grantMode` is optional and defaults to `all`, so a pre-voice-grant client's payload
+keeps its old meaning. `voiceIds` is **required** when `grantMode='selected'` and
+ignored otherwise — `all` must not clear the existing ticks, because the super-admin
+can no longer see them and switching back to `selected` would come up empty.
+
+Validation is made against the voice set **the save would produce**, derived from the
+payload — not against the database. Reading the DB answers for the state *before* the
+save, which is exactly how one PUT could both un-tick a voice and make it the default.
+Cards absent from `cardGrants` keep whatever they have today, because `put` only writes
+the cards it was given.
+
 `GET`/`PUT` response: `{tenant, providers[], defaultVoiceId}`. Each provider entry
-carries `grantIsActive`, `publicConfig`, `publicConfigSchema`, `supportedChannels`,
-`usage`, `canDisableGrant`, and `voices[]` (each with `effectiveAuthorized`,
+carries `grantIsActive`, `grantMode`, `authorizedVoiceCount`, `publicConfig`,
+`publicConfigSchema`, `supportedChannels`, `usage`, `canDisableGrant`, and `voices[]`
+(each with `voiceGrantIsActive`, `effectiveAuthorized`, `canRevoke`, `ownerTenant`,
 `isDefault`, `usage`).
+
+`voiceGrantIsActive` is the raw tick; `effectiveAuthorized` is the derived answer. They
+differ on purpose — a ticked voice on an `all`-mode or disabled card is authorized-or-not
+independently of its tick. `canRevoke` is false when the voice is still referenced, so
+the page can grey the checkbox out instead of offering an action the save will refuse.
+
+Voices owned by **another** company are absent from the response entirely — not
+rendered as un-ticked rows — so one company's page never leaks another's cloned voices.
 
 Company options (`GET /api/v1/ai-models/tts/options/`) is provider-neutral and
 additive — the legacy fields stay for the migration window:
@@ -105,12 +167,19 @@ parameters.
 
 | Condition | Result |
 | --- | --- |
-| `voiceId` unauthorized / unknown / hidden / disabled / another tenant's | 400 `所选音色未授权或已停用` — one message for all, so ids cannot be probed |
+| `voiceId` unauthorized / unknown / hidden / disabled / un-ticked / another tenant's private | 400 `所选音色未授权或已停用` — one message for all, so ids cannot be probed |
 | `tenantId` missing or inactive | 400 `公司不存在或已停用` |
+| `grantMode` outside `all` / `selected` | 400 `grantMode 必须是 all 或 selected` |
+| `grantMode='selected'` without `voiceIds` | 400 `grantMode=selected 时必须提供 voiceIds` |
+| `voiceIds` not an array / element not a positive int | 400 |
+| `voiceIds` element unknown **or** another company's private voice | 400 `{card} 下不存在该音色：{id}` — same message for both, so a save cannot probe another company's voice ids |
 | `defaultVoiceId` not under a card enabled in the same request | 400 |
-| `defaultVoiceId` disabled / hidden / card disabled | 400 |
+| `defaultVoiceId` disabled / hidden / card disabled | 400 `默认音色或所属卡片未启用` |
+| `defaultVoiceId` not in the set this save would produce (un-ticked, unlisted, or another company's) | 400 `默认音色本次保存后不可用（未上架、未勾选或不属于该公司）` |
 | `publicConfig` contains a field outside that card's schema | 400 naming the field |
 | Disabling a grant still referenced by company default / device / device application | 400 with usage summary; grant row is left untouched |
+| Un-ticking a voice still referenced by company default / device / device application | 400 `{voice} 仍在使用中，无法取消授权` with usage counts; whole save rolled back |
+| Both a card disable and its voices' revocation would be reported | card-level check runs first, so it reports **once as a card** |
 | Tenant holds no grant at all | 400 `当前公司暂无可用 TTS 音色，请联系超管分配` (options returns an empty state instead) |
 | Adapter missing, unconfigured, or channel unsupported | explicit error / `tts.error`; **never** a cross-card fallback |
 
@@ -118,25 +187,56 @@ parameters.
 
 - **Good**: super admin grants CosyVoice to company A; A's options immediately list
   its voices, binds one to a device, and realtime streams through the CosyVoice
-  adapter.
+  adapter. Narrowing the card to `selected` with two ticks immediately narrows A's
+  options, device candidate set, preview and realtime to those two.
 - **Base**: upgrade of an existing deployment — migration `0045` seeds Aliyun/Qwen
   grants for every active tenant, so company behaviour is unchanged and no
-  CosyVoice access is granted implicitly.
+  CosyVoice access is granted implicitly. `0049`–`0051` add voice-level authorization
+  with every card defaulting to `all` and every voice platform-public, so the upgrade
+  itself changes nothing a company can observe.
 - **Bad**: resolving a card from a client-supplied `providerCode`, or falling back
   to the platform default voice when a company's binding becomes unauthorized.
-  Both let a company reach a card it was never granted.
+  Both let a company reach a card it was never granted. Equally bad: using
+  `is_visible` to hide a voice from one company (it is a platform-global shelf flag —
+  it hides the voice from everybody), or validating `defaultVoiceId` against the
+  database instead of the payload's derived set.
 
-### 6. Tests Required
+### 6. Cloned voice ownership
+
+CosyVoice clones (`enroll` / `design`, both `IsSuperUser`) accept an optional
+`ownerTenantId`. Omitted or null keeps the clone platform-public, behaving exactly as
+before the field existed; a company id makes the voice private to that company on
+every card-authorization and runtime path — `owner_tenant` is in the derivation
+predicate, so no separate enforcement exists or is needed.
+
+```python
+class CosyVoiceOwnerTenantMixin(serializers.Serializer):
+    ownerTenantId = serializers.IntegerField(source='owner_tenant', required=False, allow_null=True)
+```
+
+`source='owner_tenant'` plus the views' existing `**serializer.validated_data` call
+style routes the validated `Tenant` straight into `_create_voice`'s kwarg — the views
+need no change. An unknown or inactive company id is 400 `公司不存在或已停用`.
+
+A cloned voice's `sort_order` stays platform-wide (`count()` over the whole card), so a
+company-owned clone does not restart the ordering and land on top of the shared voices.
+
+### 7. Tests Required
 
 | Module | Assertion points |
 |--------|------------------|
-| `apps.ai_models.tests.test_tts_authorization` | derived-visibility predicate, inactive grant, disabled card/voice, cross-tenant rejection, fallback stays inside authorization, per-card config isolation, usage counting |
+| `apps.ai_models.tests.test_tts_authorization` | derived-visibility predicate, inactive grant, disabled card/voice, `selected` mode narrowing, one-`.filter()` cross-tenant grant-row leak, `owner_tenant` scoping, cross-tenant rejection, fallback stays inside authorization, per-card config isolation, usage counting |
 | `apps.ai_models.tests.test_tts_adapters` | registry rejects unknown card, routing comes from `voice.provider`, per-card schema whitelist, CosyVoice task protocol + chunk forwarding, provider summary hides credentials |
-| `apps.ai_models.tests.test_tts_card_authorization_api` | superuser-only, per-card `publicConfig` isolation, blocked disable with usage counts, default-voice validation, runtime-config publish |
+| `apps.ai_models.tests.test_tts_card_authorization_api` | superuser-only, per-card `publicConfig` isolation, blocked disable with usage counts, default-voice validation against the post-save set, `all`↔`selected` round trip preserving ticks, blocked voice revocation, `canRevoke` flag, another company's private voice hidden and unusable, anti-probing message equality, runtime-config publish |
+| `apps.ai_models.tests.test_tts_api` (`CosyVoiceApiTests`) | clone without `ownerTenantId` stays platform-public, clone with it is private to that company, unknown/inactive company rejected |
 | `apps.ai_models.tests.test_company_tts_options_api` | empty state, only-authorized voices, grouped + flat shape, no credential leakage, revoked grant disappears |
 | `apps.devices.tests.test_device_tts_authorization` | binding rejection/acceptance, binding beats company default, revoked binding falls back, frozen Android payload keys, HTTP runtime headers, full-config WS push |
 
-### 7. Wrong vs Correct
+> The anti-probing assertion compares the two error bodies as strings after
+> substituting the ids out, so the messages cannot drift apart:
+> `str(rejected.data).replace(str(private_id), 'X') == str(unknown.data).replace('999999', 'X')`.
+
+### 8. Wrong vs Correct
 
 #### Wrong
 
@@ -144,6 +244,13 @@ parameters.
 # Trusts the client's providerCode as the router and queries voices globally.
 provider = resolve_tts_provider(payload.get('providerCode'))
 voice = TTSVoice.objects.filter(id=payload['voiceId'], provider=provider).first()
+
+# Validates the default against the DB — i.e. against the state before this save.
+if not voice.is_visible:
+    raise ValidationError({'defaultVoiceId': '默认音色未对外展示'})
+
+# Clears the ticks whenever the card is not in `selected` mode.
+TenantTTSVoiceGrant.objects.filter(tenant=tenant, voice__provider=provider).update(is_active=False)
 ```
 
 #### Correct
@@ -154,6 +261,15 @@ voice = ensure_tts_voice_authorized_for_tenant(tenant, payload['voiceId'])
 adapter = get_adapter_for_voice(voice)
 adapter.ensure_channel(voice.provider, CHANNEL_REALTIME)
 config = adapter.effective_config(voice.provider)
+
+# Validate against what this save would produce.
+after_voice_ids = self._voice_ids_after_save(tenant, normalized_grants, before_voice_ids)
+if voice.id not in after_voice_ids:
+    raise ValidationError({'defaultVoiceId': '默认音色本次保存后不可用（未上架、未勾选或不属于该公司）'})
+
+# Only `selected` rewrites the ticks.
+if entry['grantMode'] != TenantTTSProviderGrant.GRANT_MODE_SELECTED:
+    return
 ```
 
 ---
@@ -403,6 +519,7 @@ POST /api/v1/ai-models/tts/runtime/     header: X-Device-Code
 | Condition | Result |
 | --- | --- |
 | Device binding lost its card grant | treated as invalid; falls back to company default, then first authorized voice |
+| Binding survives the card grant but the voice was un-ticked in `selected` mode, or belongs to another company | same fallback — `resolve_device_tts_voice` re-checks the full two-level predicate, not just the card |
 | No authorized voice at all | `resources.voiceTones: []` (config) / 400 (runtime TTS) |
 | `voiceId` outside the device tenant's authorization | 400 |
 
@@ -443,8 +560,9 @@ return tts_auth.resolve_device_tts_voice(device)
 
 ### 1. Scope / Trigger
 
-- Trigger: changing a card grant, a card's `public_config`, the company default voice,
-  or a provider/voice's active/visible flags.
+- Trigger: changing a card grant (including its `grant_mode` or its per-voice ticks),
+  a card's `public_config`, the company default voice, a voice's `owner_tenant`, or a
+  provider/voice's active/visible flags.
 - These change a device's effective voice **without writing to the `Device` row**, so
   nothing else would notify an online device.
 
@@ -482,6 +600,7 @@ publish_tts_voice_authorization_changed(voice) -> None
 | `tenant_id` is `None` | no-op |
 | Device-level binding change | keeps using the existing device-level event |
 | Grant/config/default change | tenant-level event; devices are not enumerated |
+| Voice-tick-only change (`grant_mode == 'selected'`) | same single tenant-level event — the authorization PUT publishes once at the end of its transaction, not per voice |
 
 ### 5. Good/Base/Bad Cases
 

@@ -884,7 +884,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             registered_at=timezone.now(),
         )
 
-        resolved_voice = realtime_tts.resolve_tts_voice(
+        resolution = realtime_tts.resolve_realtime_tts_voice(
             {
                 'device_id': device.id,
                 'device_code': device.code,
@@ -892,10 +892,9 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
                 'is_superuser': False,
             },
             None,
-            tts_provider,
         )
 
-        self.assertEqual(resolved_voice.id, device_voice.id)
+        self.assertEqual(resolution.voice.id, device_voice.id)
 
     @patch('apps.devices.views.publish_device_event_sync')
     def test_device_voice_update_publishes_full_runtime_config_change_event(self, mock_publish):

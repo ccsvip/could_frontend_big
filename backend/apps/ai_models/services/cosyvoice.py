@@ -166,6 +166,7 @@ def _create_voice(
     description: str = '',
     avatar_path: str = '',
     language: str = '',
+    owner_tenant=None,
 ) -> TTSVoice:
     if not settings_obj.is_active:
         raise CosyVoiceCustomizationError('请先启用 CosyVoice。', status_code=400)
@@ -201,6 +202,9 @@ def _create_voice(
             voice_code=remote_voice_id,
             display_name=display_name.strip(),
             avatar_path=avatar_path,
+            owner_tenant=owner_tenant,
+            # Platform-wide, so a company-owned clone does not restart the
+            # ordering and land on top of the shared voices.
             sort_order=TTSVoice.objects.filter(provider=settings_obj.provider).count(),
         )
         CosyVoiceProfile.objects.create(
@@ -214,7 +218,12 @@ def _create_voice(
 
 
 def enroll_cosyvoice_voice(
-    *, settings_obj: CosyVoiceSettings, display_name: str, source_audio_url: str, avatar_path: str = ''
+    *,
+    settings_obj: CosyVoiceSettings,
+    display_name: str,
+    source_audio_url: str,
+    avatar_path: str = '',
+    owner_tenant=None,
 ) -> TTSVoice:
     return _create_voice(
         settings_obj=settings_obj,
@@ -222,11 +231,18 @@ def enroll_cosyvoice_voice(
         source_type=CosyVoiceProfile.SOURCE_ENROLL,
         source_audio_url=source_audio_url,
         avatar_path=avatar_path,
+        owner_tenant=owner_tenant,
     )
 
 
 def design_cosyvoice_voice(
-    *, settings_obj: CosyVoiceSettings, display_name: str, description: str, language: str, avatar_path: str = ''
+    *,
+    settings_obj: CosyVoiceSettings,
+    display_name: str,
+    description: str,
+    language: str,
+    avatar_path: str = '',
+    owner_tenant=None,
 ) -> TTSVoice:
     return _create_voice(
         settings_obj=settings_obj,
@@ -235,6 +251,7 @@ def design_cosyvoice_voice(
         description=description,
         language=language,
         avatar_path=avatar_path,
+        owner_tenant=owner_tenant,
     )
 
 def delete_cosyvoice_remote_voice(*, voice: TTSVoice) -> None:

@@ -193,6 +193,13 @@ def get_tenant_tts_settings(tenant):
 
 
 def get_available_tts_voices(provider: TTSProvider | None = None, *, model_code: str | None = None):
+    """Platform-wide listed voices on one card.
+
+    Platform scope only: ``is_visible`` means "listed on the platform", never
+    "this company may use it". Do NOT use this to decide company availability —
+    it knows nothing about card grants, voice grants or ``owner_tenant``. Company
+    availability lives in ``services.tts_authorization``.
+    """
     cfg = provider or get_aliyun_tts_provider()
     queryset = cfg.voices.filter(is_active=True, is_visible=True)
     if model_code:
@@ -201,6 +208,11 @@ def get_available_tts_voices(provider: TTSProvider | None = None, *, model_code:
 
 
 def is_voice_available(voice: TTSVoice | None) -> bool:
+    """Whether the platform itself offers this voice.
+
+    Platform scope only — see ``get_available_tts_voices``. For "may this company
+    use this voice?" call ``tts_authorization.is_tts_voice_effective_for_tenant``.
+    """
     if voice is None:
         return False
     return bool(voice.is_active and voice.is_visible and voice.provider.is_active)

@@ -99,6 +99,16 @@
   - A: 不能。前台页面只允许展示 `processing_status` / `processing_result` 的只读状态；所有状态维护都必须去 Django admin 完成。
 - Q: 知识库批量下载前端需要注意什么？
   - A: 需要把重复点击保护、loading、Blob 错误解包和文件名优先级处理一起做好；后端规则固定为“最多 20 个有效文件、总大小最多 200MB、重复 id 去重、非法/不存在 id 过滤后为空时报错”。
+- Q: 公司 TTS 卡片授权页的“全部音色 / 指定音色”是怎么提交的？
+  - A: `src/views/tts-card-authorization/index.tsx` 的 `Segmented` 只改本地 state，和开关、勾选一起由同一个 `保存授权` PUT 提交。`grantMode === 'selected'` 时才在 `cardGrants` 里带 `voiceIds`（勾选的音色 id 数组）；`all` 模式不传，后端也会忽略。
+- Q: 为什么切换成“指定音色”或取消勾选后，公司默认音色会被清空？
+  - A: 后端拒绝“同一次保存里取消勾选某音色又把它设为默认”的组合。前端用 `pendingAuthorizedVoices(card)` 镜像后端的**保存后**派生规则，所有本地改动都走 `patchCard`，一旦当前 `defaultVoiceId` 在派生集合里消失就立刻置空，保证页面构造不出会被 400 的 payload。
+- Q: 音色列表里的 `is_visible` 到底是什么语义？
+  - A: 是**平台上架**（全局开关），不是“对某家公司可见”。`src/views/tts-settings/index.tsx` 的列名已从「公司可见」改为「平台上架」；下架即对所有公司不可用。按公司收窄只能用卡片的 `grantMode` + 音色勾选 + `ownerTenant`。
+- Q: 音色行上的「专属 · xxx」标签是什么？
+  - A: `voice.ownerTenant` 非空表示这是某家公司的 CosyVoice 复刻音色，只有该公司能被授权使用；其它公司的授权页里这些音色**根本不出现**（不是显示成未勾选）。
+- Q: `voiceGrantIsActive` / `effectiveAuthorized` / `canRevoke` 有什么区别？
+  - A: `voiceGrantIsActive` 是勾选框的当前状态（仅 `selected` 模式生效）；`effectiveAuthorized` 是后端派生的“公司此刻是否真的可用”；`canRevoke` 为 false 表示该音色仍被公司默认/设备/设备应用占用，取消授权会被后端拒绝，前端因此禁用勾选框并给出 tooltip。
 
 ## 相关文件清单
 
@@ -142,3 +152,4 @@
 - 2026-04-20T19:05:00+08:00：聊天室进入第二阶段工作台形态：左侧支持会话搜索；右侧支持 `temperature` / `maxTokens` 参数调优与提示词模板；最新一条助手消息支持重新生成；代码块支持独立复制按钮。
 - 2026-04-21T13:20:00+08:00：新增知识库已批准约束说明，记录一级菜单 `/knowledge-base`、前端本地上传成功 toast、单文件并发池上限 3、独立 axios 下载 helper、前台只读状态展示与批量下载交互约束。
 - 2026-06-11T00:00:00+08:00：移除独立聊天室页面与 `/ai-models/chat` 路由；聊天底层 API 保留给应用管理调试会话使用。
+- 2026-08-03T00:00:00+08:00：公司 TTS 卡片授权页下沉到音色级——卡片新增「全部音色 / 指定音色」模式与逐音色勾选，`cardGrants` 在 `selected` 模式下携带 `voiceIds`；新增 `pendingAuthorizedVoices` 镜像后端保存后派生规则，本地改动统一走 `patchCard` 并在默认音色失效时自动置空；音色行补充「专属 · 公司」与「平台上架 / 平台下架」标签；`tts-settings` 音色列表列名由「公司可见」更正为「平台上架」。

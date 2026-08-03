@@ -352,7 +352,7 @@ export const TtsSettingsPage = () => {
       ),
     },
     {
-      title: '公司可见',
+      title: '平台上架',
       dataIndex: 'isVisible',
       width: 112,
       render: (value: boolean | undefined, record) => (

@@ -10,7 +10,7 @@ AI 三件套（ASR / LLM / TTS）+ 聊天会话。`views.py` ~40KB（仓库最�
 
 ```
 ai_models/
-├── models.py        # ASRProvider / LLMProvider / TTSProvider / TenantTTSProviderGrant / ChatConversation / ChatMessage
+├── models.py        # ASRProvider / LLMProvider / TTSProvider / TenantTTSProviderGrant / TenantTTSVoiceGrant / ChatConversation / ChatMessage
 ├── serializers.py
 ├── views.py         # 40KB —— 供应商 CRUD + chat conversations + SSE 流式 + 标题自动生成
 ├── urls.py          # /ai-models/{asr,llm,tts}/providers/*  /ai-models/chat/conversations/*
@@ -35,9 +35,13 @@ ai_models/
 - **重生成**：`send` 端点支持 `regenerateMessageId`，**只允许**最后一条助手消息；后端会删该助手消息并复用前一条用户消息重请求。
 - **自动标题**：会话标题为默认值 `新对话` 时，首轮回复成功后用同一模型轻量请求生成短标题，回写 `title`。
 - **日志规范**：聊天链路打 `chat.send.*` / `chat.conversation.config_updated`；**不**打印 API key、**不**打印完整用户消息正文，只打 `conversation_id` / `provider_id` / `model_name` / `api_url` / `status_code` / `content_type` / `completed_*` / `timeout` / `exception`。
-- **公司 TTS 授权唯一入口**：任何"这家公司能用哪个音色"的判断都必须走 `services/tts_authorization.py`，不得用请求里的 `voiceId` 直查 `TTSVoice.objects`。授权粒度是卡片（`TTSProvider`），有效音色由 `active grant + active card + active/visible voice` 派生。
+- **公司 TTS 授权唯一入口**：任何"这家公司能用哪个音色"的判断都必须走 `services/tts_authorization.py`，不得用请求里的 `voiceId` 直查 `TTSVoice.objects`。授权是**两级**的：卡片级 `TenantTTSProviderGrant`（`grant_mode` = `all` / `selected`）+ 音色级 `TenantTTSVoiceGrant`，再叠加 `TTSVoice.owner_tenant`（复刻音色归属公司，`NULL` 表示平台公有）。有效音色由 `active grant + active card + active/visible voice + owner_tenant 归属 + (all 模式 或 已勾选)` 派生，不落库。
+- **`is_visible` 是平台上架，不是公司可见**：它是全局开关（`verbose_name='平台上架'`），下架即对所有公司不可用。要按公司收窄只能用 `grant_mode` + `TenantTTSVoiceGrant` + `owner_tenant`。
+- **派生条件必须写在同一个 `.filter()` 里**：拆成两次 `.filter()` 时两个条件会分别匹配不同的关联行，`selected` 卡片可能被别家公司的授权行悄悄放宽。
+- **默认音色按"保存后"校验**：授权 PUT 里 `defaultVoiceId` 要对 `_voice_ids_after_save` 派生集合校验，不能读库（读库读到的是保存前的状态），否则同一次请求可以既取消勾选某音色又把它设成默认。
 - **TTS 供应商差异只在 adapter 内**：用 `get_adapter_for_voice(voice)` 按已解析音色所属卡片派发；每张卡片的公共配置存在自己的 `TenantTTSProviderGrant.public_config`，按各自 `publicConfigSchema` 白名单校验。
 - **realtime 路由键是音色**：`voiceId` / 设备绑定 / 公司默认决定卡片；客户端 `providerCode` 只做一致性校验，不一致返回 `tts.error` 1025。旧客户端不传该字段必须照常工作。
+- **CosyVoice 复刻音色归属**：复刻接口可选传 `ownerTenantId`，落到 `TTSVoice.owner_tenant`（serializer 用 `source='owner_tenant'`，view 侧 `**serializer.validated_data` 直接透传）；不传则为平台公有音色。
 - 完整契约见 `.trellis/spec/backend/tts-tenant-card-authorization.md`。
 
 ## ANTI-PATTERNS
@@ -53,6 +57,9 @@ ai_models/
 - ❌ 用请求里的 `providerCode` 决定真实上游协议：这让公司能跳到未授权卡片。
 - ❌ 把新供应商字段并进共享的 `tts_session_config`：Qwen 与 CosyVoice 配置会互相覆盖。
 - ❌ 用 `model_code` 过滤全部卡片的音色：它是 Qwen 播报档位概念，会把其它卡片音色全部误杀。
+- ❌ 用 `is_visible` 实现"只对某家公司隐藏"：它是平台级上架开关，一改全公司都看不到。
+- ❌ 在 `all` 模式下清空 `TenantTTSVoiceGrant` 勾选：超管切回 `selected` 时会丢掉他看不见的历史选择。
+- ❌ 拿 `defaultVoiceId` 直接查库校验：读到的是保存前状态，会放过"取消勾选 + 设为默认"的组合。
 - ❌ CosyVoice 实时流先聚合完整音频再下发：这等于取消了实时通道。
 
 ## NOTES

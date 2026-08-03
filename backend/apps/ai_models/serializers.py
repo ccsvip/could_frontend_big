@@ -1,3 +1,4 @@
+from django.db.models import Q
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -43,6 +44,7 @@ from .models import (
     THIRD_PARTY_PROVIDER_IHUAPENG,
     TenantKnowledgeModelSettings,
     TenantThirdPartyChatbotGrant,
+    TenantTTSProviderGrant,
     TenantTTSSettings,
     ThirdPartyChatbotApplication,
     ThirdPartyChatbotIntegration,
@@ -584,6 +586,11 @@ class TenantTTSCardAuthorizationSerializer(serializers.Serializer):
     Grants are per TTS card (``TTSProvider``). Each card's ``publicConfig`` is
     validated against that card's own adapter schema, so one card's fields can
     never leak into another card's stored config.
+
+    A card may authorize all of its voices (``grantMode='all'``) or only the
+    ticked ones (``grantMode='selected'``). Because both modes change what an
+    online device speaks with, every check here is made against the voice set
+    this save would produce, not the one currently in the database.
     """
 
     cardGrants = serializers.ListField(child=serializers.DictField(), required=True)
@@ -619,7 +626,12 @@ class TenantTTSCardAuthorizationSerializer(serializers.Serializer):
         normalized_grants = []
         for item in grants:
             provider = providers[int(item['providerId'])]
-            entry = {'provider': provider, 'isActive': bool(item.get('isActive'))}
+            entry = {
+                'provider': provider,
+                'isActive': bool(item.get('isActive')),
+                'grantMode': self._normalize_grant_mode(item),
+            }
+            entry['voiceIds'] = self._normalize_voice_ids(tenant, provider, item, entry['grantMode'])
             if 'publicConfig' in item:
                 raw_config = item.get('publicConfig')
                 if raw_config is not None and not isinstance(raw_config, dict):
@@ -631,14 +643,104 @@ class TenantTTSCardAuthorizationSerializer(serializers.Serializer):
                     raise serializers.ValidationError({'cardGrants': str(exc)})
             normalized_grants.append(entry)
 
-        self._validate_default_voice(attrs, active_provider_ids)
+        before_voice_ids = self._current_voice_ids(tenant)
+        after_voice_ids = self._voice_ids_after_save(tenant, normalized_grants, before_voice_ids)
+
+        self._validate_default_voice(attrs, active_provider_ids, after_voice_ids)
         self._validate_disable_not_in_use(tenant, normalized_grants)
+        self._validate_voice_revocation_not_in_use(tenant, before_voice_ids, after_voice_ids)
 
         attrs['tenant'] = tenant
         attrs['normalizedGrants'] = normalized_grants
         return attrs
 
-    def _validate_default_voice(self, attrs, active_provider_ids: set[int]) -> None:
+    def _normalize_grant_mode(self, item) -> str:
+        """Read ``grantMode``, defaulting to ``all`` for pre-voice-grant clients."""
+        raw = item.get('grantMode')
+        if raw in (None, ''):
+            return TenantTTSProviderGrant.GRANT_MODE_ALL
+        mode = str(raw)
+        if mode not in dict(TenantTTSProviderGrant.GRANT_MODE_CHOICES):
+            raise serializers.ValidationError({'cardGrants': 'grantMode 必须是 all 或 selected'})
+        return mode
+
+    def _normalize_voice_ids(self, tenant, provider, item, grant_mode: str) -> list[int]:
+        """Validate the ticked voice ids for one card.
+
+        Ids belonging to another company's private voice are reported exactly like
+        ids that do not exist, so a save cannot be used to probe another company's
+        voice ids.
+        """
+        if grant_mode != TenantTTSProviderGrant.GRANT_MODE_SELECTED:
+            # ``all`` ignores any submitted ids, and must not clear existing ticks.
+            return []
+        if 'voiceIds' not in item:
+            raise serializers.ValidationError({'cardGrants': 'grantMode=selected 时必须提供 voiceIds'})
+        raw_ids = item.get('voiceIds') or []
+        if not isinstance(raw_ids, (list, tuple)):
+            raise serializers.ValidationError({'cardGrants': 'voiceIds 必须是数组'})
+        voice_ids: list[int] = []
+        for raw in raw_ids:
+            try:
+                voice_id = int(raw)
+            except (TypeError, ValueError):
+                raise serializers.ValidationError({'cardGrants': 'voiceIds 元素必须是正整数'})
+            if voice_id <= 0:
+                raise serializers.ValidationError({'cardGrants': 'voiceIds 元素必须是正整数'})
+            voice_ids.append(voice_id)
+        known_ids = set(
+            TTSVoice.objects
+            .filter(provider=provider, id__in=voice_ids)
+            .filter(Q(owner_tenant__isnull=True) | Q(owner_tenant=tenant))
+            .values_list('id', flat=True)
+        )
+        unknown_ids = set(voice_ids) - known_ids
+        if unknown_ids:
+            raise serializers.ValidationError({
+                'cardGrants': f'{provider.name} 下不存在该音色：{min(unknown_ids)}',
+            })
+        return sorted(known_ids)
+
+    def _current_voice_ids(self, tenant) -> set[int]:
+        from .services import tts_authorization as tts_auth
+
+        return set(tts_auth.get_effective_tts_voices_for_tenant(tenant).values_list('id', flat=True))
+
+    def _voice_ids_after_save(self, tenant, normalized_grants, before_voice_ids: set[int]) -> set[int]:
+        """Derive the voice set this save would produce.
+
+        Reading the database instead would answer for the state before the save,
+        which is exactly how a single PUT could both un-tick a voice and set it as
+        the company default. Cards absent from the payload keep whatever they have
+        today, because ``put`` only writes the cards it was given.
+        """
+        submitted_provider_ids = {entry['provider'].id for entry in normalized_grants}
+        after_ids = {
+            voice_id
+            for voice_id, provider_id in self._voice_provider_pairs(before_voice_ids)
+            if provider_id not in submitted_provider_ids
+        }
+        for entry in normalized_grants:
+            if not entry['isActive'] or not entry['provider'].is_active:
+                continue
+            listed_ids = set(
+                TTSVoice.objects
+                .filter(provider=entry['provider'], is_active=True, is_visible=True)
+                .filter(Q(owner_tenant__isnull=True) | Q(owner_tenant=tenant))
+                .values_list('id', flat=True)
+            )
+            if entry['grantMode'] == TenantTTSProviderGrant.GRANT_MODE_ALL:
+                after_ids |= listed_ids
+            else:
+                after_ids |= listed_ids & set(entry['voiceIds'])
+        return after_ids
+
+    def _voice_provider_pairs(self, voice_ids: set[int]):
+        if not voice_ids:
+            return []
+        return TTSVoice.objects.filter(id__in=voice_ids).values_list('id', 'provider_id')
+
+    def _validate_default_voice(self, attrs, active_provider_ids: set[int], after_voice_ids: set[int]) -> None:
         default_voice_id = attrs.get('defaultVoiceId')
         if default_voice_id is None:
             return
@@ -649,8 +751,8 @@ class TenantTTSCardAuthorizationSerializer(serializers.Serializer):
             raise serializers.ValidationError({'defaultVoiceId': '默认音色必须属于本次启用授权的 TTS 卡片'})
         if not voice.is_active or not voice.provider.is_active:
             raise serializers.ValidationError({'defaultVoiceId': '默认音色或所属卡片未启用'})
-        if not voice.is_visible:
-            raise serializers.ValidationError({'defaultVoiceId': '默认音色未对外展示'})
+        if voice.id not in after_voice_ids:
+            raise serializers.ValidationError({'defaultVoiceId': '默认音色本次保存后不可用（未上架、未勾选或不属于该公司）'})
 
     def _validate_disable_not_in_use(self, tenant, normalized_grants) -> None:
         """Refuse to disable a card whose voices are still referenced.
@@ -669,6 +771,29 @@ class TenantTTSCardAuthorizationSerializer(serializers.Serializer):
                 raise serializers.ValidationError({
                     'cardGrants': (
                         f'{provider.name} 仍在使用中，无法取消授权'
+                        f'（公司默认音色：{"是" if usage["tenantDefault"] else "否"}，'
+                        f'设备 {usage["deviceCount"]} 台，'
+                        f'设备应用 {usage["deviceApplicationCount"]} 个）'
+                    ),
+                })
+
+    def _validate_voice_revocation_not_in_use(self, tenant, before_voice_ids: set[int], after_voice_ids: set[int]) -> None:
+        """Same protection as ``_validate_disable_not_in_use``, one level down.
+
+        Runs after the card-level check so a card being switched off reports once,
+        as a card, rather than once per voice it happens to carry.
+        """
+        from .services import tts_authorization as tts_auth
+
+        revoked_ids = before_voice_ids - after_voice_ids
+        if not revoked_ids:
+            return
+        for voice in TTSVoice.objects.filter(id__in=revoked_ids).order_by('provider_id', 'sort_order', 'id'):
+            usage = tts_auth.tts_voice_usage_for_tenant(tenant, voice)
+            if usage['tenantDefault'] or usage['deviceCount'] or usage['deviceApplicationCount']:
+                raise serializers.ValidationError({
+                    'cardGrants': (
+                        f'{voice.display_name} 仍在使用中，无法取消授权'
                         f'（公司默认音色：{"是" if usage["tenantDefault"] else "否"}，'
                         f'设备 {usage["deviceCount"]} 台，'
                         f'设备应用 {usage["deviceApplicationCount"]} 个）'
@@ -1027,7 +1152,26 @@ class CosyVoiceSettingsWriteSerializer(serializers.Serializer):
         return value
 
 
-class CosyVoiceEnrollSerializer(serializers.Serializer):
+class CosyVoiceOwnerTenantMixin(serializers.Serializer):
+    """Optional owning company for a cloned voice.
+
+    Omitted or null means the clone is platform-public and behaves exactly as
+    before this field existed; a company id makes the voice private to that
+    company on every card-authorization and runtime path.
+    """
+
+    ownerTenantId = serializers.IntegerField(source='owner_tenant', required=False, allow_null=True)
+
+    def validate_ownerTenantId(self, value):
+        if value is None:
+            return None
+        tenant = Tenant.objects.filter(id=value, is_active=True).first()
+        if tenant is None:
+            raise serializers.ValidationError('公司不存在或已停用')
+        return tenant
+
+
+class CosyVoiceEnrollSerializer(CosyVoiceOwnerTenantMixin):
     displayName = serializers.CharField(source='display_name', max_length=128)
     sourceAudioUrl = serializers.URLField(source='source_audio_url', max_length=512)
     avatarPath = serializers.CharField(source='avatar_path', required=False, max_length=255, allow_blank=True)
@@ -1038,7 +1182,7 @@ class CosyVoiceEnrollSerializer(serializers.Serializer):
         return value
 
 
-class CosyVoiceDesignSerializer(serializers.Serializer):
+class CosyVoiceDesignSerializer(CosyVoiceOwnerTenantMixin):
     displayName = serializers.CharField(source='display_name', max_length=128)
     description = serializers.CharField(max_length=2000)
     language = serializers.ChoiceField(choices=['zh', 'en'])
