@@ -225,17 +225,6 @@ def get_default_tts_voice(provider: TTSProvider | None = None, *, model_code: st
     return get_available_tts_voices(cfg, model_code=model_code).first()
 
 
-def get_effective_tts_voice_for_tenant(tenant, provider: TTSProvider | None = None, *, model_code: str | None = None) -> TTSVoice | None:
-    settings_obj = get_tenant_tts_settings(tenant)
-    if (
-        settings_obj is not None
-        and is_voice_available(settings_obj.default_voice)
-        and (not model_code or is_tts_voice_supported_by_model_code(settings_obj.default_voice, model_code))
-    ):
-        return settings_obj.default_voice
-    return get_default_tts_voice(provider, model_code=model_code)
-
-
 def normalize_tts_text(text: str | None, config: EffectiveTTSConfig) -> str:
     value = (text or '').strip()
     return value or config.default_test_text

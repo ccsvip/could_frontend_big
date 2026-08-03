@@ -544,9 +544,15 @@ field is caught), the runtime response headers, and revoked-binding fallback.
 ```python
 voice = getattr(device, 'tts_voice', None)
 if voice is None:
-    return get_effective_tts_voice_for_tenant(device.tenant)   # may be unauthorized
-return voice                                                   # binding never re-checked
+    return tts_services.get_default_tts_voice(provider)   # platform scope, may be unauthorized
+return voice                                              # binding never re-checked
 ```
+
+> A platform-scope twin of this helper used to live in `services/tts.py` as
+> `get_effective_tts_voice_for_tenant`, reading `TenantTTSSettings.default_voice`
+> with no grant check at all. It was deleted once its last caller went away —
+> do not reintroduce it. The only company-scope resolver is
+> `tts_authorization.get_effective_tts_voice_for_tenant`.
 
 #### Correct
 

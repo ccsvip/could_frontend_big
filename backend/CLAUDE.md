@@ -190,3 +190,4 @@
 - 2026-04-21T13:20:00+08:00：新增知识库已批准约束说明，记录预期 API、文档模型字段、admin-only 状态维护边界、raw DRF + 二进制下载契约，以及 A/C 两种结构下需要补充的测试路径。
 - 2026-06-11T00:00:00+08:00：移除独立 `/ai-models/chat` 菜单入口；聊天会话 API 保留给应用管理调试会话使用。
 - 2026-08-03T00:00:00+08:00：TTS 授权粒度下沉到音色级——`TenantTTSProviderGrant` 新增 `grant_mode`（`all` / `selected`），新增 `TenantTTSVoiceGrant` 逐音色授权表，`TTSVoice` 新增 `owner_tenant`（CosyVoice 复刻音色归属公司，`NULL` 为平台公有），`is_visible` 语义明确为「平台上架」并只改 `verbose_name`（迁移 `0049` / `0050` / `0051` 拆分为三个可独立回滚的纯新增迁移）。`tts_authorization.py` 的派生条件收在同一个 `.filter()` 内；授权 PUT 的 `defaultVoiceId` 改为对保存后派生集合校验；跨公司与不存在的音色 id 共用同一错误文案防探测；`resolve_device_tts_voice` 同步执行完整两级校验。
+- 2026-08-03T00:10:00+08:00：清理 TTS 平台维度遗留死代码——删除 `apps/ai_models/services/tts.py` 的 `get_effective_tts_voice_for_tenant`（与 `tts_authorization.py` 同名函数不是一个，它绕过两级授权推导，随 `realtime_tts.resolve_tts_voice` 一起失去最后一个调用方）。公司维度「用哪个音色」只剩 `services/tts_authorization.py` 一个入口。
