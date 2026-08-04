@@ -402,3 +402,36 @@ Sentry PYTHON-DJANGO-47/-48 (ImportError: TenantTTSProviderGrant) 定位为切�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 13: 修复唤醒词跨租户运行时泄露
+
+**Date**: 2026-08-05
+**Task**: 修复唤醒词跨租户运行时泄露
+**Branch**: `dev`
+
+### Summary
+
+为设备运行时唤醒词增加设备租户过滤，迁移清理历史跨租户关联，覆盖 HTTP、统一 WebSocket 与迁移幂等性并完成实际 OPPO 配置验证。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `0f7239e` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
