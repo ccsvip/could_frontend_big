@@ -272,3 +272,36 @@ Sentry PYTHON-DJANGO-47/-48 (ImportError: TenantTTSProviderGrant) 定位为切�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 9: 修复超管音色撤销授权
+
+**Date**: 2026-08-04
+**Task**: 修复超管音色撤销授权
+**Branch**: `main`
+
+### Summary
+
+移除超管 TTS 卡片和音色撤销的使用中限制；同步移除前端门控与废弃使用统计契约，并覆盖运行时刷新和引用保留回归。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3f1b419` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

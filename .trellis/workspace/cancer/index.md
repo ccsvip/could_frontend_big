@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 8
-- **Last Active**: 2026-07-31
+- **Total Sessions**: 9
+- **Last Active**: 2026-08-04
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~274 | Active |
+| `journal-1.md` | ~307 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 9 | 2026-08-04 | 修复超管音色撤销授权 | `3f1b419` | `main` |
 | 8 | 2026-07-31 | 修复设备首次运行时配置错误码 | `96e7df7` | `main` |
 | 7 | 2026-07-31 | 分析 WebSocket 三合一逻辑并绘制流程图 | none | `dev` |
 | 6 | 2026-07-31 | 修复 CosyVoice TTS 卡片授权测试失败（播种缺失的卡片行） | `1aafbff`, `81303ce`, `7fa6c83` | `fix-bug` |
