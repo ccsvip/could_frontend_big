@@ -233,6 +233,81 @@ predicate to keep old tests green.
 
 ---
 
+### Scenario: Repair a Missing Primary Key on Historical Rows
+
+#### 1. Scope / Trigger
+
+- Trigger: a Django migration is recorded as applied, but the PostgreSQL table lacks its primary-key constraint and historical rows contain duplicate IDs. This can make DRF detail lookups such as `DELETE /api/v1/wake-words/{id}/` raise `MultipleObjectsReturned` and return 500.
+- Applies to `devices_wakeword` only when it has no primary-key constraint. A healthy table is an explicit no-op.
+
+#### 2. Signatures
+
+```python
+def repair_primary_key(apps, schema_editor) -> None: ...
+
+migrations.RunPython(repair_primary_key, migrations.RunPython.noop)
+```
+
+```sql
+ALTER TABLE devices_wakeword ADD PRIMARY KEY (id);
+SELECT setval(
+  pg_get_serial_sequence('devices_wakeword', 'id'),
+  COALESCE(MAX(id), 1),
+  MAX(id) IS NOT NULL
+) FROM devices_wakeword;
+```
+
+#### 3. Contracts
+
+- Detect the existing primary key from `pg_constraint` before modifying data; return immediately when one exists.
+- For each duplicate `id`, retain the earliest row ordered by `created_at NULLS LAST, ctid`; assign every later row a new ID strictly greater than the pre-repair maximum.
+- Preserve the retained row's existing many-to-many device bindings. Do not copy ambiguous legacy bindings to reassigned rows.
+- Add the primary-key constraint only after all IDs are unique, then advance the exact table sequence above the maximum ID.
+- The REST contract remains unchanged: `DELETE /api/v1/wake-words/{id}/` resolves one globally unique row and returns 204; the existing full runtime-config refresh event remains required.
+
+#### 4. Validation & Error Matrix
+
+| Condition | Required action |
+|-----------|-----------------|
+| Primary key already exists | Return without changing rows or the sequence |
+| Duplicate IDs and no primary key | Reassign only non-retained rows, then add the constraint and synchronize the sequence |
+| A historical binding cannot identify its original duplicate row | Keep it on the retained earliest row; never duplicate it |
+| IDs are still non-unique before constraint creation | Fail the migration; do not install a false primary key |
+| PostgreSQL is unavailable | Return without applying PostgreSQL-specific SQL |
+
+#### 5. Good/Base/Bad Cases
+
+- Good: duplicate `id=1` rows across tenants become IDs `1` and `N`; deleting either row does not affect the other tenant's word.
+- Base: a normal schema already has `PRIMARY KEY (id)`; migration writes nothing.
+- Bad: catch `MultipleObjectsReturned` in the ViewSet or select an arbitrary duplicate. That hides corruption and makes the user-selected row ambiguous.
+
+#### 6. Tests Required
+
+- Use a PostgreSQL migration test that removes the primary key, creates duplicate IDs across tenants, runs the migration, and asserts globally unique IDs, retained earliest-row bindings, a real primary-key constraint, and a next sequence value larger than every ID.
+- Cover `DELETE /api/v1/wake-words/{id}/` with two same-tenant words and an other-tenant word. Assert 204, only the target row is removed, and the existing runtime configuration event is still emitted.
+- Run `migrate --check` and `makemigrations --check --dry-run` after applying the migration.
+
+#### 7. Wrong vs Correct
+
+Wrong:
+
+```python
+def perform_destroy(self, instance):
+    try:
+        super().perform_destroy(instance)
+    except WakeWord.MultipleObjectsReturned:
+        return  # Hides schema corruption and cannot identify the intended row.
+```
+
+Correct:
+
+```python
+# Repair duplicate IDs and restore PRIMARY KEY (id) in a guarded migration.
+# Keep the ViewSet's stable-ID lookup and existing destroy event unchanged.
+```
+
+---
+
 ## Naming Conventions
 
 <!-- Table names, column names, index names -->

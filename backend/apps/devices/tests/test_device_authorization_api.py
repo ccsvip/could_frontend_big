@@ -374,6 +374,35 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertNotIn('wakeWords', payload)
         self.assertNotIn('wakeWordLines', payload)
 
+    @patch('apps.devices.views.publish_device_event_sync')
+    def test_wake_word_delete_keeps_same_and_other_tenant_words(self, mock_publish):
+        self.grant_permissions('devices.view', 'devices.create', 'devices.update', 'devices.delete')
+        deleted_word = WakeWord.objects.create(
+            tenant=self.tenant,
+            text='你好小德',
+            encoded_text='n ǐ h ǎo x iǎo d é',
+        )
+        retained_word = WakeWord.objects.create(
+            tenant=self.tenant,
+            text='你好小智',
+            encoded_text='n ǐ h ǎo x iǎo zh ì',
+        )
+        other_tenant = Tenant.objects.create(name='Other Wake Word Tenant', code='other-wake-word-tenant')
+        other_tenant_word = WakeWord.objects.create(
+            tenant=other_tenant,
+            text='你好小灵',
+            encoded_text='n ǐ h ǎo x iǎo l íng',
+        )
+
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.delete(f'/api/v1/wake-words/{deleted_word.id}/')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(WakeWord.objects.filter(id=deleted_word.id).exists())
+        self.assertTrue(WakeWord.objects.filter(id=retained_word.id, tenant=self.tenant).exists())
+        self.assertTrue(WakeWord.objects.filter(id=other_tenant_word.id, tenant=other_tenant).exists())
+        self.assertEqual(mock_publish.call_args.args[0]['tenantId'], self.tenant.id)
+
     @patch('apps.devices.serializers.encode_wake_word_text', return_value='n ǐ h ǎo x iǎo d é')
     def test_wake_word_rejects_cross_tenant_device_binding(self, _mock_encode):
         other_tenant = Tenant.objects.create(name='Other Tenant', code='other-tenant')
