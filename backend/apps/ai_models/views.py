@@ -1345,7 +1345,6 @@ class TenantTTSCardAuthorizationView(APIView):
             except tts_adapters.TTSAdapterError:
                 # A card whose adapter is not implemented cannot be allocated.
                 continue
-            usage = tts_auth.tts_provider_usage_for_tenant(tenant, provider)
             voice_grant_ids = tts_auth.tts_voice_grant_ids_for_tenant(tenant, provider)
             voices = [
                 self._voice_payload(
@@ -1374,8 +1373,6 @@ class TenantTTSCardAuthorizationView(APIView):
                 'publicConfig': dict(grant.public_config) if grant and isinstance(grant.public_config, dict) else {},
                 'voices': voices,
                 'authorizedVoiceCount': sum(1 for voice in voices if voice['effectiveAuthorized']),
-                'usage': usage,
-                'canDisableGrant': not (usage['tenantDefault'] or usage['deviceCount'] or usage['deviceApplicationCount']),
             })
             providers.append(summary)
         return {
@@ -1394,7 +1391,6 @@ class TenantTTSCardAuthorizationView(APIView):
         voice_grant_ids,
         effective_voice_ids,
     ):
-        usage = tts_auth.tts_voice_usage_for_tenant(tenant, voice)
         return {
             'id': voice.id,
             'providerId': provider.id,
@@ -1416,10 +1412,6 @@ class TenantTTSCardAuthorizationView(APIView):
             'voiceGrantIsActive': voice.id in voice_grant_ids,
             'effectiveAuthorized': voice.id in effective_voice_ids,
             'isDefault': voice.id == default_voice_id,
-            'usage': usage,
-            # Un-ticking a referenced voice is refused on save, so the page must be
-            # able to grey the checkbox out instead of offering a doomed action.
-            'canRevoke': not (usage['tenantDefault'] or usage['deviceCount'] or usage['deviceApplicationCount']),
         }
 
     def get(self, request, tenant_id):

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Card, Checkbox, Collapse, Empty, Segmented, Select, Space, Spin, Switch, Tag, Tooltip, Typography, message } from 'antd';
+import { Button, Card, Checkbox, Collapse, Empty, Segmented, Select, Space, Spin, Switch, Tag, Typography, message } from 'antd';
 import { IconCloud, IconDeviceFloppy, IconHeadphones, IconRefresh, IconVolume } from '@tabler/icons-react';
 import {
   fetchTenantTtsCardAuthorization,
@@ -11,13 +11,6 @@ import {
 } from '../../api/modules/tts';
 import { fetchTenants, type TenantRecord } from '../../api/modules/tenants';
 
-const usageSummary = (usage: TenantTtsCardAuthorization['usage']) => {
-  const parts: string[] = [];
-  if (usage.tenantDefault) parts.push('公司默认音色');
-  if (usage.deviceCount) parts.push(`设备 ${usage.deviceCount} 台`);
-  if (usage.deviceApplicationCount) parts.push(`设备应用 ${usage.deviceApplicationCount} 个`);
-  return parts.join(' · ');
-};
 
 /** A voice the platform has shelved cannot be authorized in either mode. */
 const isShelved = (voice: TenantTtsCardAuthorizationVoice) => voice.isActive && voice.isVisible;
@@ -111,11 +104,6 @@ export const TtsCardAuthorizationPage = () => {
 
   const toggleGrant = (providerId: number, isActive: boolean) => {
     if (!authorization) return;
-    const card = authorization.providers.find((item) => item.id === providerId);
-    if (!isActive && card && !card.canDisableGrant) {
-      message.warning(`${card.name} 仍在使用中（${usageSummary(card.usage)}），无法取消授权`);
-      return;
-    }
     patchCard(providerId, (item) => ({ ...item, grantIsActive: isActive }));
   };
 
@@ -124,10 +112,6 @@ export const TtsCardAuthorizationPage = () => {
   };
 
   const toggleVoiceGrant = (providerId: number, voice: TenantTtsCardAuthorizationVoice, checked: boolean) => {
-    if (!checked && !voice.canRevoke) {
-      message.warning(`${voice.displayName} 仍在使用中（${usageSummary(voice.usage)}），无法取消授权`);
-      return;
-    }
     patchCard(providerId, (item) => ({
       ...item,
       voices: item.voices.map((row) => (row.id === voice.id ? { ...row, voiceGrantIsActive: checked } : row)),
@@ -251,9 +235,6 @@ export const TtsCardAuthorizationPage = () => {
                       ) : null}
                     </Space>
                     <div className="flex items-center gap-3 shrink-0 ml-2" onClick={(event) => event.stopPropagation()}>
-                      {!card.canDisableGrant ? (
-                        <span className="text-xs text-amber-600 font-medium">{usageSummary(card.usage)}</span>
-                      ) : null}
                       <span className="text-xs text-slate-400 font-medium">
                         已授权 {authorizedCount} / 共 {card.voices.length} 个音色
                       </span>
@@ -267,14 +248,12 @@ export const TtsCardAuthorizationPage = () => {
                         ]}
                         onChange={(value) => setGrantMode(card.id, value as TenantTtsGrantMode)}
                       />
-                      <Tooltip title={card.canDisableGrant ? '' : `该卡片仍在使用中（${usageSummary(card.usage)}），无法取消授权`}>
-                        <Switch
-                          checked={card.grantIsActive}
-                          disabled={!card.isActive || (card.grantIsActive && !card.canDisableGrant)}
-                          onChange={(checked) => toggleGrant(card.id, checked)}
-                          className="shadow-sm"
-                        />
-                      </Tooltip>
+                      <Switch
+                        checked={card.grantIsActive}
+                        disabled={!card.isActive}
+                        onChange={(checked) => toggleGrant(card.id, checked)}
+                        className="shadow-sm"
+                      />
                     </div>
                   </div>
                 ),
@@ -287,26 +266,11 @@ export const TtsCardAuthorizationPage = () => {
                         <div key={voice.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-3 px-4">
                           <div className="flex items-center gap-3 min-w-0">
                             {card.grantMode === 'selected' ? (
-                              <Tooltip
-                                title={
-                                  !isShelved(voice)
-                                    ? '该音色未在平台上架，无法授权'
-                                    : voice.voiceGrantIsActive && !voice.canRevoke
-                                      ? `该音色仍在使用中（${usageSummary(voice.usage)}），无法取消授权`
-                                      : ''
-                                }
-                              >
-                                <Checkbox
-                                  checked={voice.voiceGrantIsActive}
-                                  disabled={
-                                    !card.grantIsActive
-                                    || !card.isActive
-                                    || !isShelved(voice)
-                                    || (voice.voiceGrantIsActive && !voice.canRevoke)
-                                  }
-                                  onChange={(event) => toggleVoiceGrant(card.id, voice, event.target.checked)}
-                                />
-                              </Tooltip>
+                              <Checkbox
+                                checked={voice.voiceGrantIsActive}
+                                disabled={!card.grantIsActive || !card.isActive || !isShelved(voice)}
+                                onChange={(event) => toggleVoiceGrant(card.id, voice, event.target.checked)}
+                              />
                             ) : null}
                             <IconHeadphones size={16} className="text-slate-400 shrink-0" />
                             <div className="min-w-0">
@@ -335,9 +299,6 @@ export const TtsCardAuthorizationPage = () => {
                             >
                               {voice.effectiveAuthorized ? '公司可用' : '公司不可用'}
                             </Tag>
-                            {usageSummary(voice.usage) ? (
-                              <span className="text-[11px] text-slate-400">{usageSummary(voice.usage)}</span>
-                            ) : null}
                           </div>
                         </div>
                       ))

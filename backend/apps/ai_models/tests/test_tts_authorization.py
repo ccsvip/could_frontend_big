@@ -9,7 +9,6 @@ from apps.ai_models.models import (
     TTSVoice,
 )
 from apps.ai_models.services import tts_authorization as tts_auth
-from apps.devices.models import Device, DeviceApplication
 from apps.tenants.models import Tenant
 
 
@@ -189,37 +188,8 @@ class TenantTTSAuthorizationTests(TestCase):
     def test_card_public_config_is_empty_without_grant(self):
         self.assertEqual(tts_auth.get_tenant_tts_card_public_config(self.tenant, self.card_b), {})
 
-    def test_usage_reports_tenant_default_device_and_application(self):
-        self.grant(self.tenant, self.card_b)
-        TenantTTSSettings.objects.create(tenant=self.tenant, default_voice=self.voice_b)
-        Device.objects.create(code='DEV-USAGE-1', name='设备一', tenant=self.tenant, tts_voice=self.voice_b)
-        application = DeviceApplication.objects.create(name='应用一', tenant=self.tenant)
-        application.tts_voices.add(self.voice_b)
 
-        usage = tts_auth.tts_provider_usage_for_tenant(self.tenant, self.card_b)
 
-        self.assertTrue(usage['tenantDefault'])
-        self.assertEqual(usage['deviceCount'], 1)
-        self.assertEqual(usage['deviceApplicationCount'], 1)
-        self.assertTrue(tts_auth.tts_provider_grant_is_in_use(self.tenant, self.card_b))
-
-    def test_usage_excludes_other_tenants_references(self):
-        self.grant(self.tenant, self.card_b)
-        self.grant(self.other_tenant, self.card_b)
-        Device.objects.create(code='DEV-OTHER-1', name='别家设备', tenant=self.other_tenant, tts_voice=self.voice_b)
-
-        usage = tts_auth.tts_provider_usage_for_tenant(self.tenant, self.card_b)
-
-        self.assertEqual(usage['deviceCount'], 0)
-        self.assertFalse(tts_auth.tts_provider_grant_is_in_use(self.tenant, self.card_b))
-
-    def test_voice_usage_reports_single_voice_references(self):
-        self.grant(self.tenant, self.card_b)
-        other_voice = TTSVoice.objects.create(provider=self.card_b, display_name='另一个', voice_code='b-voice-3')
-        Device.objects.create(code='DEV-VOICE-1', name='设备二', tenant=self.tenant, tts_voice=self.voice_b)
-
-        self.assertEqual(tts_auth.tts_voice_usage_for_tenant(self.tenant, self.voice_b)['deviceCount'], 1)
-        self.assertEqual(tts_auth.tts_voice_usage_for_tenant(self.tenant, other_voice)['deviceCount'], 0)
 
     def test_provider_active_company_authorization_tracks_grants(self):
         self.assertFalse(tts_auth.tts_provider_has_active_company_authorization(self.card_b))

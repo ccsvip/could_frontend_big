@@ -204,49 +204,10 @@ def get_tenant_tts_card_public_config(tenant, provider) -> dict:
     return dict(config) if isinstance(config, dict) else {}
 
 
-def tts_provider_usage_for_tenant(tenant, provider) -> dict:
-    """Count references that would break if this card's grant were disabled."""
-    from apps.devices.models import Device, DeviceApplication
-
-    if tenant is None or provider is None:
-        return {'tenantDefault': False, 'deviceCount': 0, 'deviceApplicationCount': 0}
-
-    settings_obj = _tenant_tts_settings(tenant)
-    default_voice = getattr(settings_obj, 'default_voice', None)
-    return {
-        'tenantDefault': bool(default_voice is not None and default_voice.provider_id == provider.id),
-        'deviceCount': Device.objects.filter(tenant=tenant, tts_voice__provider=provider).count(),
-        'deviceApplicationCount': (
-            DeviceApplication.objects
-            .filter(tenant=tenant, tts_voices__provider=provider)
-            .distinct()
-            .count()
-        ),
-    }
 
 
-def tts_voice_usage_for_tenant(tenant, voice) -> dict:
-    from apps.devices.models import Device, DeviceApplication
-
-    if tenant is None or voice is None:
-        return {'tenantDefault': False, 'deviceCount': 0, 'deviceApplicationCount': 0}
-
-    settings_obj = _tenant_tts_settings(tenant)
-    return {
-        'tenantDefault': bool(getattr(settings_obj, 'default_voice_id', None) == voice.id),
-        'deviceCount': Device.objects.filter(tenant=tenant, tts_voice=voice).count(),
-        'deviceApplicationCount': (
-            DeviceApplication.objects
-            .filter(tenant=tenant, tts_voices=voice)
-            .distinct()
-            .count()
-        ),
-    }
 
 
-def tts_provider_grant_is_in_use(tenant, provider) -> bool:
-    usage = tts_provider_usage_for_tenant(tenant, provider)
-    return bool(usage['tenantDefault'] or usage['deviceCount'] or usage['deviceApplicationCount'])
 
 
 def tts_provider_has_active_company_authorization(provider) -> bool:

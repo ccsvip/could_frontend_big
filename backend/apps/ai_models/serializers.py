@@ -647,8 +647,6 @@ class TenantTTSCardAuthorizationSerializer(serializers.Serializer):
         after_voice_ids = self._voice_ids_after_save(tenant, normalized_grants, before_voice_ids)
 
         self._validate_default_voice(attrs, active_provider_ids, after_voice_ids)
-        self._validate_disable_not_in_use(tenant, normalized_grants)
-        self._validate_voice_revocation_not_in_use(tenant, before_voice_ids, after_voice_ids)
 
         attrs['tenant'] = tenant
         attrs['normalizedGrants'] = normalized_grants
@@ -754,51 +752,7 @@ class TenantTTSCardAuthorizationSerializer(serializers.Serializer):
         if voice.id not in after_voice_ids:
             raise serializers.ValidationError({'defaultVoiceId': '默认音色本次保存后不可用（未上架、未勾选或不属于该公司）'})
 
-    def _validate_disable_not_in_use(self, tenant, normalized_grants) -> None:
-        """Refuse to disable a card whose voices are still referenced.
 
-        Silently disabling would change what an online device speaks with, so the
-        MVP blocks it and reports where the card is still used.
-        """
-        from .services import tts_authorization as tts_auth
-
-        for entry in normalized_grants:
-            if entry['isActive']:
-                continue
-            provider = entry['provider']
-            usage = tts_auth.tts_provider_usage_for_tenant(tenant, provider)
-            if usage['tenantDefault'] or usage['deviceCount'] or usage['deviceApplicationCount']:
-                raise serializers.ValidationError({
-                    'cardGrants': (
-                        f'{provider.name} 仍在使用中，无法取消授权'
-                        f'（公司默认音色：{"是" if usage["tenantDefault"] else "否"}，'
-                        f'设备 {usage["deviceCount"]} 台，'
-                        f'设备应用 {usage["deviceApplicationCount"]} 个）'
-                    ),
-                })
-
-    def _validate_voice_revocation_not_in_use(self, tenant, before_voice_ids: set[int], after_voice_ids: set[int]) -> None:
-        """Same protection as ``_validate_disable_not_in_use``, one level down.
-
-        Runs after the card-level check so a card being switched off reports once,
-        as a card, rather than once per voice it happens to carry.
-        """
-        from .services import tts_authorization as tts_auth
-
-        revoked_ids = before_voice_ids - after_voice_ids
-        if not revoked_ids:
-            return
-        for voice in TTSVoice.objects.filter(id__in=revoked_ids).order_by('provider_id', 'sort_order', 'id'):
-            usage = tts_auth.tts_voice_usage_for_tenant(tenant, voice)
-            if usage['tenantDefault'] or usage['deviceCount'] or usage['deviceApplicationCount']:
-                raise serializers.ValidationError({
-                    'cardGrants': (
-                        f'{voice.display_name} 仍在使用中，无法取消授权'
-                        f'（公司默认音色：{"是" if usage["tenantDefault"] else "否"}，'
-                        f'设备 {usage["deviceCount"]} 台，'
-                        f'设备应用 {usage["deviceApplicationCount"]} 个）'
-                    ),
-                })
 
 
 class KnowledgeModelSerializer(serializers.Serializer):

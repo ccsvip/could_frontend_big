@@ -90,9 +90,6 @@ resolve_device_tts_voice(device, raw_voice_id=None, *, model_code=None)
 get_tenant_tts_provider_grant(tenant, provider)
 tts_voice_grant_ids_for_tenant(tenant, provider)  # -> set[int], active ticks on one card
 get_tenant_tts_card_public_config(tenant, provider)
-tts_provider_usage_for_tenant(tenant, provider)   # -> usage dict
-tts_voice_usage_for_tenant(tenant, voice)         # -> same shape, one level down
-tts_provider_grant_is_in_use(tenant, provider)
 tts_provider_has_active_company_authorization(provider)
 tts_voice_has_active_company_authorization(voice)
 grantable_tts_providers()
@@ -133,14 +130,13 @@ the cards it was given.
 
 `GET`/`PUT` response: `{tenant, providers[], defaultVoiceId}`. Each provider entry
 carries `grantIsActive`, `grantMode`, `authorizedVoiceCount`, `publicConfig`,
-`publicConfigSchema`, `supportedChannels`, `usage`, `canDisableGrant`, and `voices[]`
-(each with `voiceGrantIsActive`, `effectiveAuthorized`, `canRevoke`, `ownerTenant`,
-`isDefault`, `usage`).
+`publicConfigSchema`, `supportedChannels`, and `voices[]` (each with
+`voiceGrantIsActive`, `effectiveAuthorized`, `ownerTenant`, `isDefault`).
 
-`voiceGrantIsActive` is the raw tick; `effectiveAuthorized` is the derived answer. They
-differ on purpose — a ticked voice on an `all`-mode or disabled card is authorized-or-not
-independently of its tick. `canRevoke` is false when the voice is still referenced, so
-the page can grey the checkbox out instead of offering an action the save will refuse.
+Super-admin revocation is unconditional. The page must allow a card or selected-mode
+voice to be revoked even when the company default, a device, or a device application
+still references it. Those references stay intact; subsequent runtime resolution uses
+the existing authorization predicate and fallback rules.
 
 Voices owned by **another** company are absent from the response entirely — not
 rendered as un-ticked rows — so one company's page never leaks another's cloned voices.
@@ -177,9 +173,7 @@ parameters.
 | `defaultVoiceId` disabled / hidden / card disabled | 400 `默认音色或所属卡片未启用` |
 | `defaultVoiceId` not in the set this save would produce (un-ticked, unlisted, or another company's) | 400 `默认音色本次保存后不可用（未上架、未勾选或不属于该公司）` |
 | `publicConfig` contains a field outside that card's schema | 400 naming the field |
-| Disabling a grant still referenced by company default / device / device application | 400 with usage summary; grant row is left untouched |
-| Un-ticking a voice still referenced by company default / device / device application | 400 `{voice} 仍在使用中，无法取消授权` with usage counts; whole save rolled back |
-| Both a card disable and its voices' revocation would be reported | card-level check runs first, so it reports **once as a card** |
+| Super-admin disables a grant or un-ticks a referenced voice | 200; authorization is revoked even when company default / device / device application references remain |
 | Tenant holds no grant at all | 400 `当前公司暂无可用 TTS 音色，请联系超管分配` (options returns an empty state instead) |
 | Adapter missing, unconfigured, or channel unsupported | explicit error / `tts.error`; **never** a cross-card fallback |
 
@@ -225,9 +219,9 @@ company-owned clone does not restart the ordering and land on top of the shared 
 
 | Module | Assertion points |
 |--------|------------------|
-| `apps.ai_models.tests.test_tts_authorization` | derived-visibility predicate, inactive grant, disabled card/voice, `selected` mode narrowing, one-`.filter()` cross-tenant grant-row leak, `owner_tenant` scoping, cross-tenant rejection, fallback stays inside authorization, per-card config isolation, usage counting |
+| `apps.ai_models.tests.test_tts_authorization` | derived-visibility predicate, inactive grant, disabled card/voice, `selected` mode narrowing, one-`.filter()` cross-tenant grant-row leak, `owner_tenant` scoping, cross-tenant rejection, fallback stays inside authorization, per-card config isolation |
 | `apps.ai_models.tests.test_tts_adapters` | registry rejects unknown card, routing comes from `voice.provider`, per-card schema whitelist, CosyVoice task protocol + chunk forwarding, provider summary hides credentials |
-| `apps.ai_models.tests.test_tts_card_authorization_api` | superuser-only, per-card `publicConfig` isolation, blocked disable with usage counts, default-voice validation against the post-save set, `all`↔`selected` round trip preserving ticks, blocked voice revocation, `canRevoke` flag, another company's private voice hidden and unusable, anti-probing message equality, runtime-config publish |
+| `apps.ai_models.tests.test_tts_card_authorization_api` | superuser-only, per-card `publicConfig` isolation, unconditional card/voice revocation despite references, default-voice validation against the post-save set, `all`↔`selected` round trip preserving ticks, another company's private voice hidden and unusable, anti-probing message equality, runtime-config publish |
 | `apps.ai_models.tests.test_tts_api` (`CosyVoiceApiTests`) | clone without `ownerTenantId` stays platform-public, clone with it is private to that company, unknown/inactive company rejected |
 | `apps.ai_models.tests.test_company_tts_options_api` | empty state, only-authorized voices, grouped + flat shape, no credential leakage, revoked grant disappears |
 | `apps.devices.tests.test_device_tts_authorization` | binding rejection/acceptance, binding beats company default, revoked binding falls back, frozen Android payload keys, HTTP runtime headers, full-config WS push |

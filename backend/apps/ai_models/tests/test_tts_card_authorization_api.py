@@ -169,40 +169,8 @@ class TenantTTSCardAuthorizationApiTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_disabling_grant_used_by_company_default_is_blocked(self):
-        TenantTTSProviderGrant.objects.create(tenant=self.tenant, provider=self.aliyun, is_active=True)
-        TenantTTSSettings.objects.create(tenant=self.tenant, default_voice=self.cherry)
 
-        response = self.client.put(self.url(), {
-            'cardGrants': [{'providerId': self.aliyun.id, 'isActive': False}],
-        }, format='json')
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('仍在使用中', str(response.data))
-        self.assertTrue(TenantTTSProviderGrant.objects.get(tenant=self.tenant, provider=self.aliyun).is_active)
-
-    def test_disabling_grant_used_by_device_is_blocked_with_counts(self):
-        TenantTTSProviderGrant.objects.create(tenant=self.tenant, provider=self.aliyun, is_active=True)
-        Device.objects.create(code='DEV-GRANT-1', name='设备一', tenant=self.tenant, tts_voice=self.cherry)
-
-        response = self.client.put(self.url(), {
-            'cardGrants': [{'providerId': self.aliyun.id, 'isActive': False}],
-        }, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('设备 1 台', str(response.data))
-
-    def test_disabling_grant_used_by_device_application_is_blocked(self):
-        TenantTTSProviderGrant.objects.create(tenant=self.tenant, provider=self.aliyun, is_active=True)
-        application = DeviceApplication.objects.create(name='应用一', tenant=self.tenant)
-        application.tts_voices.add(self.cherry)
-
-        response = self.client.put(self.url(), {
-            'cardGrants': [{'providerId': self.aliyun.id, 'isActive': False}],
-        }, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('设备应用 1 个', str(response.data))
 
     def test_unused_grant_can_be_disabled_and_history_is_kept(self):
         grant = TenantTTSProviderGrant.objects.create(tenant=self.tenant, provider=self.aliyun, is_active=True)
@@ -216,18 +184,19 @@ class TenantTTSCardAuthorizationApiTests(APITestCase):
         self.assertFalse(grant.is_active)
         self.assertTrue(TenantTTSProviderGrant.objects.filter(id=grant.id).exists())
 
-    def test_can_disable_grant_flag_reflects_usage(self):
+    def test_response_omits_usage_based_revocation_controls(self):
         TenantTTSProviderGrant.objects.create(tenant=self.tenant, provider=self.aliyun, is_active=True)
-        response = self.client.get(self.url())
-        aliyun = next(item for item in response.data['providers'] if item['code'] == 'aliyun')
-        self.assertTrue(aliyun['canDisableGrant'])
-
         Device.objects.create(code='DEV-GRANT-2', name='设备二', tenant=self.tenant, tts_voice=self.cherry)
-        response = self.client.get(self.url())
-        aliyun = next(item for item in response.data['providers'] if item['code'] == 'aliyun')
-        self.assertFalse(aliyun['canDisableGrant'])
-        self.assertEqual(aliyun['usage']['deviceCount'], 1)
 
+        response = self.client.get(self.url())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        aliyun = next(item for item in response.data['providers'] if item['code'] == 'aliyun')
+        self.assertNotIn('canDisableGrant', aliyun)
+        self.assertNotIn('usage', aliyun)
+        cherry = next(voice for voice in aliyun['voices'] if voice['id'] == self.cherry.id)
+        self.assertNotIn('canRevoke', cherry)
+        self.assertNotIn('usage', cherry)
     def test_voice_payload_reports_effective_authorization_and_default(self):
         TenantTTSProviderGrant.objects.create(tenant=self.tenant, provider=self.aliyun, is_active=True)
         TenantTTSSettings.objects.create(tenant=self.tenant, default_voice=self.cherry)
@@ -362,9 +331,9 @@ class TenantTTSVoiceGrantApiTests(APITestCase):
         self.assertIn('默认音色', str(response.data))
         self.assertFalse(TenantTTSVoiceGrant.objects.filter(tenant=self.tenant).exists())
 
-    def test_unticking_a_voice_used_by_a_device_is_blocked_and_rolled_back(self):
+    def test_unticking_a_voice_used_by_a_device_succeeds(self):
         TenantTTSProviderGrant.objects.create(tenant=self.tenant, provider=self.aliyun, is_active=True)
-        Device.objects.create(code='DEV-VOICE-1', name='设备一', tenant=self.tenant, tts_voice=self.cherry)
+        device = Device.objects.create(code='DEV-VOICE-1', name='设备一', tenant=self.tenant, tts_voice=self.cherry)
 
         response = self.client.put(self.url(), {
             'cardGrants': [{
@@ -375,14 +344,17 @@ class TenantTTSVoiceGrantApiTests(APITestCase):
             }],
         }, format='json')
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('仍在使用中', str(response.data))
-        self.assertIn('设备 1 台', str(response.data))
-        grant = TenantTTSProviderGrant.objects.get(tenant=self.tenant, provider=self.aliyun)
-        self.assertEqual(grant.grant_mode, TenantTTSProviderGrant.GRANT_MODE_ALL)
-        self.assertFalse(TenantTTSVoiceGrant.objects.filter(tenant=self.tenant).exists())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        card = self.card(response)
+        self.assertEqual(card['grantMode'], TenantTTSProviderGrant.GRANT_MODE_SELECTED)
+        cherry = next(voice for voice in card['voices'] if voice['id'] == self.cherry.id)
+        self.assertFalse(cherry['effectiveAuthorized'])
+        self.assertFalse(TenantTTSVoiceGrant.objects.filter(tenant=self.tenant, voice=self.cherry, is_active=True).exists())
+        self.assertTrue(TenantTTSVoiceGrant.objects.get(tenant=self.tenant, voice=self.serena).is_active)
+        device.refresh_from_db()
+        self.assertEqual(device.tts_voice_id, self.cherry.id)
 
-    def test_unticking_a_voice_used_by_a_device_application_is_blocked(self):
+    def test_unticking_a_voice_used_by_a_device_application_succeeds(self):
         TenantTTSProviderGrant.objects.create(tenant=self.tenant, provider=self.aliyun, is_active=True)
         application = DeviceApplication.objects.create(name='应用一', tenant=self.tenant)
         application.tts_voices.add(self.cherry)
@@ -396,31 +368,40 @@ class TenantTTSVoiceGrantApiTests(APITestCase):
             }],
         }, format='json')
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('设备应用 1 个', str(response.data))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        cherry = next(voice for voice in self.card(response)['voices'] if voice['id'] == self.cherry.id)
+        self.assertFalse(cherry['effectiveAuthorized'])
+        self.assertFalse(TenantTTSVoiceGrant.objects.filter(tenant=self.tenant, voice=self.cherry, is_active=True).exists())
+        self.assertEqual(list(application.tts_voices.values_list('id', flat=True)), [self.cherry.id])
 
-    def test_disabling_the_whole_card_reports_once_as_a_card(self):
+    def test_disabling_a_card_with_references_succeeds(self):
         TenantTTSProviderGrant.objects.create(tenant=self.tenant, provider=self.aliyun, is_active=True)
-        Device.objects.create(code='DEV-VOICE-2', name='设备二', tenant=self.tenant, tts_voice=self.cherry)
+        TenantTTSSettings.objects.create(tenant=self.tenant, default_voice=self.cherry)
+        device = Device.objects.create(code='DEV-VOICE-2', name='设备二', tenant=self.tenant, tts_voice=self.cherry)
+        application = DeviceApplication.objects.create(name='应用一', tenant=self.tenant)
+        application.tts_voices.add(self.cherry)
 
-        response = self.client.put(self.url(), {
-            'cardGrants': [{'providerId': self.aliyun.id, 'isActive': False}],
-        }, format='json')
+        with patch('apps.ai_models.services.tts_runtime_events.publish_device_event_sync') as publish:
+            with self.captureOnCommitCallbacks(execute=True):
+                response = self.client.put(self.url(), {
+                    'cardGrants': [{'providerId': self.aliyun.id, 'isActive': False}],
+                    'defaultVoiceId': None,
+                }, format='json')
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(self.aliyun.name, str(response.data))
-        self.assertNotIn(self.cherry.display_name, str(response.data))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(TenantTTSProviderGrant.objects.get(tenant=self.tenant, provider=self.aliyun).is_active)
+        self.assertIsNone(TenantTTSSettings.objects.get(tenant=self.tenant).default_voice_id)
+        device.refresh_from_db()
+        self.assertEqual(device.tts_voice_id, self.cherry.id)
+        self.assertEqual(list(application.tts_voices.values_list('id', flat=True)), [self.cherry.id])
+        event = publish.call_args[0][0]
+        self.assertEqual(event['type'], 'device.voice_configuration.changed')
+        self.assertEqual(event['tenantId'], self.tenant.id)
+        self.assertEqual(event['refresh'], {
+            'endpoint': '/api/v1/device-runtime/config/',
+            'reason': 'voiceConfigurationChanged',
+        })
 
-    def test_can_revoke_flag_reflects_voice_level_usage(self):
-        TenantTTSProviderGrant.objects.create(tenant=self.tenant, provider=self.aliyun, is_active=True)
-        Device.objects.create(code='DEV-VOICE-3', name='设备三', tenant=self.tenant, tts_voice=self.cherry)
-
-        card = self.card(self.client.get(self.url()))
-        cherry = next(voice for voice in card['voices'] if voice['id'] == self.cherry.id)
-        serena = next(voice for voice in card['voices'] if voice['id'] == self.serena.id)
-        self.assertFalse(cherry['canRevoke'])
-        self.assertEqual(cherry['usage']['deviceCount'], 1)
-        self.assertTrue(serena['canRevoke'])
 
     def test_another_companys_private_voice_is_hidden_and_unusable(self):
         private_voice = TTSVoice.objects.create(

@@ -214,18 +214,11 @@ export type TenantTtsCardGrantPayload = {
   publicConfig?: Record<string, unknown>;
 };
 
-export type TenantTtsCardUsage = {
-  tenantDefault: boolean;
-  deviceCount: number;
-  deviceApplicationCount: number;
-};
 
 export type TenantTtsCardAuthorizationVoice = TtsVoiceRecord & {
   effectiveAuthorized: boolean;
   voiceGrantIsActive: boolean;
-  canRevoke: boolean;
   ownerTenant: { id: number; name: string } | null;
-  usage: TenantTtsCardUsage;
 };
 
 export type TenantTtsCardAuthorization = Omit<TtsCardSummary, 'voices'> & {
@@ -233,8 +226,6 @@ export type TenantTtsCardAuthorization = Omit<TtsCardSummary, 'voices'> & {
   grantIsActive: boolean;
   grantMode: TenantTtsGrantMode;
   authorizedVoiceCount: number;
-  usage: TenantTtsCardUsage;
-  canDisableGrant: boolean;
   voices: TenantTtsCardAuthorizationVoice[];
 };
 
