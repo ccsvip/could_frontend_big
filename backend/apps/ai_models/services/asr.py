@@ -185,7 +185,7 @@ def _transcription_session_update_event(sample_rate: int, config: EffectiveASRCo
         'session': {
             'input_audio_format': 'pcm',
             'sample_rate': sample_rate,
-            'input_audio_transcription': {'language': 'zh'},
+            'input_audio_transcription': {},
             'turn_detection': {
                 'type': 'server_vad',
                 'threshold': config.vad_threshold,
@@ -252,7 +252,7 @@ def test_asr_connection() -> dict:
             'session': {
                 'input_audio_format': 'pcm',
                 'sample_rate': 16000,
-                'input_audio_transcription': {'language': 'zh'},
+                'input_audio_transcription': {},
                 'turn_detection': {
                     'type': 'server_vad',
                     'threshold': config.vad_threshold,

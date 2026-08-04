@@ -187,7 +187,24 @@ class ASRApiTests(TenantTestMixin, APITestCase):
         session_update = json.loads(ws.send.call_args_list[0].args[0])
         self.assertEqual(session_update['session']['turn_detection']['threshold'], -0.25)
         self.assertEqual(session_update['session']['turn_detection']['silence_duration_ms'], 900)
+        self.assertEqual(session_update['session']['input_audio_transcription'], {})
         ws.close.assert_called_once()
+
+    def test_pcm_transcription_session_omits_language_for_auto_detection(self):
+        from apps.ai_models.services.asr import EffectiveASRConfig, _transcription_session_update_event
+
+        session_update = _transcription_session_update_event(
+            16000,
+            EffectiveASRConfig(
+                workspace_id='workspace',
+                api_key='api-key',
+                base_url='wss://asr.example/realtime',
+                model='qwen3-asr-flash-realtime',
+                is_active=True,
+            ),
+        )
+
+        self.assertEqual(session_update['session']['input_audio_transcription'], {})
 
     @override_settings(
         MULTIMODAL_WORKSPACE_ID='',

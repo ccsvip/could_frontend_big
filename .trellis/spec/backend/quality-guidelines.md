@@ -124,3 +124,60 @@ When serving file downloads that may be large (APK, firmware, media), support HT
 <!-- What reviewers should check -->
 
 (To be filled by the team)
+
+## Realtime ASR Automatic Language Detection
+
+### 1. Scope / Trigger
+
+The DashScope Qwen-ASR Realtime `session.update` payload crosses device, backend WebSocket, and external-provider boundaries. Any change to `input_audio_transcription.language` changes the transcription contract for every spoken language.
+
+### 2. Signatures
+
+- `apps.ai_models.services.asr._transcription_session_update_event(sample_rate, config)` for device PCM transcription.
+- `apps.ai_models.realtime_asr._session_update_event(...)` for regular and agent unified-realtime ASR sessions.
+- `apps.ai_models.services.asr.test_asr_connection()` for the administrative connectivity probe.
+
+### 3. Contract
+
+Send automatic source-language detection as an empty transcription configuration; omit `language` rather than sending an `auto` value:
+
+```python
+'input_audio_transcription': {}
+```
+
+Qwen-ASR documents `language` as optional and instructs callers with an unknown or mixed source language not to set it. Do not remove `input_audio_transcription`; keep the object as the recognition configuration boundary.
+
+### 4. Validation & Error Matrix
+
+| Condition | Required behavior |
+| --- | --- |
+| Language is unknown or mixed | Omit `input_audio_transcription.language`; the provider detects it. |
+| A fixed source language is known and intentionally required | Set a documented language code only after an explicit product decision. |
+| A developer proposes `language: 'auto'` | Reject it; this is not the documented automatic-detection contract. |
+| The ASR configuration object is removed | Do not do this without confirming provider behavior and the realtime transcription contract. |
+
+### 5. Good / Base / Bad Cases
+
+- Good: English, Chinese, Japanese, or mixed audio uses `input_audio_transcription: {}` and the provider chooses the source language.
+- Base: VAD thresholds and sample rate remain unchanged when only language selection changes.
+- Bad: A shared ASR session builder hardcodes `{'language': 'zh'}`, which biases every caller toward Chinese recognition.
+
+### 6. Tests Required
+
+- `apps.ai_models.tests.test_asr_api`: assert that the administrative ASR probe and the device PCM session builder send `{}`.
+- `apps.ai_models.tests.test_asr_realtime`: assert that the unified WebSocket upstream receives `{}` after `asr.session.start`.
+- Run `docker compose exec backend python manage.py test apps.ai_models.tests.test_asr_api apps.ai_models.tests.test_asr_realtime --keepdb`.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```python
+'input_audio_transcription': {'language': 'zh'}
+```
+
+#### Correct
+
+```python
+'input_audio_transcription': {}
+```

@@ -212,7 +212,7 @@ def _session_update_event(*, vad_threshold: float = 0.0, vad_silence_duration_ms
         'session': {
             'input_audio_format': 'pcm',
             'sample_rate': 16000,
-            'input_audio_transcription': {'language': 'zh'},
+            'input_audio_transcription': {},
             'turn_detection': {
                 'type': 'server_vad',
                 'threshold': vad_threshold,

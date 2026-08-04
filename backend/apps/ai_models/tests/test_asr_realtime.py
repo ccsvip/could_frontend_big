@@ -433,6 +433,8 @@ class ASRRealtimeTests(TenantTestMixin, TestCase):
                 self.assertEqual(ready_payload['id'], 'asr-cleanup-1')
                 self.assertTrue(ready_payload['requestId'])
                 self.assertEqual(ready_payload['traceId'], ready_payload['requestId'])
+                session_update = json.loads(upstream.messages[0])
+                self.assertEqual(session_update['session']['input_audio_transcription'], {})
 
                 await communicator.send_input({'type': 'websocket.disconnect', 'code': 1000})
                 await communicator.wait(timeout=1)
