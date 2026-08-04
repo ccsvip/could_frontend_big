@@ -206,6 +206,64 @@ class ASRApiTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(session_update['session']['input_audio_transcription'], {})
 
+    @patch('apps.ai_models.services.asr.time.sleep')
+    @patch('apps.ai_models.services.asr.websocket.create_connection')
+    def test_pcm_transcription_streams_audio_after_session_update(self, create_connection, sleep):
+        from apps.ai_models.services.asr import EffectiveASRConfig, transcribe_pcm_audio
+
+        class FakeWebSocket:
+            def __init__(self):
+                self.sent = []
+                self.closed = False
+                self.timeout = 30
+                self.events = [
+                    {'type': 'session.created'},
+                    {'type': 'session.updated'},
+                    {
+                        'type': 'conversation.item.input_audio_transcription.completed',
+                        'transcript': '介绍一下展厅',
+                    },
+                ]
+
+            def gettimeout(self):
+                return self.timeout
+
+            def settimeout(self, value):
+                self.timeout = value
+
+            def send(self, message):
+                self.sent.append(json.loads(message))
+
+            def recv(self):
+                return json.dumps(self.events.pop(0))
+
+            def close(self):
+                self.closed = True
+
+        ws = FakeWebSocket()
+        create_connection.return_value = ws
+
+        text = transcribe_pcm_audio(
+            pcm=b'\x00\x01' * 640,
+            sample_rate=16000,
+            config=EffectiveASRConfig(
+                workspace_id='workspace',
+                api_key='api-key',
+                base_url='wss://asr.example/realtime',
+                model='qwen3-asr-flash-realtime',
+                is_active=True,
+            ),
+            tenant_id=self.tenant.id,
+        )
+
+        self.assertEqual(text, '介绍一下展厅')
+        self.assertEqual(
+            [message['type'] for message in ws.sent],
+            ['session.update', 'input_audio_buffer.append', 'input_audio_buffer.append', 'session.finish'],
+        )
+        sleep.assert_called_once_with(0.02)
+        self.assertTrue(ws.closed)
+
     @override_settings(
         MULTIMODAL_WORKSPACE_ID='',
         MULTIMODAL_API_KEY='',

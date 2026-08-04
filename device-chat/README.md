@@ -101,10 +101,11 @@ X-TTS-Voice: Cherry
 
 - 从 URL `deviceCode` 自动连接设备，或手动输入设备码连接。
 - 使用 `navigator.mediaDevices.getUserMedia` 与 Web Audio 录音，上传 16k PCM。
-- 录音过程中连接统一实时通信入口，并通过设备码启动实时语音识别会话，边说边展示识别文本。
-- 录音结束后用 `multipart/form-data` 上传音频，并携带 `X-Device-Code`、`X-Request-ID`、`X-Trace-ID`。
+- 录音过程中连接统一实时通信入口，通过 `agent.session.start` 启动 ASR → LLM → TTS 三合一实时链路，边说边展示识别文本。
+- 录音结束后发送 `agent.session.finish`，随后按 `llm.delta` / `llm.done` 先展示文字回答，再消费 TTS 二进制音频。
+- 实时链路在拿到 LLM 文字前失败时，会用已录制的 PCM 自动走 HTTP 完整问答兜底。
 - 展示 ASR 问题文本、LLM 回答文本、`traceId`、`sessionId`。
-- 支持 `audioUrl` 和 `audioBase64` 两种语音回复，自动播放失败时可手动播放。
+- 支持 HTTP 返回的 `audioUrl` / `audioBase64`，也支持实时 TTS 返回的 PCM 音频，自动播放失败时可手动播放。
 - 支持请求超时、网络/CORS、设备码无效、ASR/LLM/TTS 失败等提示。
 
 ## 默认接口
@@ -147,7 +148,15 @@ GET /ws/realtime/
 
 连接建立后，页面发送 `asr.session.start` 命令，并在命令载荷里携带 `deviceCode`、`requestId`、`traceId` 完成设备身份解析与链路排查。收到 `asr.ready` 后页面持续发送 16k PCM 二进制分片，并根据 `asr.transcript` 事件实时刷新“我说的问题”；停止录音时发送 `asr.session.finish`。
 
-语音问答默认使用 PRD 约定接口：
+语音问答页面默认使用同一个统一实时通信入口：
+
+```http
+GET /ws/realtime/
+```
+
+连接建立后，页面发送 `agent.session.start` 命令，并在命令载荷里携带 `deviceCode` 和当前 `sessionId`。收到 `asr.ready` 后页面持续发送 16k PCM 二进制分片；停止录音时发送 `agent.session.finish`。服务端随后依次返回 `asr.transcript` / `asr.done`、`llm.started` / `llm.delta` / `llm.done`、`tts.ready`、TTS 二进制音频、`tts.done`、`agent.done`。页面会在 `llm.delta` 到达时立即刷新文字回答，不等待 TTS 合成结束。
+
+如果三合一实时链路在 LLM 文字到达前断开、报错或超时，页面会使用已录制的 PCM 自动改走 HTTP 完整问答兜底：
 
 ```http
 POST /api/v1/device/voice-chat
@@ -163,7 +172,6 @@ sampleRate=16000
 ```
 
 该接口会按 `deviceCode` 校验设备绑定状态，再执行 ASR → LLM → TTS。未绑定设备会返回 403，页面会提示先完成授权绑定。
-实时 ASR 只负责录音过程中的即时文本展示；停止录音后仍会提交完整音频到该接口，用后端返回的最终 ASR/LLM/TTS 结果覆盖展示内容。
 
 如果后端实际使用 PRD 中的设备会话接口，可以通过 URL 覆盖：
 

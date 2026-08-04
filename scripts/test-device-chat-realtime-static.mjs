@@ -12,14 +12,14 @@ const replacementTestSources = [
 
 const checks = [
   {
-    name: 'device chat opens unified realtime websocket',
-    pass: appSource.includes("ASR_REALTIME_PATH: '/ws/realtime/'")
-      && appSource.includes('new WebSocket(buildAsrRealtimeWebSocketUrl())'),
+    name: 'device chat opens unified agent realtime websocket',
+    pass: appSource.includes("AGENT_REALTIME_PATH: '/ws/realtime/'")
+      && appSource.includes('new WebSocket(buildAgentRealtimeWebSocketUrl())'),
   },
   {
-    name: 'browser websocket starts ASR with deviceCode command payload',
-    pass: appSource.includes("type: 'asr.session.start'")
-      && appSource.includes('payload: { deviceCode: state.deviceCode }'),
+    name: 'browser websocket starts agent session with deviceCode payload',
+    pass: appSource.includes("type: 'agent.session.start'")
+      && appSource.includes('const payload = { deviceCode: state.deviceCode }'),
   },
   {
     name: 'pcm chunks are streamed after ASR is ready',
@@ -33,14 +33,31 @@ const checks = [
       && appSource.includes('updateRealtimeQuestionText()'),
   },
   {
-    name: 'recording stop sends ASR finish command',
-    pass: appSource.includes("type: 'asr.session.finish'"),
+    name: 'recording stop sends agent finish command',
+    pass: appSource.includes("type: 'agent.session.finish'"),
   },
   {
-    name: 'README documents realtime ASR behavior',
+    name: 'LLM text is rendered before realtime TTS finishes',
+    pass: appSource.includes("payload.type === 'llm.delta'")
+      && appSource.includes('appendAgentAnswerDelta')
+      && appSource.includes("payload.type === 'tts.done'"),
+  },
+  {
+    name: 'realtime TTS binary audio is wrapped for browser playback',
+    pass: appSource.includes('event.data instanceof ArrayBuffer')
+      && appSource.includes('buildWavFromPcmChunks'),
+  },
+  {
+    name: 'agent realtime can fall back to HTTP voice-chat before answer text',
+    pass: appSource.includes('function fallbackToHttpVoice')
+      && appSource.includes('uploadVoice(state.lastAudioBlob'),
+  },
+  {
+    name: 'README documents realtime agent behavior',
     pass: readmeSource.includes('/ws/realtime/')
-      && readmeSource.includes('asr.session.start')
-      && readmeSource.includes('实时语音识别'),
+      && readmeSource.includes('agent.session.start')
+      && readmeSource.includes('llm.delta')
+      && readmeSource.includes('HTTP 完整问答兜底'),
   },
   {
     name: 'ASR replacement test pages use unified realtime websocket',

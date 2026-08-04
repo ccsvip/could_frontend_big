@@ -9,11 +9,12 @@
     SESSION_PATH: '/device-runtime/config/',
     VOICE_CHAT_PATH: '/device/voice-chat',
     ASR_REALTIME_PATH: '/ws/realtime/',
+    AGENT_REALTIME_PATH: '/ws/realtime/',
     MAX_RECORD_SECONDS: 60,
     PCM_SAMPLE_RATE: 16000,
     MIN_RECORD_MS: 700,
     REQUEST_TIMEOUT: 30000,
-    ASR_FINISH_TIMEOUT: 5000,
+    AGENT_FINISH_TIMEOUT: 60000,
     ASR_PENDING_CHUNK_LIMIT: 80,
     AUTO_PLAY_AUDIO: true,
   };
@@ -28,6 +29,7 @@
   CONFIG.SESSION_PATH = query.get('sessionPath') || CONFIG.SESSION_PATH;
   CONFIG.VOICE_CHAT_PATH = query.get('voiceChatPath') || CONFIG.VOICE_CHAT_PATH;
   CONFIG.ASR_REALTIME_PATH = query.get('asrRealtimePath') || CONFIG.ASR_REALTIME_PATH;
+  CONFIG.AGENT_REALTIME_PATH = query.get('agentRealtimePath') || CONFIG.AGENT_REALTIME_PATH;
 
   const els = {
     globalStatus: document.getElementById('globalStatus'),
@@ -72,6 +74,13 @@
     asrLiveText: '',
     asrFinalText: '',
     asrPendingBuffers: [],
+    agentAnswerText: '',
+    agentAudioChunks: [],
+    agentAudioSampleRate: CONFIG.PCM_SAMPLE_RATE,
+    agentAudioFormat: 'pcm',
+    agentCompleted: false,
+    agentRealtimeFallbackInProgress: false,
+    audioObjectUrl: '',
     pcmChunks: [],
     recordingStartedAt: 0,
     recordingTimer: 0,
@@ -260,10 +269,10 @@
     state.recordingStopPending = false;
     if (state.discardRecording) {
       state.discardRecording = false;
+      closeRealtimeAsr();
       return;
     }
     const duration = Date.now() - state.recordingStartedAt;
-    finishRealtimeAsr();
     if (duration < CONFIG.MIN_RECORD_MS) {
       closeRealtimeAsr();
       setPhase('ready');
@@ -283,6 +292,12 @@
     state.lastAudioBlob = blob;
     state.lastAudioFormat = format;
     els.retryButton.disabled = false;
+    if (finishRealtimeAsr()) {
+      setPhase('processing');
+      showNotice('语音识别完成，正在生成回答...', 'warn');
+      return;
+    }
+
     try {
       await uploadVoice(blob, format);
     } catch (error) {
@@ -339,7 +354,7 @@
 
     let socket;
     try {
-      socket = new WebSocket(buildAsrRealtimeWebSocketUrl());
+      socket = new WebSocket(buildAgentRealtimeWebSocketUrl());
     } catch (error) {
       handleRealtimeAsrError(error);
       return;
@@ -349,16 +364,20 @@
     state.asrSocket = socket;
 
     socket.onopen = () => {
+      const payload = { deviceCode: state.deviceCode };
+      if (state.sessionId) {
+        payload.sessionId = state.sessionId;
+      }
       socket.send(JSON.stringify({
-        type: 'asr.session.start',
-        id: createRealtimeCommandId('asr-session'),
-        payload: { deviceCode: state.deviceCode },
+        type: 'agent.session.start',
+        id: createRealtimeCommandId('agent-session'),
+        payload,
       }));
-      logDiagnostic('asr.realtime.opened', { deviceCode: state.deviceCode });
+      logDiagnostic('agent.realtime.opened', { deviceCode: state.deviceCode, sessionId: state.sessionId });
     };
     socket.onmessage = handleRealtimeAsrMessage;
     socket.onerror = () => {
-      handleRealtimeAsrError(new Error('实时 ASR 连接异常'));
+      handleRealtimeAsrError(new Error('三合一实时连接异常'));
     };
     socket.onclose = () => {
       if (state.asrSocket === socket) {
@@ -366,10 +385,22 @@
       }
       window.clearTimeout(state.asrFinishTimer);
       state.asrFinishTimer = 0;
+      state.asrReady = false;
+      if (state.phase === 'processing' && !state.agentCompleted && !state.agentRealtimeFallbackInProgress) {
+        handleRealtimeAgentClosed();
+      }
     };
   }
 
   function handleRealtimeAsrMessage(event) {
+    if (event.data instanceof ArrayBuffer) {
+      appendRealtimeAudioChunk(event.data);
+      return;
+    }
+    if (event.data instanceof Blob) {
+      event.data.arrayBuffer().then(appendRealtimeAudioChunk).catch(() => {});
+      return;
+    }
     let payload;
     try {
       payload = JSON.parse(event.data);
@@ -377,10 +408,15 @@
       return;
     }
 
+    if (payload.type === 'agent.started') {
+      logDiagnostic('agent.realtime.started', { deviceCode: state.deviceCode, mode: payload.payload?.mode || '' });
+      return;
+    }
+
     if (payload.type === 'asr.ready') {
       state.asrReady = true;
       flushPendingRealtimeAudio();
-      logDiagnostic('asr.realtime.ready', { deviceCode: state.deviceCode });
+      logDiagnostic('agent.realtime.asr_ready', { deviceCode: state.deviceCode });
       return;
     }
 
@@ -389,13 +425,56 @@
       return;
     }
 
-    if (payload.type === 'asr.done') {
-      closeRealtimeAsr();
+    if (payload.type === 'asr.input_stopped') {
+      handleRealtimeInputStopped(payload);
       return;
     }
 
-    if (payload.type === 'asr.error') {
-      handleRealtimeAsrError(new Error(payload.message || '实时 ASR 识别失败'));
+    if (payload.type === 'asr.done') {
+      showNotice('语音识别完成，正在生成回答...', 'warn');
+      return;
+    }
+
+    if (payload.type === 'llm.started') {
+      state.agentAnswerText = '';
+      setText(els.answerText, els.answerCount, '', '正在生成回答');
+      return;
+    }
+
+    if (payload.type === 'llm.delta' && payload.payload?.text) {
+      appendAgentAnswerDelta(String(payload.payload.text));
+      return;
+    }
+
+    if (payload.type === 'llm.done') {
+      renderRealtimeLlmDone(payload);
+      return;
+    }
+
+    if (payload.type === 'tts.ready') {
+      state.agentAudioSampleRate = Number(payload.sampleRate || CONFIG.PCM_SAMPLE_RATE) || CONFIG.PCM_SAMPLE_RATE;
+      state.agentAudioFormat = String(payload.responseFormat || 'pcm').toLowerCase();
+      state.agentAudioChunks = [];
+      return;
+    }
+
+    if (payload.type === 'tts.done') {
+      finishRealtimeAudioPlayback();
+      return;
+    }
+
+    if (payload.type === 'agent.done') {
+      finishRealtimeAgent(payload);
+      return;
+    }
+
+    if (payload.type === 'tts.error' && state.agentAnswerText) {
+      showNotice(`文字回答已生成，语音合成失败：${extractRealtimeErrorMessage(payload)}`, 'warn');
+      return;
+    }
+
+    if (['asr.error', 'llm.error', 'tts.error', 'agent.error', 'error'].includes(payload.type)) {
+      handleRealtimeAsrError(new Error(extractRealtimeErrorMessage(payload)));
     }
   }
 
@@ -435,6 +514,82 @@
     state.asrFinalText = '';
     state.asrPendingBuffers = [];
     state.asrReady = false;
+    state.agentAnswerText = '';
+    state.agentAudioChunks = [];
+    state.agentAudioSampleRate = CONFIG.PCM_SAMPLE_RATE;
+    state.agentAudioFormat = 'pcm';
+    state.agentCompleted = false;
+    state.agentRealtimeFallbackInProgress = false;
+  }
+
+  function appendAgentAnswerDelta(text) {
+    state.agentAnswerText += text;
+    setText(els.answerText, els.answerCount, state.agentAnswerText);
+    showNotice('正在生成文字回答...', 'warn');
+  }
+
+  function renderRealtimeLlmDone(message) {
+    const payload = message.payload || {};
+    const question = payload.questionText || getRealtimeTranscript();
+    const answer = payload.answerText || state.agentAnswerText;
+    state.agentAnswerText = answer;
+    state.sessionId = payload.sessionId || state.sessionId;
+    els.sessionIdText.textContent = state.sessionId || '-';
+    els.traceIdText.textContent = message.traceId ? `trace ${message.traceId}` : 'trace -';
+    setText(els.questionText, els.questionCount, question || '未识别到有效语音');
+    setText(els.answerText, els.answerCount, answer || '', answer ? '' : '等待系统回答');
+    showNotice('文字回答已生成，正在合成语音...', 'ok');
+  }
+
+  function appendRealtimeAudioChunk(buffer) {
+    if (!buffer || !buffer.byteLength) {
+      return;
+    }
+    state.agentAudioChunks.push(buffer.slice(0));
+  }
+
+  function finishRealtimeAudioPlayback() {
+    if (!state.agentAudioChunks.length) {
+      if (state.agentAnswerText) {
+        showNotice('文字回答已生成，语音合成没有返回音频。', 'warn');
+      }
+      return;
+    }
+    const source = buildRealtimeAudioSource(
+      state.agentAudioChunks,
+      state.agentAudioFormat,
+      state.agentAudioSampleRate,
+    );
+    if (source) {
+      setAudioSource(source);
+      if (CONFIG.AUTO_PLAY_AUDIO) {
+        playAudio(false);
+      }
+    }
+  }
+
+  function finishRealtimeAgent(message) {
+    state.agentCompleted = true;
+    if (message.reason === 'effective_input_timeout' && !state.agentAnswerText) {
+      setPhase('ready');
+      showNotice('未检测到有效语音，请重新说一遍。', 'warn');
+      closeRealtimeAsr();
+      return;
+    }
+    const elapsed = Math.round(Date.now() - state.recordingStartedAt);
+    if (message.traceId) {
+      els.traceIdText.textContent = `trace ${message.traceId}`;
+    }
+    setPhase('completed');
+    showNotice(state.agentAudioChunks.length ? '回答完成' : '文字回答完成', 'ok');
+    logDiagnostic('agent.completed', {
+      deviceCode: state.deviceCode,
+      sessionId: state.sessionId,
+      traceId: message.traceId || '',
+      elapsed,
+      status: 'ok',
+    });
+    closeRealtimeAsr();
   }
 
   function sendRealtimeAudio(buffer) {
@@ -470,17 +625,18 @@
   function finishRealtimeAsr() {
     const socket = state.asrSocket;
     if (!socket) {
-      return;
+      return false;
     }
     if (socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ type: 'asr.session.finish', id: createRealtimeCommandId('asr-finish') }));
+      socket.send(JSON.stringify({ type: 'agent.session.finish', id: createRealtimeCommandId('agent-finish') }));
       window.clearTimeout(state.asrFinishTimer);
-      state.asrFinishTimer = window.setTimeout(closeRealtimeAsr, CONFIG.ASR_FINISH_TIMEOUT);
-      return;
+      state.asrFinishTimer = window.setTimeout(handleRealtimeAgentTimeout, CONFIG.AGENT_FINISH_TIMEOUT);
+      return true;
     }
     if (socket.readyState === WebSocket.CONNECTING) {
       closeRealtimeAsr();
     }
+    return false;
   }
 
   function closeRealtimeAsr() {
@@ -496,13 +652,93 @@
 
   function handleRealtimeAsrError(error) {
     const message = error && error.message ? error.message : String(error);
-    logDiagnostic('asr.realtime.error', {
+    logDiagnostic('agent.realtime.error', {
       deviceCode: state.deviceCode,
       message,
     });
     if (state.phase === 'recording') {
-      showNotice(`实时识别暂不可用，录音结束后仍会提交完整问答：${message}`, 'warn');
+      closeRealtimeAsr();
+      showNotice(`三合一实时连接暂不可用，录音结束后仍会提交完整问答：${message}`, 'warn');
+      return;
     }
+    if (state.phase === 'processing') {
+      if (state.agentAnswerText) {
+        closeRealtimeAsr();
+        setPhase('completed');
+        showNotice(`文字回答已生成，实时语音后续失败：${message}`, 'warn');
+        return;
+      }
+      if (fallbackToHttpVoice(message)) {
+        return;
+      }
+      closeRealtimeAsr();
+      showError(new Error(message));
+    }
+  }
+
+  function handleRealtimeInputStopped(message) {
+    if (state.phase !== 'recording') {
+      return;
+    }
+    stopRecordingClock();
+    stopStream();
+    state.recordingStopPending = false;
+    const blob = new Blob(state.pcmChunks, { type: 'application/octet-stream' });
+    if (blob.size) {
+      state.lastAudioBlob = blob;
+      state.lastAudioFormat = 'pcm';
+      els.retryButton.disabled = false;
+    }
+    setPhase('processing');
+    showNotice(
+      message.reason === 'effective_input_timeout'
+        ? '未检测到有效语音，正在结束本轮...'
+        : '检测到停说，正在生成回答...',
+      'warn',
+    );
+  }
+
+  function handleRealtimeAgentTimeout() {
+    if (state.agentAnswerText) {
+      closeRealtimeAsr();
+      setPhase('completed');
+      showNotice('文字回答已生成，语音合成仍未完成，请稍后重试语音播放。', 'warn');
+      return;
+    }
+    if (fallbackToHttpVoice('实时三合一处理超时')) {
+      return;
+    }
+    closeRealtimeAsr();
+    showError(new Error('实时三合一处理超时'));
+  }
+
+  function handleRealtimeAgentClosed() {
+    if (state.agentAnswerText) {
+      setPhase('completed');
+      showNotice('文字回答已生成，实时连接已关闭，语音结果未完整返回。', 'warn');
+      return;
+    }
+    fallbackToHttpVoice('实时三合一连接已关闭');
+  }
+
+  function fallbackToHttpVoice(reason) {
+    if (
+      state.agentRealtimeFallbackInProgress
+      || state.agentCompleted
+      || state.agentAnswerText
+      || !state.lastAudioBlob
+    ) {
+      return false;
+    }
+    state.agentRealtimeFallbackInProgress = true;
+    closeRealtimeAsr();
+    showNotice(`实时三合一未完成，改用 HTTP 完整问答：${reason}`, 'warn');
+    uploadVoice(state.lastAudioBlob, state.lastAudioFormat || 'pcm')
+      .catch((error) => showError(error))
+      .finally(() => {
+        state.agentRealtimeFallbackInProgress = false;
+      });
+    return true;
   }
 
   async function apiRequest(path, options) {
@@ -593,8 +829,58 @@
   }
 
   function setAudioSource(src) {
+    if (state.audioObjectUrl) {
+      URL.revokeObjectURL(state.audioObjectUrl);
+      state.audioObjectUrl = '';
+    }
     els.answerAudio.src = src;
     els.playButton.disabled = false;
+  }
+
+  function buildRealtimeAudioSource(chunks, format, sampleRate) {
+    const normalizedFormat = String(format || 'pcm').toLowerCase();
+    const blobParts = normalizedFormat === 'pcm'
+      ? [buildWavFromPcmChunks(chunks, sampleRate)]
+      : chunks;
+    const contentType = normalizedFormat === 'mp3'
+      ? 'audio/mpeg'
+      : normalizedFormat === 'opus'
+        ? 'audio/ogg; codecs=opus'
+        : 'audio/wav';
+    const blob = new Blob(blobParts, { type: contentType });
+    state.audioObjectUrl = URL.createObjectURL(blob);
+    return state.audioObjectUrl;
+  }
+
+  function buildWavFromPcmChunks(chunks, sampleRate) {
+    const dataLength = chunks.reduce((total, chunk) => total + chunk.byteLength, 0);
+    const buffer = new ArrayBuffer(44 + dataLength);
+    const view = new DataView(buffer);
+    writeAscii(view, 0, 'RIFF');
+    view.setUint32(4, 36 + dataLength, true);
+    writeAscii(view, 8, 'WAVE');
+    writeAscii(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate || CONFIG.PCM_SAMPLE_RATE, true);
+    view.setUint32(28, (sampleRate || CONFIG.PCM_SAMPLE_RATE) * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeAscii(view, 36, 'data');
+    view.setUint32(40, dataLength, true);
+    let offset = 44;
+    for (const chunk of chunks) {
+      new Uint8Array(buffer, offset, chunk.byteLength).set(new Uint8Array(chunk));
+      offset += chunk.byteLength;
+    }
+    return buffer;
+  }
+
+  function writeAscii(view, offset, value) {
+    for (let index = 0; index < value.length; index += 1) {
+      view.setUint8(offset + index, value.charCodeAt(index));
+    }
   }
 
   function playAudio(fromUserGesture) {
@@ -617,6 +903,10 @@
     setText(els.questionText, els.questionCount, '', '等待语音识别结果');
     setText(els.answerText, els.answerCount, '', '等待系统回答');
     els.traceIdText.textContent = 'trace -';
+    if (state.audioObjectUrl) {
+      URL.revokeObjectURL(state.audioObjectUrl);
+      state.audioObjectUrl = '';
+    }
     els.answerAudio.removeAttribute('src');
     els.answerAudio.load();
     els.playButton.disabled = true;
@@ -805,8 +1095,12 @@
     return `${normalizeApiBase(CONFIG.API_BASE_URL)}${normalizedPath}`;
   }
 
-  function buildAsrRealtimeWebSocketUrl() {
-    const path = String(CONFIG.ASR_REALTIME_PATH || '/ws/realtime/').trim();
+  function buildAgentRealtimeWebSocketUrl() {
+    return buildRealtimeWebSocketUrl(CONFIG.AGENT_REALTIME_PATH || CONFIG.ASR_REALTIME_PATH);
+  }
+
+  function buildRealtimeWebSocketUrl(pathValue) {
+    const path = String(pathValue || '/ws/realtime/').trim();
     const apiBase = new URL(normalizeApiBase(CONFIG.API_BASE_URL), location.href);
     const url = /^wss?:\/\//i.test(path) || /^https?:\/\//i.test(path)
       ? new URL(path)
@@ -870,7 +1164,20 @@
 
   function extractMessage(payload) {
     if (!payload || typeof payload !== 'object') return '';
+    if (payload.error && typeof payload.error === 'object') {
+      return payload.error.message || payload.error.code || '';
+    }
     return payload.message || payload.detail || payload.error || '';
+  }
+
+  function extractRealtimeErrorMessage(payload) {
+    if (!payload || typeof payload !== 'object') {
+      return '三合一实时处理失败';
+    }
+    if (payload.error && typeof payload.error === 'object') {
+      return payload.error.message || payload.error.code || '三合一实时处理失败';
+    }
+    return payload.message || payload.detail || '三合一实时处理失败';
   }
 
   function normalizeDeviceState(session) {

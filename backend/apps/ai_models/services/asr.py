@@ -113,6 +113,7 @@ def transcribe_pcm_audio(
     from apps.ai_models.realtime_asr import is_filler_transcript_text, load_asr_filler_words
 
     filler_words = load_asr_filler_words(tenant_id)
+    chunk_size = _pcm_stream_chunk_size(sample_rate)
     ws = None
     transcript = ''
     try:
@@ -126,16 +127,23 @@ def transcribe_pcm_audio(
                 'User-Agent: solin-device-runtime/1.0',
             ],
         )
+        _receive_transcription_event(ws)
         ws.send(json.dumps(_transcription_session_update_event(sample_rate, effective)))
-        for offset in range(0, len(pcm), 32 * 1024):
-            chunk = pcm[offset:offset + 32 * 1024]
+        _wait_for_transcription_session_updated(ws)
+        for offset in range(0, len(pcm), chunk_size):
+            chunk = pcm[offset:offset + chunk_size]
             ws.send(json.dumps(_audio_append_event(chunk)))
+            if offset + chunk_size < len(pcm):
+                time.sleep(len(chunk) / (sample_rate * 2))
         ws.send(json.dumps(_session_finish_event()))
 
-        started_at = time.monotonic()
-        while time.monotonic() - started_at < 30:
-            raw_event = ws.recv()
-            event = json.loads(raw_event) if isinstance(raw_event, str) else {}
+        deadline = time.monotonic() + 30
+        timeout_error = getattr(websocket, 'WebSocketTimeoutException', TimeoutError)
+        while time.monotonic() < deadline:
+            try:
+                event = _receive_transcription_event(ws, timeout=max(deadline - time.monotonic(), 0.1))
+            except timeout_error:
+                break
             if not isinstance(event, dict):
                 continue
             event_type = str(event.get('type') or '')
@@ -153,8 +161,9 @@ def transcribe_pcm_audio(
             if event_type in {
                 'conversation.item.input_audio_transcription.completed',
                 'conversation.item.input_audio_transcription.finished',
-                'session.finished',
             } and transcript.strip():
+                break
+            if event_type == 'session.finished':
                 break
         return transcript.strip()
     finally:
@@ -163,6 +172,36 @@ def transcribe_pcm_audio(
                 ws.close()
             except Exception:
                 pass
+
+
+def _pcm_stream_chunk_size(sample_rate: int) -> int:
+    # Qwen realtime ASR expects small, real-time-like PCM appends.
+    return max(int(sample_rate * 2 * 0.02), 1)
+
+
+def _receive_transcription_event(ws, *, timeout: float | None = None) -> dict:
+    previous_timeout = None
+    if timeout is not None and hasattr(ws, 'gettimeout') and hasattr(ws, 'settimeout'):
+        previous_timeout = ws.gettimeout()
+        ws.settimeout(timeout)
+    try:
+        raw_event = ws.recv()
+    finally:
+        if previous_timeout is not None and hasattr(ws, 'settimeout'):
+            ws.settimeout(previous_timeout)
+    return json.loads(raw_event) if isinstance(raw_event, str) else {}
+
+
+def _wait_for_transcription_session_updated(ws) -> None:
+    timeout_error = getattr(websocket, 'WebSocketTimeoutException', TimeoutError)
+    try:
+        event = _receive_transcription_event(ws, timeout=2)
+    except timeout_error:
+        return
+    event_type = str(event.get('type') or '') if isinstance(event, dict) else ''
+    if event_type in {'error', 'session.error'}:
+        message = event.get('message') or event.get('error') or 'ASR upstream error'
+        raise RuntimeError(str(message)[:200])
 
 
 def _missing_config_message(config: EffectiveASRConfig) -> str:

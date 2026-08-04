@@ -668,11 +668,19 @@ class RealtimeWebSocketTests(SimpleTestCase):
             llm_cancelled = asyncio.Event()
 
             class FinishedASRUpstream:
+                def __init__(self):
+                    self.events = [
+                        {'type': 'conversation.item.input_audio_transcription.completed', 'transcript': '已经识别的问题'},
+                        {'type': 'session.finished'},
+                    ]
+
                 def __aiter__(self):
                     return self
 
                 async def __anext__(self):
-                    return json.dumps({'type': 'session.finished'})
+                    if not self.events:
+                        raise StopAsyncIteration
+                    return json.dumps(self.events.pop(0))
 
             async def send(event):
                 if 'text' in event:
@@ -691,7 +699,6 @@ class RealtimeWebSocketTests(SimpleTestCase):
             connection.agent_request_id = 'req-agent-cancellable-1'
             connection.agent_trace_id = 'trace-agent-cancellable-1'
             connection.agent_device_code = 'ANDROID-CANCELLABLE-001'
-            connection.agent_latest_text = '已经识别的问题'
 
             with patch('config.realtime._run_agent_llm_and_finish', side_effect=hanging_run_agent_llm):
                 task = asyncio.create_task(_agent_asr_upstream_to_client(FinishedASRUpstream(), send, connection, []))
@@ -911,7 +918,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
                     'type': 'error',
                     'id': 'unknown-1',
                     'error': {
-                        'code': 'REALTIME_UNKNOWN_COMMAND',
+                        'code': '1014',
                         'message': '不支持的实时命令',
                     },
                 },
@@ -1269,6 +1276,7 @@ class RealtimeWebSocketTests(SimpleTestCase):
                 model='qwen3-tts-flash-realtime',
                 sample_rate=24000,
                 default_test_text='默认测试文本',
+                provider=voice.provider,
             )
             upstream = UnifiedTTSUpstream()
             with (
