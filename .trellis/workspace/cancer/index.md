@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 10
+- **Total Sessions**: 11
 - **Last Active**: 2026-08-04
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~338 | Active |
+| `journal-1.md` | ~371 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 11 | 2026-08-04 | ASR 自动语言识别 | `43dc501` | `dev` |
 | 10 | 2026-08-04 | 架构审计报告复核 | - | `dev` |
 | 9 | 2026-08-04 | 修复超管音色撤销授权 | `3f1b419` | `main` |
 | 8 | 2026-07-31 | 修复设备首次运行时配置错误码 | `96e7df7` | `main` |

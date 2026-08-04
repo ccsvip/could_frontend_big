@@ -336,3 +336,36 @@ Sentry PYTHON-DJANGO-47/-48 (ImportError: TenantTTSProviderGrant) 定位为切�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 11: ASR 自动语言识别
+
+**Date**: 2026-08-04
+**Task**: ASR 自动语言识别
+**Branch**: `dev`
+
+### Summary
+
+依据阿里云 Qwen-ASR 文档移除三个实时 ASR 请求中的固定 zh，改为省略 language 触发自动源语言识别；补充 API、设备 PCM 与统一 WebSocket 回归断言。容器内 43 项测试通过。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `43dc501` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
