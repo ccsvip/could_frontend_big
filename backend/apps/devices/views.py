@@ -1021,7 +1021,7 @@ class DeviceRuntimeConfigView(DeviceRuntimeView):
 
     @staticmethod
     def _wake_words_payload(device: Device):
-        wake_words = device.wake_words.filter(is_active=True).order_by('text', 'id')
+        wake_words = device.wake_words.filter(tenant_id=device.tenant_id, is_active=True).order_by('text', 'id')
         items = [
             {
                 'id': item.id,

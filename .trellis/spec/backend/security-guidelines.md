@@ -148,6 +148,53 @@ class MyViewSet(PermissionMappedModelViewSet):
 - Never accept `tenant_id` from request body — derive from authenticated user or superuser's `?tenantId=`
 - Superuser `?tenantId=` must be validated against existing tenant
 
+### Tenant-owned many-to-many bindings
+
+#### Scope / Trigger
+
+Apply this contract when a tenant-owned resource is linked to another tenant-owned resource through a many-to-many table, including data-repair migrations.
+
+#### Signatures
+
+- `WakeWord.devices`: `WakeWord.tenant_id` ↔ `Device.tenant_id`
+- Runtime payload builder: `device.wake_words.filter(tenant_id=device.tenant_id, ...)`
+
+#### Contract
+
+- Write paths reject a related object outside the current tenant.
+- Read and runtime paths explicitly constrain related objects to the owning object's tenant; a many-to-many relation alone is not a tenant boundary.
+- Historical invalid links are removed by a data migration. Never reassign the linked resources' tenants to make a relation valid.
+
+#### Validation & Error Matrix
+
+| Condition | Result |
+|-----------|--------|
+| Related object has the same tenant | Link may be created and returned. |
+| Related object has another tenant | Reject the write; omit it from runtime payloads. |
+| Existing link has a missing or mismatched tenant | Delete only the join-table row during repair. |
+
+#### Good / Base / Bad Cases
+
+- Good: a tenant A wake word is bound to and emitted for a tenant A device.
+- Base: no bound wake words produces an empty runtime list.
+- Bad: a tenant B wake word appears in a tenant A device payload, even if a legacy join-table row exists.
+
+#### Tests Required
+
+- Assert cross-tenant writes fail without creating a relation.
+- Assert HTTP and WebSocket full runtime configurations omit cross-tenant related records.
+- Assert the migration preserves same-tenant links, removes invalid links, preserves both resource rows, and is idempotent.
+
+#### Wrong vs Correct
+
+```python
+# Wrong: trusts a legacy M2M relation as authorization.
+wake_words = device.wake_words.filter(is_active=True)
+
+# Correct: derives the tenant boundary from the requesting device.
+wake_words = device.wake_words.filter(tenant_id=device.tenant_id, is_active=True)
+```
+
 ---
 
 ## Input Validation

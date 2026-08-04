@@ -220,6 +220,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(wake_word.tenant, self.tenant)
         self.assertEqual(list(wake_word.devices.values_list('id', flat=True)), [device.id])
 
+
     @patch('apps.devices.serializers.encode_wake_word_text', return_value='n ǐ h ǎo x iǎo d é')
     def test_wake_word_allows_same_text_for_different_devices_in_same_tenant(self, _mock_encode):
         invalid_response = self.client.post('/api/v1/wake-words/', {'text': '小德你好'}, format='json')
@@ -449,8 +450,15 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             boost='2.5',
             threshold='0.35',
         )
+        other_tenant = Tenant.objects.create(name='Other Wake Word Tenant', code='other-runtime-wake-word-tenant')
+        foreign_wake_word = WakeWord.objects.create(
+            tenant=other_tenant,
+            text='你好小乐',
+            encoded_text='n ǐ h ǎo x iǎo l è',
+        )
         first.devices.add(device)
         second.devices.add(device)
+        foreign_wake_word.devices.add(device)
 
         response = self.client.get('/api/v1/device-runtime/config/', HTTP_X_DEVICE_CODE='RUNTIME-WAKE-001')
 
@@ -3097,6 +3105,13 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             authorization_type=Device.AUTHORIZATION_PERMANENT,
             registered_at=timezone.now(),
         )
+        other_tenant = Tenant.objects.create(name='Other Runtime Config Tenant', code='other-runtime-config-tenant')
+        foreign_wake_word = WakeWord.objects.create(
+            tenant=other_tenant,
+            text='你好小乐',
+            encoded_text='n ǐ h ǎo x iǎo l è',
+        )
+        foreign_wake_word.devices.add(device)
 
         async def run_websocket():
             from apps.devices.realtime import publish_device_event
@@ -3134,6 +3149,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             config = initial_payload['payload']['config']
             self.assertEqual(config['device']['deviceCode'], device.code)
             self.assertIn('application', config)
+            self.assertEqual(config['wakeWords'], [])
             self.assertIn('agentApplication', config)
             self.assertIn('wakeWords', config)
             self.assertIn('wakeWordLines', config)
@@ -3168,6 +3184,7 @@ class DeviceAuthorizationApiTests(TenantTestMixin, APITestCase):
             self.assertEqual(payload['payload']['action'], 'wakeWordsChanged')
             self.assertEqual(payload['payload']['deviceCode'], device.code)
             changed_config = payload['payload']['config']
+            self.assertEqual(changed_config['wakeWords'], [])
             self.assertEqual(changed_config['device']['deviceCode'], device.code)
             self.assertIn('wakeWords', changed_config)
             self.assertIn('voiceConfiguration', changed_config)
