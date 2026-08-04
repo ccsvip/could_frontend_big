@@ -369,3 +369,36 @@ Sentry PYTHON-DJANGO-47/-48 (ImportError: TenantTTSProviderGrant) 定位为切�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 12: 修复唤醒词删除服务器错误
+
+**Date**: 2026-08-05
+**Task**: 修复唤醒词删除服务器错误
+**Branch**: `dev`
+
+### Summary
+
+新增受保护的 PostgreSQL 数据迁移，修复 devices_wakeword 缺失主键导致的重复 ID；补充迁移、同租户定向删除及跨租户隔离回归测试，并在开发库验证实际 DELETE 返回 204。完整 devices API 模块 fresh DB 仍有 4 项既有失败，均未见本次新增迁移的执行路径。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `79c34e3` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
