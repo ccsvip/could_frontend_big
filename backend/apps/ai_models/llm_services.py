@@ -198,8 +198,9 @@ def build_llm_request_payload(
     if tool_choice is not None:
         payload['tool_choice'] = tool_choice
     if enable_web_search:
+        # 只开启联网能力，由模型自行判断是否检索：forced_search 会给每一轮（哪怕是"你好"）
+        # 都强制加一次真实检索，实测首字延迟增加 ~470ms。
         payload['enable_search'] = True
-        payload['search_options'] = {'forced_search': True}
     return payload
 
 

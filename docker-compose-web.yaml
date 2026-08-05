@@ -1,0 +1,15 @@
+# 单独跑前端容器：后端 API 经 Vite proxy 指向内网 192.168.3.90:8880
+# 不挂源码卷（用镜像内 COPY 的代码，dev 模式无热更新）
+
+services:
+  web:
+    image: could_frontend_big-web:latest
+    container_name: solin_web_local
+    restart: unless-stopped
+    ports:
+      # 宿主机 5173 被占用就改成 "5174:5173"
+      - "5173:5173"
+    environment:
+      # 前端 /api、/media、/static、/ws 请求会被 Vite dev server 代理到这个内网后端
+      # 浏览器只访问 localhost:5173（同源），不直接接触内网 IP，无跨域问题
+      VITE_API_PROXY_TARGET: http://192.168.3.90:8880

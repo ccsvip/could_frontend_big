@@ -406,6 +406,11 @@ class RealtimeVoiceResolution:
 
 resolve_realtime_tts_voice(connection, raw_voice_id=None, *, provider_code=None, model_code=None)
     -> RealtimeVoiceResolution
+
+# backend/config/realtime.py
+async def _prepare_agent_tts(connection, command_id, device_code, request_id, trace_id, payload)
+    -> tuple[_AgentTTSBundle | None, str]
+async def _agent_tts_worker(send, connection, command_id, device_code, request_id, trace_id, payload)
 ```
 
 Downstream event contract is unchanged: `tts.ready` → `tts.segment_start` → binary
@@ -421,10 +426,23 @@ audio frames → `tts.segment_end` → `tts.done`, with `tts.cancelled` / `tts.e
 - Upstream protocol per card: Qwen uses `session.update` / `input_text_buffer.append`
   / `input_text_buffer.commit` / `session.finish`; CosyVoice uses `run-task` /
   `continue-task` / `finish-task`.
-- CosyVoice segment streaming opens **one upstream task per downstream segment** over
-  a shared connection. The task protocol delimits audio per task, not per
-  `continue-task`, so this is what keeps `tts.segment_start` / `tts.segment_end`
-  aligned with the audio a client actually hears.
+- `_agent_tts_worker` resolves the authorized voice, card config and session controls,
+  then calls `adapter.prepare_realtime_stream(...)` **before** `queue.get()`. This
+  makes the six thread-sensitive ORM operations plus the supported card's upstream
+  handshake overlap LLM TTFT. It returns an existing TTS error key but must not send
+  `agent.error` or cancel the LLM task.
+- A CosyVoice prewarmed handle has already sent one `run-task` and received
+  `task-started`. The whole answer appends chunks with `continue-task`, sends one
+  `finish-task`, and has one concurrent reader that forwards PCM as it arrives.
+- Downstream event types and ordering stay `tts.ready` → `tts.segment_start` → PCM →
+  `tts.segment_end` → `tts.done`. CosyVoice task framing does not identify which
+  `continue-task` produced an audio frame, so segment markers are intentionally
+  approximate: start a segment when sending its text and end it before starting the
+  next. Playback relies on PCM arrival order, not those markers.
+- `RealtimeConnection.agent_tts_prepared` owns idle handles. `close_agent_session`,
+  a worker `finally`, and the stream `finally` may all call `aclose()`; it must be
+  idempotent so cancellation, client disconnect, and an empty answer never leak a
+  connection.
 - Upstream audio frames are forwarded as they arrive. Accumulating a complete buffer
   before sending defeats the channel and is a defect, not an optimization.
 
@@ -443,14 +461,24 @@ audio frames → `tts.segment_end` → `tts.done`, with `tts.cancelled` / `tts.e
 
 ### 5. Good/Base/Bad Cases
 
-- **Good**: an old client sends only `voiceId`; the backend resolves the card from the
-  voice and streams through the matching adapter.
-- **Base**: a device sends no `voiceId`; its binding resolves, and if that binding lost
-  its grant the company default is used instead.
-- **Bad**: honouring a mismatched `providerCode` (card hopping), or returning
-  `TTS_NOT_READY` for a card that is merely ungranted (masks the real cause).
+- **Good**: the worker prewarms CosyVoice while LLM generation is waiting for its
+  first token, then immediately sends `tts.ready` and the first `continue-task` once
+  a segment arrives; later segments are sent without waiting for earlier audio.
+- **Base**: an Aliyun/Qwen card returns `None` from `prepare_realtime_stream` and its
+  existing realtime stream still opens its own session.
+- **Bad**: waiting for `queue.get()` before opening the upstream, using one
+  `run-task` per segment, treating approximate segment markers as playback framing,
+  or leaving an idle prewarmed handle open after cancellation or an empty answer.
 
 ### 6. Tests Required
+
+`apps.ai_models.tests.test_tts_adapters` — assert one CosyVoice `run-task` and one
+`finish-task` for multiple segments, `continue-task` overlap with reader audio, event
+type order, and `task-failed` propagation.
+
+`config.tests.test_realtime_websocket.RealtimeWebSocketTests` — assert prewarming
+happens before the first queue wait; cancel and empty-answer paths call the prepared
+handle's `aclose()`; a prewarm failure emits only `tts.error` and allows `agent.done`.
 
 `config.tests.test_realtime_websocket.RealtimeTTSVoiceRoutingTests` — needs DB access
 for grants, so it is a `TestCase`, not part of the `SimpleTestCase` suite above it.
@@ -462,19 +490,18 @@ Assert: ungranted tenant → `1025`; contradicting `providerCode` → `1025`; ab
 #### Wrong
 
 ```python
-if provider_code == COSYVOICE_PROVIDER_CODE:
-    return None   # blanket refusal; conflates "not allowed" with "not ready"
+first_segment = await queue.get()
+bundle = await _prepare_agent_tts(...)  # handshake now delays first audio
 ```
 
 #### Correct
 
 ```python
-resolution = resolve_realtime_tts_voice(connection, payload.get('voiceId'),
-                                        provider_code=payload.get('providerCode'))
-if resolution.voice is None:
-    await _send_realtime_error(send, 'tts.error', command_id,
-                               resolution.error_key or 'TTS_VOICE_NOT_AVAILABLE')
-    return
+bundle, error_key = await _prepare_agent_tts(...)
+first_segment = await queue.get()
+if first_segment is not None and bundle is None:
+    await _send_realtime_error(send, 'tts.error', command_id, error_key)
+    return  # LLM task continues to agent.done
 ```
 
 ---

@@ -52,6 +52,43 @@ class TTSServiceTests(TestCase):
 
         self.assertEqual(segments, [])
 
+    def test_pop_tts_text_segments_emits_short_first_segment_at_word_gap(self):
+        answer = (
+            '腾讯总部（即腾讯滨海大厦）的具体地址是：广东省深圳市南山区海天二路33号腾讯滨海大厦。'
+            '这是腾讯集团的主要办公总部所在地，位于深圳湾科技生态园核心区域，毗邻深圳湾口岸。'
+        )
+
+        segments, rest = tts_services.pop_tts_text_segments(answer, flush=True)
+
+        self.assertEqual(rest, '')
+        self.assertEqual(segments[0], '腾讯总部（即腾讯滨海大厦）')
+        self.assertLessEqual(len(segments[0]), 15)
+        self.assertEqual(''.join(segments), answer)
+
+    def test_pop_tts_text_segments_progressive_word_gap_floor_by_segment_ordinal(self):
+        text = '腾讯总部在广东省深圳市南山区（海天二路）继续继续继续继续继续'
+
+        first, _ = tts_services.pop_tts_text_segments(text, emitted_segments=0)
+        second, second_rest = tts_services.pop_tts_text_segments(text, emitted_segments=1)
+        third, third_rest = tts_services.pop_tts_text_segments(text, emitted_segments=2)
+
+        self.assertEqual(first, ['腾讯总部在广东省深圳市南山区（海天二路）'])
+        self.assertEqual(second, [])
+        self.assertEqual(second_rest, text)
+        self.assertEqual(third, [])
+        self.assertEqual(third_rest, text)
+
+    def test_pop_tts_text_segments_keeps_soft_boundary_minimum_length(self):
+        self.assertEqual(tts_services.pop_tts_text_segments('好，'), ([], '好，'))
+        self.assertEqual(tts_services.pop_tts_text_segments('你好吗，'), (['你好吗，'], ''))
+
+    def test_pop_tts_text_segments_does_not_split_decimals_or_list_numbers(self):
+        decimals, _ = tts_services.pop_tts_text_segments('圆周率是3.14159265358979', flush=True)
+        listed, _ = tts_services.pop_tts_text_segments('步骤如下 1. 打开门 2) 关上门', flush=True)
+
+        self.assertEqual(decimals, ['圆周率是3.14159265358979'])
+        self.assertEqual(listed, ['步骤如下 1. 打开门', '2) 关上门'])
+
 
 class OneShotTTSUpstream:
     def __init__(self):

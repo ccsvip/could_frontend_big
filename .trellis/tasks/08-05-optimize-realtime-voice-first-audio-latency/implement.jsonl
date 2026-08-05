@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/backend/tts-tenant-card-authorization.md", "reason": "R2 搬动的 6 次 ORM 解析全在两级 TTS 授权派生链上（resolve_tts_realtime_connection / resolve_realtime_tts_voice / get_adapter_for_voice）；预热只重排顺序，不得改变派生语义与 realtime 路由，也不得动 Android 冻结契约。"}
+{"file": ".trellis/spec/backend/testing-strategy.md", "reason": "R3 要把 FakeCosyVoiceUpstream 重写为 asyncio.Queue 驱动的并发替身，R2 要新增 WS 会话级测试；需遵守既有 WebSocket 测试与 mock 约定。"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "R2 预热失败必须沿用 TTS_UNAUTHORIZED / TTS_VOICE_NOT_AVAILABLE / TTS_NOT_READY 三个错误码且只发 tts.error 不发 agent.error；R3 的 task-failed / ConnectionClosed 不得被静默吞。"}
+{"file": ".trellis/spec/backend/logging-guidelines.md", "reason": "AC3 靠日志时序验证（新增 realtime.agent.tts_prewarmed 需早于 realtime.agent.tts_started），新增日志字段要符合结构化日志约定且不得打印密钥。"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "R1 硬约束「不允许引入模块级可变状态」、R3 的 reader_task 异常传播、三块改动的最小编辑边界都要对齐禁止模式清单。"}

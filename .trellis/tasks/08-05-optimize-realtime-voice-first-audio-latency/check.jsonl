@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "复查三块改动是否越界：R1 是否引入了模块级可变状态、是否顺手改了 split_tts_text 的 6 个调用点；R3 的 reader_task 异常是否被静默吞；每一行改动是否都能追溯到 prd 需求。"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "复查错误码语义未漂移：预热失败仍是 TTS_UNAUTHORIZED / TTS_VOICE_NOT_AVAILABLE / TTS_NOT_READY，只发 tts.error 不发 agent.error 且不取消 agent_task；task-failed 与 ConnectionClosed 仍向上抛。"}
+{"file": ".trellis/spec/backend/tts-tenant-card-authorization.md", "reason": "复查两级授权派生条件仍在同一个 .filter() 内、realtime 音色路由仍走 voice.provider.code、Android 冻结契约与下游 WS 事件序列零变更。"}
+{"file": ".trellis/spec/backend/testing-strategy.md", "reason": "复查新增/改写的测试是否符合约定：AC5 的 action 计数与消息交错顺序断言、AC3 的预热时序断言、AC4 的 aclose 调用断言是否真的覆盖到验收点。"}
+{"file": ".trellis/spec/backend/logging-guidelines.md", "reason": "复查 realtime.agent.tts_prewarmed 等新日志字段结构合规、未打印密钥或完整用户文本，且 first_segment_length / tts_started 等既有字段未被删除（AC1/AC3 依赖它们验证）。"}

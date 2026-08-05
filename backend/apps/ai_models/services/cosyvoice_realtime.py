@@ -124,6 +124,64 @@ def _open_upstream(config: EffectiveTTSConfig):
     )
 
 
+class CosyVoicePrewarmedTask:
+    """An upstream connection whose ``run-task`` is already accepted.
+
+    Holds the connection open and idle until text arrives, so the handshake and
+    the ``task-started`` round trip stay off the first-audio critical path.
+    """
+
+    def __init__(self, *, context, upstream, task_id: str, voice_code: str):
+        self._context = context
+        self.upstream = upstream
+        self.task_id = task_id
+        self.voice_code = voice_code
+        self._closed = False
+
+    async def aclose(self) -> None:
+        if self._closed:
+            return
+        self._closed = True
+        try:
+            await self._context.__aexit__(None, None, None)
+        except Exception:
+            logger.exception('tts.cosyvoice.realtime.prewarm_close_failed task_id=%s', self.task_id)
+
+
+async def prewarm_cosyvoice_realtime(
+    *,
+    voice,
+    config: EffectiveTTSConfig,
+    controls: dict[str, Any] | None = None,
+) -> CosyVoicePrewarmedTask:
+    """Open one upstream task and wait for ``task-started``, then hand it back idle."""
+    controls = controls or {}
+    task_id = str(uuid.uuid4())
+    context = _open_upstream(config)
+    upstream = await context.__aenter__()
+    try:
+        await upstream.send(json.dumps(_run_task_message(
+            task_id,
+            voice_code=voice.voice_code,
+            config=config,
+            controls=controls,
+        )))
+        await _await_task_started(upstream, task_id)
+    except BaseException:
+        await context.__aexit__(None, None, None)
+        raise
+    logger.info(
+        'tts.cosyvoice.realtime.prewarmed task_id=%s voice=%s sample_rate=%s',
+        task_id, voice.voice_code, config.sample_rate,
+    )
+    return CosyVoicePrewarmedTask(
+        context=context,
+        upstream=upstream,
+        task_id=task_id,
+        voice_code=voice.voice_code,
+    )
+
+
 async def stream_cosyvoice_realtime_text(
     *,
     text: str,
@@ -208,20 +266,36 @@ async def stream_cosyvoice_realtime_segments(
     send,
     controls: dict[str, Any] | None = None,
     exclude_patterns=None,
+    prepared: CosyVoicePrewarmedTask | None = None,
 ) -> None:
-    """Synthesize an async stream of segments over one upstream connection.
+    """Synthesize an async stream of segments over one upstream task.
 
-    Each downstream segment gets its own upstream task on the shared connection.
-    The task protocol delimits audio per task but not per ``continue-task``, so
-    one-task-per-segment is what makes ``tts.segment_start`` / ``tts.segment_end``
-    line up with the audio a client actually hears.
+    The whole answer rides a single ``run-task``: later segments are pushed as
+    ``continue-task`` without waiting for the previous segment's audio, and a
+    concurrent reader forwards frames as they arrive. That removes the
+    ``run-task`` / ``task-started`` round trip between segments — at the cost of
+    ``tts.segment_start`` / ``tts.segment_end`` becoming approximate markers,
+    since the task protocol delimits audio per task and not per ``continue-task``.
     """
     controls = controls or {}
-    total_audio_chunks = 0
-    ready_sent = False
+    if prepared is None:
+        prepared = await prewarm_cosyvoice_realtime(voice=voice, config=config, controls=controls)
+    upstream = prepared.upstream
+    task_id = prepared.task_id
+    stats: dict[str, Any] = {'audio_chunks': 0, 'audio_bytes': 0}
 
     try:
-        async with _open_upstream(config) as upstream:
+        await _send_ready(send, config=config, voice_code=voice.voice_code)
+
+        segment_queue: asyncio.Queue[dict[str, Any] | None] = asyncio.Queue()
+        reader_task = asyncio.create_task(_forward_stream_audio(
+            upstream,
+            send,
+            segment_queue=segment_queue,
+            task_id=task_id,
+            stats=stats,
+        ))
+        try:
             segment_index = 0
             async for segment in segments:
                 text = normalize_tts_text(segment, config)
@@ -232,68 +306,90 @@ async def stream_cosyvoice_realtime_segments(
                     continue
 
                 segment_index += 1
-                task_id = str(uuid.uuid4())
-                await upstream.send(json.dumps(_run_task_message(
-                    task_id,
-                    voice_code=voice.voice_code,
-                    config=config,
-                    controls=controls,
-                )))
-                await _await_task_started(upstream, task_id)
-
-                if not ready_sent:
-                    await _send_ready(send, config=config, voice_code=voice.voice_code)
-                    ready_sent = True
-
+                await segment_queue.put({'index': segment_index, 'text': text})
                 for chunk in chunks:
                     await upstream.send(json.dumps(_continue_task_message(task_id, chunk)))
                     await asyncio.sleep(0)
-                await upstream.send(json.dumps(_finish_task_message(task_id)))
-
-                audio_chunks = await _forward_task_audio(
-                    upstream,
-                    send,
-                    task_id=task_id,
-                    segment_index=segment_index,
-                    segment_text=text,
-                )
-                total_audio_chunks += audio_chunks
                 logger.info(
-                    'tts.cosyvoice.realtime.segment_done index=%s task_id=%s audio_chunks=%s',
-                    segment_index, task_id, audio_chunks,
+                    'tts.cosyvoice.realtime.segment_sent index=%s task_id=%s chunks=%s text_chars=%s',
+                    segment_index, task_id, len(chunks), len(text),
                 )
 
-            if not ready_sent:
-                await _send_ready(send, config=config, voice_code=voice.voice_code)
-            await _send_json(send, {'type': 'tts.done'})
+            await segment_queue.put(None)
+            await upstream.send(json.dumps(_finish_task_message(task_id)))
+            await reader_task
             logger.info(
-                'tts.cosyvoice.realtime.segments_finished segments=%s audio_chunks=%s',
-                segment_index, total_audio_chunks,
+                'tts.cosyvoice.realtime.segments_finished task_id=%s segments=%s audio_chunks=%s',
+                task_id, segment_index, stats['audio_chunks'],
             )
+        except BaseException:
+            reader_task.cancel()
+            await asyncio.gather(reader_task, return_exceptions=True)
+            raise
     except ConnectionClosed as exc:
         logger.error(
-            'tts.cosyvoice.realtime.segments_connection_closed code=%s audio_chunks=%s',
-            getattr(exc, 'code', None), total_audio_chunks,
+            'tts.cosyvoice.realtime.segments_connection_closed task_id=%s code=%s audio_chunks=%s',
+            task_id, getattr(exc, 'code', None), stats['audio_chunks'],
         )
         raise
     except Exception:
-        logger.exception('tts.cosyvoice.realtime.segments_failed audio_chunks=%s', total_audio_chunks)
+        logger.exception(
+            'tts.cosyvoice.realtime.segments_failed task_id=%s audio_chunks=%s',
+            task_id, stats['audio_chunks'],
+        )
         raise
+    finally:
+        await prepared.aclose()
 
 
-async def _forward_task_audio(upstream, send, *, task_id: str, segment_index: int, segment_text: str) -> int:
-    """Forward one task's audio, emitting segment markers around the real audio."""
-    audio_chunks = 0
-    segment_started = False
+async def _forward_stream_audio(
+    upstream,
+    send,
+    *,
+    segment_queue: asyncio.Queue,
+    task_id: str,
+    stats: dict[str, Any],
+) -> None:
+    """Forward one task's whole audio stream, flipping segment markers as text arrives.
+
+    The task protocol gives no per-``continue-task`` audio boundary, so markers
+    are an approximation: each audio frame advances at most one queued segment,
+    which means segment N opens once its text has been queued rather than when
+    its own first frame arrives. Markers therefore run ahead of the audio they
+    label. They stay well-formed (one ``segment_start`` / ``segment_end`` pair
+    per segment, in order) and nothing downstream depends on their alignment.
+    """
+    active_segment: dict[str, Any] | None = None
+    segments_finished = False
+
+    async def finish_active_segment() -> None:
+        nonlocal active_segment
+        if active_segment is None:
+            return
+        await _send_segment_end(send, int(active_segment['index']))
+        active_segment = None
+
+    async def ensure_segment_started() -> None:
+        nonlocal active_segment, segments_finished
+        if segments_finished:
+            return
+        if active_segment is not None and segment_queue.empty():
+            return
+        segment = await segment_queue.get()
+        if segment is None:
+            segments_finished = True
+            return
+        await finish_active_segment()
+        active_segment = segment
+        await _send_segment_start(send, int(segment['index']), str(segment['text']))
 
     async for raw_message in upstream:
         if isinstance(raw_message, bytes):
             if not raw_message:
                 continue
-            if not segment_started:
-                await _send_segment_start(send, segment_index, segment_text)
-                segment_started = True
-            audio_chunks += 1
+            await ensure_segment_started()
+            stats['audio_chunks'] += 1
+            stats['audio_bytes'] += len(raw_message)
             await send({'type': 'websocket.send', 'bytes': raw_message})
             continue
 
@@ -304,7 +400,11 @@ async def _forward_task_audio(upstream, send, *, task_id: str, segment_index: in
         if event == 'task-failed':
             raise RuntimeError(_extract_cosyvoice_task_error(header))
         if event == 'task-finished':
-            if segment_started:
-                await _send_segment_end(send, segment_index)
-            return audio_chunks
+            await finish_active_segment()
+            await _send_json(send, {'type': 'tts.done'})
+            logger.info(
+                'tts.cosyvoice.realtime.stream_finished task_id=%s audio_chunks=%s audio_bytes=%s',
+                task_id, stats['audio_chunks'], stats['audio_bytes'],
+            )
+            return
     raise RuntimeError('CosyVoice upstream closed before task finished.')

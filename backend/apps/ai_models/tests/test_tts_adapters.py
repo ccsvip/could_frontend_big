@@ -11,15 +11,22 @@ from apps.ai_models.services import tts_adapters
 
 
 class FakeCosyVoiceUpstream:
-    """Minimal duplex stand-in for the Model Studio task protocol."""
+    """Queue-driven duplex stand-in for the Model Studio task protocol.
 
-    def __init__(self, *, audio_frames=(b'\x01\x02', b'\x03\x04'), fail=False, tasks=1):
+    ``__anext__`` really waits, so a concurrent reader can make progress while
+    the caller keeps pushing ``continue-task`` — that interleaving is exactly
+    what the single-task streaming path depends on. Audio frames are enqueued as
+    each ``continue-task`` arrives, and ``timeline`` records the send/receive
+    order so tests can assert on it.
+    """
+
+    def __init__(self, *, audio_frames=(b'\x01\x02', b'\x03\x04'), fail=False, fail_mid_stream=False):
         self.sent: list[dict] = []
+        self.timeline: list[tuple[str, str]] = []
         self._audio_frames = list(audio_frames)
         self._fail = fail
-        self._tasks = tasks
-        self._queue: list = []
-        self._task_ids: list[str] = []
+        self._fail_mid_stream = fail_mid_stream
+        self._queue: asyncio.Queue = asyncio.Queue()
 
     async def __aenter__(self):
         return self
@@ -33,17 +40,19 @@ class FakeCosyVoiceUpstream:
         header = message.get('header') or {}
         action = header.get('action')
         task_id = header.get('task_id')
+        self.timeline.append(('send', action))
         if action == 'run-task':
-            self._task_ids.append(task_id)
-            self._queue.append(json.dumps({'header': {'task_id': task_id, 'event': 'task-started'}}))
+            self._queue.put_nowait(self._event(task_id, 'task-started'))
+        elif action == 'continue-task':
+            for frame in self._audio_frames:
+                self._queue.put_nowait(frame)
+            if self._fail_mid_stream:
+                self._queue.put_nowait(self._failure(task_id))
         elif action == 'finish-task':
             if self._fail:
-                self._queue.append(json.dumps({
-                    'header': {'task_id': task_id, 'event': 'task-failed', 'error_code': 'E1', 'error_message': 'boom'},
-                }))
+                self._queue.put_nowait(self._failure(task_id))
                 return
-            self._queue.extend(self._audio_frames)
-            self._queue.append(json.dumps({'header': {'task_id': task_id, 'event': 'task-finished'}}))
+            self._queue.put_nowait(self._event(task_id, 'task-finished'))
 
     def actions(self) -> list[str]:
         return [(message.get('header') or {}).get('action') for message in self.sent]
@@ -52,9 +61,26 @@ class FakeCosyVoiceUpstream:
         return self
 
     async def __anext__(self):
-        if not self._queue:
-            raise StopAsyncIteration
-        return self._queue.pop(0)
+        await asyncio.sleep(0)
+        try:
+            item = await asyncio.wait_for(self._queue.get(), timeout=1)
+        except (asyncio.TimeoutError, TimeoutError):
+            raise StopAsyncIteration        # upstream went silent: same as a close
+        if isinstance(item, bytes):
+            self.timeline.append(('recv', 'audio'))
+        else:
+            self.timeline.append(('recv', json.loads(item)['header']['event']))
+        return item
+
+    @staticmethod
+    def _event(task_id, event: str) -> str:
+        return json.dumps({'header': {'task_id': task_id, 'event': event}})
+
+    @staticmethod
+    def _failure(task_id) -> str:
+        return json.dumps({
+            'header': {'task_id': task_id, 'event': 'task-failed', 'error_code': 'E1', 'error_message': 'boom'},
+        })
 
 
 class Collector:
@@ -297,13 +323,12 @@ class CosyVoiceRealtimeAdapterTests(TestCase):
             ))
         self.assertEqual(collector.events, [])
 
-    def test_segment_stream_opens_one_task_per_segment(self):
-        upstream = FakeCosyVoiceUpstream(audio_frames=(b'\x05',))
+    def run_segment_stream(self, upstream, *, texts=('第一段。', '第二段。')):
         collector = Collector()
 
         async def segments():
-            yield '第一段。'
-            yield '第二段。'
+            for text in texts:
+                yield text
 
         with patch('apps.ai_models.services.cosyvoice_realtime.websockets.connect', return_value=upstream):
             asyncio.run(self.adapter.stream_realtime_segments(
@@ -313,9 +338,17 @@ class CosyVoiceRealtimeAdapterTests(TestCase):
                 send=collector,
                 controls={},
             ))
+        return collector
 
-        self.assertEqual(upstream.actions().count('run-task'), 2)
-        self.assertEqual(upstream.actions().count('finish-task'), 2)
+    def test_segment_stream_uses_single_task_for_whole_answer(self):
+        upstream = FakeCosyVoiceUpstream(audio_frames=(b'\x05',))
+
+        collector = self.run_segment_stream(upstream)
+
+        actions = upstream.actions()
+        self.assertEqual(actions.count('run-task'), 1)
+        self.assertEqual(actions.count('finish-task'), 1)
+        self.assertGreaterEqual(actions.count('continue-task'), 2)
         self.assertEqual(collector.types(), [
             'tts.ready',
             'tts.segment_start', 'binary', 'tts.segment_end',
@@ -323,21 +356,27 @@ class CosyVoiceRealtimeAdapterTests(TestCase):
             'tts.done',
         ])
 
+    def test_segment_stream_does_not_wait_for_previous_segment_audio(self):
+        upstream = FakeCosyVoiceUpstream(audio_frames=(b'\x05',))
+
+        self.run_segment_stream(upstream)
+
+        continue_positions = [i for i, (kind, name) in enumerate(upstream.timeline) if (kind, name) == ('send', 'continue-task')]
+        first_audio_recv = next(i for i, entry in enumerate(upstream.timeline) if entry == ('recv', 'audio'))
+
+        self.assertEqual(len(continue_positions), 2)
+        self.assertLess(continue_positions[1], first_audio_recv)
+
+    def test_segment_stream_propagates_mid_stream_task_failure(self):
+        upstream = FakeCosyVoiceUpstream(audio_frames=(b'\x05',), fail_mid_stream=True)
+
+        with self.assertRaises(RuntimeError) as ctx:
+            self.run_segment_stream(upstream)
+
+        self.assertIn('boom', str(ctx.exception))
+
     def test_segment_stream_still_completes_when_no_segments_arrive(self):
         upstream = FakeCosyVoiceUpstream()
-        collector = Collector()
-
-        async def segments():
-            if False:
-                yield ''
-
-        with patch('apps.ai_models.services.cosyvoice_realtime.websockets.connect', return_value=upstream):
-            asyncio.run(self.adapter.stream_realtime_segments(
-                segments=segments(),
-                voice=self.voice,
-                config=self.config,
-                send=collector,
-                controls={},
-            ))
+        collector = self.run_segment_stream(upstream, texts=())
 
         self.assertEqual(collector.types(), ['tts.ready', 'tts.done'])

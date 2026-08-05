@@ -157,7 +157,17 @@ class BaseTTSAdapter:
     async def stream_realtime_text(self, *, text: str, voice: TTSVoice, config: EffectiveTTSConfig, send, controls=None, exclude_patterns=None) -> None:
         raise TTSAdapterError(f'{self.provider_code} 暂不支持实时语音合成')
 
-    async def stream_realtime_segments(self, *, segments: AsyncIterable[str], voice: TTSVoice, config: EffectiveTTSConfig, send, controls=None, exclude_patterns=None) -> None:
+    async def prepare_realtime_stream(self, *, voice: TTSVoice, config: EffectiveTTSConfig, controls=None):
+        """Open the upstream ahead of the first segment, if this card can.
+
+        Returns a handle with an idempotent ``aclose()``, or ``None`` when the
+        card has nothing to prewarm. Callers must treat ``None`` as normal and
+        keep working — every ``stream_realtime_segments`` still opens its own
+        upstream when handed no handle.
+        """
+        return None
+
+    async def stream_realtime_segments(self, *, segments: AsyncIterable[str], voice: TTSVoice, config: EffectiveTTSConfig, send, controls=None, exclude_patterns=None, prepared=None) -> None:
         raise TTSAdapterError(f'{self.provider_code} 暂不支持实时语音合成')
 
 
@@ -235,9 +245,11 @@ class AliyunQwenTTSAdapter(BaseTTSAdapter):
             exclude_patterns=exclude_patterns,
         )
 
-    async def stream_realtime_segments(self, *, segments: AsyncIterable[str], voice: TTSVoice, config: EffectiveTTSConfig, send, controls=None, exclude_patterns=None) -> None:
+    async def stream_realtime_segments(self, *, segments: AsyncIterable[str], voice: TTSVoice, config: EffectiveTTSConfig, send, controls=None, exclude_patterns=None, prepared=None) -> None:
         from ..realtime_tts import _stream_tts_segments_audio
 
+        # No prewarm on this card: ``prepared`` is always None here, and
+        # ``_stream_tts_segments_audio`` keeps opening its own session.
         await _stream_tts_segments_audio(
             segments=segments,
             voice=voice,
@@ -302,7 +314,16 @@ class CosyVoiceTTSAdapter(BaseTTSAdapter):
             exclude_patterns=exclude_patterns,
         )
 
-    async def stream_realtime_segments(self, *, segments: AsyncIterable[str], voice: TTSVoice, config: EffectiveTTSConfig, send, controls=None, exclude_patterns=None) -> None:
+    async def prepare_realtime_stream(self, *, voice: TTSVoice, config: EffectiveTTSConfig, controls=None):
+        from .cosyvoice_realtime import prewarm_cosyvoice_realtime
+
+        return await prewarm_cosyvoice_realtime(
+            voice=voice,
+            config=config,
+            controls=self._coerce_controls(controls if isinstance(controls, dict) else {}),
+        )
+
+    async def stream_realtime_segments(self, *, segments: AsyncIterable[str], voice: TTSVoice, config: EffectiveTTSConfig, send, controls=None, exclude_patterns=None, prepared=None) -> None:
         from .cosyvoice_realtime import stream_cosyvoice_realtime_segments
 
         await stream_cosyvoice_realtime_segments(
@@ -312,6 +333,7 @@ class CosyVoiceTTSAdapter(BaseTTSAdapter):
             send=send,
             controls=self._coerce_controls(controls if isinstance(controls, dict) else {}),
             exclude_patterns=exclude_patterns,
+            prepared=prepared,
         )
 
 

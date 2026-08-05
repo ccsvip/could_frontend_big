@@ -20,6 +20,11 @@ PCM_SOURCE_FORMAT = 'pcm_s16le'
 DEFAULT_TEST_TEXT = '对吧~我就特别喜欢这种超市，尤其是过年的时候去逛超市就会觉得超级超级开心！想买好多好多的东西呢！'
 COSYVOICE_TTS_MODEL = 'cosyvoice-v3.5-plus'
 DEFAULT_TTS_SEGMENT_BOUNDARIES = '。！？!?；;'
+DEFAULT_TTS_SOFT_SEGMENT_BOUNDARIES = '，,：:、\n'
+# 词间空隙：闭合括号/引号与半角空格（末位是空格，勿删）
+DEFAULT_TTS_WORD_GAP_BOUNDARIES = '）)】」』》”’ '
+PROGRESSIVE_TTS_CHUNK_SIZES = (12, 30)
+MIN_SOFT_BOUNDARY_CHUNK_SIZE = 4
 TTS_MODEL_PROFILES = [
     {
         'code': 'instructional',
@@ -274,6 +279,7 @@ def pop_tts_text_segments(
     buffer: str,
     *,
     chunk_size: int = 80,
+    emitted_segments: int = 0,
     filter_punctuation: str | None = None,
     filter_emoji: bool = False,
     exclude_patterns: list[str] | tuple[str, ...] | None = None,
@@ -291,10 +297,15 @@ def pop_tts_text_segments(
     chunks = []
     current = ''
     last_boundary = 0
-    separators = set(DEFAULT_TTS_SEGMENT_BOUNDARIES)
     for index, char in enumerate(stripped):
         current += char
-        if len(current) >= chunk_size or (char in separators and _is_tts_boundary(stripped, index)):
+        current_length = len(current)
+        soft_limit = _tts_chunk_limit(emitted_segments + len(chunks), chunk_size)
+        if (
+            current_length >= chunk_size
+            or _hits_tts_boundary(stripped, index, current_length)
+            or (current_length >= soft_limit and _hits_tts_word_gap(stripped, index))
+        ):
             filtered_current = _remove_tts_exclude_patterns(current, exclusion_patterns)
             chunk = _finalize_tts_chunk(filtered_current, filter_punctuation=filter_punctuation)
             if chunk:
@@ -395,6 +406,35 @@ def _is_tts_boundary(text: str, index: int) -> bool:
     if char in '.)' and re.search(r'(?:^|\s)\d+[.)]$', text[:index + 1]):
         return False
     return True
+
+
+def _tts_chunk_limit(segment_ordinal: int, chunk_size: int) -> int:
+    """Progressive word-gap floor; ``segment_ordinal`` is 0-based (0 is the first segment).
+
+    首几段允许在「词间空隙」处提前收束，让播报尽早起播；返回值只是放行阈值，
+    真正的硬上限始终是 ``chunk_size``。
+    """
+    if 0 <= segment_ordinal < len(PROGRESSIVE_TTS_CHUNK_SIZES):
+        return min(PROGRESSIVE_TTS_CHUNK_SIZES[segment_ordinal], chunk_size)
+    return chunk_size
+
+
+def _hits_tts_boundary(text: str, index: int, current_length: int) -> bool:
+    char = text[index]
+    if char in DEFAULT_TTS_SEGMENT_BOUNDARIES:
+        return _is_tts_boundary(text, index)
+    if char in DEFAULT_TTS_SOFT_SEGMENT_BOUNDARIES:
+        return current_length >= MIN_SOFT_BOUNDARY_CHUNK_SIZE and _is_tts_boundary(text, index)
+    return False
+
+
+def _hits_tts_word_gap(text: str, index: int) -> bool:
+    char = text[index]
+    if char not in DEFAULT_TTS_WORD_GAP_BOUNDARIES:
+        return False
+    if char == ' ' and re.search(r'(?:^|\s)\d+[.)]$', text[:index]):
+        return False
+    return _is_tts_boundary(text, index)
 
 
 def _finalize_tts_chunk(chunk: str, *, filter_punctuation: str | None = None) -> str:

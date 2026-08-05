@@ -4,6 +4,7 @@ import asyncio
 import base64
 import json
 import uuid
+from contextlib import ExitStack
 from types import SimpleNamespace
 from unittest.mock import ANY, patch
 
@@ -390,6 +391,174 @@ class RealtimeWebSocketTests(SimpleTestCase):
             tts_error = next(payload for payload in sent_payloads if payload['type'] == 'tts.error')
             self.assertEqual(tts_error['requestId'], 'req-agent-tts-fail-1')
             self.assertEqual(tts_error['traceId'], 'trace-agent-tts-fail-1')
+
+        async_to_sync(run_task)()
+
+    def test_agent_tts_worker_prewarms_before_waiting_for_first_segment(self):
+        async def run_task():
+            from config.realtime import RealtimeConnection, _agent_tts_worker
+
+            connection = RealtimeConnection()
+            connection.agent_tts_queue = asyncio.Queue()
+            prewarmed = asyncio.Event()
+            streamed = asyncio.Event()
+            timeline = []
+
+            async def fake_prepare(*args, **kwargs):
+                timeline.append('prewarmed')
+                prewarmed.set()
+                return SimpleNamespace(prepared=None), ''
+
+            async def fake_stream(*args, **kwargs):
+                timeline.append('streamed')
+                streamed.set()
+
+            with (
+                patch('config.realtime._prepare_agent_tts', side_effect=fake_prepare),
+                patch('config.realtime._run_agent_tts_stream', side_effect=fake_stream),
+            ):
+                worker = asyncio.create_task(_agent_tts_worker(
+                    lambda event: None,
+                    connection,
+                    'agent-prewarm-order',
+                    'ANDROID-PREWARM-ORDER-001',
+                    'req-prewarm-order',
+                    'trace-prewarm-order',
+                    {},
+                ))
+                await asyncio.wait_for(prewarmed.wait(), timeout=1)
+                self.assertEqual(timeline, ['prewarmed'])
+                self.assertTrue(connection.agent_tts_queue.empty())
+
+                await connection.agent_tts_queue.put('首段文本')
+                await asyncio.wait_for(streamed.wait(), timeout=1)
+                await worker
+
+            self.assertEqual(timeline, ['prewarmed', 'streamed'])
+
+        async_to_sync(run_task)()
+
+    def test_agent_session_cancel_closes_prepared_tts_upstream(self):
+        async def run_task():
+            from config.realtime import RealtimeConnection, _agent_tts_worker
+
+            class Prepared:
+                def __init__(self):
+                    self.closed = False
+
+                async def aclose(self):
+                    self.closed = True
+
+            connection = RealtimeConnection()
+            connection.agent_session_id = 'agent-prewarm-cancel'
+            connection.agent_tts_queue = asyncio.Queue()
+            prepared = Prepared()
+            prewarmed = asyncio.Event()
+
+            async def fake_prepare(*args, **kwargs):
+                connection.agent_tts_prepared = prepared
+                prewarmed.set()
+                return SimpleNamespace(prepared=prepared), ''
+
+            with patch('config.realtime._prepare_agent_tts', side_effect=fake_prepare):
+                connection.agent_tts_worker = asyncio.create_task(_agent_tts_worker(
+                    lambda event: None,
+                    connection,
+                    connection.agent_session_id,
+                    'ANDROID-PREWARM-CANCEL-001',
+                    'req-prewarm-cancel',
+                    'trace-prewarm-cancel',
+                    {},
+                ))
+                await asyncio.wait_for(prewarmed.wait(), timeout=1)
+                await connection.close_agent_session()
+
+            self.assertTrue(prepared.closed)
+            self.assertIsNone(connection.agent_tts_prepared)
+
+        async_to_sync(run_task)()
+
+    def test_empty_agent_answer_closes_prepared_tts_upstream(self):
+        async def run_task():
+            from config.realtime import RealtimeConnection, _agent_tts_worker
+
+            class Prepared:
+                def __init__(self):
+                    self.closed = False
+
+                async def aclose(self):
+                    self.closed = True
+
+            connection = RealtimeConnection()
+            connection.agent_tts_queue = asyncio.Queue()
+            prepared = Prepared()
+            prewarmed = asyncio.Event()
+
+            async def fake_prepare(*args, **kwargs):
+                connection.agent_tts_prepared = prepared
+                prewarmed.set()
+                return SimpleNamespace(prepared=prepared), ''
+
+            with patch('config.realtime._prepare_agent_tts', side_effect=fake_prepare):
+                worker = asyncio.create_task(_agent_tts_worker(
+                    lambda event: None,
+                    connection,
+                    'agent-prewarm-empty',
+                    'ANDROID-PREWARM-EMPTY-001',
+                    'req-prewarm-empty',
+                    'trace-prewarm-empty',
+                    {},
+                ))
+                await asyncio.wait_for(prewarmed.wait(), timeout=1)
+                await connection.agent_tts_queue.put(None)
+                await worker
+
+            self.assertTrue(prepared.closed)
+            self.assertIsNone(connection.agent_tts_prepared)
+
+        async_to_sync(run_task)()
+
+    def test_agent_tts_prewarm_failure_reports_tts_error_without_agent_error(self):
+        async def run_task():
+            from config.realtime import RealtimeConnection, _agent_tts_worker, _run_agent_llm_and_finish
+
+            sent_payloads = []
+
+            async def send(event):
+                if 'text' in event:
+                    sent_payloads.append(json.loads(event['text']))
+
+            async def fake_run_llm_session_body(send, command_id, message, on_tts_segment, error_event_type):
+                await on_tts_segment('播报文本')
+                return '完整文字回答。'
+
+            async def failed_prepare(*args, **kwargs):
+                return None, 'TTS_NOT_READY'
+
+            connection = RealtimeConnection()
+            connection.agent_session_id = 'agent-prewarm-failure'
+            connection.agent_request_id = 'req-prewarm-failure'
+            connection.agent_trace_id = 'trace-prewarm-failure'
+            connection.agent_device_code = 'ANDROID-PREWARM-FAILURE-001'
+            connection.agent_tts_queue = asyncio.Queue()
+
+            with (
+                patch('config.realtime._prepare_agent_tts', side_effect=failed_prepare),
+                patch('config.realtime._run_llm_session_body', side_effect=fake_run_llm_session_body),
+            ):
+                connection.agent_tts_worker = asyncio.create_task(_agent_tts_worker(
+                    send,
+                    connection,
+                    connection.agent_session_id,
+                    connection.agent_device_code,
+                    connection.agent_request_id,
+                    connection.agent_trace_id,
+                    {},
+                ))
+                await _run_agent_llm_and_finish(send, connection, '介绍一下展厅')
+
+            self.assertEqual([payload['type'] for payload in sent_payloads], ['tts.error', 'agent.done'])
+            self.assertEqual(sent_payloads[0]['error']['code'], '1024')
 
         async_to_sync(run_task)()
 
@@ -845,16 +1014,27 @@ class RealtimeWebSocketTests(SimpleTestCase):
             tts_texts,
             [
                 '您好',
-                '关于“大地为什么是蓝色的”这个问题，其实更准确的说法是：地球从太空中看去呈现蓝色，主要是因为地球表面大部分被海洋覆盖',
-                '具体原因如下： 海洋占主导地位：地球表面约71%被海洋覆盖，而陆地仅占29%',
-                '水对光的反射与散射：海水会吸收太阳光中波长较长的红橙黄光，而将波长较短的蓝光和紫光反射和散射出来',
-                '景区总面积21.8平方公里，主峰摩星岭海拔382米',
+                '关于“大地为什么是蓝色的”',
+                '这个问题，',
+                '其实更准确的说法是：',
+                '地球从太空中看去呈现蓝色，',
+                '主要是因为地球表面大部分被海洋覆盖',
+                '具体原因如下：',
+                '海洋占主导地位：',
+                '地球表面约71%被海洋覆盖，',
+                '而陆地仅占29%',
+                '水对光的反射与散射：',
+                '海水会吸收太阳光中波长较长的红',
+                '橙黄光，',
+                '而将波长较短的蓝光和紫光反射和散射出来',
+                '景区总面积21.8平方公里，',
+                '主峰摩星岭海拔382米',
             ],
         )
         self.assertNotIn('**', tts_texts)
         self.assertNotIn('1.', tts_texts)
         self.assertNotIn('2.', tts_texts)
-        self.assertIn('景区总面积21.8平方公里，主峰摩星岭海拔382米', tts_texts)
+        self.assertIn('景区总面积21.8平方公里，', tts_texts)
 
     def test_unified_realtime_websocket_responds_to_ping_command(self):
         async def run_websocket():
@@ -1524,25 +1704,28 @@ class RealtimeTTSVoiceRoutingTests(TenantTestMixin, TestCase):
         """
 
         async def run_cases():
-            from config.realtime import _run_agent_tts_stream, _run_tts_session_body
+            from config.realtime import RealtimeConnection, _agent_tts_worker, _run_tts_session_body
 
             sent = []
 
             async def send(message):
                 sent.append(message)
 
+            connection = RealtimeConnection()
+            connection.agent_tts_queue = asyncio.Queue()
+            connection.agent_tts_queue.put_nowait('你好')
+
             with patch(
                 'apps.ai_models.realtime_tts.resolve_tts_realtime_connection',
                 return_value={'user_id': 1, 'tenant_id': 2, 'is_superuser': False},
             ):
-                await _run_agent_tts_stream(
+                await _agent_tts_worker(
                     send,
+                    connection,
                     'agent-cosyvoice',
-                    asyncio.Queue(),
                     'COSYVOICE-DEVICE',
                     'request-agent-cosyvoice',
                     'trace-agent-cosyvoice',
-                    '你好',
                     {'providerCode': 'cosyvoice'},
                 )
                 await _run_tts_session_body(

@@ -5,7 +5,7 @@ import json
 import logging
 import time
 import uuid
-from typing import Any, Awaitable, Callable
+from typing import Any, Awaitable, Callable, NamedTuple
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
@@ -116,6 +116,7 @@ class RealtimeConnection:
         self.agent_runtime_session_id = None
         self.agent_tts_queue = None
         self.agent_tts_worker = None
+        self.agent_tts_prepared = None
         self.agent_task = None
 
     async def close(self) -> None:
@@ -179,6 +180,16 @@ class RealtimeConnection:
         self.tts_task = None
         self.tts_session_id = None
 
+    async def close_agent_tts_prepared(self) -> None:
+        """Release a prewarmed TTS upstream that never got used. Idempotent."""
+        prepared, self.agent_tts_prepared = self.agent_tts_prepared, None
+        if prepared is None:
+            return
+        try:
+            await prepared.aclose()
+        except Exception:
+            logger.exception('realtime.agent.tts_prewarm_close_failed')
+
     async def close_agent_session(self) -> None:
         await _cancel_agent_asr_input_timeout_task(self)
         await _cancel_agent_asr_finish_task(self)
@@ -199,6 +210,7 @@ class RealtimeConnection:
                 self.agent_tts_worker.cancel()
             await asyncio.gather(self.agent_tts_worker, return_exceptions=True)
         self.agent_tts_worker = None
+        await self.close_agent_tts_prepared()
         self.agent_session_id = None
         self.agent_mode = None
         self.agent_device_code = None
@@ -212,6 +224,7 @@ class RealtimeConnection:
         self.agent_runtime_session_id = None
         self.agent_tts_queue = None
         self.agent_tts_worker = None
+        self.agent_tts_prepared = None
         if session_id or had_agent_task or had_tts_worker:
             logger.info(
                 'realtime.agent.session_closed agent_session=%s request_id=%s trace_id=%s device_code=%s had_agent_task=%s had_tts_worker=%s',
@@ -1135,6 +1148,7 @@ async def _run_llm_session_body(
             answer_text = dispatch_outcome.reply_text
         elif session.get('backendType') == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
             tts_buffer = ''
+            emitted_tts_segments = 0
             if session.get('thirdPartySupportsStreaming'):
                 try:
                     async for delta in _stream_third_party_session_message(session, question_text):
@@ -1150,16 +1164,21 @@ async def _run_llm_session_body(
                             },
                         )
                         tts_buffer += delta
-                        segments, tts_buffer = _pop_llm_tts_segments(tts_buffer, session)
+                        segments, tts_buffer = _pop_llm_tts_segments(
+                            tts_buffer, session, emitted_segments=emitted_tts_segments
+                        )
                         for segment in segments:
                             await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
                             if on_tts_segment is not None:
                                 await on_tts_segment(segment)
+                        emitted_tts_segments += len(segments)
                 except Exception:
                     logger.exception('realtime.llm.third_party_stream_failed command_id=%s request_id=%s trace_id=%s', command_id, request_id, trace_id)
                     await _send_realtime_error(send, error_event_type, command_id, 'LLM_UPSTREAM_ERROR', request_id=request_id, trace_id=trace_id)
                     return None
-                final_segments, _ = _pop_llm_tts_segments(tts_buffer, session, flush=True)
+                final_segments, _ = _pop_llm_tts_segments(
+                    tts_buffer, session, emitted_segments=emitted_tts_segments, flush=True
+                )
                 for segment in final_segments:
                     await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
                     if on_tts_segment is not None:
@@ -1187,6 +1206,7 @@ async def _run_llm_session_body(
                     return None
         else:
             tts_buffer = ''
+            emitted_tts_segments = 0
             try:
                 async for delta in _stream_runtime_answer_deltas(session, dispatch_outcome):
                     answer_text += delta
@@ -1201,16 +1221,21 @@ async def _run_llm_session_body(
                         },
                     )
                     tts_buffer += delta
-                    segments, tts_buffer = _pop_llm_tts_segments(tts_buffer, session)
+                    segments, tts_buffer = _pop_llm_tts_segments(
+                        tts_buffer, session, emitted_segments=emitted_tts_segments
+                    )
                     for segment in segments:
                         await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
                         if on_tts_segment is not None:
                             await on_tts_segment(segment)
+                    emitted_tts_segments += len(segments)
             except Exception:
                 logger.exception('realtime.llm.stream_failed command_id=%s request_id=%s trace_id=%s', command_id, request_id, trace_id)
                 await _send_realtime_error(send, error_event_type, command_id, 'LLM_UPSTREAM_ERROR', request_id=request_id, trace_id=trace_id)
                 return None
-            final_segments, _ = _pop_llm_tts_segments(tts_buffer, session, flush=True)
+            final_segments, _ = _pop_llm_tts_segments(
+                tts_buffer, session, emitted_segments=emitted_tts_segments, flush=True
+            )
             for segment in final_segments:
                 await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
                 if on_tts_segment is not None:
@@ -1865,15 +1890,115 @@ async def _queue_agent_tts_segment(connection: RealtimeConnection, segment: str)
         await asyncio.sleep(0)
 
 
+class _AgentTTSBundle(NamedTuple):
+    """Everything the agent TTS stream needs, resolved before any text arrives."""
+
+    adapter: Any
+    voice: Any
+    config: Any
+    session_config: Any
+    model_code: str
+    prepared: Any
+
+
+async def _prepare_agent_tts(
+    connection: RealtimeConnection,
+    command_id,
+    device_code: str,
+    request_id: str,
+    trace_id: str,
+    payload: dict[str, Any],
+) -> tuple[_AgentTTSBundle | None, str]:
+    """Resolve the voice/card and open the upstream while the LLM is still thinking.
+
+    Runs before the first segment is queued, so the ORM lookups and the upstream
+    handshake hide inside the LLM's time-to-first-token instead of sitting on the
+    first-audio path.
+
+    Reporting stays lazy on purpose: this returns ``(None, error_key)`` instead of
+    sending ``tts.error`` itself, so a session that never produces text — an
+    ASR-only turn, a command dispatch, an empty answer — emits exactly the events
+    it did before prewarming existed. The caller sends the error only once a
+    segment actually needs speaking.
+    """
+    started_at = time.monotonic()
+    query_params = _payload_query_params({'deviceCode': device_code}, 'deviceCode')
+    session_config = payload.get('sessionConfig') or payload.get('ttsSessionConfig')
+    resolved_connection = await sync_to_async(realtime_tts.resolve_tts_realtime_connection, thread_sensitive=True)(
+        '',
+        query_params=query_params,
+    )
+    if resolved_connection is None:
+        return None, 'TTS_UNAUTHORIZED'
+
+    resolution = await sync_to_async(realtime_tts.resolve_realtime_tts_voice, thread_sensitive=True)(
+        resolved_connection,
+        payload.get('voiceId'),
+        provider_code=payload.get('providerCode'),
+    )
+    if resolution.voice is None:
+        return None, resolution.error_key or 'TTS_VOICE_NOT_AVAILABLE'
+    voice = resolution.voice
+
+    try:
+        # Route on the resolved voice's own card; never on the client's providerCode.
+        adapter = await sync_to_async(tts_adapters.get_adapter_for_voice, thread_sensitive=True)(voice)
+        await sync_to_async(adapter.ensure_channel, thread_sensitive=True)(voice.provider, tts_adapters.CHANNEL_REALTIME)
+        config = await sync_to_async(adapter.effective_config, thread_sensitive=True)(voice.provider)
+    except Exception:
+        logger.exception('realtime.agent.tts_adapter_unavailable device_code=%s voice_id=%s', device_code, voice.id)
+        return None, 'TTS_NOT_READY'
+    if not realtime_tts.is_tts_configured(config):
+        return None, 'TTS_NOT_READY'
+
+    if session_config is None:
+        session_config = await sync_to_async(_resolve_connection_tts_session_config, thread_sensitive=True)(
+            resolved_connection,
+            config,
+        )
+    model_code = tts_services.get_tts_model_profile_code_from_session(session_config, config.model)
+
+    try:
+        prepared = await adapter.prepare_realtime_stream(voice=voice, config=config, controls=session_config)
+    except Exception:
+        logger.exception('realtime.agent.tts_prewarm_failed device_code=%s voice_id=%s', device_code, voice.id)
+        return None, 'TTS_NOT_READY'
+    connection.agent_tts_prepared = prepared
+
+    logger.info(
+        'realtime.agent.tts_prewarmed agent_session=%s request_id=%s trace_id=%s device_code=%s prewarmed=%s elapsed_ms=%s',
+        command_id,
+        request_id,
+        trace_id,
+        device_code,
+        prepared is not None,
+        int((time.monotonic() - started_at) * 1000),
+    )
+    return _AgentTTSBundle(
+        adapter=adapter,
+        voice=voice,
+        config=config,
+        session_config=session_config,
+        model_code=model_code,
+        prepared=prepared,
+    ), ''
+
+
 async def _agent_tts_worker(send, connection: RealtimeConnection, command_id, device_code: str, request_id: str, trace_id: str, payload: dict[str, Any]) -> None:
     queue = connection.agent_tts_queue
     if queue is None:
         return
     try:
+        # Prewarm first, block on the queue second: the resolution + handshake cost
+        # then overlaps the LLM's time-to-first-token instead of delaying first audio.
+        bundle, error_key = await _prepare_agent_tts(connection, command_id, device_code, request_id, trace_id, payload)
         first_segment = await queue.get()
         if first_segment is None:
-            return
-        await _run_agent_tts_stream(send, command_id, queue, device_code, request_id, trace_id, first_segment, payload)
+            return          # nothing to speak; the failure (if any) stays unreported
+        if bundle is None:
+            await _send_realtime_error(send, 'tts.error', command_id, error_key, request_id=request_id, trace_id=trace_id)
+            return          # tts-only failure: the LLM side still runs to agent.done
+        await _run_agent_tts_stream(send, command_id, queue, device_code, request_id, trace_id, first_segment, payload, bundle)
     except asyncio.CancelledError:
         raise
     except Exception:
@@ -1885,9 +2010,14 @@ async def _agent_tts_worker(send, connection: RealtimeConnection, command_id, de
             device_code,
         )
         await _send_realtime_error(send, 'tts.error', command_id, 'TTS_UPSTREAM_ERROR', request_id=request_id, trace_id=trace_id)
+    finally:
+        # Covers the paths where the handle never reaches the stream: prewarm-only
+        # failure, an empty answer, or cancellation. Once handed over, the stream
+        # closes it itself and this is a no-op.
+        await connection.close_agent_tts_prepared()
 
 
-async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_code: str, request_id: str, trace_id: str, first_segment: str, payload: dict[str, Any]) -> None:
+async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_code: str, request_id: str, trace_id: str, first_segment: str, payload: dict[str, Any], bundle: _AgentTTSBundle) -> None:
     logger.info(
         'realtime.agent.tts_started agent_session=%s request_id=%s trace_id=%s device_code=%s first_segment_length=%s',
         command_id,
@@ -1896,52 +2026,10 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
         device_code,
         len(first_segment or ''),
     )
-    query_params = _payload_query_params({'deviceCode': device_code}, 'deviceCode')
-    session_config = payload.get('sessionConfig') or payload.get('ttsSessionConfig')
-    resolved_connection = await sync_to_async(realtime_tts.resolve_tts_realtime_connection, thread_sensitive=True)(
-        '',
-        query_params=query_params,
-    )
-    if resolved_connection is None:
-        await _send_realtime_error(send, 'tts.error', command_id, 'TTS_UNAUTHORIZED', request_id=request_id, trace_id=trace_id)
-        return
-
-    resolution = await sync_to_async(realtime_tts.resolve_realtime_tts_voice, thread_sensitive=True)(
-        resolved_connection,
-        payload.get('voiceId'),
-        provider_code=payload.get('providerCode'),
-    )
-    if resolution.voice is None:
-        await _send_realtime_error(
-            send,
-            'tts.error',
-            command_id,
-            resolution.error_key or 'TTS_VOICE_NOT_AVAILABLE',
-            request_id=request_id,
-            trace_id=trace_id,
-        )
-        return
-    voice = resolution.voice
-
-    try:
-        # Route on the resolved voice's own card; never on the client's providerCode.
-        adapter = await sync_to_async(tts_adapters.get_adapter_for_voice, thread_sensitive=True)(voice)
-        await sync_to_async(adapter.ensure_channel, thread_sensitive=True)(voice.provider, tts_adapters.CHANNEL_REALTIME)
-        config = await sync_to_async(adapter.effective_config, thread_sensitive=True)(voice.provider)
-    except Exception:
-        logger.exception('realtime.agent.tts_adapter_unavailable device_code=%s voice_id=%s', device_code, voice.id)
-        await _send_realtime_error(send, 'tts.error', command_id, 'TTS_NOT_READY', request_id=request_id, trace_id=trace_id)
-        return
-    if not realtime_tts.is_tts_configured(config):
-        await _send_realtime_error(send, 'tts.error', command_id, 'TTS_NOT_READY', request_id=request_id, trace_id=trace_id)
-        return
-
-    if session_config is None:
-        session_config = await sync_to_async(_resolve_connection_tts_session_config, thread_sensitive=True)(
-            resolved_connection,
-            config,
-        )
-    model_code = tts_services.get_tts_model_profile_code_from_session(session_config, config.model)
+    adapter = bundle.adapter
+    voice = bundle.voice
+    config = bundle.config
+    session_config = bundle.session_config
 
     _log_agent_voice_pipeline(
         'tts.request',
@@ -1951,7 +2039,7 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
         device_code=device_code,
         payload={
             'providerCode': voice.provider.code,
-            'model': model_code,
+            'model': bundle.model_code,
             'voiceId': getattr(voice, 'id', None),
             'voiceCode': getattr(voice, 'voice_code', None),
             'sessionConfig': session_config,
@@ -1974,6 +2062,7 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
         controls=session_config,
         exclude_patterns=payload.get('ttsFilterExcludePatterns') or [],
         send=_with_command_id(send, command_id, request_id=request_id, trace_id=trace_id),
+        prepared=bundle.prepared,
     )
     logger.info(
         'realtime.agent.tts_done agent_session=%s request_id=%s trace_id=%s device_code=%s',
@@ -2044,9 +2133,16 @@ async def _agent_tts_segments(first_segment: str, queue: asyncio.Queue, *, comma
             yield segment
 
 
-def _pop_llm_tts_segments(buffer: str, session: dict[str, Any], *, flush: bool = False) -> tuple[list[str], str]:
+def _pop_llm_tts_segments(
+    buffer: str,
+    session: dict[str, Any],
+    *,
+    emitted_segments: int = 0,
+    flush: bool = False,
+) -> tuple[list[str], str]:
     return tts_services.pop_tts_text_segments(
         buffer,
+        emitted_segments=emitted_segments,
         filter_punctuation=str(session.get('ttsFilterPunctuation') or ''),
         filter_emoji=bool(session.get('ttsFilterEmoji')),
         exclude_patterns=session.get('ttsFilterExcludePatterns') or [],

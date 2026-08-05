@@ -147,6 +147,12 @@
   - A: 不会。“不属于本公司的音色 id”和“根本不存在的 id”共用同一条错误文案，避免超管界面之外的调用方靠错误差异枚举其它公司的复刻音色。
 - Q: 设备侧绑定的音色被取消勾选后会怎样？
   - A: `resolve_device_tts_voice` 每次都重跑完整两级派生条件（不只校验卡片），绑定失效即回落到公司默认音色，再回落到第一个已授权音色；一个都没有时 `resources.voiceTones` 返回空数组，runtime TTS 返回 400。
+- Q: 为什么三合一实时语音的首段现在很短？
+  - A: `pop_tts_text_segments` 对第 1/2 段在达到 12/30 字后只放行词间空隙；硬标点立即切分，软标点仍至少 4 字，80 字仍是唯一硬上限。因此首段可在闭合括号、引号或标点处尽早播报，不会为凑阈值硬切词；小数点和列表序号继续不是边界。
+- Q: TTS 上游预热发生在哪里，失败会中断智能体回答吗？
+  - A: `config/realtime.py:_agent_tts_worker` 在等待第一个 LLM-TTS 段之前完成授权解析、适配器配置、CosyVoice WebSocket 握手与 `run-task`/`task-started`。预热与 LLM TTFT 并行；失败只在有文本需要播报时发送既有 `tts.error`（`1023`/`1024`/`1025`），LLM 仍可正常发送 `agent.done`。空回答、取消和断线都会幂等关闭预热句柄。
+- Q: 为什么 CosyVoice 的 `tts.segment_start` / `tts.segment_end` 与音频文本可能不再精确对应？
+  - A: 整条回答只开一个 CosyVoice task，后续文本以 `continue-task` 追加，消除了段间 `run-task` RTT；该协议只按 task 而非 continue 帧标记音频归属。服务端因此在发送下一段前结束上一段，事件类型与序号不变，客户端仍严格按 PCM 到达顺序播放。
 
 ## 相关文件清单
 
@@ -191,3 +197,4 @@
 - 2026-06-11T00:00:00+08:00：移除独立 `/ai-models/chat` 菜单入口；聊天会话 API 保留给应用管理调试会话使用。
 - 2026-08-03T00:00:00+08:00：TTS 授权粒度下沉到音色级——`TenantTTSProviderGrant` 新增 `grant_mode`（`all` / `selected`），新增 `TenantTTSVoiceGrant` 逐音色授权表，`TTSVoice` 新增 `owner_tenant`（CosyVoice 复刻音色归属公司，`NULL` 为平台公有），`is_visible` 语义明确为「平台上架」并只改 `verbose_name`（迁移 `0049` / `0050` / `0051` 拆分为三个可独立回滚的纯新增迁移）。`tts_authorization.py` 的派生条件收在同一个 `.filter()` 内；授权 PUT 的 `defaultVoiceId` 改为对保存后派生集合校验；跨公司与不存在的音色 id 共用同一错误文案防探测；`resolve_device_tts_voice` 同步执行完整两级校验。
 - 2026-08-03T00:10:00+08:00：清理 TTS 平台维度遗留死代码——删除 `apps/ai_models/services/tts.py` 的 `get_effective_tts_voice_for_tenant`（与 `tts_authorization.py` 同名函数不是一个，它绕过两级授权推导，随 `realtime_tts.resolve_tts_voice` 一起失去最后一个调用方）。公司维度「用哪个音色」只剩 `services/tts_authorization.py` 一个入口。
+- 2026-08-05T00:00:00+08:00：三合一实时语音首包链路改为渐进切段（首段/第二段 12/30 字词间放行、80 字硬上限）、CosyVoice 单 task 双工流，以及与 LLM TTFT 并行的 TTS 预热。CosyVoice 下游事件序列不变，但 `tts.segment_*` 在单 task 内是近似标记；预热失败沿用 `tts.error`，不打断 `agent.done`，并在取消、断线或空回答时回收空闲上游连接。
