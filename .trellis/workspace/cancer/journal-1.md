@@ -435,3 +435,36 @@ Sentry PYTHON-DJANGO-47/-48 (ImportError: TenantTTSProviderGrant) 定位为切�
 ### Next Steps
 
 - None - task complete
+
+
+## Session 14: 优化智能体对话设置 TTS 过滤规则 UI
+
+**Date**: 2026-08-06
+**Task**: 优化智能体对话设置 TTS 过滤规则 UI
+**Branch**: `dev`
+
+### Summary
+
+对话设置播报过滤全套重做：自动过滤/不播报字符 chip+预设/不播报文本三区；补 vite-env Tabler ambient 类型；空格换行开关与 chip 写路径统一 64 长度守卫；frontend component/quality spec 记录约定。tsc 与 vite build 通过，trellis-check pass。
+
+### Main Changes
+
+- Detailed change bullets were not supplied; see the summary above.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `2819630` | (see git log) |
+
+### Testing
+
+- Validation was not recorded for this session.
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete

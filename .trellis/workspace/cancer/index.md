@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 13
-- **Last Active**: 2026-08-05
+- **Total Sessions**: 14
+- **Last Active**: 2026-08-06
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~437 | Active |
+| `journal-1.md` | ~470 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 14 | 2026-08-06 | 优化智能体对话设置 TTS 过滤规则 UI | `2819630` | `dev` |
 | 13 | 2026-08-05 | 修复唤醒词跨租户运行时泄露 | `0f7239e` | `dev` |
 | 12 | 2026-08-05 | 修复唤醒词删除服务器错误 | `79c34e3` | `dev` |
 | 11 | 2026-08-04 | ASR 自动语言识别 | `43dc501` | `dev` |
