@@ -116,6 +116,9 @@ import {
   IconFileUnknown,
   IconBolt,
   IconCopy,
+  IconMoodSmile,
+  IconSpace,
+  IconCornerDownLeft,
 } from '@tabler/icons-react';
 
 type RuntimeBackendType = 'platform_llm' | 'third_party_chatbot';
@@ -2528,53 +2531,60 @@ export const ApplicationManagementPage = () => {
                   </div>
                   <Switch checked={replyPlaybackEnabled} disabled={!canUpdate || !ttsReady} onChange={setReplyPlaybackEnabled} />
                 </div>
-                <div className="grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <div className="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-1">
+                <div className="flex flex-col gap-3 border-t border-slate-100 pt-4">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
                     <span className="text-fluid-sm font-bold text-slate-700">过滤规则</span>
-                    <Input
-                      value={visibleTtsFilterPunctuation(ttsFilterPunctuation)}
-                      disabled={!canUpdate}
-                      maxLength={64 - (filtersTtsSpaces ? 1 : 0) - (filtersTtsLineBreaks ? 2 : 0)}
-                      onChange={(event) => setTtsFilterPunctuation(buildTtsFilterPunctuation(
-                        event.target.value,
-                        filtersTtsSpaces,
-                        filtersTtsLineBreaks,
-                      ))}
-                      placeholder="留空=不过滤；可填 -、*、# 等符号"
-                      className="text-fluid-xs font-mono"
-                    />
-                    <span className="text-fluid-xs text-slate-400">
-                      输入框按字面保存可见字符（包括反斜杠和 n）；半角空格与 CR/LF 由右侧开关配置。Markdown 和句读不会自动删除。
-                    </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50/80 py-1.5 pl-3 pr-2">
+                        <IconMoodSmile size={14} className="text-slate-400" />
+                        <span className="text-fluid-xs text-slate-600">过滤表情</span>
+                        <Switch size="small" checked={ttsFilterEmoji} disabled={!canUpdate} onChange={setTtsFilterEmoji} />
+                      </div>
+                      <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50/80 py-1.5 pl-3 pr-2">
+                        <IconSpace size={14} className="text-slate-400" />
+                        <span className="text-fluid-xs text-slate-600">过滤半角空格</span>
+                        <Switch
+                          size="small"
+                          checked={filtersTtsSpaces}
+                          disabled={!canUpdate}
+                          onChange={(checked) => setTtsFilterPunctuation(buildTtsFilterPunctuation(
+                            visibleTtsFilterPunctuation(ttsFilterPunctuation),
+                            checked,
+                            filtersTtsLineBreaks,
+                          ))}
+                        />
+                      </div>
+                      <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50/80 py-1.5 pl-3 pr-2">
+                        <IconCornerDownLeft size={14} className="text-slate-400" />
+                        <span className="text-fluid-xs text-slate-600">过滤换行（CR/LF）</span>
+                        <Switch
+                          size="small"
+                          checked={filtersTtsLineBreaks}
+                          disabled={!canUpdate}
+                          onChange={(checked) => setTtsFilterPunctuation(buildTtsFilterPunctuation(
+                            visibleTtsFilterPunctuation(ttsFilterPunctuation),
+                            filtersTtsSpaces,
+                            checked,
+                          ))}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 lg:self-end">
-                    <span className="text-fluid-sm font-medium text-slate-700">过滤表情</span>
-                    <Switch checked={ttsFilterEmoji} disabled={!canUpdate} onChange={setTtsFilterEmoji} />
-                  </div>
-                  <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 lg:self-end">
-                    <span className="text-fluid-sm font-medium text-slate-700">过滤半角空格</span>
-                    <Switch
-                      checked={filtersTtsSpaces}
-                      disabled={!canUpdate}
-                      onChange={(checked) => setTtsFilterPunctuation(buildTtsFilterPunctuation(
-                        visibleTtsFilterPunctuation(ttsFilterPunctuation),
-                        checked,
-                        filtersTtsLineBreaks,
-                      ))}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 lg:self-end">
-                    <span className="text-fluid-sm font-medium text-slate-700">过滤换行（CR/LF）</span>
-                    <Switch
-                      checked={filtersTtsLineBreaks}
-                      disabled={!canUpdate}
-                      onChange={(checked) => setTtsFilterPunctuation(buildTtsFilterPunctuation(
-                        visibleTtsFilterPunctuation(ttsFilterPunctuation),
-                        filtersTtsSpaces,
-                        checked,
-                      ))}
-                    />
-                  </div>
+                  <Input
+                    value={visibleTtsFilterPunctuation(ttsFilterPunctuation)}
+                    disabled={!canUpdate}
+                    maxLength={64 - (filtersTtsSpaces ? 1 : 0) - (filtersTtsLineBreaks ? 2 : 0)}
+                    onChange={(event) => setTtsFilterPunctuation(buildTtsFilterPunctuation(
+                      event.target.value,
+                      filtersTtsSpaces,
+                      filtersTtsLineBreaks,
+                    ))}
+                    placeholder="留空=不过滤；可填 -、*、# 等符号"
+                    className="text-fluid-xs font-mono"
+                  />
+                  <span className="text-fluid-xs text-slate-400">
+                    输入框按字面保存可见字符（包括反斜杠和 n）；半角空格与 CR/LF 由上方开关配置。Markdown 和句读不会自动删除。
+                  </span>
                 </div>
                 <div className="flex flex-col gap-2 border-t border-slate-100 pt-4">
                   <div className="flex items-center justify-between gap-3">
