@@ -1120,6 +1120,7 @@ async def _run_llm_session_body(
         filter_punctuation=str(session.get('ttsFilterPunctuation') or ''),
         filter_emoji=bool(session.get('ttsFilterEmoji')),
         exclude_patterns=session.get('ttsFilterExcludePatterns') or [],
+        soft_boundary_target=tts_services.DEFAULT_TTS_SOFT_SEGMENT_TARGET_CHARACTERS,
     )
 
     async def emit_tts_text(text: str, *, finish: bool = False) -> None:

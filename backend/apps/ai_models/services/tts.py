@@ -19,7 +19,9 @@ from apps.ai_models.models import TTSProvider, TTSVoice, TenantTTSSettings
 PCM_SOURCE_FORMAT = 'pcm_s16le'
 DEFAULT_TEST_TEXT = '对吧~我就特别喜欢这种超市，尤其是过年的时候去逛超市就会觉得超级超级开心！想买好多好多的东西呢！'
 COSYVOICE_TTS_MODEL = 'cosyvoice-v3.5-plus'
-DEFAULT_TTS_SEGMENT_BOUNDARIES = frozenset('。！？!?；;，,：:、\r\n')
+DEFAULT_TTS_SEGMENT_BOUNDARIES = frozenset('。！？!?；;')
+DEFAULT_TTS_SOFT_SEGMENT_BOUNDARIES = frozenset('，,：:、\r\n')
+DEFAULT_TTS_SOFT_SEGMENT_TARGET_CHARACTERS = 32
 TTS_EMOJI_PATTERN = re.compile(r'[\U0001F000-\U0001FAFF\u2600-\u27BF\ufe0f]')
 COSYVOICE_MAX_MESSAGE_CHARACTERS = 20_000
 COSYVOICE_MAX_TASK_CHARACTERS = 200_000
@@ -253,6 +255,8 @@ def normalize_tts_text(text: str | None, config: EffectiveTTSConfig) -> str:
 class _TTSStreamToken:
     text: str = ''
     boundary: bool = False
+    hard_boundary: bool = False
+
 
 
 class _LiteralExclusionStage:
@@ -278,9 +282,10 @@ class _LiteralExclusionStage:
         char_positions = [index for index, token in enumerate(self._pending) if token.text]
         visible = ''.join(self._pending[index].text for index in char_positions)
         if visible.endswith(self.pattern):
+            hard_boundary = any(token.hard_boundary for token in self._pending)
             boundary = any(token.boundary for token in self._pending)
             self._pending = []
-            return [_TTSStreamToken(boundary=True)] if boundary else []
+            return [_TTSStreamToken(boundary=boundary, hard_boundary=hard_boundary)] if boundary else []
 
         max_prefix_length = min(len(visible), len(self.pattern) - 1)
         held_characters = 0
@@ -301,7 +306,7 @@ class _LiteralExclusionStage:
 
 
 class TTSStreamingTextProcessor:
-    """Apply page-owned TTS rules once, then split only at source boundaries."""
+    """Apply page-owned TTS rules once, then split at hard or sized soft boundaries."""
 
     def __init__(
         self,
@@ -309,6 +314,7 @@ class TTSStreamingTextProcessor:
         filter_punctuation: str | None = None,
         filter_emoji: bool = False,
         exclude_patterns: list[str] | tuple[str, ...] | None = None,
+        soft_boundary_target: int | None = None,
     ):
         self._exclusion_stages = [
             _LiteralExclusionStage(pattern)
@@ -316,6 +322,7 @@ class TTSStreamingTextProcessor:
         ]
         self._filtered_characters = frozenset(filter_punctuation or '')
         self._filter_emoji = filter_emoji
+        self._soft_boundary_target = soft_boundary_target
         self._segment_characters: list[str] = []
         self._finished = False
 
@@ -323,7 +330,11 @@ class TTSStreamingTextProcessor:
         if self._finished:
             raise RuntimeError('TTS text processor is already finished.')
         tokens = [
-            _TTSStreamToken(char, char in DEFAULT_TTS_SEGMENT_BOUNDARIES)
+            _TTSStreamToken(
+                char,
+                char in DEFAULT_TTS_SEGMENT_BOUNDARIES or char in DEFAULT_TTS_SOFT_SEGMENT_BOUNDARIES,
+                char in DEFAULT_TTS_SEGMENT_BOUNDARIES,
+            )
             for char in str(text or '')
         ]
         return self._consume(self._apply_rules(tokens))
@@ -361,7 +372,7 @@ class TTSStreamingTextProcessor:
             )
             if remove_character:
                 if token.boundary:
-                    filtered.append(_TTSStreamToken(boundary=True))
+                    filtered.append(_TTSStreamToken(boundary=True, hard_boundary=token.hard_boundary))
                 continue
             filtered.append(token)
         return filtered
@@ -371,7 +382,13 @@ class TTSStreamingTextProcessor:
         for token in tokens:
             if token.text:
                 self._segment_characters.append(token.text)
-            if token.boundary and self._segment_characters:
+            soft_boundary_ready = (
+                token.boundary
+                and not token.hard_boundary
+                and self._soft_boundary_target is not None
+                and len(self._segment_characters) >= self._soft_boundary_target
+            )
+            if token.boundary and (token.hard_boundary or soft_boundary_ready) and self._segment_characters:
                 segments.append(''.join(self._segment_characters))
                 self._segment_characters = []
         return segments

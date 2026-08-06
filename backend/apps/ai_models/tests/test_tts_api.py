@@ -35,7 +35,7 @@ class TTSServiceTests(TestCase):
 
         segments = tts_services.split_tts_text(source)
 
-        self.assertEqual(segments, ['**球形LED显示屏** \n', '- 内球幕LED显示屏'])
+        self.assertEqual(segments, ['**球形LED显示屏** \n- 内球幕LED显示屏'])
         self.assertEqual(''.join(segments), source)
 
     def test_split_tts_text_keeps_boundaries_after_configured_characters_are_removed(self):
@@ -45,6 +45,23 @@ class TTSServiceTests(TestCase):
         )
 
         self.assertEqual(segments, ['球形LED显示屏', '内球幕LED显示屏'])
+    def test_split_tts_text_keeps_product_lists_in_one_sentence(self):
+        source = '公司产品涵盖LED幕墙屏、LED异形屏、\nLED户外显示屏。'
+
+        segments = tts_services.split_tts_text(source)
+
+        self.assertEqual(segments, [source])
+    def test_streaming_processor_emits_sized_soft_boundaries(self):
+        source = '公司产品涵盖LED幕墙屏、LED异形屏、LED户外显示屏、LED室内显示屏。'
+        processor = tts_services.TTSStreamingTextProcessor(soft_boundary_target=20)
+
+        segments = [*processor.feed(source), *processor.finish()]
+
+        self.assertEqual(segments, [
+            '公司产品涵盖LED幕墙屏、LED异形屏、',
+            'LED户外显示屏、LED室内显示屏。',
+        ])
+        self.assertEqual(''.join(segments), source)
 
     def test_apply_agent_tts_rules_uses_page_rule_order(self):
         filtered = tts_services.apply_agent_tts_rules(
