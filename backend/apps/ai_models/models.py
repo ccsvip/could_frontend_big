@@ -882,6 +882,7 @@ class AgentApplication(models.Model):
     opening_message = models.TextField('开场白', blank=True, default='')
     suggested_questions = models.JSONField('建议问题', blank=True, default=list)
     follow_up_suggested_questions_enabled = models.BooleanField('是否启用回答后建议问题', default=False)
+    enable_web_search = models.BooleanField('是否启用联网搜索', default=False)
     voice_input_enabled = models.BooleanField('是否启用语音输入', default=False)
     reply_playback_enabled = models.BooleanField('是否自动播报回复', default=False)
     tts_filter_punctuation = models.CharField('TTS 过滤标点', max_length=64, blank=True, default='。！？!?；;、-')
@@ -951,6 +952,7 @@ class AgentApplication(models.Model):
             'opening_message': self.opening_message,
             'suggested_questions': list(self.suggested_questions or []),
             'follow_up_suggested_questions_enabled': self.follow_up_suggested_questions_enabled,
+            'enable_web_search': self.enable_web_search,
             'voice_input_enabled': self.voice_input_enabled,
             'reply_playback_enabled': self.reply_playback_enabled,
             'tts_filter_punctuation': self.tts_filter_punctuation,
@@ -993,6 +995,7 @@ class AgentApplication(models.Model):
                 'follow_up_suggested_questions_enabled',
                 self.follow_up_suggested_questions_enabled,
             ),
+            'enable_web_search': config.get('enable_web_search', self.enable_web_search),
             'voice_input_enabled': config.get('voice_input_enabled', self.voice_input_enabled),
             'reply_playback_enabled': config.get('reply_playback_enabled', self.reply_playback_enabled),
             'tts_filter_punctuation': config.get('tts_filter_punctuation', self.tts_filter_punctuation),

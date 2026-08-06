@@ -115,6 +115,8 @@ class LLMCompanySettingsApiTests(TenantTestMixin, APITestCase):
         self.assertNotIn('apiKey', str(resp.data))
         self.assertNotIn('apiBaseUrl', str(resp.data))
         self.assertEqual(resp.data['providers'][0]['models'][0]['id'], self.model.id)
+        self.assertIn('enableWebSearch', resp.data['providers'][0]['models'][0])
+        self.assertFalse(resp.data['providers'][0]['models'][0]['enableWebSearch'])
 
     def test_company_with_agent_application_view_can_see_models_without_llm_permission(self):
         self.grant_permissions('agent_applications.view')

@@ -386,6 +386,7 @@ export const ApplicationManagementPage = () => {
   const [openingMessage, setOpeningMessage] = useState('');
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
   const [followUpSuggestedQuestionsEnabled, setFollowUpSuggestedQuestionsEnabled] = useState(false);
+  const [enableWebSearch, setEnableWebSearch] = useState(false);
   const [followUpSuggestedQuestions, setFollowUpSuggestedQuestions] = useState<string[]>([]);
   const [newSuggestedQuestion, setNewSuggestedQuestion] = useState('');
   const [voiceInputEnabled, setVoiceInputEnabled] = useState(false);
@@ -490,6 +491,7 @@ export const ApplicationManagementPage = () => {
     setOpeningMessage(detail.openingMessage || '');
     setSuggestedQuestions(detail.suggestedQuestions || []);
     setFollowUpSuggestedQuestionsEnabled(Boolean(detail.followUpSuggestedQuestionsEnabled));
+    setEnableWebSearch(Boolean(detail.enableWebSearch));
     setFollowUpSuggestedQuestions([]);
     setNewSuggestedQuestion('');
     setVoiceInputEnabled(detail.voiceInputEnabled);
@@ -533,6 +535,9 @@ export const ApplicationManagementPage = () => {
     if (Boolean(detail.followUpSuggestedQuestionsEnabled) !== Boolean(payload.followUpSuggestedQuestionsEnabled)) {
       return '回答后建议问题';
     }
+    if (Boolean(detail.enableWebSearch) !== Boolean(payload.enableWebSearch)) {
+      return '联网搜索';
+    }
     if (detail.voiceInputEnabled !== payload.voiceInputEnabled) return '语音输入';
     if (detail.replyPlaybackEnabled !== payload.replyPlaybackEnabled) return '回复播报';
     if (!hasTtsFilterPunctuation) return 'TTS 过滤规则字段';
@@ -564,6 +569,7 @@ export const ApplicationManagementPage = () => {
     if (openingMessageEnabled !== selectedApplication.openingMessageEnabled) return true;
     if (openingMessage.trim() !== (selectedApplication.openingMessage || '')) return true;
     if (followUpSuggestedQuestionsEnabled !== Boolean(selectedApplication.followUpSuggestedQuestionsEnabled)) return true;
+    if (enableWebSearch !== Boolean(selectedApplication.enableWebSearch)) return true;
     if (voiceInputEnabled !== selectedApplication.voiceInputEnabled) return true;
     if (replyPlaybackEnabled !== selectedApplication.replyPlaybackEnabled) return true;
     if (ttsFilterPunctuation !== selectedApplication.ttsFilterPunctuation) return true;
@@ -598,6 +604,7 @@ export const ApplicationManagementPage = () => {
     openingMessage,
     suggestedQuestions,
     followUpSuggestedQuestionsEnabled,
+    enableWebSearch,
     voiceInputEnabled,
     replyPlaybackEnabled,
     ttsFilterPunctuation,
@@ -745,6 +752,14 @@ export const ApplicationManagementPage = () => {
     [llmOptions],
   );
   const hasAvailableLlmModels = llmModelOptions.length > 1;
+  const selectedModelSupportsWebSearch = useMemo(() => {
+    if (!llmModelId || !llmOptions) return false;
+    for (const provider of llmOptions.providers || []) {
+      const model = (provider.models || []).find((item) => item.id === llmModelId);
+      if (model) return Boolean(model.enableWebSearch);
+    }
+    return false;
+  }, [llmModelId, llmOptions]);
   const thirdPartyChatbotSelectOptions = useMemo(
     () => [
       { label: '无第三方机器人', value: 'none' },
@@ -1172,6 +1187,7 @@ export const ApplicationManagementPage = () => {
         openingMessage: openingMessage.trim(),
         suggestedQuestions: normalizedSuggestedQuestions,
         followUpSuggestedQuestionsEnabled,
+        enableWebSearch,
         voiceInputEnabled,
         replyPlaybackEnabled,
         ttsFilterPunctuation,
@@ -1222,6 +1238,7 @@ export const ApplicationManagementPage = () => {
     openingMessage,
     suggestedQuestions,
     followUpSuggestedQuestionsEnabled,
+    enableWebSearch,
     voiceInputEnabled,
     replyPlaybackEnabled,
     ttsFilterPunctuation,
@@ -2051,6 +2068,32 @@ export const ApplicationManagementPage = () => {
 
             {runtimeBackendType === 'platform_llm' ? (
               <>
+            <div className="rounded-xl border border-slate-200/60 bg-slate-50/40 px-3 py-3">
+              <div className="flex justify-between items-center gap-3">
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-bold text-slate-700">联网搜索</span>
+                    <Tooltip title="开启后请求会附带 enable_search / web_search；关闭可降低首字延迟。实际生效还需模型在 LLM 设置中开通联网能力。">
+                      <IconHelpCircle size={14} className="text-slate-400 cursor-help shrink-0" />
+                    </Tooltip>
+                  </div>
+                  <span className="text-fluid-xs text-slate-400">
+                    开启后模型可检索公网；关闭可降低首字延迟
+                  </span>
+                </div>
+                <Switch
+                  checked={enableWebSearch}
+                  disabled={!canUpdate || !selectedModelSupportsWebSearch}
+                  onChange={setEnableWebSearch}
+                />
+              </div>
+              {!selectedModelSupportsWebSearch ? (
+                <div className="mt-2 text-fluid-xs text-slate-400">
+                  当前模型未开通联网能力，请先在 LLM 设置中开启
+                </div>
+              ) : null}
+            </div>
+
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-1.5">
                 <span className="text-sm font-bold text-slate-700">系统提示词 (System Prompt)</span>

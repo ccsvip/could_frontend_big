@@ -783,3 +783,83 @@ class ChatApiTests(TenantTestMixin, APITestCase):
                 ]),
             ],
         )
+
+    def test_send_with_agent_application_respects_enable_web_search_switch(self):
+        self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')
+        provider = self.create_provider()
+        model = self.create_model(provider, enable_web_search=True)
+        self.grant_model(model)
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Search gated agent',
+            llm_model=model,
+            enable_web_search=False,
+        )
+        conversation = ChatConversation.objects.create(
+            tenant=self.tenant,
+            title='Agent search gate',
+            user=self.user,
+            llm_model=model,
+            application=application,
+        )
+
+        plain_json_response = json.dumps(
+            {
+                'choices': [
+                    {
+                        'message': {
+                            'role': 'assistant',
+                            'content': '不联网回复',
+                        },
+                    }
+                ],
+            }
+        )
+        dummy_client = _DummyHttpxClient(
+            _DummyStreamResponse([plain_json_response]),
+            post_response=_DummyJsonResponse({'choices': [{'message': {'content': '标题'}}]}),
+        )
+        with (
+            patch('apps.ai_models.views.httpx.AsyncClient', return_value=dummy_client),
+            patch(
+                'apps.ai_models.services.agent_knowledge.inject_knowledge_context_with_recall',
+                return_value=([], {}),
+            ),
+        ):
+            response = self.client.post(
+                f'/api/v1/ai-models/chat/conversations/{conversation.id}/send/',
+                {'content': '你好'},
+                format='json',
+            )
+            _read_streaming_body(response)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        request_payload = dummy_client.stream_calls[0][1]['json']
+        self.assertNotIn('enable_search', request_payload)
+        self.assertNotIn('search_options', request_payload)
+
+        application.enable_web_search = True
+        application.save(update_fields=['enable_web_search', 'updated_at'])
+        dummy_client_on = _DummyHttpxClient(
+            _DummyStreamResponse([plain_json_response]),
+            post_response=_DummyJsonResponse({'choices': [{'message': {'content': '标题'}}]}),
+        )
+        with (
+            patch('apps.ai_models.views.httpx.AsyncClient', return_value=dummy_client_on),
+            patch(
+                'apps.ai_models.services.agent_knowledge.inject_knowledge_context_with_recall',
+                return_value=([], {}),
+            ),
+        ):
+            response_on = self.client.post(
+                f'/api/v1/ai-models/chat/conversations/{conversation.id}/send/',
+                {'content': '天气怎样'},
+                format='json',
+            )
+            _read_streaming_body(response_on)
+
+        self.assertEqual(response_on.status_code, status.HTTP_200_OK)
+        request_payload_on = dummy_client_on.stream_calls[0][1]['json']
+        self.assertTrue(request_payload_on['enable_search'])
+        self.assertTrue(request_payload_on['search_options']['forced_search'])

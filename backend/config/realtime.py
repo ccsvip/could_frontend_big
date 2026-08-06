@@ -2451,7 +2451,9 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
             'apiBaseUrl': model.provider.api_base_url,
             'apiKey': model.provider.api_key,
             'apiProtocol': model.provider.api_protocol,
-            'enableWebSearch': model.enable_web_search,
+            'enableWebSearch': bool(model.enable_web_search) and bool(
+                runtime_config.get('enable_web_search', False)
+            ),
         },
         'llmModelId': model.id,
         'messages': messages,

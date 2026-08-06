@@ -1731,6 +1731,7 @@ def _build_company_llm_options_payload(tenant, request):
             'id': model.id,
             'name': model.name,
             'displayName': model.display_name,
+            'enableWebSearch': bool(model.enable_web_search),
             'isDefault': model.id == default_model_id,
         })
 
@@ -2710,7 +2711,12 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
 
         provider = model.provider
         model_name = model.name
-        enable_web_search = model.enable_web_search
+        enable_web_search = bool(model.enable_web_search)
+        if conversation.application_id is not None:
+            application = conversation.application
+            enable_web_search = enable_web_search and bool(
+                getattr(application, 'enable_web_search', False)
+            )
 
         # Build messages history
         history_messages = list(

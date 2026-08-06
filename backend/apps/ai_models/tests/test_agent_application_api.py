@@ -555,6 +555,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
             system_prompt='Published prompt.',
             temperature=0.3,
             max_tokens=900,
+            enable_web_search=True,
         )
         application.knowledge_documents.set([document])
 
@@ -567,6 +568,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         application.refresh_from_db()
         self.assertEqual(application.published_config['system_prompt'], 'Published prompt.')
         self.assertEqual(application.published_config['knowledge_document_ids'], [document.id])
+        self.assertTrue(application.published_config['enable_web_search'])
 
         application.system_prompt = 'Draft prompt after publish.'
         application.save(update_fields=['system_prompt', 'updated_at'])
@@ -764,6 +766,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         )
         self.assertEqual(response.data['suggestedQuestions'], [])
         self.assertFalse(response.data['followUpSuggestedQuestionsEnabled'])
+        self.assertFalse(response.data['enableWebSearch'])
         self.assertFalse(response.data['voiceInputEnabled'])
         self.assertFalse(response.data['replyPlaybackEnabled'])
         self.assertEqual(response.data['ttsFilterPunctuation'], '。！？!?；;、-')
@@ -786,6 +789,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
                 'openingMessage': '你好，我是客服助手。',
                 'suggestedQuestions': ['你能做什么？', '如何使用知识库？'],
                 'followUpSuggestedQuestionsEnabled': True,
+                'enableWebSearch': True,
                 'voiceInputEnabled': True,
                 'replyPlaybackEnabled': True,
                 'ttsFilterPunctuation': '。！？!?；;、',
@@ -799,6 +803,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['openingMessage'], '你好，我是客服助手。')
         self.assertEqual(response.data['suggestedQuestions'], ['你能做什么？', '如何使用知识库？'])
         self.assertTrue(response.data['followUpSuggestedQuestionsEnabled'])
+        self.assertTrue(response.data['enableWebSearch'])
         self.assertTrue(response.data['voiceInputEnabled'])
         self.assertTrue(response.data['replyPlaybackEnabled'])
         self.assertEqual(response.data['ttsFilterPunctuation'], '。！？!?；;、')
@@ -806,6 +811,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['ttsFilterExcludePatterns'], ['（动作提示）', '内心独白'])
         application.refresh_from_db()
         self.assertTrue(application.follow_up_suggested_questions_enabled)
+        self.assertTrue(application.enable_web_search)
         self.assertEqual(application.tts_filter_punctuation, '。！？!?；;、')
         self.assertFalse(application.tts_filter_emoji)
         self.assertEqual(application.tts_filter_exclude_patterns, ['（动作提示）', '内心独白'])
@@ -1348,3 +1354,75 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         doc1.file.delete()
         doc2.file.delete()
         doc3.file.delete()
+
+    def test_enable_web_search_backfill_follows_bound_model(self):
+        import importlib
+        from django.db import connection
+
+        provider = self.create_provider()
+        model_on = self.create_model(provider)
+        model_on.enable_web_search = True
+        model_on.save(update_fields=['enable_web_search'])
+        model_off = LLMModel.objects.create(
+            provider=provider,
+            name='gpt-no-search',
+            display_name='No Search',
+            is_active=True,
+            enable_web_search=False,
+        )
+        TenantLLMModelGrant.objects.create(tenant=self.tenant, model=model_off, is_active=True)
+
+        AgentApplication = self.agent_application_model()
+        app_on = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Backfill on',
+            llm_model=model_on,
+            enable_web_search=False,
+        )
+        app_off = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Backfill off',
+            llm_model=model_off,
+            enable_web_search=False,
+        )
+        app_none = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Backfill none',
+            enable_web_search=False,
+        )
+
+        migration = importlib.import_module(
+            'apps.ai_models.migrations.0052_agentapplication_enable_web_search'
+        )
+        migration.backfill_enable_web_search(apps, connection.schema_editor())
+
+        app_on.refresh_from_db()
+        app_off.refresh_from_db()
+        app_none.refresh_from_db()
+        self.assertTrue(app_on.enable_web_search)
+        self.assertFalse(app_off.enable_web_search)
+        self.assertFalse(app_none.enable_web_search)
+
+    def test_runtime_config_falls_back_enable_web_search_when_publish_key_missing(self):
+        provider = self.create_provider()
+        model = self.create_model(provider)
+        AgentApplication = self.agent_application_model()
+        application = AgentApplication.objects.create(
+            tenant=self.tenant,
+            created_by=self.user,
+            name='Legacy publish snapshot',
+            llm_model=model,
+            enable_web_search=True,
+        )
+        application.publish()
+        application.refresh_from_db()
+        published = dict(application.published_config)
+        published.pop('enable_web_search', None)
+        application.published_config = published
+        application.save(update_fields=['published_config', 'updated_at'])
+
+        runtime = application.runtime_config()
+        self.assertTrue(runtime['enable_web_search'])

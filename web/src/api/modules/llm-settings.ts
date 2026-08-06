@@ -5,6 +5,7 @@ export type LLMModelOption = {
   id: number;
   name: string;
   displayName: string;
+  enableWebSearch: boolean;
   isDefault: boolean;
 };
 
