@@ -157,6 +157,8 @@ The codebase follows a consistent import order per file. When adding imports to 
 5. **Creating inline `<span className="... text-\[13px\] ...">`** instead of choosing the appropriate `text-fluid-*` class.
 6. **Using `<Tag color="green">在线</Tag>`** inline instead of `<StatusTag type="online" />`.
 7. **Hardcoding Tailwind `gap-4` or `space-y-4`** inconsistently — prefer the project's established spacing conventions.
+8. **Importing a new `@tabler/icons-react` icon without updating `web/src/vite-env.d.ts`**. This repo shadows the package with a hand-maintained `declare module '@tabler/icons-react'` ambient list. Runtime/package d.ts may export the icon while `tsc -b` still fails with `has no exported member` until the ambient export is added.
+9. **Writing `ttsFilterPunctuation` length guards only on the character-chip path**. Space and linebreak toggles also append hidden characters (`' '` / `'\r\n'`) via `buildTtsFilterPunctuation`; every write path must enforce the same ≤64 total length limit.
 
 ---
 

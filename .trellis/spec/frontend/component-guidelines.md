@@ -25,3 +25,24 @@
 - Manual inline status tags with mixed color classes across different pages.
 - Mixing font scale systems (e.g. raw `text-xs` alongside `text-fluid-base`).
 - Adding `!` prefix classes in TSX components to patch Ant Design styles.
+
+---
+
+## Convention: Agent TTS filter rules UI
+
+**Where**: Application conversation settings (`web/src/views/application-management/index.tsx`) under reply playback.
+
+**API fields (unchanged contract)**:
+- `ttsFilterEmoji: boolean`
+- `ttsFilterPunctuation: string` — visible filter chars plus optional hidden `' '` and `'\r\n'`; deduped; total length ≤ 64
+- `ttsFilterExcludePatterns: string[]` — trim, dedupe, max 20, each ≤ 120
+
+**UI projection**:
+- Auto toggles: emoji / half-width space / line breaks (space & breaks are **not** separate API fields)
+- Visible chars: removable chips + preset toggles (`- * # _ \` ~ > |`) + custom multi-char add
+- Exclude patterns: add + delete only (no inline edit / no live filter preview panel)
+- Filter block stays fully editable when reply playback is off or TTS is not ready (`canUpdate` still applies)
+
+**Write paths**: chip remove, preset toggle, custom add, **and** space/linebreak switches must all refuse writes that would make `ttsFilterPunctuation.length > 64`, with the same user-facing warning.
+
+**Icons**: any new Tabler icon used here must also be exported from the ambient module in `web/src/vite-env.d.ts`.

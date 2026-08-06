@@ -150,8 +150,10 @@ const PAGE_SIZE = 10;
 const DEFAULT_TEMPERATURE = 0.7;
 const DEFAULT_MAX_TOKENS = 1000;
 const DEFAULT_TTS_FILTER_PUNCTUATION = '';
+const MAX_TTS_FILTER_PUNCTUATION_LENGTH = 64;
 const MAX_TTS_EXCLUDE_PATTERN_COUNT = 20;
 const MAX_TTS_EXCLUDE_PATTERN_LENGTH = 120;
+const TTS_FILTER_CHAR_PRESETS = ['-', '*', '#', '_', '`', '~', '>', '|'] as const;
 const ANNOTATION_PUNCTUATION_PATTERN = /\p{P}/gu;
 const ASR_BOUNDARY_PUNCTUATION_PATTERN = /^[\p{P}\s]+|[\p{P}\s]+$/gu;
 
@@ -167,6 +169,71 @@ const buildTtsFilterPunctuation = (visible: string, filterSpace: boolean, filter
     `${visibleTtsFilterPunctuation(visible)}${filterSpace ? ' ' : ''}${filterLineBreak ? '\r\n' : ''}`,
   )).join('')
 );
+
+type TtsFilterCharMutationResult = {
+  next: string;
+  changed: boolean;
+  error?: string;
+};
+
+const removeTtsFilterChar = (
+  punctuation: string,
+  char: string,
+  filterSpace: boolean,
+  filterLineBreak: boolean,
+): TtsFilterCharMutationResult => {
+  const current = new Set(Array.from(visibleTtsFilterPunctuation(punctuation)));
+  if (!current.delete(char)) {
+    return { next: punctuation, changed: false };
+  }
+  return {
+    next: buildTtsFilterPunctuation(Array.from(current).join(''), filterSpace, filterLineBreak),
+    changed: true,
+  };
+};
+
+const addTtsFilterChars = (
+  punctuation: string,
+  rawInput: string,
+  filterSpace: boolean,
+  filterLineBreak: boolean,
+): TtsFilterCharMutationResult => {
+  const incoming = Array.from(rawInput).filter((ch) => ch !== ' ' && ch !== '\r' && ch !== '\n');
+  if (incoming.length === 0) {
+    return { next: punctuation, changed: false, error: '请输入要过滤的字符' };
+  }
+  const current = new Set(Array.from(visibleTtsFilterPunctuation(punctuation)));
+  const beforeSize = current.size;
+  for (const ch of incoming) {
+    current.add(ch);
+  }
+  if (current.size === beforeSize) {
+    return { next: punctuation, changed: false, error: '字符已存在' };
+  }
+  const next = buildTtsFilterPunctuation(Array.from(current).join(''), filterSpace, filterLineBreak);
+  if (next.length > MAX_TTS_FILTER_PUNCTUATION_LENGTH) {
+    return {
+      next: punctuation,
+      changed: false,
+      error: '不播报字符过多（含空格/换行占用），请先删除部分字符',
+    };
+  }
+  return { next, changed: true };
+};
+
+const toggleTtsFilterChar = (
+  punctuation: string,
+  char: string,
+  filterSpace: boolean,
+  filterLineBreak: boolean,
+): TtsFilterCharMutationResult => {
+  const current = Array.from(visibleTtsFilterPunctuation(punctuation));
+  if (current.includes(char)) {
+    return removeTtsFilterChar(punctuation, char, filterSpace, filterLineBreak);
+  }
+  return addTtsFilterChars(punctuation, char, filterSpace, filterLineBreak);
+};
+
 const textBlock = (text: string): AgentReplyBlock => ({ type: 'text', text });
 const blocksToText = (blocks: AgentReplyBlock[]) => blocks
   .filter((block): block is Extract<AgentReplyBlock, { type: 'text' }> => block.type === 'text')
@@ -405,8 +472,11 @@ export const ApplicationManagementPage = () => {
   const [ttsFilterEmoji, setTtsFilterEmoji] = useState(true);
   const [ttsFilterExcludePatterns, setTtsFilterExcludePatterns] = useState<string[]>([]);
   const [newTtsFilterExcludePattern, setNewTtsFilterExcludePattern] = useState('');
+  const [newTtsFilterCharInput, setNewTtsFilterCharInput] = useState('');
   const filtersTtsSpaces = ttsFilterPunctuation.includes(' ');
   const filtersTtsLineBreaks = ttsFilterPunctuation.includes('\r') || ttsFilterPunctuation.includes('\n');
+  const visibleTtsFilterChars = Array.from(visibleTtsFilterPunctuation(ttsFilterPunctuation));
+  const visibleTtsFilterCharSet = new Set(visibleTtsFilterChars);
   const [asrStatus, setAsrStatus] = useState<AsrStatusRecord | null>(null);
   const [ttsOptions, setTtsOptions] = useState<CompanyTtsOptions | null>(null);
   const agentAudio = useAgentAudio();
@@ -512,6 +582,7 @@ export const ApplicationManagementPage = () => {
     setTtsFilterEmoji(detail.ttsFilterEmoji);
     setTtsFilterExcludePatterns(normalizeTtsFilterExcludePatterns(detail.ttsFilterExcludePatterns || []));
     setNewTtsFilterExcludePattern('');
+    setNewTtsFilterCharInput('');
   }, []);
 
   const getApplicationSaveMismatch = (detail: AgentApplicationRecord, payload: AgentApplicationPayload) => {
@@ -1441,6 +1512,39 @@ export const ApplicationManagementPage = () => {
       agentAudio.stopRecording({ suppressDone: true, cancel: true });
     }
     await sendChatContent(content);
+  };
+
+  const applyTtsFilterCharMutation = (result: TtsFilterCharMutationResult, options?: { clearInput?: boolean }) => {
+    if (result.error) {
+      message.warning(result.error);
+      return;
+    }
+    if (!result.changed) {
+      return;
+    }
+    setTtsFilterPunctuation(result.next);
+    if (options?.clearInput) {
+      setNewTtsFilterCharInput('');
+    }
+  };
+
+  const handleToggleTtsFilterChar = (char: string) => {
+    applyTtsFilterCharMutation(
+      toggleTtsFilterChar(ttsFilterPunctuation, char, filtersTtsSpaces, filtersTtsLineBreaks),
+    );
+  };
+
+  const handleRemoveTtsFilterChar = (char: string) => {
+    applyTtsFilterCharMutation(
+      removeTtsFilterChar(ttsFilterPunctuation, char, filtersTtsSpaces, filtersTtsLineBreaks),
+    );
+  };
+
+  const handleAddTtsFilterChars = () => {
+    applyTtsFilterCharMutation(
+      addTtsFilterChars(ttsFilterPunctuation, newTtsFilterCharInput, filtersTtsSpaces, filtersTtsLineBreaks),
+      { clearInput: true },
+    );
   };
 
   const addTtsFilterExcludePattern = () => {
@@ -2531,68 +2635,155 @@ export const ApplicationManagementPage = () => {
                   </div>
                   <Switch checked={replyPlaybackEnabled} disabled={!canUpdate || !ttsReady} onChange={setReplyPlaybackEnabled} />
                 </div>
+                {/* 自动过滤 */}
                 <div className="flex flex-col gap-3 border-t border-slate-100 pt-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <span className="text-fluid-sm font-bold text-slate-700">过滤规则</span>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50/80 py-1.5 pl-3 pr-2">
-                        <IconMoodSmile size={14} className="text-slate-400" />
-                        <span className="text-fluid-xs text-slate-600">过滤表情</span>
-                        <Switch size="small" checked={ttsFilterEmoji} disabled={!canUpdate} onChange={setTtsFilterEmoji} />
-                      </div>
-                      <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50/80 py-1.5 pl-3 pr-2">
-                        <IconSpace size={14} className="text-slate-400" />
-                        <span className="text-fluid-xs text-slate-600">过滤半角空格</span>
-                        <Switch
-                          size="small"
-                          checked={filtersTtsSpaces}
-                          disabled={!canUpdate}
-                          onChange={(checked) => setTtsFilterPunctuation(buildTtsFilterPunctuation(
+                  <div className="flex flex-col gap-1">
+                    <span className="text-fluid-sm font-bold text-slate-700">自动过滤</span>
+                    <span className="text-fluid-xs text-slate-400">播报前去掉这些内容；不影响聊天区原文显示</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50/80 py-1.5 pl-3 pr-2">
+                      <IconMoodSmile size={14} className="text-slate-400" />
+                      <span className="text-fluid-xs text-slate-600">过滤表情</span>
+                      <Switch size="small" checked={ttsFilterEmoji} disabled={!canUpdate} onChange={setTtsFilterEmoji} />
+                    </div>
+                    <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50/80 py-1.5 pl-3 pr-2">
+                      <IconSpace size={14} className="text-slate-400" />
+                      <span className="text-fluid-xs text-slate-600">过滤半角空格</span>
+                      <Switch
+                        size="small"
+                        checked={filtersTtsSpaces}
+                        disabled={!canUpdate}
+                        onChange={(checked) => {
+                          const next = buildTtsFilterPunctuation(
                             visibleTtsFilterPunctuation(ttsFilterPunctuation),
                             checked,
                             filtersTtsLineBreaks,
-                          ))}
-                        />
-                      </div>
-                      <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50/80 py-1.5 pl-3 pr-2">
-                        <IconCornerDownLeft size={14} className="text-slate-400" />
-                        <span className="text-fluid-xs text-slate-600">过滤换行（CR/LF）</span>
-                        <Switch
-                          size="small"
-                          checked={filtersTtsLineBreaks}
-                          disabled={!canUpdate}
-                          onChange={(checked) => setTtsFilterPunctuation(buildTtsFilterPunctuation(
+                          );
+                          if (next.length > MAX_TTS_FILTER_PUNCTUATION_LENGTH) {
+                            message.warning('不播报字符过多（含空格/换行占用），请先删除部分字符');
+                            return;
+                          }
+                          setTtsFilterPunctuation(next);
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50/80 py-1.5 pl-3 pr-2">
+                      <IconCornerDownLeft size={14} className="text-slate-400" />
+                      <span className="text-fluid-xs text-slate-600">过滤换行</span>
+                      <Switch
+                        size="small"
+                        checked={filtersTtsLineBreaks}
+                        disabled={!canUpdate}
+                        onChange={(checked) => {
+                          const next = buildTtsFilterPunctuation(
                             visibleTtsFilterPunctuation(ttsFilterPunctuation),
                             filtersTtsSpaces,
                             checked,
-                          ))}
-                        />
-                      </div>
+                          );
+                          if (next.length > MAX_TTS_FILTER_PUNCTUATION_LENGTH) {
+                            message.warning('不播报字符过多（含空格/换行占用），请先删除部分字符');
+                            return;
+                          }
+                          setTtsFilterPunctuation(next);
+                        }}
+                      />
                     </div>
                   </div>
-                  <Input
-                    value={visibleTtsFilterPunctuation(ttsFilterPunctuation)}
-                    disabled={!canUpdate}
-                    maxLength={64 - (filtersTtsSpaces ? 1 : 0) - (filtersTtsLineBreaks ? 2 : 0)}
-                    onChange={(event) => setTtsFilterPunctuation(buildTtsFilterPunctuation(
-                      event.target.value,
-                      filtersTtsSpaces,
-                      filtersTtsLineBreaks,
-                    ))}
-                    placeholder="留空=不过滤；可填 -、*、# 等符号"
-                    className="text-fluid-xs font-mono"
-                  />
-                  <span className="text-fluid-xs text-slate-400">
-                    输入框按字面保存可见字符（包括反斜杠和 n）；半角空格与 CR/LF 由上方开关配置。Markdown 和句读不会自动删除。
-                  </span>
                 </div>
-                <div className="flex flex-col gap-2 border-t border-slate-100 pt-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-bold text-slate-700">不播报文本</span>
-                      <span className="text-xs text-slate-400">播报前会从回复中移除这些文本片段，其余内容继续送去 TTS</span>
+
+                {/* 不播报字符 */}
+                <div className="flex flex-col gap-3 border-t border-slate-100 pt-4">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-fluid-sm font-bold text-slate-700">不播报字符</span>
+                    <span className="text-fluid-xs text-slate-400">
+                      逐字去掉；半角空格与换行请用上方开关。不会自动删除 Markdown 或中文句读
+                    </span>
+                  </div>
+
+                  {visibleTtsFilterChars.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {visibleTtsFilterChars.map((char) => (
+                        <Tag
+                          key={`tts-filter-char-${char}`}
+                          closable={canUpdate}
+                          onClose={(event) => {
+                            event.preventDefault();
+                            handleRemoveTtsFilterChar(char);
+                          }}
+                          className="m-0 inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 font-mono text-fluid-xs text-slate-700"
+                        >
+                          {char}
+                        </Tag>
+                      ))}
                     </div>
-                    <Tag color="default" className="m-0">{ttsFilterExcludePatterns.length}/{MAX_TTS_EXCLUDE_PATTERN_COUNT}</Tag>
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-3 py-2 text-fluid-xs text-slate-400">
+                      未添加不播报字符
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-2">
+                    <span className="text-fluid-xs text-slate-500">快捷添加</span>
+                    <div className="flex flex-wrap gap-2">
+                      {TTS_FILTER_CHAR_PRESETS.map((char) => {
+                        const selected = visibleTtsFilterCharSet.has(char);
+                        return (
+                          <button
+                            key={`tts-filter-preset-${char}`}
+                            type="button"
+                            disabled={!canUpdate}
+                            onClick={() => handleToggleTtsFilterChar(char)}
+                            className={[
+                              'inline-flex min-w-8 items-center justify-center rounded-full border px-2.5 py-1 font-mono text-fluid-xs transition-colors',
+                              selected
+                                ? 'border-brand-200 bg-brand-50 text-brand-700'
+                                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50',
+                              !canUpdate ? 'cursor-not-allowed opacity-60' : 'cursor-pointer',
+                            ].join(' ')}
+                            aria-pressed={selected}
+                          >
+                            {char}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Input
+                      value={newTtsFilterCharInput}
+                      disabled={!canUpdate || visibleTtsFilterChars.length + (filtersTtsSpaces ? 1 : 0) + (filtersTtsLineBreaks ? 2 : 0) >= MAX_TTS_FILTER_PUNCTUATION_LENGTH}
+                      maxLength={Math.max(
+                        0,
+                        MAX_TTS_FILTER_PUNCTUATION_LENGTH
+                          - (filtersTtsSpaces ? 1 : 0)
+                          - (filtersTtsLineBreaks ? 2 : 0)
+                          - visibleTtsFilterChars.length,
+                      )}
+                      onChange={(event) => setNewTtsFilterCharInput(event.target.value)}
+                      onPressEnter={handleAddTtsFilterChars}
+                      placeholder="自定义字符，可一次输入多个"
+                      className="text-fluid-xs font-mono"
+                    />
+                    <Button
+                      disabled={!canUpdate || visibleTtsFilterChars.length + (filtersTtsSpaces ? 1 : 0) + (filtersTtsLineBreaks ? 2 : 0) >= MAX_TTS_FILTER_PUNCTUATION_LENGTH}
+                      onClick={handleAddTtsFilterChars}
+                      className="flex items-center justify-center gap-1 sm:w-24"
+                    >
+                      <IconPlus size={14} /> 添加
+                    </Button>
+                  </div>
+                </div>
+
+                {/* 不播报文本 */}
+                <div className="flex flex-col gap-3 border-t border-slate-100 pt-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-fluid-sm font-bold text-slate-700">不播报文本</span>
+                      <span className="text-fluid-xs text-slate-400">整段匹配移除；其余内容继续播报</span>
+                    </div>
+                    <Tag color="default" className="m-0 text-fluid-xs">{ttsFilterExcludePatterns.length}/{MAX_TTS_EXCLUDE_PATTERN_COUNT}</Tag>
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row">
                     <Input
@@ -2602,6 +2793,7 @@ export const ApplicationManagementPage = () => {
                       onChange={(event) => setNewTtsFilterExcludePattern(event.target.value)}
                       onPressEnter={addTtsFilterExcludePattern}
                       placeholder="例如：括号内的舞台提示、动作说明等"
+                      className="text-fluid-xs"
                     />
                     <Button
                       disabled={!canUpdate || ttsFilterExcludePatterns.length >= MAX_TTS_EXCLUDE_PATTERN_COUNT}
@@ -2618,7 +2810,7 @@ export const ApplicationManagementPage = () => {
                           key={`${pattern}-${index}`}
                           className="flex items-center justify-between gap-2 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2"
                         >
-                          <span className="min-w-0 flex-1 break-words text-sm text-slate-700">{pattern}</span>
+                          <span className="min-w-0 flex-1 break-words text-fluid-sm text-slate-700">{pattern}</span>
                           <Button
                             type="text"
                             danger
@@ -2633,7 +2825,7 @@ export const ApplicationManagementPage = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-3 py-2 text-xs text-slate-400">
+                    <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-3 py-2 text-fluid-xs text-slate-400">
                       暂未配置不播报文本
                     </div>
                   )}

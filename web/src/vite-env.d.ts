@@ -34,6 +34,7 @@ declare module '@tabler/icons-react' {
   export const IconClock: ComponentType<IconProps>;
   export const IconCloud: ComponentType<IconProps>;
   export const IconCloudUpload: ComponentType<IconProps>;
+  export const IconCornerDownLeft: ComponentType<IconProps>;
   export const IconCopy: ComponentType<IconProps>;
   export const IconDatabase: ComponentType<IconProps>;
   export const IconDeviceDesktop: ComponentType<IconProps>;
@@ -63,6 +64,7 @@ declare module '@tabler/icons-react' {
   export const IconMap: ComponentType<IconProps>;
   export const IconMapPin: ComponentType<IconProps>;
   export const IconMenu2: ComponentType<IconProps>;
+  export const IconMoodSmile: ComponentType<IconProps>;
   export const IconMessage: ComponentType<IconProps>;
   export const IconMicrophone: ComponentType<IconProps>;
   export const IconMicrophoneOff: ComponentType<IconProps>;
@@ -80,6 +82,7 @@ declare module '@tabler/icons-react' {
   export const IconSend: ComponentType<IconProps>;
   export const IconSettings: ComponentType<IconProps>;
   export const IconSparkles: ComponentType<IconProps>;
+  export const IconSpace: ComponentType<IconProps>;
   export const IconSquare: ComponentType<IconProps>;
   export const IconStack2: ComponentType<IconProps>;
   export const IconTrash: ComponentType<IconProps>;
