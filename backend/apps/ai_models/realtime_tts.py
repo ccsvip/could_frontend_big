@@ -26,7 +26,6 @@ from .services.tts import (
     get_aliyun_tts_provider,
     get_effective_tts_config,
     is_tts_configured,
-    normalize_tts_text,
     split_tts_text,
     _session_finish_event,
     _session_update_event,
@@ -309,7 +308,6 @@ async def _stream_tts_segments_audio(
     config,
     send,
     session_config: dict | None = None,
-    exclude_patterns: list[str] | tuple[str, ...] | None = None,
 ) -> None:
     stats = _new_tts_stream_stats('segments')
     session_event = _session_update_event(config, voice, session_config)
@@ -354,25 +352,20 @@ async def _stream_tts_segments_audio(
             try:
                 segment_index = 0
                 async for segment in segments:
-                    text = normalize_tts_text(segment, config)
+                    text = str(segment or '')
                     if not text:
-                        continue
-                    chunks = split_tts_text(text, exclude_patterns=exclude_patterns)
-                    if not chunks:
                         continue
                     segment_index += 1
                     stats['segments'] = segment_index
-                    stats['chunks'] += len(chunks)
+                    stats['chunks'] += 1
                     stats['text_chars'] += len(text)
-                    logger.info('tts.realtime.segment_prepared index=%s text_chars=%s chunks=%s %s', segment_index, len(text), len(chunks), _tts_stats_summary(stats))
+                    logger.info('tts.realtime.segment_prepared index=%s text_chars=%s chunks=1 %s', segment_index, len(text), _tts_stats_summary(stats))
                     await segment_queue.put({'index': segment_index, 'text': text})
-                    for chunk_index, chunk in enumerate(chunks, start=1):
-                        await upstream.send(json.dumps(_text_append_event(chunk)))
-                        if chunk_index == 1 or chunk_index == len(chunks):
-                            logger.info('tts.realtime.text_chunk_sent segment=%s chunk=%s/%s chars=%s %s', segment_index, chunk_index, len(chunks), len(chunk), _tts_stats_summary(stats))
-                        await asyncio.sleep(0)
+                    await upstream.send(json.dumps(_text_append_event(text)))
+                    await asyncio.sleep(0)
                     await upstream.send(json.dumps(_text_commit_event()))
                     await asyncio.sleep(0)
+
 
                 await segment_queue.put(None)
                 await upstream.send(json.dumps(_session_finish_event()))

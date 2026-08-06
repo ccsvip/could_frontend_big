@@ -146,7 +146,7 @@ type LogConversationDetail = Omit<ChatConversationDetail, 'messages'> & { messag
 const PAGE_SIZE = 10;
 const DEFAULT_TEMPERATURE = 0.7;
 const DEFAULT_MAX_TOKENS = 1000;
-const DEFAULT_TTS_FILTER_PUNCTUATION = '。！？!?；;、-';
+const DEFAULT_TTS_FILTER_PUNCTUATION = '';
 const MAX_TTS_EXCLUDE_PATTERN_COUNT = 20;
 const MAX_TTS_EXCLUDE_PATTERN_LENGTH = 120;
 const ANNOTATION_PUNCTUATION_PATTERN = /\p{P}/gu;
@@ -157,6 +157,13 @@ const normalizeAsrTranscript = (value: string) => value.replace(ASR_BOUNDARY_PUN
 const normalizeTtsFilterExcludePatterns = (items: string[] = []) => Array.from(
   new Set(items.map((item) => item.trim()).filter(Boolean)),
 ).slice(0, MAX_TTS_EXCLUDE_PATTERN_COUNT);
+const TTS_HIDDEN_FILTER_PATTERN = /[ \r\n]/g;
+const visibleTtsFilterPunctuation = (value: string) => value.replace(TTS_HIDDEN_FILTER_PATTERN, '');
+const buildTtsFilterPunctuation = (visible: string, filterSpace: boolean, filterLineBreak: boolean) => (
+  Array.from(new Set(
+    `${visibleTtsFilterPunctuation(visible)}${filterSpace ? ' ' : ''}${filterLineBreak ? '\r\n' : ''}`,
+  )).join('')
+);
 const textBlock = (text: string): AgentReplyBlock => ({ type: 'text', text });
 const blocksToText = (blocks: AgentReplyBlock[]) => blocks
   .filter((block): block is Extract<AgentReplyBlock, { type: 'text' }> => block.type === 'text')
@@ -395,6 +402,8 @@ export const ApplicationManagementPage = () => {
   const [ttsFilterEmoji, setTtsFilterEmoji] = useState(true);
   const [ttsFilterExcludePatterns, setTtsFilterExcludePatterns] = useState<string[]>([]);
   const [newTtsFilterExcludePattern, setNewTtsFilterExcludePattern] = useState('');
+  const filtersTtsSpaces = ttsFilterPunctuation.includes(' ');
+  const filtersTtsLineBreaks = ttsFilterPunctuation.includes('\r') || ttsFilterPunctuation.includes('\n');
   const [asrStatus, setAsrStatus] = useState<AsrStatusRecord | null>(null);
   const [ttsOptions, setTtsOptions] = useState<CompanyTtsOptions | null>(null);
   const agentAudio = useAgentAudio();
@@ -496,7 +505,7 @@ export const ApplicationManagementPage = () => {
     setNewSuggestedQuestion('');
     setVoiceInputEnabled(detail.voiceInputEnabled);
     setReplyPlaybackEnabled(detail.replyPlaybackEnabled);
-    setTtsFilterPunctuation(detail.ttsFilterPunctuation || DEFAULT_TTS_FILTER_PUNCTUATION);
+    setTtsFilterPunctuation(detail.ttsFilterPunctuation ?? DEFAULT_TTS_FILTER_PUNCTUATION);
     setTtsFilterEmoji(detail.ttsFilterEmoji);
     setTtsFilterExcludePatterns(normalizeTtsFilterExcludePatterns(detail.ttsFilterExcludePatterns || []));
     setNewTtsFilterExcludePattern('');
@@ -504,7 +513,7 @@ export const ApplicationManagementPage = () => {
 
   const getApplicationSaveMismatch = (detail: AgentApplicationRecord, payload: AgentApplicationPayload) => {
     const stringValue = (value?: string) => value || '';
-    const normalizedPunctuation = Array.from(new Set(stringValue(payload.ttsFilterPunctuation).trim())).join('');
+    const normalizedPunctuation = Array.from(new Set(stringValue(payload.ttsFilterPunctuation))).join('');
     const hasTtsFilterPunctuation = Object.prototype.hasOwnProperty.call(detail, 'ttsFilterPunctuation');
     const hasTtsFilterEmoji = Object.prototype.hasOwnProperty.call(detail, 'ttsFilterEmoji');
     const hasTtsFilterExcludePatterns = Object.prototype.hasOwnProperty.call(detail, 'ttsFilterExcludePatterns');
@@ -2519,22 +2528,52 @@ export const ApplicationManagementPage = () => {
                   </div>
                   <Switch checked={replyPlaybackEnabled} disabled={!canUpdate || !ttsReady} onChange={setReplyPlaybackEnabled} />
                 </div>
-                <div className="grid gap-3 border-t border-slate-100 pt-4 md:grid-cols-[minmax(0,1fr)_140px]">
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-sm font-bold text-slate-700">过滤规则</span>
+                <div className="grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-1">
+                    <span className="text-fluid-sm font-bold text-slate-700">过滤规则</span>
                     <Input
-                      value={ttsFilterPunctuation}
+                      value={visibleTtsFilterPunctuation(ttsFilterPunctuation)}
                       disabled={!canUpdate}
-                      maxLength={64}
-                      onChange={(event) => setTtsFilterPunctuation(event.target.value)}
-                      placeholder={DEFAULT_TTS_FILTER_PUNCTUATION}
-                      className="font-mono"
+                      maxLength={64 - (filtersTtsSpaces ? 1 : 0) - (filtersTtsLineBreaks ? 2 : 0)}
+                      onChange={(event) => setTtsFilterPunctuation(buildTtsFilterPunctuation(
+                        event.target.value,
+                        filtersTtsSpaces,
+                        filtersTtsLineBreaks,
+                      ))}
+                      placeholder="留空=不过滤；可填 -、*、# 等符号"
+                      className="text-fluid-xs font-mono"
                     />
-                    <span className="text-xs text-slate-400">播报前过滤这些字符，默认包含中文/英文句末标点与顿号</span>
+                    <span className="text-fluid-xs text-slate-400">
+                      输入框按字面保存可见字符（包括反斜杠和 n）；半角空格与 CR/LF 由右侧开关配置。Markdown 和句读不会自动删除。
+                    </span>
                   </div>
-                  <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 md:self-end">
-                    <span className="text-sm font-medium text-slate-700">过滤表情</span>
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 lg:self-end">
+                    <span className="text-fluid-sm font-medium text-slate-700">过滤表情</span>
                     <Switch checked={ttsFilterEmoji} disabled={!canUpdate} onChange={setTtsFilterEmoji} />
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 lg:self-end">
+                    <span className="text-fluid-sm font-medium text-slate-700">过滤半角空格</span>
+                    <Switch
+                      checked={filtersTtsSpaces}
+                      disabled={!canUpdate}
+                      onChange={(checked) => setTtsFilterPunctuation(buildTtsFilterPunctuation(
+                        visibleTtsFilterPunctuation(ttsFilterPunctuation),
+                        checked,
+                        filtersTtsLineBreaks,
+                      ))}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2 lg:self-end">
+                    <span className="text-fluid-sm font-medium text-slate-700">过滤换行（CR/LF）</span>
+                    <Switch
+                      checked={filtersTtsLineBreaks}
+                      disabled={!canUpdate}
+                      onChange={(checked) => setTtsFilterPunctuation(buildTtsFilterPunctuation(
+                        visibleTtsFilterPunctuation(ttsFilterPunctuation),
+                        filtersTtsSpaces,
+                        checked,
+                      ))}
+                    />
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 border-t border-slate-100 pt-4">

@@ -966,7 +966,7 @@ async def _try_dispatch_command_for_session(
     command_id,
     request_id: str,
     trace_id: str,
-    on_tts_segment,
+    emit_tts_text,
     error_event_type: str,
 ):
     """Attempt local command dispatch before normal chat completion."""
@@ -985,9 +985,7 @@ async def _try_dispatch_command_for_session(
         )
 
     async def on_tts(text: str) -> None:
-        await _send_llm_tts_segment(send, command_id, request_id, trace_id, text)
-        if on_tts_segment is not None:
-            await on_tts_segment(text)
+        await emit_tts_text(text)
 
     try:
         return await try_dispatch_command(
@@ -1118,6 +1116,20 @@ async def _run_llm_session_body(
     await _send_json(send, started_payload)
 
     answer_text = ''
+    tts_processor = tts_services.TTSStreamingTextProcessor(
+        filter_punctuation=str(session.get('ttsFilterPunctuation') or ''),
+        filter_emoji=bool(session.get('ttsFilterEmoji')),
+        exclude_patterns=session.get('ttsFilterExcludePatterns') or [],
+    )
+
+    async def emit_tts_text(text: str, *, finish: bool = False) -> None:
+        segments = tts_processor.feed(text) if text else []
+        if finish:
+            segments.extend(tts_processor.finish())
+        for segment in segments:
+            await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
+            if on_tts_segment is not None:
+                await on_tts_segment(segment)
     dispatch_outcome = None
     answer_blocks = session.get('annotationBlocks') or None
     knowledge_media_blocks = session.get('knowledgeMediaBlocks') or []
@@ -1136,19 +1148,15 @@ async def _run_llm_session_body(
                 'payload': delta_payload,
             },
         )
-        for segment in _split_llm_tts_segments(answer_text, session):
-            await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
-            if on_tts_segment is not None:
-                await on_tts_segment(segment)
+        await emit_tts_text(answer_text, finish=True)
     else:
         dispatch_outcome = await _try_dispatch_command_for_session(
-            send, session, question_text, command_id, request_id, trace_id, on_tts_segment, error_event_type
+            send, session, question_text, command_id, request_id, trace_id, emit_tts_text, error_event_type
         )
         if dispatch_outcome is not None and dispatch_outcome.hit:
             answer_text = dispatch_outcome.reply_text
+            await emit_tts_text('', finish=True)
         elif session.get('backendType') == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
-            tts_buffer = ''
-            emitted_tts_segments = 0
             if session.get('thirdPartySupportsStreaming'):
                 try:
                     async for delta in _stream_third_party_session_message(session, question_text):
@@ -1163,26 +1171,12 @@ async def _run_llm_session_body(
                                 'payload': {'text': delta},
                             },
                         )
-                        tts_buffer += delta
-                        segments, tts_buffer = _pop_llm_tts_segments(
-                            tts_buffer, session, emitted_segments=emitted_tts_segments
-                        )
-                        for segment in segments:
-                            await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
-                            if on_tts_segment is not None:
-                                await on_tts_segment(segment)
-                        emitted_tts_segments += len(segments)
+                        await emit_tts_text(delta)
                 except Exception:
                     logger.exception('realtime.llm.third_party_stream_failed command_id=%s request_id=%s trace_id=%s', command_id, request_id, trace_id)
                     await _send_realtime_error(send, error_event_type, command_id, 'LLM_UPSTREAM_ERROR', request_id=request_id, trace_id=trace_id)
                     return None
-                final_segments, _ = _pop_llm_tts_segments(
-                    tts_buffer, session, emitted_segments=emitted_tts_segments, flush=True
-                )
-                for segment in final_segments:
-                    await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
-                    if on_tts_segment is not None:
-                        await on_tts_segment(segment)
+                await emit_tts_text('', finish=True)
             else:
                 try:
                     answer_text = await sync_to_async(_send_third_party_session_message, thread_sensitive=True)(session, question_text)
@@ -1196,17 +1190,12 @@ async def _run_llm_session_body(
                             'payload': {'text': answer_text},
                         },
                     )
-                    for segment in _split_llm_tts_segments(answer_text, session):
-                        await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
-                        if on_tts_segment is not None:
-                            await on_tts_segment(segment)
+                    await emit_tts_text(answer_text, finish=True)
                 except Exception:
                     logger.exception('realtime.llm.third_party_failed command_id=%s request_id=%s trace_id=%s', command_id, request_id, trace_id)
                     await _send_realtime_error(send, error_event_type, command_id, 'LLM_UPSTREAM_ERROR', request_id=request_id, trace_id=trace_id)
                     return None
         else:
-            tts_buffer = ''
-            emitted_tts_segments = 0
             try:
                 async for delta in _stream_runtime_answer_deltas(session, dispatch_outcome):
                     answer_text += delta
@@ -1220,26 +1209,12 @@ async def _run_llm_session_body(
                             'payload': {'text': delta},
                         },
                     )
-                    tts_buffer += delta
-                    segments, tts_buffer = _pop_llm_tts_segments(
-                        tts_buffer, session, emitted_segments=emitted_tts_segments
-                    )
-                    for segment in segments:
-                        await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
-                        if on_tts_segment is not None:
-                            await on_tts_segment(segment)
-                    emitted_tts_segments += len(segments)
+                    await emit_tts_text(delta)
             except Exception:
                 logger.exception('realtime.llm.stream_failed command_id=%s request_id=%s trace_id=%s', command_id, request_id, trace_id)
                 await _send_realtime_error(send, error_event_type, command_id, 'LLM_UPSTREAM_ERROR', request_id=request_id, trace_id=trace_id)
                 return None
-            final_segments, _ = _pop_llm_tts_segments(
-                tts_buffer, session, emitted_segments=emitted_tts_segments, flush=True
-            )
-            for segment in final_segments:
-                await _send_llm_tts_segment(send, command_id, request_id, trace_id, segment)
-                if on_tts_segment is not None:
-                    await on_tts_segment(segment)
+            await emit_tts_text('', finish=True)
 
     if not answer_text:
         await _send_realtime_error(send, error_event_type, command_id, 'LLM_EMPTY_RESPONSE', request_id=request_id, trace_id=trace_id)
@@ -1396,7 +1371,7 @@ def _generate_session_follow_up_questions(session: dict[str, Any], answer_text: 
 
 
 async def _send_llm_tts_segment(send, command_id, request_id: str, trace_id: str, text: str) -> None:
-    segment = str(text or '').strip()
+    segment = str(text or '')
     if not segment:
         return
     await _send_json(
@@ -2060,7 +2035,6 @@ async def _run_agent_tts_stream(send, command_id, queue: asyncio.Queue, device_c
         voice=voice,
         config=config,
         controls=session_config,
-        exclude_patterns=payload.get('ttsFilterExcludePatterns') or [],
         send=_with_command_id(send, command_id, request_id=request_id, trace_id=trace_id),
         prepared=bundle.prepared,
     )
@@ -2133,26 +2107,6 @@ async def _agent_tts_segments(first_segment: str, queue: asyncio.Queue, *, comma
             yield segment
 
 
-def _pop_llm_tts_segments(
-    buffer: str,
-    session: dict[str, Any],
-    *,
-    emitted_segments: int = 0,
-    flush: bool = False,
-) -> tuple[list[str], str]:
-    return tts_services.pop_tts_text_segments(
-        buffer,
-        emitted_segments=emitted_segments,
-        filter_punctuation=str(session.get('ttsFilterPunctuation') or ''),
-        filter_emoji=bool(session.get('ttsFilterEmoji')),
-        exclude_patterns=session.get('ttsFilterExcludePatterns') or [],
-        flush=flush,
-    )
-
-
-def _split_llm_tts_segments(text: str, session: dict[str, Any]) -> list[str]:
-    segments, _ = _pop_llm_tts_segments(text, session, flush=True)
-    return segments
 
 
 def _has_media_reply_blocks(blocks) -> bool:
@@ -2549,7 +2503,16 @@ async def _run_tts_session_body(send, command_id, message: dict[str, Any]) -> No
         await _send_realtime_error(send, 'tts.error', command_id, 'TTS_NOT_READY', request_id=request_id, trace_id=trace_id)
         return
 
-    text = realtime_tts.normalize_tts_text(str(payload.get('text') or ''), config)
+    text = tts_services.normalize_tts_text(str(payload.get('text') or ''), config)
+    exclude_patterns = payload.get('excludePatterns')
+    if not isinstance(exclude_patterns, list):
+        exclude_patterns = None
+    text = tts_services.apply_agent_tts_rules(
+        text,
+        filter_punctuation=str(payload.get('filterPunctuation') or ''),
+        filter_emoji=bool(payload.get('filterEmoji')),
+        exclude_patterns=exclude_patterns,
+    )
     session_config = payload.get('sessionConfig') or payload.get('ttsSessionConfig')
     if session_config is None:
         session_config = await sync_to_async(_resolve_connection_tts_session_config, thread_sensitive=True)(

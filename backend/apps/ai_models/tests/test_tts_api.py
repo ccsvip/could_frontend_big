@@ -30,64 +30,117 @@ User = get_user_model()
 
 
 class TTSServiceTests(TestCase):
-    def test_split_tts_text_removes_configured_text_from_segments(self):
+    def test_split_tts_text_is_identity_without_page_rules(self):
+        source = '**球形LED显示屏** \n- 内球幕LED显示屏'
+
+        segments = tts_services.split_tts_text(source)
+
+        self.assertEqual(segments, ['**球形LED显示屏** \n', '- 内球幕LED显示屏'])
+        self.assertEqual(''.join(segments), source)
+
+    def test_split_tts_text_keeps_boundaries_after_configured_characters_are_removed(self):
         segments = tts_services.split_tts_text(
-            '第一句正常播报。第二句包含（动作提示）也要播报。第三句继续播报。',
-            exclude_patterns=['（动作提示）'],
+            '球形LED显示屏。\r\n内球幕LED显示屏。',
+            filter_punctuation='。\r\n',
         )
 
-        self.assertEqual(segments, ['第一句正常播报。', '第二句包含也要播报。', '第三句继续播报。'])
+        self.assertEqual(segments, ['球形LED显示屏', '内球幕LED显示屏'])
 
-    def test_pop_tts_text_segments_removes_configured_text_and_keeps_remainder(self):
-        segments, rest = tts_services.pop_tts_text_segments(
-            '第一句正常播报。第二句包含内心独白也要播报。第三句还没结束',
+    def test_apply_agent_tts_rules_uses_page_rule_order(self):
+        filtered = tts_services.apply_agent_tts_rules(
+            '甲a-b乙',
+            filter_punctuation='-',
+            exclude_patterns=['a-b'],
+        )
+
+        self.assertEqual(filtered, '甲乙')
+
+    def test_streaming_filter_matches_exclusion_across_deltas(self):
+        processor = tts_services.TTSStreamingTextProcessor(
             exclude_patterns=['内心独白'],
         )
 
-        self.assertEqual(segments, ['第一句正常播报。', '第二句包含也要播报。'])
-        self.assertEqual(rest, '第三句还没结束')
+        first = processor.feed('第一句。内心')
+        second = processor.feed('独白第二句。')
+        final = processor.finish()
 
-    def test_split_tts_text_skips_segment_when_exclusions_remove_everything(self):
-        segments = tts_services.split_tts_text('（动作提示）', exclude_patterns=['（动作提示）'])
+        self.assertEqual(first, ['第一句。'])
+        self.assertEqual(second, ['第二句。'])
+        self.assertEqual(final, [])
 
-        self.assertEqual(segments, [])
+    def test_streaming_filter_is_lossless_at_every_delta_cut(self):
+        source = '甲[动作]乙🙂，丙\r\n尾部'
+        rules = {
+            'exclude_patterns': ['[动作]'],
+            'filter_emoji': True,
+            'filter_punctuation': '，\r\n',
+        }
+        expected = tts_services.apply_agent_tts_rules(source, **rules)
 
-    def test_pop_tts_text_segments_emits_short_first_segment_at_word_gap(self):
-        answer = (
-            '腾讯总部（即腾讯滨海大厦）的具体地址是：广东省深圳市南山区海天二路33号腾讯滨海大厦。'
-            '这是腾讯集团的主要办公总部所在地，位于深圳湾科技生态园核心区域，毗邻深圳湾口岸。'
+        for cut in range(len(source) + 1):
+            with self.subTest(cut=cut):
+                processor = tts_services.TTSStreamingTextProcessor(**rules)
+                segments = [
+                    *processor.feed(source[:cut]),
+                    *processor.feed(source[cut:]),
+                    *processor.finish(),
+                ]
+                self.assertEqual(''.join(segments), expected)
+
+    def test_streaming_filter_does_not_hard_split_unpunctuated_text(self):
+        for length in (80, 81, 200):
+            with self.subTest(length=length):
+                source = '甲' * length
+                processor = tts_services.TTSStreamingTextProcessor()
+
+                self.assertEqual(processor.feed(source), [])
+                self.assertEqual(processor.finish(), [source])
+
+    def test_streaming_filter_preserves_whitespace_only_content(self):
+        source = ' \r\n\t'
+        processor = tts_services.TTSStreamingTextProcessor()
+
+        segments = [*processor.feed(source), *processor.finish()]
+
+        self.assertEqual(''.join(segments), source)
+
+    def test_streaming_filter_applies_exclusion_emoji_and_character_rules_once(self):
+        source = '前缀[动作]-🙂正文。'
+        processor = tts_services.TTSStreamingTextProcessor(
+            exclude_patterns=['[动作]'],
+            filter_emoji=True,
+            filter_punctuation='-。',
         )
 
-        segments, rest = tts_services.pop_tts_text_segments(answer, flush=True)
+        segments = [*processor.feed('前缀[动'), *processor.feed('作]-🙂正文。'), *processor.finish()]
 
-        self.assertEqual(rest, '')
-        self.assertEqual(segments[0], '腾讯总部（即腾讯滨海大厦）')
-        self.assertLessEqual(len(segments[0]), 15)
-        self.assertEqual(''.join(segments), answer)
+        self.assertEqual(segments, ['前缀正文'])
+        self.assertEqual(''.join(segments), tts_services.apply_agent_tts_rules(
+            source,
+            exclude_patterns=['[动作]'],
+            filter_emoji=True,
+            filter_punctuation='-。',
+        ))
 
-    def test_pop_tts_text_segments_progressive_word_gap_floor_by_segment_ordinal(self):
-        text = '腾讯总部在广东省深圳市南山区（海天二路）继续继续继续继续继续'
+    def test_new_streaming_filter_does_not_reuse_previous_session_state(self):
+        interrupted = tts_services.TTSStreamingTextProcessor(exclude_patterns=['内心独白'])
+        self.assertEqual(interrupted.feed('内心'), [])
 
-        first, _ = tts_services.pop_tts_text_segments(text, emitted_segments=0)
-        second, second_rest = tts_services.pop_tts_text_segments(text, emitted_segments=1)
-        third, third_rest = tts_services.pop_tts_text_segments(text, emitted_segments=2)
+        replacement = tts_services.TTSStreamingTextProcessor(exclude_patterns=['内心独白'])
+        self.assertEqual(replacement.feed('正常回答。'), ['正常回答。'])
+        self.assertEqual(replacement.finish(), [])
 
-        self.assertEqual(first, ['腾讯总部在广东省深圳市南山区（海天二路）'])
-        self.assertEqual(second, [])
-        self.assertEqual(second_rest, text)
-        self.assertEqual(third, [])
-        self.assertEqual(third_rest, text)
+    def test_cosyvoice_task_text_limit_counts_all_messages(self):
+        sent_characters = tts_services.validate_cosyvoice_task_text(
+            '甲' * tts_services.COSYVOICE_MAX_MESSAGE_CHARACTERS,
+            tts_services.COSYVOICE_MAX_TASK_CHARACTERS - tts_services.COSYVOICE_MAX_MESSAGE_CHARACTERS,
+        )
 
-    def test_pop_tts_text_segments_keeps_soft_boundary_minimum_length(self):
-        self.assertEqual(tts_services.pop_tts_text_segments('好，'), ([], '好，'))
-        self.assertEqual(tts_services.pop_tts_text_segments('你好吗，'), (['你好吗，'], ''))
+        self.assertEqual(sent_characters, tts_services.COSYVOICE_MAX_TASK_CHARACTERS)
+        with self.assertRaises(RuntimeError) as ctx:
+            tts_services.validate_cosyvoice_task_text('乙', sent_characters)
+        self.assertIn('200000', str(ctx.exception))
 
-    def test_pop_tts_text_segments_does_not_split_decimals_or_list_numbers(self):
-        decimals, _ = tts_services.pop_tts_text_segments('圆周率是3.14159265358979', flush=True)
-        listed, _ = tts_services.pop_tts_text_segments('步骤如下 1. 打开门 2) 关上门', flush=True)
-
-        self.assertEqual(decimals, ['圆周率是3.14159265358979'])
-        self.assertEqual(listed, ['步骤如下 1. 打开门', '2) 关上门'])
 
 
 class OneShotTTSUpstream:

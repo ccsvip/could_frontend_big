@@ -19,12 +19,26 @@ from apps.ai_models.models import TTSProvider, TTSVoice, TenantTTSSettings
 PCM_SOURCE_FORMAT = 'pcm_s16le'
 DEFAULT_TEST_TEXT = '对吧~我就特别喜欢这种超市，尤其是过年的时候去逛超市就会觉得超级超级开心！想买好多好多的东西呢！'
 COSYVOICE_TTS_MODEL = 'cosyvoice-v3.5-plus'
-DEFAULT_TTS_SEGMENT_BOUNDARIES = '。！？!?；;'
-DEFAULT_TTS_SOFT_SEGMENT_BOUNDARIES = '，,：:、\n'
-# 词间空隙：闭合括号/引号与半角空格（末位是空格，勿删）
-DEFAULT_TTS_WORD_GAP_BOUNDARIES = '）)】」』》”’ '
-PROGRESSIVE_TTS_CHUNK_SIZES = (12, 30)
-MIN_SOFT_BOUNDARY_CHUNK_SIZE = 4
+DEFAULT_TTS_SEGMENT_BOUNDARIES = frozenset('。！？!?；;，,：:、\r\n')
+TTS_EMOJI_PATTERN = re.compile(r'[\U0001F000-\U0001FAFF\u2600-\u27BF\ufe0f]')
+COSYVOICE_MAX_MESSAGE_CHARACTERS = 20_000
+COSYVOICE_MAX_TASK_CHARACTERS = 200_000
+
+
+def validate_cosyvoice_task_text(text: str, sent_characters: int = 0) -> int:
+    text_characters = len(text)
+    if text_characters > COSYVOICE_MAX_MESSAGE_CHARACTERS:
+        raise RuntimeError(
+            f'CosyVoice 单条文本超过 {COSYVOICE_MAX_MESSAGE_CHARACTERS} 字符限制'
+        )
+    total_characters = sent_characters + text_characters
+    if total_characters > COSYVOICE_MAX_TASK_CHARACTERS:
+        raise RuntimeError(
+            f'CosyVoice 单任务文本超过 {COSYVOICE_MAX_TASK_CHARACTERS} 字符限制'
+        )
+    return total_characters
+
+
 TTS_MODEL_PROFILES = [
     {
         'code': 'instructional',
@@ -231,95 +245,166 @@ def get_default_tts_voice(provider: TTSProvider | None = None, *, model_code: st
 
 
 def normalize_tts_text(text: str | None, config: EffectiveTTSConfig) -> str:
-    value = (text or '').strip()
-    return value or config.default_test_text
+    value = '' if text is None else str(text)
+    return value if value else config.default_test_text
+
+
+@dataclass(frozen=True, slots=True)
+class _TTSStreamToken:
+    text: str = ''
+    boundary: bool = False
+
+
+class _LiteralExclusionStage:
+    """Incrementally remove one literal pattern without consuming a partial suffix."""
+
+    def __init__(self, pattern: str):
+        self.pattern = pattern
+        self._pending: list[_TTSStreamToken] = []
+
+    def feed(self, tokens: list[_TTSStreamToken]) -> list[_TTSStreamToken]:
+        emitted: list[_TTSStreamToken] = []
+        for token in tokens:
+            self._pending.append(token)
+            emitted.extend(self._drain_safe_prefix())
+        return emitted
+
+    def finish(self) -> list[_TTSStreamToken]:
+        pending = self._pending
+        self._pending = []
+        return pending
+
+    def _drain_safe_prefix(self) -> list[_TTSStreamToken]:
+        char_positions = [index for index, token in enumerate(self._pending) if token.text]
+        visible = ''.join(self._pending[index].text for index in char_positions)
+        if visible.endswith(self.pattern):
+            boundary = any(token.boundary for token in self._pending)
+            self._pending = []
+            return [_TTSStreamToken(boundary=True)] if boundary else []
+
+        max_prefix_length = min(len(visible), len(self.pattern) - 1)
+        held_characters = 0
+        for length in range(max_prefix_length, 0, -1):
+            if self.pattern.startswith(visible[-length:]):
+                held_characters = length
+                break
+
+        if held_characters:
+            held_from = char_positions[-held_characters]
+            emitted = self._pending[:held_from]
+            self._pending = self._pending[held_from:]
+            return emitted
+
+        emitted = self._pending
+        self._pending = []
+        return emitted
+
+
+class TTSStreamingTextProcessor:
+    """Apply page-owned TTS rules once, then split only at source boundaries."""
+
+    def __init__(
+        self,
+        *,
+        filter_punctuation: str | None = None,
+        filter_emoji: bool = False,
+        exclude_patterns: list[str] | tuple[str, ...] | None = None,
+    ):
+        self._exclusion_stages = [
+            _LiteralExclusionStage(pattern)
+            for pattern in _normalize_tts_exclude_patterns(exclude_patterns)
+        ]
+        self._filtered_characters = frozenset(filter_punctuation or '')
+        self._filter_emoji = filter_emoji
+        self._segment_characters: list[str] = []
+        self._finished = False
+
+    def feed(self, text: str) -> list[str]:
+        if self._finished:
+            raise RuntimeError('TTS text processor is already finished.')
+        tokens = [
+            _TTSStreamToken(char, char in DEFAULT_TTS_SEGMENT_BOUNDARIES)
+            for char in str(text or '')
+        ]
+        return self._consume(self._apply_rules(tokens))
+
+    def finish(self) -> list[str]:
+        if self._finished:
+            return []
+        self._finished = True
+        tokens: list[_TTSStreamToken] = []
+        for index, stage in enumerate(self._exclusion_stages):
+            stage_output = stage.finish()
+            for downstream in self._exclusion_stages[index + 1:]:
+                stage_output = downstream.feed(stage_output)
+            tokens.extend(stage_output)
+        segments = self._consume(self._apply_character_rules(tokens))
+        if self._segment_characters:
+            segments.append(''.join(self._segment_characters))
+            self._segment_characters = []
+        return segments
+
+    def _apply_rules(self, tokens: list[_TTSStreamToken]) -> list[_TTSStreamToken]:
+        for stage in self._exclusion_stages:
+            tokens = stage.feed(tokens)
+        return self._apply_character_rules(tokens)
+
+    def _apply_character_rules(self, tokens: list[_TTSStreamToken]) -> list[_TTSStreamToken]:
+        filtered: list[_TTSStreamToken] = []
+        for token in tokens:
+            remove_character = bool(
+                token.text
+                and (
+                    (self._filter_emoji and TTS_EMOJI_PATTERN.fullmatch(token.text))
+                    or token.text in self._filtered_characters
+                )
+            )
+            if remove_character:
+                if token.boundary:
+                    filtered.append(_TTSStreamToken(boundary=True))
+                continue
+            filtered.append(token)
+        return filtered
+
+    def _consume(self, tokens: list[_TTSStreamToken]) -> list[str]:
+        segments: list[str] = []
+        for token in tokens:
+            if token.text:
+                self._segment_characters.append(token.text)
+            if token.boundary and self._segment_characters:
+                segments.append(''.join(self._segment_characters))
+                self._segment_characters = []
+        return segments
 
 
 def split_tts_text(
     text: str,
     *,
-    chunk_size: int = 80,
     filter_punctuation: str | None = None,
     filter_emoji: bool = False,
     exclude_patterns: list[str] | tuple[str, ...] | None = None,
-    flush: bool = True,
 ) -> list[str]:
-    exclusion_patterns = _normalize_tts_exclude_patterns(exclude_patterns)
-    stripped = sanitize_tts_text(
+    processor = TTSStreamingTextProcessor(
+        filter_punctuation=filter_punctuation,
+        filter_emoji=filter_emoji,
+        exclude_patterns=exclude_patterns,
+    )
+    return [*processor.feed(text), *processor.finish()]
+
+
+def apply_agent_tts_rules(
+    text: str,
+    *,
+    filter_punctuation: str | None = None,
+    filter_emoji: bool = False,
+    exclude_patterns: list[str] | tuple[str, ...] | None = None,
+) -> str:
+    return ''.join(split_tts_text(
         text,
         filter_punctuation=filter_punctuation,
         filter_emoji=filter_emoji,
-        preserve_sentence_boundaries=True,
-    )
-    if not stripped:
-        return []
-    chunks = []
-    current = ''
-    separators = set(DEFAULT_TTS_SEGMENT_BOUNDARIES)
-    for index, char in enumerate(stripped):
-        current += char
-        if len(current) >= chunk_size or (char in separators and _is_tts_boundary(stripped, index)):
-            chunk = current.strip()
-            if chunk:
-                filtered_chunk = _remove_tts_exclude_patterns(chunk, exclusion_patterns)
-                finalized = _finalize_tts_chunk(filtered_chunk, filter_punctuation=filter_punctuation)
-                if finalized:
-                    chunks.append(finalized)
-            current = ''
-    tail = current.strip()
-    if tail and flush:
-        filtered_tail = _remove_tts_exclude_patterns(tail, exclusion_patterns)
-        finalized = _finalize_tts_chunk(filtered_tail, filter_punctuation=filter_punctuation)
-        if finalized:
-            chunks.append(finalized)
-    return chunks
-
-
-def pop_tts_text_segments(
-    buffer: str,
-    *,
-    chunk_size: int = 80,
-    emitted_segments: int = 0,
-    filter_punctuation: str | None = None,
-    filter_emoji: bool = False,
-    exclude_patterns: list[str] | tuple[str, ...] | None = None,
-    flush: bool = False,
-) -> tuple[list[str], str]:
-    exclusion_patterns = _normalize_tts_exclude_patterns(exclude_patterns)
-    stripped = sanitize_tts_text(
-        buffer,
-        filter_punctuation=filter_punctuation,
-        filter_emoji=filter_emoji,
-        preserve_sentence_boundaries=True,
-    )
-    if not stripped:
-        return [], ''
-    chunks = []
-    current = ''
-    last_boundary = 0
-    for index, char in enumerate(stripped):
-        current += char
-        current_length = len(current)
-        soft_limit = _tts_chunk_limit(emitted_segments + len(chunks), chunk_size)
-        if (
-            current_length >= chunk_size
-            or _hits_tts_boundary(stripped, index, current_length)
-            or (current_length >= soft_limit and _hits_tts_word_gap(stripped, index))
-        ):
-            filtered_current = _remove_tts_exclude_patterns(current, exclusion_patterns)
-            chunk = _finalize_tts_chunk(filtered_current, filter_punctuation=filter_punctuation)
-            if chunk:
-                chunks.append(chunk)
-            current = ''
-            last_boundary = index + 1
-    rest = stripped[last_boundary:]
-    if flush and rest:
-        filtered_rest = _remove_tts_exclude_patterns(rest.strip(), exclusion_patterns)
-        chunk = _finalize_tts_chunk(filtered_rest, filter_punctuation=filter_punctuation)
-        if chunk:
-            chunks.append(chunk)
-        rest = ''
-    return chunks, rest
+        exclude_patterns=exclude_patterns,
+    ))
 
 
 def _normalize_tts_exclude_patterns(patterns: list[str] | tuple[str, ...] | None) -> list[str]:
@@ -328,120 +413,11 @@ def _normalize_tts_exclude_patterns(patterns: list[str] | tuple[str, ...] | None
     normalized = []
     seen = set()
     for pattern in patterns:
-        text = str(pattern).strip()
+        text = str(pattern)
         if text and text not in seen:
             normalized.append(text)
             seen.add(text)
     return normalized
-
-
-def _remove_tts_exclude_patterns(text: str, patterns: list[str]) -> str:
-    if not patterns:
-        return text
-    result = text
-    for pattern in patterns:
-        result = result.replace(pattern, '')
-    return result.strip()
-
-
-def sanitize_tts_text(
-    text: str,
-    *,
-    filter_punctuation: str | None = None,
-    filter_emoji: bool = False,
-    preserve_sentence_boundaries: bool = False,
-) -> str:
-    value = strip_markdown_for_tts(text)
-    if filter_emoji:
-        value = re.sub(r'[\U0001F000-\U0001FAFF\u2600-\u27BF\ufe0f]', '', value)
-    value = value.replace('\r\n', '\n')
-    value = re.sub(r'[*_`>#~|\[\]{}]', ' ', value)
-    value = re.sub(r'[ \t]+', ' ', value)
-    if not preserve_sentence_boundaries:
-        value = re.sub(r'\s*\n\s*', ' ', value)
-    value = re.sub(r'\n{2,}', '\n', value)
-    value = re.sub(r' {2,}', ' ', value)
-    if preserve_sentence_boundaries:
-        return value.strip(' \t')
-    return value.strip()
-
-
-def strip_markdown_for_tts(text: str) -> str:
-    value = str(text or '').replace('\r\n', '\n')
-    value = re.sub(r'```[\s\S]*?```', ' ', value)
-    value = re.sub(r'`([^`]+)`', r'\1', value)
-    lines = []
-    for line in value.split('\n'):
-        stripped = line.strip()
-        if not stripped:
-            lines.append('')
-            continue
-        if re.fullmatch(r'\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?', stripped):
-            lines.append('')
-            continue
-        if re.fullmatch(r'\d+[.)、]?', stripped):
-            lines.append(' ')
-            continue
-        if '|' in stripped:
-            stripped = '，'.join(cell.strip() for cell in stripped.strip('|').split('|') if cell.strip())
-        stripped = re.sub(r'^#{1,6}\s+', '', stripped)
-        stripped = re.sub(r'^[-*+]\s+', '', stripped)
-        stripped = re.sub(r'^\d+[.)]\s+', '', stripped)
-        stripped = re.sub(r'^>\s?', '', stripped)
-        lines.append(stripped)
-    value = '\n'.join(lines)
-    value = re.sub(r'!\[[^\]]*]\([^)]*\)', ' ', value)
-    value = re.sub(r'\[([^\]]+)]\([^)]*\)', r'\1', value)
-    value = re.sub(r'(\*\*|__)(.*?)\1', r'\2', value)
-    value = re.sub(r'(\*|_)(.*?)\1', r'\2', value)
-    return value
-
-
-def _is_tts_boundary(text: str, index: int) -> bool:
-    char = text[index]
-    previous_char = text[index - 1] if index > 0 else ''
-    next_char = text[index + 1] if index + 1 < len(text) else ''
-    if char == '.' and previous_char.isdigit() and next_char.isdigit():
-        return False
-    if char in '.)' and re.search(r'(?:^|\s)\d+[.)]$', text[:index + 1]):
-        return False
-    return True
-
-
-def _tts_chunk_limit(segment_ordinal: int, chunk_size: int) -> int:
-    """Progressive word-gap floor; ``segment_ordinal`` is 0-based (0 is the first segment).
-
-    首几段允许在「词间空隙」处提前收束，让播报尽早起播；返回值只是放行阈值，
-    真正的硬上限始终是 ``chunk_size``。
-    """
-    if 0 <= segment_ordinal < len(PROGRESSIVE_TTS_CHUNK_SIZES):
-        return min(PROGRESSIVE_TTS_CHUNK_SIZES[segment_ordinal], chunk_size)
-    return chunk_size
-
-
-def _hits_tts_boundary(text: str, index: int, current_length: int) -> bool:
-    char = text[index]
-    if char in DEFAULT_TTS_SEGMENT_BOUNDARIES:
-        return _is_tts_boundary(text, index)
-    if char in DEFAULT_TTS_SOFT_SEGMENT_BOUNDARIES:
-        return current_length >= MIN_SOFT_BOUNDARY_CHUNK_SIZE and _is_tts_boundary(text, index)
-    return False
-
-
-def _hits_tts_word_gap(text: str, index: int) -> bool:
-    char = text[index]
-    if char not in DEFAULT_TTS_WORD_GAP_BOUNDARIES:
-        return False
-    if char == ' ' and re.search(r'(?:^|\s)\d+[.)]$', text[:index]):
-        return False
-    return _is_tts_boundary(text, index)
-
-
-def _finalize_tts_chunk(chunk: str, *, filter_punctuation: str | None = None) -> str:
-    value = chunk.strip()
-    if filter_punctuation:
-        value = value.translate(str.maketrans('', '', filter_punctuation))
-    return re.sub(r'\s+', ' ', value).strip()
 
 
 def pcm_to_wav(pcm: bytes, *, sample_rate: int) -> bytes:
@@ -495,6 +471,10 @@ async def _synthesize_cosyvoice_tts_pcm_async(
         raise RuntimeError('TTS 音色未配置')
 
     options = controls if isinstance(controls, dict) else {}
+    chunks = split_tts_text(text)
+    sent_characters = 0
+    for chunk in chunks:
+        sent_characters = validate_cosyvoice_task_text(chunk, sent_characters)
     task_id = str(uuid.uuid4())
     run_task = {
         'header': {
@@ -541,7 +521,7 @@ async def _synthesize_cosyvoice_tts_pcm_async(
         else:
             raise RuntimeError('CosyVoice upstream closed before task started.')
 
-        for chunk in split_tts_text(text):
+        for chunk in chunks:
             await upstream.send(json.dumps({
                 'header': {
                     'action': 'continue-task',

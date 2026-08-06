@@ -1,0 +1,7 @@
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Keep page config, published snapshot, realtime pipeline, browser playback, and adapter behavior consistent."}
+{"file":".trellis/spec/backend/tts-tenant-card-authorization.md","reason":"Preserve the unified adapter and realtime TTS architecture while changing text semantics."}
+{"file":".trellis/spec/backend/testing-strategy.md","reason":"Use repository WebSocket, async, adapter mock, and Django regression-test conventions."}
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"Apply backend source-of-truth and clean-cutover conventions."}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Add special-character controls using existing Ant Design component patterns."}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"Keep the canonical ttsFilterPunctuation string typed consistently across UI and API."}
+{"file":".trellis/tasks/08-06-diagnose-realtime-tts-runon/research/aliyun-cosyvoice-streaming.md","reason":"Retain the official continue-task buffering contract that constrains lossless segmentation."}

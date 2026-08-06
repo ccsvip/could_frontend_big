@@ -1,0 +1,6 @@
+{"file":".trellis/spec/backend/testing-strategy.md","reason":"Check behavior-level and WebSocket regression coverage against project conventions."}
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"Check removal of duplicate sanitizers and obsolete compatibility paths."}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Check responsive UI, design-token compliance, hooks, and build quality."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Check that Python and TypeScript paths each have one local rule implementation rather than repeated helpers."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Check field round-trip and identical behavior from page through TTS upstream."}
+{"file":".trellis/tasks/08-06-diagnose-realtime-tts-runon/research/aliyun-cosyvoice-streaming.md","reason":"Check the upstream protocol remains compliant with Alibaba documentation."}

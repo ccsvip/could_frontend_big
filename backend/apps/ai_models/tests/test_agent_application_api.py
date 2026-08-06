@@ -556,6 +556,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
             temperature=0.3,
             max_tokens=900,
             enable_web_search=True,
+            tts_filter_punctuation=' \r\n',
         )
         application.knowledge_documents.set([document])
 
@@ -569,6 +570,8 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(application.published_config['system_prompt'], 'Published prompt.')
         self.assertEqual(application.published_config['knowledge_document_ids'], [document.id])
         self.assertTrue(application.published_config['enable_web_search'])
+        self.assertEqual(application.published_config['tts_filter_punctuation'], ' \r\n')
+        self.assertEqual(response.data['ttsFilterPunctuation'], ' \r\n')
 
         application.system_prompt = 'Draft prompt after publish.'
         application.save(update_fields=['system_prompt', 'updated_at'])
@@ -579,6 +582,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertFalse(detail_response.data['isPublishedCurrent'])
         application.refresh_from_db()
         self.assertEqual(application.runtime_config()['system_prompt'], 'Published prompt.')
+        self.assertEqual(application.runtime_config()['tts_filter_punctuation'], ' \r\n')
 
     def test_create_agent_application_supports_unlimited_max_tokens(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.create')
@@ -769,7 +773,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertFalse(response.data['enableWebSearch'])
         self.assertFalse(response.data['voiceInputEnabled'])
         self.assertFalse(response.data['replyPlaybackEnabled'])
-        self.assertEqual(response.data['ttsFilterPunctuation'], '。！？!?；;、-')
+        self.assertEqual(response.data['ttsFilterPunctuation'], '')
         self.assertTrue(response.data['ttsFilterEmoji'])
         self.assertEqual(response.data['ttsFilterExcludePatterns'], [])
 
@@ -792,7 +796,7 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
                 'enableWebSearch': True,
                 'voiceInputEnabled': True,
                 'replyPlaybackEnabled': True,
-                'ttsFilterPunctuation': '。！？!?；;、',
+                'ttsFilterPunctuation': ' \r\n。 \n',
                 'ttsFilterEmoji': False,
                 'ttsFilterExcludePatterns': ['（动作提示）', '  内心独白  ', '（动作提示）'],
             },
@@ -806,13 +810,13 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertTrue(response.data['enableWebSearch'])
         self.assertTrue(response.data['voiceInputEnabled'])
         self.assertTrue(response.data['replyPlaybackEnabled'])
-        self.assertEqual(response.data['ttsFilterPunctuation'], '。！？!?；;、')
+        self.assertEqual(response.data['ttsFilterPunctuation'], ' \r\n。')
         self.assertFalse(response.data['ttsFilterEmoji'])
         self.assertEqual(response.data['ttsFilterExcludePatterns'], ['（动作提示）', '内心独白'])
         application.refresh_from_db()
         self.assertTrue(application.follow_up_suggested_questions_enabled)
         self.assertTrue(application.enable_web_search)
-        self.assertEqual(application.tts_filter_punctuation, '。！？!?；;、')
+        self.assertEqual(application.tts_filter_punctuation, ' \r\n。')
         self.assertFalse(application.tts_filter_emoji)
         self.assertEqual(application.tts_filter_exclude_patterns, ['（动作提示）', '内心独白'])
 

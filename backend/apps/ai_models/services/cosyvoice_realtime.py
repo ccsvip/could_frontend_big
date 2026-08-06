@@ -14,6 +14,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import time
 import uuid
 from typing import Any, AsyncIterable
 
@@ -26,11 +27,13 @@ from .tts import (
     _extract_cosyvoice_task_error,
     _matching_cosyvoice_task_header,
     is_tts_configured,
-    normalize_tts_text,
     split_tts_text,
+    validate_cosyvoice_task_text,
 )
 
 logger = logging.getLogger(__name__)
+COSYVOICE_MAX_SEND_INTERVAL_SECONDS = 23.0
+COSYVOICE_PREWARM_STALE_SECONDS = 20.0
 
 
 def _run_task_message(task_id: str, *, voice_code: str, config: EffectiveTTSConfig, controls: dict[str, Any]) -> dict[str, Any]:
@@ -137,6 +140,10 @@ class CosyVoicePrewarmedTask:
         self.task_id = task_id
         self.voice_code = voice_code
         self._closed = False
+        self.created_at = time.monotonic()
+
+    def is_stale(self) -> bool:
+        return time.monotonic() - self.created_at >= COSYVOICE_PREWARM_STALE_SECONDS
 
     async def aclose(self) -> None:
         if self._closed:
@@ -197,6 +204,10 @@ async def stream_cosyvoice_realtime_text(
     audio_chunks = 0
     audio_bytes = 0
     segment_started = False
+    chunks = split_tts_text(text, exclude_patterns=exclude_patterns)
+    sent_characters = 0
+    for chunk in chunks:
+        sent_characters = validate_cosyvoice_task_text(chunk, sent_characters)
 
     try:
         async with _open_upstream(config) as upstream:
@@ -209,7 +220,8 @@ async def stream_cosyvoice_realtime_text(
             await _await_task_started(upstream, task_id)
             await _send_ready(send, config=config, voice_code=voice.voice_code)
 
-            chunks = split_tts_text(text, exclude_patterns=exclude_patterns)
+            # ``chunks`` were validated before opening the provider task so an
+            # indivisible over-limit span fails without sending partial text.
             for chunk in chunks:
                 await upstream.send(json.dumps(_continue_task_message(task_id, chunk)))
                 await asyncio.sleep(0)
@@ -265,17 +277,13 @@ async def stream_cosyvoice_realtime_segments(
     config: EffectiveTTSConfig,
     send,
     controls: dict[str, Any] | None = None,
-    exclude_patterns=None,
     prepared: CosyVoicePrewarmedTask | None = None,
 ) -> None:
-    """Synthesize an async stream of segments over one upstream task.
+    """Synthesize safe source slices over one provider task.
 
-    The whole answer rides a single ``run-task``: later segments are pushed as
-    ``continue-task`` without waiting for the previous segment's audio, and a
-    concurrent reader forwards frames as they arrive. That removes the
-    ``run-task`` / ``task-started`` round trip between segments — at the cost of
-    ``tts.segment_start`` / ``tts.segment_end`` becoming approximate markers,
-    since the task protocol delimits audio per task and not per ``continue-task``.
+    A valid prewarmed task remains the one task for the whole answer. An unused
+    task that has approached the provider's first-send interval is replaced only
+    after the first real slice exists; no keepalive or partial sentence is sent.
     """
     controls = controls or {}
     if prepared is None:
@@ -285,6 +293,30 @@ async def stream_cosyvoice_realtime_segments(
     stats: dict[str, Any] = {'audio_chunks': 0, 'audio_bytes': 0}
 
     try:
+        segment_iterator = segments.__aiter__()
+        first_text: str | None = None
+        async for segment in segment_iterator:
+            text = str(segment or '')
+            if text:
+                first_text = text
+                break
+
+        if first_text is not None and prepared.is_stale():
+            stale_task_id = prepared.task_id
+            await prepared.aclose()
+            prepared = await prewarm_cosyvoice_realtime(
+                voice=voice,
+                config=config,
+                controls=controls,
+            )
+            upstream = prepared.upstream
+            task_id = prepared.task_id
+            logger.info(
+                'tts.cosyvoice.realtime.prewarm_rebuilt stale_task_id=%s task_id=%s',
+                stale_task_id,
+                task_id,
+            )
+
         await _send_ready(send, config=config, voice_code=voice.voice_code)
 
         segment_queue: asyncio.Queue[dict[str, Any] | None] = asyncio.Queue()
@@ -296,23 +328,35 @@ async def stream_cosyvoice_realtime_segments(
             stats=stats,
         ))
         try:
-            segment_index = 0
-            async for segment in segments:
-                text = normalize_tts_text(segment, config)
-                if not text:
-                    continue
-                chunks = split_tts_text(text, exclude_patterns=exclude_patterns)
-                if not chunks:
-                    continue
+            async def remaining_texts():
+                if first_text is not None:
+                    yield first_text
+                async for remaining_segment in segment_iterator:
+                    remaining_text = str(remaining_segment or '')
+                    if remaining_text:
+                        yield remaining_text
 
+            segment_index = 0
+            sent_characters = 0
+            last_text_sent_at: float | None = None
+            async for text in remaining_texts():
+                now = time.monotonic()
+                if (
+                    last_text_sent_at is not None
+                    and now - last_text_sent_at > COSYVOICE_MAX_SEND_INTERVAL_SECONDS
+                ):
+                    raise RuntimeError(
+                        f'CosyVoice 文本发送间隔超过 {COSYVOICE_MAX_SEND_INTERVAL_SECONDS:g} 秒限制'
+                    )
+                sent_characters = validate_cosyvoice_task_text(text, sent_characters)
                 segment_index += 1
                 await segment_queue.put({'index': segment_index, 'text': text})
-                for chunk in chunks:
-                    await upstream.send(json.dumps(_continue_task_message(task_id, chunk)))
-                    await asyncio.sleep(0)
+                await upstream.send(json.dumps(_continue_task_message(task_id, text)))
+                last_text_sent_at = time.monotonic()
+                await asyncio.sleep(0)
                 logger.info(
-                    'tts.cosyvoice.realtime.segment_sent index=%s task_id=%s chunks=%s text_chars=%s',
-                    segment_index, task_id, len(chunks), len(text),
+                    'tts.cosyvoice.realtime.segment_sent index=%s task_id=%s chunks=1 text_chars=%s',
+                    segment_index, task_id, len(text),
                 )
 
             await segment_queue.put(None)

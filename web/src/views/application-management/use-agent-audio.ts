@@ -14,7 +14,7 @@ import type { TtsSessionConfig } from '../../api/modules/tts';
 import { useAuthStore } from '../../store/auth';
 import { useTenantScopeStore } from '../../store/tenant-scope';
 import { requestMicrophoneStream } from '../media-devices';
-import { playRealtimeTts, sanitizeTtsText } from '../tts-realtime-playback';
+import { playRealtimeTts, TtsStreamingTextProcessor } from '../tts-realtime-playback';
 import { createPlaybackRequestGuard } from './playback-request-guard';
 import {
   AUDIO_WORKLET_PROCESSOR_NAME,
@@ -76,7 +76,7 @@ export const useAgentAudio = () => {
   const asrDoneCallbackRef = useRef<((text: string) => void) | null>(null);
   const suppressAsrDoneRef = useRef(false);
   const streamPlaybackQueueRef = useRef<string[]>([]);
-  const streamPlaybackBufferRef = useRef('');
+  const streamPlaybackProcessorRef = useRef<TtsStreamingTextProcessor | null>(null);
   const streamPlaybackActiveRef = useRef(false);
   const streamPlaybackSessionRef = useRef(0);
   const streamPlaybackInterruptedRef = useRef(false);
@@ -278,7 +278,7 @@ export const useAgentAudio = () => {
     playbackAbortRef.current = null;
     streamPlaybackSessionRef.current += 1;
     streamPlaybackQueueRef.current = [];
-    streamPlaybackBufferRef.current = '';
+    streamPlaybackProcessorRef.current = null;
     streamPlaybackActiveRef.current = false;
     audioRef.current?.pause();
     audioRef.current = null;
@@ -307,16 +307,10 @@ export const useAgentAudio = () => {
       playbackAbortRef.current = abortController;
       playbackInterruptRef.current = interruptController;
       try {
-        const playbackSegment = removeTtsExcludePatterns(segment, filterRules?.excludePatterns);
-        if (!playbackSegment) {
-          continue;
-        }
         await playRealtimeTts({
-          text: playbackSegment,
+          text: segment,
           token,
           tenantId: tenantScopeId ?? tenant?.id ?? null,
-          filterPunctuation: filterRules?.punctuation,
-          filterEmoji: filterRules?.emoji,
           sessionConfig: filterRules?.sessionConfig,
           signal: abortController.signal,
           interruptSignal: interruptController.signal,
@@ -347,21 +341,27 @@ export const useAgentAudio = () => {
     if (streamPlaybackInterruptedRef.current) {
       return;
     }
-    const content = text.trim();
-    if (!token || (!content && !force)) {
+    if (!token || (!text && !force)) {
       return;
     }
-    streamPlaybackBufferRef.current += sanitizeTtsText(text, undefined, Boolean(filterRules?.emoji));
-    const readySegments = extractReadyTtsSegments(streamPlaybackBufferRef.current, force);
-    streamPlaybackBufferRef.current = readySegments.remainder;
-    if (readySegments.segments.length === 0) {
+    if (streamPlaybackProcessorRef.current === null) {
+      streamPlaybackProcessorRef.current = new TtsStreamingTextProcessor({
+        filterPunctuation: filterRules?.punctuation,
+        filterEmoji: filterRules?.emoji,
+        excludePatterns: filterRules?.excludePatterns,
+      });
+    }
+    const readySegments = text ? streamPlaybackProcessorRef.current.feed(text) : [];
+    if (force) {
+      readySegments.push(...streamPlaybackProcessorRef.current.finish());
+    }
+    if (readySegments.length === 0) {
+      if (force) {
+        void playQueuedStreamSegments(streamPlaybackSessionRef.current, filterRules);
+      }
       return;
     }
-    streamPlaybackQueueRef.current.push(
-      ...readySegments.segments
-        .map((segment) => removeTtsExcludePatterns(segment, filterRules?.excludePatterns))
-        .filter((segment): segment is string => Boolean(segment)),
-    );
+    streamPlaybackQueueRef.current.push(...readySegments);
     const sessionId = streamPlaybackSessionRef.current;
     void playQueuedStreamSegments(sessionId, filterRules);
   }, [playQueuedStreamSegments, token]);
@@ -371,7 +371,7 @@ export const useAgentAudio = () => {
     streamPlaybackInterruptedRef.current = false;
     streamPlaybackSessionRef.current += 1;
     streamPlaybackQueueRef.current = [];
-    streamPlaybackBufferRef.current = '';
+    streamPlaybackProcessorRef.current = null;
     streamPlaybackActiveRef.current = false;
     setPendingPlaybackKey('streaming-reply');
   }, [stopPlayback]);
@@ -391,7 +391,7 @@ export const useAgentAudio = () => {
     playbackInterruptRef.current = null;
     streamPlaybackSessionRef.current += 1;
     streamPlaybackQueueRef.current = [];
-    streamPlaybackBufferRef.current = '';
+    streamPlaybackProcessorRef.current = null;
     streamPlaybackActiveRef.current = false;
     audioRef.current?.pause();
     audioRef.current = null;
@@ -403,14 +403,11 @@ export const useAgentAudio = () => {
   }, [revokeObjectUrl]);
 
   const playText = useCallback(async (key: string, text: string, filterRules?: TtsFilterRules) => {
-    const content = text.trim();
+    const content = text;
     if (!content) {
       return;
     }
-    const playbackContent = removeTtsExcludePatterns(content, filterRules?.excludePatterns);
-    if (!playbackContent) {
-      return;
-    }
+    const playbackContent = text;
 
     if (playbackKeyRef.current === key && audioRef.current) {
       if (audioRef.current.paused) {
@@ -455,6 +452,7 @@ export const useAgentAudio = () => {
         tenantId: tenantScopeId ?? tenant?.id ?? null,
         filterPunctuation: filterRules?.punctuation,
         filterEmoji: filterRules?.emoji,
+        excludePatterns: filterRules?.excludePatterns,
         sessionConfig: filterRules?.sessionConfig,
         signal: abortController.signal,
         interruptSignal: interruptController.signal,
@@ -501,38 +499,4 @@ export const useAgentAudio = () => {
     appendStreamPlaybackText,
     finishStreamPlayback,
   };
-};
-
-const TTS_SEGMENT_PATTERN = /[。！？!?；;\n]/g;
-
-const normalizeTtsExcludePatterns = (patterns?: string[]) => Array.from(
-  new Set((patterns || []).map((pattern) => pattern.trim()).filter(Boolean)),
-);
-
-const removeTtsExcludePatterns = (text: string, patterns?: string[]) => normalizeTtsExcludePatterns(patterns)
-  .reduce((current, pattern) => current.split(pattern).join(''), text)
-  .trim();
-
-const extractReadyTtsSegments = (text: string, force: boolean): { segments: string[]; remainder: string } => {
-  const segments: string[] = [];
-  let lastIndex = 0;
-  for (const match of text.matchAll(TTS_SEGMENT_PATTERN)) {
-    const endIndex = match.index + match[0].length;
-    const segment = text.slice(lastIndex, endIndex).trim();
-    if (segment) {
-      segments.push(segment);
-    }
-    lastIndex = endIndex;
-  }
-
-  let remainder = text.slice(lastIndex);
-  if (force && remainder.trim()) {
-    segments.push(remainder.trim());
-    remainder = '';
-  } else if (remainder.length >= 80) {
-    segments.push(remainder.trim());
-    remainder = '';
-  }
-
-  return { segments, remainder };
 };

@@ -391,7 +391,6 @@ async def try_dispatch_command(
         max_tokens=session.get('maxTokens') or 1000,
         on_delta=on_delta,
         on_tts_segment=on_tts_segment,
-        session=session,
     )
 
     if not reply_text:
@@ -632,7 +631,6 @@ async def _generate_control_execution_reply(
             max_tokens=session.get('maxTokens') or 1000,
             on_delta=on_delta,
             on_tts_segment=on_tts_segment,
-            session=session,
         )
     except Exception as exc:
         logger.warning('command_dispatch.generated_reply_failed command=%s error=%s', command_name, exc)
@@ -687,10 +685,7 @@ async def _generate_natural_reply(
     max_tokens: int | None,
     on_delta: DispatchCallback | None,
     on_tts_segment: TtsSegmentCallback | None,
-    session: dict[str, Any],
 ) -> str:
-    from config.realtime import _pop_llm_tts_segments, _split_llm_tts_segments  # noqa: F401
-
     follow_up_messages = [*messages, *tool_role_messages]
     follow_up_messages.append({
         'role': 'system',
@@ -698,7 +693,6 @@ async def _generate_natural_reply(
     })
 
     reply_text = ''
-    tts_buffer = ''
     try:
         async for delta in llm_services.stream_llm_chat_completion(
             model_config=model_config,
@@ -711,19 +705,12 @@ async def _generate_natural_reply(
             reply_text += delta
             if on_delta is not None:
                 await on_delta(delta)
-            tts_buffer += delta
-            segments, tts_buffer = _pop_llm_tts_segments(tts_buffer, session)
             if on_tts_segment is not None:
-                for segment in segments:
-                    await on_tts_segment(segment)
+                await on_tts_segment(delta)
     except Exception as exc:
         logger.warning('command_dispatch.second_round_failed error=%s', exc)
         if not reply_text:
             raise
-    final_segments, _ = _pop_llm_tts_segments(tts_buffer, session, flush=True)
-    if on_tts_segment is not None:
-        for segment in final_segments:
-            await on_tts_segment(segment)
     return reply_text
 
 

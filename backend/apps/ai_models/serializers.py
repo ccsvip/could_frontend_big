@@ -1520,7 +1520,12 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
     enableWebSearch = serializers.BooleanField(source='enable_web_search', required=False)
     voiceInputEnabled = serializers.BooleanField(source='voice_input_enabled', required=False)
     replyPlaybackEnabled = serializers.BooleanField(source='reply_playback_enabled', required=False)
-    ttsFilterPunctuation = serializers.CharField(source='tts_filter_punctuation', required=False, allow_blank=True)
+    ttsFilterPunctuation = serializers.CharField(
+        source='tts_filter_punctuation',
+        required=False,
+        allow_blank=True,
+        trim_whitespace=False,
+    )
     ttsFilterEmoji = serializers.BooleanField(source='tts_filter_emoji', required=False)
     ttsFilterExcludePatterns = serializers.ListField(
         source='tts_filter_exclude_patterns',
@@ -1696,7 +1701,7 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
         return normalized
 
     def validate_ttsFilterPunctuation(self, value: str) -> str:
-        value = ''.join(dict.fromkeys(str(value).strip()))
+        value = ''.join(dict.fromkeys(str(value)))
         if len(value) > 64:
             raise serializers.ValidationError('TTS 过滤标点不能超过 64 个字符')
         return value

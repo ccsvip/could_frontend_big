@@ -6,6 +6,7 @@ from django.test import TestCase
 
 from apps.ai_models.models import TTSProvider, TTSVoice
 from apps.ai_models.services import cosyvoice as cosyvoice_services
+from apps.ai_models.services import cosyvoice_realtime
 from apps.ai_models.services import tts as tts_services
 from apps.ai_models.services import tts_adapters
 
@@ -380,3 +381,49 @@ class CosyVoiceRealtimeAdapterTests(TestCase):
         collector = self.run_segment_stream(upstream, texts=())
 
         self.assertEqual(collector.types(), ['tts.ready', 'tts.done'])
+
+    def test_segment_stream_rebuilds_stale_unused_prewarm_before_first_text(self):
+        stale_upstream = FakeCosyVoiceUpstream()
+        fresh_upstream = FakeCosyVoiceUpstream(audio_frames=(b'\x05',))
+        collector = Collector()
+
+        async def run_stream():
+            async def segments():
+                yield ' 第一段。\n'
+
+            prepared = await self.adapter.prepare_realtime_stream(
+                voice=self.voice,
+                config=self.config,
+                controls={},
+            )
+            prepared.created_at -= cosyvoice_realtime.COSYVOICE_PREWARM_STALE_SECONDS
+            await self.adapter.stream_realtime_segments(
+                segments=segments(),
+                voice=self.voice,
+                config=self.config,
+                send=collector,
+                controls={},
+                prepared=prepared,
+            )
+
+        with patch(
+            'apps.ai_models.services.cosyvoice_realtime.websockets.connect',
+            side_effect=[stale_upstream, fresh_upstream],
+        ):
+            asyncio.run(run_stream())
+
+        self.assertEqual(stale_upstream.actions(), ['run-task'])
+        self.assertEqual(fresh_upstream.actions(), ['run-task', 'continue-task', 'finish-task'])
+        self.assertEqual(fresh_upstream.sent[1]['payload']['input']['text'], ' 第一段。\n')
+
+    def test_segment_stream_rejects_indivisible_provider_overflow_without_sending_text(self):
+        upstream = FakeCosyVoiceUpstream()
+
+        with self.assertRaises(RuntimeError) as ctx:
+            self.run_segment_stream(
+                upstream,
+                texts=('甲' * (tts_services.COSYVOICE_MAX_MESSAGE_CHARACTERS + 1),),
+            )
+
+        self.assertIn('20000', str(ctx.exception))
+        self.assertEqual(upstream.actions(), ['run-task'])

@@ -649,3 +649,125 @@ publish_tts_voice_authorization_changed(voice) -> None
 > WebSocket test the request runs through `sync_to_async`, so the capture must live
 > inside the wrapped callable.
 
+
+
+---
+
+## Scenario: Lossless agent TTS text filtering and CosyVoice task limits
+
+### 1. Scope / Trigger
+
+- Trigger: changing intelligent-agent TTS filter fields, LLM-delta segmentation,
+  browser reply playback, or CosyVoice duplex streaming.
+- The text sent upstream must equal the LLM answer with **only** the three
+  page-configured transformations applied. Markdown removal, whitespace collapse,
+  list-number removal, punctuation insertion, and hard length splitting are forbidden.
+
+### 2. Signatures
+
+```python
+# AgentApplication DB / REST serializer
+tts_filter_punctuation: CharField(max_length=64, default='')
+tts_filter_emoji: BooleanField(default=True)
+tts_filter_exclude_patterns: JSONField(default=list)
+
+TTSStreamingTextProcessor(
+    filter_punctuation: str | None = None,
+    filter_emoji: bool = False,
+    exclude_patterns: list[str] | tuple[str, ...] | None = None,
+)
+feed(text: str) -> list[str]
+finish() -> list[str]
+
+validate_cosyvoice_task_text(text: str, sent_characters: int = 0) -> int
+```
+
+The REST fields are `ttsFilterPunctuation`, `ttsFilterEmoji`, and
+`ttsFilterExcludePatterns`. Published runtime snapshots keep the corresponding
+snake-case keys.
+
+### 3. Contracts
+
+- `ttsFilterPunctuation` is a literal set of characters, not a regular expression.
+  Whitespace is significant (`trim_whitespace=False`), duplicate characters are
+  removed in first-seen order, and empty means no punctuation removal.
+- `ttsFilterExcludePatterns` contains literal strings. Matching is global, ordered,
+  and stateful across arbitrary LLM delta boundaries. Duplicate entries are removed
+  after trimming page input.
+- Removing a character or literal must preserve its source boundary metadata. For
+  example, filtering `\n` may remove that character from speech but must still allow
+  the preceding list item to be emitted as a separate segment.
+- Segments are emitted only at source characters in
+  `。！？!?；;，,：:、\r\n`; the boundary character remains in the emitted text unless
+  the page explicitly filters it. `''.join(segments)` must equal the filtered answer.
+- Browser streaming reply playback applies this processor once to raw LLM deltas,
+  then calls `playRealtimeTts` without forwarding the three filter fields. The backend
+  receives already-filtered segments and must not apply the rules a second time.
+- Backend agent playback applies one processor to the complete delta stream and calls
+  `finish()` exactly once. Empty output produces no TTS request.
+- One CosyVoice answer uses one `run-task`, zero or more exact `continue-task` texts,
+  and one `finish-task`; PCM is forwarded as received. A prewarmed task older than
+  20 seconds is closed and rebuilt only after the first real text is available.
+- Provider guards are 20,000 characters per `continue-task`, 200,000 cumulative
+  characters per task, and at most 23 seconds between consecutive text sends.
+
+### 4. Validation & Error Matrix
+
+| Condition | Result |
+| --- | --- |
+| `ttsFilterPunctuation` exceeds 64 characters | HTTP 400: `TTS 过滤标点不能超过 64 个字符` |
+| More than 20 exclusion strings | HTTP 400: `TTS 排除文本最多 20 条` |
+| Exclusion is blank or exceeds 120 characters | HTTP 400 with the field-specific message |
+| `continue-task` text exceeds 20,000 characters | fail before provider send with explicit runtime error |
+| Cumulative task text exceeds 200,000 characters | fail before provider send with explicit runtime error |
+| Consecutive sends are more than 23 seconds apart | abort the task; never send fake keepalive text |
+| Filter rules remove the whole answer | no upstream synthesis request; normal agent completion remains valid |
+
+### 5. Good/Base/Bad Cases
+
+- **Good**: `球形LED显示屏\n内球幕LED显示屏` becomes two upstream segments whose
+  concatenation is exactly the original text when newline filtering is disabled.
+- **Base**: an empty punctuation field and no exclusions preserve every LLM character;
+  emoji filtering follows the saved boolean only.
+- **Bad**: converting Markdown to plain text, collapsing `\r\n` to spaces, flushing a
+  segment because it reached an arbitrary character count, or re-filtering a browser
+  segment in the backend. Each silently changes what the user hears.
+
+### 6. Tests Required
+
+- `apps.ai_models.tests.test_tts_api`: identity without page rules; literal exclusion
+  across delta boundaries; emoji/punctuation combinations; filtered-boundary
+  preservation; empty output; 20,000/200,000-character failures; 23-second send guard;
+  stale prewarm close/rebuild; one-task protocol and PCM forwarding.
+- `config.tests.test_realtime_websocket`: concatenate all `tts.segment` payload texts
+  and compare with the expected filtered LLM answer; assert `agent.done` after empty
+  filtered output and after prewarm failure.
+- Frontend build/type-check plus browser smoke: stream several raw deltas through the
+  page processor, confirm the displayed answer is unchanged, transmitted segment
+  concatenation equals the configured filtered answer, PCM plays, and interruption
+  resets processor state.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```python
+text = strip_markdown_for_tts(text)
+text = re.sub(r'\s+', ' ', text).strip()
+return hard_split(text, max_length=80)
+```
+
+#### Correct
+
+```python
+processor = TTSStreamingTextProcessor(
+    filter_punctuation=published_config['tts_filter_punctuation'],
+    filter_emoji=published_config['tts_filter_emoji'],
+    exclude_patterns=published_config['tts_filter_exclude_patterns'],
+)
+for delta in llm_deltas:
+    for segment in processor.feed(delta):
+        await queue.put(segment)
+for segment in processor.finish():
+    await queue.put(segment)
+```

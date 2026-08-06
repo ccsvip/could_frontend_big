@@ -72,6 +72,9 @@ export const buildTtsSessionStartCommand = (
     voiceId?: number | null;
     providerCode?: string;
     sessionConfig?: Record<string, unknown>;
+    filterPunctuation?: string;
+    filterEmoji?: boolean;
+    excludePatterns?: string[];
   },
 ): RealtimeCommand => ({
   type: 'tts.session.start',
@@ -83,6 +86,9 @@ export const buildTtsSessionStartCommand = (
     voiceId: payload.voiceId ?? null,
     providerCode: payload.providerCode,
     sessionConfig: payload.sessionConfig,
+    filterPunctuation: payload.filterPunctuation,
+    filterEmoji: payload.filterEmoji,
+    excludePatterns: payload.excludePatterns,
   },
 });
 

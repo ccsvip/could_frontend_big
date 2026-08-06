@@ -167,7 +167,7 @@ class BaseTTSAdapter:
         """
         return None
 
-    async def stream_realtime_segments(self, *, segments: AsyncIterable[str], voice: TTSVoice, config: EffectiveTTSConfig, send, controls=None, exclude_patterns=None, prepared=None) -> None:
+    async def stream_realtime_segments(self, *, segments: AsyncIterable[str], voice: TTSVoice, config: EffectiveTTSConfig, send, controls=None, prepared=None) -> None:
         raise TTSAdapterError(f'{self.provider_code} 暂不支持实时语音合成')
 
 
@@ -245,7 +245,7 @@ class AliyunQwenTTSAdapter(BaseTTSAdapter):
             exclude_patterns=exclude_patterns,
         )
 
-    async def stream_realtime_segments(self, *, segments: AsyncIterable[str], voice: TTSVoice, config: EffectiveTTSConfig, send, controls=None, exclude_patterns=None, prepared=None) -> None:
+    async def stream_realtime_segments(self, *, segments: AsyncIterable[str], voice: TTSVoice, config: EffectiveTTSConfig, send, controls=None, prepared=None) -> None:
         from ..realtime_tts import _stream_tts_segments_audio
 
         # No prewarm on this card: ``prepared`` is always None here, and
@@ -256,7 +256,6 @@ class AliyunQwenTTSAdapter(BaseTTSAdapter):
             config=config,
             send=send,
             session_config=controls,
-            exclude_patterns=exclude_patterns,
         )
 
 
@@ -323,7 +322,7 @@ class CosyVoiceTTSAdapter(BaseTTSAdapter):
             controls=self._coerce_controls(controls if isinstance(controls, dict) else {}),
         )
 
-    async def stream_realtime_segments(self, *, segments: AsyncIterable[str], voice: TTSVoice, config: EffectiveTTSConfig, send, controls=None, exclude_patterns=None, prepared=None) -> None:
+    async def stream_realtime_segments(self, *, segments: AsyncIterable[str], voice: TTSVoice, config: EffectiveTTSConfig, send, controls=None, prepared=None) -> None:
         from .cosyvoice_realtime import stream_cosyvoice_realtime_segments
 
         await stream_cosyvoice_realtime_segments(
@@ -332,9 +331,9 @@ class CosyVoiceTTSAdapter(BaseTTSAdapter):
             config=config,
             send=send,
             controls=self._coerce_controls(controls if isinstance(controls, dict) else {}),
-            exclude_patterns=exclude_patterns,
             prepared=prepared,
         )
+
 
 
 _ADAPTERS: dict[str, BaseTTSAdapter] = {

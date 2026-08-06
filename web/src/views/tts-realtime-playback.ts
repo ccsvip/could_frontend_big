@@ -17,6 +17,8 @@ type PlayRealtimeTtsOptions = TtsTestPayload & {
   filterPunctuation?: string;
   filterEmoji?: boolean;
   signal?: AbortSignal;
+  excludePatterns?: string[];
+  jitterBufferMs?: number;
   interruptSignal?: AbortSignal;
 };
 
@@ -32,9 +34,179 @@ type WebAudioWindow = Window & typeof globalThis & {
 type TtsRealtimeSocketMessage = TtsRealtimeMessage & {
   error?: RealtimeError;
 };
+type TtsStreamToken = {
+  text: string;
+  boundary: boolean;
+};
+
+export type TtsTextFilterRules = {
+  filterPunctuation?: string;
+  filterEmoji?: boolean;
+  excludePatterns?: string[];
+};
+
+const TTS_SEGMENT_BOUNDARIES: Record<string, true> = {
+  '。': true,
+  '！': true,
+  '!': true,
+  '？': true,
+  '?': true,
+  '；': true,
+  ';': true,
+  '，': true,
+  ',': true,
+  '：': true,
+  ':': true,
+  '、': true,
+  '\r': true,
+  '\n': true,
+};
+const TTS_EMOJI_PATTERN = /[\u{1F000}-\u{1FAFF}\u2600-\u27BF\uFE0F]/u;
+
+class LiteralExclusionStage {
+  private pending: TtsStreamToken[] = [];
+  private readonly patternLength: number;
+
+  constructor(private readonly pattern: string) {
+    this.patternLength = Array.from(pattern).length;
+  }
+
+  feed(tokens: TtsStreamToken[]) {
+    const emitted: TtsStreamToken[] = [];
+    tokens.forEach((token) => {
+      this.pending.push(token);
+      emitted.push(...this.drainSafePrefix());
+    });
+    return emitted;
+  }
+
+  finish() {
+    const pending = this.pending;
+    this.pending = [];
+    return pending;
+  }
+
+  private drainSafePrefix() {
+    const characterPositions = this.pending
+      .map((token, index) => token.text ? index : -1)
+      .filter((index) => index >= 0);
+    const visibleCharacters = characterPositions.map((index) => this.pending[index].text);
+    const visible = visibleCharacters.join('');
+    if (visible.endsWith(this.pattern)) {
+      const boundary = this.pending.some((token) => token.boundary);
+      this.pending = [];
+      return boundary ? [{ text: '', boundary: true }] : [];
+    }
+
+    const maxPrefixLength = Math.min(visibleCharacters.length, this.patternLength - 1);
+    let heldCharacters = 0;
+    for (let length = maxPrefixLength; length > 0; length -= 1) {
+      if (this.pattern.startsWith(visibleCharacters.slice(-length).join(''))) {
+        heldCharacters = length;
+        break;
+      }
+    }
+    if (heldCharacters > 0) {
+      const heldFrom = characterPositions[characterPositions.length - heldCharacters];
+      const emitted = this.pending.slice(0, heldFrom);
+      this.pending = this.pending.slice(heldFrom);
+      return emitted;
+    }
+
+    const emitted = this.pending;
+    this.pending = [];
+    return emitted;
+  }
+}
+
+export class TtsStreamingTextProcessor {
+  private readonly exclusionStages: LiteralExclusionStage[];
+  private readonly filteredCharacters: Set<string>;
+  private readonly filterEmoji: boolean;
+  private segmentCharacters: string[] = [];
+  private finished = false;
+
+  constructor(rules: TtsTextFilterRules = {}) {
+    const patterns = Array.from(new Set(rules.excludePatterns ?? [])).filter(Boolean);
+    this.exclusionStages = patterns.map((pattern) => new LiteralExclusionStage(pattern));
+    this.filteredCharacters = new Set(Array.from(rules.filterPunctuation ?? ''));
+    this.filterEmoji = Boolean(rules.filterEmoji);
+  }
+
+  feed(text: string) {
+    if (this.finished) {
+      throw new Error('TTS text processor is already finished.');
+    }
+    const tokens = Array.from(text).map((character) => ({
+      text: character,
+      boundary: character in TTS_SEGMENT_BOUNDARIES,
+    }));
+    return this.consume(this.applyRules(tokens));
+  }
+
+  finish() {
+    if (this.finished) {
+      return [];
+    }
+    this.finished = true;
+    const tokens: TtsStreamToken[] = [];
+    this.exclusionStages.forEach((stage, index) => {
+      let stageOutput = stage.finish();
+      this.exclusionStages.slice(index + 1).forEach((downstream) => {
+        stageOutput = downstream.feed(stageOutput);
+      });
+      tokens.push(...stageOutput);
+    });
+    const segments = this.consume(this.applyCharacterRules(tokens));
+    if (this.segmentCharacters.length > 0) {
+      segments.push(this.segmentCharacters.join(''));
+      this.segmentCharacters = [];
+    }
+    return segments;
+  }
+
+  private applyRules(tokens: TtsStreamToken[]) {
+    this.exclusionStages.forEach((stage) => {
+      tokens = stage.feed(tokens);
+    });
+    return this.applyCharacterRules(tokens);
+  }
+
+  private applyCharacterRules(tokens: TtsStreamToken[]) {
+    const filtered: TtsStreamToken[] = [];
+    tokens.forEach((token) => {
+      const removeCharacter = Boolean(token.text) && (
+        (this.filterEmoji && TTS_EMOJI_PATTERN.test(token.text))
+        || this.filteredCharacters.has(token.text)
+      );
+      if (removeCharacter) {
+        if (token.boundary) {
+          filtered.push({ text: '', boundary: true });
+        }
+        return;
+      }
+      filtered.push(token);
+    });
+    return filtered;
+  }
+
+  private consume(tokens: TtsStreamToken[]) {
+    const segments: string[] = [];
+    tokens.forEach((token) => {
+      if (token.text) {
+        this.segmentCharacters.push(token.text);
+      }
+      if (token.boundary && this.segmentCharacters.length > 0) {
+        segments.push(this.segmentCharacters.join(''));
+        this.segmentCharacters = [];
+      }
+    });
+    return segments;
+  }
+}
 
 export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<PlayRealtimeTtsResult> => {
-  const text = sanitizeTtsText(options.text || '', options.filterPunctuation, Boolean(options.filterEmoji));
+  const text = options.text || '';
   if (!text) {
     throw new Error('TTS 测试文本不能为空');
   }
@@ -47,12 +219,15 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
   const audioContext = new AudioContextClass();
   const gain = audioContext.createGain();
   gain.connect(audioContext.destination);
+  const pcmPlayback = new PcmJitterBuffer(
+    audioContext,
+    gain,
+    Math.max(0, options.jitterBufferMs ?? DEFAULT_PCM_JITTER_BUFFER_MS),
+  );
 
   let sampleRate = 24000;
   let responseFormat: TtsRealtimeMessage['responseFormat'] = options.sessionConfig?.response_format || 'pcm';
-  let nextStartTime = audioContext.currentTime + 0.05;
   const chunks: ArrayBuffer[] = [];
-  const scheduledSources: AudioBufferSourceNode[] = [];
   let audioClosed = false;
   let encodedAudio: HTMLAudioElement | null = null;
   let encodedAudioUrl: string | null = null;
@@ -76,25 +251,13 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
       return;
     }
     audioClosed = true;
+    pcmPlayback.stop();
     try {
       gain.gain.cancelScheduledValues(audioContext.currentTime);
       gain.gain.setValueAtTime(0, audioContext.currentTime);
     } catch {
       // Audio context may already be closing.
     }
-    scheduledSources.forEach((source) => {
-      try {
-        source.stop(audioContext.currentTime);
-      } catch {
-        // Source may already have ended.
-      }
-      try {
-        source.disconnect();
-      } catch {
-        // Source may already be disconnected.
-      }
-    });
-    scheduledSources.length = 0;
     try {
       gain.disconnect();
     } catch {
@@ -103,59 +266,22 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
     void audioContext.close();
   };
 
-  return new Promise((resolve, reject) => {
+  let resolve!: (result: PlayRealtimeTtsResult) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<PlayRealtimeTtsResult>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
     let settled = false;
     let completing = false;
     let interrupted = false;
     let cancelled = false;
-    let completionTimer: number | null = null;
     const socket = new WebSocket(buildRealtimeWebSocketUrl());
     socket.binaryType = 'arraybuffer';
 
-    const finish = () => {
-      if (settled || completing || cancelled) {
-        return;
-      }
-      completing = true;
-      const playbackTailMs = Math.max(0, (nextStartTime - audioContext.currentTime) * 1000);
-      completionTimer = window.setTimeout(() => {
-        if (cancelled) {
-          return;
-        }
-        settled = true;
-        closeAudio();
-        if (chunks.length === 0) {
-          reject(new Error('TTS 未返回有效音频'));
-          return;
-        }
-        const blob = buildTtsAudioBlob(chunks, sampleRate, responseFormat);
-        if (responseFormat === 'pcm') {
-          resolve({ blob, sampleRate });
-          return;
-        }
-        const objectUrl = URL.createObjectURL(blob);
-        const audio = new Audio(objectUrl);
-        encodedAudioUrl = objectUrl;
-        encodedAudio = audio;
-        audio.onended = () => {
-          URL.revokeObjectURL(objectUrl);
-          encodedAudioUrl = null;
-          encodedAudio = null;
-          resolve({ blob, sampleRate });
-        };
-        audio.onerror = () => {
-          URL.revokeObjectURL(objectUrl);
-          encodedAudioUrl = null;
-          encodedAudio = null;
-          reject(new Error('当前浏览器无法播放该 TTS 音频格式'));
-        };
-        void audio.play().catch(() => {
-          URL.revokeObjectURL(objectUrl);
-          encodedAudioUrl = null;
-          encodedAudio = null;
-          reject(new Error('当前浏览器无法播放该 TTS 音频格式'));
-        });
-      }, playbackTailMs + 50);
+    const removeAbortListeners = () => {
+      options.signal?.removeEventListener('abort', abort);
+      options.interruptSignal?.removeEventListener('abort', interruptPlayback);
     };
 
     const fail = (error: Error) => {
@@ -163,46 +289,85 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
         return;
       }
       settled = true;
-      if (completionTimer !== null) {
-        window.clearTimeout(completionTimer);
-        completionTimer = null;
-      }
+      removeAbortListeners();
       closeAudio();
       reject(error);
     };
 
-    const abort = () => {
+    const finish = async () => {
+      if (settled || completing || cancelled) {
+        return;
+      }
+      completing = true;
+      if (chunks.length === 0) {
+        fail(new Error('TTS 未返回有效音频'));
+        return;
+      }
+      const blob = buildTtsAudioBlob(chunks, sampleRate, responseFormat);
+      if (responseFormat === 'pcm') {
+        try {
+          await pcmPlayback.finish();
+        } catch (error) {
+          fail(error instanceof Error ? error : new Error('TTS PCM 音频格式无效'));
+          return;
+        }
+        if (cancelled || settled) {
+          return;
+        }
+        settled = true;
+        removeAbortListeners();
+        closeAudio();
+        resolve({ blob, sampleRate });
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(blob);
+      const audio = new Audio(objectUrl);
+      encodedAudioUrl = objectUrl;
+      encodedAudio = audio;
+      audio.onended = () => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        removeAbortListeners();
+        closeAudio();
+        resolve({ blob, sampleRate });
+      };
+      audio.onerror = () => fail(new Error('当前浏览器无法播放该 TTS 音频格式'));
+      void audio.play().catch(() => fail(new Error('当前浏览器无法播放该 TTS 音频格式')));
+    };
+
+    function abort() {
+      if (settled) {
+        return;
+      }
       cancelled = true;
-      closeAudio();
       if (socket.readyState === WebSocket.OPEN) {
         socket.send(encodeRealtimeCommand(buildTtsSessionCancelCommand(createRealtimeCommandId('tts-cancel'))));
       }
       socket.close();
       fail(new DOMException('TTS playback was cancelled', 'AbortError'));
-    };
+    }
 
-    const interruptPlayback = () => {
-      if (interrupted) {
+    function interruptPlayback() {
+      if (interrupted || settled) {
         return;
       }
       interrupted = true;
       cancelled = true;
-      if (completionTimer !== null) {
-        window.clearTimeout(completionTimer);
-        completionTimer = null;
-      }
-      closeAudio();
       socket.close(1000, 'tts playback interrupted');
       fail(new DOMException('TTS playback was interrupted', 'AbortError'));
-    };
+    }
 
     if (options.signal?.aborted) {
       abort();
-      return;
+      return promise;
     }
     options.signal?.addEventListener('abort', abort, { once: true });
     if (options.interruptSignal?.aborted) {
       interruptPlayback();
+      return promise;
     }
     options.interruptSignal?.addEventListener('abort', interruptPlayback, { once: true });
 
@@ -221,6 +386,9 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
         voiceId: options.voiceId ?? null,
         providerCode: options.providerCode,
         sessionConfig: options.sessionConfig,
+        filterPunctuation: options.filterPunctuation,
+        filterEmoji: options.filterEmoji,
+        excludePatterns: options.excludePatterns,
       })));
     };
 
@@ -231,20 +399,13 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
       if (typeof event.data !== 'string') {
         const pcm = event.data.slice(0);
         chunks.push(pcm);
-        if (responseFormat !== 'pcm') {
-          return;
+        if (responseFormat === 'pcm') {
+          try {
+            pcmPlayback.push(pcm, sampleRate);
+          } catch (error) {
+            fail(error instanceof Error ? error : new Error('TTS PCM 音频格式无效'));
+          }
         }
-        schedulePcmChunk(
-          audioContext,
-          gain,
-          scheduledSources,
-          pcm,
-          sampleRate,
-          () => nextStartTime,
-          (value) => {
-            nextStartTime = value;
-          },
-        );
         return;
       }
 
@@ -265,7 +426,7 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
           fail(new DOMException('TTS playback was interrupted', 'AbortError'));
           return;
         }
-        finish();
+        void finish();
         return;
       }
       if (payload.type === 'tts.cancelled') {
@@ -279,25 +440,151 @@ export const playRealtimeTts = async (options: PlayRealtimeTtsOptions): Promise<
       }
     };
 
-    socket.onerror = () => {
-      fail(new Error('TTS WebSocket 连接异常'));
-    };
+    socket.onerror = () => fail(new Error('TTS WebSocket 连接异常'));
 
     socket.onclose = () => {
-      options.signal?.removeEventListener('abort', abort);
-      options.interruptSignal?.removeEventListener('abort', interruptPlayback);
+      removeAbortListeners();
       if (interrupted && !settled) {
         fail(new DOMException('TTS playback was interrupted', 'AbortError'));
         return;
       }
       if (!settled && !completing && chunks.length > 0) {
-        finish();
+        void finish();
       } else if (!settled && !completing) {
         fail(new Error('TTS WebSocket 已关闭'));
       }
     };
-  });
+  return promise;
 };
+
+const DEFAULT_PCM_JITTER_BUFFER_MS = 120;
+
+type PendingPcmBuffer = {
+  samples: Float32Array<ArrayBuffer>;
+  sampleRate: number;
+};
+
+class PcmJitterBuffer {
+  private readonly pending: PendingPcmBuffer[] = [];
+  private readonly sources = new Set<AudioBufferSourceNode>();
+  private pendingDuration = 0;
+  private nextStartTime = 0;
+  private trailingByte: number | null = null;
+  private started = false;
+  private finished = false;
+  private finishResolver: (() => void) | null = null;
+
+  constructor(
+    private readonly audioContext: AudioContext,
+    private readonly output: AudioNode,
+    private readonly startupBufferMs: number,
+  ) {}
+
+  push(pcm: ArrayBuffer, sampleRate: number) {
+    if (this.finished) {
+      throw new Error('TTS PCM 播放队列已经结束');
+    }
+    const alignedPcm = this.alignPcmFrames(pcm);
+    if (alignedPcm.byteLength === 0) {
+      return;
+    }
+    const samples = pcm16ToFloat32(alignedPcm);
+    this.pending.push({ samples, sampleRate });
+    this.pendingDuration += samples.length / sampleRate;
+    if (!this.started && this.pendingDuration * 1000 >= this.startupBufferMs) {
+      this.started = true;
+    }
+    if (this.started) {
+      this.schedulePending();
+    }
+  }
+
+  finish(): Promise<void> {
+    if (this.trailingByte !== null) {
+      return Promise.reject(new Error('TTS 返回了不完整的 PCM 采样帧'));
+    }
+    this.finished = true;
+    this.started = true;
+    this.schedulePending();
+    if (this.sources.size === 0) {
+      return Promise.resolve();
+    }
+    return new Promise<void>((resolve) => {
+      this.finishResolver = resolve;
+    });
+  }
+
+  stop() {
+    this.pending.length = 0;
+    this.pendingDuration = 0;
+    this.trailingByte = null;
+    this.sources.forEach((source) => {
+      source.onended = null;
+      try {
+        source.stop(this.audioContext.currentTime);
+      } catch {
+        // Source may already have ended.
+      }
+      try {
+        source.disconnect();
+      } catch {
+        // Source may already be disconnected.
+      }
+    });
+    this.sources.clear();
+    this.finishResolver?.();
+    this.finishResolver = null;
+  }
+
+  private alignPcmFrames(pcm: ArrayBuffer) {
+    const bytes = new Uint8Array(pcm);
+    if (this.trailingByte === null && bytes.byteLength % 2 === 0) {
+      return pcm;
+    }
+
+    const combined = new Uint8Array(bytes.byteLength + (this.trailingByte === null ? 0 : 1));
+    let offset = 0;
+    if (this.trailingByte !== null) {
+      combined[0] = this.trailingByte;
+      this.trailingByte = null;
+      offset = 1;
+    }
+    combined.set(bytes, offset);
+    const alignedLength = combined.byteLength - (combined.byteLength % 2);
+    if (alignedLength < combined.byteLength) {
+      this.trailingByte = combined[combined.byteLength - 1];
+    }
+    return combined.buffer.slice(0, alignedLength);
+  }
+
+  private schedulePending() {
+    if (this.pending.length === 0) {
+      return;
+    }
+    let startAt = Math.max(this.nextStartTime, this.audioContext.currentTime + 0.04);
+    this.pending.forEach(({ samples, sampleRate }) => {
+      const audioBuffer = this.audioContext.createBuffer(1, samples.length, sampleRate);
+      audioBuffer.copyToChannel(samples, 0);
+      const source = this.audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(this.output);
+      source.onended = () => {
+        source.disconnect();
+        this.sources.delete(source);
+        if (this.finished && this.sources.size === 0) {
+          this.finishResolver?.();
+          this.finishResolver = null;
+        }
+      };
+      this.sources.add(source);
+      source.start(startAt);
+      startAt += audioBuffer.duration;
+    });
+    this.pending.length = 0;
+    this.pendingDuration = 0;
+    this.nextStartTime = startAt;
+  }
+}
 
 const buildTtsAudioBlob = (
   chunks: ArrayBuffer[],
@@ -316,82 +603,6 @@ const buildTtsAudioBlob = (
   return pcmToWav(chunks, sampleRate);
 };
 
-export const sanitizeTtsText = (value: string, filterPunctuation?: string, filterEmoji = false) => {
-  let nextValue = stripMarkdownForTts(value);
-  if (filterPunctuation) {
-    const escaped = filterPunctuation.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
-    nextValue = nextValue.replace(new RegExp(`[${escaped}]`, 'g'), '');
-  }
-  if (filterEmoji) {
-    nextValue = nextValue.replace(EMOJI_PATTERN, '');
-  }
-  return nextValue
-    .replace(/[*_`>#~|[\]{}]/g, ' ')
-    .replace(/[ \t]+/g, ' ')
-    .replace(/\s*\n\s*/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-};
-
-const EMOJI_PATTERN = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu;
-
-const stripMarkdownForTts = (value: string) => value
-  .replace(/\r\n/g, '\n')
-  .replace(/```[\s\S]*?```/g, ' ')
-  .replace(/`([^`]+)`/g, '$1')
-  .split('\n')
-  .map((line) => {
-    const trimmed = line.trim();
-    if (!trimmed) {
-      return '';
-    }
-    if (/^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(trimmed)) {
-      return '';
-    }
-    if (trimmed.includes('|')) {
-      return trimmed
-        .replace(/^\|/, '')
-        .replace(/\|$/, '')
-        .split('|')
-        .map((cell) => cell.trim())
-        .filter(Boolean)
-        .join('，');
-    }
-    return trimmed
-      .replace(/^#{1,6}\s+/, '')
-      .replace(/^[-*+]\s+/, '')
-      .replace(/^\d+[.)]\s+/, '')
-      .replace(/^>\s?/, '');
-  })
-  .join('\n')
-  .replace(/!\[[^\]]*]\([^)]*\)/g, ' ')
-  .replace(/\[([^\]]+)]\([^)]*\)/g, '$1')
-  .replace(/(\*\*|__)(.*?)\1/g, '$2')
-  .replace(/(\*|_)(.*?)\1/g, '$2');
-
-const schedulePcmChunk = (
-  audioContext: AudioContext,
-  output: AudioNode,
-  scheduledSources: AudioBufferSourceNode[],
-  pcm: ArrayBuffer,
-  sampleRate: number,
-  getNextStartTime: () => number,
-  setNextStartTime: (value: number) => void,
-) => {
-  const samples = pcm16ToFloat32(pcm);
-  if (samples.length === 0) {
-    return;
-  }
-  const audioBuffer = audioContext.createBuffer(1, samples.length, sampleRate);
-  audioBuffer.copyToChannel(samples, 0);
-  const source = audioContext.createBufferSource();
-  source.buffer = audioBuffer;
-  source.connect(output);
-  const startAt = Math.max(audioContext.currentTime + 0.02, getNextStartTime());
-  source.start(startAt);
-  setNextStartTime(startAt + audioBuffer.duration);
-  scheduledSources.push(source);
-};
 
 const pcm16ToFloat32 = (pcm: ArrayBuffer) => {
   const view = new DataView(pcm);
