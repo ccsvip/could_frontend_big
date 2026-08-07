@@ -1,5 +1,6 @@
 import {
   IconApps,
+  IconHeadphones,
   IconMicrophone,
   IconDeviceDesktop,
   IconEdit,
@@ -10,6 +11,7 @@ import {
   IconTrash,
 } from '@tabler/icons-react';
 import {
+  Avatar,
   Button,
   Card,
   Empty,
@@ -38,6 +40,7 @@ import {
   encodeRealtimeCommand,
   parseRealtimeMessage,
 } from '../../api/realtime';
+import { normalizeMediaAssetUrl } from '../../api/client';
 import {
   createDeviceApplication,
   deleteDeviceApplication,
@@ -79,6 +82,12 @@ type WakeWordForm = WakeWordPayload;
 type ResourceOption = {
   label: string;
   value: number;
+};
+
+type VoiceToneOption = {
+  label: string;
+  value: number;
+  avatarPath?: string;
 };
 
 type DeviceRuntimeDiagnostic = {
@@ -150,7 +159,7 @@ const isDeviceRealtimePayload = (payload: unknown): payload is { type: string } 
 
 const emptyApplicationOption = [{ label: '待绑定资源应用', value: null as number | null }];
 const emptyAgentApplicationOption = [{ label: '待绑定智能体', value: null as number | null }];
-const emptyVoiceToneOption = [{ label: '暂不绑定音色', value: null as number | null }];
+const emptyVoiceToneOption: Array<{ label: string; value: number | null }> = [{ label: '暂不绑定音色', value: null }];
 const DEVICE_PAGE_SIZE = 10;
 const DEFAULT_VOICE_TONE_CONFIG: DeviceVoiceToneConfig = {
   speechRate: 1,
@@ -172,7 +181,7 @@ export const DeviceManagementPage = () => {
   const [wakeWords, setWakeWords] = useState<WakeWordRecord[]>([]);
   const [agentApplications, setAgentApplications] = useState<AgentApplicationRecord[]>([]);
   const [commandGroupOptions, setCommandGroupOptions] = useState<ResourceOption[]>([]);
-  const [voiceToneOptions, setVoiceToneOptions] = useState<ResourceOption[]>([]);
+  const [voiceToneOptions, setVoiceToneOptions] = useState<VoiceToneOption[]>([]);
   const [defaultVoiceToneConfig, setDefaultVoiceToneConfig] = useState<DeviceVoiceToneConfig>(DEFAULT_VOICE_TONE_CONFIG);
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState('');
@@ -216,6 +225,10 @@ export const DeviceManagementPage = () => {
   const agentApplicationOptions = useMemo(() => toSelectOptions(agentApplications), [agentApplications]);
   const unboundDeviceCount = useMemo(() => devices.filter((item) => !item.agentApplicationId).length, [devices]);
   const selectedDevice = useMemo(() => devices.find((d) => d.deviceCode === selectedDeviceCode) ?? null, [devices, selectedDeviceCode]);
+  const selectedDeviceVoiceOption = useMemo(
+    () => (selectedDevice?.voiceToneId == null ? null : voiceToneOptions.find((item) => item.value === selectedDevice.voiceToneId) ?? null),
+    [selectedDevice, voiceToneOptions],
+  );
   const selectedDeviceExpiration = selectedDevice ? resolveDeviceExpirationDisplay(selectedDevice) : null;
   const runtimeDiagnosticCounts = useMemo(
     () =>
@@ -377,13 +390,10 @@ export const DeviceManagementPage = () => {
       pitchRate: sessionConfig.pitch_rate ?? DEFAULT_VOICE_TONE_CONFIG.pitchRate,
       volume: sessionConfig.volume ?? DEFAULT_VOICE_TONE_CONFIG.volume,
     });
-    const nextOptions = ttsOptionsResponse.voices.map((item) => ({
-      // Multiple cards can be authorized at once, so the card name disambiguates
-      // voices that would otherwise read identically.
-      label: item.providerName
-        ? `${item.displayName}（${item.voiceCode}）· ${item.providerName}`
-        : `${item.displayName}（${item.voiceCode}）`,
+    const nextOptions: VoiceToneOption[] = ttsOptionsResponse.voices.map((item) => ({
+      label: item.displayName,
       value: item.id,
+      avatarPath: item.avatarPath || '',
     }));
     setVoiceToneOptions(nextOptions);
     return nextOptions;
@@ -1075,11 +1085,28 @@ export const DeviceManagementPage = () => {
                             </div>
 
                             <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 xl:col-span-1">
-                              <div className="flex items-center justify-between gap-2">
-                                <Typography.Text className="text-fluid-lg text-slate-700">音色</Typography.Text>
-                                <Tag className="shrink-0 text-fluid-xs" color="default" bordered={false}>{selectedDevice.voiceToneName || '未绑定'}</Tag>
+                              <Typography.Text className="text-fluid-lg text-slate-700">音色</Typography.Text>
+                              <div className="mt-2 flex min-w-0 items-center gap-2">
+                                {selectedDevice.voiceToneId ? (
+                                  <>
+                                    <Avatar
+                                      size={28}
+                                      src={
+                                        selectedDeviceVoiceOption?.avatarPath
+                                          ? normalizeMediaAssetUrl(selectedDeviceVoiceOption.avatarPath)
+                                          : undefined
+                                      }
+                                      icon={<IconHeadphones size={14} />}
+                                      className="shrink-0 border border-slate-100 bg-brand-50 text-brand-600"
+                                    />
+                                    <span className="truncate text-fluid-base text-slate-700">
+                                      {selectedDevice.voiceToneName || selectedDeviceVoiceOption?.label || '已绑定音色'}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span className="text-fluid-base text-slate-500">未绑定</span>
+                                )}
                               </div>
-                              <div className="mt-2 text-fluid-base text-slate-600 font-mono">{selectedDevice.voiceToneCode || '-'}</div>
                             </div>
 
                             <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 xl:col-span-1">
@@ -1195,7 +1222,47 @@ export const DeviceManagementPage = () => {
             <Select options={[...emptyApplicationOption, ...applicationOptions]} optionFilterProp="label" showSearch />
           </Form.Item>
           <Form.Item label="当前音色" name="voiceToneId" extra="运行时配置只会返回该设备当前绑定的音色。">
-            <Select options={[...emptyVoiceToneOption, ...voiceToneOptions]} optionFilterProp="label" showSearch />
+            <Select
+              options={[...emptyVoiceToneOption, ...voiceToneOptions]}
+              optionFilterProp="label"
+              showSearch
+              optionRender={(option) => {
+                const data = option.data as VoiceToneOption | { label: string; value: number | null };
+                if (data.value == null) {
+                  return <span className="text-fluid-sm text-slate-600">{data.label}</span>;
+                }
+                const avatarPath = 'avatarPath' in data ? data.avatarPath : '';
+                return (
+                  <span className="flex min-w-0 items-center gap-2">
+                    <Avatar
+                      size={24}
+                      src={avatarPath ? normalizeMediaAssetUrl(avatarPath) : undefined}
+                      icon={<IconHeadphones size={14} />}
+                      className="shrink-0 border border-slate-100 bg-brand-50 text-brand-600"
+                    />
+                    <span className="truncate text-fluid-sm text-slate-800">{data.label}</span>
+                  </span>
+                );
+              }}
+              labelRender={(props) => {
+                const value = props.value as number | null | undefined;
+                if (value == null) {
+                  return <span className="text-fluid-sm">{props.label}</span>;
+                }
+                const matched = voiceToneOptions.find((item) => item.value === value);
+                return (
+                  <span className="flex min-w-0 items-center gap-2">
+                    <Avatar
+                      size={20}
+                      src={matched?.avatarPath ? normalizeMediaAssetUrl(matched.avatarPath) : undefined}
+                      icon={<IconHeadphones size={12} />}
+                      className="shrink-0 border border-slate-100 bg-brand-50 text-brand-600"
+                    />
+                    <span className="truncate text-fluid-sm">{matched?.label ?? props.label}</span>
+                  </span>
+                );
+              }}
+            />
           </Form.Item>
           <Form.Item noStyle shouldUpdate={(prev, next) => prev.voiceToneId !== next.voiceToneId}>
             {({ getFieldValue }) => {
