@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import PurePosixPath
 import re
+import uuid
 from typing import Any
 
 import httpx
+from django.conf import settings
+from django.core.files.storage import default_storage
 from django.db import transaction
+from rest_framework.exceptions import ValidationError
 
 from apps.ai_models.credential_crypto import decrypt_credential
 from apps.ai_models.models import CosyVoiceProfile, CosyVoiceSettings, TTSProvider, TTSVoice
@@ -263,3 +268,68 @@ def delete_cosyvoice_remote_voice(*, voice: TTSVoice) -> None:
         get_cosyvoice_settings(),
         {'model': 'voice-enrollment', 'input': {'action': 'delete_voice', 'voice_id': voice.voice_code}},
     )
+
+
+
+VOICE_AVATAR_ALLOWED_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.webp'}
+VOICE_AVATAR_ALLOWED_CONTENT_TYPES = {
+    'image/png',
+    'image/jpeg',
+    'image/jpg',
+    'image/webp',
+}
+VOICE_AVATAR_STORAGE_PREFIX = 'tts/voice-avatars/'
+
+
+def _media_url_prefix() -> str:
+    media_url = settings.MEDIA_URL or '/media/'
+    if not media_url.endswith('/'):
+        media_url = f'{media_url}/'
+    return media_url
+
+
+def store_cosyvoice_voice_avatar(voice: TTSVoice, uploaded_file) -> str:
+    """Persist an uploaded voice avatar and return a rooted media path."""
+    original_name = getattr(uploaded_file, 'name', '') or 'avatar.png'
+
+    ext = PurePosixPath(original_name).suffix.lower()
+    if ext not in VOICE_AVATAR_ALLOWED_EXTENSIONS:
+        raise ValidationError({'avatar': '仅支持 PNG / JPEG / WebP 图片'})
+
+    content_type = (getattr(uploaded_file, 'content_type', '') or '').lower()
+    if content_type and content_type not in VOICE_AVATAR_ALLOWED_CONTENT_TYPES:
+        raise ValidationError({'avatar': '仅支持 PNG / JPEG / WebP 图片'})
+
+    storage_name = f'{VOICE_AVATAR_STORAGE_PREFIX}{voice.id}/{uuid.uuid4().hex}{ext}'
+    saved_name = default_storage.save(storage_name, uploaded_file)
+    path = f'{_media_url_prefix()}{saved_name.lstrip("/")}'
+    if not path.startswith('/'):
+        path = f'/{path}'
+    return path
+
+
+def maybe_delete_previous_voice_avatar(previous_path: str | None) -> None:
+    """Delete previous media avatar only when it lives under voice-avatars/."""
+    if not previous_path:
+        return
+    if previous_path.startswith('/static/') or '/static/tts/voices/' in previous_path:
+        return
+
+    relative: str | None = None
+    media_url = _media_url_prefix()
+    if previous_path.startswith(media_url):
+        relative = previous_path[len(media_url) :]
+    else:
+        idx = previous_path.find(VOICE_AVATAR_STORAGE_PREFIX)
+        if idx >= 0:
+            relative = previous_path[idx:]
+
+    if not relative or not relative.startswith(VOICE_AVATAR_STORAGE_PREFIX):
+        return
+
+    try:
+        if default_storage.exists(relative):
+            default_storage.delete(relative)
+    except Exception:
+        # Best-effort cleanup; never block avatar replacement on storage delete.
+        return

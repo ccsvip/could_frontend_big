@@ -15,7 +15,8 @@ from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.parsers import JSONParser, MultiPartParser
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -589,6 +590,7 @@ class CosyVoiceDesignView(APIView):
 
 class CosyVoiceVoiceDetailView(APIView):
     permission_classes = [IsSuperUser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def _voice(self, voice_id):
         return get_object_or_404(TTSVoice.objects.select_related('cosyvoice_profile'), id=voice_id, provider__code=cosyvoice_services.COSYVOICE_PROVIDER_CODE, cosyvoice_profile__isnull=False)
@@ -599,9 +601,14 @@ class CosyVoiceVoiceDetailView(APIView):
         serializer.is_valid(raise_exception=True)
         values = serializer.validated_data
         is_default = values.pop('isDefault', None)
+        avatar_file = values.pop('avatar', None)
         for source, target in {'displayName': 'display_name', 'avatarPath': 'avatar_path', 'isActive': 'is_active', 'isVisible': 'is_visible'}.items():
             if source in values:
                 setattr(voice, target, values[source])
+        if avatar_file is not None:
+            previous_path = voice.avatar_path
+            voice.avatar_path = cosyvoice_services.store_cosyvoice_voice_avatar(voice, avatar_file)
+            cosyvoice_services.maybe_delete_previous_voice_avatar(previous_path)
         voice.save()
         settings_obj = cosyvoice_services.get_cosyvoice_settings()
         if is_default is True:
@@ -620,6 +627,7 @@ class CosyVoiceVoiceDetailView(APIView):
             return Response({'message': exc.message}, status=exc.status_code)
         voice.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 
 class TTSSettingsView(APIView):

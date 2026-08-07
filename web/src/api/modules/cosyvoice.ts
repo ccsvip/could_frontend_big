@@ -54,12 +54,32 @@ export type CosyVoiceDesignPayload = {
   avatarPath?: string;
 };
 
-export type CosyVoiceVoiceUpdatePayload = Partial<Pick<CosyVoiceVoiceRecord, 'displayName' | 'isActive' | 'isVisible' | 'avatarPath' | 'isDefault'>>;
+export type CosyVoiceVoiceUpdatePayload = Partial<
+  Pick<CosyVoiceVoiceRecord, 'displayName' | 'isActive' | 'isVisible' | 'avatarPath' | 'isDefault'>
+> & {
+  avatar?: File;
+};
 
 const cosyVoiceSettingsPath = '/settings/tts/cosyvoice/';
 const cosyVoiceBlobRequestConfig = {
   responseType: 'blob' as const,
   timeout: 60000,
+};
+
+const buildVoiceUpdateBody = (payload: CosyVoiceVoiceUpdatePayload): CosyVoiceVoiceUpdatePayload | FormData => {
+  if (!payload.avatar) {
+    const { avatar: _avatar, ...jsonPayload } = payload;
+    return jsonPayload;
+  }
+
+  const formData = new FormData();
+  if (payload.displayName !== undefined) formData.append('displayName', payload.displayName);
+  if (payload.avatarPath !== undefined) formData.append('avatarPath', payload.avatarPath);
+  if (payload.isActive !== undefined) formData.append('isActive', String(payload.isActive));
+  if (payload.isVisible !== undefined) formData.append('isVisible', String(payload.isVisible));
+  if (payload.isDefault !== undefined) formData.append('isDefault', String(payload.isDefault));
+  formData.append('avatar', payload.avatar);
+  return formData;
 };
 
 export const fetchCosyVoiceSettings = async (): Promise<CosyVoiceSettings> => {
@@ -87,10 +107,17 @@ export const designCosyVoice = async (payload: CosyVoiceDesignPayload): Promise<
   return response.data;
 };
 
-export const updateCosyVoiceVoice = async (voiceId: number, payload: CosyVoiceVoiceUpdatePayload): Promise<CosyVoiceVoiceRecord> => {
-  const response = await httpClient.patch<CosyVoiceVoiceRecord>(`${cosyVoiceSettingsPath}voices/${voiceId}/`, payload);
+export const updateCosyVoiceVoice = async (
+  voiceId: number,
+  payload: CosyVoiceVoiceUpdatePayload,
+): Promise<CosyVoiceVoiceRecord> => {
+  const response = await httpClient.patch<CosyVoiceVoiceRecord>(
+    `${cosyVoiceSettingsPath}voices/${voiceId}/`,
+    buildVoiceUpdateBody(payload),
+  );
   return response.data;
 };
+
 
 export const deleteCosyVoiceVoice = async (voiceId: number): Promise<void> => {
   await httpClient.delete(`${cosyVoiceSettingsPath}voices/${voiceId}/`);

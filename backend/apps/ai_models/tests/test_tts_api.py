@@ -1,16 +1,21 @@
 import base64
 import asyncio
 import json
+import tempfile
+from io import BytesIO
 from types import SimpleNamespace
 from unittest.mock import patch
 
 from asgiref.sync import async_to_sync
 from asgiref.testing import ApplicationCommunicator
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
+from PIL import Image
 from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
+
 
 from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.credential_crypto import decrypt_credential
@@ -1161,6 +1166,99 @@ class CosyVoiceApiTests(APITestCase):
             post_customization.call_args.args[1]['input'],
             {'action': 'delete_voice', 'voice_id': 'cv-designed-1'},
         )
+
+    def _build_test_png(self, name: str = 'voice-avatar.png') -> SimpleUploadedFile:
+        image = Image.new('RGB', (8, 8), color=(15, 118, 110))
+        buffer = BytesIO()
+        image.save(buffer, format='PNG')
+        buffer.seek(0)
+        return SimpleUploadedFile(name, buffer.getvalue(), content_type='image/png')
+
+    @patch('apps.ai_models.services.cosyvoice._post_customization')
+    def test_voice_json_edit_updates_fields_and_default(self, post_customization):
+        self.authenticate_superuser()
+        post_customization.return_value = {'output': {'voice_id': 'cv-edit-1'}}
+        created = self.client.post(
+            f'{self.settings_path}voices/design/',
+            {'displayName': '编辑前', 'description': '用于编辑测试', 'language': 'zh'},
+            format='json',
+        )
+        self.assertEqual(created.status_code, status.HTTP_201_CREATED)
+        voice_id = created.data['id']
+
+        updated = self.client.patch(
+            f'{self.settings_path}voices/{voice_id}/',
+            {'displayName': '编辑后', 'isActive': False, 'isDefault': True},
+            format='json',
+        )
+
+        self.assertEqual(updated.status_code, status.HTTP_200_OK)
+        self.assertEqual(updated.data['displayName'], '编辑后')
+        self.assertFalse(updated.data['isActive'])
+        self.assertTrue(updated.data['isDefault'])
+        voice = TTSVoice.objects.get(id=voice_id)
+        self.assertEqual(voice.display_name, '编辑后')
+        self.assertFalse(voice.is_active)
+        settings_obj = CosyVoiceSettings.objects.get(provider__code='cosyvoice')
+        self.assertEqual(settings_obj.default_voice_id, voice_id)
+
+    @patch('apps.ai_models.services.cosyvoice._post_customization')
+    def test_voice_avatar_multipart_upload_persists_media_path(self, post_customization):
+        self.authenticate_superuser()
+        post_customization.return_value = {'output': {'voice_id': 'cv-avatar-1'}}
+        created = self.client.post(
+            f'{self.settings_path}voices/design/',
+            {'displayName': '带头像音色', 'description': '上传头像', 'language': 'zh'},
+            format='json',
+        )
+        self.assertEqual(created.status_code, status.HTTP_201_CREATED)
+        voice_id = created.data['id']
+
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root, MEDIA_URL='/media/'):
+                response = self.client.patch(
+                    f'{self.settings_path}voices/{voice_id}/',
+                    {'avatar': self._build_test_png()},
+                    format='multipart',
+                )
+
+                self.assertEqual(response.status_code, status.HTTP_200_OK)
+                self.assertIn('/media/tts/voice-avatars/', response.data['avatarPath'])
+                voice = TTSVoice.objects.get(id=voice_id)
+                self.assertTrue(voice.avatar_path.startswith('/media/tts/voice-avatars/'))
+                self.assertIn(str(voice_id), voice.avatar_path)
+
+    @patch('apps.ai_models.services.cosyvoice._post_customization')
+    def test_voice_avatar_rejects_invalid_file_type(self, post_customization):
+        self.authenticate_superuser()
+        post_customization.return_value = {'output': {'voice_id': 'cv-avatar-bad'}}
+        created = self.client.post(
+            f'{self.settings_path}voices/design/',
+            {'displayName': '非法头像', 'description': '拒绝非图片', 'language': 'zh'},
+            format='json',
+        )
+        self.assertEqual(created.status_code, status.HTTP_201_CREATED)
+        voice_id = created.data['id']
+
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root, MEDIA_URL='/media/'):
+                response = self.client.patch(
+                    f'{self.settings_path}voices/{voice_id}/',
+                    {
+                        'avatar': SimpleUploadedFile(
+                            'not-image.txt',
+                            b'not-an-image',
+                            content_type='text/plain',
+                        ),
+                    },
+                    format='multipart',
+                )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        voice = TTSVoice.objects.get(id=voice_id)
+        self.assertFalse(voice.avatar_path.startswith('/media/tts/voice-avatars/'))
+
+
 
     @patch('apps.ai_models.services.cosyvoice._post_customization')
     def test_clone_without_owner_tenant_stays_platform_public(self, post_customization):

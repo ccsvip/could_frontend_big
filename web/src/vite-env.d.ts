@@ -24,6 +24,7 @@ declare module '@tabler/icons-react' {
   export const IconChartBar: ComponentType<IconProps>;
   export const IconCheck: ComponentType<IconProps>;
   export const IconChevronDown: ComponentType<IconProps>;
+  export const IconChevronLeft: ComponentType<IconProps>;
   export const IconChevronRight: ComponentType<IconProps>;
   export const IconChevronUp: ComponentType<IconProps>;
   export const IconCircleCheck: ComponentType<IconProps>;
@@ -70,6 +71,7 @@ declare module '@tabler/icons-react' {
   export const IconMicrophoneOff: ComponentType<IconProps>;
   export const IconPencil: ComponentType<IconProps>;
   export const IconPhoto: ComponentType<IconProps>;
+  export const IconPhotoEdit: ComponentType<IconProps>;
   export const IconPlayerPause: ComponentType<IconProps>;
   export const IconPlayerPlay: ComponentType<IconProps>;
   export const IconPlus: ComponentType<IconProps>;
@@ -94,4 +96,5 @@ declare module '@tabler/icons-react' {
   export const IconVolume2: ComponentType<IconProps>;
   export const IconWorld: ComponentType<IconProps>;
   export const IconX: ComponentType<IconProps>;
+  export const IconZoomIn: ComponentType<IconProps>;
 }

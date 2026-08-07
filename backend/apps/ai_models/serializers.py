@@ -1146,9 +1146,11 @@ class CosyVoiceDesignSerializer(CosyVoiceOwnerTenantMixin):
 class CosyVoiceVoiceWriteSerializer(serializers.Serializer):
     displayName = serializers.CharField(required=False, max_length=128)
     avatarPath = serializers.CharField(required=False, max_length=255, allow_blank=True)
+    avatar = serializers.ImageField(required=False, allow_null=True)
     isActive = serializers.BooleanField(required=False)
     isVisible = serializers.BooleanField(required=False)
     isDefault = serializers.BooleanField(required=False)
+
 
 def validate_tts_session_config(value: dict) -> dict:
     if not isinstance(value, dict):
