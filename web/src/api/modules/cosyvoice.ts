@@ -45,6 +45,7 @@ export type CosyVoiceEnrollPayload = {
   displayName: string;
   sourceAudioUrl: string;
   avatarPath?: string;
+  avatar?: File;
 };
 
 export type CosyVoiceDesignPayload = {
@@ -98,7 +99,19 @@ export const testCosyVoice = async (payload: CosyVoiceTestPayload): Promise<Blob
 };
 
 export const enrollCosyVoice = async (payload: CosyVoiceEnrollPayload): Promise<CosyVoiceVoiceRecord> => {
-  const response = await httpClient.post<CosyVoiceVoiceRecord>(`${cosyVoiceSettingsPath}voices/enroll/`, payload);
+  const body = (() => {
+    if (!payload.avatar) {
+      const { avatar: _avatar, ...jsonPayload } = payload;
+      return jsonPayload;
+    }
+    const formData = new FormData();
+    formData.append('displayName', payload.displayName);
+    formData.append('sourceAudioUrl', payload.sourceAudioUrl);
+    if (payload.avatarPath !== undefined) formData.append('avatarPath', payload.avatarPath);
+    formData.append('avatar', payload.avatar);
+    return formData;
+  })();
+  const response = await httpClient.post<CosyVoiceVoiceRecord>(`${cosyVoiceSettingsPath}voices/enroll/`, body);
   return response.data;
 };
 

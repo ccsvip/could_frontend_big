@@ -288,8 +288,8 @@ def _media_url_prefix() -> str:
     return media_url
 
 
-def store_cosyvoice_voice_avatar(voice: TTSVoice, uploaded_file) -> str:
-    """Persist an uploaded voice avatar and return a rooted media path."""
+def validate_cosyvoice_voice_avatar_file(uploaded_file) -> None:
+    """Reject unsupported avatar types before any write side-effects."""
     original_name = getattr(uploaded_file, 'name', '') or 'avatar.png'
 
     ext = PurePosixPath(original_name).suffix.lower()
@@ -299,6 +299,13 @@ def store_cosyvoice_voice_avatar(voice: TTSVoice, uploaded_file) -> str:
     content_type = (getattr(uploaded_file, 'content_type', '') or '').lower()
     if content_type and content_type not in VOICE_AVATAR_ALLOWED_CONTENT_TYPES:
         raise ValidationError({'avatar': '仅支持 PNG / JPEG / WebP 图片'})
+
+
+def store_cosyvoice_voice_avatar(voice: TTSVoice, uploaded_file) -> str:
+    """Persist an uploaded voice avatar and return a rooted media path."""
+    validate_cosyvoice_voice_avatar_file(uploaded_file)
+    original_name = getattr(uploaded_file, 'name', '') or 'avatar.png'
+    ext = PurePosixPath(original_name).suffix.lower()
 
     storage_name = f'{VOICE_AVATAR_STORAGE_PREFIX}{voice.id}/{uuid.uuid4().hex}{ext}'
     saved_name = default_storage.save(storage_name, uploaded_file)

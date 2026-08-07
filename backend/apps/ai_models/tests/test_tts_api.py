@@ -1228,6 +1228,53 @@ class CosyVoiceApiTests(APITestCase):
                 self.assertTrue(voice.avatar_path.startswith('/media/tts/voice-avatars/'))
                 self.assertIn(str(voice_id), voice.avatar_path)
 
+
+    @patch('apps.ai_models.services.cosyvoice._post_customization')
+    def test_enroll_with_avatar_multipart_persists_media_path(self, post_customization):
+        self.authenticate_superuser()
+        post_customization.return_value = {'output': {'voice_id': 'cv-enroll-avatar-1'}}
+
+        with tempfile.TemporaryDirectory() as media_root:
+            with override_settings(MEDIA_ROOT=media_root, MEDIA_URL='/media/'):
+                response = self.client.post(
+                    f'{self.settings_path}voices/enroll/',
+                    {
+                        'displayName': '复刻带头像',
+                        'sourceAudioUrl': 'https://example.com/source.wav',
+                        'avatar': self._build_test_png('enroll-avatar.png'),
+                    },
+                    format='multipart',
+                )
+
+                self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+                self.assertIn('/media/tts/voice-avatars/', response.data['avatarPath'])
+                voice = TTSVoice.objects.get(voice_code='cv-enroll-avatar-1')
+                self.assertTrue(voice.avatar_path.startswith('/media/tts/voice-avatars/'))
+                self.assertIn(str(voice.id), voice.avatar_path)
+
+    @patch('apps.ai_models.services.cosyvoice._post_customization')
+    def test_enroll_with_invalid_avatar_rejects_before_create(self, post_customization):
+        self.authenticate_superuser()
+        post_customization.return_value = {'output': {'voice_id': 'cv-enroll-avatar-bad'}}
+
+        response = self.client.post(
+            f'{self.settings_path}voices/enroll/',
+            {
+                'displayName': '复刻非法头像',
+                'sourceAudioUrl': 'https://example.com/source.wav',
+                'avatar': SimpleUploadedFile(
+                    'not-image.txt',
+                    b'not-an-image',
+                    content_type='text/plain',
+                ),
+            },
+            format='multipart',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(TTSVoice.objects.filter(voice_code='cv-enroll-avatar-bad').exists())
+        post_customization.assert_not_called()
+
     @patch('apps.ai_models.services.cosyvoice._post_customization')
     def test_voice_avatar_rejects_invalid_file_type(self, post_customization):
         self.authenticate_superuser()

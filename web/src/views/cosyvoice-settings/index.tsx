@@ -71,6 +71,29 @@ const playBlob = (blob: Blob) => {
 const avatarSrcOf = (voice: CosyVoiceVoiceRecord) =>
   voice.avatarPath ? normalizeMediaAssetUrl(voice.avatarPath) : '';
 
+const VOICE_AVATAR_ACCEPT = 'image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp';
+const VOICE_AVATAR_MIME_TYPES: Record<string, true> = {
+  'image/png': true,
+  'image/jpeg': true,
+  'image/jpg': true,
+  'image/webp': true,
+};
+const VOICE_AVATAR_EXTENSIONS: Record<string, true> = {
+  '.png': true,
+  '.jpg': true,
+  '.jpeg': true,
+  '.webp': true,
+};
+
+const isAllowedVoiceAvatarFile = (file: File) => {
+  const mimeOk = !file.type || Boolean(VOICE_AVATAR_MIME_TYPES[file.type.toLowerCase()]);
+  const name = file.name || '';
+  const dot = name.lastIndexOf('.');
+  const ext = dot >= 0 ? name.slice(dot).toLowerCase() : '';
+  const extOk = !ext || Boolean(VOICE_AVATAR_EXTENSIONS[ext]);
+  return mimeOk && extOk && (Boolean(file.type) || Boolean(ext));
+};
+
 export const CosyVoiceSettingsPage = () => {
   const navigate = useNavigate();
   const [settingsForm] = Form.useForm<SettingsFormValues>();
@@ -89,6 +112,9 @@ export const CosyVoiceSettingsPage = () => {
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState('');
   const [editSaving, setEditSaving] = useState(false);
   const [avatarSaving, setAvatarSaving] = useState(false);
+  const [enrollAvatarFileList, setEnrollAvatarFileList] = useState<UploadFile[]>([]);
+  const [enrollAvatarPreviewUrl, setEnrollAvatarPreviewUrl] = useState('');
+
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -119,6 +145,13 @@ export const CosyVoiceSettingsPage = () => {
     };
   }, [avatarPreviewUrl]);
 
+  useEffect(() => {
+    return () => {
+      if (enrollAvatarPreviewUrl) URL.revokeObjectURL(enrollAvatarPreviewUrl);
+    };
+  }, [enrollAvatarPreviewUrl]);
+
+
   const save = async (values: SettingsFormValues) => {
     setSaving(true);
     try {
@@ -133,12 +166,34 @@ export const CosyVoiceSettingsPage = () => {
     }
   };
 
+  const resetEnrollAvatar = () => {
+    setEnrollAvatarFileList([]);
+    if (enrollAvatarPreviewUrl) URL.revokeObjectURL(enrollAvatarPreviewUrl);
+    setEnrollAvatarPreviewUrl('');
+  };
+
+  const openEnroll = () => {
+    resetEnrollAvatar();
+    enrollForm.resetFields();
+    setEnrollOpen(true);
+  };
+
+  const closeEnroll = () => {
+    setEnrollOpen(false);
+    enrollForm.resetFields();
+    resetEnrollAvatar();
+  };
+
   const createEnrollment = async () => {
     const values = await enrollForm.validateFields();
+    const raw = enrollAvatarFileList[0];
+    const file = (raw?.originFileObj ?? (raw as UploadFile & { file?: File })?.file) as File | undefined;
     try {
-      await enrollCosyVoice(values);
-      setEnrollOpen(false);
-      enrollForm.resetFields();
+      await enrollCosyVoice({
+        ...values,
+        ...(file ? { avatar: file } : {}),
+      });
+      closeEnroll();
       message.success('音色复刻请求已创建');
       await load();
     } catch {
@@ -316,7 +371,7 @@ export const CosyVoiceSettingsPage = () => {
           </div>
         </div>
         <Space wrap>
-          <Button icon={<IconHeadphones size={16} />} onClick={() => setEnrollOpen(true)}>
+          <Button icon={<IconHeadphones size={16} />} onClick={openEnroll}>
             复刻音色
           </Button>
           <Button type="primary" icon={<IconDeviceFloppy size={16} />} onClick={() => setDesignOpen(true)}>
@@ -470,13 +525,12 @@ export const CosyVoiceSettingsPage = () => {
               </div>
             </div>
             <Upload.Dragger
-              accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
+              accept={VOICE_AVATAR_ACCEPT}
               maxCount={1}
               fileList={avatarFileList}
               beforeUpload={(file) => {
-                const isImage = file.type.startsWith('image/');
-                if (!isImage) {
-                  message.error('仅支持图片文件');
+                if (!isAllowedVoiceAvatarFile(file)) {
+                  message.error('仅支持 PNG / JPEG / WebP 图片');
                   return Upload.LIST_IGNORE;
                 }
                 return false;
@@ -522,7 +576,14 @@ export const CosyVoiceSettingsPage = () => {
         </Form>
       </Modal>
 
-      <Modal title="复刻 CosyVoice 音色" open={enrollOpen} onCancel={() => setEnrollOpen(false)} onOk={() => void createEnrollment()} okText="提交复刻">
+      <Modal
+        title="复刻 CosyVoice 音色"
+        open={enrollOpen}
+        onCancel={closeEnroll}
+        onOk={() => void createEnrollment()}
+        okText="提交复刻"
+        destroyOnHidden
+      >
         <Form form={enrollForm} layout="vertical">
           <Form.Item label="名称" name="displayName" rules={[{ required: true, message: '请填写名称' }]}>
             <Input />
@@ -536,6 +597,46 @@ export const CosyVoiceSettingsPage = () => {
             ]}
           >
             <Input placeholder="https://…" />
+          </Form.Item>
+          <Form.Item label="音色头像（可选）">
+            <div className="space-y-3">
+              {enrollAvatarPreviewUrl ? (
+                <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3">
+                  <img
+                    src={enrollAvatarPreviewUrl}
+                    alt="头像预览"
+                    className="h-14 w-14 rounded-full object-cover ring-2 ring-white"
+                  />
+                  <div className="text-fluid-sm text-slate-500">已选择本地图片，提交复刻时一并上传</div>
+                </div>
+              ) : null}
+              <Upload.Dragger
+                accept={VOICE_AVATAR_ACCEPT}
+                maxCount={1}
+                fileList={enrollAvatarFileList}
+                beforeUpload={(file) => {
+                  if (!isAllowedVoiceAvatarFile(file)) {
+                    message.error('仅支持 PNG / JPEG / WebP 图片');
+                    return Upload.LIST_IGNORE;
+                  }
+                  return false;
+                }}
+                onChange={({ fileList }) => {
+                  const next = fileList.slice(-1);
+                  setEnrollAvatarFileList(next);
+                  const file = next[0]?.originFileObj;
+                  if (enrollAvatarPreviewUrl) URL.revokeObjectURL(enrollAvatarPreviewUrl);
+                  setEnrollAvatarPreviewUrl(file ? URL.createObjectURL(file) : '');
+                }}
+                className="rounded-xl"
+              >
+                <p className="flex justify-center text-brand-600">
+                  <IconUpload size={28} />
+                </p>
+                <p className="text-fluid-sm text-slate-700">点击或拖拽本地图片到此处</p>
+                <p className="text-fluid-xs text-slate-400">可选；仅支持 PNG / JPEG / WebP</p>
+              </Upload.Dragger>
+            </div>
           </Form.Item>
         </Form>
       </Modal>

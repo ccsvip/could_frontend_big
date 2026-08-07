@@ -22,6 +22,14 @@
   - `application/json`：`displayName` / `isActive` / `isVisible` / `isDefault` / 可选 `avatarPath` 字符串（兼容）
   - `multipart/form-data`：同上字段 + 可选文件字段 `avatar`
 
+`POST /api/v1/settings/tts/cosyvoice/voices/enroll/`
+
+- 权限：`IsSuperUser`
+- Content-Type：
+  - `application/json`：`displayName` / `sourceAudioUrl` / 可选 `avatarPath` / 可选 `ownerTenantId`（兼容，无文件）
+  - `multipart/form-data`：同上字段 + 可选文件字段 `avatar`
+- 流程：校验后 `enroll_cosyvoice_voice(...)` 创建音色；若有 `avatar` 再 `store_cosyvoice_voice_avatar` 写 `avatar_path`
+
 ### 文件处理
 
 1. 校验：content-type 或扩展名为 image/jpeg、image/png、image/webp（无文件大小上限）
@@ -54,14 +62,14 @@
    - 编辑：名称 + 启用 + 默认
    - 更换头像：当前缩略图（无路径）+ Upload.Dragger，仅本地文件
    - 头像 lightbox 预览
-4. 复刻/设计 Modal 保留；创建可不带头像上传（创建后换）
+   - 复刻 Modal：可选本地头像 Upload.Dragger（与换头像同 accept/规则）；设计 Modal 仍可创建后换
 
 ### API module
 
-`updateCosyVoiceVoice` 扩展：
+`updateCosyVoiceVoice` / `enrollCosyVoice` 扩展：
 
 - JSON 路径保持
-- 若含 `avatar: File`，改 `FormData` multipart 提交（字段名 `avatar`，布尔/字符串字段一并 append）
+- 若含 `avatar: File`，改 `FormData` multipart 提交（字段名 `avatar`，其它字段一并 append）
 
 ### 组件拆分（正式代码，非 prototype）
 

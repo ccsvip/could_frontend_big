@@ -18,6 +18,7 @@ from .services.cosyvoice import (
     COSYVOICE_WEBSOCKET_URL_ERROR,
     is_valid_cosyvoice_customization_url,
     is_valid_cosyvoice_websocket_url,
+    validate_cosyvoice_voice_avatar_file,
 )
 from .models import (
     ASRConfig,
@@ -1129,10 +1130,16 @@ class CosyVoiceEnrollSerializer(CosyVoiceOwnerTenantMixin):
     displayName = serializers.CharField(source='display_name', max_length=128)
     sourceAudioUrl = serializers.URLField(source='source_audio_url', max_length=512)
     avatarPath = serializers.CharField(source='avatar_path', required=False, max_length=255, allow_blank=True)
+    avatar = serializers.ImageField(required=False, allow_null=True)
 
     def validate_sourceAudioUrl(self, value):
         if not value.startswith('https://'):
             raise serializers.ValidationError('参考音频必须是可访问的 HTTPS URL。')
+        return value
+
+    def validate_avatar(self, value):
+        if value is not None:
+            validate_cosyvoice_voice_avatar_file(value)
         return value
 
 
@@ -1150,6 +1157,11 @@ class CosyVoiceVoiceWriteSerializer(serializers.Serializer):
     isActive = serializers.BooleanField(required=False)
     isVisible = serializers.BooleanField(required=False)
     isDefault = serializers.BooleanField(required=False)
+
+    def validate_avatar(self, value):
+        if value is not None:
+            validate_cosyvoice_voice_avatar_file(value)
+        return value
 
 
 def validate_tts_session_config(value: dict) -> dict:

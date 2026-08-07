@@ -564,14 +564,23 @@ class CosyVoiceTestView(APIView):
 
 class CosyVoiceEnrollView(APIView):
     permission_classes = [IsSuperUser]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def post(self, request):
         serializer = CosyVoiceEnrollSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        values = dict(serializer.validated_data)
+        avatar_file = values.pop('avatar', None)
         try:
-            voice = cosyvoice_services.enroll_cosyvoice_voice(settings_obj=cosyvoice_services.get_cosyvoice_settings(), **serializer.validated_data)
+            voice = cosyvoice_services.enroll_cosyvoice_voice(
+                settings_obj=cosyvoice_services.get_cosyvoice_settings(),
+                **values,
+            )
         except cosyvoice_services.CosyVoiceCustomizationError as exc:
             return Response({'message': exc.message}, status=exc.status_code)
+        if avatar_file is not None:
+            voice.avatar_path = cosyvoice_services.store_cosyvoice_voice_avatar(voice, avatar_file)
+            voice.save(update_fields=['avatar_path'])
         return Response(CosyVoiceVoiceSerializer(voice, context={'request': request}).data, status=status.HTTP_201_CREATED)
 
 
