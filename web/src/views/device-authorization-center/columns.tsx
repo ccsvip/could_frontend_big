@@ -4,7 +4,7 @@ import { IconLink } from '@tabler/icons-react';
 import type { ReactNode } from 'react';
 import type { DeviceActivationLogRecord, DeviceAuthorizationRequestRecord } from '../../api/modules/devices';
 import { bindingStatusMap, logActionMap, runtimeStatusMap } from './constants';
-import { getInfoText } from './utils';
+import { formatDateTime, getInfoText } from './utils';
 
 type DeviceAuthorizationColumnsOptions = {
   renderEditableDeviceName: (record: DeviceAuthorizationRequestRecord) => ReactNode;
@@ -87,7 +87,7 @@ const requestColumns: ColumnsType<DeviceAuthorizationRequestRecord> = [
       );
     },
   },
-  { title: '最近请求', dataIndex: 'latestActivationAt', key: 'latestActivationAt', width: 180, render: (value) => value || '-' },
+  { title: '最近请求', dataIndex: 'latestActivationAt', key: 'latestActivationAt', width: 180, render: (value) => formatDateTime(value) },
   { title: '请求 IP', dataIndex: 'latestActivationIp', key: 'latestActivationIp', width: 130, render: (value) => value || '-' },
   {
     title: '操作',
@@ -142,9 +142,9 @@ const authorizationColumns: ColumnsType<DeviceAuthorizationRequestRecord> = [
     dataIndex: 'expiresAt',
     key: 'expiresAt',
     width: 180,
-    render: (value: string | null, record) => (record.authorizationType === 'permanent' ? '永久' : value || '-'),
+    render: (value: string | null, record) => (record.authorizationType === 'permanent' ? '永久' : formatDateTime(value)),
   },
-  { title: '最近心跳', dataIndex: 'lastHeartbeat', key: 'lastHeartbeat', width: 180, render: (value) => value || '-' },
+  { title: '最近心跳', dataIndex: 'lastHeartbeat', key: 'lastHeartbeat', width: 180, render: (value) => formatDateTime(value) },
   {
     title: '操作',
     key: 'action',
@@ -167,7 +167,7 @@ const authorizationColumns: ColumnsType<DeviceAuthorizationRequestRecord> = [
 ];
 
 const logColumns: ColumnsType<DeviceActivationLogRecord> = [
-  { title: '请求时间', dataIndex: 'createdAt', key: 'createdAt', width: 180 },
+  { title: '请求时间', dataIndex: 'createdAt', key: 'createdAt', width: 180, render: (value) => formatDateTime(value) },
   {
     title: '设备码',
     dataIndex: 'code',

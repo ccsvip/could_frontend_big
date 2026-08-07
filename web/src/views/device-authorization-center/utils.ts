@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+
 import type { TenantRecord } from '../../api/modules/tenants';
 import type { BindForm } from './types';
 
@@ -14,3 +16,6 @@ export const getInfoText = (info: Record<string, unknown>, key: string) => {
   const value = info[key];
   return typeof value === 'string' || typeof value === 'number' ? String(value) : '';
 };
+
+export const formatDateTime = (value?: string | null) =>
+  value ? dayjs(value).format('YYYY-MM-DD HH:mm:ss') : '-';
