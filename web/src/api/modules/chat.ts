@@ -13,6 +13,14 @@ export type KnowledgeReference = {
   score: number | null;
 };
 
+export type AnnotationMatchInfo = {
+  annotationId: number;
+  matchType: 'exact' | 'semantic';
+  score: number;
+  question: string;
+  threshold: number;
+};
+
 export type ChatMessage = {
   id: number;
   conversationId: number;
@@ -20,6 +28,7 @@ export type ChatMessage = {
   content: string;
   contentBlocks: AgentReplyBlock[];
   knowledgeReferences: KnowledgeReference[];
+  annotationMatch?: AnnotationMatchInfo | null;
   feedback: 'none' | 'up' | 'down';
   created_at: string;
 };
@@ -98,6 +107,7 @@ export const sendMessageStream = async (
   onDone: () => void,
   onFollowUpSuggestedQuestions?: (questions: string[]) => void,
   onKnowledgeReferences?: (references: KnowledgeReference[]) => void,
+  onAnnotationMatch?: (match: AnnotationMatchInfo) => void,
 ): Promise<AbortController> => {
   const controller = new AbortController();
   const token = localStorage.getItem('token');
@@ -175,6 +185,9 @@ export const sendMessageStream = async (
                 onChunk(parsed.content);
                 if (Array.isArray(parsed.blocks)) {
                   onBlocks(parsed.blocks);
+                }
+                if (parsed.annotationMatch && typeof parsed.annotationMatch === 'object') {
+                  onAnnotationMatch?.(parsed.annotationMatch as AnnotationMatchInfo);
                 }
               }
             } catch {

@@ -883,6 +883,12 @@ class AgentApplication(models.Model):
     suggested_questions = models.JSONField('建议问题', blank=True, default=list)
     follow_up_suggested_questions_enabled = models.BooleanField('是否启用回答后建议问题', default=False)
     enable_web_search = models.BooleanField('是否启用联网搜索', default=False)
+    annotation_semantic_enabled = models.BooleanField('是否启用标注语义匹配', default=True)
+    annotation_cosine_threshold = models.FloatField('标注语义余弦阈值', default=0.88)
+    annotation_rerank_enabled = models.BooleanField('是否启用标注重排序（预留）', default=False)
+    annotation_rerank_threshold = models.FloatField('标注重排序阈值（预留）', default=0.0)
+    annotation_semantic_top_k = models.PositiveIntegerField('标注语义候选数（预留）', default=3)
+
     voice_input_enabled = models.BooleanField('是否启用语音输入', default=False)
     reply_playback_enabled = models.BooleanField('是否自动播报回复', default=False)
     tts_filter_punctuation = models.CharField('TTS 过滤标点', max_length=64, blank=True, default='')
@@ -961,6 +967,12 @@ class AgentApplication(models.Model):
             'is_active': self.is_active,
             'knowledge_document_ids': list(self.knowledge_documents.order_by('id').values_list('id', flat=True)),
             'knowledge_base_ids': list(self.knowledge_bases.order_by('id').values_list('id', flat=True)),
+            'annotation_semantic_enabled': self.annotation_semantic_enabled,
+            'annotation_cosine_threshold': self.annotation_cosine_threshold,
+            'annotation_rerank_enabled': self.annotation_rerank_enabled,
+            'annotation_rerank_threshold': self.annotation_rerank_threshold,
+            'annotation_semantic_top_k': self.annotation_semantic_top_k,
+
         }
 
     def publish(self) -> None:
@@ -1004,6 +1016,27 @@ class AgentApplication(models.Model):
             'is_active': config.get('is_active', self.is_active),
             'knowledge_document_ids': config.get('knowledge_document_ids', []),
             'knowledge_base_ids': config.get('knowledge_base_ids', []),
+            'annotation_semantic_enabled': config.get(
+                'annotation_semantic_enabled',
+                self.annotation_semantic_enabled,
+            ),
+            'annotation_cosine_threshold': config.get(
+                'annotation_cosine_threshold',
+                self.annotation_cosine_threshold,
+            ),
+            'annotation_rerank_enabled': config.get(
+                'annotation_rerank_enabled',
+                self.annotation_rerank_enabled,
+            ),
+            'annotation_rerank_threshold': config.get(
+                'annotation_rerank_threshold',
+                self.annotation_rerank_threshold,
+            ),
+            'annotation_semantic_top_k': config.get(
+                'annotation_semantic_top_k',
+                self.annotation_semantic_top_k,
+            ),
+
         }
 
     @property
@@ -1082,6 +1115,82 @@ class AgentAnnotation(models.Model):
 
     def __str__(self):
         return f'{self.application_id}: {self.question[:40]}'
+
+
+class AgentAnnotationEmbedding(models.Model):
+    """Per-fingerprint embedding bucket for agent annotation semantic match."""
+
+    STATUS_PENDING = 'pending'
+    STATUS_READY = 'ready'
+    STATUS_FAILED = 'failed'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, '处理中'),
+        (STATUS_READY, '就绪'),
+        (STATUS_FAILED, '失败'),
+    ]
+
+    annotation = models.ForeignKey(
+        AgentAnnotation,
+        on_delete=models.CASCADE,
+        related_name='embeddings',
+        verbose_name='所属标注',
+    )
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='+',
+        verbose_name='所属公司',
+        null=True,
+        blank=True,
+    )
+    application = models.ForeignKey(
+        AgentApplication,
+        on_delete=models.CASCADE,
+        related_name='annotation_embeddings',
+        verbose_name='所属智能体',
+    )
+    embedding_fingerprint = models.CharField('嵌入指纹', max_length=128)
+    embedding_model_name = models.CharField('嵌入模型名', max_length=128)
+    dimensions = models.PositiveIntegerField('向量维度', default=0)
+    question_hash = models.CharField('问题哈希', max_length=64)
+    embedding = models.JSONField('向量', blank=True, default=list)
+    status = models.CharField(
+        '状态',
+        max_length=16,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDING,
+    )
+    error_message = models.TextField('错误信息', blank=True, default='')
+    embedded_at = models.DateTimeField('嵌入完成时间', null=True, blank=True)
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        verbose_name = '智能体标注向量'
+        verbose_name_plural = '智能体标注向量'
+        ordering = ['-updated_at', '-id']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['annotation', 'embedding_fingerprint'],
+                name='unique_agent_annotation_embedding_fingerprint',
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=['application', 'embedding_fingerprint', 'status'],
+                name='ai_ann_emb_app_fp_st_idx',
+            ),
+            models.Index(
+                fields=['tenant', 'embedding_fingerprint', 'status'],
+                name='ai_ann_emb_tn_fp_st_idx',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.annotation_id}:{self.embedding_fingerprint}:{self.status}'
+
 
 
 
@@ -1200,6 +1309,7 @@ class ChatMessage(models.Model):
     content = models.TextField('消息内容')
     content_blocks = models.JSONField('消息内容块', blank=True, default=list)
     knowledge_references = models.JSONField('知识引用快照', blank=True, default=list)
+    annotation_match = models.JSONField('标注命中快照', blank=True, default=dict)
     feedback = models.CharField('反馈', max_length=8, choices=FEEDBACK_CHOICES, default=FEEDBACK_NONE)
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
 

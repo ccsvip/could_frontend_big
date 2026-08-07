@@ -765,24 +765,30 @@ class ChatApiTests(TenantTestMixin, APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(_sse_content(streamed_body), '我们的服务时间为周一至周五 09:00 - 18:00。')
-        self.assertEqual(
-            streamed_body,
-            f"data: {json.dumps({'content': '我们的服务时间为周一至周五 09:00 - 18:00。', 'blocks': [{'type': 'text', 'text': '我们的服务时间为周一至周五 09:00 - 18:00。'}, {'type': 'image', 'resourceId': image.id, 'resourceName': '营业时间图片', 'url': 'https://cdn.example.test/business-hours.png', 'missing': False}]})}\n\ndata: [DONE]\n\n",
-        )
+        self.assertIn('"annotationMatch"', streamed_body)
+        self.assertIn('"matchType": "exact"', streamed_body)
+        self.assertIn('我们的服务时间为周一至周五 09:00 - 18:00。', streamed_body)
+        self.assertIn('data: [DONE]', streamed_body)
         client_mock.assert_not_called()
         annotation.refresh_from_db()
         self.assertEqual(annotation.hit_count, 1)
-        messages = list(conversation.messages.order_by('created_at').values_list('role', 'content', 'content_blocks'))
+        messages = list(conversation.messages.order_by('created_at'))
+        self.assertEqual(len(messages), 2)
+        self.assertEqual(messages[0].role, ChatMessage.ROLE_USER)
+        self.assertEqual(messages[0].content, '营业时间。')
+        self.assertEqual(messages[0].content_blocks, [{'type': 'text', 'text': '营业时间。'}])
+        self.assertEqual(messages[1].role, ChatMessage.ROLE_ASSISTANT)
+        self.assertEqual(messages[1].content, '我们的服务时间为周一至周五 09:00 - 18:00。')
         self.assertEqual(
-            messages,
+            messages[1].content_blocks,
             [
-                (ChatMessage.ROLE_USER, '营业时间。', [{'type': 'text', 'text': '营业时间。'}]),
-                (ChatMessage.ROLE_ASSISTANT, '我们的服务时间为周一至周五 09:00 - 18:00。', [
-                    {'type': 'text', 'text': '我们的服务时间为周一至周五 09:00 - 18:00。'},
-                    {'type': 'image', 'resourceId': image.id},
-                ]),
+                {'type': 'text', 'text': '我们的服务时间为周一至周五 09:00 - 18:00。'},
+                {'type': 'image', 'resourceId': image.id},
             ],
         )
+        self.assertEqual(messages[1].annotation_match.get('matchType'), 'exact')
+        self.assertEqual(messages[1].annotation_match.get('annotationId'), annotation.id)
+        self.assertEqual(messages[1].annotation_match.get('question'), '营业时间？')
 
     def test_send_with_agent_application_respects_enable_web_search_switch(self):
         self.grant_permissions('ai_models.chat.view', 'ai_models.chat.create')

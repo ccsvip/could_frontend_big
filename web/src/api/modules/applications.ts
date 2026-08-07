@@ -41,6 +41,8 @@ export type AgentApplicationRecord = {
   suggestedQuestions: string[];
   followUpSuggestedQuestionsEnabled: boolean;
   enableWebSearch: boolean;
+  annotationSemanticEnabled: boolean;
+  annotationCosineThreshold: number;
   voiceInputEnabled: boolean;
   replyPlaybackEnabled: boolean;
   ttsFilterPunctuation: string;
@@ -88,6 +90,8 @@ export type AgentApplicationPayload = {
   suggestedQuestions?: string[];
   followUpSuggestedQuestionsEnabled?: boolean;
   enableWebSearch?: boolean;
+  annotationSemanticEnabled?: boolean;
+  annotationCosineThreshold?: number;
   voiceInputEnabled?: boolean;
   replyPlaybackEnabled?: boolean;
   ttsFilterPunctuation?: string;
@@ -172,6 +176,7 @@ export type AgentAnnotationRecord = {
   answerBlocks: AgentReplyBlock[];
   sourceMessageId: number | null;
   isActive: boolean;
+  embeddingStatus?: 'ready' | 'pending' | 'failed' | 'missing' | 'none';
   hitCount: number;
   lastHitAt: string | null;
   createdBy: string;

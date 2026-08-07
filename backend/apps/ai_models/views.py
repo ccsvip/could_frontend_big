@@ -95,7 +95,7 @@ from .models import (
 )
 from .credential_crypto import encrypt_credential
 from .realtime_asr import resolve_asr_device_connection
-from .services.annotations import find_matching_annotation
+from .services.annotations import match_annotation, serialize_annotation_match_payload
 from .services.reply_blocks import blocks_to_text, serialize_reply_blocks, text_to_blocks
 from .serializers import (
     ASRConfigSerializer,
@@ -1695,6 +1695,8 @@ class TenantKnowledgeModelAuthorizationView(APIView):
         serializer = TenantKnowledgeModelSettingsSerializer(data=request.data, context={'tenant_id': tenant_id})
         serializer.is_valid(raise_exception=True)
         tenant = serializer.validated_data['tenant']
+        previous_settings = TenantKnowledgeModelSettings.objects.filter(tenant=tenant).first()
+        previous_embedding_model_id = previous_settings.embedding_model_id if previous_settings else None
         settings, _ = TenantKnowledgeModelSettings.objects.update_or_create(
             tenant=tenant,
             defaults={
@@ -1711,6 +1713,16 @@ class TenantKnowledgeModelAuthorizationView(APIView):
                 ensure_tenant_category(tenant.id)
             except Exception as exc:
                 raise ValidationError({'managedRagEnabled': str(exc)}) from exc
+        if settings.embedding_model_id != previous_embedding_model_id:
+            try:
+                from apps.ai_models.services.annotation_embeddings import reindex_annotation_embeddings
+
+                reindex_annotation_embeddings(tenant=tenant)
+            except Exception:
+                logger.exception(
+                    'annotation.reindex.after_embedding_model_change failed tenant_id=%s',
+                    tenant.id,
+                )
         return Response(self._response_payload(tenant))
 
 
@@ -2044,6 +2056,13 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
         context['tenant'] = self.request_tenant
         return context
 
+    def _annotation_serializer_context(self, application):
+        from apps.ai_models.services.annotation_embeddings import current_fingerprint_for_tenant
+
+        context = self.get_serializer_context()
+        context['current_embedding_fingerprint'] = current_fingerprint_for_tenant(application.tenant)
+        return context
+
     def get_permissions(self):
         if self.action == 'annotations' and self.request.method == 'POST':
             return [CanUpdateAgentApplications()]
@@ -2158,11 +2177,12 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
     def annotations(self, request, pk=None):
         application = self.get_object()
         if request.method == 'GET':
-            queryset = application.annotations.select_related('created_by').order_by('-updated_at', '-id')
+            serializer_context = self._annotation_serializer_context(application)
+            queryset = application.annotations.select_related('created_by').prefetch_related('embeddings').order_by('-updated_at', '-id')
             keyword = request.query_params.get('keyword', '').strip()
             if keyword:
                 queryset = queryset.filter(Q(question__icontains=keyword) | Q(answer__icontains=keyword))
-            return Response(AgentAnnotationSerializer(queryset, many=True, context=self.get_serializer_context()).data)
+            return Response(AgentAnnotationSerializer(queryset, many=True, context=serializer_context).data)
 
         serializer = AgentAnnotationSerializer(data=request.data, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)
@@ -2177,8 +2197,15 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                 'created_by': request.user,
             },
         )
+        from apps.ai_models.services.annotation_embeddings import sync_annotation_embedding
+
+        sync_annotation_embedding(annotation, question_changed=created)
+
         status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
-        return Response(AgentAnnotationSerializer(annotation, context=self.get_serializer_context()).data, status=status_code)
+        return Response(
+            AgentAnnotationSerializer(annotation, context=self._annotation_serializer_context(application)).data,
+            status=status_code,
+        )
 
     @action(detail=True, methods=['post'], url_path='annotations/from-message')
     def create_annotation(self, request, pk=None):
@@ -2209,8 +2236,15 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
                 'created_by': request.user,
             },
         )
+        from apps.ai_models.services.annotation_embeddings import sync_annotation_embedding
+
+        sync_annotation_embedding(annotation, question_changed=created)
+
         status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
-        return Response(AgentAnnotationSerializer(annotation, context=self.get_serializer_context()).data, status=status_code)
+        return Response(
+            AgentAnnotationSerializer(annotation, context=self._annotation_serializer_context(application)).data,
+            status=status_code,
+        )
 
     @action(detail=True, methods=['patch', 'delete'], url_path='annotations/(?P<annotation_id>[^/.]+)')
     def update_annotation(self, request, pk=None, annotation_id=None):
@@ -2225,10 +2259,17 @@ class AgentApplicationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             annotation.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
+        previous_question = annotation.question
         serializer = AgentAnnotationSerializer(annotation, data=request.data, partial=True, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(AgentAnnotationSerializer(annotation, context=self.get_serializer_context()).data)
+        from apps.ai_models.services.annotation_embeddings import sync_annotation_embedding
+
+        annotation.refresh_from_db()
+        sync_annotation_embedding(annotation, question_changed=previous_question != annotation.question)
+        return Response(
+            AgentAnnotationSerializer(annotation, context=self._annotation_serializer_context(application)).data,
+        )
 
     @action(detail=True, methods=['get'], url_path='stats')
     def stats(self, request, pk=None):
@@ -2596,25 +2637,34 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             )
             conversation.save(update_fields=['updated_at'])
 
-        annotation = None
+        annotation_match = None
         if regenerate_message_id is None and conversation.application_id:
-            annotation = find_matching_annotation(
-                AgentAnnotation.objects.filter(
+            annotation_match = match_annotation(
+                question_text=content,
+                annotations=AgentAnnotation.objects.filter(
                     application=conversation.application,
                     tenant=conversation.tenant,
                 ),
-                content,
+                application=conversation.application,
+                tenant=conversation.tenant,
+                source='live',
             )
-        if annotation is not None:
+        if annotation_match is not None:
+            annotation = annotation_match.annotation
             now = timezone.now()
             AgentAnnotation.objects.filter(id=annotation.id).update(hit_count=F('hit_count') + 1, last_hit_at=now)
             answer_blocks = annotation.answer_blocks or text_to_blocks(annotation.answer)
             answer_text = blocks_to_text(answer_blocks)
+            annotation_match_payload = serialize_annotation_match_payload(
+                annotation_match,
+                application=conversation.application,
+            ) or {}
             ChatMessage.objects.create(
                 conversation=conversation,
                 role=ChatMessage.ROLE_ASSISTANT,
                 content=answer_text,
                 content_blocks=answer_blocks,
+                annotation_match=annotation_match_payload,
             )
             conversation.save(update_fields=['updated_at'])
 
@@ -2625,15 +2675,28 @@ class ChatConversationViewSet(TenantScopedQuerysetMixin, PermissionMappedModelVi
             )
 
             async def annotation_event_stream():
-                yield f"data: {json.dumps({'content': answer_text, 'blocks': serialized_answer_blocks})}\n\n"
+                yield (
+                    'data: '
+                    + json.dumps(
+                        {
+                            'content': answer_text,
+                            'blocks': serialized_answer_blocks,
+                            'annotationMatch': annotation_match_payload,
+                        },
+                        ensure_ascii=False,
+                    )
+                    + '\n\n'
+                )
                 yield "data: [DONE]\n\n"
 
             logger.info(
-                'chat.send.annotation_hit conversation_id=%s user_id=%s application_id=%s annotation_id=%s',
+                'chat.send.annotation_hit conversation_id=%s user_id=%s application_id=%s annotation_id=%s match_type=%s score=%.4f',
                 conversation.id,
                 request.user.id,
                 conversation.application_id,
                 annotation.id,
+                annotation_match.match_type,
+                annotation_match.score,
             )
             response = StreamingHttpResponse(annotation_event_stream(), content_type='text/event-stream')
             response['Cache-Control'] = 'no-cache'

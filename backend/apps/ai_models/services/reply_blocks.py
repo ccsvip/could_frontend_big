@@ -80,7 +80,13 @@ def serialize_reply_blocks(blocks: Any, *, tenant=None, request=None) -> list[di
 
 
 def build_published_annotation_snapshot(application) -> list[dict[str, Any]]:
+    from apps.ai_models.services.annotation_embeddings import (
+        current_fingerprint_for_tenant,
+        snapshot_embedding_payload,
+    )
+
     annotations = application.annotations.filter(is_active=True).order_by('id')
+    fingerprint = current_fingerprint_for_tenant(getattr(application, 'tenant', None))
     snapshot = []
     for annotation in annotations:
         blocks = normalize_reply_blocks(annotation.answer_blocks, fallback_text=annotation.answer, tenant=application.tenant)
@@ -90,6 +96,7 @@ def build_published_annotation_snapshot(application) -> list[dict[str, Any]]:
             'answer': blocks_to_text(blocks),
             'answerBlocks': blocks,
             'isActive': annotation.is_active,
+            'embedding': snapshot_embedding_payload(annotation, fingerprint),
         })
     return snapshot
 

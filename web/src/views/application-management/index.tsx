@@ -30,6 +30,7 @@ import {
   updateConversationConfig,
   type ChatConversationDetail,
   type ChatMessage,
+  type AnnotationMatchInfo,
   type KnowledgeReference,
   type ChatConversationRecord,
 } from '../../api/modules/chat';
@@ -120,6 +121,41 @@ import {
   IconSpace,
   IconCornerDownLeft,
 } from '@tabler/icons-react';
+
+const DEFAULT_ANNOTATION_COSINE_THRESHOLD = 0.88;
+
+const annotationEmbeddingStatusMeta = (
+  status?: AgentAnnotationRecord['embeddingStatus'],
+): { label: string; type: 'active' | 'inactive' | 'pending' | 'bound' | 'unbound' } | null => {
+  switch (status) {
+    case 'ready':
+      return { label: '语义匹配就绪', type: 'active' };
+    case 'pending':
+      return { label: '语义索引生成中', type: 'pending' };
+    case 'failed':
+      return { label: '语义索引失败', type: 'inactive' };
+    case 'missing':
+      return { label: '待建立语义索引', type: 'unbound' };
+    case 'none':
+      // 公司级未开通：只在语义配置卡片提示一次，不在每条标注重复吓人。
+      return null;
+    default:
+      // 旧接口未返回字段时不要误报
+      return null;
+  }
+};
+
+const formatAnnotationMatchLabel = (match: AnnotationMatchInfo) => {
+  const question = String(match.question || '').trim();
+  if (match.matchType === 'exact') {
+    return question ? `精确命中标注 · ${question}` : '精确命中标注';
+  }
+  const score = `${(match.score * 100).toFixed(1)}%`;
+  const threshold = `${(match.threshold * 100).toFixed(0)}%`;
+  return question
+    ? `语义命中 ${score}（阈值 ${threshold}）· ${question}`
+    : `语义命中 ${score} / 阈值 ${threshold}`;
+};
 
 type RuntimeBackendType = 'platform_llm' | 'third_party_chatbot';
 
@@ -464,6 +500,8 @@ export const ApplicationManagementPage = () => {
   const [suggestedQuestions, setSuggestedQuestions] = useState<string[]>([]);
   const [followUpSuggestedQuestionsEnabled, setFollowUpSuggestedQuestionsEnabled] = useState(false);
   const [enableWebSearch, setEnableWebSearch] = useState(false);
+  const [annotationSemanticEnabled, setAnnotationSemanticEnabled] = useState(true);
+  const [annotationCosineThreshold, setAnnotationCosineThreshold] = useState(DEFAULT_ANNOTATION_COSINE_THRESHOLD);
   const [followUpSuggestedQuestions, setFollowUpSuggestedQuestions] = useState<string[]>([]);
   const [newSuggestedQuestion, setNewSuggestedQuestion] = useState('');
   const [voiceInputEnabled, setVoiceInputEnabled] = useState(false);
@@ -500,6 +538,7 @@ export const ApplicationManagementPage = () => {
   const [streamingContent, setStreamingContent] = useState('');
   const [streamingBlocks, setStreamingBlocks] = useState<AgentReplyBlock[]>([]);
   const [streamingKnowledgeReferences, setStreamingKnowledgeReferences] = useState<KnowledgeReference[]>([]);
+  const [streamingAnnotationMatch, setStreamingAnnotationMatch] = useState<AnnotationMatchInfo | null>(null);
   const [chatLoading, setChatLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -574,6 +613,12 @@ export const ApplicationManagementPage = () => {
     setSuggestedQuestions(detail.suggestedQuestions || []);
     setFollowUpSuggestedQuestionsEnabled(Boolean(detail.followUpSuggestedQuestionsEnabled));
     setEnableWebSearch(Boolean(detail.enableWebSearch));
+    setAnnotationSemanticEnabled(detail.annotationSemanticEnabled !== false);
+    setAnnotationCosineThreshold(
+      typeof detail.annotationCosineThreshold === 'number'
+        ? detail.annotationCosineThreshold
+        : DEFAULT_ANNOTATION_COSINE_THRESHOLD,
+    );
     setFollowUpSuggestedQuestions([]);
     setNewSuggestedQuestion('');
     setVoiceInputEnabled(detail.voiceInputEnabled);
@@ -621,6 +666,15 @@ export const ApplicationManagementPage = () => {
     if (Boolean(detail.enableWebSearch) !== Boolean(payload.enableWebSearch)) {
       return '联网搜索';
     }
+    if (Boolean(detail.annotationSemanticEnabled) !== Boolean(payload.annotationSemanticEnabled)) {
+      return '标注语义匹配';
+    }
+    if (
+      payload.annotationCosineThreshold != null
+      && Number(detail.annotationCosineThreshold) !== Number(payload.annotationCosineThreshold)
+    ) {
+      return '标注语义阈值';
+    }
     if (detail.voiceInputEnabled !== payload.voiceInputEnabled) return '语音输入';
     if (detail.replyPlaybackEnabled !== payload.replyPlaybackEnabled) return '回复播报';
     if (!hasTtsFilterPunctuation) return 'TTS 过滤规则字段';
@@ -653,6 +707,11 @@ export const ApplicationManagementPage = () => {
     if (openingMessage.trim() !== (selectedApplication.openingMessage || '')) return true;
     if (followUpSuggestedQuestionsEnabled !== Boolean(selectedApplication.followUpSuggestedQuestionsEnabled)) return true;
     if (enableWebSearch !== Boolean(selectedApplication.enableWebSearch)) return true;
+    if (annotationSemanticEnabled !== Boolean(selectedApplication.annotationSemanticEnabled !== false)) return true;
+    const savedThreshold = typeof selectedApplication.annotationCosineThreshold === 'number'
+      ? selectedApplication.annotationCosineThreshold
+      : DEFAULT_ANNOTATION_COSINE_THRESHOLD;
+    if (annotationCosineThreshold !== savedThreshold) return true;
     if (voiceInputEnabled !== selectedApplication.voiceInputEnabled) return true;
     if (replyPlaybackEnabled !== selectedApplication.replyPlaybackEnabled) return true;
     if (ttsFilterPunctuation !== selectedApplication.ttsFilterPunctuation) return true;
@@ -688,6 +747,8 @@ export const ApplicationManagementPage = () => {
     suggestedQuestions,
     followUpSuggestedQuestionsEnabled,
     enableWebSearch,
+    annotationSemanticEnabled,
+    annotationCosineThreshold,
     voiceInputEnabled,
     replyPlaybackEnabled,
     ttsFilterPunctuation,
@@ -1271,6 +1332,8 @@ export const ApplicationManagementPage = () => {
         suggestedQuestions: normalizedSuggestedQuestions,
         followUpSuggestedQuestionsEnabled,
         enableWebSearch,
+        annotationSemanticEnabled,
+        annotationCosineThreshold,
         voiceInputEnabled,
         replyPlaybackEnabled,
         ttsFilterPunctuation,
@@ -1322,6 +1385,8 @@ export const ApplicationManagementPage = () => {
     suggestedQuestions,
     followUpSuggestedQuestionsEnabled,
     enableWebSearch,
+    annotationSemanticEnabled,
+    annotationCosineThreshold,
     voiceInputEnabled,
     replyPlaybackEnabled,
     ttsFilterPunctuation,
@@ -1373,7 +1438,13 @@ export const ApplicationManagementPage = () => {
 
       // IconDeviceFloppy config: Ctrl + S (or Cmd + S)
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        if ((activeTab === 'orchestrate' || activeTab === 'conversation') && isDirty && canUpdate && !configSaving && !streaming) {
+        if (
+          (activeTab === 'orchestrate' || activeTab === 'conversation' || activeTab === 'annotations')
+          && isDirty
+          && canUpdate
+          && !configSaving
+          && !streaming
+        ) {
           e.preventDefault();
           void handleSaveConfig();
         }
@@ -1453,12 +1524,14 @@ export const ApplicationManagementPage = () => {
     setStreamingContent('');
     setStreamingBlocks([]);
     setStreamingKnowledgeReferences([]);
+    setStreamingAnnotationMatch(null);
     setFollowUpSuggestedQuestions([]);
     if (replyPlaybackEnabled && ttsReady) {
       agentAudio.startStreamPlayback();
     }
 
     let settled = false;
+    let capturedAnnotationMatch: AnnotationMatchInfo | null = null;
     const finish = () => {
       if (settled) return;
       settled = true;
@@ -1473,7 +1546,26 @@ export const ApplicationManagementPage = () => {
         });
       }
       void refreshConversation(activeConversation.id)
-        .then(() => undefined)
+        .then(() => {
+          if (!capturedAnnotationMatch) {
+            setStreamingAnnotationMatch(null);
+            return;
+          }
+          setMessages((current) => {
+            const nextMessages = [...current];
+            for (let index = nextMessages.length - 1; index >= 0; index -= 1) {
+              if (nextMessages[index].role === 'assistant') {
+                nextMessages[index] = {
+                  ...nextMessages[index],
+                  annotationMatch: capturedAnnotationMatch,
+                };
+                break;
+              }
+            }
+            return nextMessages;
+          });
+          setStreamingAnnotationMatch(null);
+        })
         .catch(() => {
           message.error('会话刷新失败');
         });
@@ -1502,6 +1594,10 @@ export const ApplicationManagementPage = () => {
       finish,
       (questions) => setFollowUpSuggestedQuestions(questions),
       (references) => setStreamingKnowledgeReferences(references),
+      (match) => {
+        capturedAnnotationMatch = match;
+        setStreamingAnnotationMatch(match);
+      },
     );
     abortRef.current = controller;
   };
@@ -1631,11 +1727,19 @@ export const ApplicationManagementPage = () => {
         content: streamingContent,
         contentBlocks: streamingBlocks.length ? streamingBlocks : [textBlock(streamingContent)],
         knowledgeReferences: streamingKnowledgeReferences,
+        annotationMatch: streamingAnnotationMatch,
         feedback: 'none' as const,
         created_at: new Date().toISOString(),
       },
     ];
-  }, [conversation?.id, messages, streamingBlocks, streamingContent, streamingKnowledgeReferences]);
+  }, [
+    conversation?.id,
+    messages,
+    streamingAnnotationMatch,
+    streamingBlocks,
+    streamingContent,
+    streamingKnowledgeReferences,
+  ]);
 
   const applicationOverview = useMemo(() => {
     const activeCount = applications.filter((app) => app.isActive).length;
@@ -1991,6 +2095,7 @@ export const ApplicationManagementPage = () => {
     const playbackKey = `message-${msg.id}`;
     const isPlaybackPending = agentAudio.pendingPlaybackKey === playbackKey;
     const isPlaybackPlaying = agentAudio.playingKey === playbackKey && !agentAudio.paused;
+    const annotationMatch = msg.annotationMatch || null;
     return (
       <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`} key={msg.id}>
         <div className={`flex ${isUser ? 'flex-row-reverse' : 'flex-row'} gap-3`} style={{ maxWidth: '85%' }}>
@@ -2000,6 +2105,13 @@ export const ApplicationManagementPage = () => {
             className={isUser ? 'bg-indigo-600 shrink-0' : 'bg-brand-600 shrink-0'}
           />
           <div className="flex flex-col gap-1">
+            {!isUser && annotationMatch && (
+              <div className="px-1">
+                <Tag color={annotationMatch.matchType === 'exact' ? 'success' : 'processing'} className="m-0 text-fluid-xs">
+                  {formatAnnotationMatchLabel(annotationMatch)}
+                </Tag>
+              </div>
+            )}
             <div
               className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm ${
                 isUser
@@ -2975,33 +3087,132 @@ export const ApplicationManagementPage = () => {
       <div className="flex flex-col gap-4 h-full min-h-0">
         {/* Banner Card */}
         <Card variant="borderless" className="bg-blue-50/50 border border-blue-100 shadow-sm shrink-0" styles={{ body: { padding: '16px' } }}>
-          <div className="flex justify-between items-center gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
             <div className="flex items-center gap-4" style={{ minWidth: 0 }}>
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm">
                 <IconBook size={22} />
               </div>
               <div className="flex flex-col gap-0.5" style={{ minWidth: 0 }}>
-                <div className="text-base font-bold text-slate-800">精确命中标准问答</div>
-                <span className="text-xs text-slate-500 max-w-2xl leading-relaxed truncate md:whitespace-normal">
-                  配置标准问答。如果用户提问内容与所配的标注问题相符，智能体将绕过模型推理直接返回该标准回复，从而达到 100% 回复准确率。
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="text-fluid-lg text-slate-800">标准问答标注</div>
+                  {selectedApplication && (
+                    <Tag color={getPublishStatus(selectedApplication).color} className="m-0">
+                      {getPublishStatus(selectedApplication).text}
+                    </Tag>
+                  )}
+                  {isDirty && (
+                    <Tag color="warning" className="m-0 animate-pulse font-medium">
+                      未保存更改
+                    </Tag>
+                  )}
+                </div>
+                <span className="text-fluid-xs text-slate-500 max-w-2xl leading-relaxed truncate md:whitespace-normal">
+                  先精确匹配，未命中时再按语义匹配。命中后绕过模型，直接返回标准回复。语义开关与阈值需「保存配置」后生效；设备/API 运行时还需「发布」。
                 </span>
               </div>
             </div>
-            <Switch 
-              checked={annotationsEnabled} 
-              onChange={async (checked) => {
-                setAnnotationsEnabled(checked);
-                const changedAnnotations = annotations.filter((annotation) => annotation.isActive !== checked);
-                if (changedAnnotations.length === 0) return;
-                try {
-                  await Promise.all(changedAnnotations.map((annotation) => toggleAnnotation(annotation, checked, true)));
-                  message.success(checked ? '已启用全部标注' : '已停用全部标注');
-                } catch {
-                  message.error('批量更新标注失败');
-                }
-              }}
-              disabled={!canUpdate || annotations.length === 0}
-            />
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 mr-1">
+                <span className="text-fluid-xs text-slate-500">全部标注</span>
+                <Switch
+                  checked={annotationsEnabled}
+                  onChange={async (checked) => {
+                    setAnnotationsEnabled(checked);
+                    const changedAnnotations = annotations.filter((annotation) => annotation.isActive !== checked);
+                    if (changedAnnotations.length === 0) return;
+                    try {
+                      await Promise.all(changedAnnotations.map((annotation) => toggleAnnotation(annotation, checked, true)));
+                      message.success(checked ? '已启用全部标注' : '已停用全部标注');
+                    } catch {
+                      message.error('批量更新标注失败');
+                    }
+                  }}
+                  disabled={!canUpdate || annotations.length === 0}
+                />
+              </div>
+              <Button
+                type="default"
+                loading={publishSaving}
+                disabled={!canUpdate || streaming || isDirty || !selectedApplication}
+                onClick={() => void handlePublish()}
+                className="flex items-center gap-1"
+              >
+                <IconBolt size={14} /> 发布
+              </Button>
+              <Button
+                type="primary"
+                loading={configSaving}
+                disabled={!canUpdate || streaming}
+                onClick={() => void handleSaveConfig()}
+                className="flex items-center gap-1 shadow-sm"
+              >
+                <IconDeviceFloppy size={14} /> 保存配置
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        <Card variant="borderless" className="border border-slate-200/70 shadow-sm shrink-0" styles={{ body: { padding: '16px' } }}>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-0.5" style={{ minWidth: 0 }}>
+                <div className="text-fluid-base font-semibold text-slate-800">语义匹配</div>
+                <span className="text-fluid-xs text-slate-500">
+                  关闭后仅精确匹配。阈值越高越严格，默认 0.88。
+                </span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-fluid-xs text-slate-500">启用语义</span>
+                <Switch
+                  checked={annotationSemanticEnabled}
+                  disabled={!canUpdate}
+                  onChange={setAnnotationSemanticEnabled}
+                />
+              </div>
+            </div>
+            <div className={`flex flex-col gap-2 ${annotationSemanticEnabled ? '' : 'opacity-50'}`}>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-fluid-sm text-slate-600">余弦相似度阈值</span>
+                <span className="text-fluid-sm font-mono text-brand-700">
+                  {annotationCosineThreshold.toFixed(2)}
+                </span>
+              </div>
+              <Slider
+                min={0.5}
+                max={0.99}
+                step={0.01}
+                disabled={!canUpdate || !annotationSemanticEnabled}
+                value={annotationCosineThreshold}
+                onChange={(value) => setAnnotationCosineThreshold(Array.isArray(value) ? value[0] : value)}
+                tooltip={{ formatter: (value) => Number(value ?? 0).toFixed(2) }}
+              />
+              <div className="flex justify-between text-fluid-xs text-slate-400">
+                <span>宽松 0.50</span>
+                <span>默认 0.88</span>
+                <span>严格 0.99</span>
+              </div>
+            </div>
+            {annotations.length > 0
+              && annotations.every((item) => !item.embeddingStatus || item.embeddingStatus === 'none') && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-fluid-xs text-amber-700">
+                当前公司尚未开通语义匹配能力，因此只能精确匹配。请联系平台管理员为该公司开通后，重新保存标注或重建索引。
+              </div>
+            )}
+            {annotations.some((item) => item.embeddingStatus === 'missing' || item.embeddingStatus === 'failed') && (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-fluid-xs text-slate-600">
+                部分标注还不能用于语义匹配。重新编辑保存该标注，或联系平台管理员重建后即可。
+              </div>
+            )}
+            {isDirty && (
+              <div className="text-fluid-xs text-amber-600">
+                语义配置已修改，请点击「保存配置」后生效；设备/API 运行时还需「发布」。
+              </div>
+            )}
+            {!isDirty && selectedApplication && !selectedApplication.isPublishedCurrent && (
+              <div className="text-fluid-xs text-amber-600">
+                草稿已保存，但运行时仍是旧版本。点击「发布」后设备和 API 才会使用最新标注与语义配置。
+              </div>
+            )}
           </div>
         </Card>
 
@@ -3076,12 +3287,22 @@ export const ApplicationManagementPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 text-xs text-slate-400 mt-0.5">
+                  <div className="flex flex-wrap items-center gap-2 text-fluid-xs text-slate-400 mt-0.5">
                     <span className="flex items-center gap-1 text-slate-500">
                       <IconBolt size={13} className="text-amber-500" /> 累计命中 <span className="font-semibold text-slate-700">{annotation.hitCount}</span> 次
                     </span>
+                    {annotation.lastHitAt && (
+                      <>
+                        <span>•</span>
+                        <span>最近命中: {dayjs(annotation.lastHitAt).format('M月D日 HH:mm')}</span>
+                      </>
+                    )}
                     <span>•</span>
-                    <span>修改于: {annotation.lastHitAt ? dayjs(annotation.lastHitAt).format('M月D日 HH:mm') : dayjs(annotation.updated_at).format('M月D日 HH:mm')}</span>
+                    <span>修改于: {dayjs(annotation.updated_at).format('M月D日 HH:mm')}</span>
+                    {(() => {
+                      const meta = annotationEmbeddingStatusMeta(annotation.embeddingStatus);
+                      return meta ? <StatusTag type={meta.type} label={meta.label} /> : null;
+                    })()}
                     {!annotation.isActive && <StatusTag type="inactive" label="已停用" />}
                   </div>
                 </div>
@@ -3247,8 +3468,13 @@ export const ApplicationManagementPage = () => {
 
                 <div className="flex-1 overflow-y-auto bg-slate-50/20 p-4 rounded-xl border border-slate-100/30 custom-scrollbar min-h-0">
                   {selectedLogConversation.messages.length > 0 ? (
-                    selectedLogConversation.messages.map((msg) => {
+                    selectedLogConversation.messages.map((msg, index) => {
                       const isUser = msg.role === 'user';
+                      const nextMessage = selectedLogConversation.messages[index + 1];
+                      const annotationMatch =
+                        isUser && nextMessage?.role === 'assistant'
+                          ? nextMessage.annotationMatch || null
+                          : null;
                       return (
                         <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`} key={msg.id}>
                           <div className={`flex ${isUser ? 'flex-row-reverse' : 'flex-row'} gap-3`} style={{ maxWidth: '85%' }}>
@@ -3274,6 +3500,16 @@ export const ApplicationManagementPage = () => {
                                   </>
                                 )}
                               </div>
+                              {isUser && annotationMatch && (
+                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 px-1 justify-end">
+                                  <Tag
+                                    color={annotationMatch.matchType === 'exact' ? 'success' : 'processing'}
+                                    className="m-0 text-fluid-xs"
+                                  >
+                                    {formatAnnotationMatchLabel(annotationMatch)}
+                                  </Tag>
+                                </div>
+                              )}
                               {!isUser && msg.commandDispatch?.route && (
                                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 px-1 text-fluid-xs text-slate-500">
                                   <Tag color="processing" className="m-0 text-fluid-xs">
@@ -3415,7 +3651,7 @@ export const ApplicationManagementPage = () => {
           </div>
         </div>
 
-        {(activeTab === 'orchestrate' || activeTab === 'conversation') && (
+        {(activeTab === 'orchestrate' || activeTab === 'conversation' || activeTab === 'annotations') && (
           <div className="flex items-center gap-3">
             {isDirty && (
               <Tag color="warning" className="animate-pulse m-0 font-medium">
@@ -3432,10 +3668,10 @@ export const ApplicationManagementPage = () => {
             >
               <IconBolt size={14} /> 发布
             </Button>
-            <Button 
+            <Button
               type="primary"
-              loading={configSaving} 
-              disabled={!canUpdate || streaming} 
+              loading={configSaving}
+              disabled={!canUpdate || streaming}
               onClick={() => void handleSaveConfig()}
               style={{ minWidth: 100 }}
               className="flex items-center gap-1 shadow-sm"

@@ -118,6 +118,7 @@ def serialize_device_chat_session(logs: list[DeviceChatLog], *, request=None) ->
     conversation = last_log.conversation
     messages = []
     for log in ordered_logs:
+        annotation_match = log.annotation_match if isinstance(log.annotation_match, dict) and log.annotation_match else None
         messages.extend([
             {
                 'id': log.id * 2,
@@ -139,6 +140,7 @@ def serialize_device_chat_session(logs: list[DeviceChatLog], *, request=None) ->
                     request=request,
                 ),
                 'knowledgeReferences': serialize_knowledge_references(log.knowledge_references),
+                'annotationMatch': annotation_match,
                 'commandDispatch': log.command_dispatch_diagnostics,
                 'feedback': 'none',
                 'createdAt': log.created_at,

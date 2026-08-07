@@ -388,6 +388,11 @@ ALIYUN_RERANK_BASE_URL = (
     or 'https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank'
 ).strip()
 ALIYUN_RERANK_MODEL = os.getenv('ALIYUN_RERANK_MODEL', 'qwen3-vl-rerank').strip()
+ANNOTATION_SEMANTIC_MATCH_ENABLED = os.getenv(
+    'ANNOTATION_SEMANTIC_MATCH_ENABLED',
+    'true',
+).strip().lower() in {'1', 'true', 'yes', 'on'}
+
 
 # 飞书自定义机器人 Webhook 配置（用于控制指令变更通知等场景）
 # 在飞书群里 -> 设置 -> 群机器人 -> 添加机器人 -> 自定义机器人 中获取 webhook 地址。

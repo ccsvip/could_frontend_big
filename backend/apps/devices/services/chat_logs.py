@@ -15,6 +15,7 @@ def record_device_chat_log(
     answer_blocks: list[dict] | None = None,
     knowledge_references: list[dict] | None = None,
     command_dispatch_diagnostics: dict | None = None,
+    annotation_match: dict | None = None,
 ) -> DeviceChatLog | None:
     question = str(question_text or '').strip()
     answer = str(answer_text or '').strip()
@@ -35,6 +36,7 @@ def record_device_chat_log(
         answer_blocks=answer_blocks or [{'type': 'text', 'text': answer}],
         knowledge_references=knowledge_references if isinstance(knowledge_references, list) else [],
         command_dispatch_diagnostics=command_dispatch_diagnostics or {},
+        annotation_match=annotation_match if isinstance(annotation_match, dict) else {},
         request_id=str(request_id or ''),
         trace_id=str(trace_id or ''),
         model_name=str(model_name or ''),

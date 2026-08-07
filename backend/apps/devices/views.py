@@ -22,7 +22,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 from apps.accounts.permissions import CanCreateDevices, CanDeleteChat, CanDeleteDevices, CanUpdateDevices, CanViewChat, CanViewDevices, IsSuperUser
 from apps.ai_models import llm_services
 from apps.ai_models.models import AgentAnnotation, ChatConversation, LLMModel, RUNTIME_BACKEND_THIRD_PARTY_CHATBOT, ThirdPartyChatbotApplication
-from apps.ai_models.services.annotations import find_matching_annotation, find_matching_published_annotation
+from apps.ai_models.services.annotations import match_annotation, serialize_annotation_match_payload
 from apps.ai_models.services.reply_blocks import blocks_to_text, serialize_published_annotation_blocks, serialize_reply_blocks, text_to_blocks
 from apps.ai_models.services import asr as asr_services
 from apps.ai_models.services import third_party_chatbots
@@ -1243,7 +1243,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             )
 
         try:
-            answer_text, answer_blocks, answer_source, knowledge_references = self._generate_answer(
+            answer_text, answer_blocks, answer_source, knowledge_references, annotation_match_payload = self._generate_answer(
                 device, question_text, session_id=session_id, request=request, pipeline_context=pipeline_context,
             )
         except Exception as exc:
@@ -1296,6 +1296,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
                 runtime_session_id=session_id,
                 answer_blocks=answer_blocks,
                 knowledge_references=knowledge_references,
+                annotation_match=annotation_match_payload,
             )
         except Exception:
             logger.exception('device.voice_chat.log_failed device_code=%s', device.code)
@@ -1383,15 +1384,21 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         session_id: str | None = None,
         request=None,
         pipeline_context: dict[str, str | None] | None = None,
-    ) -> tuple[str, list[dict], str, list[dict]]:
+    ) -> tuple[str, list[dict], str, list[dict], dict | None]:
         agent_application = device.effective_agent_application
-        annotation = DeviceVoiceChatView._find_annotation(agent_application, question_text)
-        if annotation is not None:
+        annotation_match = DeviceVoiceChatView._match_annotation(agent_application, question_text)
+        if annotation_match is not None:
+            annotation = annotation_match.annotation
             now = timezone.now()
             annotation_id = annotation.get('id') if isinstance(annotation, dict) else annotation.id
             AgentAnnotation.objects.filter(id=annotation_id).update(
                 hit_count=F('hit_count') + 1,
                 last_hit_at=now,
+            )
+            annotation_match_payload = serialize_annotation_match_payload(
+                annotation_match,
+                application=agent_application,
+                published=bool(getattr(agent_application, 'published_at', None)),
             )
             if isinstance(annotation, dict):
                 blocks = annotation.get('answerBlocks') or text_to_blocks(annotation.get('answer') or '')
@@ -1399,13 +1406,25 @@ class DeviceVoiceChatView(DeviceRuntimeView):
                 if pipeline_context is not None:
                     _log_http_voice_pipeline('llm.request', pipeline_context, {'backend': 'annotation', 'questionText': question_text, 'annotationId': annotation_id})
                     _log_http_voice_pipeline('llm.response', pipeline_context, {'answerText': answer_text, 'answerBlocks': blocks})
-                return answer_text, serialize_published_annotation_blocks(annotation, tenant=agent_application.tenant, request=request), 'annotation', []
+                return (
+                    answer_text,
+                    serialize_published_annotation_blocks(annotation, tenant=agent_application.tenant, request=request),
+                    'annotation',
+                    [],
+                    annotation_match_payload,
+                )
             blocks = annotation.answer_blocks or text_to_blocks(annotation.answer)
             answer_text = blocks_to_text(blocks)
             if pipeline_context is not None:
                 _log_http_voice_pipeline('llm.request', pipeline_context, {'backend': 'annotation', 'questionText': question_text, 'annotationId': annotation_id})
                 _log_http_voice_pipeline('llm.response', pipeline_context, {'answerText': answer_text, 'answerBlocks': blocks})
-            return answer_text, serialize_reply_blocks(blocks, tenant=agent_application.tenant, request=request), 'annotation', []
+            return (
+                answer_text,
+                serialize_reply_blocks(blocks, tenant=agent_application.tenant, request=request),
+                'annotation',
+                [],
+                annotation_match_payload,
+            )
 
         runtime_config = agent_application.runtime_config() if agent_application is not None else {}
         if runtime_config.get('runtime_backend_type') == RUNTIME_BACKEND_THIRD_PARTY_CHATBOT:
@@ -1439,7 +1458,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             answer_text = third_party_chatbots.send_chatbot_message(chatbot, question_text, conversation=conversation)
             if pipeline_context is not None:
                 _log_http_voice_pipeline('llm.response', pipeline_context, {'answerText': answer_text})
-            return answer_text, serialize_reply_blocks(text_to_blocks(answer_text), tenant=device.tenant), 'third_party', []
+            return answer_text, serialize_reply_blocks(text_to_blocks(answer_text), tenant=device.tenant), 'third_party', [], None
 
         model = None
         runtime_model_id = runtime_config.get('llm_model_id')
@@ -1510,7 +1529,7 @@ class DeviceVoiceChatView(DeviceRuntimeView):
             [*text_to_blocks(answer_text), *media_blocks],
             tenant=device.tenant,
             request=request,
-        ), 'platform_llm', knowledge_references
+        ), 'platform_llm', knowledge_references, None
 
     @staticmethod
     def _resolve_third_party_conversation(device: Device, agent_application, chatbot, runtime_config: dict, session_id: str | None):
@@ -1562,12 +1581,29 @@ class DeviceVoiceChatView(DeviceRuntimeView):
         return user
 
     @staticmethod
-    def _find_annotation(agent_application, question_text: str):
+    def _match_annotation(agent_application, question_text: str):
         if agent_application is None:
             return None
         if agent_application.published_at:
-            return find_matching_published_annotation(agent_application.published_annotations, question_text)
-        return find_matching_annotation(agent_application.annotations, question_text)
+            return match_annotation(
+                question_text=question_text,
+                annotations=agent_application.published_annotations,
+                application=agent_application,
+                tenant=agent_application.tenant,
+                source='published',
+            )
+        return match_annotation(
+            question_text=question_text,
+            annotations=agent_application.annotations.all(),
+            application=agent_application,
+            tenant=agent_application.tenant,
+            source='live',
+        )
+
+    @staticmethod
+    def _find_annotation(agent_application, question_text: str):
+        match = DeviceVoiceChatView._match_annotation(agent_application, question_text)
+        return match.annotation if match is not None else None
 
     @staticmethod
     def _synthesize_answer_audio(device: Device, answer_text: str, *, pipeline_context: dict[str, str | None] | None = None) -> str:

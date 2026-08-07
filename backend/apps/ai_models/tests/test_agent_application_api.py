@@ -776,6 +776,8 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['ttsFilterPunctuation'], '')
         self.assertTrue(response.data['ttsFilterEmoji'])
         self.assertEqual(response.data['ttsFilterExcludePatterns'], [])
+        self.assertTrue(response.data['annotationSemanticEnabled'])
+        self.assertEqual(response.data['annotationCosineThreshold'], 0.88)
 
     def test_update_agent_application_accepts_conversation_settings(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.update')
@@ -799,6 +801,8 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
                 'ttsFilterPunctuation': ' \r\n。 \n',
                 'ttsFilterEmoji': False,
                 'ttsFilterExcludePatterns': ['（动作提示）', '  内心独白  ', '（动作提示）'],
+                'annotationSemanticEnabled': False,
+                'annotationCosineThreshold': 0.92,
             },
             format='json',
         )
@@ -813,12 +817,16 @@ class AgentApplicationApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.data['ttsFilterPunctuation'], ' \r\n。')
         self.assertFalse(response.data['ttsFilterEmoji'])
         self.assertEqual(response.data['ttsFilterExcludePatterns'], ['（动作提示）', '内心独白'])
+        self.assertFalse(response.data['annotationSemanticEnabled'])
+        self.assertEqual(response.data['annotationCosineThreshold'], 0.92)
         application.refresh_from_db()
         self.assertTrue(application.follow_up_suggested_questions_enabled)
         self.assertTrue(application.enable_web_search)
         self.assertEqual(application.tts_filter_punctuation, ' \r\n。')
         self.assertFalse(application.tts_filter_emoji)
         self.assertEqual(application.tts_filter_exclude_patterns, ['（动作提示）', '内心独白'])
+        self.assertFalse(application.annotation_semantic_enabled)
+        self.assertEqual(application.annotation_cosine_threshold, 0.92)
 
     def test_update_agent_application_rejects_duplicate_name_in_same_tenant(self):
         self.grant_permissions('agent_applications.view', 'agent_applications.update')

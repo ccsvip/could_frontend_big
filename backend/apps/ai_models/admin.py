@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from .models import (
     AgentAnnotation,
+    AgentAnnotationEmbedding,
     AgentApplication,
     BailianKnowledgeConfig,
     ChatConversation,
@@ -97,6 +98,22 @@ class AgentAnnotationAdmin(admin.ModelAdmin):
     list_filter = ('is_active', 'application')
     search_fields = ('question', 'answer', 'application__name')
     raw_id_fields = ('application', 'tenant', 'source_message', 'created_by')
+
+
+@admin.register(AgentAnnotationEmbedding)
+class AgentAnnotationEmbeddingAdmin(admin.ModelAdmin):
+    list_display = (
+        'annotation',
+        'application',
+        'embedding_fingerprint',
+        'status',
+        'dimensions',
+        'embedded_at',
+        'updated_at',
+    )
+    list_filter = ('status', 'embedding_model_name')
+    search_fields = ('embedding_fingerprint', 'question_hash', 'annotation__question')
+    raw_id_fields = ('annotation', 'application', 'tenant')
 
 
 @admin.register(ChatMessage)

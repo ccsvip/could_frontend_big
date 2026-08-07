@@ -1254,7 +1254,13 @@ async def _run_llm_session_body(
             session.get('sessionId'),
         )
     if conversation_id is not None:
-        await sync_to_async(_append_runtime_conversation_messages, thread_sensitive=True)(conversation_id, question_text, answer_text, answer_blocks)
+        await sync_to_async(_append_runtime_conversation_messages, thread_sensitive=True)(
+            conversation_id,
+            question_text,
+            answer_text,
+            answer_blocks,
+            session.get('annotationMatch') if isinstance(session.get('annotationMatch'), dict) else None,
+        )
     else:
         _remember_agent_exchange(session.get('memoryKey'), question_text, answer_text)
     should_record_knowledge_references = (
@@ -1447,6 +1453,7 @@ def _record_realtime_device_chat_log(
     from apps.devices.services.runtime import get_runtime_device
 
     device = get_runtime_device(str(session.get('deviceCode') or ''))
+    annotation_match = session.get('annotationMatch') if isinstance(session.get('annotationMatch'), dict) else None
     record_device_chat_log(
         device,
         question_text,
@@ -1460,6 +1467,7 @@ def _record_realtime_device_chat_log(
         answer_blocks=answer_blocks,
         command_dispatch_diagnostics=command_dispatch_diagnostics,
         knowledge_references=knowledge_references,
+        annotation_match=annotation_match,
     )
 
 
@@ -2235,7 +2243,13 @@ def _resolve_runtime_conversation(
         tenant=device.tenant,
     )
 
-def _append_runtime_conversation_messages(conversation_id: int | None, question_text: str, answer_text: str, answer_blocks=None) -> None:
+def _append_runtime_conversation_messages(
+    conversation_id: int | None,
+    question_text: str,
+    answer_text: str,
+    answer_blocks=None,
+    annotation_match=None,
+) -> None:
     if conversation_id is None:
         return
 
@@ -2255,6 +2269,7 @@ def _append_runtime_conversation_messages(conversation_id: int | None, question_
         role=ChatMessage.ROLE_ASSISTANT,
         content=answer_text,
         content_blocks=answer_blocks or [{'type': 'text', 'text': answer_text}],
+        annotation_match=annotation_match if isinstance(annotation_match, dict) else {},
     )
     conversation.save(update_fields=['updated_at'])
 
@@ -2314,27 +2329,34 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
             _conversation_session_id(conversation),
         )
 
-    annotation = DeviceVoiceChatView._find_annotation(agent_application, question_text)
-    if annotation is not None:
+    annotation_match = DeviceVoiceChatView._match_annotation(agent_application, question_text)
+    if annotation_match is not None:
+        annotation = annotation_match.annotation
         now = timezone.now()
         annotation_id = annotation.get('id') if isinstance(annotation, dict) else annotation.id
         from apps.ai_models.models import AgentAnnotation
+        from apps.ai_models.services.annotations import serialize_annotation_match_payload
+        from apps.ai_models.services.reply_blocks import serialize_published_annotation_blocks, serialize_reply_blocks
 
         AgentAnnotation.objects.filter(id=annotation_id).update(
             hit_count=F('hit_count') + 1,
             last_hit_at=now,
         )
         annotation_answer = annotation.get('answer') if isinstance(annotation, dict) else annotation.answer
-        from apps.ai_models.services.reply_blocks import serialize_published_annotation_blocks, serialize_reply_blocks
-
         annotation_blocks = (
             serialize_published_annotation_blocks(annotation, tenant=agent_application.tenant)
             if isinstance(annotation, dict)
             else serialize_reply_blocks(annotation.answer_blocks, tenant=agent_application.tenant)
         )
+        annotation_match_payload = serialize_annotation_match_payload(
+            annotation_match,
+            application=agent_application,
+            published=bool(getattr(agent_application, 'published_at', None)),
+        )
     else:
         annotation_answer = None
         annotation_blocks = None
+        annotation_match_payload = None
 
     base_session = {
         'deviceCode': device.code,
@@ -2344,6 +2366,7 @@ def _prepare_device_llm_session(device_code: str, question_text: str, payload: d
         'conversationId': conversation.id if conversation is not None else None,
         'annotationAnswer': annotation_answer,
         'annotationBlocks': annotation_blocks,
+        'annotationMatch': annotation_match_payload,
         'agentApplicationId': agent_application.id,
         'agentApplicationName': runtime_config.get('name') or agent_application.name,
         'applicationId': device.application_id,
@@ -2429,7 +2452,7 @@ def _run_device_llm_answer(device_code: str, question_text: str) -> dict[str, An
     if agent_application is None or not agent_application.runtime_config().get('is_active'):
         raise RuntimeDeviceError(require_error_definition_by_key('DEVICE_AGENT_UNBOUND'), 403)
     runtime_config = agent_application.runtime_config()
-    answer_text, answer_blocks, _answer_source, _knowledge_references = DeviceVoiceChatView._generate_answer(device, question_text)
+    answer_text, answer_blocks, _answer_source, _knowledge_references, _annotation_match = DeviceVoiceChatView._generate_answer(device, question_text)
     return {
         'deviceCode': device.code,
         'answerText': answer_text,

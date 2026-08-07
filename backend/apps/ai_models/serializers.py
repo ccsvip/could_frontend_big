@@ -1532,6 +1532,16 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
         required=False,
     )
     enableWebSearch = serializers.BooleanField(source='enable_web_search', required=False)
+    annotationSemanticEnabled = serializers.BooleanField(
+        source='annotation_semantic_enabled',
+        required=False,
+    )
+    annotationCosineThreshold = serializers.FloatField(
+        source='annotation_cosine_threshold',
+        required=False,
+        min_value=0.01,
+        max_value=1.0,
+    )
     voiceInputEnabled = serializers.BooleanField(source='voice_input_enabled', required=False)
     replyPlaybackEnabled = serializers.BooleanField(source='reply_playback_enabled', required=False)
     ttsFilterPunctuation = serializers.CharField(
@@ -1591,6 +1601,8 @@ class AgentApplicationSerializer(serializers.ModelSerializer):
             'suggestedQuestions',
             'followUpSuggestedQuestionsEnabled',
             'enableWebSearch',
+            'annotationSemanticEnabled',
+            'annotationCosineThreshold',
             'voiceInputEnabled',
             'replyPlaybackEnabled',
             'ttsFilterPunctuation',
@@ -1768,6 +1780,7 @@ class AgentAnnotationSerializer(serializers.ModelSerializer):
     isActive = serializers.BooleanField(source='is_active', required=False)
     hitCount = serializers.IntegerField(source='hit_count', read_only=True)
     lastHitAt = serializers.DateTimeField(source='last_hit_at', read_only=True, allow_null=True)
+    embeddingStatus = serializers.SerializerMethodField()
     createdBy = serializers.SerializerMethodField()
 
     class Meta:
@@ -1782,6 +1795,7 @@ class AgentAnnotationSerializer(serializers.ModelSerializer):
             'isActive',
             'hitCount',
             'lastHitAt',
+            'embeddingStatus',
             'createdBy',
             'created_at',
             'updated_at',
@@ -1792,6 +1806,7 @@ class AgentAnnotationSerializer(serializers.ModelSerializer):
             'sourceMessageId',
             'hitCount',
             'lastHitAt',
+            'embeddingStatus',
             'createdBy',
             'created_at',
             'updated_at',
@@ -1801,6 +1816,16 @@ class AgentAnnotationSerializer(serializers.ModelSerializer):
         if obj.created_by is None:
             return ''
         return obj.created_by.get_full_name() or obj.created_by.username
+
+    def get_embeddingStatus(self, obj: AgentAnnotation) -> str:
+        fingerprint = self.context.get('current_embedding_fingerprint')
+        if not fingerprint:
+            return 'none'
+        embeddings = list(obj.embeddings.all())
+        for record in embeddings:
+            if record.embedding_fingerprint == fingerprint:
+                return record.status or 'missing'
+        return 'missing'
 
     def validate_question(self, value: str) -> str:
         value = normalize_annotation_question(value)
@@ -1878,11 +1903,22 @@ class ChatMessageSerializer(serializers.ModelSerializer):
     conversationId = serializers.IntegerField(source='conversation_id', read_only=True)
     contentBlocks = serializers.SerializerMethodField()
     knowledgeReferences = serializers.SerializerMethodField()
+    annotationMatch = serializers.SerializerMethodField()
     feedback = serializers.CharField(required=False)
 
     class Meta:
         model = ChatMessage
-        fields = ['id', 'conversationId', 'role', 'content', 'contentBlocks', 'knowledgeReferences', 'feedback', 'created_at']
+        fields = [
+            'id',
+            'conversationId',
+            'role',
+            'content',
+            'contentBlocks',
+            'knowledgeReferences',
+            'annotationMatch',
+            'feedback',
+            'created_at',
+        ]
         read_only_fields = fields
 
     def get_contentBlocks(self, obj: ChatMessage) -> list[dict]:
@@ -1894,6 +1930,12 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 
     def get_knowledgeReferences(self, obj: ChatMessage) -> list[dict]:
         return serialize_knowledge_references(obj.knowledge_references)
+
+    def get_annotationMatch(self, obj: ChatMessage) -> dict | None:
+        payload = obj.annotation_match if isinstance(obj.annotation_match, dict) else None
+        if not payload:
+            return None
+        return payload
 
 
 class ChatConversationListSerializer(serializers.ModelSerializer):
