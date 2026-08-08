@@ -23,6 +23,7 @@ from apps.ai_models.models import (
     CosyVoiceSettings,
     TenantTTSProviderGrant,
     TenantTTSSettings,
+    TenantTTSVoiceTestText,
     TTSProvider,
     TTSVoice,
 )
@@ -877,6 +878,35 @@ class TTSApiTests(TenantTestMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         call_kwargs = synthesize_tts_pcm.call_args.kwargs
         self.assertEqual(call_kwargs['voice'].id, other_voice.id)
+    @patch('apps.ai_models.services.tts.synthesize_tts_pcm', return_value=b'\x05\x06')
+    def test_company_test_uses_voice_override_when_text_is_empty(self, synthesize_tts_pcm):
+        self.grant_permissions('ai_models.tts.view')
+        other_voice = TTSVoice.objects.get(provider=self.provider, voice_code='Elias')
+        TenantTTSVoiceTestText.objects.create(
+            tenant=self.tenant,
+            voice=other_voice,
+            test_text='该音色专属试听',
+        )
+        self.client.force_authenticate(user=self.tenant_user)
+
+        response = self.client.post(
+            '/api/v1/ai-models/tts/test/',
+            {'text': '', 'voiceId': other_voice.id},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(synthesize_tts_pcm.call_args.kwargs['text'], '该音色专属试听')
+
+        synthesize_tts_pcm.reset_mock()
+        explicit = self.client.post(
+            '/api/v1/ai-models/tts/test/',
+            {'text': '临时试听内容', 'voiceId': other_voice.id},
+            format='json',
+        )
+
+        self.assertEqual(explicit.status_code, status.HTTP_200_OK)
+        self.assertEqual(synthesize_tts_pcm.call_args.kwargs['text'], '临时试听内容')
 
     @patch('apps.ai_models.services.tts.synthesize_tts_pcm', return_value=b'\x03\x04')
     def test_device_runtime_uses_device_code_and_returns_raw_pcm(self, synthesize_tts_pcm):

@@ -1,0 +1,9 @@
+{"file":"backend/apps/ai_models/models.py","reason":"新增公司与音色唯一关联的试听文本覆盖模型，并移除错误的展示名称模型。"}
+{"file":"backend/apps/ai_models/migrations/0058_tenant_tts_voice_test_text.py","reason":"为公司音色级试听文本覆盖创建唯一约束表；替换错误的 0058 展示名称迁移。"}
+{"file":"backend/apps/ai_models/serializers.py","reason":"在公司 Web options 传出有效试听文本并校验试听文本写入。"}
+{"file":"backend/apps/ai_models/views.py","reason":"实现公司试听文本 REST 写入、删除和测试播放回退，并保持设备码边界。"}
+{"file":"backend/apps/ai_models/urls.py","reason":"注册公司音色试听文本资源路由。"}
+{"file":"backend/apps/ai_models/tests/test_company_tts_options_api.py","reason":"覆盖试听文本回退、租户隔离、权限、授权和设备码契约。"}
+{"file":"backend/apps/ai_models/tests/test_tts_api.py","reason":"验证公司测试接口按音色读取公司试听文本且显式文本优先。"}
+{"file":"web/src/api/modules/tts.ts","reason":"同步公司音色试听文本字段和 REST API 类型。"}
+{"file":"web/src/views/tts-management/index.tsx","reason":"按音色编辑、恢复和选择试听文本。"}

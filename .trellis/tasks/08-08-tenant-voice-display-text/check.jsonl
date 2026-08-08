@@ -1,0 +1,9 @@
+{"file":"backend/apps/ai_models/tests/test_company_tts_options_api.py","reason":"Django API tests for tenant isolation, fallback, unauthorized writes, and frozen device options."}
+{"file":"backend/apps/ai_models/tests/test_tts_api.py","reason":"Company TTS test endpoint regression for per-voice fallback and explicit text precedence."}
+{"file":"backend/apps/ai_models/migrations/0058_tenant_tts_voice_test_text.py","reason":"Migration consistency and model schema validation."}
+{"file":"backend/apps/ai_models/models.py","reason":"Backend model syntax and uniqueness contract."}
+{"file":"backend/apps/ai_models/serializers.py","reason":"Serializer validation and response contract."}
+{"file":"backend/apps/ai_models/views.py","reason":"REST authorization and test-playback data flow."}
+{"file":"web/src/api/modules/tts.ts","reason":"Frontend API type contract."}
+{"file":"web/src/views/tts-management/index.tsx","reason":"Company UI behavior and design-token compliance."}
+{"file":".trellis/tasks/08-08-tenant-voice-display-text/prd.md","reason":"Observable acceptance criteria."}

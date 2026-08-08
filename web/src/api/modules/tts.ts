@@ -18,6 +18,11 @@ export type TtsVoiceRecord = {
   configSchemaKey?: string;
   supportedChannels?: TtsChannel[];
   capabilities?: TtsVoiceCapabilities;
+  /** 公司 Web 返回完整元数据；设备码仅返回 customTestText（无覆盖则为空串）。 */
+  testText?: string;
+  customTestText?: string;
+  platformTestText?: string;
+  hasTestTextOverride?: boolean;
 };
 
 export type TtsChannel = 'httpTest' | 'httpRuntime' | 'realtime';
@@ -151,6 +156,12 @@ export type TtsTestPayload = {
   voiceId?: number | null;
 };
 
+/** Payload for the company-only HTTP audition endpoint. */
+export type CompanyTtsTestPayload = TtsTestPayload & {
+  ttsSessionConfig?: TtsSessionConfig;
+  modelCode?: string;
+};
+
 export type TtsRealtimeMessage = {
   type?: string;
   sampleRate?: number;
@@ -194,12 +205,31 @@ export const fetchCompanyTtsOptions = async () => {
   return response.data;
 };
 
+export type CompanyTtsVoiceTestTextPayload = {
+  testText: string;
+};
+
+const companyTtsVoiceTestTextPath = (voiceId: number) =>
+  `/ai-models/tts/voice-test-texts/${voiceId}/`;
+
+export const updateCompanyTtsVoiceTestText = async (
+  voiceId: number,
+  payload: CompanyTtsVoiceTestTextPayload,
+) => {
+  const response = await httpClient.put<TtsVoiceRecord>(companyTtsVoiceTestTextPath(voiceId), payload);
+  return response.data;
+};
+
+export const deleteCompanyTtsVoiceTestText = async (voiceId: number) => {
+  await httpClient.delete(companyTtsVoiceTestTextPath(voiceId));
+};
+
 export const updateCompanyDefaultTtsVoice = async (voiceId: number, ttsSessionConfig?: TtsSessionConfig, modelCode?: string) => {
   const response = await httpClient.patch<CompanyTtsOptions>('/ai-models/tts/default-voice/', { voiceId, ttsSessionConfig, modelCode });
   return response.data;
 };
 
-export const testCompanyTts = async (payload: TtsTestPayload) => {
+export const testCompanyTts = async (payload: CompanyTtsTestPayload) => {
   const response = await httpClient.post<Blob>('/ai-models/tts/test/', payload, blobRequestConfig);
   return response.data;
 };

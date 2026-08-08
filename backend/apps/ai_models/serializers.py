@@ -47,6 +47,7 @@ from .models import (
     TenantThirdPartyChatbotGrant,
     TenantTTSProviderGrant,
     TenantTTSSettings,
+    TenantTTSVoiceTestText,
     ThirdPartyChatbotApplication,
     ThirdPartyChatbotIntegration,
     ThirdPartyChatbotProvider,
@@ -1030,7 +1031,6 @@ class TTSVoiceWriteSerializer(serializers.ModelSerializer):
         fields = ['displayName', 'voiceCode', 'gender', 'avatarPath', 'isActive', 'isVisible', 'sortOrder']
 
 
-
 class CosyVoiceVoiceSerializer(TTSVoiceSerializer):
     sourceType = serializers.CharField(source='cosyvoice_profile.source_type', read_only=True)
     sourceAudioUrl = serializers.CharField(source='cosyvoice_profile.source_audio_url', read_only=True)
@@ -1039,6 +1039,7 @@ class CosyVoiceVoiceSerializer(TTSVoiceSerializer):
 
     class Meta(TTSVoiceSerializer.Meta):
         fields = TTSVoiceSerializer.Meta.fields + ['sourceType', 'sourceAudioUrl', 'description', 'language']
+
 
 
 class CosyVoiceSettingsSerializer(serializers.ModelSerializer):
@@ -1086,6 +1087,10 @@ class CosyVoiceSettingsSerializer(serializers.ModelSerializer):
             many=True,
             context={'request': self.context.get('request'), 'default_voice_id': obj.default_voice_id},
         ).data
+
+    @extend_schema_field(serializers.CharField())
+    def get_defaultTestText(self, obj: CosyVoiceSettings) -> str:
+        return obj.default_test_text
 
 
 class CosyVoiceSettingsWriteSerializer(serializers.Serializer):
@@ -1405,13 +1410,12 @@ class PlatformTTSSettingsWriteSerializer(serializers.ModelSerializer):
 
 
 class CompanyTTSVoiceSerializer(TTSVoiceSerializer):
-    """Company-facing voice payload.
+    """公司侧音色载荷，试听文本按公司覆盖优先。"""
 
-    Carries the public card identity the frontend needs to pick the right config
-    schema for the selected voice. Never carries credentials or provider-private
-    request parameters.
-    """
-
+    testText = serializers.SerializerMethodField()
+    customTestText = serializers.SerializerMethodField()
+    platformTestText = serializers.SerializerMethodField()
+    hasTestTextOverride = serializers.SerializerMethodField()
     providerId = serializers.IntegerField(source='provider_id', read_only=True)
     providerCode = serializers.SerializerMethodField()
     providerName = serializers.SerializerMethodField()
@@ -1421,24 +1425,56 @@ class CompanyTTSVoiceSerializer(TTSVoiceSerializer):
 
     class Meta(TTSVoiceSerializer.Meta):
         fields = [
-            'id',
-            'providerId',
-            'providerCode',
-            'providerName',
-            'displayName',
-            'voiceCode',
-            'gender',
-            'avatarPath',
-            'configSchemaKey',
-            'supportedChannels',
-            'capabilities',
-            'isDefault',
+            'id', 'providerId', 'providerCode', 'providerName', 'displayName',
+            'testText', 'platformTestText', 'hasTestTextOverride', 'voiceCode',
+            'customTestText', 'gender', 'avatarPath', 'configSchemaKey', 'supportedChannels',
+            'capabilities', 'isDefault',
         ]
         read_only_fields = fields
 
+    def get_fields(self):
+        fields = super().get_fields()
+        include_metadata = self.context.get('include_test_text_metadata', False)
+        include_custom = self.context.get('include_custom_test_text', False) or include_metadata
+        if not include_metadata:
+            fields.pop('testText', None)
+            fields.pop('platformTestText', None)
+            fields.pop('hasTestTextOverride', None)
+        if not include_custom:
+            fields.pop('customTestText', None)
+        return fields
+
+    def _test_text_data(self, obj: TTSVoice) -> dict:
+        values = self.context.get('voice_test_texts')
+        value = values.get(obj.id) if isinstance(values, dict) else None
+        if isinstance(value, dict):
+            return value
+        return {
+            'test_text': '',
+            'custom_test_text': '',
+            'platform_test_text': '',
+            'has_override': False,
+        }
+
+    @extend_schema_field(serializers.CharField())
+    def get_testText(self, obj: TTSVoice) -> str:
+        data = self._test_text_data(obj)
+        return data['test_text'] or data['platform_test_text']
+
+    @extend_schema_field(serializers.CharField())
+    def get_customTestText(self, obj: TTSVoice) -> str:
+        return self._test_text_data(obj).get('custom_test_text', '')
+
+    @extend_schema_field(serializers.CharField())
+    def get_platformTestText(self, obj: TTSVoice) -> str:
+        return self._test_text_data(obj)['platform_test_text']
+
+    @extend_schema_field(serializers.BooleanField())
+    def get_hasTestTextOverride(self, obj: TTSVoice) -> bool:
+        return bool(self._test_text_data(obj)['has_override'])
+
     def _adapter(self, obj: TTSVoice):
         from .services.tts_adapters import TTSAdapterError, get_tts_provider_adapter
-
         cache = self.context.setdefault('_adapter_cache', {})
         code = obj.provider.code
         if code not in cache:
@@ -1470,6 +1506,11 @@ class CompanyTTSVoiceSerializer(TTSVoiceSerializer):
     def get_capabilities(self, obj: TTSVoice) -> dict:
         adapter = self._adapter(obj)
         return adapter.public_voice_capabilities(obj) if adapter is not None else {}
+
+
+
+class CompanyTTSVoiceTestTextWriteSerializer(serializers.Serializer):
+    testText = serializers.CharField(max_length=2000, allow_blank=False, trim_whitespace=True)
 
 
 class AgentKnowledgeDocumentSerializer(serializers.ModelSerializer):

@@ -14,7 +14,7 @@ from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 
 from rest_framework.permissions import AllowAny
@@ -86,6 +86,7 @@ from .models import (
     TenantThirdPartyChatbotGrant,
     TenantTTSProviderGrant,
     TenantTTSSettings,
+    TenantTTSVoiceTestText,
     TenantTTSVoiceGrant,
     ThirdPartyChatbotApplication,
     ThirdPartyChatbotIntegration,
@@ -136,6 +137,7 @@ from .serializers import (
     CosyVoiceSettingsWriteSerializer,
     CosyVoiceVoiceSerializer,
     CosyVoiceVoiceWriteSerializer,
+    CompanyTTSVoiceTestTextWriteSerializer,
     CompanyTTSVoiceSerializer,
     TenantKnowledgeModelSettingsSerializer,
     TenantLLMAuthorizationSerializer,
@@ -411,25 +413,58 @@ def _get_platform_tts_provider(provider_code: str | None = None) -> TTSProvider:
     return get_object_or_404(TTSProvider, code=provider_code)
 
 
-def _build_company_tts_options_payload(tenant, request=None):
-    """Provider-neutral company TTS options.
+def _build_company_tts_options_payload(
+    tenant,
+    request=None,
+    *,
+    include_test_text_metadata=False,
+    include_custom_test_text=False,
+):
+    """构建公司 TTS options。
 
-    Keeps the legacy flat ``voices`` list and single ``provider`` summary for the
-    existing pages, and adds ``providers[]`` groups plus each card's
-    ``publicConfigSchema`` so the UI can render per-card config for whichever
-    voice is selected. Only voices the tenant is authorized for appear.
+    - 认证 Web：完整试听文本元数据（有效值/覆盖/平台默认）。
+    - 设备码：仅附加 customTestText（公司覆盖，无则为空串），不暴露平台默认与有效回退。
     """
     voices = list(tts_auth.get_effective_tts_voices_for_tenant(tenant))
     selected_voice = tts_auth.get_effective_tts_voice_for_tenant(tenant)
     default_voice_id = selected_voice.id if selected_voice else None
-
     serializer_context = {'default_voice_id': default_voice_id, 'request': request}
+
     voices_by_provider: dict[int, list] = {}
     for voice in voices:
         voices_by_provider.setdefault(voice.provider_id, []).append(voice)
 
+    include_custom = include_custom_test_text or include_test_text_metadata
+    voice_test_texts = {}
+    if voices and (include_test_text_metadata or include_custom):
+        overrides = dict(
+            TenantTTSVoiceTestText.objects
+            .filter(tenant=tenant, voice_id__in=[voice.id for voice in voices])
+            .values_list('voice_id', 'test_text')
+        )
+        for voice in voices:
+            platform_text = ''
+            if include_test_text_metadata:
+                try:
+                    adapter = tts_adapters.get_tts_provider_adapter(voice.provider.code)
+                    platform_text = adapter.effective_config(voice.provider).default_test_text
+                except (tts_adapters.TTSAdapterError, cosyvoice_services.CosyVoiceCustomizationError):
+                    platform_text = tts_services.DEFAULT_TEST_TEXT
+            custom_text = overrides.get(voice.id, '')
+            voice_test_texts[voice.id] = {
+                'test_text': custom_text,
+                'custom_test_text': custom_text,
+                'platform_test_text': platform_text,
+                'has_override': voice.id in overrides,
+            }
+        if include_test_text_metadata:
+            serializer_context['include_test_text_metadata'] = True
+        if include_custom:
+            serializer_context['include_custom_test_text'] = True
+        serializer_context['voice_test_texts'] = voice_test_texts
+
     providers_payload = []
-    for provider_id, provider_voices in voices_by_provider.items():
+    for provider_voices in voices_by_provider.values():
         provider = provider_voices[0].provider
         try:
             adapter = tts_adapters.get_tts_provider_adapter(provider.code)
@@ -438,9 +473,7 @@ def _build_company_tts_options_payload(tenant, request=None):
         summary = adapter.public_provider_summary(provider)
         summary['publicConfig'] = tts_auth.get_tenant_tts_card_public_config(tenant, provider)
         summary['voices'] = CompanyTTSVoiceSerializer(
-            provider_voices,
-            many=True,
-            context=serializer_context,
+            provider_voices, many=True, context=serializer_context,
         ).data
         providers_payload.append(summary)
 
@@ -690,8 +723,60 @@ class CompanyTTSOptionsView(TenantScopedQuerysetMixin, APIView):
                 device = get_runtime_device(device_code, require_tenant=True)
             except RuntimeDeviceError as exc:
                 return Response(exc.as_payload(), status=exc.status_code)
-            return Response(_build_company_tts_options_payload(device.tenant, request))
-        return Response(_build_company_tts_options_payload(self.request_tenant, request))
+            return Response(
+                _build_company_tts_options_payload(
+                    device.tenant,
+                    request,
+                    include_custom_test_text=True,
+                )
+            )
+        return Response(
+            _build_company_tts_options_payload(
+                self.request_tenant,
+                request,
+                include_test_text_metadata=True,
+            )
+        )
+
+
+class CompanyTTSVoiceTestTextView(TenantScopedQuerysetMixin, APIView):
+    permission_classes = [CanUpdateTTS]
+
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        if request.user.is_superuser:
+            raise PermissionDenied('平台超级管理员不能写入公司试听文本')
+
+    def _tenant(self):
+        tenant = self.request_tenant
+        if tenant is None:
+            raise ValidationError({'tenant': '当前账号未归属公司'})
+        return tenant
+
+    def _voice(self, tenant, voice_id):
+        return tts_auth.ensure_tts_voice_authorized_for_tenant(tenant, voice_id)
+
+    def _serialize(self, request, tenant, voice):
+        payload = _build_company_tts_options_payload(tenant, request, include_test_text_metadata=True)
+        return next(item for item in payload['voices'] if item['id'] == voice.id)
+
+    def put(self, request, voice_id):
+        tenant = self._tenant()
+        voice = self._voice(tenant, voice_id)
+        serializer = CompanyTTSVoiceTestTextWriteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        TenantTTSVoiceTestText.objects.update_or_create(
+            tenant=tenant,
+            voice=voice,
+            defaults={'test_text': serializer.validated_data['testText']},
+        )
+        return Response(self._serialize(request, tenant, voice))
+
+    def delete(self, request, voice_id):
+        tenant = self._tenant()
+        voice = self._voice(tenant, voice_id)
+        TenantTTSVoiceTestText.objects.filter(tenant=tenant, voice=voice).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CompanyTTSDefaultVoiceView(TenantScopedQuerysetMixin, APIView):
@@ -736,7 +821,7 @@ class CompanyTTSDefaultVoiceView(TenantScopedQuerysetMixin, APIView):
                 ).update(public_config=controls)
             tts_runtime_events.publish_tenant_tts_config_changed(tenant.id)
 
-        return Response(_build_company_tts_options_payload(tenant, request))
+        return Response(_build_company_tts_options_payload(tenant, request, include_test_text_metadata=True))
 
     def _resolve_public_controls(self, data, tenant, voice, adapter):
         """Merge request controls over the card's stored config, then whitelist."""
@@ -795,7 +880,18 @@ class CompanyTTSTestView(TenantScopedQuerysetMixin, APIView):
         except (tts_adapters.TTSAdapterError, cosyvoice_services.CosyVoiceCustomizationError) as exc:
             return Response({'message': str(exc)[:200]}, status=status.HTTP_400_BAD_REQUEST)
 
-        text = tts_services.normalize_tts_text(request.data.get('text'), config)
+        raw_text = request.data.get('text')
+        if (
+            isinstance(raw_text, str)
+            and not raw_text.strip()
+            and request.data.get('voiceId') not in (None, '')
+        ):
+            override_text = TenantTTSVoiceTestText.objects.filter(
+                tenant=tenant,
+                voice=voice,
+            ).values_list('test_text', flat=True).first()
+            raw_text = override_text or config.default_test_text
+        text = tts_services.normalize_tts_text(raw_text, config)
         try:
             pcm = adapter.synthesize_pcm(text=text, voice=voice, config=config, controls=controls)
         except Exception as exc:

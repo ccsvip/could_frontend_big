@@ -803,6 +803,35 @@ class TenantTTSVoiceGrant(models.Model):
         return f'{self.tenant_id}:{self.voice_id}'
 
 
+class TenantTTSVoiceTestText(models.Model):
+    tenant = models.ForeignKey(
+        'tenants.Tenant',
+        on_delete=models.CASCADE,
+        related_name='tts_voice_test_texts',
+        verbose_name='所属公司',
+    )
+    voice = models.ForeignKey(
+        TTSVoice,
+        on_delete=models.CASCADE,
+        related_name='tenant_test_texts',
+        verbose_name='TTS 音色',
+    )
+    test_text = models.TextField('试听文本', max_length=2000)
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    objects = TenantManager()
+
+    class Meta:
+        verbose_name = '公司 TTS 音色试听文本'
+        verbose_name_plural = '公司 TTS 音色试听文本'
+        constraints = [
+            models.UniqueConstraint(fields=['tenant', 'voice'], name='uniq_tenant_tts_voice_test_text'),
+        ]
+
+    def __str__(self):
+        return f'{self.tenant_id}:{self.voice_id}:{self.test_text}'
+
 class ASRReplacementRule(models.Model):
     source_text = models.CharField('原词', max_length=128)
     replacement_text = models.CharField('替换词', max_length=128)

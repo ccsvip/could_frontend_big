@@ -9,12 +9,13 @@ from apps.accounts.models import PermissionPoint, Role, UserRole
 from apps.ai_models.models import (
     TenantTTSProviderGrant,
     TenantTTSSettings,
+    TenantTTSVoiceTestText,
     TTSProvider,
     TTSVoice,
 )
 from apps.ai_models.services import cosyvoice as cosyvoice_services
 from apps.devices.models import Device
-from apps.tenants.models import Tenant
+from apps.tenants.models import Membership, Tenant
 from apps.tenants.test_utils import TenantTestMixin
 
 User = get_user_model()
@@ -179,6 +180,148 @@ class CompanyTTSProviderNeutralOptionsTests(TenantTestMixin, APITestCase):
         self.assertIn(self.cosy_voice.id, voice_ids)
         self.assertNotIn(self.cherry.id, voice_ids)
         self.assertEqual({voice['providerCode'] for voice in response.data['voices']}, {'cosyvoice'})
+
+
+class CompanyTTSVoiceTestTextTests(TenantTestMixin, APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='tts-test-text-user', password='test123456')
+        self.setup_tenant(self.user)
+        self.role = Role.objects.create(name='TTS Test Text Role', code='tts_test_text')
+        UserRole.objects.create(user=self.user, role=self.role)
+        self.other_user = User.objects.create_user(username='tts-test-text-other', password='test123456')
+        self.other_tenant = Tenant.objects.create(name='另一家公司', code='other-test-text-tenant')
+        Membership.objects.create(user=self.other_user, tenant=self.other_tenant)
+
+        permission_points = []
+        for code in ('ai_models.tts.view', 'ai_models.tts.update'):
+            point, _ = PermissionPoint.objects.update_or_create(
+                code=code,
+                defaults={'name': code, 'module': 'ai_models_tts', 'description': code, 'is_active': True},
+            )
+            permission_points.append(point)
+            self.role.permission_points.add(point)
+        self.tenant.permission_points.set(permission_points)
+        self.other_tenant.permission_points.set(permission_points)
+
+        self.provider = TTSProvider.objects.get(code='aliyun')
+        self.provider.default_test_text = '平台默认试听文本'
+        self.provider.save(update_fields=['default_test_text'])
+        self.voice = TTSVoice.objects.get(provider=self.provider, voice_code='Cherry')
+        TenantTTSProviderGrant.objects.create(tenant=self.tenant, provider=self.provider)
+        TenantTTSProviderGrant.objects.create(tenant=self.other_tenant, provider=self.provider)
+        self.client.force_authenticate(user=self.user)
+
+    def text_url(self, voice_id=None):
+        return f'/api/v1/ai-models/tts/voice-test-texts/{voice_id or self.voice.id}/'
+
+    def options(self):
+        response = self.client.get('/api/v1/ai-models/tts/options/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        return response.data
+
+    def voice_from_options(self, data=None):
+        data = data or self.options()
+        return next(voice for voice in data['voices'] if voice['id'] == self.voice.id)
+
+    def test_options_fall_back_to_platform_text(self):
+        voice = self.voice_from_options()
+        self.assertEqual(voice['testText'], '平台默认试听文本')
+        self.assertEqual(voice['customTestText'], '')
+        self.assertEqual(voice['platformTestText'], '平台默认试听文本')
+        self.assertFalse(voice['hasTestTextOverride'])
+
+    def test_two_tenants_receive_isolated_texts(self):
+        TenantTTSVoiceTestText.objects.create(tenant=self.tenant, voice=self.voice, test_text='甲公司试听')
+        TenantTTSVoiceTestText.objects.create(tenant=self.other_tenant, voice=self.voice, test_text='乙公司试听')
+        self.assertEqual(self.voice_from_options()['testText'], '甲公司试听')
+        self.assertEqual(self.voice_from_options()['customTestText'], '甲公司试听')
+        self.client.force_authenticate(user=self.other_user)
+        self.assertEqual(self.voice_from_options()['testText'], '乙公司试听')
+        self.assertEqual(self.voice_from_options()['customTestText'], '乙公司试听')
+
+    def test_put_trims_text_and_delete_restores_platform_text(self):
+        response = self.client.put(self.text_url(), {'testText': '  公司专属试听  '}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['testText'], '公司专属试听')
+        self.assertEqual(response.data['customTestText'], '公司专属试听')
+        self.assertTrue(response.data['hasTestTextOverride'])
+        self.assertEqual(
+            TenantTTSVoiceTestText.objects.get(tenant=self.tenant, voice=self.voice).test_text,
+            '公司专属试听',
+        )
+
+        delete_response = self.client.delete(self.text_url())
+
+        self.assertEqual(delete_response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(self.voice_from_options()['testText'], '平台默认试听文本')
+        self.assertEqual(self.voice_from_options()['customTestText'], '')
+        self.assertFalse(TenantTTSVoiceTestText.objects.filter(tenant=self.tenant, voice=self.voice).exists())
+
+    def test_text_length_and_blank_validation(self):
+        for test_text in ('', '   ', 'x' * 2001):
+            response = self.client.put(self.text_url(), {'testText': test_text}, format='json')
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertFalse(TenantTTSVoiceTestText.objects.filter(tenant=self.tenant, voice=self.voice).exists())
+
+    def test_override_requires_tts_update_permission(self):
+        self.tenant.permission_points.remove(PermissionPoint.objects.get(code='ai_models.tts.update'))
+
+        response = self.client.put(self.text_url(), {'testText': '不应写入'}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertFalse(TenantTTSVoiceTestText.objects.filter(tenant=self.tenant, voice=self.voice).exists())
+
+    def test_platform_superuser_cannot_write_company_override(self):
+        superuser = User.objects.create_superuser(username='tts-test-text-root', password='test123456')
+        self.client.force_authenticate(user=superuser)
+
+        response = self.client.put(self.text_url(), {'testText': '平台账号不应写入'}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertFalse(TenantTTSVoiceTestText.objects.filter(voice=self.voice).exists())
+
+    def test_unauthorized_voice_is_rejected_without_record(self):
+        ungranted_provider = TTSProvider.objects.create(code='ungranted-test-text-provider', name='未授权卡片')
+        ungranted_voice = TTSVoice.objects.create(
+            provider=ungranted_provider,
+            display_name='未授权音色',
+            voice_code='ungranted-test-text-voice',
+        )
+
+        response = self.client.put(self.text_url(ungranted_voice.id), {'testText': '不应写入'}, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(TenantTTSVoiceTestText.objects.filter(tenant=self.tenant, voice=ungranted_voice).exists())
+
+    def test_device_options_expose_only_custom_test_text(self):
+        TenantTTSVoiceTestText.objects.create(tenant=self.tenant, voice=self.voice, test_text='仅设备可见的公司试听')
+        Device.objects.create(tenant=self.tenant, name='Test Text Device', code='ANDROID-TEST-TEXT-001', is_enabled=True)
+        self.client.force_authenticate(user=None)
+
+        response = self.client.get('/api/v1/ai-models/tts/options/', HTTP_X_DEVICE_CODE='ANDROID-TEST-TEXT-001')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        voice = next(item for item in response.data['voices'] if item['id'] == self.voice.id)
+        self.assertEqual(voice['customTestText'], '仅设备可见的公司试听')
+        self.assertNotIn('testText', voice)
+        self.assertNotIn('platformTestText', voice)
+        self.assertNotIn('hasTestTextOverride', voice)
+        # customTestText 位于 voiceCode 与 gender 之间
+        keys = list(voice.keys())
+        self.assertLess(keys.index('voiceCode'), keys.index('customTestText'))
+        self.assertLess(keys.index('customTestText'), keys.index('gender'))
+
+    def test_device_options_custom_test_text_empty_without_override(self):
+        Device.objects.create(tenant=self.tenant, name='Test Text Empty', code='ANDROID-TEST-TEXT-EMPTY', is_enabled=True)
+        self.client.force_authenticate(user=None)
+
+        response = self.client.get('/api/v1/ai-models/tts/options/', HTTP_X_DEVICE_CODE='ANDROID-TEST-TEXT-EMPTY')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        voice = next(item for item in response.data['voices'] if item['id'] == self.voice.id)
+        self.assertEqual(voice['customTestText'], '')
+        self.assertNotIn('testText', voice)
 
 
 class CompanyTTSDefaultVoiceAuthorizationTests(TenantTestMixin, APITestCase):

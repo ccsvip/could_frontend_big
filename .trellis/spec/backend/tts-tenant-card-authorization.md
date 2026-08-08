@@ -268,6 +268,97 @@ if entry['grantMode'] != TenantTTSProviderGrant.GRANT_MODE_SELECTED:
 
 ---
 
+## Scenario: Company Web voice audition-text override
+
+### 1. Scope / Trigger
+
+- Trigger: a company needs a tenant-specific audition text for an already authorized TTS voice.
+- The override is Web test-playback metadata only; it must not enter device runtime,
+  realtime, synthesis parameters, voice identity, or authorization decisions.
+
+### 2. Signatures
+
+`backend/apps/ai_models/models.py` adds:
+
+```python
+class TenantTTSVoiceTestText(models.Model):
+    tenant = FK('tenants.Tenant')
+    voice = FK(TTSVoice)
+    test_text = TextField(max_length=2000)
+    # UniqueConstraint(fields=['tenant', 'voice'], name='uniq_tenant_tts_voice_test_text')
+```
+
+Company Web endpoints:
+
+```text
+PUT    /api/v1/ai-models/tts/voice-test-texts/{voiceId}/
+       body: {"testText": string}
+DELETE /api/v1/ai-models/tts/voice-test-texts/{voiceId}/
+GET    /api/v1/ai-models/tts/options/
+POST   /api/v1/ai-models/tts/test/
+```
+
+### 3. Contracts
+
+For authenticated company Web options, each voice returns `testText` (the effective
+company value), `customTestText` (the raw company override or `''`),
+`platformTestText` (the super-admin provider default), and `hasTestTextOverride`.
+The options builder obtains overrides for the request tenant and passes them through
+serializer context. Device-code options deliberately omit that context and retain the
+existing platform-only voice fields.
+
+`PUT` returns the updated voice record; `DELETE` returns `204 No Content`. The tenant
+is always derived from the authenticated request and never accepted from the payload.
+The company test endpoint uses the effective `testText` only when its `text` is empty
+and a `voiceId` was supplied; explicit `text` remains authoritative.
+
+### 4. Validation & Error Matrix
+
+| Condition | Result |
+| --- | --- |
+| audition text is blank after trimming | 400 `试听文本不能为空` |
+| audition text exceeds 2000 characters after trimming | 400 validation error |
+| voice is unknown, inactive, hidden, unauthorized, or another tenant's private voice | existing unified 400 `所选音色未授权或已停用` |
+| device-code request attempts PUT/DELETE | existing management permission denial |
+| super-admin or a user without company TTS update permission attempts PUT/DELETE | 403 |
+| DELETE for an authorized voice without a row | 204; no empty override is stored |
+
+### 5. Good/Base/Bad Cases
+
+- **Good**: company A and company B save different audition texts for one shared voice;
+  each options response and blank-text Web test request uses only its own text.
+- **Base**: no row exists, so `testText` equals the provider's current default; a later
+  super-admin default-text update is immediately visible to every company without an override.
+- **Bad**: applying the override in `resolve_tenant_tts_voice`, runtime config, realtime,
+  device-code options, or non-test synthesis changes a frozen device-facing contract.
+
+### 6. Tests Required
+
+`apps.ai_models.tests.test_company_tts_options_api` must assert: save and readback,
+two-tenant isolation, effective fallback after DELETE, blank/overlong validation,
+unified anti-probing errors with no row creation, Web-vs-device options boundary, and
+blank-text test fallback. `apps.ai_models.tests.test_tts_api` must retain explicit-text
+precedence and super-admin test behavior. The frontend must pass `npm run build`.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```python
+# A company's audition text must not alter the globally shared voice.
+voice.default_test_text = request.data['testText']
+```
+
+#### Correct
+
+```python
+voice = ensure_tts_voice_authorized_for_tenant(tenant, voice_id)
+TenantTTSVoiceTestText.objects.update_or_create(
+    tenant=tenant, voice=voice, defaults={'test_text': text.strip()}
+)
+```
+---
+
 ## Scenario: Provider adapter seam
 
 ### 1. Scope / Trigger

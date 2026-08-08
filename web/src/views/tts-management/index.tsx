@@ -1,16 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Avatar, Button, Card, Empty, Input, Select, Slider, Space, Spin, Switch, Tag, Tooltip, Typography, message } from 'antd';
+import { Avatar, Button, Card, Empty, Input, Modal, Select, Slider, Space, Spin, Switch, Tag, Tooltip, Typography, message } from 'antd';
 import {
   IconCheck,
+  IconEdit,
   IconHeadphones,
   IconPlayerPlay,
   IconRefresh,
+  IconRotate,
   IconVolume,
   IconDeviceFloppy,
 } from '@tabler/icons-react';
 import {
+  deleteCompanyTtsVoiceTestText,
   fetchCompanyTtsOptions,
   updateCompanyDefaultTtsVoice,
+  updateCompanyTtsVoiceTestText,
   type CompanyTtsOptions,
   type TtsCardSummary,
   type TtsSessionConfig,
@@ -89,6 +93,9 @@ export const TtsManagementPage = () => {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testText, setTestText] = useState('');
+  const [editingTestTextVoice, setEditingTestTextVoice] = useState<TtsVoiceRecord | null>(null);
+  const [editingTestText, setEditingTestText] = useState('');
+  const [testTextSaving, setTestTextSaving] = useState(false);
   const playbackAbortRef = useRef<AbortController | null>(null);
   const playbackInterruptRef = useRef<AbortController | null>(null);
   const token = useAuthStore((state) => state.token);
@@ -111,6 +118,8 @@ export const TtsManagementPage = () => {
     setSelectedVoiceId(data.defaultVoiceId);
     setSelectedModelCode(data.provider.defaultModelCode || 'instructional');
     setTtsSessionConfig(normalizeTtsSessionConfig(data.ttsSessionConfig));
+    const selected = data.voices.find((voice) => voice.id === data.defaultVoiceId);
+    setTestText(selected?.testText ?? data.defaultTestText ?? '');
   }, []);
 
   const loadOptions = useCallback(async () => {
@@ -121,6 +130,12 @@ export const TtsManagementPage = () => {
       setLoading(false);
     }
   }, [applyOptions]);
+  const refreshTestTextOptions = async () => {
+    const data = await fetchCompanyTtsOptions();
+    setOptions(data);
+    const current = data.voices.find((voice) => voice.id === selectedVoiceId);
+    setTestText(current?.testText ?? data.defaultTestText ?? '');
+  };
 
   useEffect(() => {
     void loadOptions();
@@ -178,6 +193,11 @@ export const TtsManagementPage = () => {
       setSelectedVoiceId(null);
     }
   }, [options, selectedVoiceId, isVoiceSelectable]);
+  useEffect(() => {
+    if (!options || !selectedVoiceId) return;
+    const voice = options.voices.find((item) => item.id === selectedVoiceId);
+    setTestText(voice?.testText ?? options.defaultTestText ?? '');
+  }, [options, selectedVoiceId]);
 
   const saveDefaultVoice = async () => {
     if (!selectedVoiceId) {
@@ -204,6 +224,50 @@ export const TtsManagementPage = () => {
       message.success('TTS 管理设置已保存');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const openTestTextModal = (voice: TtsVoiceRecord) => {
+    setEditingTestTextVoice(voice);
+    setEditingTestText(voice.testText ?? '');
+  };
+
+  const closeTestTextModal = () => {
+    if (testTextSaving) return;
+    setEditingTestTextVoice(null);
+    setEditingTestText('');
+  };
+
+  const saveTestTextOverride = async () => {
+    if (!editingTestTextVoice) return;
+    const normalized = editingTestText.trim();
+    if (!normalized) {
+      message.warning('请输入试听文本');
+      return;
+    }
+    setTestTextSaving(true);
+    try {
+      await updateCompanyTtsVoiceTestText(editingTestTextVoice.id, { testText: normalized });
+      await refreshTestTextOptions();
+      setEditingTestTextVoice(null);
+      setEditingTestText('');
+      message.success('音色试听文本已保存');
+    } finally {
+      setTestTextSaving(false);
+    }
+  };
+
+  const restorePlatformTestText = async () => {
+    if (!editingTestTextVoice) return;
+    setTestTextSaving(true);
+    try {
+      await deleteCompanyTtsVoiceTestText(editingTestTextVoice.id);
+      await refreshTestTextOptions();
+      setEditingTestTextVoice(null);
+      setEditingTestText('');
+      message.success('已恢复平台默认试听文本');
+    } finally {
+      setTestTextSaving(false);
     }
   };
 
@@ -302,6 +366,21 @@ export const TtsManagementPage = () => {
               <Tag color="blue" className="m-0 border-0 rounded-md px-2 py-0.5">支持指令</Tag>
             ) : null}
           </div>
+          <Button
+            type="text"
+            size="small"
+            icon={<IconEdit size={15} />}
+            className="h-auto max-w-full whitespace-normal px-0 text-left"
+            onClick={(event) => {
+              event.stopPropagation();
+              openTestTextModal(voice);
+            }}
+            onKeyDown={(event) => event.stopPropagation()}
+          >
+            <span className="line-clamp-2 text-fluid-sm">
+              {voice.customTestText?.trim() || '编辑试听文本'}
+            </span>
+          </Button>
         </div>
         <div className={`h-4 w-4 rounded-full border ${checked ? 'border-brand-600 bg-brand-600 shadow-[inset_0_0_0_3px_white]' : 'border-slate-300'}`} />
       </div>
@@ -501,7 +580,7 @@ export const TtsManagementPage = () => {
                     onChange={setSelectedVoiceId}
                   />
                   <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
-                    {availableVoices.map(renderVoice)}
+                    {(options?.voices ?? []).map(renderVoice)}
                   </div>
                 </div>
               </Card>
@@ -509,6 +588,56 @@ export const TtsManagementPage = () => {
           </div>
         )}
       </div>
+        <Modal
+          title={editingTestTextVoice ? `编辑试听文本 · ${editingTestTextVoice.displayName}` : '编辑试听文本'}
+          open={!!editingTestTextVoice}
+          onCancel={closeTestTextModal}
+          destroyOnHidden
+          closable={!testTextSaving}
+          maskClosable={!testTextSaving}
+          footer={
+            editingTestTextVoice ? (
+              <div className="flex items-center justify-between gap-3">
+                {editingTestTextVoice.hasTestTextOverride ? (
+                  <Button
+                    icon={<IconRotate size={16} />}
+                    loading={testTextSaving}
+                    onClick={() => void restorePlatformTestText()}
+                  >
+                    恢复默认
+                  </Button>
+                ) : <span />}
+                <Space>
+                  <Button disabled={testTextSaving} onClick={closeTestTextModal}>取消</Button>
+                  <Button type="primary" loading={testTextSaving} onClick={() => void saveTestTextOverride()}>
+                    保存
+                  </Button>
+                </Space>
+              </div>
+            ) : null
+          }
+        >
+          {editingTestTextVoice ? (
+            <div className="space-y-4">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-fluid-sm text-slate-600">
+                平台默认试听文本：{editingTestTextVoice.platformTestText ?? editingTestTextVoice.testText ?? ''}
+              </div>
+              <div className="space-y-1.5">
+                <div className="text-fluid-sm font-medium text-slate-700">公司试听文本</div>
+                <Input.TextArea
+                  autoFocus
+                  value={editingTestText}
+                  maxLength={2000}
+                  showCount
+                  rows={5}
+                  placeholder="输入公司内使用的音色试听内容"
+                  onChange={(event) => setEditingTestText(event.target.value)}
+                />
+                <div className="text-fluid-xs text-slate-500">留空不可保存；恢复默认后将使用平台维护的文本。</div>
+              </div>
+            </div>
+          ) : null}
+        </Modal>
     </Spin>
   );
 };
