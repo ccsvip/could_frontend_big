@@ -39,6 +39,9 @@ const DEFAULT_TTS_SESSION_CONFIG: TtsSessionConfig = {
 const OPTIMIZE_INSTRUCTIONS_TOOLTIP = '开启后会在有指令控制文本时自动优化表达，让语气、情绪和播报风格更清晰；不支持该能力的播报风格或音色不会生效。';
 const ALIYUN_CARD_CODE = 'aliyun';
 
+/** Human label for a voice's gender; falls back to the raw value. */
+const genderLabel = (gender?: string) => (gender === 'female' ? '女声' : gender === 'male' ? '男声' : gender || '');
+
 const normalizeTtsSessionConfig = (config?: Partial<TtsSessionConfig> | null): TtsSessionConfig => ({
   ...DEFAULT_TTS_SESSION_CONFIG,
   ...(config || {}),
@@ -291,9 +294,6 @@ export const TtsManagementPage = () => {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="truncate text-sm font-semibold text-slate-900">{voice.displayName}</span>
-            {voice.providerName ? (
-              <Tag className="m-0 border-0 rounded-md px-2 py-0.5">{voice.providerName}</Tag>
-            ) : null}
             {voice.isDefault ? <Tag color="success" className="m-0 border-0 rounded-md px-2 py-0.5">当前默认</Tag> : null}
             <Tag color={selectable ? 'green' : 'default'} className="m-0 border-0 rounded-md px-2 py-0.5">
               {selectable ? '可用' : '当前风格不可用'}
@@ -302,47 +302,21 @@ export const TtsManagementPage = () => {
               <Tag color="blue" className="m-0 border-0 rounded-md px-2 py-0.5">支持指令</Tag>
             ) : null}
           </div>
-          <div className="mt-1" onClick={(e) => e.stopPropagation()}>
-            <Typography.Text
-              copyable={{ text: voice.voiceCode }}
-              className="font-mono text-[11px] text-slate-500 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded inline-block"
-            >
-              {voice.voiceCode}
-            </Typography.Text>
-          </div>
-          <div className="mt-2 text-xs text-slate-400">
-            {voice.gender === 'female' ? '女声' : voice.gender === 'male' ? '男声' : voice.gender || '-'}
-          </div>
         </div>
         <div className={`h-4 w-4 rounded-full border ${checked ? 'border-brand-600 bg-brand-600 shadow-[inset_0_0_0_3px_white]' : 'border-slate-300'}`} />
       </div>
     );
   };
 
-  const voiceSelectGroups = useMemo(() => {
-    const cards = options?.providers ?? [];
-    if (cards.length > 0) {
-      return cards
-        .map((card) => ({
-          label: card.name,
-          options: card.voices.filter(isVoiceSelectable).map((voice) => ({
-            label: `${voice.displayName} (${voice.voiceCode})`,
-            value: voice.id,
-          })),
-        }))
-        .filter((group) => group.options.length > 0);
-    }
-    // Migration window: the payload may predate `providers`.
-    return [
-      {
-        label: options?.provider.name || '可用音色',
-        options: availableVoices.map((voice) => ({
-          label: `${voice.displayName} (${voice.voiceCode})`,
-          value: voice.id,
-        })),
-      },
-    ];
-  }, [options?.providers, options?.provider.name, availableVoices, isVoiceSelectable]);
+  /** Flat voice options; card/model identity stays hidden from company users. */
+  const voiceSelectOptions = useMemo(
+    () =>
+      availableVoices.map((voice) => ({
+        label: `${voice.displayName}${genderLabel(voice.gender) ? `（${genderLabel(voice.gender)}）` : ''}`,
+        value: voice.id,
+      })),
+    [availableVoices],
+  );
 
   const hasAuthorizedVoices = (options?.voices?.length ?? 0) > 0;
 
@@ -363,9 +337,6 @@ export const TtsManagementPage = () => {
                   <Tag color={hasAuthorizedVoices ? 'success' : 'default'} className="m-0 border-0 rounded-md px-2 py-0.5">
                     {hasAuthorizedVoices ? `已授权 ${options?.providers?.length ?? 1} 张卡片` : '未分配 TTS 卡片'}
                   </Tag>
-                  {selectedCard ? (
-                    <Tag color="blue" className="m-0 border-0 rounded-md px-2 py-0.5">{selectedCard.name}</Tag>
-                  ) : null}
                 </div>
               </div>
             </div>
@@ -399,19 +370,9 @@ export const TtsManagementPage = () => {
                   <div className="flex items-center gap-3">
                     <Avatar src={defaultVoice?.avatarPath} icon={<IconHeadphones size={22} />} size={48} />
                     <div>
-                      <div className="text-sm font-semibold text-slate-900 mb-1">
+                      <div className="text-sm font-semibold text-slate-900">
                         {defaultVoice?.displayName || '未选择默认音色'}
                       </div>
-                      {defaultVoice?.voiceCode ? (
-                        <Typography.Text
-                          copyable={{ text: defaultVoice.voiceCode }}
-                          className="font-mono text-[11px] text-slate-500 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded cursor-pointer inline-block"
-                        >
-                          {defaultVoice.voiceCode}
-                        </Typography.Text>
-                      ) : (
-                        <div className="text-xs text-slate-400">-</div>
-                      )}
                     </div>
                   </div>
                   {selectedVoice ? (
@@ -425,7 +386,6 @@ export const TtsManagementPage = () => {
 
               <Card
                 title="播报参数"
-                extra={selectedCard ? <Tag className="m-0 rounded-md border-0">{selectedCard.name} 配置</Tag> : null}
                 className="rounded-xl border border-slate-100 shadow-card"
               >
                 <div className="space-y-4">
@@ -533,7 +493,7 @@ export const TtsManagementPage = () => {
                 <div className="space-y-3">
                   <Select
                     value={selectedVoiceId ?? undefined}
-                    options={voiceSelectGroups}
+                    options={voiceSelectOptions}
                     placeholder="搜索并选择默认音色"
                     showSearch
                     optionFilterProp="label"
